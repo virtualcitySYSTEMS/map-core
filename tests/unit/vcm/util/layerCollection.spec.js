@@ -1,0 +1,252 @@
+import ImagerySplitDirection from 'cesium/Source/Scene/ImagerySplitDirection.js';
+import Layer from '../../../../src/vcs/vcm/layer/layer.js';
+import LayerCollection from '../../../../src/vcs/vcm/util/layerCollection.js';
+import { getCesiumEventSpy } from '../../helpers/cesiumHelpers.js';
+import OpenStreetMap from '../../../../src/vcs/vcm/layer/openStreetMap.js';
+import { setOpenlayersMap } from '../../helpers/openlayers.js';
+import { getFramework } from '../../helpers/framework.js';
+import resetFramework from '../../helpers/resetFramework.js';
+
+describe('vcs.vcm.util.LayerCollection', () => {
+  let layer1;
+  let layer2;
+  let layer3;
+  let layer4;
+  let sandbox;
+
+  before(() => {
+    layer1 = new Layer({
+      name: 'layer1',
+    });
+    layer2 = new Layer({
+      name: 'layer2',
+      zIndex: 5,
+    });
+    layer3 = new Layer({
+      name: 'layer3',
+      zIndex: 2,
+    });
+    layer4 = new Layer({
+      name: 'layer4',
+    });
+    sandbox = sinon.createSandbox();
+    sandbox.stub(Layer.prototype, 'isSupported').returns(true);
+    sandbox.stub(Layer.prototype, 'initialize').resolves(true);
+  });
+
+  after(() => {
+    layer1.destroy();
+    layer2.destroy();
+    layer3.destroy();
+    layer4.destroy();
+    sandbox.restore();
+    resetFramework();
+  });
+
+  describe('creating from an existing array', () => {
+    it('should add each layer, sorting by zIndex', () => {
+      const layerCollection = LayerCollection.from([layer1, layer2, layer3, layer4]);
+      const asArray = [...layerCollection];
+      expect(asArray).to.have.ordered.members([layer1, layer4, layer3, layer2]);
+      layerCollection.destroy();
+    });
+  });
+
+  describe('adding layers', () => {
+    let layerCollection;
+    let layer5;
+    let layer6;
+
+    before(() => {
+      layer5 = new Layer({
+        name: 'layer5',
+      });
+
+      layer6 = new Layer({
+        name: 'layer6',
+        zIndex: 5,
+      });
+    });
+
+    beforeEach(() => {
+      layerCollection = new LayerCollection();
+    });
+
+    afterEach(() => {
+      layerCollection.destroy();
+    });
+
+    after(() => {
+      layer5.destroy();
+      layer6.destroy();
+    });
+
+    it('should add a layer', () => {
+      layerCollection.add(layer1);
+      expect(layerCollection.hasKey(layer1.name)).to.be.true;
+    });
+
+    it('should raise the added event', () => {
+      const spy = sandbox.spy();
+      const listener = layerCollection.added.addEventListener((layer) => {
+        expect(layer).to.equal(layer2);
+        spy();
+        listener();
+      });
+      layerCollection.add(layer2);
+      expect(spy).to.have.been.calledOnce;
+    });
+
+    it('should place the layer at the correct location, based on zIndex', () => {
+      layerCollection.add(layer1);
+      layerCollection.add(layer2);
+      layerCollection.add(layer3);
+      layerCollection.add(layer4);
+      layerCollection.add(layer5);
+      const asArray = [...layerCollection];
+      expect(asArray).to.have.ordered.members([layer1, layer4, layer5, layer3, layer2]);
+    });
+
+    it('should add a state change listener and emit state changed', async () => {
+      layerCollection.add(layer1);
+      const spy = sandbox.spy();
+      const listener = layerCollection.stateChanged.addEventListener((layer) => {
+        expect(layer).to.equal(layer1);
+        spy();
+      });
+      await layer1.activate();
+      expect(spy).to.have.been.calledTwice;
+      layer1.deactivate();
+      listener();
+    });
+
+    it('should add a zIndex changed listener and move the layer accordingly', () => {
+      layerCollection.add(layer1);
+      layerCollection.add(layer2);
+      layerCollection.add(layer3);
+      layerCollection.add(layer4);
+      layerCollection.add(layer5);
+      const spy = getCesiumEventSpy(sandbox, layerCollection.moved);
+      layer5.zIndex = 5;
+      expect(spy).to.have.been.calledOnceWithExactly(layer5);
+      expect(layerCollection.indexOf(layer5)).to.equal(4);
+    });
+
+    it('should add a layer at a given index, ensuring, it gets an appropriate local zIndex', () => {
+      layerCollection.add(layer1);
+      layerCollection.add(layer2);
+      layerCollection.add(layer3);
+      layerCollection.add(layer4);
+      layerCollection.add(layer5);
+      layerCollection.add(layer6, 1);
+      expect(layerCollection.indexOf(layer6)).to.equal(1);
+      layer5.zIndex = 1;
+      expect(layerCollection.indexOf(layer5)).to.equal(3); // if layer6 did have zIndex of 5, zIndex 1 would have index 1 and not 3
+    });
+  });
+
+  describe('removing layers', () => {
+    let layerCollection;
+
+    beforeEach(() => {
+      layerCollection = LayerCollection.from([layer1, layer2, layer3, layer4]);
+      layerCollection.remove(layer1);
+    });
+
+    afterEach(() => {
+      layerCollection.destroy();
+    });
+
+    it('should no longer contain the layer', () => {
+      expect(layerCollection.has(layer1)).to.be.false;
+    });
+
+    it('should no longer listen to state changes', async () => {
+      const spy = sandbox.spy();
+      const listener = layerCollection.stateChanged.addEventListener(spy);
+      await layer1.activate();
+      layer1.deactivate();
+      expect(spy).to.not.have.been.called;
+      listener();
+    });
+
+    it('should remove the local zIndex of a layer, ensuring the zIndex is reevaluated on adding the layer again', () => {
+      layerCollection.lower(layer2, 3);
+      expect(layerCollection.indexOf(layer2)).to.equal(0);
+      layerCollection.remove(layer2);
+      layerCollection.add(layer2);
+      expect(layerCollection.indexOf(layer2)).to.equal(2);
+    });
+  });
+
+  describe('handling of exclusive layers', () => {
+    let layerCollection;
+    let layer5;
+    let layer6;
+
+    before(async () => {
+      await setOpenlayersMap(getFramework());
+      layer5 = new OpenStreetMap({
+        name: 'layer5',
+        exclusiveGroups: ['test'],
+      });
+
+      layer6 = new OpenStreetMap({
+        name: 'layer6',
+        zIndex: 5,
+        exclusiveGroups: ['test'],
+      });
+    });
+
+    beforeEach(() => {
+      layerCollection = LayerCollection.from([layer1, layer5, layer6]);
+    });
+
+    afterEach(() => {
+      layerCollection.destroy();
+    });
+
+    after(() => {
+      layer5.destroy();
+      layer6.destroy();
+    });
+
+    it('should handle exclusivity', async () => {
+      await layer5.activate();
+      await layer6.activate();
+      expect(layer5.active).to.be.false;
+    });
+
+    it('should handle changes to exclusivity', async () => {
+      await layer5.activate();
+      const layer = new Layer({});
+      layerCollection.add(layer);
+      await layer.activate();
+      layer.exclusiveGroups = ['test'];
+      expect(layer5.active).to.be.false;
+      layer.exclusiveGroups = [];
+      await layer5.activate();
+      expect(layer.active).to.be.true;
+      layer.destroy();
+    });
+
+    it('should handle changes to split direction', async () => {
+      layer5.splitDirection = ImagerySplitDirection.LEFT;
+      layer6.splitDirection = ImagerySplitDirection.RIGHT;
+      await layer5.activate();
+      await layer6.activate();
+      expect(layer5.active).to.be.true;
+      expect(layer6.active).to.be.true;
+      layer6.splitDirection = ImagerySplitDirection.NONE;
+      expect(layer5.active).to.be.false;
+    });
+
+    it('should no longer manage exclusivity if a layer is removed', async () => {
+      layerCollection.remove(layer6);
+      await layer5.activate();
+      await layer6.activate();
+      expect(layer5.active).to.be.true;
+      expect(layer6.active).to.be.true;
+    });
+  });
+});

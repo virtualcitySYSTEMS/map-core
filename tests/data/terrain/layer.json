@@ -1,0 +1,136 @@
+{
+    "tilejson": "2.1.0",
+    "qmc-version": "3.5-0-g0f89f13_64bit_QMC_virtualcitySYSTEMS_GmbH",
+    "version": "1.1536156513599457",
+    "format": "quantized-mesh-1.0",
+    "scheme": "tms",
+    "extensions": [
+        "octvertexnormals"
+    ],
+    "tiles": [
+        "{z}/{x}/{y}.terrain?v={version}"
+    ],
+    "minzoom": 0,
+    "maxzoom": 13,
+    "bounds": [
+        -180.0,
+        -90.0,
+        180.0,
+        90.0
+    ],
+    "projection": "EPSG:4326",
+    "available": [
+      [
+        {
+          "endY": 0,
+          "endX": 1,
+          "startX": 0,
+          "startY": 0
+        }
+      ],
+      [
+        {
+          "endY": 1,
+          "endX": 2,
+          "startX": 2,
+          "startY": 1
+        }
+      ],
+      [
+        {
+          "endY": 3,
+          "endX": 4,
+          "startX": 4,
+          "startY": 3
+        }
+      ],
+      [
+        {
+          "endY": 6,
+          "endX": 8,
+          "startX": 8,
+          "startY": 6
+        }
+      ],
+      [
+        {
+          "endY": 12,
+          "endX": 17,
+          "startX": 17,
+          "startY": 12
+        }
+      ],
+      [
+        {
+          "endY": 25,
+          "endX": 34,
+          "startX": 34,
+          "startY": 25
+        }
+      ],
+      [
+        {
+          "endY": 50,
+          "endX": 68,
+          "startX": 68,
+          "startY": 50
+        }
+      ],
+      [
+        {
+          "endY": 101,
+          "endX": 137,
+          "startX": 137,
+          "startY": 101
+        }
+      ],
+      [
+        {
+          "endY": 202,
+          "endX": 275,
+          "startX": 275,
+          "startY": 202
+        }
+      ],
+      [
+        {
+          "endY": 405,
+          "endX": 550,
+          "startX": 550,
+          "startY": 405
+        }
+      ],
+      [
+        {
+          "endY": 810,
+          "endX": 1100,
+          "startX": 1100,
+          "startY": 810
+        }
+      ],
+      [
+        {
+          "endY": 1621,
+          "endX": 2200,
+          "startX": 2200,
+          "startY": 1621
+        }
+      ],
+      [
+        {
+          "endY": 3243,
+          "endX": 4400,
+          "startX": 4400,
+          "startY": 3242
+        }
+      ],
+      [
+        {
+            "endY": 6486,
+            "endX": 8801,
+            "startX": 8800,
+            "startY": 6485
+        }
+      ]
+    ]
+}

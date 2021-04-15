@@ -1,0 +1,93 @@
+<html>
+<head>
+
+  <style>
+      .mapElement {
+          top: 0px;
+          bottom : 0px;
+          left: 0px;
+          right:0px;
+          overflow: hidden; /* Fix for iFrame content */
+      }
+      .cesium-widget, .cesium-widget canvas {
+          width: 100%;
+          height: 100%;
+          touch-action: none;
+      }
+  </style>
+</head>
+<body>
+
+<div id="mapContainer" style="border-style: solid;border-color: black;width:200px;height:200px"></div>
+<div id="mapContainer2" style="border-style: solid;border-color: black;width:200px;height:200px"></div>
+<div id="init">
+  <button id="changeMapCesium">changeMapCesium</button>
+  <button id="changeMapOpenlayers">changeMapOpenlayers</button>
+  <button id="changeMapOblique">changeMapOblique</button>
+  <button id="changeTarget">changeTarget</button>
+</div>
+<script type="module">
+  import MapCollection from './src/vcs/vcm/util/mapCollection.js';
+  import Openlayers from './src/vcs/vcm/maps/openlayers.js';
+  import OpenStreetMap from './src/vcs/vcm/layer/openStreetMap.js';
+  import ObliqueCollection from './src/vcs/vcm/oblique/ObliqueCollection.js';
+  import ObliqueDataSet from './src/vcs/vcm/oblique/ObliqueDataSet.js';
+  import Projection from './src/vcs/vcm/util/projection.js';
+  import { obliqueCollectionCollection } from './src/vcs/vcm/globalCollections.js';
+
+  window.CESIUM_BASE_URL = '/node_modules/cesium/Source/';
+  const ol = new Openlayers({});
+  const mapCollection = new MapCollection();
+  const osm = new OpenStreetMap({});
+  mapCollection.add(ol);
+  mapCollection.setTarget('mapContainer');
+  mapCollection.layerCollection.add(osm);
+  mapCollection.setActiveMap(ol.name);
+  osm.activate();
+  let cesium = null;
+  let oblique = null;
+
+  document.getElementById('changeMapOpenlayers').addEventListener('click', async () => {
+    await mapCollection.setActiveMap(ol.name);
+  });
+
+  document.getElementById('changeMapCesium').addEventListener('click', async () => {
+    if(!cesium) {
+      const CesiumMap = await import('./src/vcs/vcm/maps/cesium.js');
+      cesium = new CesiumMap.default({});
+      mapCollection.add(cesium);
+    }
+    mapCollection.setActiveMap(cesium.name);
+  });
+  document.getElementById('changeMapOblique').addEventListener('click', async () => {
+    if(!oblique) {
+      const projection = new Projection({
+        epsg: 25833,
+        proj4: '+proj=utm +zone=33 +ellps=GRS80 +units=m +no_defs'
+      });
+      const obliqueCollection = new ObliqueCollection({
+        name: 'berlin',
+        dataSets: [
+          new ObliqueDataSet('https://a.3d.blc.shc.eu/WAB/base_layer/obliques/image.json', projection.proj)
+        ]
+      })
+      obliqueCollectionCollection.add(obliqueCollection);
+      const obliqueMap = await import('./src/vcs/vcm/maps/oblique.js');
+
+      oblique = new obliqueMap.default({});
+      await oblique.setCollection(obliqueCollection);
+      mapCollection.add(oblique);
+    }
+    await mapCollection.setActiveMap(oblique.name);
+  });
+
+  document.getElementById('changeTarget').addEventListener('click', async () => {
+    if (mapCollection.target.id === 'mapContainer') {
+      mapCollection.setTarget('mapContainer2');
+    } else {
+      mapCollection.setTarget('mapContainer');
+    }
+  });
+</script>
+</body>
+</html>

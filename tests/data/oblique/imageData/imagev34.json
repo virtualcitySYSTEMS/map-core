@@ -1,0 +1,352 @@
+{
+  "version": "v3.4-36-ga9377e0_64bit",
+  "info": "- the corner points of the images are sorted like [lower left, lower right, upper right, upper left] always with respect to north - the view direction angle is either calculated from camera pose and center on ground or the center of footprint edges in view direction - if the images have same size the data can be found in generalImageInfo otherwise the data is stored in the data regarding the images - view-direction is north, east, south, west with 0, 1, 2, 3",
+  "generalImageInfo": {
+    "width": 11608,
+    "height": 8708,
+    "tile-resolution": [
+      32,
+      16,
+      8,
+      4,
+      2,
+      1
+    ],
+    "tile-width": 512,
+    "tile-height": 512,
+    "cameraParameter": {
+      "111_right": {
+        "camera-matrix": [
+          [
+            19366.4347826064,
+            0,
+            5793.2826
+          ],
+          [
+            0,
+            -19366.4347826064,
+            4354.913
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "focal-length": 89.0856,
+        "principal-point": [
+          5793.28,
+          4354.91
+        ],
+        "pixel-size": [
+          0.0046,
+          0.0046
+        ],
+        "radial-distorsion-expected-2-found": [
+          0.000161722,
+          0.00421904,
+          0.0000305735,
+          -0.00000912995,
+          3.9396e-8
+        ],
+        "radial-distorsion-found-2-expected": [
+          -0.000154022,
+          -0.00421231,
+          -0.0000274032,
+          0.00000871298,
+          -2.8186e-8
+        ]
+      },
+      "110_left": {
+        "camera-matrix": [
+          [
+            -19345.3260869542,
+            0,
+            5824.1739
+          ],
+          [
+            0,
+            19345.3260869542,
+            4368.7826
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "focal-length": 88.9885,
+        "principal-point": [
+          5824.17,
+          4368.78
+        ],
+        "pixel-size": [
+          0.0046,
+          0.0046
+        ],
+        "radial-distorsion-expected-2-found": [
+          0.000161722,
+          0.00421904,
+          0.0000305735,
+          -0.00000912995,
+          3.9396e-8
+        ],
+        "radial-distorsion-found-2-expected": [
+          -0.000154022,
+          -0.00421231,
+          -0.0000274032,
+          0.00000871298,
+          -2.8186e-8
+        ]
+      },
+      "116_back": {
+        "camera-matrix": [
+          [
+            19370.0869565194,
+            0,
+            5823.913
+          ],
+          [
+            0,
+            -19370.0869565194,
+            4376.413
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "focal-length": 89.1024,
+        "principal-point": [
+          5823.91,
+          4376.41
+        ],
+        "pixel-size": [
+          0.0046,
+          0.0046
+        ],
+        "radial-distorsion-expected-2-found": [
+          0.000161722,
+          0.00421904,
+          0.0000305735,
+          -0.00000912995,
+          3.9396e-8
+        ],
+        "radial-distorsion-found-2-expected": [
+          -0.000154022,
+          -0.00421231,
+          -0.0000274032,
+          0.00000871298,
+          -2.8186e-8
+        ]
+      },
+      "119_front": {
+        "camera-matrix": [
+          [
+            -19359.9999999977,
+            0,
+            5834.3696
+          ],
+          [
+            0,
+            19359.9999999977,
+            4362.1957
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "focal-length": 89.056,
+        "principal-point": [
+          5834.37,
+          4362.2
+        ],
+        "pixel-size": [
+          0.0046,
+          0.0046
+        ],
+        "radial-distorsion-expected-2-found": [
+          0.000161722,
+          0.00421904,
+          0.0000305735,
+          -0.00000912995,
+          3.9396e-8
+        ],
+        "radial-distorsion-found-2-expected": [
+          -0.000154022,
+          -0.00421231,
+          -0.0000274032,
+          0.00000871298,
+          -2.8186e-8
+        ]
+      }
+    }
+  },
+  "images": [
+    {
+      "name": "004_003_111002665",
+      "camera-name": "111_right",
+      "view-direction": "north",
+      "view-direction-angle": 1.57123191749574,
+      "groundCoordinates": [
+        [
+          3457599,
+          5547108,
+          0
+        ],
+        [
+          3456417,
+          5547112,
+          0
+        ],
+        [
+          3456131,
+          5548571,
+          0
+        ],
+        [
+          3457882,
+          5548548,
+          0
+        ]
+      ],
+      "centerPointOnGround": [
+        3457007.25,
+        5547834.75
+      ],
+      "rotation-matrix": [
+        [
+          -0.999999651448,
+          0.000798874411,
+          -0.000242700749
+        ],
+        [
+          -0.000429001807,
+          -0.741009804172,
+          -0.671494070025
+        ],
+        [
+          -0.000716283064,
+          -0.671493731856,
+          0.74100988861
+        ]
+      ],
+      "projection-center": [
+        3457007.999,
+        5546115.246,
+        1927.841
+      ]
+    },
+    {
+      "name": "004_005_111002663",
+      "camera-name": "111_right",
+      "view-direction": "north",
+      "view-direction-angle": 1.5671780653022,
+      "groundCoordinates": [
+        [
+          3458400,
+          5547104,
+          0
+        ],
+        [
+          3457220,
+          5547103,
+          0
+        ],
+        [
+          3456942,
+          5548539,
+          0
+        ],
+        [
+          3458691,
+          5548564,
+          0
+        ]
+      ],
+      "centerPointOnGround": [
+        3457813.25,
+        5547827.5
+      ],
+      "rotation-matrix": [
+        [
+          -0.999998771528,
+          0.001516459488,
+          -0.000396602454
+        ],
+        [
+          -0.000858526615,
+          -0.741588082952,
+          -0.670854960596
+        ],
+        [
+          -0.001311440024,
+          -0.670853795975,
+          0.741588473852
+        ]
+      ],
+      "projection-center": [
+        3457807.041,
+        5546111.49,
+        1926.837
+      ]
+    },
+    {
+      "name": "004_007_111002661",
+      "camera-name": "111_right",
+      "view-direction": "north",
+      "view-direction-angle": 1.56624217126172,
+      "groundCoordinates": [
+        [
+          3459204,
+          5547117,
+          0
+        ],
+        [
+          3458016,
+          5547106,
+          0
+        ],
+        [
+          3457735,
+          5548546,
+          0
+        ],
+        [
+          3459501,
+          5548606,
+          0
+        ]
+      ],
+      "centerPointOnGround": [
+        3458614,
+        5547843.75
+      ],
+      "rotation-matrix": [
+        [
+          -0.999999781516,
+          0.000636795036,
+          0.000177368728
+        ],
+        [
+          -0.000591492023,
+          -0.742186295235,
+          -0.670193370083
+        ],
+        [
+          -0.000295135172,
+          -0.670193328569,
+          0.742186509738
+        ]
+      ],
+      "projection-center": [
+        3458606.125,
+        5546114.572,
+        1932.222
+      ]
+    }
+  ]
+}

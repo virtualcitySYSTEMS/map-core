@@ -1,0 +1,428 @@
+{
+  "asset": {
+    "version": "0.0",
+    "tilesetVersion": "54443336650"
+  },
+  "geometricError": 48.828125,
+  "root": {
+    "boundingVolume": {
+      "region": [
+        0.233260953,
+        0.916361773,
+        0.233644448,
+        0.91655352,
+        0.0,
+        140.3
+      ]
+    },
+    "geometricError": 24.4140625,
+    "refine": "ADD",
+    "children": [
+      {
+        "boundingVolume": {
+          "region": [
+            0.233260953,
+            0.916361773,
+            0.233380094,
+            0.916457646,
+            31.1,
+            78.7
+          ]
+        },
+        "geometricError": 0.0,
+        "refine": "REPLACE",
+        "content": {
+          "boundingVolume": {
+            "region": [
+              0.233331935,
+              0.916407795,
+              0.233380094,
+              0.916449129,
+              31.1,
+              78.7
+            ]
+          },
+          "uri": "15/35201/6825.b3dm"
+        }
+      },
+      {
+        "boundingVolume": {
+          "region": [
+            0.233356409,
+            0.916457646,
+            0.233456404,
+            0.91655352,
+            30.3,
+            137.0
+          ]
+        },
+        "geometricError": 0.0,
+        "refine": "REPLACE",
+        "content": {
+          "boundingVolume": {
+            "region": [
+              0.233356409,
+              0.916461664,
+              0.233456404,
+              0.916504342,
+              30.3,
+              137.0
+            ]
+          },
+          "uri": "15/35202/6824.b3dm"
+        }
+      },
+      {
+        "boundingVolume": {
+          "region": [
+            0.233356827,
+            0.916361773,
+            0.233463022,
+            0.916459533,
+            0.0,
+            140.3
+          ]
+        },
+        "geometricError": 0.0,
+        "refine": "REPLACE",
+        "content": {
+          "boundingVolume": {
+            "region": [
+              0.233366702,
+              0.916369892,
+              0.233463022,
+              0.916459533,
+              0.0,
+              140.3
+            ]
+          },
+          "uri": "15/35202/6825.b3dm"
+        }
+      },
+      {
+        "boundingVolume": {
+          "region": [
+            0.233448286,
+            0.916457646,
+            0.233552106,
+            0.91655352,
+            0.0,
+            104.6
+          ]
+        },
+        "geometricError": 0.0,
+        "refine": "REPLACE",
+        "content": {
+          "boundingVolume": {
+            "region": [
+              0.233448286,
+              0.916458978,
+              0.233552106,
+              0.916523912,
+              0.0,
+              104.6
+            ]
+          },
+          "uri": "15/35203/6824.b3dm"
+        }
+      },
+      {
+        "boundingVolume": {
+          "region": [
+            0.233444878,
+            0.916361773,
+            0.233565333,
+            0.916468504,
+            0.0,
+            87.9
+          ]
+        },
+        "geometricError": 0.0,
+        "refine": "REPLACE",
+        "content": {
+          "boundingVolume": {
+            "region": [
+              0.233444878,
+              0.916381249,
+              0.233565333,
+              0.916468504,
+              0.0,
+              87.9
+            ]
+          },
+          "uri": "15/35203/6825.b3dm"
+        }
+      },
+      {
+        "boundingVolume": {
+          "region": [
+            0.233503526,
+            0.916457646,
+            0.233644448,
+            0.91655352,
+            31.9,
+            69.5
+          ]
+        },
+        "geometricError": 0.0,
+        "refine": "REPLACE",
+        "content": {
+          "boundingVolume": {
+            "region": [
+              0.233503526,
+              0.916459892,
+              0.233593156,
+              0.916528355,
+              31.9,
+              69.5
+            ]
+          },
+          "uri": "15/35204/6824.b3dm"
+        }
+      },
+      {
+        "boundingVolume": {
+          "region": [
+            0.233537322,
+            0.916361773,
+            0.233644448,
+            0.916457646,
+            30.9,
+            82.2
+          ]
+        },
+        "geometricError": 0.0,
+        "refine": "REPLACE",
+        "content": {
+          "boundingVolume": {
+            "region": [
+              0.233537322,
+              0.916378958,
+              0.233589257,
+              0.916452399,
+              30.9,
+              82.2
+            ]
+          },
+          "uri": "15/35204/6825.b3dm"
+        }
+      }
+    ]
+  },
+  "properties": {
+    "EIG_KL_ST": {
+      "valueType": "INTEGER",
+      "minimum": -1.0,
+      "maximum": 1.0
+    },
+    "FOLIE": {
+      "valueType": "STRING"
+    },
+    "ANZ_LOC": {
+      "valueType": "INTEGER",
+      "minimum": 1.0,
+      "maximum": 2.0
+    },
+    "TexVersion": {
+      "valueType": "INTEGER",
+      "minimum": 1.0,
+      "maximum": 1.0
+    },
+    "HoeheDach": {
+      "valueType": "STRING"
+    },
+    "Address": {
+      "valueType": "SIMPLEADDRESS"
+    },
+    "file_candidate_gmlid": {
+      "valueType": "STRING"
+    },
+    "LFD": {
+      "valueType": "STRING"
+    },
+    "HNR": {
+      "valueType": "STRING"
+    },
+    "overlap_DB_to_file": {
+      "valueType": "INTEGER",
+      "minimum": 100.0,
+      "maximum": 100.0
+    },
+    "externalReference 1 externalObjectName": {
+      "valueType": "STRING"
+    },
+    "area_diff": {
+      "valueType": "INTEGER",
+      "minimum": 0.0,
+      "maximum": 0.0
+    },
+    "externalReference externalObjectName": {
+      "valueType": "STRING"
+    },
+    "STR": {
+      "valueType": "STRING"
+    },
+    "based_on_file_lod": {
+      "valueType": "INTEGER",
+      "minimum": 0.0,
+      "maximum": 0.0
+    },
+    "overlap_filter": {
+      "valueType": "INTEGER",
+      "minimum": 89.0,
+      "maximum": 89.0
+    },
+    "measuredHeight": {
+      "valueType": "DOUBLE",
+      "minimum": 3.41,
+      "maximum": 70.89
+    },
+    "DENKMALART": {
+      "valueType": "STRING"
+    },
+    "ADZ": {
+      "valueType": "STRING"
+    },
+    "function": {
+      "valueType": "STRING"
+    },
+    "NiedrigsteTraufeDesGebaeudes": {
+      "valueType": "STRING"
+    },
+    "Qualitaet": {
+      "valueType": "STRING"
+    },
+    "DENK_ID": {
+      "valueType": "STRING"
+    },
+    "Methode": {
+      "valueType": "STRING"
+    },
+    "H_First_Max": {
+      "valueType": "DOUBLE",
+      "minimum": 37.27528,
+      "maximum": 140.5875
+    },
+    "creationDate": {
+      "valueType": "STRING"
+    },
+    "KREIS": {
+      "valueType": "STRING"
+    },
+    "GE_LoD3_zOffset": {
+      "valueType": "STRING"
+    },
+    "area_diff_filter": {
+      "valueType": "INTEGER",
+      "minimum": 10.0,
+      "maximum": 10.0
+    },
+    "gml:description": {
+      "valueType": "STRING"
+    },
+    "H_First_Min": {
+      "valueType": "DOUBLE",
+      "minimum": 36.8,
+      "maximum": 70.00429
+    },
+    "DatenquelleDachhoehe": {
+      "valueType": "STRING"
+    },
+    "OAR": {
+      "valueType": "STRING"
+    },
+    "Kachel": {
+      "valueType": "STRING"
+    },
+    "RBEZ": {
+      "valueType": "STRING"
+    },
+    "DatenquelleBodenhoehe": {
+      "valueType": "STRING"
+    },
+    "GMDE": {
+      "valueType": "STRING"
+    },
+    "LAND": {
+      "valueType": "STRING"
+    },
+    "matching_mode": {
+      "valueType": "INTEGER",
+      "minimum": 1.0,
+      "maximum": 1.0
+    },
+    "overlap_file_to_DB": {
+      "valueType": "INTEGER",
+      "minimum": 100.0,
+      "maximum": 100.0
+    },
+    "H_Trauf_Max": {
+      "valueType": "DOUBLE",
+      "minimum": 37.27528,
+      "maximum": 140.5875
+    },
+    "roofType": {
+      "valueType": "STRING"
+    },
+    "TerrainHeight": {
+      "valueType": "DOUBLE",
+      "minimum": 35.0,
+      "maximum": 35.0
+    },
+    "H_Trauf_Min": {
+      "valueType": "DOUBLE",
+      "minimum": 36.8,
+      "maximum": 70.00429
+    },
+    "EIG_KL_PV": {
+      "valueType": "INTEGER",
+      "minimum": -1.0,
+      "maximum": 3.0
+    },
+    "GE_LoD2_zOffset": {
+      "valueType": "STRING"
+    },
+    "HoeheGrund": {
+      "valueType": "STRING"
+    },
+    "gml:name": {
+      "valueType": "STRING"
+    },
+    "integrating_person": {
+      "valueType": "STRING"
+    },
+    "based_on_db_lod": {
+      "valueType": "INTEGER",
+      "minimum": 0.0,
+      "maximum": 0.0
+    },
+    "Address 2": {
+      "valueType": "SIMPLEADDRESS"
+    },
+    "Address 3": {
+      "valueType": "SIMPLEADDRESS"
+    },
+    "GE_LoD4_zOffset": {
+      "valueType": "STRING"
+    },
+    "Address 1": {
+      "valueType": "SIMPLEADDRESS"
+    },
+    "BezugspunktDachhoehe": {
+      "valueType": "STRING"
+    },
+    "integration_date": {
+      "valueType": "STRING"
+    },
+    "Address 4": {
+      "valueType": "SIMPLEADDRESS"
+    },
+    "Kennung": {
+      "valueType": "STRING"
+    },
+    "Address 5": {
+      "valueType": "SIMPLEADDRESS"
+    }
+  },
+  "extras": { "_3DTILESDIFFUSE" : true}
+}
