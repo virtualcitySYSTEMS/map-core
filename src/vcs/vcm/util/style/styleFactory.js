@@ -1,4 +1,4 @@
-import { getLogger as getLoggerByName } from '@vcs/logger';
+import { getLogger as getLoggerByName } from '@vcsuite/logger';
 import StyleItem, { StyleType } from './styleItem.js';
 import DeclarativeStyleItem, { defaultDeclarativeStyle } from './declarativeStyleItem.js';
 import VectorStyleItem from './vectorStyleItem.js';

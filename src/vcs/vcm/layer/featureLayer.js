@@ -1,7 +1,7 @@
 import Style from 'ol/style/Style.js';
 
-import { check } from '@vcs/check';
-import { parseInteger } from '@vcs/parsers';
+import { check } from '@vcsuite/check';
+import { parseInteger } from '@vcsuite/parsers';
 import Layer from './layer.js';
 import StyleItem, { referenceableStyleSymbol } from '../util/style/styleItem.js';
 import VectorStyleItem from '../util/style/vectorStyleItem.js';

@@ -4,7 +4,7 @@ import GeographicTilingScheme from 'cesium/Source/Core/GeographicTilingScheme.js
 import Cartographic from 'cesium/Source/Core/Cartographic.js';
 import { getBottomLeft, getBottomRight, getTopLeft, getTopRight } from 'ol/extent.js';
 
-import { parseInteger, parseNumberRange, parseEnumValue } from '@vcs/parsers';
+import { parseInteger, parseNumberRange, parseEnumValue } from '@vcsuite/parsers';
 import { wgs84Projection } from '../util/projection.js';
 import Layer from './layer.js';
 import VcsEvent from '../event/vcsEvent.js';

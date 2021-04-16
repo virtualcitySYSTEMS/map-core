@@ -1,7 +1,7 @@
 import { boundingExtent, containsXY } from 'ol/extent.js';
 import { get as getProjection, getTransform, transform, transformExtent } from 'ol/proj.js';
-import { check } from '@vcs/check';
-import { parseBoolean, parseNumber } from '@vcs/parsers';
+import { check } from '@vcsuite/check';
+import { parseBoolean, parseNumber } from '@vcsuite/parsers';
 import Extent from '../util/extent.js';
 import { mercatorProjection, wgs84Projection } from '../util/projection.js';
 import { getResolutionOptions, getZoom } from '../layer/oblique/obliqueHelpers.js';

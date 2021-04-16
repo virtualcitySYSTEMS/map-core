@@ -1,4 +1,4 @@
-import { checkMaybe } from '@vcs/check';
+import { checkMaybe } from '@vcsuite/check';
 import CesiumTileset from './cesiumTileset.js';
 import DeclarativeStyleItem from '../util/style/declarativeStyleItem.js';
 import VectorStyleItem from '../util/style/vectorStyleItem.js';

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { unByKey } from 'ol/Observable.js';
 import Feature from 'ol/Feature.js';
-import { check } from '@vcs/check';
+import { check } from '@vcsuite/check';
 import { featureStoreState, featureStoreStateSymbol } from './featureStoreState.js';
 import { parseGeoJSON, writeGeoJSONFeature } from './geojsonHelpers.js';
 import VcsObject from '../object.js';

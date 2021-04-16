@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { parseBoolean } from '@vcs/parsers';
+import { parseBoolean } from '@vcsuite/parsers';
 import { vcsLayerName } from '../../layer/layerSymbols.js';
 import VcsObject from '../../object.js';
 import { getStyleOrDefaultStyle } from '../style/styleFactory.js';

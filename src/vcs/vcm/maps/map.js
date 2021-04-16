@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { check, checkMaybe } from '@vcs/check';
+import { check, checkMaybe } from '@vcsuite/check';
 import VcsObject from '../object.js';
 import LayerCollection from '../util/layerCollection.js';
 import MapState from './mapState.js';

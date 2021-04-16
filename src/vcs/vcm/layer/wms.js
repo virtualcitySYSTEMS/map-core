@@ -1,5 +1,5 @@
-import { check } from '@vcs/check';
-import { parseBoolean } from '@vcs/parsers';
+import { check } from '@vcsuite/check';
+import { parseBoolean } from '@vcsuite/parsers';
 import RasterLayer from './rasterLayer.js';
 import WMSFeatureProvider from '../util/featureProvider/wmsFeatureProvider.js';
 import CesiumMap from '../maps/cesium.js';

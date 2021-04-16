@@ -27,8 +27,8 @@ import KeyboardEventModifier from 'cesium/Source/Core/KeyboardEventModifier.js';
 import ScreenSpaceEventType from 'cesium/Source/Core/ScreenSpaceEventType.js';
 import Cesium3DTileset from 'cesium/Source/Scene/Cesium3DTileset.js';
 
-import { check, checkMaybe } from '@vcs/check';
-import { parseBoolean, parseInteger } from '@vcs/parsers';
+import { check, checkMaybe } from '@vcsuite/check';
+import { parseBoolean, parseInteger } from '@vcsuite/parsers';
 import VcsMap from './map.js';
 import ViewPoint from '../util/viewpoint.js';
 import Projection, { mercatorProjection } from '../util/projection.js';

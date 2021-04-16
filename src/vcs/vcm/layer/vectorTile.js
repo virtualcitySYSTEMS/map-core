@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import Style from 'ol/style/Style.js';
-import { parseInteger } from '@vcs/parsers';
+import { parseInteger } from '@vcsuite/parsers';
 import CesiumMap from '../maps/cesium.js';
 import VectorRasterTileCesium from './cesium/vectorRasterTileCesium.js';
 import Openlayers from '../maps/openlayers.js';

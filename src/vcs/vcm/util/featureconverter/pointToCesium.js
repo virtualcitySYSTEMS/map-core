@@ -13,7 +13,7 @@ import Icon from 'ol/style/Icon.js';
 import GeometryType from 'ol/geom/GeometryType.js';
 import HorizontalOrigin from 'cesium/Source/Scene/HorizontalOrigin.js';
 import ImageState from 'ol/ImageState.js';
-import { parseNumber } from '@vcs/parsers';
+import { parseNumber } from '@vcsuite/parsers';
 import {
   createLinePrimitive,
   getHeightInfo,

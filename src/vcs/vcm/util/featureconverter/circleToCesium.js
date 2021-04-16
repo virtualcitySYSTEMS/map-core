@@ -7,7 +7,7 @@ import CircleOutlineGeometry from 'cesium/Source/Core/CircleOutlineGeometry.js';
 import CesiumMath from 'cesium/Source/Core/Math.js';
 import Cartographic from 'cesium/Source/Core/Cartographic.js';
 import PolylineGeometry from 'cesium/Source/Core/PolylineGeometry.js';
-import { parseNumber } from '@vcs/parsers';
+import { parseNumber } from '@vcsuite/parsers';
 import { addPrimitivesToContext } from './featureconverterHelper.js';
 import Projection from '../projection.js';
 

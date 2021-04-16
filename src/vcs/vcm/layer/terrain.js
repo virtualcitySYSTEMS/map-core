@@ -1,4 +1,4 @@
-import { parseBoolean } from '@vcs/parsers';
+import { parseBoolean } from '@vcsuite/parsers';
 import Layer from './layer.js';
 import { getHeightFromTerrainProvider, getTerrainProviderForUrl } from './terrainHelpers.js';
 import CesiumMap from '../maps/cesium.js';

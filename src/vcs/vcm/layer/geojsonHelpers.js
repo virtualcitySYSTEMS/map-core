@@ -6,7 +6,7 @@ import Point from 'ol/geom/Point.js';
 import Circle from 'ol/geom/Circle.js';
 
 import { getDistance as haversineDistance } from 'ol/sphere.js';
-import { getLogger as getLoggerByName } from '@vcs/logger';
+import { getLogger as getLoggerByName } from '@vcsuite/logger';
 import Projection, { mercatorProjection, wgs84Projection } from '../util/projection.js';
 import VectorStyleItem, { defaultVectorStyle, vectorStyleSymbol } from '../util/style/vectorStyleItem.js';
 import { parseColor } from '../util/style/styleHelpers.js';

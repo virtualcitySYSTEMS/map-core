@@ -1,5 +1,5 @@
-import { check } from '@vcs/check';
-import { getLogger } from '@vcs/logger';
+import { check } from '@vcsuite/check';
+import { getLogger } from '@vcsuite/logger';
 
 /**
  * @class

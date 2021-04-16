@@ -15,7 +15,7 @@ import { offset } from 'ol/sphere.js';
 import GeometryLayout from 'ol/geom/GeometryLayout.js';
 import Polygon from 'ol/geom/Polygon.js';
 
-import { check, checkMaybe } from '@vcs/check';
+import { check, checkMaybe } from '@vcsuite/check';
 import Projection, { mercatorProjection, wgs84Projection } from '../projection.js';
 import { createOrUpdateFromGeometry } from '../featureconverter/extent3d.js';
 import { enforceEndingVertex, enforceRightHand, getFlatCoordinatesFromGeometry } from '../geometryHelpers.js';

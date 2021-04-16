@@ -5,7 +5,7 @@ import OLText from 'ol/style/Text.js';
 import Style from 'ol/style/Style.js';
 import Color from 'cesium/Source/Core/Color.js';
 
-import { getLogger as getLoggerByName } from '@vcs/logger';
+import { getLogger as getLoggerByName } from '@vcsuite/logger';
 
 /**
  * @returns {vcs-logger/Logger}

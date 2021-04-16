@@ -1,7 +1,7 @@
 import Cartographic from 'cesium/Source/Core/Cartographic.js';
 import Ellipsoid from 'cesium/Source/Core/Ellipsoid.js';
-import { checkMaybe } from '@vcs/check';
-import { parseInteger, parseNumber, parseEnumValue } from '@vcs/parsers';
+import { checkMaybe } from '@vcsuite/check';
+import { parseInteger, parseNumber, parseEnumValue } from '@vcsuite/parsers';
 import { sampleCesiumTerrain, sampleCesiumTerrainMostDetailed, getTerrainProviderForUrl } from '../layer/terrainHelpers.js';
 
 /**

@@ -5,7 +5,7 @@ import GeoJSON from 'ol/format/GeoJSON.js';
 import GML3 from 'ol/format/GML3.js';
 import Point from 'ol/geom/Point.js';
 import { getTransform } from 'ol/proj.js';
-import { parseInteger } from '@vcs/parsers';
+import { parseInteger } from '@vcsuite/parsers';
 import AbstractFeatureProvider from './abstractFeatureProvider.js';
 import Projection, { mercatorProjection } from '../projection.js';
 import { getWMSSource } from '../../layer/wmsHelpers.js';

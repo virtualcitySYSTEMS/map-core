@@ -10,7 +10,7 @@ import Circle from 'ol/style/Circle.js';
 import RegularShape from 'ol/style/RegularShape.js';
 import VerticalOrigin from 'cesium/Source/Scene/VerticalOrigin.js';
 
-import { check, checkMaybe } from '@vcs/check';
+import { check, checkMaybe } from '@vcsuite/check';
 import StyleItem, { StyleType } from './styleItem.js';
 import {
   parseColor,

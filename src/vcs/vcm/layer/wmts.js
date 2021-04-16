@@ -1,5 +1,5 @@
-import { parseInteger } from '@vcs/parsers';
-import { getLogger } from '@vcs/logger';
+import { parseInteger } from '@vcsuite/parsers';
+import { getLogger } from '@vcsuite/logger';
 import RasterLayer from './rasterLayer.js';
 import Openlayers from '../maps/openlayers.js';
 import CesiumMap from '../maps/cesium.js';

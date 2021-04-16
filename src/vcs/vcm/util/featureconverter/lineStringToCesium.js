@@ -4,7 +4,7 @@ import WallOutlineGeometry from 'cesium/Source/Core/WallOutlineGeometry.js';
 import GroundPolylineGeometry from 'cesium/Source/Core/GroundPolylineGeometry.js';
 import PolylineGeometry from 'cesium/Source/Core/PolylineGeometry.js';
 import GeometryType from 'ol/geom/GeometryType.js';
-import { parseNumber } from '@vcs/parsers';
+import { parseNumber } from '@vcsuite/parsers';
 import Projection from '../projection.js';
 import { addPrimitivesToContext } from './featureconverterHelper.js';
 import { getFlatCoordinatesFromSimpleGeometry } from '../geometryHelpers.js';

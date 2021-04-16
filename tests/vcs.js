@@ -6,7 +6,7 @@ import '../src/cesium/cesium3DTilePointFeature.js';
 import '../src/cesium/cesium3DTileFeature.js';
 import '../src/cesium/cesiumVcsCameraPrimitive.js';
 
-import { setLogLevel } from '@vcs/logger';
+import { setLogLevel } from '@vcsuite/logger';
 import { getFramework } from './unit/helpers/framework.js';
 import { mercatorProjection, setDefaultProjectionOptions } from '../src/vcs/vcm/util/projection.js';
 import { setupCesiumContextLimits } from './unit/helpers/cesiumHelpers.js';

@@ -1,8 +1,8 @@
 import ImagerySplitDirection from 'cesium/Source/Scene/ImagerySplitDirection.js';
 import Matrix4 from 'cesium/Source/Core/Matrix4.js';
 
-import { checkMaybe } from '@vcs/check';
-import { parseInteger } from '@vcs/parsers';
+import { checkMaybe } from '@vcsuite/check';
+import { parseInteger } from '@vcsuite/parsers';
 import getJSONObjectFromObject from './cesium/x3dmHelper.js';
 import VectorStyleItem from '../util/style/vectorStyleItem.js';
 import FeatureLayer from './featureLayer.js';

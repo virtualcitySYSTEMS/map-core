@@ -3,7 +3,7 @@ import View from 'ol/View.js';
 import { getTransform } from 'ol/proj.js';
 import { inAndOut } from 'ol/easing.js';
 import { boundingExtent, containsXY } from 'ol/extent.js';
-import { parseBoolean } from '@vcs/parsers';
+import { parseBoolean } from '@vcsuite/parsers';
 import ViewPoint from '../util/viewpoint.js';
 import BaseOLMap from './baseOLMap.js';
 import VcsMap from './map.js';

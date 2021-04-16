@@ -1,5 +1,5 @@
 import GeometryCollection from 'ol/geom/GeometryCollection.js';
-import { check } from '@vcs/check';
+import { check } from '@vcsuite/check';
 
 /**
  * @returns {Array<ol/Coordinate|Array<ol/Coordinate>|Array<Array<ol/Coordinate>>|Array<Array<Array<ol/Coordinate>>>>}

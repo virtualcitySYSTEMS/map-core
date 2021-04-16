@@ -1,4 +1,4 @@
-import { check } from '@vcs/check';
+import { check } from '@vcsuite/check';
 import { clearClippingPlanes, setClippingPlanes } from './clippingPlaneHelper.js';
 import ClippingObject from './clippingObject.js';
 import CesiumMap from '../../maps/cesium.js';

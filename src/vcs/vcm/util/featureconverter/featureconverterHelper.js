@@ -14,7 +14,7 @@ import ShadowMode from 'cesium/Source/Scene/ShadowMode.js';
 import Primitive from 'cesium/Source/Scene/Primitive.js';
 import Color from 'cesium/Source/Core/Color.js';
 import PolylineMaterialAppearance from 'cesium/Source/Scene/PolylineMaterialAppearance.js';
-import { parseInteger, parseNumber } from '@vcs/parsers';
+import { parseInteger, parseNumber } from '@vcsuite/parsers';
 import { getCesiumColor } from '../style/styleHelpers.js';
 
 /**

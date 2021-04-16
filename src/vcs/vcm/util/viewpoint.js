@@ -1,5 +1,5 @@
 import EasingFunction from 'cesium/Source/Core/EasingFunction.js';
-import { parseBoolean, parseNumber } from '@vcs/parsers';
+import { parseBoolean, parseNumber } from '@vcsuite/parsers';
 import Projection, { wgs84Projection } from './projection.js';
 import VcsObject from '../object.js';
 import Extent from './extent.js';

@@ -1,5 +1,5 @@
 import Circle from 'ol/geom/Circle.js';
-import { check } from '@vcs/check';
+import { check } from '@vcsuite/check';
 import { cartesian2DDistance, cartesian3DDistance } from '../../vcs/vcm/util/math.js';
 
 /**

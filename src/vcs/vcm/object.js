@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { getLogger } from '@vcs/logger';
+import { getLogger } from '@vcsuite/logger';
 
 /**
  * @typedef {Object} vcs.vcm.VcsObject.Options

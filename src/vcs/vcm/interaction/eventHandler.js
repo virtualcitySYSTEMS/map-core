@@ -1,8 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import Cartesian2 from 'cesium/Source/Core/Cartesian2.js';
 
-import { check, checkMaybe } from '@vcs/check';
-import { getLogger as getLoggerByName } from '@vcs/logger';
+import { check, checkMaybe } from '@vcsuite/check';
+import { getLogger as getLoggerByName } from '@vcsuite/logger';
 import AbstractInteraction from './abstractInteraction.js';
 import InteractionChain from './interactionChain.js';
 import CoordinateAtPixel from './coordinateAtPixel.js';

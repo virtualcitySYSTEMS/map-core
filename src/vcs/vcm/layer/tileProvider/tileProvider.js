@@ -5,7 +5,7 @@ import WebMercatorTilingScheme from 'cesium/Source/Core/WebMercatorTilingScheme.
 import LRUCache from 'ol/structs/LRUCache.js';
 import { buffer, createOrUpdateFromCoordinate } from 'ol/extent.js';
 import Cartographic from 'cesium/Source/Core/Cartographic.js';
-import { parseBoolean, parseInteger } from '@vcs/parsers';
+import { parseBoolean, parseInteger } from '@vcsuite/parsers';
 import { mercatorToWgs84Transformer, wgs84ToMercatorTransformer } from '../../util/projection.js';
 import VcsObject from '../../object.js';
 import VcsEvent from '../../event/vcsEvent.js';

@@ -1,5 +1,5 @@
-import { check } from '@vcs/check';
-import { parseBoolean, parseInteger } from '@vcs/parsers';
+import { check } from '@vcsuite/check';
+import { parseBoolean, parseInteger } from '@vcsuite/parsers';
 import VcsObject from '../object.js';
 import Extent from '../util/extent.js';
 import { getInstance as getGlobalHiderInstance } from './globalHider.js';

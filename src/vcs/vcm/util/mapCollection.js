@@ -1,5 +1,5 @@
-import { checkMaybe } from '@vcs/check';
-import { getLogger } from '@vcs/logger';
+import { checkMaybe } from '@vcsuite/check';
+import { getLogger } from '@vcsuite/logger';
 import VcsEvent from '../event/vcsEvent.js';
 import Collection from './collection.js';
 import EventHandler from '../interaction/eventHandler.js';

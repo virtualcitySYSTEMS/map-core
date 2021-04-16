@@ -1,8 +1,8 @@
 import { getTransform, get as getProjection, equivalent } from 'ol/proj.js';
 import { register } from 'ol/proj/proj4.js';
 import proj4 from 'proj4';
-import { getLogger as getLoggerByName } from '@vcs/logger';
-import { check } from '@vcs/check';
+import { getLogger as getLoggerByName } from '@vcsuite/logger';
+import { check } from '@vcsuite/check';
 
 /**
  * @typedef {Object} vcs.vcm.util.Projection.Options

@@ -3,9 +3,9 @@ import HeightReference from 'cesium/Source/Scene/HeightReference.js';
 import ClassificationType from 'cesium/Source/Scene/ClassificationType.js';
 import NearFarScalar from 'cesium/Source/Core/NearFarScalar.js';
 import Cartesian3 from 'cesium/Source/Core/Cartesian3.js';
-import { check, checkMaybe } from '@vcs/check';
-import { parseBoolean, parseEnumKey, parseNumber, parseInteger } from '@vcs/parsers';
-import { getLogger as getLoggerByName } from '@vcs/logger';
+import { check, checkMaybe } from '@vcsuite/check';
+import { parseBoolean, parseEnumKey, parseNumber, parseInteger } from '@vcsuite/parsers';
+import { getLogger as getLoggerByName } from '@vcsuite/logger';
 import VcsEvent from '../event/vcsEvent.js';
 
 /**

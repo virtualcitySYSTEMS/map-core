@@ -5,7 +5,7 @@ import ClippingPlane from 'cesium/Source/Scene/ClippingPlane.js';
 import ClippingPlaneCollection from 'cesium/Source/Scene/ClippingPlaneCollection.js';
 import ImagerySplitDirection from 'cesium/Source/Scene/ImagerySplitDirection.js';
 
-import { check } from '@vcs/check';
+import { check } from '@vcsuite/check';
 import CesiumMap from '../maps/cesium.js';
 import ClippingObject from './clipping/clippingObject.js';
 import Openlayers from '../maps/openlayers.js';

@@ -1,9 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
 import Cesium3DTileset from 'cesium/Source/Scene/Cesium3DTileset.js';
 
-import { check } from '@vcs/check';
-import { parseBoolean } from '@vcs/parsers';
-import { getLogger as getLoggerByName } from '@vcs/logger';
+import { check } from '@vcsuite/check';
+import { parseBoolean } from '@vcsuite/parsers';
+import { getLogger as getLoggerByName } from '@vcsuite/logger';
 import CesiumMap from '../../maps/cesium.js';
 import VcsEvent from '../../event/vcsEvent.js';
 import LayerCollection from '../layerCollection.js';
