@@ -1,31 +1,34 @@
 import path from 'path';
 import fs from 'fs';
 
-async function makeModule(packageJson) {
-  const content = await fs.promises.readFile(packageJson);
-  const jsonContent = JSON.parse(content);
-  jsonContent.type = 'module';
-  await fs.promises.writeFile(packageJson, JSON.stringify(jsonContent, null, 2));
-}
-
-function fixOpenlayers() {
-  return makeModule(path.join(process.cwd(), 'node_modules', 'ol', 'package.json'));
+async function fixOpenlayers() {
+  const fileName = path.join(process.cwd(), 'node_modules', 'ol', 'package.json');
+  if (fs.existsSync(fileName)) {
+    const content = await fs.promises.readFile(fileName);
+    const jsonContent = JSON.parse(content);
+    jsonContent.type = 'module';
+    await fs.promises.writeFile(fileName, JSON.stringify(jsonContent, null, 2));
+  }
 }
 
 async function fixTinyQueue() {
-  const packageJson = path.join(process.cwd(), 'node_modules', 'tinyqueue', 'package.json');
-  const content = await fs.promises.readFile(packageJson);
-  const jsonContent = JSON.parse(content);
-  jsonContent.browser = 'tinyqueue.min.js';
-  await fs.promises.writeFile(packageJson, JSON.stringify(jsonContent, null, 2));
+  const fileName = path.join(process.cwd(), 'node_modules', 'tinyqueue', 'package.json');
+  if (fs.existsSync(fileName)) {
+    const content = await fs.promises.readFile(fileName);
+    const jsonContent = JSON.parse(content);
+    jsonContent.browser = 'tinyqueue.min.js';
+    await fs.promises.writeFile(fileName, JSON.stringify(jsonContent, null, 2));
+  }
 }
 
 async function fixCesium() {
-  const olPackageJson = path.join(process.cwd(), 'node_modules', 'cesium', 'package.json');
-  const content = await fs.promises.readFile(olPackageJson);
-  const jsonContent = JSON.parse(content);
-  jsonContent.exports['./Source/'] = './Source/';
-  await fs.promises.writeFile(olPackageJson, JSON.stringify(jsonContent, null, 2));
+  const fileName = path.join(process.cwd(), 'node_modules', 'cesium', 'package.json');
+  if (fs.existsSync(fileName)) {
+    const content = await fs.promises.readFile(fileName);
+    const jsonContent = JSON.parse(content);
+    jsonContent.exports['./Source/'] = './Source/';
+    await fs.promises.writeFile(fileName, JSON.stringify(jsonContent, null, 2));
+  }
 }
 
 async function run() {
