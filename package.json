@@ -15,6 +15,12 @@
     "type": "git",
     "url": "https://github.com/virtualcitySYSTEMS/map-core.git"
   },
+  "files": [
+    "build/",
+    "src/",
+    "LICENSE.md",
+    "README.md"
+  ],
   "author": "Virtual City Systems",
   "license": "MIT",
   "devDependencies": {
