@@ -1,4 +1,4 @@
-import EntityCollection from 'cesium/Source/DataSources/EntityCollection.js';
+import EntityCollection from '@vcmap/cesium/Source/DataSources/EntityCollection.js';
 import Layer from './layer.js';
 import CesiumMap from '../maps/cesium.js';
 import DataSourceCesium from './cesium/dataSourceCesium.js';

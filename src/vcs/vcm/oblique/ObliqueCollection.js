@@ -7,7 +7,7 @@ import Feature from 'ol/Feature.js';
 import Polygon, { fromExtent } from 'ol/geom/Polygon.js';
 import { Vector } from 'ol/source.js';
 import { boundingExtent, buffer, containsCoordinate, getCenter } from 'ol/extent.js';
-import CesiumEvent from 'cesium/Source/Core/Event.js';
+import CesiumEvent from '@vcmap/cesium/Source/Core/Event.js';
 import { DataState, getStateFromStatesArray } from './ObliqueDataSet.js';
 import { ObliqueViewDirection } from './ObliqueViewDirection.js';
 

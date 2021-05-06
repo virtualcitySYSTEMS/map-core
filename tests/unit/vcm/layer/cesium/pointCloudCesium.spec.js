@@ -1,4 +1,4 @@
-import Cesium3DTileStyle from 'cesium/Source/Scene/Cesium3DTileStyle.js';
+import Cesium3DTileStyle from '@vcmap/cesium/Source/Scene/Cesium3DTileStyle.js';
 import PointCloud from '../../../../../src/vcs/vcm/layer/pointCloud.js';
 import { createTilesetServer, setCesiumMap } from '../../../helpers/cesiumHelpers.js';
 import { getFramework } from '../../../helpers/framework.js';

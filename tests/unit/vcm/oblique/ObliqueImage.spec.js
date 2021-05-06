@@ -1,6 +1,6 @@
-import Cartesian3 from 'cesium/Source/Core/Cartesian3.js';
-import Matrix3 from 'cesium/Source/Core/Matrix3.js';
-import Matrix4 from 'cesium/Source/Core/Matrix4.js';
+import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
+import Matrix3 from '@vcmap/cesium/Source/Core/Matrix3.js';
+import Matrix4 from '@vcmap/cesium/Source/Core/Matrix4.js';
 import ObliqueImage from '../../../../src/vcs/vcm/oblique/ObliqueImage.js';
 import ObliqueImageMeta from '../../../../src/vcs/vcm/oblique/ObliqueImageMeta.js';
 

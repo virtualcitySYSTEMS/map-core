@@ -1,10 +1,10 @@
-import Cartesian3 from 'cesium/Source/Core/Cartesian3.js';
-import PolygonGeometry from 'cesium/Source/Core/PolygonGeometry.js';
-import PerInstanceColorAppearance from 'cesium/Source/Scene/PerInstanceColorAppearance.js';
-import PolygonOutlineGeometry from 'cesium/Source/Core/PolygonOutlineGeometry.js';
-import GroundPolylineGeometry from 'cesium/Source/Core/GroundPolylineGeometry.js';
-import PolygonHierarchy from 'cesium/Source/Core/PolygonHierarchy.js';
-import PolylineGeometry from 'cesium/Source/Core/PolylineGeometry.js';
+import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
+import PolygonGeometry from '@vcmap/cesium/Source/Core/PolygonGeometry.js';
+import PerInstanceColorAppearance from '@vcmap/cesium/Source/Scene/PerInstanceColorAppearance.js';
+import PolygonOutlineGeometry from '@vcmap/cesium/Source/Core/PolygonOutlineGeometry.js';
+import GroundPolylineGeometry from '@vcmap/cesium/Source/Core/GroundPolylineGeometry.js';
+import PolygonHierarchy from '@vcmap/cesium/Source/Core/PolygonHierarchy.js';
+import PolylineGeometry from '@vcmap/cesium/Source/Core/PolylineGeometry.js';
 import GeometryType from 'ol/geom/GeometryType.js';
 import { parseNumber } from '@vcsuite/parsers';
 import { addPrimitivesToContext } from './featureconverterHelper.js';

@@ -2,7 +2,7 @@ import { get as getProjection } from 'ol/proj.js';
 import OLMap from 'ol/Map.js';
 import View from 'ol/View.js';
 import TileLayer from 'ol/layer/Tile.js';
-import CesiumTerrainProvider from 'cesium/Source/Core/CesiumTerrainProvider.js';
+import CesiumTerrainProvider from '@vcmap/cesium/Source/Core/CesiumTerrainProvider.js';
 import ObliqueCollection from '../../../../src/vcs/vcm/oblique/ObliqueCollection.js';
 import ObliqueDataSet, { DataState } from '../../../../src/vcs/vcm/oblique/ObliqueDataSet.js';
 import ObliqueProvider from '../../../../src/vcs/vcm/oblique/ObliqueProvider.js';

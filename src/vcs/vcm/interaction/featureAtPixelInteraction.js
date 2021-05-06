@@ -1,8 +1,8 @@
-import Cartographic from 'cesium/Source/Core/Cartographic.js';
-import Cartesian3 from 'cesium/Source/Core/Cartesian3.js';
-import CesiumMath from 'cesium/Source/Core/Math.js';
-import Cesium3DTileFeature from 'cesium/Source/Scene/Cesium3DTileFeature.js';
-import Cesium3DTilePointFeature from 'cesium/Source/Scene/Cesium3DTilePointFeature.js';
+import Cartographic from '@vcmap/cesium/Source/Core/Cartographic.js';
+import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
+import CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
+import Cesium3DTileFeature from '@vcmap/cesium/Source/Scene/Cesium3DTileFeature.js';
+import Cesium3DTilePointFeature from '@vcmap/cesium/Source/Scene/Cesium3DTilePointFeature.js';
 
 import AbstractInteraction from './abstractInteraction.js';
 import Projection from '../util/projection.js';

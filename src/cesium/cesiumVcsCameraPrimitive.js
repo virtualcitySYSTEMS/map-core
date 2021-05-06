@@ -1,14 +1,14 @@
-import Cartesian3 from 'cesium/Source/Core/Cartesian3.js';
-import Matrix3 from 'cesium/Source/Core/Matrix3.js';
-import Quaternion from 'cesium/Source/Core/Quaternion.js';
-import Color from 'cesium/Source/Core/Color.js';
-import Primitive from 'cesium/Source/Scene/Primitive.js';
-import GeometryInstance from 'cesium/Source/Core/GeometryInstance.js';
-import FrustumGeometry from 'cesium/Source/Core/FrustumGeometry.js';
-import ColorGeometryInstanceAttribute from 'cesium/Source/Core/ColorGeometryInstanceAttribute.js';
-import PerInstanceColorAppearance from 'cesium/Source/Scene/PerInstanceColorAppearance.js';
-import FrustumOutlineGeometry from 'cesium/Source/Core/FrustumOutlineGeometry.js';
-import destroyObject from 'cesium/Source/Core/destroyObject.js';
+import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
+import Matrix3 from '@vcmap/cesium/Source/Core/Matrix3.js';
+import Quaternion from '@vcmap/cesium/Source/Core/Quaternion.js';
+import Color from '@vcmap/cesium/Source/Core/Color.js';
+import Primitive from '@vcmap/cesium/Source/Scene/Primitive.js';
+import GeometryInstance from '@vcmap/cesium/Source/Core/GeometryInstance.js';
+import FrustumGeometry from '@vcmap/cesium/Source/Core/FrustumGeometry.js';
+import ColorGeometryInstanceAttribute from '@vcmap/cesium/Source/Core/ColorGeometryInstanceAttribute.js';
+import PerInstanceColorAppearance from '@vcmap/cesium/Source/Scene/PerInstanceColorAppearance.js';
+import FrustumOutlineGeometry from '@vcmap/cesium/Source/Core/FrustumOutlineGeometry.js';
+import destroyObject from '@vcmap/cesium/Source/Core/destroyObject.js';
 
 const scratchRight = new Cartesian3();
 const scratchRotation = new Matrix3();

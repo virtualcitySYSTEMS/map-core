@@ -1,5 +1,5 @@
-import Material from 'cesium/Source/Scene/Material.js';
-import Cartesian2 from 'cesium/Source/Core/Cartesian2.js';
+import Material from '@vcmap/cesium/Source/Scene/Material.js';
+import Cartesian2 from '@vcmap/cesium/Source/Core/Cartesian2.js';
 
 
 /**

@@ -1,7 +1,7 @@
-import CesiumTerrainProvider from 'cesium/Source/Core/CesiumTerrainProvider.js';
-import Cartographic from 'cesium/Source/Core/Cartographic.js';
-import sampleTerrainMostDetailed from 'cesium/Source/Core/sampleTerrainMostDetailed.js';
-import sampleTerrain from 'cesium/Source/Core/sampleTerrain.js';
+import CesiumTerrainProvider from '@vcmap/cesium/Source/Core/CesiumTerrainProvider.js';
+import Cartographic from '@vcmap/cesium/Source/Core/Cartographic.js';
+import sampleTerrainMostDetailed from '@vcmap/cesium/Source/Core/sampleTerrainMostDetailed.js';
+import sampleTerrain from '@vcmap/cesium/Source/Core/sampleTerrain.js';
 
 import Projection, { wgs84Projection } from '../util/projection.js';
 

@@ -1,6 +1,6 @@
 /* eslint-disable no-template-curly-in-string */
 import Stroke from 'ol/style/Stroke.js';
-import Color from 'cesium/Source/Core/Color.js';
+import Color from '@vcmap/cesium/Source/Core/Color.js';
 import Icon from 'ol/style/Icon.js';
 import Style from 'ol/style/Style.js';
 import OLText from 'ol/style/Text.js';
@@ -8,7 +8,7 @@ import OLImage from 'ol/style/Image.js';
 import Fill from 'ol/style/Fill.js';
 import Circle from 'ol/style/Circle.js';
 import RegularShape from 'ol/style/RegularShape.js';
-import VerticalOrigin from 'cesium/Source/Scene/VerticalOrigin.js';
+import VerticalOrigin from '@vcmap/cesium/Source/Scene/VerticalOrigin.js';
 
 import { check, checkMaybe } from '@vcsuite/check';
 import StyleItem, { StyleType } from './styleItem.js';

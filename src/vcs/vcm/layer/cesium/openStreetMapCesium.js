@@ -1,5 +1,5 @@
-import OpenStreetMapImageryProvider from 'cesium/Source/Scene/OpenStreetMapImageryProvider.js';
-import CesiumImageryLayer from 'cesium/Source/Scene/ImageryLayer.js';
+import OpenStreetMapImageryProvider from '@vcmap/cesium/Source/Scene/OpenStreetMapImageryProvider.js';
+import CesiumImageryLayer from '@vcmap/cesium/Source/Scene/ImageryLayer.js';
 import RasterLayerCesium from './rasterLayerCesium.js';
 
 /**

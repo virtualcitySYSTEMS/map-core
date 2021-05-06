@@ -1,10 +1,10 @@
-import Rectangle from 'cesium/Source/Core/Rectangle.js';
-import CesiumMath from 'cesium/Source/Core/Math.js';
+import Rectangle from '@vcmap/cesium/Source/Core/Rectangle.js';
+import CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
 import VectorSource from 'ol/source/Vector.js';
-import WebMercatorTilingScheme from 'cesium/Source/Core/WebMercatorTilingScheme.js';
+import WebMercatorTilingScheme from '@vcmap/cesium/Source/Core/WebMercatorTilingScheme.js';
 import LRUCache from 'ol/structs/LRUCache.js';
 import { buffer, createOrUpdateFromCoordinate } from 'ol/extent.js';
-import Cartographic from 'cesium/Source/Core/Cartographic.js';
+import Cartographic from '@vcmap/cesium/Source/Core/Cartographic.js';
 import { parseBoolean, parseInteger } from '@vcsuite/parsers';
 import { mercatorToWgs84Transformer, wgs84ToMercatorTransformer } from '../../util/projection.js';
 import VcsObject from '../../object.js';

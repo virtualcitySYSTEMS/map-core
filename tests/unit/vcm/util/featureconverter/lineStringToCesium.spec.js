@@ -1,19 +1,19 @@
 import LineString from 'ol/geom/LineString.js';
 import Polygon from 'ol/geom/Polygon.js';
-import Cartesian3 from 'cesium/Source/Core/Cartesian3.js';
-import Cartographic from 'cesium/Source/Core/Cartographic.js';
-import CesiumMath from 'cesium/Source/Core/Math.js';
+import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
+import Cartographic from '@vcmap/cesium/Source/Core/Cartographic.js';
+import CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
 import Style from 'ol/style/Style.js';
-import PolylineGeometry from 'cesium/Source/Core/PolylineGeometry.js';
+import PolylineGeometry from '@vcmap/cesium/Source/Core/PolylineGeometry.js';
 import Stroke from 'ol/style/Stroke.js';
 import Feature from 'ol/Feature.js';
 import Fill from 'ol/style/Fill.js';
-import GroundPolylineGeometry from 'cesium/Source/Core/GroundPolylineGeometry.js';
-import WallGeometry from 'cesium/Source/Core/WallGeometry.js';
-import WallOutlineGeometry from 'cesium/Source/Core/WallOutlineGeometry.js';
-import PrimitiveCollection from 'cesium/Source/Scene/PrimitiveCollection.js';
-import Primitive from 'cesium/Source/Scene/Primitive.js';
-import GroundPolylinePrimitive from 'cesium/Source/Scene/GroundPolylinePrimitive.js';
+import GroundPolylineGeometry from '@vcmap/cesium/Source/Core/GroundPolylineGeometry.js';
+import WallGeometry from '@vcmap/cesium/Source/Core/WallGeometry.js';
+import WallOutlineGeometry from '@vcmap/cesium/Source/Core/WallOutlineGeometry.js';
+import PrimitiveCollection from '@vcmap/cesium/Source/Scene/PrimitiveCollection.js';
+import Primitive from '@vcmap/cesium/Source/Scene/Primitive.js';
+import GroundPolylinePrimitive from '@vcmap/cesium/Source/Scene/GroundPolylinePrimitive.js';
 import lineStringToCesium, {
   createGroundLineGeometries,
   createLineGeometries, createOutlineGeometries, createSolidGeometries,

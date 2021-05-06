@@ -1,7 +1,7 @@
-import ImagerySplitDirection from 'cesium/Source/Scene/ImagerySplitDirection.js';
-import WebMercatorTilingScheme from 'cesium/Source/Core/WebMercatorTilingScheme.js';
-import GeographicTilingScheme from 'cesium/Source/Core/GeographicTilingScheme.js';
-import Cartographic from 'cesium/Source/Core/Cartographic.js';
+import ImagerySplitDirection from '@vcmap/cesium/Source/Scene/ImagerySplitDirection.js';
+import WebMercatorTilingScheme from '@vcmap/cesium/Source/Core/WebMercatorTilingScheme.js';
+import GeographicTilingScheme from '@vcmap/cesium/Source/Core/GeographicTilingScheme.js';
+import Cartographic from '@vcmap/cesium/Source/Core/Cartographic.js';
 import { getBottomLeft, getBottomRight, getTopLeft, getTopRight } from 'ol/extent.js';
 
 import { parseInteger, parseNumberRange, parseEnumValue } from '@vcsuite/parsers';

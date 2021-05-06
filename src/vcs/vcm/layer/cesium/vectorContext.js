@@ -1,6 +1,6 @@
-import PrimitiveCollection from 'cesium/Source/Scene/PrimitiveCollection.js';
-import BillboardCollection from 'cesium/Source/Scene/BillboardCollection.js';
-import LabelCollection from 'cesium/Source/Scene/LabelCollection.js';
+import PrimitiveCollection from '@vcmap/cesium/Source/Scene/PrimitiveCollection.js';
+import BillboardCollection from '@vcmap/cesium/Source/Scene/BillboardCollection.js';
+import LabelCollection from '@vcmap/cesium/Source/Scene/LabelCollection.js';
 
 /**
  * @typedef {Object} vcs.vcm.layer.cesium.VectorContext.FeatureCache
