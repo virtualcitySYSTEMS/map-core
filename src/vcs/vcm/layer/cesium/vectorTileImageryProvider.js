@@ -1,8 +1,8 @@
-import CesiumEvent from 'cesium/Source/Core/Event.js';
+import CesiumEvent from '@vcmap/cesium/Source/Core/Event.js';
 import { DEVICE_PIXEL_RATIO } from 'ol/has.js';
 import { compose, create as createTransform, scale as scaleTransform } from 'ol/transform.js';
-import Rectangle from 'cesium/Source/Core/Rectangle.js';
-import CesiumMath from 'cesium/Source/Core/Math.js';
+import Rectangle from '@vcmap/cesium/Source/Core/Rectangle.js';
+import CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
 import { rectangleToExtent } from '../tileProvider/tileProvider.js';
 import { wgs84ToMercatorTransformer } from '../../util/projection.js';
 import CanvasTileRenderer from '../../../../ol/render/canvas/canvasTileRenderer.js';

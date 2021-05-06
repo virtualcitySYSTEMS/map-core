@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import Cesium3DTileset from 'cesium/Source/Scene/Cesium3DTileset.js';
+import Cesium3DTileset from '@vcmap/cesium/Source/Scene/Cesium3DTileset.js';
 
 import { check } from '@vcsuite/check';
 import { parseBoolean } from '@vcsuite/parsers';

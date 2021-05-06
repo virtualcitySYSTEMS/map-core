@@ -1,4 +1,4 @@
-import CesiumEvent from 'cesium/Source/Core/Event.js';
+import CesiumEvent from '@vcmap/cesium/Source/Core/Event.js';
 import axios from 'axios';
 import { createXYZ } from 'ol/tilegrid.js';
 import { cartesian2DDistance, destroyCesiumEvent } from './helpers.js';

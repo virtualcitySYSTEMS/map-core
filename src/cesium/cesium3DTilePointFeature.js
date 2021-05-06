@@ -1,4 +1,4 @@
-import Cesium3DTilePointFeature from 'cesium/Source/Scene/Cesium3DTilePointFeature.js';
+import Cesium3DTilePointFeature from '@vcmap/cesium/Source/Scene/Cesium3DTilePointFeature.js';
 
 /**
  * @returns {string|number}

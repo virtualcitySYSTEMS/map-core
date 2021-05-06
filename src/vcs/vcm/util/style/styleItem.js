@@ -1,5 +1,5 @@
-import Cesium3DTileStyle from 'cesium/Source/Scene/Cesium3DTileStyle.js';
-import Cesium3DTileColorBlendMode from 'cesium/Source/Scene/Cesium3DTileColorBlendMode.js';
+import Cesium3DTileStyle from '@vcmap/cesium/Source/Scene/Cesium3DTileStyle.js';
+import Cesium3DTileColorBlendMode from '@vcmap/cesium/Source/Scene/Cesium3DTileColorBlendMode.js';
 import deepEqual from 'fast-deep-equal';
 
 import { parseEnumValue } from '@vcsuite/parsers';

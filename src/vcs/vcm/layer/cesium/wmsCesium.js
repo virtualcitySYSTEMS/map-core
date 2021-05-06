@@ -1,7 +1,7 @@
-import CesiumImageryLayer from 'cesium/Source/Scene/ImageryLayer.js';
-import Rectangle from 'cesium/Source/Core/Rectangle.js';
-import WebMercatorTilingScheme from 'cesium/Source/Core/WebMercatorTilingScheme.js';
-import WebMapServiceImageryProvider from 'cesium/Source/Scene/WebMapServiceImageryProvider.js';
+import CesiumImageryLayer from '@vcmap/cesium/Source/Scene/ImageryLayer.js';
+import Rectangle from '@vcmap/cesium/Source/Core/Rectangle.js';
+import WebMercatorTilingScheme from '@vcmap/cesium/Source/Core/WebMercatorTilingScheme.js';
+import WebMapServiceImageryProvider from '@vcmap/cesium/Source/Scene/WebMapServiceImageryProvider.js';
 
 import RasterLayerCesium from './rasterLayerCesium.js';
 import { wgs84Projection } from '../../util/projection.js';

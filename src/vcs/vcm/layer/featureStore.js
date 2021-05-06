@@ -1,8 +1,8 @@
 import axios from 'axios';
 import Feature from 'ol/Feature.js';
-import Cesium3DTileFeature from 'cesium/Source/Scene/Cesium3DTileFeature.js';
-import Cesium3DTilePointFeature from 'cesium/Source/Scene/Cesium3DTilePointFeature.js';
-import ImagerySplitDirection from 'cesium/Source/Scene/ImagerySplitDirection.js';
+import Cesium3DTileFeature from '@vcmap/cesium/Source/Scene/Cesium3DTileFeature.js';
+import Cesium3DTilePointFeature from '@vcmap/cesium/Source/Scene/Cesium3DTilePointFeature.js';
+import ImagerySplitDirection from '@vcmap/cesium/Source/Scene/ImagerySplitDirection.js';
 import VectorSource from 'ol/source/Vector.js';
 import { createEmpty, extend as extendExtent } from 'ol/extent.js';
 

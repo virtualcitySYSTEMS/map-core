@@ -1,4 +1,4 @@
-import ImagerySplitDirection from 'cesium/Source/Scene/ImagerySplitDirection.js';
+import ImagerySplitDirection from '@vcmap/cesium/Source/Scene/ImagerySplitDirection.js';
 
 import { getCesiumEventSpy } from '../../helpers/cesiumHelpers.js';
 import { setOpenlayersMap } from '../../helpers/openlayers.js';

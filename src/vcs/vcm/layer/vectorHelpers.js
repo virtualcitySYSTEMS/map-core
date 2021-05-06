@@ -1,7 +1,7 @@
 import { unByKey } from 'ol/Observable.js';
 import Feature from 'ol/Feature.js';
 import GeometryType from 'ol/geom/GeometryType.js';
-import HeightReference from 'cesium/Source/Scene/HeightReference.js';
+import HeightReference from '@vcmap/cesium/Source/Scene/HeightReference.js';
 import { FeatureVisibilityAction } from './featureVisibility.js';
 import Projection from '../util/projection.js';
 import { getHeightInfo } from '../util/featureconverter/featureconverterHelper.js';

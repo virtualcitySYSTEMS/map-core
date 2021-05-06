@@ -1,5 +1,5 @@
-import CesiumMath from 'cesium/Source/Core/Math.js';
-import Cartesian3 from 'cesium/Source/Core/Cartesian3.js';
+import CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
+import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
 
 /**
  * returns a new coordinate ([lon, lat] in degrees) from a distance, bearing and starting coordinate

@@ -1,5 +1,5 @@
-import ImagerySplitDirection from 'cesium/Source/Scene/ImagerySplitDirection.js';
-import Matrix4 from 'cesium/Source/Core/Matrix4.js';
+import ImagerySplitDirection from '@vcmap/cesium/Source/Scene/ImagerySplitDirection.js';
+import Matrix4 from '@vcmap/cesium/Source/Core/Matrix4.js';
 
 import { checkMaybe } from '@vcsuite/check';
 import { parseInteger } from '@vcsuite/parsers';
