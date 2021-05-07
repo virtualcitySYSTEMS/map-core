@@ -1,0 +1,22 @@
+{
+  "opts": {
+    "recurse": true,
+    "template": "build/index"
+  },
+  "tags": {
+    "allowUnknownTags": true
+  },
+  "source": {
+    "includePattern": "\\.js$",
+    "include":[
+      "src"
+    ],
+    "exclude": [
+      "index.js",
+      "src/vcs/vcm/oblique"
+    ]
+  },
+  "plugins": [
+    "build/index/export-plugin"
+  ]
+}
