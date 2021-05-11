@@ -14,7 +14,7 @@ class ClassRegistry {
      */
     this._classMap = new Map();
     /**
-     * @type {vcs-logger/Logger}
+     * @type {vcsuite-logger/Logger}
      */
     this.logger = getLogger('vcs.vcm.ClassRegistry');
   }

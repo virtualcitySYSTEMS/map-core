@@ -333,11 +333,11 @@ class VectorOblique extends LayerOblique {
     }
     const imageName = this.fetchedFeaturesForImageName;
     this._updatingMercator[id] = setTimeout(async () => {
-      const originalGeometry = getPolygonizedGeometry(originalFeature);
+      const originalGeometry = getPolygonizedGeometry(originalFeature, false);
       if (originalGeometry[actuallyIsCircle]) {
         originalFeature.setGeometry(originalGeometry);
       }
-      const imageGeometry = getPolygonizedGeometry(obliqueFeature);
+      const imageGeometry = getPolygonizedGeometry(obliqueFeature, true);
       this._updatingMercator[id] = true;
       await imageGeometryToMercatorGeometry(
         imageGeometry,

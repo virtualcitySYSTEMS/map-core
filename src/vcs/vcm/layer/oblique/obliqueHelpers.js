@@ -142,10 +142,16 @@ export function imageGeometryToMercatorGeometry(sourceGeometry, destinationGeome
 
 /**
  * @param {ol/Feature} feature
+ * @param {boolean} [retainRectangle=false]
  * @returns {ol/geom/Geometry}
  */
-export function getPolygonizedGeometry(feature) {
+export function getPolygonizedGeometry(feature, retainRectangle = false) {
   const geom = feature.getGeometry();
+  const isRectangle = geom.get('_vcsGeomType') === 'bbox' || geom.get('_vcsGeomType') === 'rectangle';
+  if (isRectangle && retainRectangle) {
+    return geom;
+  }
+
   const isCircle = geom instanceof Circle;
   const converted = convertGeometryToPolygon(geom);
   converted[actuallyIsCircle] = isCircle;

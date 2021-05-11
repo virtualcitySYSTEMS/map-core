@@ -66,9 +66,13 @@ function createHorizontalPlanes(feature, coords, options) {
   let min = Number.isFinite(extent[2]) ? extent[2] : 0;
   let max = Number.isFinite(extent[5]) ? extent[5] : 0;
   const extruded = feature.get('olcs_extrudedHeight');
-  if (extruded && feature.get('olcs_skirt')) {
-    min -= feature.get('olcs_skirt');
+  if (extruded) {
+    max = extruded;
+    if (feature.get('olcs_skirt')) {
+      min -= feature.get('olcs_skirt');
+    }
   }
+
 
   if (min === max) {
     max += 1;
@@ -242,18 +246,31 @@ export function clearClippingPlanes(target) {
  */
 function setTilesetClippingPlane(cesium3DTileset, clippingPlaneCollection, local) {
   clearClippingPlanes(cesium3DTileset);
+  // copyClippingPlanesToCollection(clippingPlaneCollection, cesium3DTileset.clippingPlanes); XXX this is in release-4.0 but i think its an oversight
   if (!local) {
-    const rotation = Matrix4.getMatrix3(
-      Matrix4.inverse(cesium3DTileset.clippingPlanesOriginMatrix, new Matrix4()),
-      new Matrix3(),
-    );
-    const transformationMatrix = Matrix4.fromRotationTranslation(rotation, new Cartesian3());
-    copyClippingPlanesToCollection(
-      clippingPlaneCollection,
-      cesium3DTileset.clippingPlanes,
-      transformationMatrix,
-      cesium3DTileset.boundingSphere.center,
-    );
+    if (!clippingPlaneCollection.modelMatrix.equals(Matrix4.IDENTITY)) {
+      copyClippingPlanesToCollection(clippingPlaneCollection, cesium3DTileset.clippingPlanes);
+      cesium3DTileset.clippingPlanes.modelMatrix = Matrix4.multiply(
+        Matrix4.inverse(
+          cesium3DTileset.clippingPlanesOriginMatrix,
+          cesium3DTileset.clippingPlanes.modelMatrix,
+        ),
+        clippingPlaneCollection.modelMatrix,
+        cesium3DTileset.clippingPlanes.modelMatrix,
+      );
+    } else {
+      const rotation = Matrix4.getMatrix3(
+        Matrix4.inverse(cesium3DTileset.clippingPlanesOriginMatrix, new Matrix4()),
+        new Matrix3(),
+      );
+      const transformationMatrix = Matrix4.fromRotationTranslation(rotation, new Cartesian3());
+      copyClippingPlanesToCollection(
+        clippingPlaneCollection,
+        cesium3DTileset.clippingPlanes,
+        transformationMatrix,
+        cesium3DTileset.boundingSphere.center,
+      );
+    }
   } else {
     copyClippingPlanesToCollection(clippingPlaneCollection, cesium3DTileset.clippingPlanes);
   }
