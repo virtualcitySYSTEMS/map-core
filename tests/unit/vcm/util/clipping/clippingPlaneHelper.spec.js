@@ -333,9 +333,10 @@ describe('vcs.vcm.util.clipping.ClippingPlaneHelpers', () => {
       });
 
       it('should multiply any previous model matrix on the collection', () => {
-        collection.modelMatrix = Matrix4.fromScale(new Cartesian3(2, 1, 1));
+        const multiply = sandbox.spy(Matrix4, 'multiply');
+        collection.modelMatrix = Matrix4.multiplyByScalar(Matrix4.IDENTITY, 2, new Matrix4());
         setClippingPlanes(tileset, collection);
-        expect(tileset.clippingPlanes.modelMatrix.equals(collection.modelMatrix)).to.be.true;
+        expect(multiply).to.have.been.called;
       });
 
       it('should not multiply any previous model, if its an IDENTITY', () => {

@@ -9,7 +9,7 @@ import { getLogger as getLoggerByName } from '@vcsuite/logger';
 import VcsEvent from '../event/vcsEvent.js';
 
 /**
- * @returns {vcs-logger/Logger}
+ * @returns {vcsuite-logger/Logger}
  */
 function getLogger() {
   return getLoggerByName('vcs.vcm.layer.VectorProperties');

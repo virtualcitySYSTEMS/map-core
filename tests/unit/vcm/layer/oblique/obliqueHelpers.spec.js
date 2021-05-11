@@ -104,4 +104,46 @@ describe('vcs.vcm.layer.oblique.Helpers', () => {
       });
     });
   });
+
+  describe('getting a polygonized geometry retaining rectangle', () => {
+    describe('for a circle', () => {
+      let feature;
+      let convertedGeometry;
+
+      before(() => {
+        feature = new Feature();
+        feature.setGeometry(new Circle([1, 1, 0], 20));
+        convertedGeometry = getPolygonizedGeometry(feature, true);
+      });
+
+      it('should return a polygonized circle', () => {
+        expect(convertedGeometry).to.be.an.instanceof(Polygon);
+      });
+
+      it('should set the actuallyIsCircle symbol', () => {
+        expect(convertedGeometry).to.have.property(actuallyIsCircle, true);
+      });
+    });
+
+    describe('for a bbox', () => {
+      let feature;
+      let convertedGeometry;
+
+      before(() => {
+        feature = new Feature();
+        const geom = new Polygon([[[1, 1, 0], [0, 1, 0], [0, 0, 0]]]);
+        geom.set('_vcsGeomType', 'bbox');
+        feature.setGeometry(geom);
+        convertedGeometry = getPolygonizedGeometry(feature, true);
+      });
+
+      it('should retain the vcsGeomType property', () => {
+        expect(convertedGeometry.get('_vcsGeomType')).to.equal('bbox');
+      });
+
+      it('should not set the actuallyIsCircle symbol', () => {
+        expect(convertedGeometry).not.to.have.property(actuallyIsCircle);
+      });
+    });
+  });
 });

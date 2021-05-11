@@ -39,7 +39,7 @@ function getFormat() {
 }
 
 /**
- * @returns {vcs-logger/Logger}
+ * @returns {vcsuite-logger/Logger}
  */
 function getLogger() {
   return getLoggerByName('vcs.vcm.layer.GeoJSONHelper');

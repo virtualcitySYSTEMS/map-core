@@ -6,6 +6,7 @@ import GeometryInstance from '@vcmap/cesium/Source/Core/GeometryInstance.js';
 import Material from '@vcmap/cesium/Source/Scene/Material.js';
 import SceneTransforms from '@vcmap/cesium/Source/Scene/SceneTransforms.js';
 import MaterialAppearance from '@vcmap/cesium/Source/Scene/MaterialAppearance.js';
+import ClassificationType from '@vcmap/cesium/Source/Scene/ClassificationType.js';
 import PerInstanceColorAppearance from '@vcmap/cesium/Source/Scene/PerInstanceColorAppearance.js';
 import GroundPrimitive from '@vcmap/cesium/Source/Scene/GroundPrimitive.js';
 import GroundPolylinePrimitive from '@vcmap/cesium/Source/Scene/GroundPolylinePrimitive.js';
@@ -127,7 +128,7 @@ export function createPrimitive(scene, vectorProperties, allowPicking, feature, 
       if (!GroundPrimitive.isSupported(scene)) {
         return null;
       }
-      options.classificationType = classificationType;
+      options.classificationType = classificationType || ClassificationType.TERRAIN;
       primitive = new GroundPrimitive(options);
     } else {
       primitive = new Primitive(options);
@@ -228,7 +229,7 @@ export function createLinePrimitive(
     if (!GroundPolylinePrimitive.isSupported(scene)) {
       return null;
     }
-    options.classificationType = classificationType;
+    options.classificationType = classificationType || ClassificationType.TERRAIN;
     primitive = new GroundPolylinePrimitive(options);
   } else {
     primitive = new Primitive(options);

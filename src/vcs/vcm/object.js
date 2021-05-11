@@ -49,7 +49,7 @@ class VcsObject {
   }
 
   /**
-   * @returns {vcs-logger/Logger}
+   * @returns {vcsuite-logger/Logger}
    * @api
    */
   getLogger() {

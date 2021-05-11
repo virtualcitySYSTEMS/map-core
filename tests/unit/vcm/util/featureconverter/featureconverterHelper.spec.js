@@ -158,10 +158,10 @@ describe('vcs.vcm.util.featureconverter.vectorLayerHelper', () => {
     });
 
     it('should create GroundPrimitives for classified ground primitives, setting their classification type', () => {
-      feature.set('olcs_classificationType', 'terrain');
+      feature.set('olcs_classificationType', 'both');
       const primitive = createPrimitive(scene, vectorProperties, true, feature, geometries, style, true);
       expect(primitive).to.be.an.instanceOf(GroundPrimitive);
-      expect(primitive.classificationType).to.equal(ClassificationType.TERRAIN);
+      expect(primitive.classificationType).to.equal(ClassificationType.BOTH);
       primitive.destroy();
     });
 
@@ -171,9 +171,10 @@ describe('vcs.vcm.util.featureconverter.vectorLayerHelper', () => {
       primitive.destroy();
     });
 
-    it('should create a Primitive for non-classification ground features', () => {
+    it('should create a Primitive for non-classification ground features, defaulting to terrain only classification.', () => {
       const primitive = createPrimitive(scene, vectorProperties, true, feature, geometries, style, true);
       expect(primitive).to.be.an.instanceOf(GroundPrimitive);
+      expect(primitive.classificationType).to.equal(ClassificationType.TERRAIN);
       primitive.destroy();
     });
 
@@ -278,10 +279,10 @@ describe('vcs.vcm.util.featureconverter.vectorLayerHelper', () => {
     });
 
     it('should create GroundPrimitives for classified ground primitives, setting their classification type', () => {
-      feature.set('olcs_classificationType', 'terrain');
+      feature.set('olcs_classificationType', 'both');
       const primitive = createLinePrimitive(scene, vectorProperties, true, feature, geometries, style, true);
       expect(primitive).to.be.an.instanceOf(GroundPolylinePrimitive);
-      expect(primitive.classificationType).to.equal(ClassificationType.TERRAIN);
+      expect(primitive.classificationType).to.equal(ClassificationType.BOTH);
       primitive.destroy();
     });
 
@@ -291,9 +292,10 @@ describe('vcs.vcm.util.featureconverter.vectorLayerHelper', () => {
       primitive.destroy();
     });
 
-    it('should create a Primitive for non-classification ground features', () => {
+    it('should create a Primitive for non-classification ground features, defaulting to terrain only classification', () => {
       const primitive = createLinePrimitive(scene, vectorProperties, true, feature, geometries, style, true);
       expect(primitive).to.be.an.instanceOf(GroundPolylinePrimitive);
+      expect(primitive.classificationType).to.equal(ClassificationType.TERRAIN);
       primitive.destroy();
     });
 
