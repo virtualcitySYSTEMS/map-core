@@ -111,7 +111,7 @@ class WFS extends Vector {
         .writeGetFeature(/** @type {ol/format/WFSWriteGetFeatureOptions} */ ({
           featureNS: this.featureNS,
           featurePrefix: this.featurePrefix,
-          featureTypes: [this.featureType],
+          featureTypes: this.featureType,
           srsName: this.projection.epsg,
           ...this.getFeaturesOptions,
         }));

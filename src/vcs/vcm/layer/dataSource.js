@@ -35,7 +35,7 @@ import { getInstance as getGlobalHider } from './globalHider.js';
  * @memberOf vcs.vcm.layer
  */
 class DataSource extends Layer {
-  static get className() { return 'vcs.vcm.layer.cesium.DataSource'; }
+  static get className() { return 'vcs.vcm.layer.DataSource'; }
 
   /**
    * @returns {vcs.vcm.layer.DataSource.Options}
