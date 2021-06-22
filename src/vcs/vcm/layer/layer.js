@@ -632,7 +632,9 @@ class Layer extends VcsObject {
    */
   activate() {
     if (this._loadingPromise) {
-      this._state = LayerState.LOADING;
+      if (this._state !== LayerState.ACTIVE) {
+        this._state = LayerState.LOADING;
+      }
       return this._loadingPromise;
     }
 
