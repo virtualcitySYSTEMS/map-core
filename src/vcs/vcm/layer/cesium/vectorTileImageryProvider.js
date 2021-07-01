@@ -1,5 +1,4 @@
 import CesiumEvent from '@vcmap/cesium/Source/Core/Event.js';
-import { DEVICE_PIXEL_RATIO } from 'ol/has.js';
 import { compose, create as createTransform, scale as scaleTransform } from 'ol/transform.js';
 import Rectangle from '@vcmap/cesium/Source/Core/Rectangle.js';
 import CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
@@ -16,18 +15,17 @@ import CanvasTileRenderer from '../../../../ol/render/canvas/canvasTileRenderer.
  */
 export function toContext(extent, center, context, tileSize) {
   const { canvas } = context;
-  const pixelRatio = DEVICE_PIXEL_RATIO;
-  canvas.width = tileSize[0] * pixelRatio;
-  canvas.height = tileSize[1] * pixelRatio;
+  canvas.width = tileSize[0];
+  canvas.height = tileSize[1];
   canvas.style.width = `${tileSize[0] }px`;
   canvas.style.height = `${tileSize[1] }px`;
   const scaleY = (extent[2] - extent[0]) / (extent[3] - extent[1]);
-  const sx = pixelRatio / ((extent[2] - extent[0]) / 256);
-  const sy = -pixelRatio / ((extent[3] - extent[1]) / 256);
-  const transform = scaleTransform(createTransform(), pixelRatio, pixelRatio);
+  const sx = 1 / ((extent[2] - extent[0]) / 256);
+  const sy = -1 / ((extent[3] - extent[1]) / 256);
+  const transform = scaleTransform(createTransform(), 1, 1);
   const newTransform = compose(transform, 128, 128, sx, sy, 0, -center[0], -center[1]);
   // @ts-ignore
-  return new CanvasTileRenderer(context, pixelRatio, extent, newTransform, 0, null, null, scaleY);
+  return new CanvasTileRenderer(context, 1, extent, newTransform, 0, null, null, scaleY);
 }
 
 

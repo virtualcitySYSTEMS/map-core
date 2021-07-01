@@ -423,7 +423,7 @@ class Layer extends VcsObject {
 
   /**
    * creates or returns a cached array of layer implementations for the given map.
-   * @param {vcs.vcm.maps.VcsMap} map Map
+   * @param {vcs.vcm.maps.VcsMap} map initialized Map
    * @returns {Array<vcs.vcm.layer.LayerImplementation>} return the specific implementation
    */
   getImplementationsForMap(map) {
