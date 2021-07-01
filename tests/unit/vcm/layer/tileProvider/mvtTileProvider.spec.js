@@ -59,7 +59,7 @@ describe('vcs.vcm.layer.tileProvider.MVTTileProvider', () => {
 
     it('should only apply id Property as featureId if set', async () => {
       await tileProvider.getFeaturesForTile(0, 0, 0);
-      expect(featureNorthEast.getId()).to.equal(undefined);
+      expect(featureNorthEast.getId()).to.not.equal('test1');
     });
 
     it('should transform local coordinates from southWest Corner to mercator', async () => {

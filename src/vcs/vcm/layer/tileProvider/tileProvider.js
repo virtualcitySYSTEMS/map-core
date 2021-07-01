@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import Rectangle from '@vcmap/cesium/Source/Core/Rectangle.js';
 import CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
 import VectorSource from 'ol/source/Vector.js';
@@ -253,6 +254,11 @@ class TileProvider extends VcsObject {
    */
   _addTilePromiseToCache(featuresPromise, baseLevel, tileId) {
     const sourcePromise = featuresPromise.then((features) => {
+      features.forEach((feature) => {
+        if (!feature.getId()) {
+          feature.setId(uuidv4());
+        }
+      });
       const tileSource = new VectorSource({ features, useSpatialIndex: this.useSpatialIndex });
       this.tileLoadedEvent.raiseEvent({ tileId, source: tileSource });
       this._trackFeatures(features, tileId);
