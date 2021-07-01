@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
 import Style from 'ol/style/Style.js';
 import { parseInteger } from '@vcsuite/parsers';
 import CesiumMap from '../maps/cesium.js';
@@ -247,9 +246,6 @@ class VectorTile extends FeatureLayer {
    */
   _handleTileLoaded({ source }) {
     source.forEachFeature((feature) => {
-      if (!feature.getId()) {
-        feature.setId(uuidv4());
-      }
       const featureStyle = /** @type {ol/style/Style} */ (feature.getStyle());
       if (featureStyle && featureStyle instanceof Style) {
         featureStyle.setZIndex(this._getNextStyleZIndex());
