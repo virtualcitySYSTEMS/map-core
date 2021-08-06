@@ -227,10 +227,31 @@ describe('vcs.vcm.util.style.DeclarativeStyleItem', () => {
           expect(style.getImage().getRadius()).to.equal(6);
         });
 
-        it.skip('should scale the image based on a scale', () => {
+        it('should scale the image based on a scale', () => {
           feature.set('scale', 6);
           const style = DSI.style(feature, 1);
           expect(style.getImage().getScale()).to.equal(6);
+        });
+
+        it('should cache the circle and reuse on same style', () => {
+          const style1 = DSI.style(feature, 1);
+          const style2 = DSI.style(feature, 1);
+          expect(style1.getImage()).to.be.equal(style2.getImage());
+        });
+
+        it('should cache the circle and reuse on same style for different features', () => {
+          const style1 = DSI.style(feature, 1);
+          const feature2 = feature.clone();
+          const style2 = DSI.style(feature2, 1);
+          expect(style1.getImage()).to.be.equal(style2.getImage());
+        });
+
+        it('should not cache the circle if the style is different', () => {
+          const style1 = DSI.style(feature, 1);
+          const feature2 = feature.clone();
+          feature2.set('image', 'sensor');
+          const style2 = DSI.style(feature2, 1);
+          expect(style1.getImage()).to.not.be.equal(style2.getImage());
         });
       });
     }
@@ -276,7 +297,7 @@ describe('vcs.vcm.util.style.DeclarativeStyleItem', () => {
           expect(style.getImage()).to.be.null;
         });
 
-        it.skip('should scale the image based on a scale', () => {
+        it('should scale the image based on a scale', () => {
           feature.set('src', 'test');
           feature.set('scale', 6);
           const style = DSI.style(feature, 1);

@@ -16,7 +16,7 @@ import { getURL } from './urlTemplateTileProvider.js';
  * Loads the pbf tiles
  *
  * @class
- * @memberOf vcs.vcm.layer
+ * @memberOf vcs.vcm.layer.tileProvider
  * @extends {vcs.vcm.layer.tileProvider.TileProvider}
  * @export
  * @api

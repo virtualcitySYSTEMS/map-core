@@ -1,5 +1,6 @@
 import CesiumTerrainProvider from '@vcmap/cesium/Source/Core/CesiumTerrainProvider.js';
 import Cartographic from '@vcmap/cesium/Source/Core/Cartographic.js';
+import Cartesian2 from '@vcmap/cesium/Source/Core/Cartesian2.js';
 import sampleTerrainMostDetailed from '@vcmap/cesium/Source/Core/sampleTerrainMostDetailed.js';
 import sampleTerrain from '@vcmap/cesium/Source/Core/sampleTerrain.js';
 
@@ -53,6 +54,7 @@ export function sampleCesiumTerrainMostDetailed(terrainProvider, positions) {
 }
 
 /**
+ * updates the height of the positions in place.
  * @param {Cesium/CesiumTerrainProvider} terrainProvider
  * @param {number} level
  * @param {Array<Cesium/Cartographic>} positions
@@ -94,3 +96,21 @@ export function getHeightFromTerrainProvider(terrainProvider, coordinates, optSo
       return coordinates;
     });
 }
+
+/**
+ * checks, whether a terrain tile is available at given position or not
+ * @param {Cesium/CesiumTerrainProvider} terrainProvider
+ * @param {number} level
+ * @param {Cesium/Cartographic} position
+ * @returns {boolean}
+ */
+export function isTerrainTileAvailable(terrainProvider, level, position) {
+  if (!terrainProvider.ready) {
+    return false;
+  }
+  const tileXY = terrainProvider.tilingScheme.positionToTileXY(
+    position, level, new Cartesian2(),
+  );
+  return terrainProvider.getTileDataAvailable(tileXY.x, tileXY.y, level);
+}
+

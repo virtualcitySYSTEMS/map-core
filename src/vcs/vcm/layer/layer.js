@@ -425,6 +425,7 @@ class Layer extends VcsObject {
    * creates or returns a cached array of layer implementations for the given map.
    * @param {vcs.vcm.maps.VcsMap} map initialized Map
    * @returns {Array<vcs.vcm.layer.LayerImplementation>} return the specific implementation
+   * @api
    */
   getImplementationsForMap(map) {
     if (!this._implementations.has(map)) {
@@ -607,7 +608,11 @@ class Layer extends VcsObject {
    */
   async _activate() {
     this._state = LayerState.LOADING;
-    this.stateChanged.raiseEvent(LayerState.LOADING);
+    try {
+      this.stateChanged.raiseEvent(LayerState.LOADING);
+    } catch (e) {
+      this.getLogger().debug(`Error on raising LayerState.LOADING event for layer ${this.name} : ${e.message}`);
+    }
     await this.initialize();
     if (this._state !== LayerState.LOADING) {
       return;
@@ -619,7 +624,12 @@ class Layer extends VcsObject {
     }
     this.globalHider.hideObjects(this.hiddenObjectIds);
     this._state = LayerState.ACTIVE;
-    this.stateChanged.raiseEvent(LayerState.ACTIVE);
+    try {
+      this.stateChanged.raiseEvent(LayerState.ACTIVE);
+    } catch (e) {
+      this.getLogger().debug(`Error on raising LayerState.ACTIVE event for layer ${this.name} : ${e.message}`);
+    }
+    this._loadingPromise = null;
   }
 
   /**
@@ -632,9 +642,6 @@ class Layer extends VcsObject {
    */
   activate() {
     if (this._loadingPromise) {
-      if (this._state !== LayerState.ACTIVE) {
-        this._state = LayerState.LOADING;
-      }
       return this._loadingPromise;
     }
 
@@ -643,9 +650,6 @@ class Layer extends VcsObject {
         .catch((err) => {
           this._state = LayerState.INACTIVE;
           return Promise.reject(err);
-        })
-        .finally(() => {
-          this._loadingPromise = null;
         });
       return this._loadingPromise;
     }
@@ -658,6 +662,10 @@ class Layer extends VcsObject {
    * @api
    */
   deactivate() {
+    if (this._loadingPromise) {
+      this._loadingPromise = null;
+    }
+
     if (this._state !== LayerState.INACTIVE) {
       this.getImplementations().forEach((impl) => {
         if (impl.loading || impl.active) {
@@ -666,7 +674,11 @@ class Layer extends VcsObject {
       });
       this.globalHider.showObjects(this.hiddenObjectIds);
       this._state = LayerState.INACTIVE;
-      this.stateChanged.raiseEvent(LayerState.INACTIVE);
+      try {
+        this.stateChanged.raiseEvent(LayerState.INACTIVE);
+      } catch (e) {
+        this.getLogger().debug(`Error on raising LayerState.INACTIVE event for layer ${this.name} : ${e.message}`);
+      }
     }
   }
 

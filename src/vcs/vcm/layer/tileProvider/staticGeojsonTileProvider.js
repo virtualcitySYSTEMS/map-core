@@ -12,7 +12,7 @@ import TileProvider from './tileProvider.js';
  * Loads the provided geojson url and tiles the content in memory, data is only requested once
  *
  * @class
- * @memberOf vcs.vcm.layer
+ * @memberOf vcs.vcm.layer.tileProvider
  * @extends {vcs.vcm.layer.tileProvider.TileProvider}
  * @export
  * @api
