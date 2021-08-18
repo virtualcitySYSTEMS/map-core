@@ -155,6 +155,7 @@ describe('vcs.vcm.layer.VectorProperties', () => {
         modelScaleX: 2,
         modelScaleY: 2,
         modelScaleZ: 2,
+        baseUrl: 'http://other',
       });
       eventListener = sandbox.spy();
       vectorProperties.propertyChanged.addEventListener(eventListener);
@@ -723,6 +724,24 @@ describe('vcs.vcm.layer.VectorProperties', () => {
       });
     });
 
+    describe('baseUrl', () => {
+      it('should parse value baseUrl', () => {
+        expect(vectorProperties.baseUrl).to.be.equal('http://other');
+      });
+
+      it('should not set baseUrl and not raiseEvent, if value does not change', () => {
+        vectorProperties.baseUrl = vectorProperties.baseUrl;
+        expect(eventListener).to.have.not.been.called;
+      });
+
+      it('should set modelScaleZ and raiseEvent, if value changed', () => {
+        vectorProperties.baseUrl = 'http://other2';
+        expect(vectorProperties.baseUrl).to.be.equal('http://other2');
+        expect(eventListener).to.have.been.calledOnce;
+        expect(eventListener).to.have.been.calledWith(['baseUrl']);
+      });
+    });
+
     describe('getting model options', () => {
       let feature;
 
@@ -748,6 +767,13 @@ describe('vcs.vcm.layer.VectorProperties', () => {
         expect(modelOptions).to.be.an('object')
           .and.to.have.property('scale')
           .and.to.have.ordered.members([2, 4, 8]);
+      });
+
+      it('should make relatives URL resolve to a baseUrl', () => {
+        feature.set('olcs_modelUrl', 'test.glb');
+        const modelOptions = vectorProperties.getModel(feature);
+        expect(modelOptions)
+          .to.have.property('url', 'http://other/test.glb');
       });
     });
   });

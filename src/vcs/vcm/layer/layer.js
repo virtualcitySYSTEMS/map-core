@@ -45,6 +45,7 @@ import { getCurrentLocale, getLocaleChangedEvent } from '../util/locale.js';
  * @property {Array<string>|undefined} embeddedIcons
  * @property {number|undefined} screenSpaceError
  * @property {vcs.vcm.util.flight.FlightInstance.Meta|undefined} flightOptions
+ * @property {string|undefined} baseUrl
  * @api
  */
 

@@ -38,6 +38,7 @@ function getLogger() {
  * @property {number} [modelHeading=0] - in degrees
  * @property {number} [modelPitch=0] - in degrees
  * @property {number} [modelRoll=0] - in degrees
+ * @property {string|undefined} baseUrl - a base URL to resolve relative model URLs against.
  * @api
  */
 
@@ -199,6 +200,7 @@ class VectorProperties {
       modelHeading: 0,
       modelPitch: 0,
       modelRoll: 0,
+      baseUrl: undefined,
     };
   }
 
@@ -334,6 +336,12 @@ class VectorProperties {
      * @private
      */
     this._modelRoll = parseNumber(options.modelRoll, defaultValues.modelRoll);
+
+    /**
+     * @type {string}
+     * @private
+     */
+    this._baseUrl = options.baseUrl || defaultValues.baseUrl;
 
     /**
      * Event raised when properties change. is passed an array of keys for the changed properties.
@@ -961,14 +969,49 @@ class VectorProperties {
   }
 
   /**
+   * @api
+   * @type {string}
+   */
+  get baseUrl() {
+    return this._baseUrl;
+  }
+
+  /**
+   * @param {string} value
+   */
+  set baseUrl(value) {
+    check(value, String);
+
+    if (this._baseUrl !== value) {
+      this._baseUrl = value;
+      this.propertyChanged.raiseEvent(['baseUrl']);
+    }
+  }
+
+  /**
+   * @param {ol/Feature} feature
+   * @returns {string}
+   * @api
+   */
+  getBaseUrl(feature) {
+    const featureValue = feature.get('olcs_baseUrl');
+    return featureValue !== undefined ? featureValue : this.baseUrl;
+  }
+
+  /**
    * @param {ol/Feature} feature
    * @returns {vcs.vcm.layer.VectorProperties.ModelOptions|null}
    * @api
    */
   getModel(feature) {
-    const url = this.getModelUrl(feature);
+    let url = this.getModelUrl(feature);
     if (!url) {
       return null;
+    }
+
+    const baseUrl = this.getBaseUrl(feature);
+    if (baseUrl) {
+      url = (new URL(url, baseUrl)).toString();
     }
 
     return {
@@ -1174,6 +1217,13 @@ class VectorProperties {
       }
     }
 
+    if ('baseUrl' in options) {
+      if (options.baseUrl !== this._baseUrl) {
+        this._baseUrl = options.baseUrl;
+        changedProperties.push('baseUrl');
+      }
+    }
+
     if (changedProperties.length) {
       this.propertyChanged.raiseEvent(changedProperties);
     }
@@ -1206,6 +1256,7 @@ class VectorProperties {
       modelHeading: this.modelHeading,
       modelPitch: this.modelPitch,
       modelRoll: this.modelRoll,
+      baseUrl: this.baseUrl,
     };
     return values;
   }
@@ -1280,6 +1331,9 @@ class VectorProperties {
     }
     if (this.modelRoll !== defaultValues.modelRoll) {
       vcsMeta.modelRoll = this.modelRoll;
+    }
+    if (this.baseUrl !== defaultValues.baseUrl) {
+      vcsMeta.baseUrl = this.baseUrl;
     }
     return vcsMeta;
   }
