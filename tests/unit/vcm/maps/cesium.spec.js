@@ -543,6 +543,29 @@ describe('vcs.vcm.maps.Cesium', () => {
         expect(cartographic.latitude).to.be.closeTo(CesiumMath.toRadians(1), 0.00001);
         expect(cartographic.height).to.be.closeTo(100, 0.00001);
       });
+
+      it('should cancel a running animated viewpoint on the next function call', async () => {
+        map.gotoViewPoint(new ViewPoint({
+          groundPosition: [0, 0, 0],
+          cameraPosition: [1, 1, 100],
+          distance: 100,
+          animate: true,
+          duration: 0.01,
+          heading: 45,
+        }));
+        await map.gotoViewPoint(new ViewPoint({
+          groundPosition: [0, 0, 0],
+          cameraPosition: [2, 2, 100],
+          distance: 100,
+          animate: false,
+          duration: 0.01,
+          heading: 45,
+        }));
+        const cartographic = map.getScene().camera.positionCartographic;
+        expect(cartographic.longitude).to.be.closeTo(CesiumMath.toRadians(2), 0.00001);
+        expect(cartographic.latitude).to.be.closeTo(CesiumMath.toRadians(2), 0.00001);
+        expect(cartographic.height).to.be.closeTo(100, 0.00001);
+      });
     });
   });
 

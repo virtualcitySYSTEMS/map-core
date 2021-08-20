@@ -117,8 +117,12 @@ class LayerCollection extends IndexedCollection {
   _zIndexChanged(layer) {
     const currentIndex = this.indexOf(layer);
     if (currentIndex > -1) {
+      const increased = layer[this._zIndexSymbol] < layer.zIndex;
       layer[this._zIndexSymbol] = layer.zIndex;
       let zIndexPosition = this._findZIndexPosition(layer.zIndex);
+      if (increased && zIndexPosition > 0) {
+        zIndexPosition -= 1; // remove self from count
+      }
       zIndexPosition = zIndexPosition != null ? zIndexPosition : this._array.length - 1;
       this._move(layer, currentIndex, zIndexPosition);
       this._ensureLocalZIndex(layer);

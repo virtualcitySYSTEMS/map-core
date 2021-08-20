@@ -86,6 +86,12 @@ class ObliqueDataSet {
      * @private
      */
     this._images = [];
+
+    /**
+     * @type {vcs.vcm.layer.CopyrightOptions|undefined}
+     * @api
+     */
+    this.copyright = undefined;
   }
 
   /**
