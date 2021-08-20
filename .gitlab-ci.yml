@@ -20,9 +20,7 @@ build:
   script:
     - npm set registry 'http://npmregistry:4873'
     - npm ci
-    - npm run generate-index
-  before_script:
-    - git submodule update --init --recursive
+    - npm run build-index
   stage: build
 
 .after_build_template: &after_build_definition
@@ -58,19 +56,21 @@ tests:
     reports:
       junit: test-results.xml
 
-patchVersion:
+publish:
   <<: *after_build_definition
-  stage: version
+  stage: publish
   only:
     variables:
       - $PUBLISH
     refs:
       - /^(master|release-v.*)$/
   script:
-    - npm version patch -m "%s [skip-ci]"
+    - LEVEL=$([ $CI_COMMIT_REF_NAME == "master" ] && echo "prerelease" || echo "patch")
+    - npm version $LEVEL -m "%s [skip-ci]"
     - TAG=`git describe --abbrev=0`
-    - git push git@gitlab:vcsuite/virtualcityMAP.git $TAG
-    - git push git@gitlab:vcsuite/virtualcityMAP.git HEAD:$CI_COMMIT_REF_NAME
+    - git push git@gitlab:vcsuite/npm/vcmap/core.git $TAG
+    - git push git@gitlab:vcsuite/npm/vcmap/core.git HEAD:$CI_COMMIT_REF_NAME
+    - npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
     - npm publish
   before_script:
     - mkdir -p ~/.ssh
