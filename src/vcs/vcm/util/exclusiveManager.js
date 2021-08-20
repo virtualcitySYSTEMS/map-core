@@ -1,19 +1,24 @@
 /**
+ * Tracks layer exclusivity, added to every {@link vcs.vcm.util.LayerCollection}.
  * @class
  * @memberOf vcs.vcm.util
+ * @api
  */
 class ExclusiveManager {
   constructor() {
     /**
+     * The layers managed by this manager. The key is the group.
      * @type {Map<(string|symbol), Set<vcs.vcm.layer.Layer>>}
+     * @api
      */
     this.layers = new Map();
   }
 
   /**
-   * registers a Layer as Exclusive, the activation of a layer triggers the deactivation of all other exclusive Layers
-   * layers with the exclusive property do this on creation
+   * registers a Layer as Exclusive, the activation of a layer triggers the deactivation of all other exclusive Layers.
+   * The layer collection adds exclusive layers to the manager on adding the layer to the collection.
    * @param {vcs.vcm.layer.Layer} layer - layer to register
+   * @api
    */
   registerLayer(layer) {
     const { exclusiveGroups } = layer;
@@ -33,7 +38,9 @@ class ExclusiveManager {
   }
 
   /**
+   * Removes a layer from tracking. Layer collections remove the layer once they are removed from them.
    * @param {vcs.vcm.layer.Layer} layer - layer to unregister
+   * @api
    */
   unregisterLayer(layer) {
     const { exclusiveGroups } = layer;

@@ -370,6 +370,7 @@ class Layer extends VcsObject {
   }
 
   /**
+   * An array of arbitrary exclusive groups
    * @returns {Array<string|symbol>}
    * @readonly
    * @api
