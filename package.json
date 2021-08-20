@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "postinstall": "node build/postinstall.js",
     "coverage": "c8 --reporter text-summary npm run test",
+    "coverage:gitlab": "c8 --reporter text-summary npm run test -- --reporter mocha-junit-reporter",
     "serve": "npx wds --node-resolve --open --watch",
     "build-index": "jsdoc -c build/index/conf.json",
     "prepare": "npm run build-index"
@@ -41,6 +42,7 @@
     "jsdom": "^16.5.2",
     "jsdom-global": "^3.0.2",
     "mocha": "^8.3.2",
+    "mocha-junit-reporter": "^2.0.0",
     "ol": "^6.5.0",
     "sinon": "^9.2.4",
     "sinon-chai": "^3.6.0"
