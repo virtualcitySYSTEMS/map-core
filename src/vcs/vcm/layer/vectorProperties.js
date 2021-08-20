@@ -463,6 +463,7 @@ class VectorProperties {
 
   /**
    * @type {Cesium/Cartesian3|undefined}
+   * @api
    */
   get eyeOffset() {
     return this._eyeOffset;
@@ -498,6 +499,7 @@ class VectorProperties {
 
   /**
    * @type {number}
+   * @api
    */
   get heightAboveGround() {
     return this._heightAboveGround;
@@ -526,6 +528,7 @@ class VectorProperties {
 
   /**
    * @type {number}
+   * @api
    */
   get skirt() {
     return this._skirt;
@@ -554,6 +557,7 @@ class VectorProperties {
 
   /**
    * @type {number|undefined}
+   * @api
    */
   get groundLevel() {
     return this._groundLevel;
@@ -582,6 +586,7 @@ class VectorProperties {
 
   /**
    * @type {number}
+   * @api
    */
   get extrudedHeight() {
     return this._extrudedHeight;
@@ -610,6 +615,7 @@ class VectorProperties {
 
   /**
    * @type {number}
+   * @api
    */
   get storeysAboveGround() {
     return this._storeysAboveGround;
@@ -638,6 +644,7 @@ class VectorProperties {
 
   /**
    * @type {number}
+   * @api
    */
   get storeysBelowGround() {
     return this._storeysBelowGround;
@@ -666,6 +673,7 @@ class VectorProperties {
 
   /**
    * @type {Array<number>}
+   * @api
    */
   get storeyHeightsAboveGround() {
     return this._storeyHeightsAboveGround.slice();
@@ -694,6 +702,7 @@ class VectorProperties {
 
   /**
    * @type {Array<number>}
+   * @api
    */
   get storeyHeightsBelowGround() {
     return this._storeyHeightsBelowGround.slice();
