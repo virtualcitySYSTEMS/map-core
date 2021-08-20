@@ -275,7 +275,7 @@ describe('ObliqueDataSet', () => {
         const spy = getCesiumEventSpy(sandbox, obliqueDataSet.imagesLoaded);
         await obliqueDataSet.loadDataForCoordinate(tiledMercatorCoordinate);
         expect(spy).to.have.been.calledOnce;
-        expect(spy).to.have.been.calledWith(obliqueDataSet.images, '12/2200/1343')
+        expect(spy).to.have.been.calledWith(obliqueDataSet.images, '12/2200/1343');
       });
     });
 
