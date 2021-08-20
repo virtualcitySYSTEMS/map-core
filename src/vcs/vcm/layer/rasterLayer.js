@@ -38,6 +38,7 @@ import Extent from '../util/extent.js';
  */
 
 /**
+ * Enumeration of tiling schemes.
  * @enum {string}
  * @api
  * @property {string} GEOGRAPHIC

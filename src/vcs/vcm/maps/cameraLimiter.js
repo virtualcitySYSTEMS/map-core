@@ -20,6 +20,7 @@ import {
  */
 
 /**
+ * Enumeration of camera limiter modes.
  * @enum {string}
  * @property {string} HEIGHT
  * @property {string} DISTANCE

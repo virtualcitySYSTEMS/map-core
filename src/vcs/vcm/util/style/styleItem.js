@@ -44,6 +44,7 @@ import VcsEvent from '../../event/vcsEvent.js';
  */
 
 /**
+ * Enumeration of possible style types.
  * @enum {string}
  * @property {string} VECTOR
  * @property {string} DECLARATIVE

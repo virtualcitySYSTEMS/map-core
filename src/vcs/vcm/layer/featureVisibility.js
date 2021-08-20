@@ -176,10 +176,15 @@ export function showFeature(feature, symbol) {
 }
 
 /**
+ * Enumeration of feature visibility actions.
  * @enum {number}
  * @memberOf vcs.vcm.layer.FeatureVisibility
  * @export
  * @api
+ * @property {number} HIGHLIGHT
+ * @property {number} UNHIGHLIGHT
+ * @property {number} HIDE
+ * @property {number} SHOW
  */
 export const FeatureVisibilityAction = {
   HIGHLIGHT: 1,

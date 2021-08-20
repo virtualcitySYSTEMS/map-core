@@ -18,6 +18,7 @@ export class BitCounter {
 }
 
 /**
+ * Enumeration of modification key types
  * @enum {number}
  * @memberOf vcs.vcm.interaction
  * @export
@@ -42,6 +43,7 @@ ModificationKeyType.ALL = ModificationKeyType.NONE |
   ModificationKeyType.SHIFT;
 
 /**
+ * Enumeration of pointer event types
  * @memberOf vcs.vcm.interaction
  * @enum {number}
  * @property {number} NONE
@@ -80,6 +82,7 @@ EventType.ALL = Object.values(EventType)
   .reduce((val, mask) => val | mask, 0);
 
 /**
+ * Enumeration of pointer keys.
  * @memberOf vcs.vcm.interaction
  * @enum {number}
  * @property {number} LEFT
@@ -101,6 +104,7 @@ PointerKeyType.ALL = PointerKeyType.LEFT |
   PointerKeyType.MIDDLE;
 
 /**
+ * Enumeration of pointer key events.
  * @enum {number}
  * @memberOf vcs.vcm.interaction
  * @property {number} DOWN

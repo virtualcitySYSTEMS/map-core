@@ -1,4 +1,5 @@
 /**
+ * Enumeration of view directions.
  * @enum {number}
  * @property {number} NORTH
  * @property {number} EAST
@@ -6,6 +7,7 @@
  * @property {number} WEST
  * @property {number} NADIR
  * @export
+ * @api
  */
 export const ObliqueViewDirection = {
   NORTH: 1,
