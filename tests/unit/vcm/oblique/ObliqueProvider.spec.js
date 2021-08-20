@@ -244,7 +244,7 @@ describe('ObliqueProvider', () => {
       collection.destroy();
     });
 
-    it.skip('should calculate the current images average height', async () => { // XXX failing do to previous specs. cleanup issue
+    it('should calculate the current images average height', async () => {
       await obliqueProvider.setImage(image);
       expect(image.averageHeight).to.be.greaterThan(0);
     });

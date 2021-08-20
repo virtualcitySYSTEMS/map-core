@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import { fromRollup } from '@web/dev-server-rollup';
 import rollupCommonjs from '@rollup/plugin-commonjs';
 import rollupNodeResolve from '@rollup/plugin-node-resolve';

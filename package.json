@@ -62,9 +62,6 @@
       ]
     }
   },
-  "eslintIgnore": [
-    "overrides"
-  ],
   "dependencies": {
     "@vcsuite/check": "^1.0.2",
     "@vcsuite/logger": "^1.0.0",
