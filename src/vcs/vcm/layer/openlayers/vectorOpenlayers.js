@@ -1,7 +1,7 @@
 import OLVectorLayer from 'ol/layer/Vector.js';
 import LayerOpenlayers from './layerOpenlayers.js';
 import { synchronizeFeatureVisibility } from '../vectorHelpers.js';
-import { getInstance as getGlobalHider } from '../globalHider.js';
+import { getGlobalHider } from '../globalHider.js';
 
 /**
  * represents a specific vectorlayer for openlayers.

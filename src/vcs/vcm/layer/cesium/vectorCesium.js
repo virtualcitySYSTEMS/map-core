@@ -5,7 +5,7 @@ import convert from '../../util/featureconverter/convert.js';
 import VectorContext from './vectorContext.js';
 import { vcsLayerName } from '../layerSymbols.js';
 import LayerImplementation from '../layerImplementation.js';
-import { getInstance as getGlobalHider } from '../globalHider.js';
+import { getGlobalHider } from '../globalHider.js';
 import { synchronizeFeatureVisibility } from '../vectorHelpers.js';
 
 /**

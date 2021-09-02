@@ -2,7 +2,7 @@ import { check } from '@vcsuite/check';
 import { parseBoolean, parseInteger } from '@vcsuite/parsers';
 import VcsObject from '../object.js';
 import Extent from '../util/extent.js';
-import { getInstance as getGlobalHiderInstance } from './globalHider.js';
+import { getGlobalHider } from './globalHider.js';
 import { vcsLayerName } from './layerSymbols.js';
 import LayerState from './layerState.js';
 import VcsEvent from '../event/vcsEvent.js';
@@ -243,7 +243,7 @@ class Layer extends VcsObject {
     this.exclusiveGroupsChanged = new VcsEvent();
 
     /** @type {vcs.vcm.layer.GlobalHider} */
-    this.globalHider = getGlobalHiderInstance();
+    this.globalHider = getGlobalHider();
 
     /**
      * @type {vcs.vcm.layer.CopyrightOptions|undefined}
