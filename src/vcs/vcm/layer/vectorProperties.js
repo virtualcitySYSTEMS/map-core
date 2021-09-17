@@ -38,6 +38,7 @@ function getLogger() {
  * @property {number} [modelHeading=0] - in degrees
  * @property {number} [modelPitch=0] - in degrees
  * @property {number} [modelRoll=0] - in degrees
+ * @property {Object|undefined} modelOptions - Model options are merged with the model definition from model url, scale and orientation and accepts any option passed to a Cesium.Model.
  * @property {string|undefined} baseUrl - a base URL to resolve relative model URLs against.
  * @api
  */
@@ -200,6 +201,7 @@ class VectorProperties {
       modelHeading: 0,
       modelPitch: 0,
       modelRoll: 0,
+      modelOptions: undefined,
       baseUrl: undefined,
     };
   }
@@ -342,6 +344,12 @@ class VectorProperties {
      * @private
      */
     this._baseUrl = options.baseUrl || defaultValues.baseUrl;
+
+    /**
+     * @type {Object|undefined}
+     * @private
+     */
+    this._modelOptions = options.modelOptions || defaultValues.modelOptions;
 
     /**
      * Event raised when properties change. is passed an array of keys for the changed properties.
@@ -966,6 +974,45 @@ class VectorProperties {
   getModelRoll(feature) {
     const featureValue = feature.get('olcs_modelRoll');
     return parseNumber(featureValue, this.modelRoll);
+  }
+
+  /**
+   * Model options are merged with the model definition from model url, scale and orientation and accepts any option
+   * passed to a Cesium.Model.
+   * @type {Object|undefined}
+   * @api
+   */
+  get modelOptions() {
+    return this._modelOptions;
+  }
+
+  /**
+   * @param {Object|undefined} modelOptions
+   */
+  set modelOptions(modelOptions) {
+    checkMaybe(modelOptions, Object);
+
+    if (this._modelOptions !== modelOptions) {
+      this._modelOptions = modelOptions;
+      this.propertyChanged.raiseEvent(['modelOptions']);
+    }
+  }
+
+  /**
+   * Get the features or the properties modelOptions. Returns an empty Object if both are undefined
+   * @param {ol/Feature} feature
+   * @returns {Object}
+   * @api
+   */
+  getModelOptions(feature) {
+    const featureValue = feature.get('olcs_modelOptions');
+    if (featureValue) {
+      return featureValue;
+    }
+    if (this.modelOptions) {
+      return this.modelOptions;
+    }
+    return {};
   }
 
   /**

@@ -190,9 +190,11 @@ export function getModelOptions(feature, positions, vectorProperties) {
         new Matrix4(),
       );
 
+      const additionalModelOptions = vectorProperties.getModelOptions(feature);
       const model = Model.fromGltf({
         url: modelOptions.url,
         modelMatrix,
+        ...additionalModelOptions,
       });
 
       model.readyPromise.then(() => {
