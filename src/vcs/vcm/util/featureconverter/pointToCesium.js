@@ -9,6 +9,7 @@ import Model from '@vcmap/cesium/Source/Scene/Model.js';
 import HeadingPitchRoll from '@vcmap/cesium/Source/Core/HeadingPitchRoll.js';
 import LabelStyle from '@vcmap/cesium/Source/Scene/LabelStyle.js';
 import ModelAnimationLoop from '@vcmap/cesium/Source/Scene/ModelAnimationLoop.js';
+import { Cartographic } from '@vcmap/cesium';
 import Icon from 'ol/style/Icon.js';
 import GeometryType from 'ol/geom/GeometryType.js';
 import HorizontalOrigin from '@vcmap/cesium/Source/Scene/HorizontalOrigin.js';
@@ -21,6 +22,7 @@ import {
 import Projection from '../projection.js';
 import { createLineGeometries } from './lineStringToCesium.js';
 import { getCesiumColor } from '../style/styleHelpers.js';
+import { sampleCesiumTerrainMostDetailed } from '../../layer/terrainHelpers.js';
 
 /**
  * @param {Array<ol/geom/Point>} geometries
@@ -174,16 +176,18 @@ export function getLabelOptions(feature, style, heightReference, vectorPropertie
 
 /**
  * @param {ol/Feature} feature
+ * @param {Array<ol/Coordinate>} wgs84Positions
  * @param {Array<Cesium/Cartesian3>} positions
  * @param {vcs.vcm.layer.VectorProperties} vectorProperties
+ * @param {Cesium/Scene} scene
  * @returns {null|Array<Cesium/Model>}
  */
-export function getModelOptions(feature, positions, vectorProperties) {
+export function getModelOptions(feature, wgs84Positions, positions, vectorProperties, scene) {
   const modelOptions = vectorProperties.getModel(feature);
   if (modelOptions) {
     const scale = Cartesian3.fromArray(modelOptions.scale);
     const headingPitchRoll = HeadingPitchRoll.fromDegrees(modelOptions.heading, modelOptions.pitch, modelOptions.roll);
-    return positions.map((position) => {
+    return positions.map((position, index) => {
       const modelMatrix = Matrix4.multiply(
         Transforms.headingPitchRollToFixedFrame(position, headingPitchRoll),
         Matrix4.fromScale(scale),
@@ -196,6 +200,19 @@ export function getModelOptions(feature, positions, vectorProperties) {
         modelMatrix,
         ...additionalModelOptions,
       });
+
+      if (wgs84Positions[index][2] === 0) {
+        sampleCesiumTerrainMostDetailed(scene.globe.terrainProvider, [Cartographic.fromCartesian(position)])
+          .then(([newHeight]) => {
+            if (!model.isDestroyed()) {
+              model.modelMatrix = Matrix4.multiply(
+                Transforms.headingPitchRollToFixedFrame(Cartographic.toCartesian(newHeight), headingPitchRoll),
+                Matrix4.fromScale(scale),
+                new Matrix4(),
+              );
+            }
+          });
+      }
 
       model.readyPromise.then(() => {
         model.activeAnimations.addAll({
@@ -299,7 +316,7 @@ export default function pointToCesium(feature, style, geometries, vectorProperti
 
   const { positions, wgs84Positions } = getCartesian3AndWGS84FromCoordinates(coordinates, heightInfo);
 
-  const modelOptions = getModelOptions(feature, positions, vectorProperties);
+  const modelOptions = getModelOptions(feature, wgs84Positions, positions, vectorProperties, scene);
   if (modelOptions) {
     context.addPrimitives(modelOptions, feature, allowPicking);
   } else {
