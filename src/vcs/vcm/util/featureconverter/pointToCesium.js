@@ -201,17 +201,18 @@ export function getModelOptions(feature, wgs84Positions, positions, vectorProper
         ...additionalModelOptions,
       });
 
-      if (wgs84Positions[index][2] === 0) {
+      if (!wgs84Positions[index][2]) {
         sampleCesiumTerrainMostDetailed(scene.globe.terrainProvider, [Cartographic.fromCartesian(position)])
-          .then(([newHeight]) => {
+          .then(([cartoWithNewHeight]) => {
             if (!model.isDestroyed()) {
               model.modelMatrix = Matrix4.multiply(
-                Transforms.headingPitchRollToFixedFrame(Cartographic.toCartesian(newHeight), headingPitchRoll),
+                Transforms.headingPitchRollToFixedFrame(Cartographic.toCartesian(cartoWithNewHeight), headingPitchRoll),
                 Matrix4.fromScale(scale),
                 new Matrix4(),
               );
             }
-          });
+          })
+          .catch(() => {});
       }
 
       model.readyPromise.then(() => {
