@@ -7,7 +7,12 @@ import LRUCache from 'ol/structs/LRUCache.js';
 import { buffer, createOrUpdateFromCoordinate } from 'ol/extent.js';
 import Cartographic from '@vcmap/cesium/Source/Core/Cartographic.js';
 import { parseBoolean, parseInteger } from '@vcsuite/parsers';
-import { mercatorToWgs84Transformer, wgs84ToMercatorTransformer } from '../../util/projection.js';
+import {
+  mercatorProjection,
+  mercatorToWgs84Transformer,
+  wgs84Projection,
+  wgs84ToMercatorTransformer,
+} from '../../util/projection.js';
 import VcsObject from '../../object.js';
 import VcsEvent from '../../event/vcsEvent.js';
 
@@ -423,6 +428,34 @@ class TileProvider extends VcsObject {
       ];
     }
     return [];
+  }
+
+  /**
+   * @param {vcs.vcm.util.Extent} extent
+   * @param {number=} level
+   * @returns {Promise<Array<ol/Feature>>}
+   */
+  async getFeaturesForExtent(extent, level) {
+    const usedLevel = level != null ? level : this.baseLevels[0];
+
+    const [minx, miny, maxx, maxy] = extent.getCoordinatesInProjection(wgs84Projection);
+    const topLeft = this.tilingScheme.positionToTileXY(Cartographic.fromDegrees(minx, maxy), usedLevel);
+    const bottomRight = this.tilingScheme.positionToTileXY(Cartographic.fromDegrees(maxx, miny), usedLevel);
+    const tileCoordinates = [];
+    for (let { x } = topLeft; x <= bottomRight.x; x++) {
+      for (let { y } = topLeft; y <= bottomRight.y; y++) {
+        tileCoordinates.push([x, y]);
+      }
+    }
+
+    const features = await Promise.all(tileCoordinates.map(([x, y]) => this.getFeaturesForTile(x, y, usedLevel)));
+    const mercatorExtent = extent.getCoordinatesInProjection(mercatorProjection);
+    return features
+      .flat()
+      .filter((f) => {
+        const geometry = f.getGeometry();
+        return geometry && geometry.intersectsExtent(mercatorExtent);
+      });
   }
 
   /**

@@ -3,6 +3,8 @@ import CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
 import Point from 'ol/geom/Point.js';
 import Feature from 'ol/Feature.js';
 import TileProvider, { mercatorResolutionsToLevel } from '../../../../../src/vcs/vcm/layer/tileProvider/tileProvider.js';
+import Extent from '../../../../../src/vcs/vcm/util/extent.js';
+import Projection from '../../../../../src/vcs/vcm/util/projection.js';
 import resetFramework from '../../../helpers/resetFramework.js';
 
 describe('vcs.vcm.layer.tileProvider.TileProvider', () => {
@@ -195,6 +197,54 @@ describe('vcs.vcm.layer.tileProvider.TileProvider', () => {
       expect(tileProvider.sourceCache.has(tileProvider.getCacheKey(1, 1, 10))).to.be.true;
       await tileProvider.getFeaturesForTile(1, 2, 10);
       expect(tileProvider.sourceCache.has(tileProvider.getCacheKey(1, 1, 10))).to.be.false;
+    });
+  });
+
+  describe('getFeaturesForExtent', () => {
+    let loaderStub;
+    let extent;
+
+    before(() => {
+      extent = new Extent({ epsg: 4326, coordinates: [13.3, 52, 13.3005, 52.005] });
+    });
+
+    beforeEach(() => {
+      loaderStub = sandbox.stub(tileProvider, 'loader');
+      loaderStub.returns(Promise.resolve([]));
+    });
+
+    afterEach(async () => {
+      await tileProvider.clearCache();
+      sandbox.restore();
+    });
+
+    it('should load all the tiles for a given extent at the highest level', async () => {
+      await tileProvider.getFeaturesForExtent(extent);
+      expect(loaderStub).to.have.been.calledWith(70378, 43292, 17);
+      expect(loaderStub).to.have.been.calledWith(70378, 43293, 17);
+      expect(loaderStub).to.have.been.calledWith(70378, 43294, 17);
+      expect(loaderStub).to.have.been.calledWith(70378, 43295, 17);
+    });
+
+    it('should load all tile for a given extent and level', async () => {
+      await tileProvider.getFeaturesForExtent(extent, 10);
+      expect(loaderStub).to.have.been.calledOnce;
+      expect(loaderStub).to.have.been.calledWith(549, 338, 10);
+    });
+
+    it('should return features from the tiles, if they intersect the extent', async () => {
+      const intersection = new Feature({
+        geometry: new Point(Projection.wgs84ToMercator([13.3002, 52.002, 0])),
+      });
+
+      const noIntersection = new Feature({
+        geometry: new Point(Projection.wgs84ToMercator([13.2, 52.1, 0])),
+      });
+
+      loaderStub.returns(Promise.resolve([intersection, noIntersection]));
+      const features = await tileProvider.getFeaturesForExtent(extent, 10);
+      expect(features).to.include(intersection);
+      expect(features).to.not.include(noIntersection);
     });
   });
 
