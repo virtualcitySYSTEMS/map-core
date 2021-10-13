@@ -244,7 +244,7 @@ describe('ObliqueProvider', () => {
       collection.destroy();
     });
 
-    it.skip('should calculate the current images average height', async () => { // XXX failing do to previous specs. cleanup issue
+    it('should calculate the current images average height', async () => {
       await obliqueProvider.setImage(image);
       expect(image.averageHeight).to.be.greaterThan(0);
     });
@@ -290,8 +290,8 @@ describe('ObliqueProvider', () => {
     it('should set an optional center', async () => {
       await obliqueProvider.setImage(image, imagev35MercatorCoordinate);
       const { center } = await obliqueProvider.getView();
-      expect(center[0]).to.be.closeTo(imagev35MercatorCoordinate[0], 0.001);
-      expect(center[1]).to.be.closeTo(imagev35MercatorCoordinate[1], 0.001);
+      expect(center[0]).to.be.closeTo(imagev35MercatorCoordinate[0], 0.5);
+      expect(center[1]).to.be.closeTo(imagev35MercatorCoordinate[1], 0.5);
     });
 
     it('should truncate the provided center to be within the bounds of the image', async () => {

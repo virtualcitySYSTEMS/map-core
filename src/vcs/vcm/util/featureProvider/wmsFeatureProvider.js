@@ -67,6 +67,7 @@ export function getFormat(responseType, options = {}) {
 
 /**
  * @class
+ * @export
  * @extends {vcs.vcm.util.featureProvider.AbstractFeatureProvider}
  * @memberOf vcs.vcm.util.featureProvider
  */

@@ -7,7 +7,12 @@ import LRUCache from 'ol/structs/LRUCache.js';
 import { buffer, createOrUpdateFromCoordinate } from 'ol/extent.js';
 import Cartographic from '@vcmap/cesium/Source/Core/Cartographic.js';
 import { parseBoolean, parseInteger } from '@vcsuite/parsers';
-import { mercatorToWgs84Transformer, wgs84ToMercatorTransformer } from '../../util/projection.js';
+import {
+  mercatorProjection,
+  mercatorToWgs84Transformer,
+  wgs84Projection,
+  wgs84ToMercatorTransformer,
+} from '../../util/projection.js';
 import VcsObject from '../../object.js';
 import VcsEvent from '../../event/vcsEvent.js';
 
@@ -392,7 +397,7 @@ class TileProvider extends VcsObject {
    * returns features for the requested Tile.
    * @param {number} x
    * @param {number} y
-   * @param {number} level
+   * @param {number} level - if the level is not a base level, will use the closest match
    * @returns {Promise<Array<ol/Feature>>}
    * @api
    */
@@ -423,6 +428,36 @@ class TileProvider extends VcsObject {
       ];
     }
     return [];
+  }
+
+  /**
+   * Retrieves all features which intersect the given extent. Will load all intersecting tiles.
+   * @param {vcs.vcm.util.Extent} extent
+   * @param {number=} level - Optional level to request. Will use highest level if omitted. If the provided level is not a base level, will use the closest match.
+   * @returns {Promise<Array<ol/Feature>>}
+   * @api
+   */
+  async getFeaturesForExtent(extent, level) {
+    let usedLevel = level != null ? level : this.baseLevels[0];
+    usedLevel = this.getBaseLevel(usedLevel);
+    const [minx, miny, maxx, maxy] = extent.getCoordinatesInProjection(wgs84Projection);
+    const topLeft = this.tilingScheme.positionToTileXY(Cartographic.fromDegrees(minx, maxy), usedLevel);
+    const bottomRight = this.tilingScheme.positionToTileXY(Cartographic.fromDegrees(maxx, miny), usedLevel);
+    const tileCoordinates = [];
+    for (let { x } = topLeft; x <= bottomRight.x; x++) {
+      for (let { y } = topLeft; y <= bottomRight.y; y++) {
+        tileCoordinates.push([x, y]);
+      }
+    }
+
+    const features = await Promise.all(tileCoordinates.map(([x, y]) => this.getFeaturesForTile(x, y, usedLevel)));
+    const mercatorExtent = extent.getCoordinatesInProjection(mercatorProjection);
+    return features
+      .flat()
+      .filter((f) => {
+        const geometry = f.getGeometry();
+        return geometry && geometry.intersectsExtent(mercatorExtent);
+      });
   }
 
   /**

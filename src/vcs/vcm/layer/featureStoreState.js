@@ -4,6 +4,7 @@
 export const featureStoreStateSymbol = Symbol('vcsFeatureType');
 
 /**
+ * Enumeration of feature store item states
  * @enum {string}
  * @property {string} DYNAMIC
  * @property {string} STATIC

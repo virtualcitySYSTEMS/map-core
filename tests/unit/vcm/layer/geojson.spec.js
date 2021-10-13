@@ -1,4 +1,5 @@
 import Feature from 'ol/Feature.js';
+import ClassificationType from '@vcmap/cesium/Source/Scene/ClassificationType.js';
 import GeoJSON, { featureFromOptions } from '../../../../src/vcs/vcm/layer/geojson.js';
 import testGeoJSON from './testGeoJSON.json';
 import resetFramework from '../../helpers/resetFramework.js';
@@ -57,6 +58,54 @@ describe('vcs.vcm.layer.GeoJSON', () => {
     it('should add the featureFromOptions symbol to config features', () => {
       const [configFeature] = geojsonLayer.getFeaturesById(['test']);
       expect(configFeature).to.have.property(featureFromOptions);
+    });
+  });
+
+  describe('vectorProperties handling', () => {
+    let geojsonLayer;
+
+    before(async () => {
+      const server = sandbox.useFakeServer();
+      server.autoRespond = true;
+      server.respondImmediately = true;
+      server.respondWith(/test.json/, (res) => {
+        res.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify({
+          type: 'FeatureCollection',
+          vcsMeta: {
+            classificationType: 'terrain',
+            storeysAboveGround: 1,
+            storeyHeightsAboveGround: [1],
+            storeysBelowGround: 1,
+            storeyHeightsBelowGround: [1],
+          },
+          features: [],
+        }));
+      });
+      geojsonLayer = new GeoJSON({
+        url: 'http://localhost/test.json',
+        vectorProperties: {
+          classificationType: 'both',
+          storeysBelowGround: 2,
+          storeyHeightsBelowGround: [2],
+        },
+      });
+      await geojsonLayer.fetchData();
+    });
+
+    after(() => {
+      sandbox.restore();
+      geojsonLayer.destroy();
+    });
+
+    it('data vectorProperties should be evaluated', () => {
+      expect(geojsonLayer.vectorProperties.storeysAboveGround).to.be.equal(1);
+      expect(geojsonLayer.vectorProperties.storeyHeightsAboveGround).to.have.members([1]);
+    });
+
+    it('layer vectorProperties should have priority over data vectorProperties', () => {
+      expect(geojsonLayer.vectorProperties.storeysBelowGround).to.be.equal(2);
+      expect(geojsonLayer.vectorProperties.storeyHeightsBelowGround).to.have.members([2]);
+      expect(geojsonLayer.vectorProperties.classificationType).to.be.equal(ClassificationType.BOTH);
     });
   });
 

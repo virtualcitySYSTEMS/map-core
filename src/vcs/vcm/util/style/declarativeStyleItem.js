@@ -124,6 +124,9 @@ class DeclarativeStyleItem extends StyleItem {
     }
     /** @type {vcs.vcm.util.style.DeclarativeStyleItem.DeclarativeStyleOptions} */
     this._styleOptions = declarativeStyle;
+
+    /** @type {Map<string,ol/style/Circle>} */
+    this._circleCache = new Map();
   }
 
   /**
@@ -310,39 +313,46 @@ class DeclarativeStyleItem extends StyleItem {
         style.setImage(new Icon({ src }));
       }
     } else {
-      const circleOptions = {
-        radius: 4,
-      };
-
       const color = this.cesiumStyle.color ?
         // @ts-ignore
         this.cesiumStyle.color.evaluate(feature, scratchColor) :
         Color.WHITE;
-      circleOptions.fill = new Fill({ color: cesiumColorToColor(color) });
 
+      let radius = 4;
       if (this.cesiumStyle.pointSize) {
         // @ts-ignore
         const size = this.cesiumStyle.pointSize.evaluate(feature);
-        circleOptions.radius = size / 2;
+        radius = size / 2;
       }
       const width = this.cesiumStyle.pointOutlineWidth ?
         // @ts-ignore
         this.cesiumStyle.pointOutlineWidth.evaluate(feature) :
         0;
-      if (width) {
-        const pointOutlineColor = this.cesiumStyle.pointOutlineColor ?
-          // @ts-ignore
-          this.cesiumStyle.pointOutlineColor.evaluateColor(feature, scratchColor) :
-          Color.BLACK;
 
-        circleOptions.stroke = new Stroke({
-          color: cesiumColorToColor(pointOutlineColor),
-          width,
-        });
-        circleOptions.radius += width / 2;
+      let pointOutlineColor = Color.BLACK;
+      if (width) {
+        if (this.cesiumStyle.pointOutlineColor) {
+          // @ts-ignore
+          pointOutlineColor = this.cesiumStyle.pointOutlineColor.evaluateColor(feature, scratchColor);
+        }
+        radius += width / 2;
       }
 
-      style.setImage(new Circle(circleOptions));
+      const circleCacheKey = `${radius}${color}${width}${pointOutlineColor}`;
+      if (!this._circleCache.has(circleCacheKey)) {
+        const circleOptions = {
+          radius,
+          fill: new Fill({ color: cesiumColorToColor(color) }),
+        };
+        if (width) {
+          circleOptions.stroke = new Stroke({
+            color: cesiumColorToColor(pointOutlineColor),
+            width,
+          });
+        }
+        this._circleCache.set(circleCacheKey, new Circle(circleOptions));
+      }
+      style.setImage(this._circleCache.get(circleCacheKey));
     }
 
     if (this.cesiumStyle.scale && style.getImage()) {
@@ -537,6 +547,14 @@ class DeclarativeStyleItem extends StyleItem {
     // @ts-ignore setter != getter
     this.cesiumStyle.pointSize = pointSize;
     this._styleChanged();
+  }
+
+  /**
+   * @inheritDoc
+   */
+  destroy() {
+    this._circleCache.clear();
+    super.destroy();
   }
 }
 

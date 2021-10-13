@@ -5,7 +5,7 @@ import Feature from 'ol/Feature.js';
 
 import { mercatorProjection } from '../../util/projection.js';
 import { mercatorGeometryToImageGeometry, imageGeometryToMercatorGeometry, getPolygonizedGeometry, setNewGeometry } from './obliqueHelpers.js';
-import { getInstance as getGlobalHider } from '../globalHider.js';
+import { getGlobalHider } from '../globalHider.js';
 import {
   actuallyIsCircle,
   alreadyTransformedToImage,

@@ -38,6 +38,8 @@ function getLogger() {
  * @property {number} [modelHeading=0] - in degrees
  * @property {number} [modelPitch=0] - in degrees
  * @property {number} [modelRoll=0] - in degrees
+ * @property {Object|undefined} modelOptions - Model options are merged with the model definition from model url, scale and orientation and accepts any option passed to a Cesium.Model.
+ * @property {string|undefined} baseUrl - a base URL to resolve relative model URLs against.
  * @api
  */
 
@@ -199,6 +201,8 @@ class VectorProperties {
       modelHeading: 0,
       modelPitch: 0,
       modelRoll: 0,
+      modelOptions: undefined,
+      baseUrl: undefined,
     };
   }
 
@@ -336,6 +340,18 @@ class VectorProperties {
     this._modelRoll = parseNumber(options.modelRoll, defaultValues.modelRoll);
 
     /**
+     * @type {string}
+     * @private
+     */
+    this._baseUrl = options.baseUrl || defaultValues.baseUrl;
+
+    /**
+     * @type {Object|undefined}
+     * @private
+     */
+    this._modelOptions = options.modelOptions || defaultValues.modelOptions;
+
+    /**
      * Event raised when properties change. is passed an array of keys for the changed properties.
      * @type {vcs.vcm.event.VcsEvent<Array<string>>}
      * @readonly
@@ -463,6 +479,7 @@ class VectorProperties {
 
   /**
    * @type {Cesium/Cartesian3|undefined}
+   * @api
    */
   get eyeOffset() {
     return this._eyeOffset;
@@ -498,6 +515,7 @@ class VectorProperties {
 
   /**
    * @type {number}
+   * @api
    */
   get heightAboveGround() {
     return this._heightAboveGround;
@@ -526,6 +544,7 @@ class VectorProperties {
 
   /**
    * @type {number}
+   * @api
    */
   get skirt() {
     return this._skirt;
@@ -554,6 +573,7 @@ class VectorProperties {
 
   /**
    * @type {number|undefined}
+   * @api
    */
   get groundLevel() {
     return this._groundLevel;
@@ -582,6 +602,7 @@ class VectorProperties {
 
   /**
    * @type {number}
+   * @api
    */
   get extrudedHeight() {
     return this._extrudedHeight;
@@ -610,6 +631,7 @@ class VectorProperties {
 
   /**
    * @type {number}
+   * @api
    */
   get storeysAboveGround() {
     return this._storeysAboveGround;
@@ -638,6 +660,7 @@ class VectorProperties {
 
   /**
    * @type {number}
+   * @api
    */
   get storeysBelowGround() {
     return this._storeysBelowGround;
@@ -666,6 +689,7 @@ class VectorProperties {
 
   /**
    * @type {Array<number>}
+   * @api
    */
   get storeyHeightsAboveGround() {
     return this._storeyHeightsAboveGround.slice();
@@ -694,6 +718,7 @@ class VectorProperties {
 
   /**
    * @type {Array<number>}
+   * @api
    */
   get storeyHeightsBelowGround() {
     return this._storeyHeightsBelowGround.slice();
@@ -952,14 +977,88 @@ class VectorProperties {
   }
 
   /**
+   * Model options are merged with the model definition from model url, scale and orientation and accepts any option
+   * passed to a Cesium.Model.
+   * @type {Object|undefined}
+   * @api
+   */
+  get modelOptions() {
+    return this._modelOptions;
+  }
+
+  /**
+   * @param {Object|undefined} modelOptions
+   */
+  set modelOptions(modelOptions) {
+    checkMaybe(modelOptions, Object);
+
+    if (this._modelOptions !== modelOptions) {
+      this._modelOptions = modelOptions;
+      this.propertyChanged.raiseEvent(['modelOptions']);
+    }
+  }
+
+  /**
+   * Get the features or the properties modelOptions. Returns an empty Object if both are undefined
+   * @param {ol/Feature} feature
+   * @returns {Object}
+   * @api
+   */
+  getModelOptions(feature) {
+    const featureValue = feature.get('olcs_modelOptions');
+    if (featureValue) {
+      return featureValue;
+    }
+    if (this.modelOptions) {
+      return this.modelOptions;
+    }
+    return {};
+  }
+
+  /**
+   * @api
+   * @type {string}
+   */
+  get baseUrl() {
+    return this._baseUrl;
+  }
+
+  /**
+   * @param {string} value
+   */
+  set baseUrl(value) {
+    check(value, String);
+
+    if (this._baseUrl !== value) {
+      this._baseUrl = value;
+      this.propertyChanged.raiseEvent(['baseUrl']);
+    }
+  }
+
+  /**
+   * @param {ol/Feature} feature
+   * @returns {string}
+   * @api
+   */
+  getBaseUrl(feature) {
+    const featureValue = feature.get('olcs_baseUrl');
+    return featureValue !== undefined ? featureValue : this.baseUrl;
+  }
+
+  /**
    * @param {ol/Feature} feature
    * @returns {vcs.vcm.layer.VectorProperties.ModelOptions|null}
    * @api
    */
   getModel(feature) {
-    const url = this.getModelUrl(feature);
+    let url = this.getModelUrl(feature);
     if (!url) {
       return null;
+    }
+
+    const baseUrl = this.getBaseUrl(feature);
+    if (baseUrl) {
+      url = (new URL(url, baseUrl)).toString();
     }
 
     return {
@@ -1165,6 +1264,13 @@ class VectorProperties {
       }
     }
 
+    if ('baseUrl' in options) {
+      if (options.baseUrl !== this._baseUrl) {
+        this._baseUrl = options.baseUrl;
+        changedProperties.push('baseUrl');
+      }
+    }
+
     if (changedProperties.length) {
       this.propertyChanged.raiseEvent(changedProperties);
     }
@@ -1197,6 +1303,7 @@ class VectorProperties {
       modelHeading: this.modelHeading,
       modelPitch: this.modelPitch,
       modelRoll: this.modelRoll,
+      baseUrl: this.baseUrl,
     };
     return values;
   }
@@ -1271,6 +1378,9 @@ class VectorProperties {
     }
     if (this.modelRoll !== defaultValues.modelRoll) {
       vcsMeta.modelRoll = this.modelRoll;
+    }
+    if (this.baseUrl !== defaultValues.baseUrl) {
+      vcsMeta.baseUrl = this.baseUrl;
     }
     return vcsMeta;
   }

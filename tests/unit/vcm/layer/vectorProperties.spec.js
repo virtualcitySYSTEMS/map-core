@@ -155,6 +155,8 @@ describe('vcs.vcm.layer.VectorProperties', () => {
         modelScaleX: 2,
         modelScaleY: 2,
         modelScaleZ: 2,
+        modelOptions: {},
+        baseUrl: 'http://other',
       });
       eventListener = sandbox.spy();
       vectorProperties.propertyChanged.addEventListener(eventListener);
@@ -723,19 +725,55 @@ describe('vcs.vcm.layer.VectorProperties', () => {
       });
     });
 
-    describe('getting model options', () => {
+    describe('modelOptions', () => {
+      it('should set modelOptions', () => {
+        expect(vectorProperties.modelOptions).to.be.an('object').and.to.be.empty;
+      });
+
+      it('should not set modelOptions and not raiseEvent, if the value does not change', () => {
+        vectorProperties.modelOptions = vectorProperties.modelOptions;
+        expect(eventListener).to.have.not.been.called;
+      });
+
+      it('should set modelOptions and raiseEvent, if value changed', () => {
+        vectorProperties.modelOptions = undefined;
+        expect(vectorProperties.modelOptions).to.be.undefined;
+        expect(eventListener).to.have.been.calledOnce;
+        expect(eventListener).to.have.been.calledWith(['modelOptions']);
+      });
+    });
+
+    describe('baseUrl', () => {
+      it('should parse value baseUrl', () => {
+        expect(vectorProperties.baseUrl).to.be.equal('http://other');
+      });
+
+      it('should not set baseUrl and not raiseEvent, if value does not change', () => {
+        vectorProperties.baseUrl = vectorProperties.baseUrl;
+        expect(eventListener).to.have.not.been.called;
+      });
+
+      it('should set modelScaleZ and raiseEvent, if value changed', () => {
+        vectorProperties.baseUrl = 'http://other2';
+        expect(vectorProperties.baseUrl).to.be.equal('http://other2');
+        expect(eventListener).to.have.been.calledOnce;
+        expect(eventListener).to.have.been.calledWith(['baseUrl']);
+      });
+    });
+
+    describe('getting model', () => {
       let feature;
 
       beforeEach(() => {
         feature = new Feature({});
       });
 
-      it('should return the model options for a feature', () => {
+      it('should return the model base options for a feature', () => {
         const modelOptions = vectorProperties.getModel(feature);
         expect(modelOptions).to.be.an('object');
       });
 
-      it('should not return the model options, if the feature unsets', () => {
+      it('should not return the model base options, if the feature unsets', () => {
         feature.set('olcs_modelUrl', null);
         const modelOptions = vectorProperties.getModel(feature);
         expect(modelOptions).to.be.null;
@@ -748,6 +786,33 @@ describe('vcs.vcm.layer.VectorProperties', () => {
         expect(modelOptions).to.be.an('object')
           .and.to.have.property('scale')
           .and.to.have.ordered.members([2, 4, 8]);
+      });
+
+      it('should make relatives URL resolve to a baseUrl', () => {
+        feature.set('olcs_modelUrl', 'test.glb');
+        const modelOptions = vectorProperties.getModel(feature);
+        expect(modelOptions)
+          .to.have.property('url', 'http://other/test.glb');
+      });
+
+      it('should return modelOptions for a feature', () => {
+        const options = {};
+        feature.set('olcs_modelOptions', options);
+        const modelOptions = vectorProperties.getModelOptions(feature);
+        expect(modelOptions).to.be.equal(options);
+      });
+
+      it('should return vectorProperties modelOptions', () => {
+        const options = {};
+        vectorProperties.modelOptions = options;
+        const modelOptions = vectorProperties.getModelOptions(feature);
+        expect(modelOptions).to.be.equal(options);
+      });
+
+      it('should return an empty object modelOptions, if both feature and vectorProperties modelOptions are undefined', () => {
+        vectorProperties.modelOptions = undefined;
+        const modelOptions = vectorProperties.getModelOptions(feature);
+        expect(modelOptions).to.be.an('object').and.to.be.empty;
       });
     });
   });

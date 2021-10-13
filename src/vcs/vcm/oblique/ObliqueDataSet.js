@@ -5,11 +5,13 @@ import { cartesian2DDistance, destroyCesiumEvent } from './helpers.js';
 import { parseImageData, parseImageMeta, parseLegacyImageData, getVersionFromImageJson } from './parseImageJson.js';
 
 /**
+ * Enumeration of data set states
  * @enum {number}
  * @property {number} PENDING
  * @property {number} LOADING
  * @property {number} READY
  * @export
+ * @api
  */
 export const DataState = {
   PENDING: 1,
@@ -86,6 +88,12 @@ class ObliqueDataSet {
      * @private
      */
     this._images = [];
+
+    /**
+     * @type {vcs.vcm.layer.CopyrightOptions|undefined}
+     * @api
+     */
+    this.copyright = undefined;
   }
 
   /**

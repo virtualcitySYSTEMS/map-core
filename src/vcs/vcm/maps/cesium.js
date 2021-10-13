@@ -685,6 +685,7 @@ class CesiumMap extends VcsMap {
       roll,
     };
     cameraPosition = cameraPosition || null;
+    cam.cancelFlight();
     if (viewpoint.animate) {
       await new Promise((resolve) => {
         const flightOptions = {

@@ -122,6 +122,12 @@ class FeatureStore extends Vector {
       Oblique.className,
     ];
 
+    /**
+     * Feature Store layers have feature UUIDs by design
+     * @type {boolean}
+     */
+    this.hasFeatureUUID = true;
+
     /** @type {string} */
     this.layerId = options.id;
 

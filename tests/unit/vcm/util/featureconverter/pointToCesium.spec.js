@@ -8,6 +8,7 @@ import Icon from 'ol/style/Icon.js';
 import HeightReference from '@vcmap/cesium/Source/Scene/HeightReference.js';
 import VerticalOrigin from '@vcmap/cesium/Source/Scene/VerticalOrigin.js';
 import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
+import Cartographic from '@vcmap/cesium/Source/Core/Cartographic.js';
 import Color from '@vcmap/cesium/Source/Core/Color.js';
 import Cartesian2 from '@vcmap/cesium/Source/Core/Cartesian2.js';
 import Matrix4 from '@vcmap/cesium/Source/Core/Matrix4.js';
@@ -33,6 +34,7 @@ import { getCesiumColor } from '../../../../../src/vcs/vcm/util/style/styleHelpe
 import Projection from '../../../../../src/vcs/vcm/util/projection.js';
 import VectorContext from '../../../../../src/vcs/vcm/layer/cesium/vectorContext.js';
 import { getMockScene } from '../../../helpers/cesiumHelpers.js';
+import { getTerrainProvider } from '../../../helpers/terrain/terrainData.js';
 
 describe('vcs.vcm.util.featureConverter.pointToCesium', () => {
   describe('getCoordinates', () => {
@@ -366,14 +368,21 @@ describe('vcs.vcm.util.featureConverter.pointToCesium', () => {
     let positions;
     let vectorProperties;
     let model;
+    let scene;
 
     before(() => {
       feature = new Feature({
         olcs_modelUrl: 'http://localhost/test.glb',
       });
-      positions = [[1, 1, 0]].map(pos => Cartesian3.fromDegrees(...pos));
+      const coordinates = [[1, 1, 2]];
+      scene = getMockScene();
+      positions = coordinates.map(pos => Cartesian3.fromDegrees(...pos));
       vectorProperties = new VectorProperties({ modelScaleX: 2, modelScaleY: 4, modelScaleZ: 8 });
-      [model] = getModelOptions(feature, positions, vectorProperties);
+      [model] = getModelOptions(feature, coordinates, positions, vectorProperties, scene);
+    });
+
+    after(() => {
+      scene.destroy();
     });
 
     it('should create a model with the feature modelUrl', () => {
@@ -385,6 +394,33 @@ describe('vcs.vcm.util.featureConverter.pointToCesium', () => {
       expect(scale.x).to.closeTo(2, CesiumMath.EPSILON8);
       expect(scale.y).to.closeTo(4, CesiumMath.EPSILON8);
       expect(scale.z).to.closeTo(8, CesiumMath.EPSILON8);
+    });
+
+    it('should set a 2D point onto the terrain', (done) => {
+      const server = sinon.createFakeServer();
+      const scene2 = getMockScene();
+      scene2.globe.terrainProvider = getTerrainProvider(server);
+      const twoD = [[13.374517914005413, 52.501750770534045, 0]];
+      const [twoDModel] = getModelOptions(
+        feature,
+        twoD,
+        twoD.map(pos => Cartesian3.fromDegrees(...pos)),
+        vectorProperties,
+        scene2,
+      );
+      const { modelMatrix } = twoDModel;
+      const cartographicBefore = Cartographic
+        .fromCartesian(Matrix4.getTranslation(modelMatrix, new Cartesian3()));
+      expect(cartographicBefore.height).to.equal(0);
+      setTimeout(() => {
+        expect(twoDModel.modelMatrix).to.not.equal(modelMatrix);
+        const cartographicAfter = Cartographic
+          .fromCartesian(Matrix4.getTranslation(twoDModel.modelMatrix, new Cartesian3()));
+
+        expect(cartographicAfter.height).to.not.equal(0);
+        server.restore();
+        done();
+      }, 500);
     });
   });
 

@@ -4,7 +4,7 @@ import CesiumMap from '../maps/cesium.js';
 import DataSourceCesium from './cesium/dataSourceCesium.js';
 import { vcsLayerName } from './layerSymbols.js';
 import FeatureVisibility, { FeatureVisibilityAction } from './featureVisibility.js';
-import { getInstance as getGlobalHider } from './globalHider.js';
+import { getGlobalHider } from './globalHider.js';
 
 /**
  * @typedef {vcs.vcm.layer.Layer.Options} vcs.vcm.layer.DataSource.Options

@@ -139,7 +139,9 @@ class GeoJSON extends Vector {
       this.setStyle(data.style);
     }
     if (data.vcsMeta) {
-      this.setVcsMeta(data.vcsMeta);
+      // configured layer vectorProperties trumps vectorProperties from geojson file;
+      const meta = { ...data.vcsMeta, ...this.vectorProperties.getVcsMeta() };
+      this.setVcsMeta(meta);
     }
   }
 

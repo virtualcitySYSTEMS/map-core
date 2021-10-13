@@ -9,7 +9,7 @@ import CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
 import { createEmpty } from 'ol/extent.js';
 import LayerImplementation from '../layerImplementation.js';
 import { vcsLayerName } from '../layerSymbols.js';
-import { getInstance as getGlobalHider } from '../globalHider.js';
+import { getGlobalHider } from '../globalHider.js';
 import { originalStyle, updateOriginalStyle } from '../featureVisibility.js';
 import Projection from '../../util/projection.js';
 import { circleFromCenterRadius } from '../../util/geometryHelpers.js';

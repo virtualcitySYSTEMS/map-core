@@ -181,6 +181,7 @@ class VectorStyleItem extends StyleItem {
      * @private
      */
     this._label = options.label;
+    this.label = this._label;
 
     /**
      * @type {Cesium/Color}
@@ -405,7 +406,7 @@ class VectorStyleItem extends StyleItem {
    */
   set label(label) {
     checkMaybe(label, String);
-    if (!label.length) {
+    if (!label) {
       this._label = undefined;
     } else {
       this._label = label;

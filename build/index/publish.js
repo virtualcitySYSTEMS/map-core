@@ -40,8 +40,8 @@ function createIndex() {
   fs.writeFileSync('./index.js', `${imports.join('\n')}\n${exports.join('\n')}`, 'utf8');
 }
 
-exports.publish = function(data) {
-  const docs = data(function() {
+exports.publish = function publish(data) {
+  const docs = data(function dataCb() {
     return typeof this.export === 'boolean';
   }).get();
 
@@ -53,7 +53,10 @@ exports.publish = function(data) {
         isNamed: /\.exports/.test(doc.longname),
         name: doc.name,
       };
-    } else if ((doc.kind === 'function' || doc.isEnum || doc.kind === 'member' || doc.kind === 'constant') && !/\#/.test(doc.longname)) {
+    } else if (
+      (doc.kind === 'function' || doc.isEnum || doc.kind === 'member' || doc.kind === 'constant') &&
+      !/#/.test(doc.longname)
+    ) {
       const name = doc.longname.replace(/\.exports/, '');
       namespaces[name] = {
         path: path.join(doc.meta.path, doc.meta.filename),

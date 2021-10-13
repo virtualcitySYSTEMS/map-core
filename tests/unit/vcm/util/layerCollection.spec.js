@@ -249,4 +249,57 @@ describe('vcs.vcm.util.LayerCollection', () => {
       expect(layer6.active).to.be.true;
     });
   });
+
+  describe('handling changes to zIndex', () => {
+    /** @type {vcs.vcm.util.LayerCollection} */
+    let layerCollection;
+    let layer5;
+    let layer6;
+
+    beforeEach(() => {
+      layer5 = new Layer({
+        name: 'layer5',
+      });
+
+      layer6 = new Layer({
+        name: 'layer6',
+        zIndex: 5,
+      });
+
+      layerCollection = LayerCollection.from([
+        layer1,
+        layer2,
+        layer3,
+        layer4,
+        layer5,
+        layer6,
+      ]);
+    });
+
+    afterEach(() => {
+      layerCollection.destroy();
+      layer5.destroy();
+      layer6.destroy();
+    });
+
+    it('should move the zIndex to the end of its block if increasing', () => {
+      layer5.zIndex = 2;
+      expect(layerCollection.indexOf(layer5)).to.equal(3);
+    });
+
+    it('should set the layer at the end, if there is no higher zIndex', () => {
+      layer5.zIndex = 10;
+      expect(layerCollection.indexOf(layer5)).to.equal(layerCollection.size - 1);
+    });
+
+    it('should move a layer at the end of its block if decreasing', () => {
+      layer6.zIndex = 2;
+      expect(layerCollection.indexOf(layer6)).to.equal(4);
+    });
+
+    it('should move a layer to the beginning if it has the smallest zIndex', () => {
+      layer5.zIndex = -1;
+      expect(layerCollection.indexOf(layer5)).to.equal(0);
+    });
+  });
 });

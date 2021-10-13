@@ -1,8 +1,14 @@
 import Cartographic from '@vcmap/cesium/Source/Core/Cartographic.js';
 import Ellipsoid from '@vcmap/cesium/Source/Core/Ellipsoid.js';
+import CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
 import { checkMaybe } from '@vcsuite/check';
 import { parseInteger, parseNumber, parseEnumValue } from '@vcsuite/parsers';
-import { sampleCesiumTerrain, sampleCesiumTerrainMostDetailed, getTerrainProviderForUrl } from '../layer/terrainHelpers.js';
+import {
+  sampleCesiumTerrain,
+  sampleCesiumTerrainMostDetailed,
+  getTerrainProviderForUrl,
+  isTerrainTileAvailable,
+} from '../layer/terrainHelpers.js';
 
 /**
  * @typedef {Object} vcs.vcm.maps.CameraLimiter.Options
@@ -14,6 +20,7 @@ import { sampleCesiumTerrain, sampleCesiumTerrainMostDetailed, getTerrainProvide
  */
 
 /**
+ * Enumeration of camera limiter modes.
  * @enum {string}
  * @property {string} HEIGHT
  * @property {string} DISTANCE
@@ -79,6 +86,22 @@ class CameraLimiter {
      * @api
      */
     this.level = options.level === null ? null : parseInteger(options.level, defaultOptions.level);
+    /**
+     * last checked camera position
+     * @type {Cesium/Cartographic}
+     */
+    this.lastCheckedPosition = new Cartographic();
+    /**
+     * last updated terrain height
+     * @type {number|null}
+     * @private
+     */
+    this._terrainHeight = null;
+    /**
+     * @type {boolean}
+     * @private
+     */
+    this._updatingTerrainHeight = false;
   }
 
   /**
@@ -108,7 +131,10 @@ class CameraLimiter {
    * @private
    */
   _limitWithLevel(cameraCartographic) {
-    return sampleCesiumTerrain(this._terrainProvider, this.level, [cameraCartographic]);
+    if (isTerrainTileAvailable(this._terrainProvider, this.level, cameraCartographic)) {
+      return sampleCesiumTerrain(this._terrainProvider, this.level, [cameraCartographic]);
+    }
+    return this._limitMostDetailed(cameraCartographic);
   }
 
   /**
@@ -121,37 +147,52 @@ class CameraLimiter {
   }
 
   /**
+   * @param {Cesium/Cartographic} cameraCartographic
+   * @returns {Promise<void>}
+   * @private
+   */
+  async _updateTerrainHeight(cameraCartographic) {
+    if (!this._updatingTerrainHeight &&
+      !cameraCartographic.equalsEpsilon(this.lastCheckedPosition, CesiumMath.EPSILON5)) {
+      this._updatingTerrainHeight = true;
+      const [updatedPosition] = this.level != null ?
+        await this._limitWithLevel(cameraCartographic.clone()) :
+        await this._limitMostDetailed(cameraCartographic.clone());
+      this._terrainHeight = updatedPosition.height;
+      this.lastCheckedPosition = cameraCartographic;
+      this._updatingTerrainHeight = false;
+    }
+  }
+
+  /**
    * Limits the given camera based on this limiters specs.
    * @param {Cesium/Camera} camera
-   * @returns {Promise<void>}
    * @api
+   * @returns {Promise<void>}
    */
-  async limitCamera(camera) {
+  limitCamera(camera) {
+    let promise = Promise.resolve();
     const cameraCartographic = Cartographic.fromCartesian(camera.position);
     if (cameraCartographic) {
       if (this.mode === Mode.DISTANCE && this._terrainProvider) {
-        const cameraHeight = cameraCartographic.height;
-        const [updatedPosition] = this.level != null ?
-          await this._limitWithLevel(cameraCartographic) :
-          await this._limitMostDetailed(cameraCartographic);
-
-        if ((cameraHeight - updatedPosition.height) < this.limit) {
-          updatedPosition.height += this.limit;
+        promise = this._updateTerrainHeight(cameraCartographic);
+        if (this._terrainHeight && (cameraCartographic.height - this._terrainHeight) < this.limit) {
+          const newHeight = this._terrainHeight + this.limit;
           Cartographic.toCartesian(
-            updatedPosition,
+            new Cartographic(cameraCartographic.longitude, cameraCartographic.latitude, newHeight),
             Ellipsoid.WGS84,
             camera.position,
           );
         }
       } else if (cameraCartographic.height < this.limit) {
-        cameraCartographic.height = this.limit;
         Cartographic.toCartesian(
-          cameraCartographic,
+          new Cartographic(cameraCartographic.longitude, cameraCartographic.latitude, this.limit),
           Ellipsoid.WGS84,
           camera.position,
         );
       }
     }
+    return promise;
   }
 
   /**
