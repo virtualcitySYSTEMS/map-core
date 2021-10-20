@@ -1,15 +1,17 @@
-import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
-import Plane from '@vcmap/cesium/Source/Core/Plane.js';
-import ClippingPlane from '@vcmap/cesium/Source/Scene/ClippingPlane.js';
-import Matrix3 from '@vcmap/cesium/Source/Core/Matrix3.js';
-import Matrix4 from '@vcmap/cesium/Source/Core/Matrix4.js';
+import {
+  Cartesian3,
+  Plane,
+  ClippingPlane,
+  Matrix3,
+  Matrix4,
+  ClippingPlaneCollection,
+  Entity,
+  ConstantProperty,
+  JulianDate,
+  Cesium3DTileset,
+  Globe,
+} from '@vcmap/cesium';
 import Feature from 'ol/Feature.js';
-import ClippingPlaneCollection from '@vcmap/cesium/Source/Scene/ClippingPlaneCollection.js';
-import Entity from '@vcmap/cesium/Source/DataSources/Entity.js';
-import ConstantProperty from '@vcmap/cesium/Source/DataSources/ConstantProperty.js';
-import JulianDate from '@vcmap/cesium/Source/Core/JulianDate.js';
-import Cesium3DTileset from '@vcmap/cesium/Source/Scene/Cesium3DTileset.js';
-import Globe from '@vcmap/cesium/Source/Scene/Globe.js';
 import LineString from 'ol/geom/LineString.js';
 import { offset } from 'ol/sphere.js';
 import GeometryLayout from 'ol/geom/GeometryLayout.js';

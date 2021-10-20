@@ -1,7 +1,7 @@
 import PrimitiveCollection from '@vcmap/cesium/Source/Scene/PrimitiveCollection.js';
 import ImageryLayer from '@vcmap/cesium/Source/Scene/ImageryLayer.js';
 import SingleTileImageryProvider from '@vcmap/cesium/Source/Scene/SingleTileImageryProvider.js';
-import CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
+import Math as CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
 import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
 import Cartographic from '@vcmap/cesium/Source/Core/Cartographic.js';
 import CustomDataSource from '@vcmap/cesium/Source/DataSources/CustomDataSource.js';

@@ -2,9 +2,7 @@
 /* eslint-disable no-continue */
 import { boundingExtent, getBottomLeft, getBottomRight, getTopLeft, getTopRight } from 'ol/extent.js';
 import { get as getProjection, getTransform, transform } from 'ol/proj.js';
-import Cartographic from '@vcmap/cesium/Source/Core/Cartographic.js';
-import Cartesian2 from '@vcmap/cesium/Source/Core/Cartesian2.js';
-import sampleTerrainMostDetailed from '@vcmap/cesium/Source/Core/sampleTerrainMostDetailed.js';
+import { Cartographic, Cartesian2, sampleTerrainMostDetailed } from '@vcmap/cesium';
 import { ObliqueViewDirection } from './ObliqueViewDirection.js';
 
 /**

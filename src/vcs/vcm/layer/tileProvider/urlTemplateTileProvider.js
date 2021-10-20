@@ -1,6 +1,5 @@
 import axios from 'axios';
-import CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
-import Rectangle from '@vcmap/cesium/Source/Core/Rectangle.js';
+import { Math as CesiumMath, Rectangle } from '@vcmap/cesium';
 import { parseGeoJSON } from '../geojsonHelpers.js';
 import TileProvider from './tileProvider.js';
 import { getCurrentLocale } from '../../util/locale.js';

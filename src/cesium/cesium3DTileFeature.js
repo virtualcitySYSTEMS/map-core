@@ -1,4 +1,4 @@
-import Cesium3DTileFeature from '@vcmap/cesium/Source/Scene/Cesium3DTileFeature.js';
+import { Cesium3DTileFeature } from '@vcmap/cesium';
 
 /**
  * @returns {string|number}

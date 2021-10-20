@@ -1,18 +1,20 @@
-import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
-import Color from '@vcmap/cesium/Source/Core/Color.js';
-import HeightReference from '@vcmap/cesium/Source/Scene/HeightReference.js';
-import VerticalOrigin from '@vcmap/cesium/Source/Scene/VerticalOrigin.js';
-import Cartesian2 from '@vcmap/cesium/Source/Core/Cartesian2.js';
-import Transforms from '@vcmap/cesium/Source/Core/Transforms.js';
-import Matrix4 from '@vcmap/cesium/Source/Core/Matrix4.js';
-import Model from '@vcmap/cesium/Source/Scene/Model.js';
-import HeadingPitchRoll from '@vcmap/cesium/Source/Core/HeadingPitchRoll.js';
-import LabelStyle from '@vcmap/cesium/Source/Scene/LabelStyle.js';
-import ModelAnimationLoop from '@vcmap/cesium/Source/Scene/ModelAnimationLoop.js';
-import { Cartographic } from '@vcmap/cesium';
+import {
+  Cartesian3,
+  Color,
+  HeightReference,
+  VerticalOrigin,
+  Cartesian2,
+  Transforms,
+  Matrix4,
+  Model,
+  HeadingPitchRoll,
+  LabelStyle,
+  ModelAnimationLoop,
+  Cartographic,
+  HorizontalOrigin,
+} from '@vcmap/cesium';
 import Icon from 'ol/style/Icon.js';
 import GeometryType from 'ol/geom/GeometryType.js';
-import HorizontalOrigin from '@vcmap/cesium/Source/Scene/HorizontalOrigin.js';
 import ImageState from 'ol/ImageState.js';
 import { parseNumber } from '@vcsuite/parsers';
 import {

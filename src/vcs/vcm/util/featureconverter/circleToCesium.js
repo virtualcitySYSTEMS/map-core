@@ -1,12 +1,14 @@
 import { circular } from 'ol/geom/Polygon.js';
 import GeometryType from 'ol/geom/GeometryType.js';
-import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
-import CircleGeometry from '@vcmap/cesium/Source/Core/CircleGeometry.js';
-import GroundPolylineGeometry from '@vcmap/cesium/Source/Core/GroundPolylineGeometry.js';
-import CircleOutlineGeometry from '@vcmap/cesium/Source/Core/CircleOutlineGeometry.js';
-import CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
-import Cartographic from '@vcmap/cesium/Source/Core/Cartographic.js';
-import PolylineGeometry from '@vcmap/cesium/Source/Core/PolylineGeometry.js';
+import {
+  Cartesian3,
+  CircleGeometry,
+  GroundPolylineGeometry,
+  CircleOutlineGeometry,
+  Math as CesiumMath,
+  Cartographic,
+  PolylineGeometry,
+} from '@vcmap/cesium';
 import { parseNumber } from '@vcsuite/parsers';
 import { addPrimitivesToContext } from './featureconverterHelper.js';
 import Projection from '../projection.js';

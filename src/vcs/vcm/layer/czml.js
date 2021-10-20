@@ -1,4 +1,4 @@
-import CzmlDataSource from '@vcmap/cesium/Source/DataSources/CzmlDataSource.js';
+import { CzmlDataSource } from '@vcmap/cesium';
 
 import DataSource from './dataSource.js';
 import { vcsLayerName } from './layerSymbols.js';

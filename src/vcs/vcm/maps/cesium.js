@@ -1,31 +1,33 @@
-import JulianDate from '@vcmap/cesium/Source/Core/JulianDate.js';
-import Clock from '@vcmap/cesium/Source/Core/Clock.js';
-import DataSourceClock from '@vcmap/cesium/Source/DataSources/DataSourceClock.js';
-import Color from '@vcmap/cesium/Source/Core/Color.js';
-import CesiumWidget from '@vcmap/cesium/Source/Widgets/CesiumWidget/CesiumWidget.js';
-import ShadowMode from '@vcmap/cesium/Source/Scene/ShadowMode.js';
-import DataSourceDisplay from '@vcmap/cesium/Source/DataSources/DataSourceDisplay.js';
-import DataSourceCollection from '@vcmap/cesium/Source/DataSources/DataSourceCollection.js';
-import RequestScheduler from '@vcmap/cesium/Source/Core/RequestScheduler.js';
-import Ellipsoid from '@vcmap/cesium/Source/Core/Ellipsoid.js';
-import ScreenSpaceEventHandler from '@vcmap/cesium/Source/Core/ScreenSpaceEventHandler.js';
-import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
-import Ray from '@vcmap/cesium/Source/Core/Ray.js';
-import CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
-import Camera from '@vcmap/cesium/Source/Scene/Camera.js';
-import BillboardVisualizer from '@vcmap/cesium/Source/DataSources/BillboardVisualizer.js';
-import LabelVisualizer from '@vcmap/cesium/Source/DataSources/LabelVisualizer.js';
-import PointVisualizer from '@vcmap/cesium/Source/DataSources/PointVisualizer.js';
-import CustomDataSource from '@vcmap/cesium/Source/DataSources/CustomDataSource.js';
-import BoundingSphere from '@vcmap/cesium/Source/Core/BoundingSphere.js';
-import Intersect from '@vcmap/cesium/Source/Core/Intersect.js';
-import CesiumInspector from '@vcmap/cesium/Source/Widgets/CesiumInspector/CesiumInspector.js';
-import Cesium3DTilesInspector from '@vcmap/cesium/Source/Widgets/Cesium3DTilesInspector/Cesium3DTilesInspector.js';
-import ImageryLayer from '@vcmap/cesium/Source/Scene/ImageryLayer.js';
-import PrimitiveCollection from '@vcmap/cesium/Source/Scene/PrimitiveCollection.js';
-import KeyboardEventModifier from '@vcmap/cesium/Source/Core/KeyboardEventModifier.js';
-import ScreenSpaceEventType from '@vcmap/cesium/Source/Core/ScreenSpaceEventType.js';
-import Cesium3DTileset from '@vcmap/cesium/Source/Scene/Cesium3DTileset.js';
+import {
+  JulianDate,
+  Clock,
+  DataSourceClock,
+  Color,
+  CesiumWidget,
+  ShadowMode,
+  DataSourceDisplay,
+  DataSourceCollection,
+  RequestScheduler,
+  Ellipsoid,
+  ScreenSpaceEventHandler,
+  Cartesian3,
+  Ray,
+  Math as CesiumMath,
+  Camera,
+  BillboardVisualizer,
+  LabelVisualizer,
+  PointVisualizer,
+  CustomDataSource,
+  BoundingSphere,
+  Intersect,
+  CesiumInspector,
+  Cesium3DTilesInspector,
+  ImageryLayer,
+  PrimitiveCollection,
+  KeyboardEventModifier,
+  ScreenSpaceEventType,
+  Cesium3DTileset,
+} from '@vcmap/cesium';
 
 import { check, checkMaybe } from '@vcsuite/check';
 import { parseBoolean, parseInteger } from '@vcsuite/parsers';

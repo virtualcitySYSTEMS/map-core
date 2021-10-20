@@ -1,7 +1,4 @@
-import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
-import Cartesian4 from '@vcmap/cesium/Source/Core/Cartesian4.js';
-import Matrix3 from '@vcmap/cesium/Source/Core/Matrix3.js';
-import Matrix4 from '@vcmap/cesium/Source/Core/Matrix4.js';
+import { Cartesian3, Cartesian4, Matrix3, Matrix4 } from '@vcmap/cesium';
 import { transformCWIFC, getHeightFromTerrainProvider } from './helpers.js';
 
 /**

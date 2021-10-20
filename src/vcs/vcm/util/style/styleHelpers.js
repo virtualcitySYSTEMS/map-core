@@ -3,7 +3,7 @@ import Fill from 'ol/style/Fill.js';
 import Stroke from 'ol/style/Stroke.js';
 import OLText from 'ol/style/Text.js';
 import Style from 'ol/style/Style.js';
-import Color from '@vcmap/cesium/Source/Core/Color.js';
+import { Color } from '@vcmap/cesium';
 
 import { getLogger as getLoggerByName } from '@vcsuite/logger';
 

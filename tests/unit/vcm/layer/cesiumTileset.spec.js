@@ -3,7 +3,7 @@ import Matrix4 from '@vcmap/cesium/Source/Core/Matrix4.js';
 import BoundingSphere from '@vcmap/cesium/Source/Core/BoundingSphere.js';
 import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
 import Circle from 'ol/geom/Circle.js';
-import CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
+import Math as CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
 import Rectangle from '@vcmap/cesium/Source/Core/Rectangle.js';
 import Cesium3DTileFeature from '@vcmap/cesium/Source/Scene/Cesium3DTileFeature.js';
 import CesiumTileset from '../../../../src/vcs/vcm/layer/cesiumTileset.js';

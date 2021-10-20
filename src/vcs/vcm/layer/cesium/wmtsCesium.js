@@ -1,6 +1,4 @@
-import Rectangle from '@vcmap/cesium/Source/Core/Rectangle.js';
-import WebMapTileServiceImageryProvider from '@vcmap/cesium/Source/Scene/WebMapTileServiceImageryProvider.js';
-import CesiumImageryLayer from '@vcmap/cesium/Source/Scene/ImageryLayer.js';
+import { Rectangle, WebMapTileServiceImageryProvider, ImageryLayer as CesiumImageryLayer } from '@vcmap/cesium';
 import RasterLayerCesium from './rasterLayerCesium.js';
 import { wgs84Projection } from '../../util/projection.js';
 import { getTilingScheme } from '../rasterLayer.js';

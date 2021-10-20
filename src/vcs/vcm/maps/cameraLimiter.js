@@ -1,6 +1,4 @@
-import Cartographic from '@vcmap/cesium/Source/Core/Cartographic.js';
-import Ellipsoid from '@vcmap/cesium/Source/Core/Ellipsoid.js';
-import CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
+import { Cartographic, Ellipsoid, Math as CesiumMath } from '@vcmap/cesium';
 import { checkMaybe } from '@vcsuite/check';
 import { parseInteger, parseNumber, parseEnumValue } from '@vcsuite/parsers';
 import {

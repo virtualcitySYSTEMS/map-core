@@ -1,6 +1,4 @@
-import Rectangle from '@vcmap/cesium/Source/Core/Rectangle.js';
-import SingleTileImageryProvider from '@vcmap/cesium/Source/Scene/SingleTileImageryProvider.js';
-import ImageryLayer from '@vcmap/cesium/Source/Scene/ImageryLayer.js';
+import { Rectangle, SingleTileImageryProvider, ImageryLayer } from '@vcmap/cesium';
 import RasterLayerCesium from './rasterLayerCesium.js';
 import { wgs84Projection } from '../../util/projection.js';
 

@@ -12,7 +12,7 @@ import PrimitiveCollection from '@vcmap/cesium/Source/Scene/PrimitiveCollection.
 import Primitive from '@vcmap/cesium/Source/Scene/Primitive.js';
 import GroundPolylinePrimitive from '@vcmap/cesium/Source/Scene/GroundPolylinePrimitive.js';
 import GroundPrimitive from '@vcmap/cesium/Source/Scene/GroundPrimitive.js';
-import CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
+import Math as CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
 import Feature from 'ol/Feature.js';
 import Fill from 'ol/style/Fill.js';
 import circleToCesium, {

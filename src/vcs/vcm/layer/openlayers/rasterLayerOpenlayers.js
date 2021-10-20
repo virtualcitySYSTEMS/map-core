@@ -1,4 +1,4 @@
-import ImagerySplitDirection from '@vcmap/cesium/Source/Scene/ImagerySplitDirection.js';
+import { ImagerySplitDirection } from '@vcmap/cesium';
 import { unByKey } from 'ol/Observable.js';
 import LayerOpenlayers from './layerOpenlayers.js';
 

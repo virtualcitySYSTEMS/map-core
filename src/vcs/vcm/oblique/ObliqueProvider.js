@@ -1,4 +1,4 @@
-import CesiumEvent from '@vcmap/cesium/Source/Core/Event.js';
+import { Event as CesiumEvent } from '@vcmap/cesium';
 import { getTransform, get as getProjection } from 'ol/proj.js';
 import View from 'ol/View.js';
 import { unByKey } from 'ol/Observable.js';

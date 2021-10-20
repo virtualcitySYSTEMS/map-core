@@ -1,7 +1,4 @@
-import Color from '@vcmap/cesium/Source/Core/Color.js';
-import ConditionsExpression from '@vcmap/cesium/Source/Scene/ConditionsExpression.js';
-import Expression from '@vcmap/cesium/Source/Scene/Expression.js';
-import Cesium3DTileStyle from '@vcmap/cesium/Source/Scene/Cesium3DTileStyle.js';
+import { Color, ConditionsExpression, Expression, Cesium3DTileStyle } from '@vcmap/cesium';
 import Style from 'ol/style/Style.js';
 import Stroke from 'ol/style/Stroke.js';
 import Icon from 'ol/style/Icon.js';

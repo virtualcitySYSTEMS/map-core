@@ -1,11 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
-import Rectangle from '@vcmap/cesium/Source/Core/Rectangle.js';
-import CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
+import { Rectangle, Math as CesiumMath, WebMercatorTilingScheme, Cartographic } from '@vcmap/cesium';
 import VectorSource from 'ol/source/Vector.js';
-import WebMercatorTilingScheme from '@vcmap/cesium/Source/Core/WebMercatorTilingScheme.js';
 import LRUCache from 'ol/structs/LRUCache.js';
 import { buffer, createOrUpdateFromCoordinate } from 'ol/extent.js';
-import Cartographic from '@vcmap/cesium/Source/Core/Cartographic.js';
 import { parseBoolean, parseInteger } from '@vcsuite/parsers';
 import {
   mercatorProjection,

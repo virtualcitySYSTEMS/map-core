@@ -1,8 +1,10 @@
-import CustomDataSource from '@vcmap/cesium/Source/DataSources/CustomDataSource.js';
-import BoundingSphereState from '@vcmap/cesium/Source/DataSources/BoundingSphereState.js';
-import BoundingSphere from '@vcmap/cesium/Source/Core/BoundingSphere.js';
-import HeadingPitchRange from '@vcmap/cesium/Source/Core/HeadingPitchRange.js';
-import CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
+import {
+  CustomDataSource,
+  BoundingSphereState,
+  BoundingSphere,
+  HeadingPitchRange,
+  Math as CesiumMath,
+} from '@vcmap/cesium';
 import LayerImplementation from '../layerImplementation.js';
 import { vcsLayerName } from '../layerSymbols.js';
 

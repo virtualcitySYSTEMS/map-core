@@ -1,9 +1,11 @@
-import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
-import Matrix4 from '@vcmap/cesium/Source/Core/Matrix4.js';
-import Plane from '@vcmap/cesium/Source/Core/Plane.js';
-import ClippingPlane from '@vcmap/cesium/Source/Scene/ClippingPlane.js';
-import ClippingPlaneCollection from '@vcmap/cesium/Source/Scene/ClippingPlaneCollection.js';
-import ImagerySplitDirection from '@vcmap/cesium/Source/Scene/ImagerySplitDirection.js';
+import {
+  Cartesian3,
+  Matrix4,
+  Plane,
+  ClippingPlane,
+  ClippingPlaneCollection,
+  ImagerySplitDirection,
+} from '@vcmap/cesium';
 
 import { check } from '@vcsuite/check';
 import CesiumMap from '../maps/cesium.js';

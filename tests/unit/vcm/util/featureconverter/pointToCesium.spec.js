@@ -22,7 +22,7 @@ import PrimitiveCollection from '@vcmap/cesium/Source/Scene/PrimitiveCollection.
 import Billboard from '@vcmap/cesium/Source/Scene/Billboard.js';
 import Label from '@vcmap/cesium/Source/Scene/Label.js';
 import Primitive from '@vcmap/cesium/Source/Scene/Primitive.js';
-import CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
+import Math as CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
 import VectorProperties from '../../../../../src/vcs/vcm/layer/vectorProperties.js';
 import pointToCesium, {
   getCoordinates,

@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import Cartesian2 from '@vcmap/cesium/Source/Core/Cartesian2.js';
+import { Cartesian2 } from '@vcmap/cesium';
 
 import { check, checkMaybe } from '@vcsuite/check';
 import { getLogger as getLoggerByName } from '@vcsuite/logger';

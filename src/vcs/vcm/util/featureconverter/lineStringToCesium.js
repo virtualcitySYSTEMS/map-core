@@ -1,8 +1,4 @@
-import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
-import WallGeometry from '@vcmap/cesium/Source/Core/WallGeometry.js';
-import WallOutlineGeometry from '@vcmap/cesium/Source/Core/WallOutlineGeometry.js';
-import GroundPolylineGeometry from '@vcmap/cesium/Source/Core/GroundPolylineGeometry.js';
-import PolylineGeometry from '@vcmap/cesium/Source/Core/PolylineGeometry.js';
+import { Cartesian3, WallGeometry, WallOutlineGeometry, GroundPolylineGeometry, PolylineGeometry } from '@vcmap/cesium';
 import GeometryType from 'ol/geom/GeometryType.js';
 import { parseNumber } from '@vcsuite/parsers';
 import Projection from '../projection.js';

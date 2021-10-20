@@ -6,7 +6,7 @@ import Cesium3DTile from '@vcmap/cesium/Source/Scene/Cesium3DTile.js';
 import BoundingSphere from '@vcmap/cesium/Source/Core/BoundingSphere.js';
 import Matrix4 from '@vcmap/cesium/Source/Core/Matrix4.js';
 import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
-import CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
+import Math as CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
 import CesiumTileset from '../../../../../src/vcs/vcm/layer/cesiumTileset.js';
 import DeclarativeStyleItem from '../../../../../src/vcs/vcm/util/style/declarativeStyleItem.js';
 import { getFramework } from '../../../helpers/framework.js';

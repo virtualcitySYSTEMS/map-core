@@ -1,4 +1,4 @@
-import Cesium3DTileStyle from '@vcmap/cesium/Source/Scene/Cesium3DTileStyle.js';
+import { Cesium3DTileStyle } from '@vcmap/cesium';
 import CesiumTilesetCesium from './cesiumTilesetCesium.js';
 
 /**

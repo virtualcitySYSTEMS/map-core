@@ -8,7 +8,7 @@ import Stroke from 'ol/style/Stroke.js';
 import GroundPolylineGeometry from '@vcmap/cesium/Source/Core/GroundPolylineGeometry.js';
 import PolylineGeometry from '@vcmap/cesium/Source/Core/PolylineGeometry.js';
 import Cartographic from '@vcmap/cesium/Source/Core/Cartographic.js';
-import CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
+import Math as CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
 import PolygonHierarchy from '@vcmap/cesium/Source/Core/PolygonHierarchy.js';
 import Feature from 'ol/Feature.js';
 import Fill from 'ol/style/Fill.js';

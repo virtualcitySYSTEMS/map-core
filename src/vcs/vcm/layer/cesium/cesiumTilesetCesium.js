@@ -1,11 +1,13 @@
-import Composite3DTileContent from '@vcmap/cesium/Source/Scene/Composite3DTileContent.js';
-import Cesium3DTileset from '@vcmap/cesium/Source/Scene/Cesium3DTileset.js';
-import Cesium3DTileColorBlendMode from '@vcmap/cesium/Source/Scene/Cesium3DTileColorBlendMode.js';
-import Matrix4 from '@vcmap/cesium/Source/Core/Matrix4.js';
-import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
-import Cartographic from '@vcmap/cesium/Source/Core/Cartographic.js';
-import Rectangle from '@vcmap/cesium/Source/Core/Rectangle.js';
-import CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
+import {
+  Composite3DTileContent,
+  Cesium3DTileset,
+  Cesium3DTileColorBlendMode,
+  Matrix4,
+  Cartesian3,
+  Cartographic,
+  Rectangle,
+  Math as CesiumMath,
+} from '@vcmap/cesium';
 import { createEmpty } from 'ol/extent.js';
 import LayerImplementation from '../layerImplementation.js';
 import { vcsLayerName } from '../layerSymbols.js';

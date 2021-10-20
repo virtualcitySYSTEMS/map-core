@@ -2,7 +2,7 @@ import LineString from 'ol/geom/LineString.js';
 import Polygon from 'ol/geom/Polygon.js';
 import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
 import Cartographic from '@vcmap/cesium/Source/Core/Cartographic.js';
-import CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
+import Math as CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
 import Style from 'ol/style/Style.js';
 import PolylineGeometry from '@vcmap/cesium/Source/Core/PolylineGeometry.js';
 import Stroke from 'ol/style/Stroke.js';

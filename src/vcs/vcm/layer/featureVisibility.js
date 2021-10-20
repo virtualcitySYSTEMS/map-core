@@ -1,7 +1,4 @@
-import Color from '@vcmap/cesium/Source/Core/Color.js';
-import Cesium3DTileFeature from '@vcmap/cesium/Source/Scene/Cesium3DTileFeature.js';
-import Cesium3DTilePointFeature from '@vcmap/cesium/Source/Scene/Cesium3DTilePointFeature.js';
-import CesiumEntity from '@vcmap/cesium/Source/DataSources/Entity.js';
+import { Color, Cesium3DTileFeature, Cesium3DTilePointFeature, Entity as CesiumEntity } from '@vcmap/cesium';
 import Feature from 'ol/Feature.js';
 import Style from 'ol/style/Style.js';
 

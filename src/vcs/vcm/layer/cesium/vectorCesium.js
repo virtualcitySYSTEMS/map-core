@@ -1,5 +1,5 @@
 import { unByKey } from 'ol/Observable.js';
-import PrimitiveCollection from '@vcmap/cesium/Source/Scene/PrimitiveCollection.js';
+import { PrimitiveCollection } from '@vcmap/cesium';
 
 import convert from '../../util/featureconverter/convert.js';
 import VectorContext from './vectorContext.js';

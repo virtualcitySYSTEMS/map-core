@@ -1,20 +1,22 @@
 import { getBottomLeft } from 'ol/extent.js';
-import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
-import HeightReference from '@vcmap/cesium/Source/Scene/HeightReference.js';
-import ColorGeometryInstanceAttribute from '@vcmap/cesium/Source/Core/ColorGeometryInstanceAttribute.js';
-import GeometryInstance from '@vcmap/cesium/Source/Core/GeometryInstance.js';
-import Material from '@vcmap/cesium/Source/Scene/Material.js';
-import SceneTransforms from '@vcmap/cesium/Source/Scene/SceneTransforms.js';
-import MaterialAppearance from '@vcmap/cesium/Source/Scene/MaterialAppearance.js';
-import ClassificationType from '@vcmap/cesium/Source/Scene/ClassificationType.js';
-import PerInstanceColorAppearance from '@vcmap/cesium/Source/Scene/PerInstanceColorAppearance.js';
-import GroundPrimitive from '@vcmap/cesium/Source/Scene/GroundPrimitive.js';
-import GroundPolylinePrimitive from '@vcmap/cesium/Source/Scene/GroundPolylinePrimitive.js';
-import ClassificationPrimitive from '@vcmap/cesium/Source/Scene/ClassificationPrimitive.js';
-import ShadowMode from '@vcmap/cesium/Source/Scene/ShadowMode.js';
-import Primitive from '@vcmap/cesium/Source/Scene/Primitive.js';
-import Color from '@vcmap/cesium/Source/Core/Color.js';
-import PolylineMaterialAppearance from '@vcmap/cesium/Source/Scene/PolylineMaterialAppearance.js';
+import {
+  Cartesian3,
+  HeightReference,
+  ColorGeometryInstanceAttribute,
+  GeometryInstance,
+  Material,
+  SceneTransforms,
+  MaterialAppearance,
+  ClassificationType,
+  PerInstanceColorAppearance,
+  GroundPrimitive,
+  GroundPolylinePrimitive,
+  ClassificationPrimitive,
+  ShadowMode,
+  Primitive,
+  Color,
+  PolylineMaterialAppearance,
+} from '@vcmap/cesium';
 import { parseInteger, parseNumber } from '@vcsuite/parsers';
 import { getCesiumColor } from '../style/styleHelpers.js';
 

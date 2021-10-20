@@ -1,4 +1,4 @@
-import ImagerySplitDirection from '@vcmap/cesium/Source/Scene/ImagerySplitDirection.js';
+import { ImagerySplitDirection } from '@vcmap/cesium';
 
 import { parseNumberRange, parseInteger } from '@vcsuite/parsers';
 import Layer from './layer.js';

@@ -1,8 +1,5 @@
 import deepEqual from 'fast-deep-equal';
-import HeightReference from '@vcmap/cesium/Source/Scene/HeightReference.js';
-import ClassificationType from '@vcmap/cesium/Source/Scene/ClassificationType.js';
-import NearFarScalar from '@vcmap/cesium/Source/Core/NearFarScalar.js';
-import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
+import { HeightReference, ClassificationType, NearFarScalar, Cartesian3 } from '@vcmap/cesium';
 import { check, checkMaybe } from '@vcsuite/check';
 import { parseBoolean, parseEnumKey, parseNumber, parseInteger } from '@vcsuite/parsers';
 import { getLogger as getLoggerByName } from '@vcsuite/logger';

@@ -1,6 +1,4 @@
-import Cartographic from '@vcmap/cesium/Source/Core/Cartographic.js';
-import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
-import CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
+import { Cartographic, Cartesian3, Math as CesiumMath } from '@vcmap/cesium';
 import AbstractInteraction from './abstractInteraction.js';
 import Projection, { mercatorProjection } from '../util/projection.js';
 import { EventType, ModificationKeyType } from './interactionType.js';
