@@ -45,6 +45,31 @@ function parseEPSGCode(value, prefix = 'EPSG:') {
 
 /**
  * @param {vcs.vcm.util.Projection.Options} options
+ * @returns {boolean}
+ */
+function validateProjectionOptions(options) {
+  let proj = null;
+  if (options.epsg) {
+    try {
+      // @ts-ignore
+      proj = proj4(parseEPSGCode(options.epsg));
+    } catch (error) {
+      proj = null;
+    }
+  }
+  if (options.proj4) {
+    try {
+      // @ts-ignore
+      proj = proj4(options.proj4);
+    } catch (error) {
+      proj = null;
+    }
+  }
+  return proj != null;
+}
+
+/**
+ * @param {vcs.vcm.util.Projection.Options} options
  * @returns {vcs.vcm.util.Projection.Options} valid options
  */
 function registerProjection(options) {
@@ -80,6 +105,9 @@ function registerProjection(options) {
  */
 export function setDefaultProjectionOptions(options) {
   check(options, { epsg: [String, Number], proj4: [String, undefined, null] });
+  if (!validateProjectionOptions(options)) {
+    throw new Error('Cannot set invalid projection options as default options');
+  }
   defaultProjectionOption = registerProjection(options);
 }
 
@@ -276,24 +304,7 @@ class Projection {
    * @api
    */
   static validateOptions(options) {
-    let proj = null;
-    if (options.epsg) {
-      try {
-        // @ts-ignore
-        proj = proj4(Projection.parseEPSGCode(options.epsg));
-      } catch (error) {
-        proj = null;
-      }
-    }
-    if (options.proj4) {
-      try {
-        // @ts-ignore
-        proj = proj4(options.proj4);
-      } catch (error) {
-        proj = null;
-      }
-    }
-    return proj != null;
+    return validateProjectionOptions(options);
   }
 
   /**
