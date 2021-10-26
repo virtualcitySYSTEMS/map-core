@@ -73,23 +73,22 @@ function validateProjectionOptions(options) {
  * @returns {vcs.vcm.util.Projection.Options} valid options
  */
 function registerProjection(options) {
-  const saneOptions = { ...options };
-  if (saneOptions.epsg) {
-    saneOptions.epsg = parseEPSGCode(saneOptions.epsg);
+  const saneOptions = {};
+  if (options.epsg) {
+    saneOptions.epsg = parseEPSGCode(options.epsg);
     if (saneOptions.epsg) {
-      if (saneOptions.proj4) {
-        proj4.defs(saneOptions.epsg, saneOptions.proj4);
+      if (options.proj4) {
+        saneOptions.proj4 = options.proj4;
+        proj4.defs(saneOptions.epsg, options.proj4);
         register(proj4);
       }
-      if (saneOptions.alias && Array.isArray(saneOptions.alias)) {
-        const aliasArray = saneOptions.alias;
-        aliasArray.forEach((alias) => {
+      if (options.alias && Array.isArray(options.alias)) {
+        saneOptions.alias = options.alias;
+        saneOptions.alias.forEach((alias) => {
           proj4.defs(alias, proj4.defs(saneOptions.epsg));
           register(proj4);
-        }, this);
+        });
       }
-    } else {
-      delete saneOptions.epsg;
     }
   }
   return saneOptions;
