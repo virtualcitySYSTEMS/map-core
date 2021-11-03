@@ -2,7 +2,7 @@
   "name": "@vcmap/core",
   "version": "5.0.0-rc.0",
   "description": "",
-  "module": "index.js",
+  "main": "index.js",
   "type": "module",
   "scripts": {
     "test": "node --experimental-json-modules node_modules/mocha/bin/_mocha --exit --require tests/setupJsdom.js --require tests/setup.js --file tests/vcs.js --recursive \"tests/**/*spec.js\"",
@@ -62,6 +62,10 @@
       ]
     }
   },
+  "eslintIgnore": [
+    "node_modules",
+    "coverage"
+  ],
   "dependencies": {
     "@vcsuite/check": "^1.0.2",
     "@vcsuite/logger": "^1.0.0",
