@@ -1,5 +1,4 @@
-import ClassificationType from '@vcmap/cesium/Source/Scene/ClassificationType.js';
-import HeightReference from '@vcmap/cesium/Source/Scene/HeightReference.js';
+import { ClassificationType, HeightReference } from '@vcmap/cesium';
 import Feature from 'ol/Feature.js';
 import { fromExtent } from 'ol/geom/Polygon.js';
 import Point from 'ol/geom/Point.js';

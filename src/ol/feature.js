@@ -34,5 +34,14 @@ Feature.prototype.getProperty = function getProperty(property) {
   return this.get(property);
 };
 
+/**
+ * To be used for cesium 3D style functions
+ * @param {string} property
+ * @returns {*}
+ */
+Feature.prototype.getPropertyInherited = function getPropertyInherited(property) {
+  return this.getProperty(property);
+};
+
 // TODO implement getExactClassName, isClass & isExactClass
 // TODO implement feature.content.tileset.timeSinceLoad

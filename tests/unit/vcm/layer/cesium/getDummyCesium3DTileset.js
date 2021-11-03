@@ -1,9 +1,11 @@
-import CesiumEvent from '@vcmap/cesium/Source/Core/Event.js';
-import Cesium3DTileColorBlendMode from '@vcmap/cesium/Source/Scene/Cesium3DTileColorBlendMode.js';
-import BoundingSphere from '@vcmap/cesium/Source/Core/BoundingSphere.js';
-import Matrix4 from '@vcmap/cesium/Source/Core/Matrix4.js';
-import ClippingPlaneCollection from '@vcmap/cesium/Source/Scene/ClippingPlaneCollection.js';
-import ActualCesium3DTileset from '@vcmap/cesium/Source/Scene/Cesium3DTileset.js';
+import {
+  Event as CesiumEvent,
+  Cesium3DTileColorBlendMode,
+  BoundingSphere,
+  Matrix4,
+  ClippingPlaneCollection,
+  Cesium3DTileset as ActualCesium3DTileset,
+} from '@vcmap/cesium';
 
 class Cesium3DTileset {
   constructor() {

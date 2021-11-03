@@ -1,4 +1,4 @@
-import CesiumTerrainProvider from '@vcmap/cesium/Source/Core/CesiumTerrainProvider.js';
+import { CesiumTerrainProvider } from '@vcmap/cesium';
 import { getTerrainProviderForUrl } from '../../../../src/vcs/vcm/layer/terrainHelpers.js';
 
 describe('terrainHelpers', () => {

@@ -1,4 +1,4 @@
-import Entity from '@vcmap/cesium/Source/DataSources/Entity.js';
+import { Entity } from '@vcmap/cesium';
 import { setCesiumMap } from '../../../helpers/cesiumHelpers.js';
 import { getFramework } from '../../../helpers/framework.js';
 import resetFramework from '../../../helpers/resetFramework.js';

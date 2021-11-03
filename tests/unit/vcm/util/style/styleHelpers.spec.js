@@ -1,4 +1,4 @@
-import Color from '@vcmap/cesium/Source/Core/Color.js';
+import { Color } from '@vcmap/cesium';
 import {
   cesiumColorToColor,
   hexToOlColor,

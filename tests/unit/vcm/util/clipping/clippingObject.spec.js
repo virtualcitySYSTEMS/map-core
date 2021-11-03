@@ -1,5 +1,4 @@
-import Entity from '@vcmap/cesium/Source/DataSources/Entity.js';
-import ClippingPlaneCollection from '@vcmap/cesium/Source/Scene/ClippingPlaneCollection.js';
+import { Entity, ClippingPlaneCollection } from '@vcmap/cesium';
 import ClippingObject from '../../../../../src/vcs/vcm/util/clipping/clippingObject.js';
 import { getFramework } from '../../../helpers/framework.js';
 import Vector from '../../../../../src/vcs/vcm/layer/vector.js';

@@ -1,4 +1,4 @@
-import ImagerySplitDirection from '@vcmap/cesium/Source/Scene/ImagerySplitDirection.js';
+import { ImagerySplitDirection } from '@vcmap/cesium';
 import ExclusiveManager from '../../../src/vcs/vcm/util/exclusiveManager.js';
 import OpenStreetMap from '../../../src/vcs/vcm/layer/openStreetMap.js';
 import LayerState from '../../../src/vcs/vcm/layer/layerState.js';

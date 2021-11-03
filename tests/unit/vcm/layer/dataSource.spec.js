@@ -1,5 +1,5 @@
-import CesiumEntity from '@vcmap/cesium/Source/DataSources/Entity.js';
-import { getInstance as getGlobalHider } from '../../../../src/vcs/vcm/layer/globalHider.js';
+import { Entity as CesiumEntity } from '@vcmap/cesium';
+import { getGlobalHider } from '../../../../src/vcs/vcm/layer/globalHider.js';
 import DataSource from '../../../../src/vcs/vcm/layer/dataSource.js';
 import { vcsLayerName } from '../../../../src/vcs/vcm/layer/layerSymbols.js';
 

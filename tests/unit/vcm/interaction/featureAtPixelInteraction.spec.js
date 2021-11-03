@@ -1,8 +1,5 @@
-import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
+import { Cartesian3, Cartesian2, Clock, JulianDate } from '@vcmap/cesium';
 import Feature from 'ol/Feature.js';
-import Cartesian2 from '@vcmap/cesium/Source/Core/Cartesian2.js';
-import Clock from '@vcmap/cesium/Source/Core/Clock.js';
-import JulianDate from '@vcmap/cesium/Source/Core/JulianDate.js';
 import FeatureAtPixel from '../../../../src/vcs/vcm/interaction/featureAtPixelInteraction.js';
 import Openlayers from '../../../../src/vcs/vcm/maps/openlayers.js';
 import Layer from '../../../../src/vcs/vcm/layer/layer.js';

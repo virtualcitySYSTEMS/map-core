@@ -1,4 +1,4 @@
-import Cartesian2 from '@vcmap/cesium/Source/Core/Cartesian2.js';
+import { Cartesian2 } from '@vcmap/cesium';
 import EventHandler from '../../../../src/vcs/vcm/interaction/eventHandler.js';
 import AbstractInteraction from '../../../../src/vcs/vcm/interaction/abstractInteraction.js';
 import InteractionChain from '../../../../src/vcs/vcm/interaction/interactionChain.js';

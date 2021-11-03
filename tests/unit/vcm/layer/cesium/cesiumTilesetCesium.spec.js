@@ -1,12 +1,14 @@
-import Cesium3DTileset from '@vcmap/cesium/Source/Scene/Cesium3DTileset.js';
-import Cesium3DTileColorBlendMode from '@vcmap/cesium/Source/Scene/Cesium3DTileColorBlendMode.js';
-import ImagerySplitDirection from '@vcmap/cesium/Source/Scene/ImagerySplitDirection.js';
-import Composite3DTileContent from '@vcmap/cesium/Source/Scene/Composite3DTileContent.js';
-import Cesium3DTile from '@vcmap/cesium/Source/Scene/Cesium3DTile.js';
-import BoundingSphere from '@vcmap/cesium/Source/Core/BoundingSphere.js';
-import Matrix4 from '@vcmap/cesium/Source/Core/Matrix4.js';
-import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
-import Math as CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
+import {
+  Cesium3DTileset,
+  Cesium3DTileColorBlendMode,
+  ImagerySplitDirection,
+  Composite3DTileContent,
+  Cesium3DTile,
+  BoundingSphere,
+  Matrix4,
+  Cartesian3,
+  Math as CesiumMath,
+} from '@vcmap/cesium';
 import CesiumTileset from '../../../../../src/vcs/vcm/layer/cesiumTileset.js';
 import DeclarativeStyleItem from '../../../../../src/vcs/vcm/util/style/declarativeStyleItem.js';
 import { getFramework } from '../../../helpers/framework.js';

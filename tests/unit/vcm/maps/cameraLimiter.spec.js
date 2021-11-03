@@ -1,5 +1,4 @@
-import Cartographic from '@vcmap/cesium/Source/Core/Cartographic.js';
-import Ellipsoid from '@vcmap/cesium/Source/Core/Ellipsoid.js';
+import { Cartographic, Ellipsoid } from '@vcmap/cesium';
 import { setCesiumMap } from '../../helpers/cesiumHelpers.js';
 import { getFramework } from '../../helpers/framework.js';
 import CameraLimiter, { Mode } from '../../../../src/vcs/vcm/maps/cameraLimiter.js';

@@ -1,5 +1,5 @@
 import Layer from 'ol/layer/Layer.js';
-import ImagerySplitDirection from '@vcmap/cesium/Source/Scene/ImagerySplitDirection.js';
+import { ImagerySplitDirection } from '@vcmap/cesium';
 import AbstractRasterLayerOL from '../../../../../src/vcs/vcm/layer/openlayers/rasterLayerOpenlayers.js';
 import { getFramework } from '../../../helpers/framework.js';
 import RasterLayer from '../../../../../src/vcs/vcm/layer/rasterLayer.js';

@@ -1,18 +1,20 @@
 import Feature from 'ol/Feature.js';
 import Polygon from 'ol/geom/Polygon.js';
 import LineString from 'ol/geom/LineString.js';
-import ClassificationType from '@vcmap/cesium/Source/Scene/ClassificationType.js';
-import Primitive from '@vcmap/cesium/Source/Scene/Primitive.js';
+import {
+  ClassificationType,
+  Primitive,
+  ClassificationPrimitive,
+  HeightReference,
+  GroundPrimitive,
+  Color,
+  PerInstanceColorAppearance,
+  GroundPolylinePrimitive,
+  PolylineMaterialAppearance,
+} from '@vcmap/cesium';
 import Fill from 'ol/style/Fill.js';
-import ClassificationPrimitive from '@vcmap/cesium/Source/Scene/ClassificationPrimitive.js';
-import HeightReference from '@vcmap/cesium/Source/Scene/HeightReference.js';
 import Style from 'ol/style/Style.js';
-import GroundPrimitive from '@vcmap/cesium/Source/Scene/GroundPrimitive.js';
-import Color from '@vcmap/cesium/Source/Core/Color.js';
 import Stroke from 'ol/style/Stroke.js';
-import PerInstanceColorAppearance from '@vcmap/cesium/Source/Scene/PerInstanceColorAppearance.js';
-import GroundPolylinePrimitive from '@vcmap/cesium/Source/Scene/GroundPolylinePrimitive.js';
-import PolylineMaterialAppearance from '@vcmap/cesium/Source/Scene/PolylineMaterialAppearance.js';
 import {
   createClassificationPrimitive,
   createLinePrimitive,

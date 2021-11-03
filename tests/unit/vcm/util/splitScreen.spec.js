@@ -1,5 +1,4 @@
-import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
-import ImagerySplitDirection from '@vcmap/cesium/Source/Scene/ImagerySplitDirection.js';
+import { Cartesian3, ImagerySplitDirection } from '@vcmap/cesium';
 import { getFramework } from '../../helpers/framework.js';
 import { createInitializedTilesetLayer, getCesiumEventSpy, setCesiumMap } from '../../helpers/cesiumHelpers.js';
 import { setOpenlayersMap } from '../../helpers/openlayers.js';

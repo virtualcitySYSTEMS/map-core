@@ -5,24 +5,26 @@ import Style from 'ol/style/Style.js';
 import RegularShape from 'ol/style/RegularShape.js';
 import TextStyle from 'ol/style/Text.js';
 import Icon from 'ol/style/Icon.js';
-import HeightReference from '@vcmap/cesium/Source/Scene/HeightReference.js';
-import VerticalOrigin from '@vcmap/cesium/Source/Scene/VerticalOrigin.js';
-import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
-import Cartographic from '@vcmap/cesium/Source/Core/Cartographic.js';
-import Color from '@vcmap/cesium/Source/Core/Color.js';
-import Cartesian2 from '@vcmap/cesium/Source/Core/Cartesian2.js';
-import Matrix4 from '@vcmap/cesium/Source/Core/Matrix4.js';
-import HorizontalOrigin from '@vcmap/cesium/Source/Scene/HorizontalOrigin.js';
-import Model from '@vcmap/cesium/Source/Scene/Model.js';
+import {
+  HeightReference,
+  VerticalOrigin,
+  Cartesian3,
+  Cartographic,
+  Color,
+  Cartesian2,
+  Matrix4,
+  HorizontalOrigin,
+  Model,
+  LabelStyle,
+  PolylineGeometry,
+  PrimitiveCollection,
+  Billboard,
+  Label,
+  Primitive,
+  Math as CesiumMath,
+} from '@vcmap/cesium';
 import Fill from 'ol/style/Fill.js';
 import Stroke from 'ol/style/Stroke.js';
-import LabelStyle from '@vcmap/cesium/Source/Scene/LabelStyle.js';
-import PolylineGeometry from '@vcmap/cesium/Source/Core/PolylineGeometry.js';
-import PrimitiveCollection from '@vcmap/cesium/Source/Scene/PrimitiveCollection.js';
-import Billboard from '@vcmap/cesium/Source/Scene/Billboard.js';
-import Label from '@vcmap/cesium/Source/Scene/Label.js';
-import Primitive from '@vcmap/cesium/Source/Scene/Primitive.js';
-import Math as CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
 import VectorProperties from '../../../../../src/vcs/vcm/layer/vectorProperties.js';
 import pointToCesium, {
   getCoordinates,

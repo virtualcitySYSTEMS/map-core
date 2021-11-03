@@ -1,13 +1,15 @@
-import PrimitiveCollection from '@vcmap/cesium/Source/Scene/PrimitiveCollection.js';
-import ImageryLayer from '@vcmap/cesium/Source/Scene/ImageryLayer.js';
-import SingleTileImageryProvider from '@vcmap/cesium/Source/Scene/SingleTileImageryProvider.js';
-import Math as CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
-import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
-import Cartographic from '@vcmap/cesium/Source/Core/Cartographic.js';
-import CustomDataSource from '@vcmap/cesium/Source/DataSources/CustomDataSource.js';
-import DataSourceClock from '@vcmap/cesium/Source/DataSources/DataSourceClock.js';
-import Clock from '@vcmap/cesium/Source/Core/Clock.js';
-import JulianDate from '@vcmap/cesium/Source/Core/JulianDate.js';
+import {
+  PrimitiveCollection,
+  ImageryLayer,
+  SingleTileImageryProvider,
+  Math as CesiumMath,
+  Cartesian3,
+  Cartographic,
+  CustomDataSource,
+  DataSourceClock,
+  Clock,
+  JulianDate,
+} from '@vcmap/cesium';
 
 import Layer from '../../../../src/vcs/vcm/layer/layer.js';
 import { vcsLayerName } from '../../../../src/vcs/vcm/layer/layerSymbols.js';

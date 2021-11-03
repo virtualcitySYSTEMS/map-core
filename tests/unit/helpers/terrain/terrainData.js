@@ -1,5 +1,5 @@
 import fs from 'fs';
-import CesiumTerrainProvider from '@vcmap/cesium/Source/Core/CesiumTerrainProvider.js';
+import { CesiumTerrainProvider } from '@vcmap/cesium';
 import layerJSON from '../../../data/terrain/layer.json';
 
 const terrainFiles = {

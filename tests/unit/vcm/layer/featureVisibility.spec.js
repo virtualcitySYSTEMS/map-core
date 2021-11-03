@@ -1,4 +1,4 @@
-import Color from '@vcmap/cesium/Source/Core/Color.js';
+import { Color } from '@vcmap/cesium';
 import Fill from 'ol/style/Fill.js';
 import Style from 'ol/style/Style.js';
 import OpenlayersText from 'ol/style/Text.js';

@@ -2,19 +2,21 @@ import LineString from 'ol/geom/LineString.js';
 import { getCenter, getSize } from 'ol/extent.js';
 import Polygon from 'ol/geom/Polygon.js';
 import Feature from 'ol/Feature.js';
-import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
+import {
+  Cartesian3,
+  ClippingPlaneCollection,
+  ClippingPlane,
+  Matrix4,
+  Color,
+  ConstantProperty,
+  Entity,
+  Globe,
+  Cesium3DTileset,
+  Plane,
+  Matrix3,
+  JulianDate,
+} from '@vcmap/cesium';
 import { Point } from 'ol/geom.js';
-import ClippingPlaneCollection from '@vcmap/cesium/Source/Scene/ClippingPlaneCollection.js';
-import ClippingPlane from '@vcmap/cesium/Source/Scene/ClippingPlane.js';
-import Matrix4 from '@vcmap/cesium/Source/Core/Matrix4.js';
-import Color from '@vcmap/cesium/Source/Core/Color.js';
-import ConstantProperty from '@vcmap/cesium/Source/DataSources/ConstantProperty.js';
-import Entity from '@vcmap/cesium/Source/DataSources/Entity.js';
-import Globe from '@vcmap/cesium/Source/Scene/Globe.js';
-import Cesium3DTileset from '@vcmap/cesium/Source/Scene/Cesium3DTileset.js';
-import Plane from '@vcmap/cesium/Source/Core/Plane.js';
-import Matrix3 from '@vcmap/cesium/Source/Core/Matrix3.js';
-import JulianDate from '@vcmap/cesium/Source/Core/JulianDate.js';
 import {
   clearClippingPlanes,
   copyClippingPlanesToCollection,

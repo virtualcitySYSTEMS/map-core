@@ -1,6 +1,5 @@
 import Feature from 'ol/Feature.js';
-import Primitive from '@vcmap/cesium/Source/Scene/Primitive.js';
-import PrimitiveCollection from '@vcmap/cesium/Source/Scene/PrimitiveCollection.js';
+import { Primitive, PrimitiveCollection } from '@vcmap/cesium';
 import VectorContext, { addPrimitiveToContext, setReferenceForPicking } from '../../../../../src/vcs/vcm/layer/cesium/vectorContext.js';
 import { getMockScene } from '../../../helpers/cesiumHelpers.js';
 

@@ -1,18 +1,20 @@
 import Circle from 'ol/geom/Circle.js';
 import Point from 'ol/geom/Point.js';
-import Cartesian3 from '@vcmap/cesium/Source/Core/Cartesian3.js';
-import CircleGeometry from '@vcmap/cesium/Source/Core/CircleGeometry.js';
-import CircleOutlineGeometry from '@vcmap/cesium/Source/Core/CircleOutlineGeometry.js';
+import {
+  Cartesian3,
+  CircleGeometry,
+  CircleOutlineGeometry,
+  GroundPolylineGeometry,
+  PolylineGeometry,
+  Cartographic,
+  PrimitiveCollection,
+  Primitive,
+  GroundPolylinePrimitive,
+  GroundPrimitive,
+  Math as CesiumMath,
+} from '@vcmap/cesium';
 import Style from 'ol/style/Style.js';
 import Stroke from 'ol/style/Stroke.js';
-import GroundPolylineGeometry from '@vcmap/cesium/Source/Core/GroundPolylineGeometry.js';
-import PolylineGeometry from '@vcmap/cesium/Source/Core/PolylineGeometry.js';
-import Cartographic from '@vcmap/cesium/Source/Core/Cartographic.js';
-import PrimitiveCollection from '@vcmap/cesium/Source/Scene/PrimitiveCollection.js';
-import Primitive from '@vcmap/cesium/Source/Scene/Primitive.js';
-import GroundPolylinePrimitive from '@vcmap/cesium/Source/Scene/GroundPolylinePrimitive.js';
-import GroundPrimitive from '@vcmap/cesium/Source/Scene/GroundPrimitive.js';
-import Math as CesiumMath from '@vcmap/cesium/Source/Core/Math.js';
 import Feature from 'ol/Feature.js';
 import Fill from 'ol/style/Fill.js';
 import circleToCesium, {

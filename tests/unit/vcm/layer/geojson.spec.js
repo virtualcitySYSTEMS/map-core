@@ -1,5 +1,5 @@
 import Feature from 'ol/Feature.js';
-import ClassificationType from '@vcmap/cesium/Source/Scene/ClassificationType.js';
+import { ClassificationType } from '@vcmap/cesium';
 import GeoJSON, { featureFromOptions } from '../../../../src/vcs/vcm/layer/geojson.js';
 import testGeoJSON from './testGeoJSON.json';
 import resetFramework from '../../helpers/resetFramework.js';
