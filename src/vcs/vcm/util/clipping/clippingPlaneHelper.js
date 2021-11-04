@@ -67,7 +67,7 @@ function createHorizontalPlanes(feature, coords, options) {
   let max = Number.isFinite(extent[5]) ? extent[5] : 0;
   const extruded = feature.get('olcs_extrudedHeight');
   if (extruded) {
-    max = extruded;
+    max += extruded;
     if (feature.get('olcs_skirt')) {
       min -= feature.get('olcs_skirt');
     }

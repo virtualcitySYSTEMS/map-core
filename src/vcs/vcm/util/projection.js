@@ -31,6 +31,70 @@ let defaultProjectionOption = {
 };
 
 /**
+ * @param {string} value
+ * @param {string=} [prefix="EPSG:"]
+ * @returns {string}
+ */
+function parseEPSGCode(value, prefix = 'EPSG:') {
+  const matches = `${value}`.match(/^(?:epsg:)?(\d+)/i);
+  if (matches && matches[1]) {
+    return `${prefix}${matches[1]}`;
+  }
+  return '';
+}
+
+/**
+ * @param {vcs.vcm.util.Projection.Options} options
+ * @returns {boolean}
+ */
+function validateProjectionOptions(options) {
+  let proj = null;
+  if (options.epsg) {
+    try {
+      // @ts-ignore
+      proj = proj4(parseEPSGCode(options.epsg));
+    } catch (error) {
+      proj = null;
+    }
+  }
+  if (options.proj4) {
+    try {
+      // @ts-ignore
+      proj = proj4(options.proj4);
+    } catch (error) {
+      proj = null;
+    }
+  }
+  return proj != null;
+}
+
+/**
+ * @param {vcs.vcm.util.Projection.Options} options
+ * @returns {vcs.vcm.util.Projection.Options} valid options
+ */
+function registerProjection(options) {
+  const saneOptions = {};
+  if (options.epsg) {
+    saneOptions.epsg = parseEPSGCode(options.epsg);
+    if (saneOptions.epsg) {
+      if (options.proj4) {
+        saneOptions.proj4 = options.proj4;
+        proj4.defs(saneOptions.epsg, options.proj4);
+        register(proj4);
+      }
+      if (options.alias && Array.isArray(options.alias)) {
+        saneOptions.alias = options.alias;
+        saneOptions.alias.forEach((alias) => {
+          proj4.defs(alias, proj4.defs(saneOptions.epsg));
+          register(proj4);
+        });
+      }
+    }
+  }
+  return saneOptions;
+}
+
+/**
  * Set the default projections epsg and proj4. Does not update
  * projection created prior to this functions call.
  * @param {vcs.vcm.util.Projection.Options} options
@@ -40,8 +104,10 @@ let defaultProjectionOption = {
  */
 export function setDefaultProjectionOptions(options) {
   check(options, { epsg: [String, Number], proj4: [String, undefined, null] });
-
-  defaultProjectionOption = { ...options };
+  if (!validateProjectionOptions(options)) {
+    throw new Error('Cannot set invalid projection options as default options');
+  }
+  defaultProjectionOption = registerProjection(options);
 }
 
 /**
@@ -63,36 +129,18 @@ class Projection {
    * @param {vcs.vcm.util.Projection.Options} options
    */
   constructor(options = {}) {
+    const saneOptions = registerProjection(options);
     /**
      * @type {string|null}
      * @private
      */
-    this._proj4 = null;
-
-    let epsgCode = '';
-    if (options.epsg) {
-      epsgCode = Projection.parseEPSGCode(options.epsg);
-      if (epsgCode) {
-        if (options.proj4) {
-          this._proj4 = options.proj4;
-          proj4.defs(epsgCode, options.proj4);
-          register(proj4);
-        }
-        if (options.alias && Array.isArray(options.alias)) {
-          const aliasArray = options.alias;
-          aliasArray.forEach((alias) => {
-            proj4.defs(alias, proj4.defs(epsgCode));
-            register(proj4);
-          }, this);
-        }
-      }
-    }
+    this._proj4 = saneOptions.proj4;
 
     /**
      * @type {string}
      * @private
      */
-    this._epsg = epsgCode;
+    this._epsg = saneOptions.epsg;
 
     if (!this.proj) {
       this._epsg = Projection.parseEPSGCode(defaultProjectionOption.epsg);
@@ -255,24 +303,7 @@ class Projection {
    * @api
    */
   static validateOptions(options) {
-    let proj = null;
-    if (options.epsg) {
-      try {
-        // @ts-ignore
-        proj = proj4(Projection.parseEPSGCode(options.epsg));
-      } catch (error) {
-        proj = null;
-      }
-    }
-    if (options.proj4) {
-      try {
-        // @ts-ignore
-        proj = proj4(options.proj4);
-      } catch (error) {
-        proj = null;
-      }
-    }
-    return proj != null;
+    return validateProjectionOptions(options);
   }
 
   /**
@@ -287,11 +318,7 @@ class Projection {
    * @api
    */
   static parseEPSGCode(value, prefix = 'EPSG:') {
-    const matches = `${value}`.match(/^(?:epsg:)?(\d+)/i);
-    if (matches && matches[1]) {
-      return `${prefix}${matches[1]}`;
-    }
-    return '';
+    return parseEPSGCode(value, prefix);
   }
 }
 
