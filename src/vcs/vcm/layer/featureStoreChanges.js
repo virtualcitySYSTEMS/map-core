@@ -44,8 +44,7 @@ class FeatureStoreChanges extends VcsObject {
 
     /** @type {vcs.vcm.layer.FeatureStore} */
     this.layer = layer;
-    /**
-     * @type {vcs.vcm.layer.FeatureStore.FeatureStoreChanges.Listeners} */
+    /** @type {vcs.vcm.layer.FeatureStore.FeatureStoreChanges.Listeners} */
     this._changesListeners = {
       addfeature: null,
       changefeature: null,

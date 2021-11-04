@@ -490,7 +490,6 @@ class TileProvider extends VcsObject {
    *     const { features } = vcs.vcm.layer.GeoJSON.parseGeoJSON(data.data, { dynamicStyle: true });
    *     return features;
    *   });
-   *
    * @param {number} x
    * @param {number} y
    * @param {number} z
