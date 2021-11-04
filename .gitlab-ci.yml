@@ -43,7 +43,7 @@ audit:
   only:
     - /^(feature-.*|hotfix-.*|master|release-.*)$/
   script:
-    - npm audit --production --audit-level=low
+    - npm audit --production --audit-level=low --registry 'http://npmregistry:4873'
 
 tests:
   <<: *after_build_definition
