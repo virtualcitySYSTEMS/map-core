@@ -370,7 +370,8 @@ class ObliqueProvider {
       }
       this._loadingImage = image;
       if (!usedCoordinate[2] && image.terrainProvider) {
-        usedCoordinate = await getHeightFromTerrainProvider(image.terrainProvider, [usedCoordinate], mercatorProjection);
+        usedCoordinate =
+          await getHeightFromTerrainProvider(image.terrainProvider, [usedCoordinate], mercatorProjection);
       }
       if (this._loadingImage !== image) {
         return;

@@ -92,7 +92,6 @@ export function getHeightFromTerrainProvider(terrainProvider, coordinates, optSo
   return new Promise((resolve, reject) => {
     sampleTerrainMostDetailed(terrainProvider, positions)
       .then((updatedPositions) => {
-        console.log(updatedPositions);
         updatedPositions.forEach((position, index) => {
           outArray[index][2] = position.height || 0;
         });

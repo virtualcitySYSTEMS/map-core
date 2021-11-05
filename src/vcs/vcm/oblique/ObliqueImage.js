@@ -230,7 +230,6 @@ class ObliqueImage {
           this.meta.projection,
         )
           .then((coords) => {
-            console.log(coords);
             if (coords[0] && coords[0][2] != null) {
               this._averageHeight = coords[0][2];
             }
