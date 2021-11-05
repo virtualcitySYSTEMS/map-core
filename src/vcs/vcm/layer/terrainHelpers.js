@@ -1,6 +1,6 @@
 import { CesiumTerrainProvider, Cartographic, Cartesian2, sampleTerrainMostDetailed, sampleTerrain } from '@vcmap/cesium';
-
-import Projection, { wgs84Projection } from '../util/projection.js';
+import { getTransform } from 'ol/proj.js';
+import { wgs84Projection } from '../util/projection.js';
 
 /**
  * @typedef {Object} vcs.vcm.layer.TerrainProvider.Options
@@ -69,12 +69,16 @@ export function sampleCesiumTerrain(terrainProvider, level, positions) {
  * changes input coordinate Array in place, new height can also be accessed by coordinates[x][2]
  * @param {Cesium/CesiumTerrainProvider} terrainProvider
  * @param {Array<ol/Coordinate>} coordinates
- * @param {vcs.vcm.util.Projection=} optSourceProjection - if input is not WGS84
+ * @param {(vcs.vcm.util.Projection|ol.proj.Projection)=} optSourceProjection - if input is not WGS84
+ * @param {Array<ol/Coordinate>=} result
  * @returns {Promise<Array<ol/Coordinate>>}
  */
-export function getHeightFromTerrainProvider(terrainProvider, coordinates, optSourceProjection) {
+export function getHeightFromTerrainProvider(terrainProvider, coordinates, optSourceProjection, result) {
   const sourceTransformer = optSourceProjection ?
-    Projection.getTransformer(wgs84Projection, optSourceProjection) :
+    getTransform(
+      optSourceProjection.proj ? optSourceProjection.proj : optSourceProjection,
+      wgs84Projection.proj,
+    ) :
     null;
 
   const positions = coordinates.map((coord) => {
@@ -84,13 +88,17 @@ export function getHeightFromTerrainProvider(terrainProvider, coordinates, optSo
     return Cartographic.fromDegrees(wgs84[0], wgs84[1]);
   });
 
-  return sampleTerrainMostDetailed(terrainProvider, positions)
-    .then((updatedPositions) => {
-      updatedPositions.forEach((position, index) => {
-        coordinates[index][2] = position.height || 0;
-      });
-      return coordinates;
-    });
+  const outArray = result || coordinates.map(c => c.slice());
+  return new Promise((resolve, reject) => {
+    sampleTerrainMostDetailed(terrainProvider, positions)
+      .then((updatedPositions) => {
+        console.log(updatedPositions);
+        updatedPositions.forEach((position, index) => {
+          outArray[index][2] = position.height || 0;
+        });
+        resolve(outArray);
+      }, reject);
+  });
 }
 
 /**

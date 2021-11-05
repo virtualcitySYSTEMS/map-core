@@ -1,9 +1,11 @@
 /* eslint no-underscore-dangle: ["error", { "allow": ["_listeners", "_scopes", "_toRemove"] }] */
 /* eslint-disable no-continue */
 import { boundingExtent, getBottomLeft, getBottomRight, getTopLeft, getTopRight } from 'ol/extent.js';
-import { get as getProjection, getTransform, transform } from 'ol/proj.js';
-import { Cartographic, Cartesian2, sampleTerrainMostDetailed } from '@vcmap/cesium';
+import { get as getProjection, transform } from 'ol/proj.js';
+import { Cartesian2 } from '@vcmap/cesium';
 import { ObliqueViewDirection } from './ObliqueViewDirection.js';
+import { getHeightFromTerrainProvider } from '../layer/terrainHelpers.js';
+import { cartesian2DDistance } from '../util/math.js';
 
 /**
  * @type {import("cesium").Cartesian2}
@@ -13,18 +15,6 @@ let scratchCartesian2A = new Cartesian2();
  * @type {import("cesium").Cartesian2}
  */
 let scratchCartesian2B = new Cartesian2();
-
-/**
- * returns distance between two coordinates
- * @param {import("ol/coordinate").Coordinate} point0
- * @param {import("ol/coordinate").Coordinate} point1
- * @returns {number};
- */
-export function cartesian2DDistance(point0, point1) {
-  scratchCartesian2A = Cartesian2.fromElements(point0[0], point0[1], scratchCartesian2A);
-  scratchCartesian2B = Cartesian2.fromElements(point1[0], point1[1], scratchCartesian2B);
-  return Cartesian2.distance(scratchCartesian2A, scratchCartesian2B);
-}
 
 /**
  * sorts the corner points of the json after [lower left, lower right, upper right, upper left]
@@ -291,35 +281,6 @@ export function transformCWIFC(inputOrigin, inputTarget, originIsImage, coordina
     });
 
   return intrCross;
-}
-
-/**
- * Creates a clone of the given coordinates array with new heights
- * @param {import("cesium").CesiumTerrainProvider} terrainProvider
- * @param {Array<import("ol/coordinate").Coordinate>} coordinates
- * @param {import("ol/proj/Projection").default=} optSourceProjection - if input is not WGS84
- * @returns {Promise<Array<import("ol/coordinate").Coordinate>>}
- */
-export function getHeightFromTerrainProvider(terrainProvider, coordinates, optSourceProjection) {
-  const wgs84 = getProjection('EPSG:4326');
-  const sourceTransformer = optSourceProjection ? getTransform(optSourceProjection, wgs84) : null;
-
-  const positions = coordinates.map((coord) => {
-    const transformedCoordinates = sourceTransformer ? sourceTransformer(coord.slice(0, 2)) : coord;
-    return Cartographic.fromDegrees(transformedCoordinates[0], transformedCoordinates[1]);
-  });
-
-  const outArray = new Array(positions.length);
-  return new Promise((resolve, reject) => {
-    sampleTerrainMostDetailed(terrainProvider, positions)
-      .then((updatedPositions) => {
-        updatedPositions.forEach((position, index) => {
-          const [x, y] = coordinates[index];
-          outArray[index] = [x, y, position.height];
-        });
-        resolve(outArray);
-      }, reject);
-  });
 }
 
 /**

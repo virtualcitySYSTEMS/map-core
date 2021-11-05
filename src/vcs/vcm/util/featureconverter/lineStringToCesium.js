@@ -11,6 +11,7 @@ import { getFlatCoordinatesFromSimpleGeometry } from '../geometryHelpers.js';
  * @param {boolean} perPositionHeight
  * @param {number=} extrudedHeight
  * @returns {Array<Cesium/WallGeometry>}
+ * @private
  */
 export function createSolidGeometries(options, height, perPositionHeight, extrudedHeight) {
   return [WallGeometry.fromConstantHeights({
@@ -26,6 +27,7 @@ export function createSolidGeometries(options, height, perPositionHeight, extrud
  * @param {boolean} perPositionHeight
  * @param {number=} extrudedHeight
  * @returns {Array<Cesium/WallOutlineGeometry>}
+ * @private
  */
 export function createOutlineGeometries(options, height, perPositionHeight, extrudedHeight) {
   // maxium and minimum are flipped, to create the same perPositionHeight behaviour as in polygons
@@ -42,6 +44,7 @@ export function createOutlineGeometries(options, height, perPositionHeight, extr
  * @param {number} height
  * @param {boolean} perPositionHeight
  * @returns {Array}
+ * @private
  */
 // eslint-disable-next-line no-unused-vars
 export function createFillGeometries(options, height, perPositionHeight) {
@@ -53,6 +56,7 @@ export function createFillGeometries(options, height, perPositionHeight) {
  * @param {Object} options
  * @param {ol/style/Style} style
  * @returns {Array<Cesium/GroundPolylineGeometry>}
+ * @private
  */
 export function createGroundLineGeometries(options, style) {
   const width = parseNumber(style.getStroke().getWidth(), 1.0);
@@ -66,6 +70,7 @@ export function createGroundLineGeometries(options, style) {
  * @param {Object} options
  * @param {ol/style/Style} style
  * @returns {Array<Cesium/PolylineGeometry>}
+ * @private
  */
 export function createLineGeometries(options, style) {
   const width = parseNumber(style.getStroke().getWidth(), 1.0);
@@ -80,6 +85,7 @@ export function createLineGeometries(options, style) {
  * @param {ol/geom/LineString} geometry
  * @param {number} positionHeightAdjustment
  * @returns {Object}
+ * @private
  */
 export function getGeometryOptions(geometry, positionHeightAdjustment) {
   const coords = geometry.getCoordinates();
@@ -96,6 +102,7 @@ export function getGeometryOptions(geometry, positionHeightAdjustment) {
 /**
  * @param {Array<ol/geom/LineString>} geometries
  * @returns {Array<ol/Coordinate>}
+ * @private
  */
 export function getCoordinates(geometries) {
   const coordinates = [];

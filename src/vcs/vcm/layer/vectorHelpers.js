@@ -64,7 +64,7 @@ export function updateGlobalHider(globalHider, source) {
  * @param {vcs.vcm.layer.GlobalHider} globalHider
  * @returns {Array<Function>}
  */
-export function synchronizeFeatureVisibility(featureVisibility, source, globalHider) {
+export function synchronizeFeatureVisibilityWithSource(featureVisibility, source, globalHider) {
   const sourceListener = source.on('addfeature', ({ feature }) => {
     const id = feature.getId();
     if (featureVisibility.highlightedObjects[id]) {

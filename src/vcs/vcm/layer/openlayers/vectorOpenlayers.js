@@ -1,6 +1,6 @@
 import OLVectorLayer from 'ol/layer/Vector.js';
 import LayerOpenlayers from './layerOpenlayers.js';
-import { synchronizeFeatureVisibility } from '../vectorHelpers.js';
+import { synchronizeFeatureVisibilityWithSource } from '../vectorHelpers.js';
 import { getGlobalHider } from '../globalHider.js';
 
 /**
@@ -82,7 +82,7 @@ class VectorOpenlayers extends LayerOpenlayers {
       if (this.active) {
         if (this._featureVisibilityListeners.length === 0) {
           this._featureVisibilityListeners =
-            synchronizeFeatureVisibility(this.featureVisibility, this.source, this.globalHider);
+            synchronizeFeatureVisibilityWithSource(this.featureVisibility, this.source, this.globalHider);
         }
       }
     }

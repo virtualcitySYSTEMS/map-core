@@ -12,7 +12,9 @@
       "src"
     ],
     "exclude": [
-      "index.js"
+      "index.js",
+      "src/ol",
+      "src/cesium"
     ]
   },
   "plugins": [

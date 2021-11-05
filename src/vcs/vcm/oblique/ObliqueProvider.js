@@ -1,10 +1,12 @@
 import { Event as CesiumEvent } from '@vcmap/cesium';
-import { getTransform, get as getProjection } from 'ol/proj.js';
+import { getTransform } from 'ol/proj.js';
 import View from 'ol/View.js';
 import { unByKey } from 'ol/Observable.js';
 import { DataState } from './ObliqueDataSet.js';
 import OLView from './ObliqueView.js';
-import { destroyCesiumEvent, getHeightFromTerrainProvider, transformFromImage } from './helpers.js';
+import { destroyCesiumEvent, transformFromImage } from './helpers.js';
+import { getHeightFromTerrainProvider } from '../layer/terrainHelpers.js';
+import { mercatorProjection } from '../util/projection.js';
 
 /**
  * @typedef {Object} ObliqueViewPoint
@@ -368,7 +370,7 @@ class ObliqueProvider {
       }
       this._loadingImage = image;
       if (!usedCoordinate[2] && image.terrainProvider) {
-        usedCoordinate = await getHeightFromTerrainProvider(image.terrainProvider, [usedCoordinate], getProjection('EPSG:3857'));
+        usedCoordinate = await getHeightFromTerrainProvider(image.terrainProvider, [usedCoordinate], mercatorProjection);
       }
       if (this._loadingImage !== image) {
         return;

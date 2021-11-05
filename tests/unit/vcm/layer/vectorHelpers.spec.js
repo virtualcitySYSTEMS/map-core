@@ -9,7 +9,7 @@ import VectorStyleItem from '../../../../src/vcs/vcm/util/style/vectorStyleItem.
 import {
   updateGlobalHider,
   updateFeatureVisibility,
-  synchronizeFeatureVisibility,
+  synchronizeFeatureVisibilityWithSource,
   fvLastUpdated,
   globalHiderLastUpdated,
   getGenericFeatureFromClickedObject,
@@ -141,7 +141,7 @@ describe('vcs.vcm.layer.VectorHelpers', () => {
       before(() => {
         setup = setupVectorLayer();
         [impl] = setup.vectorLayer.createImplementationsForMap(openlayers);
-        listeners = synchronizeFeatureVisibility(impl.featureVisibility, impl.source, impl.globalHider);
+        listeners = synchronizeFeatureVisibilityWithSource(impl.featureVisibility, impl.source, impl.globalHider);
         now = Date.now();
         clock = sandbox.useFakeTimers(now);
       });
@@ -191,7 +191,7 @@ describe('vcs.vcm.layer.VectorHelpers', () => {
       });
 
       it('should update hidden and highlighted features', () => {
-        const listeners = synchronizeFeatureVisibility(impl.featureVisibility, impl.source, impl.globalHider);
+        const listeners = synchronizeFeatureVisibilityWithSource(impl.featureVisibility, impl.source, impl.globalHider);
         const hiddenFeature = impl.source.getFeatureById(setup.hiddenFeatureId);
         expect(impl.featureVisibility.hasHiddenFeature(setup.hiddenFeatureId, hiddenFeature)).to.be.true;
         listeners.forEach((cb) => { cb(); });
@@ -199,7 +199,7 @@ describe('vcs.vcm.layer.VectorHelpers', () => {
 
       it('should update globalHider', () => {
         impl.globalHider.hideObjects([setup.hiddenFeatureId]);
-        const listeners = synchronizeFeatureVisibility(impl.featureVisibility, impl.source, impl.globalHider);
+        const listeners = synchronizeFeatureVisibilityWithSource(impl.featureVisibility, impl.source, impl.globalHider);
         const hiddenFeature = impl.source.getFeatureById(setup.hiddenFeatureId);
         expect(impl.globalHider.hasFeature(setup.hiddenFeatureId, hiddenFeature)).to.be.true;
         listeners.forEach((cb) => { cb(); });
@@ -216,7 +216,7 @@ describe('vcs.vcm.layer.VectorHelpers', () => {
       before(() => {
         setup = setupVectorLayer();
         [impl] = setup.vectorLayer.createImplementationsForMap(openlayers);
-        listeners = synchronizeFeatureVisibility(impl.featureVisibility, impl.source, impl.globalHider);
+        listeners = synchronizeFeatureVisibilityWithSource(impl.featureVisibility, impl.source, impl.globalHider);
         now = Date.now();
         clock = sandbox.useFakeTimers(now);
       });
@@ -271,7 +271,7 @@ describe('vcs.vcm.layer.VectorHelpers', () => {
       before(() => {
         setup = setupVectorLayer();
         [impl] = setup.vectorLayer.createImplementationsForMap(openlayers);
-        listeners = synchronizeFeatureVisibility(impl.featureVisibility, impl.source, impl.globalHider);
+        listeners = synchronizeFeatureVisibilityWithSource(impl.featureVisibility, impl.source, impl.globalHider);
         now = Date.now();
         clock = sandbox.useFakeTimers(now);
       });

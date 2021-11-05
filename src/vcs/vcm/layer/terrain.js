@@ -98,7 +98,7 @@ class Terrain extends Layer {
       requestVertexNormals: this.requestVertexNormals,
       requestWaterMask: this.requestWaterMask,
     });
-    return getHeightFromTerrainProvider(terrainProvider, coords);
+    return getHeightFromTerrainProvider(terrainProvider, coords, null, coords);
   }
 
   /**

@@ -1,30 +1,40 @@
 const path = require('path');
 const fs = require('fs');
 
-const namespaces = {};
+/**
+ * @typedef {Object} ExportDef
+ * @property {string} default
+ * @property {Set<string>} named
+ */
 
+/**
+ * @param {string} nsPath
+ * @returns {string}
+ */
 function resolvePath(nsPath) {
   return `./${path.relative(path.join(__dirname, '..', '..'), nsPath).replace(/\\/g, '/')}`;
 }
 
-function createIndex() {
-  const importedNamedFiles = {};
-
-  const exports = [];
+/**
+ * @param {Object<string, ExportDef>} fileNames
+ */
+function createIndex(fileNames) {
   const imports = [];
 
-  Object.keys(namespaces).sort().forEach((ns) => {
-    const def = namespaces[ns];
-    const filePath = resolvePath(def.path);
-    if (def.isNamed) {
-      if (!importedNamedFiles[filePath]) {
-        exports.push(`export * from '${filePath}';`);
-        importedNamedFiles[filePath] = true;
+  const exports = Object.entries(fileNames)
+    .map(([fileName, e]) => {
+      const filePath = resolvePath(fileName);
+      const es = [...e.named];
+      if (e.default) {
+        es.push(`default as ${e.default}`);
       }
-    } else {
-      exports.push(`export { default as ${def.name} } from '${filePath}';`);
-    }
-  });
+      if (es.length === 0) {
+        console.error(`Found nothing to export in file ${fileName}`);
+        return null;
+      }
+      return `export { ${es.join(', ')} } from '${filePath}';`;
+    })
+    .filter(f => f);
 
   imports.push(
     'import \'./src/ol/geom/circle.js\';',
@@ -41,30 +51,45 @@ function createIndex() {
 }
 
 exports.publish = function publish(data) {
-  const docs = data(function dataCb() {
-    return typeof this.export === 'boolean';
-  }).get();
+  const docs = data([
+    { define: { isObject: true } },
+    function dataCb() {
+      if (this.longname === 'module.exports') {
+        this.longname = this.meta.code.node.id ? this.meta.code.node.id.name : this.meta.code.node.name;
+      }
+
+      if (typeof this?.meta?.code?.name === 'string') {
+        if (this.meta.code.name === 'module.exports') {
+          this.exports = 'default';
+        } else if (this.meta.code.name.startsWith('exports.')) {
+          this.exports = this.meta.code.name.replace(/exports./, '');
+        }
+      }
+
+      return this.access !== 'private' && this.exports;
+    },
+  ]).get();
+
+  /**
+   * @type {Object<string, ExportDef>}
+   */
+  const fileNames = {};
 
   docs.forEach((doc) => {
-    if (doc.kind === 'class') {
-      const className = doc.longname.replace(/\.exports/, '');
-      namespaces[className] = {
-        path: path.join(doc.meta.path, doc.meta.filename),
-        isNamed: /\.exports/.test(doc.longname),
-        name: doc.name,
+    const fileName = path.join(doc.meta.path, doc.meta.filename);
+    if (!fileNames[fileName]) {
+      fileNames[fileName] = {
+        named: new Set(),
       };
-    } else if (
-      (doc.kind === 'function' || doc.isEnum || doc.kind === 'member' || doc.kind === 'constant') &&
-      !/#/.test(doc.longname)
-    ) {
-      const name = doc.longname.replace(/\.exports/, '');
-      namespaces[name] = {
-        path: path.join(doc.meta.path, doc.meta.filename),
-        isNamed: /\.exports/.test(doc.longname),
-        name: doc.name,
-      };
+    }
+    const exports = fileNames[fileName];
+    const name = doc.longname.split('.').pop();
+    if (doc.exports === 'default') {
+      exports.default = name;
+    } else {
+      exports.named.add(name);
     }
   });
 
-  createIndex();
+  createIndex(fileNames);
 };

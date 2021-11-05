@@ -1,5 +1,6 @@
 import { Cartesian3, Cartesian4, Matrix3, Matrix4 } from '@vcmap/cesium';
-import { transformCWIFC, getHeightFromTerrainProvider } from './helpers.js';
+import { transformCWIFC } from './helpers.js';
+import { getHeightFromTerrainProvider } from '../layer/terrainHelpers.js';
 
 /**
  * @typedef {Object} ObliqueImageOptions
@@ -229,10 +230,12 @@ class ObliqueImage {
           this.meta.projection,
         )
           .then((coords) => {
+            console.log(coords);
             if (coords[0] && coords[0][2] != null) {
               this._averageHeight = coords[0][2];
             }
-          }).catch(() => {
+          })
+          .catch(() => {
             this._averageHeight = averageHeight;
           });
       }

@@ -581,6 +581,7 @@ class CesiumMap extends VcsMap {
           /** @type {Cesium/CesiumTerrainProvider} */(terrainProvider),
           positions,
           mercatorProjection,
+          positions,
         );
       }
       return Promise.resolve(positions);

@@ -19,6 +19,7 @@ import { getFlatCoordinatesFromSimpleGeometry } from '../geometryHelpers.js';
  * @param {boolean} perPositionHeight
  * @param {number=} extrudedHeight
  * @returns {Array<Cesium/PolygonGeometry>}
+ * @private
  */
 export function createSolidGeometries(options, height, perPositionHeight, extrudedHeight) {
   const polygonOptions = {
@@ -38,6 +39,7 @@ export function createSolidGeometries(options, height, perPositionHeight, extrud
  * @param {boolean} perPositionHeight
  * @param {number=} extrudedHeight
  * @returns {Array<Cesium/PolygonOutlineGeometry>}
+ * @private
  */
 export function createOutlineGeometries(options, height, perPositionHeight, extrudedHeight) {
   return [new PolygonOutlineGeometry({
@@ -54,6 +56,7 @@ export function createOutlineGeometries(options, height, perPositionHeight, extr
  * @param {number} height
  * @param {boolean} perPositionHeight
  * @returns {Array<Cesium/PolygonGeometry>}
+ * @private
  */
 export function createFillGeometries(options, height, perPositionHeight) {
   return createSolidGeometries(options, height, perPositionHeight, undefined);
@@ -63,6 +66,7 @@ export function createFillGeometries(options, height, perPositionHeight) {
  * @param {Object} options
  * @param {ol/style/Style} style
  * @returns {Array<Object>}
+ * @private
  */
 export function getLineGeometryOptions(options, style) {
   const width = parseNumber(style.getStroke().getWidth(), 1.0);
@@ -84,6 +88,7 @@ export function getLineGeometryOptions(options, style) {
  * @param {Object} options
  * @param {ol/style/Style} style
  * @returns {Array<GroundPolylineGeometry>}
+ * @private
  */
 export function createGroundLineGeometries(options, style) {
   return getLineGeometryOptions(options, style).map((option) => {
@@ -95,6 +100,7 @@ export function createGroundLineGeometries(options, style) {
  * @param {Object} options
  * @param {ol/style/Style} style
  * @returns {Array<PolylineGeometry>}
+ * @private
  */
 export function createLineGeometries(options, style) {
   return getLineGeometryOptions(options, style).map((option) => {
@@ -107,6 +113,7 @@ export function createLineGeometries(options, style) {
  * @param {ol/geom/Polygon} geometry
  * @param {number} positionHeightAdjustment
  * @returns {Object}
+ * @private
  */
 export function getGeometryOptions(geometry, positionHeightAdjustment) {
   let hieraryPositions;
@@ -139,6 +146,7 @@ export function getGeometryOptions(geometry, positionHeightAdjustment) {
 /**
  * @param {Array<ol/geom/Polygon>} geometries
  * @returns {Array<ol/Coordinate>}
+ * @private
  */
 export function getCoordinates(geometries) {
   const coordinates = [];

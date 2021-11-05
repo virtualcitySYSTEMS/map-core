@@ -19,6 +19,7 @@ import Projection from '../projection.js';
  * @param {boolean} perPositionHeight
  * @param {number=} extrudedHeight
  * @returns {Array<Cesium/CircleGeometry>}
+ * @private
  */
 export function createSolidGeometries(options, height, perPositionHeight, extrudedHeight) {
   return [new CircleGeometry({
@@ -35,6 +36,7 @@ export function createSolidGeometries(options, height, perPositionHeight, extrud
  * @param {boolean} perPositionHeight
  * @param {number=} extrudedHeight
  * @returns {Array<Cesium/CircleOutlineGeometry>}
+ * @private
  */
 export function createOutlineGeometries(options, height, perPositionHeight, extrudedHeight) {
   return [new CircleOutlineGeometry({
@@ -50,6 +52,7 @@ export function createOutlineGeometries(options, height, perPositionHeight, extr
  * @param {number} height
  * @param {boolean} perPositionHeight
  * @returns {Array<Cesium/CircleGeometry>}
+ * @private
  */
 export function createFillGeometries(options, height, perPositionHeight) {
   return createSolidGeometries(options, height, perPositionHeight, undefined);
@@ -59,6 +62,7 @@ export function createFillGeometries(options, height, perPositionHeight) {
  * @param {Object} options
  * @param {ol/style/Style} style
  * @returns {{width: number, positions: Array}}
+ * @private
  */
 export function getLineGeometryOptions(options, style) {
   const width = parseNumber(style.getStroke().getWidth(), 1.0);
@@ -89,6 +93,7 @@ export function getLineGeometryOptions(options, style) {
  * @param {Object} options
  * @param {ol/style/Style} style
  * @returns {Array<Cesium/GroundPolylineGeometry>}
+ * @private
  */
 export function createGroundLineGeometries(options, style) {
   const lineOptions = getLineGeometryOptions(options, style);
@@ -99,6 +104,7 @@ export function createGroundLineGeometries(options, style) {
  * @param {Object} options
  * @param {ol/style/Style} style
  * @returns {Array<Cesium/PolylineGeometry>}
+ * @private
  */
 export function createLineGeometries(options, style) {
   const lineOptions = getLineGeometryOptions(options, style);
@@ -110,6 +116,7 @@ export function createLineGeometries(options, style) {
  * @param {ol/geom/Circle} geometry
  * @param {number} positionHeightAdjustment
  * @returns {{center: Cesium/Cartesian3, radius: Number}}
+ * @private
  */
 export function getGeometryOptions(geometry, positionHeightAdjustment) {
   // olCoordinates of center and radius in WGS84
@@ -138,6 +145,7 @@ export function getGeometryOptions(geometry, positionHeightAdjustment) {
 /**
  * @param {Array<ol/geom/Circle>} geometries
  * @returns {Array<ol/Coordinate>}
+ * @private
  */
 export function getCoordinates(geometries) {
   return geometries.map((circle) => {

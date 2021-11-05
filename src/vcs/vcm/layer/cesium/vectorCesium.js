@@ -6,7 +6,7 @@ import VectorContext from './vectorContext.js';
 import { vcsLayerName } from '../layerSymbols.js';
 import LayerImplementation from '../layerImplementation.js';
 import { getGlobalHider } from '../globalHider.js';
-import { synchronizeFeatureVisibility } from '../vectorHelpers.js';
+import { synchronizeFeatureVisibilityWithSource } from '../vectorHelpers.js';
 
 /**
  * represents a specific vector layer for cesium.
@@ -190,7 +190,7 @@ class VectorCesium extends LayerImplementation {
         this._rootCollection.show = true;
         if (this._featureVisibilityListeners.length === 0) {
           this._featureVisibilityListeners =
-            synchronizeFeatureVisibility(this.featureVisibility, this.source, this.globalHider);
+            synchronizeFeatureVisibilityWithSource(this.featureVisibility, this.source, this.globalHider);
         }
       }
     }

@@ -29,6 +29,7 @@ import { sampleCesiumTerrainMostDetailed } from '../../layer/terrainHelpers.js';
 /**
  * @param {Array<ol/geom/Point>} geometries
  * @returns {Array<ol/Coordinate>}
+ * @private
  */
 export function getCoordinates(geometries) {
   return geometries.map((point) => {
@@ -277,6 +278,7 @@ export function getCartesian3AndWGS84FromCoordinates(coordinates, heightInfo) {
  * @param {Array<Cesium/Cartesian3>} positions
  * @param {ol/style/Style} style
  * @returns {Array<Cesium/PolylineGeometry>}
+ * @private
  */
 export function getLineGeometries(wgs84Positions, heightInfo, positions, style) {
   const lineGeometries = [];

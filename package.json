@@ -30,7 +30,7 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^18.0.0",
     "@rollup/plugin-node-resolve": "^11.2.1",
-    "@vcmap/cesium": "^1.87.2",
+    "@vcmap/cesium": "~1.87.2",
     "@vcsuite/eslint-config": "^2.0.3",
     "@web/dev-server": "^0.1.11",
     "@web/dev-server-rollup": "^0.3.3",
@@ -49,7 +49,7 @@
     "sinon-chai": "^3.6.0"
   },
   "peerDependencies": {
-    "@vcmap/cesium": "~1.87.1",
+    "@vcmap/cesium": "~1.87.2",
     "ol": "^6.5.0"
   },
   "eslintConfig": {
@@ -65,7 +65,8 @@
   },
   "eslintIgnore": [
     "node_modules",
-    "coverage"
+    "coverage",
+    "index.js"
   ],
   "dependencies": {
     "@vcsuite/check": "^1.0.3",

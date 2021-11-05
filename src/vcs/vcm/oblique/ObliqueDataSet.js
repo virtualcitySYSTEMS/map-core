@@ -1,7 +1,8 @@
 import { Event as CesiumEvent } from '@vcmap/cesium';
 import axios from 'axios';
 import { createXYZ } from 'ol/tilegrid.js';
-import { cartesian2DDistance, destroyCesiumEvent } from './helpers.js';
+import { destroyCesiumEvent } from './helpers.js';
+import { cartesian2DDistance } from '../util/math.js';
 import { parseImageData, parseImageMeta, parseLegacyImageData, getVersionFromImageJson } from './parseImageJson.js';
 
 /**

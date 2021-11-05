@@ -1,4 +1,4 @@
-import { cartesian2DDistance } from './helpers.js';
+import { cartesian2DDistance } from '../util/math.js';
 
 /**
  * @typedef {Object} ObliqueImageMetaOptions

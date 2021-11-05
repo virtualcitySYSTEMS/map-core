@@ -14,7 +14,7 @@ import {
   originalFeatureSymbol,
 } from '../vectorSymbols.js';
 import LayerOblique from './layerOblique.js';
-import { synchronizeFeatureVisibility } from '../vectorHelpers.js';
+import { synchronizeFeatureVisibilityWithSource } from '../vectorHelpers.js';
 
 /**
  * represents a specific vector layer for oblique.
@@ -179,7 +179,7 @@ class VectorOblique extends LayerOblique {
         this.olLayer.setVisible(true);
         if (this._featureVisibilityListeners.length === 0) {
           this._featureVisibilityListeners =
-            synchronizeFeatureVisibility(this.featureVisibility, this.source, this.globalHider);
+            synchronizeFeatureVisibilityWithSource(this.featureVisibility, this.source, this.globalHider);
         }
         this._addSourceListeners();
         this._imageChangedListener = this.map.imageChanged.addEventListener(this._onObliqueImageChanged.bind(this));
