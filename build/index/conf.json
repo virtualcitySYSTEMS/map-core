@@ -12,11 +12,14 @@
       "src"
     ],
     "exclude": [
-      "index.js",
-      "src/vcs/vcm/oblique"
+      "index.js"
     ]
   },
   "plugins": [
+    "jsdoc-plugin-typescript",
     "build/index/export-plugin"
-  ]
+  ],
+  "typescript": {
+    "moduleRoot": "src"
+  }
 }
