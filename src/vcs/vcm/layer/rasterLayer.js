@@ -6,6 +6,7 @@ import { wgs84Projection } from '../util/projection.js';
 import Layer from './layer.js';
 import VcsEvent from '../event/vcsEvent.js';
 import Extent from '../util/extent.js';
+import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {vcs.vcm.layer.Layer.Options} vcs.vcm.layer.RasterLayer.Options
@@ -291,4 +292,5 @@ class RasterLayer extends Layer {
   }
 }
 
+VcsClassRegistry.registerClass(RasterLayer.className, RasterLayer);
 export default RasterLayer;

@@ -14,6 +14,7 @@ import { ObliqueViewDirection as ViewDirection } from '../oblique/ObliqueViewDir
 import ObliqueProvider from '../oblique/ObliqueProvider.js';
 import ObliqueCollection from '../oblique/ObliqueCollection.js';
 import { transformFromImage } from '../oblique/helpers.js';
+import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {Object} vcs.vcm.maps.Oblique.ClickParameters
@@ -531,4 +532,5 @@ class Oblique extends BaseOLMap {
   }
 }
 
+VcsClassRegistry.registerClass(Oblique.className, Oblique);
 export default Oblique;

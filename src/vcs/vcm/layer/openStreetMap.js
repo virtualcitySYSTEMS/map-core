@@ -7,6 +7,7 @@ import CesiumMap from '../maps/cesium.js';
 import OpenStreetMapOpenlayers from './openlayers/openStreetMapOpenlayers.js';
 import OpenStreetMapCesium from './cesium/openStreetMapCesium.js';
 import VcsEvent from '../event/vcsEvent.js';
+import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {vcs.vcm.layer.Layer.Options} vcs.vcm.layer.OpenStreetMap.Options
@@ -190,4 +191,5 @@ class OpenStreetMap extends Layer {
   }
 }
 
+VcsClassRegistry.registerClass(OpenStreetMap.className, OpenStreetMap);
 export default OpenStreetMap;

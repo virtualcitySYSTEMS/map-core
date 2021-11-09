@@ -7,6 +7,7 @@ import { vcsLayerName } from './layerSymbols.js';
 import LayerState from './layerState.js';
 import VcsEvent from '../event/vcsEvent.js';
 import { getCurrentLocale, getLocaleChangedEvent } from '../util/locale.js';
+import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
  * @namespace vcs.vcm.layer
@@ -755,4 +756,5 @@ class Layer extends VcsObject {
   }
 }
 
+VcsClassRegistry.registerClass(Layer.className, Layer);
 export default Layer;

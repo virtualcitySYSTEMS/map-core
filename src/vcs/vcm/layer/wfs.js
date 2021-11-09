@@ -2,6 +2,7 @@ import WFSFormat from 'ol/format/WFS.js';
 import axios from 'axios';
 import Vector from './vector.js';
 import Projection from '../util/projection.js';
+import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {vcs.vcm.layer.Vector.Options} vcs.vcm.layer.WFS.Options
@@ -161,4 +162,5 @@ class WFS extends Vector {
   }
 }
 
+VcsClassRegistry.registerClass(WFS.className, WFS);
 export default WFS;

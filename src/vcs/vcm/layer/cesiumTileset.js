@@ -12,6 +12,7 @@ import Extent from '../util/extent.js';
 import { mercatorProjection } from '../util/projection.js';
 import { isMobile } from '../util/isMobile.js';
 import { referenceableStyleSymbol } from '../util/style/styleItem.js';
+import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {vcs.vcm.layer.Layer.Options} vcs.vcm.layer.CesiumTileset.Options
@@ -372,4 +373,5 @@ class CesiumTileset extends FeatureLayer {
   }
 }
 
+VcsClassRegistry.registerClass(CesiumTileset.className, CesiumTileset);
 export default CesiumTileset;

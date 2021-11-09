@@ -4,6 +4,7 @@ import DeclarativeStyleItem from '../util/style/declarativeStyleItem.js';
 import VectorStyleItem from '../util/style/vectorStyleItem.js';
 import CesiumMap from '../maps/cesium.js';
 import PointCloudCesium from './cesium/pointCloudCesium.js';
+import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {vcs.vcm.layer.CesiumTileset.Options} vcs.vcm.layer.PointCloud.Options
@@ -158,4 +159,5 @@ class PointCloud extends CesiumTileset {
   }
 }
 
+VcsClassRegistry.registerClass(PointCloud.className, PointCloud);
 export default PointCloud;

@@ -7,6 +7,7 @@ import WMSCesium from './cesium/wmsCesium.js';
 import Openlayers from '../maps/openlayers.js';
 import WMSOpenlayers from './openlayers/wmsOpenlayers.js';
 import Extent from '../util/extent.js';
+import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {vcs.vcm.layer.RasterLayer.ImplementationOptions} vcs.vcm.layer.WMS.ImplementationOptions
@@ -266,4 +267,5 @@ class WMS extends RasterLayer {
   }
 }
 
+VcsClassRegistry.registerClass(WMS.className, WMS);
 export default WMS;

@@ -1,3 +1,4 @@
+import { VcsClassRegistry } from '../classRegistry.js';
 import CesiumTileset from './cesiumTileset.js';
 
 /**
@@ -13,5 +14,5 @@ class Buildings extends CesiumTileset {
   static get className() { return 'vcs.vcm.layer.Buildings'; }
 }
 
-
+VcsClassRegistry.registerClass(Buildings.className, Buildings);
 export default Buildings;

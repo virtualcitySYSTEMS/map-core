@@ -9,6 +9,7 @@ import FeatureVisibility from './featureVisibility.js';
 import { getStyleOrDefaultStyle } from '../util/style/styleFactory.js';
 import VcsEvent from '../event/vcsEvent.js';
 import { styleCollection } from '../globalCollections.js';
+import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {vcs.vcm.layer.Layer.Options} vcs.vcm.layer.FeatureLayer.Options
@@ -257,4 +258,5 @@ class FeatureLayer extends Layer {
   }
 }
 
+VcsClassRegistry.registerClass(FeatureLayer.className, FeatureLayer);
 export default FeatureLayer;

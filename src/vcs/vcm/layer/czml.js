@@ -2,6 +2,7 @@ import { CzmlDataSource } from '@vcmap/cesium';
 
 import DataSource from './dataSource.js';
 import { vcsLayerName } from './layerSymbols.js';
+import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {vcs.vcm.layer.DataSource.Options} vcs.vcm.layer.Czml.Options
@@ -137,4 +138,5 @@ class Czml extends DataSource {
   }
 }
 
+VcsClassRegistry.registerClass(Czml.className, Czml);
 export default Czml;

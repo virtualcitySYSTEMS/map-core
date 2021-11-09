@@ -7,6 +7,7 @@ import { parseBoolean } from '@vcsuite/parsers';
 import ViewPoint from '../util/viewpoint.js';
 import BaseOLMap from './baseOLMap.js';
 import VcsMap from './map.js';
+import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {vcs.vcm.maps.VcsMap.Options} vcs.vcm.maps.Openlayers.Options
@@ -201,4 +202,5 @@ class Openlayers extends BaseOLMap {
   }
 }
 
+VcsClassRegistry.registerClass(Openlayers.className, Openlayers);
 export default Openlayers;

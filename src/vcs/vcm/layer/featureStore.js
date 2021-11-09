@@ -28,6 +28,7 @@ import DeclarativeStyleItem from '../util/style/declarativeStyleItem.js';
 import VectorOblique from './oblique/vectorOblique.js';
 import Extent from '../util/extent.js';
 import { isMobile } from '../util/isMobile.js';
+import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {Object} vcs.vcm.layer.FeatureStore.StaticRepresentation
@@ -640,4 +641,5 @@ class FeatureStore extends Vector {
   }
 }
 
+VcsClassRegistry.registerClass(FeatureStore.className, FeatureStore);
 export default FeatureStore;

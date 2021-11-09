@@ -38,6 +38,7 @@ import { getHeightFromTerrainProvider } from '../layer/terrainHelpers.js';
 import { vcsLayerName } from '../layer/layerSymbols.js';
 import { ModificationKeyType, PointerEventType, PointerKeyType } from '../interaction/interactionType.js';
 import CameraLimiter from './cameraLimiter.js';
+import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {vcs.vcm.maps.VcsMap.Options} vcs.vcm.maps.CesiumMap.Options
@@ -1182,4 +1183,5 @@ class CesiumMap extends VcsMap {
   }
 }
 
+VcsClassRegistry.registerClass(CesiumMap.className, CesiumMap);
 export default CesiumMap;

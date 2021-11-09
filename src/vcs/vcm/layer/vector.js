@@ -28,6 +28,7 @@ import CesiumMap from '../maps/cesium.js';
 import { originalStyle, updateOriginalStyle } from './featureVisibility.js';
 import StyleItem, { referenceableStyleSymbol, StyleType } from '../util/style/styleItem.js';
 import { getGenericFeatureFromClickedObject } from './vectorHelpers.js';
+import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {vcs.vcm.layer.FeatureLayer.Options} vcs.vcm.layer.Vector.Options
@@ -628,4 +629,5 @@ class Vector extends FeatureLayer {
   }
 }
 
+VcsClassRegistry.registerClass(Vector.className, Vector);
 export default Vector;

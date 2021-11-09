@@ -2,6 +2,7 @@ import axios from 'axios';
 import Vector from './vector.js';
 import { parseGeoJSON, writeGeoJSONFeature } from './geojsonHelpers.js';
 import Projection, { wgs84Projection } from '../util/projection.js';
+import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {vcs.vcm.layer.Vector.Options} vcs.vcm.layer.GeoJSON.Options
@@ -181,4 +182,5 @@ class GeoJSON extends Vector {
   }
 }
 
+VcsClassRegistry.registerClass(GeoJSON.className, GeoJSON);
 export default GeoJSON;

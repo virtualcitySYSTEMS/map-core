@@ -15,6 +15,7 @@ import TileProviderFeatureProvider from '../util/featureProvider/tileProviderFea
 import tileProviderFactory from './tileProvider/tileProviderFactory.js';
 import { getGenericFeatureFromClickedObject } from './vectorHelpers.js';
 import { originalFeatureSymbol } from './vectorSymbols.js';
+import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
  * synchronizes featureVisibility Symbols on the feature;
@@ -474,4 +475,5 @@ class VectorTile extends FeatureLayer {
   }
 }
 
+VcsClassRegistry.registerClass(VectorTile.className, VectorTile);
 export default VectorTile;

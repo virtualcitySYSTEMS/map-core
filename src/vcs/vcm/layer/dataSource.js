@@ -5,6 +5,7 @@ import DataSourceCesium from './cesium/dataSourceCesium.js';
 import { vcsLayerName } from './layerSymbols.js';
 import FeatureVisibility, { FeatureVisibilityAction } from './featureVisibility.js';
 import { getGlobalHider } from './globalHider.js';
+import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {vcs.vcm.layer.Layer.Options} vcs.vcm.layer.DataSource.Options
@@ -255,4 +256,5 @@ class DataSource extends Layer {
   }
 }
 
+VcsClassRegistry.registerClass(DataSource.className, DataSource);
 export default DataSource;

@@ -5,6 +5,7 @@ import SingleImageOpenlayers from './openlayers/singleImageOpenlayers.js';
 import CesiumMap from '../maps/cesium.js';
 import Openlayers from '../maps/openlayers.js';
 import Extent from '../util/extent.js';
+import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {vcs.vcm.layer.RasterLayer.Options} vcs.vcm.layer.SingleImage.Options
@@ -115,4 +116,5 @@ class SingleImage extends RasterLayer {
   }
 }
 
+VcsClassRegistry.registerClass(SingleImage.className, SingleImage);
 export default SingleImage;
