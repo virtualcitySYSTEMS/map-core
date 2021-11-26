@@ -13,12 +13,12 @@ import lineStringToCesium from './lineStringToCesium.js';
 import pointToCesium from './pointToCesium.js';
 
 /**
- * @param {ol/Feature} feature
- * @param {ol/geom/Geometry} geometry
- * @param {ol/style/Style} style
- * @param {vcs.vcm.layer.VectorProperties} vectorProperties
- * @param {Cesium/Scene} scene
- * @param {vcs.vcm.layer.cesium.VectorContext|vcs.vcm.layer.cesium.ClusterContext} context
+ * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+ * @param {import("ol/geom/Geometry").default} geometry
+ * @param {import("ol/style/Style").default} style
+ * @param {import("@vcmap/core").VectorProperties} vectorProperties
+ * @param {import("@vcmap/cesium").Scene} scene
+ * @param {import("@vcmap/core").VectorContext|import("@vcmap/core").ClusterContext} context
  */
 function convertGeometry(feature, geometry, style, vectorProperties, scene, context) {
   if (geometry instanceof Point) {
@@ -43,10 +43,10 @@ function convertGeometry(feature, geometry, style, vectorProperties, scene, cont
 }
 
 /**
- * @param {void|ol/style/StyleLike} style
- * @param {ol/Feature} feature
+ * @param {void|import("ol/style/Style").StyleLike} style
+ * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
  * @param {number=} resolution
- * @returns {Array<ol/style/Style>}
+ * @returns {Array<import("ol/style/Style").default>}
  */
 export function getStylesArray(style, feature, resolution = 1) {
   const styles = [];
@@ -66,16 +66,16 @@ export function getStylesArray(style, feature, resolution = 1) {
 /**
  * function to convert a feature to an array of Cesium.Primitives given a style and default properties. the resulting primitives
  * must be added to the contexts collections here
- * @param {ol/Feature} feature
- * @param {ol/style/StyleLike} style
- * @param {vcs.vcm.layer.VectorProperties} vectorProperties
- * @param {vcs.vcm.layer.cesium.VectorContext|vcs.vcm.layer.cesium.ClusterContext} context
- * @param {Cesium/Scene} scene
+ * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+ * @param {import("ol/style/Style").StyleLike} style
+ * @param {import("@vcmap/core").VectorProperties} vectorProperties
+ * @param {import("@vcmap/core").VectorContext|import("@vcmap/core").ClusterContext} context
+ * @param {import("@vcmap/cesium").Scene} scene
  */
 export default function convert(feature, style, vectorProperties, context, scene) {
   const styles = getStylesArray(feature.getStyle() || style, feature, 0);
   styles.forEach((currentStyle) => {
-    const geometry = /** @type {ol/geom/Geometry} */(currentStyle.getGeometryFunction()(feature));
+    const geometry = /** @type {import("ol/geom/Geometry").default} */(currentStyle.getGeometryFunction()(feature));
     if (geometry) {
       convertGeometry(feature, geometry, currentStyle, vectorProperties, scene, context);
     }

@@ -15,7 +15,7 @@ import { StyleType } from '../../../../../src/vcs/vcm/util/style/styleItem.js';
 import { originalFeatureSymbol } from '../../../../../src/vcs/vcm/layer/vectorSymbols.js';
 
 describe('vcs.vcm.util.style.DeclarativeStyleItem', () => {
-  /** @type {vcs.vcm.util.style.DeclarativeStyleItem} */
+  /** @type {import("@vcmap/core").DeclarativeStyleItem} */
   let DSI;
 
   describe('constructor', () => {

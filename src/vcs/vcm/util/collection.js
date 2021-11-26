@@ -3,7 +3,6 @@ import VcsEvent from '../event/vcsEvent.js';
 /**
  * A generic array based collection. Implements the Symbol.iterator (e.g. [...collection])
  * @class
- * @memberOf vcs.vcm.util
  * @export
  * @template {*} T
  * @api
@@ -14,11 +13,11 @@ class Collection {
    * @template {*} T
    * @param {Iterable<T>} iterable
    * @param {(string|symbol|boolean)=} [uniqueKey='name'] - a key to maintain uniquely within the collection. passing false disables uniqueness.
-   * @returns {vcs.vcm.util.Collection<T>}
+   * @returns {Collection<T>}
    * @api
    */
   static from(iterable, uniqueKey) {
-    const collection = /** @type {vcs.vcm.util.Collection<T>} */ (new Collection(uniqueKey));
+    const collection = /** @type {Collection<T>} */ (new Collection(uniqueKey));
     if (iterable) {
       // eslint-disable-next-line no-restricted-syntax
       for (const i of iterable) {
@@ -51,14 +50,14 @@ class Collection {
 
     /**
      * Event raised if an item is added. Is passed the added item.
-     * @type {vcs.vcm.event.VcsEvent<T>}
+     * @type {VcsEvent<T>}
      * @api
      */
     this.added = new VcsEvent();
 
     /**
      * Event raised if an item is removed. Is passed the removed item.
-     * @type {vcs.vcm.event.VcsEvent<T>}
+     * @type {VcsEvent<T>}
      * @api
      */
     this.removed = new VcsEvent();

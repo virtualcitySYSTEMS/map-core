@@ -31,63 +31,62 @@ import { getGenericFeatureFromClickedObject } from './vectorHelpers.js';
 import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
- * @typedef {vcs.vcm.layer.FeatureLayer.Options} vcs.vcm.layer.Vector.Options
- * @property {vcs.vcm.util.Projection.Options|undefined} projection - if not specified, the framework projection is taken
+ * @typedef {FeatureLayerOptions} VectorOptions
+ * @property {ProjectionOptions|undefined} projection - if not specified, the framework projection is taken
  * @property {number|undefined} maxResolution
  * @property {number|undefined} minResolution
  * @property {boolean} [dontUseTerrainForOblique=false]
  * @property {number} [zIndex=10]
- * @property {vcs.vcm.util.style.VectorStyleItem.Options|vcs.vcm.util.style.VectorStyleItem|undefined} highlightStyle
+ * @property {VectorStyleItemOptions|import("@vcmap/core").VectorStyleItem|undefined} highlightStyle
  * @property {boolean} [isDynamic=false] - if true, the cesium synchronizers are destroyed on map change
- * @property {vcs.vcm.layer.VectorProperties.Options|undefined} vectorProperties
+ * @property {VectorPropertiesOptions|undefined} vectorProperties
  * @api
  */
 
 /**
- * @typedef {Object} vcs.vcm.layer.Vector.GeometryFactoryType
- * @property {function(Array<ol/geom/SimpleGeometry>):Array<ol/Coordinate>} getCoordinates
- * @property {function(ol/geom/SimpleGeometry, number):Object} getGeometryOptions
- * @property {function(Object, number, boolean, number=):Array<Cesium/PolygonGeometry|Cesium/CircleGeometry|Cesium/WallGeometry>} createSolidGeometries
- * @property {function(Object, number, boolean, number=):Array<Cesium/CircleOutlineGeometry|Cesium/WallOutlineGeometry|Cesium/PolygonOutlineGeometry>} createOutlineGeometries
- * @property {function(Object, number, boolean):Array<Cesium/CircleGeometry|Cesium/PolygonGeometry>} createFillGeometries
- * @property {function(Object, ol/style/Style):Array<Cesium/GroundPolylineGeometry>} createGroundLineGeometries
- * @property {function(Object, ol/style/Style):Array<Cesium/PolylineGeometry>} createLineGeometries
+ * @typedef {Object} VectorGeometryFactoryType
+ * @property {function(Array<import("ol/geom/SimpleGeometry").default>):Array<import("ol/coordinate").Coordinate>} getCoordinates
+ * @property {function(import("ol/geom/SimpleGeometry").default, number):Object} getGeometryOptions
+ * @property {function(Object, number, boolean, number=):Array<import("@vcmap/cesium").PolygonGeometry|import("@vcmap/cesium").CircleGeometry|import("@vcmap/cesium").WallGeometry>} createSolidGeometries
+ * @property {function(Object, number, boolean, number=):Array<import("@vcmap/cesium").CircleOutlineGeometry|import("@vcmap/cesium").WallOutlineGeometry|import("@vcmap/cesium").PolygonOutlineGeometry>} createOutlineGeometries
+ * @property {function(Object, number, boolean):Array<import("@vcmap/cesium").CircleGeometry|import("@vcmap/cesium").PolygonGeometry>} createFillGeometries
+ * @property {function(Object, import("ol/style/Style").default):Array<import("@vcmap/cesium").GroundPolylineGeometry>} createGroundLineGeometries
+ * @property {function(Object, import("ol/style/Style").default):Array<import("@vcmap/cesium").PolylineGeometry>} createLineGeometries
  * @api
  */
 
 /**
- * @typedef {Object} vcs.vcm.layer.Vector.HeightInfo
+ * @typedef {Object} VectorHeightInfo
  * @property {boolean} extruded - if the object is extruded
  * @property {Array<number>} storeyHeightsAboveGround - storey heights above ground, list has the same length as storeysAboveGround
  * @property {Array<number>} storeyHeightsBelowGround - storey heights below ground, list has the same length as storeysBelowGround
  * @property {number} groundLevel - the level above or below mean sea level (minZ value or ground_level or 0)
  * @property {number} skirt - a negative height to <i>push</i> the geometry visually into the ground
  * @property {boolean} perPositionHeight
- * @property {Cesium/HeightReference} heightReference heightReference of the feature.
+ * @property {import("@vcmap/cesium").HeightReference} heightReference heightReference of the feature.
  * @property {number} heightAboveGroundAdjustment
  * @api
  */
 
 /**
- * @typedef {vcs.vcm.layer.FeatureLayer.ImplementationOptions} vcs.vcm.layer.Vector.ImplementationOptions
- * @property {ol/source/Vector} source
+ * @typedef {FeatureLayerImplementationOptions} VectorImplementationOptions
+ * @property {import("ol/source").Vector<import("ol/geom/Geometry").default>} source
  * @property {number} maxResolution
  * @property {number} minResolution
- * @property {vcs.vcm.layer.VectorProperties} vectorProperties
+ * @property {VectorProperties} vectorProperties
  */
 
 /**
- * @typedef {ol/Feature} vcs.vcm.layer.Vector.ClickedObject
- * @property {vcs.vcm.maps.ClickPosition} clickedPosition
+ * @typedef {import("ol").Feature<import("ol/geom/Geometry").default>} VectorClickedObject
+ * @property {ClickPosition} clickedPosition
  */
 
 /**
  * Vector Layer for Openlayers, Cesium and Oblique
  * @class
  * @export
- * @extends {vcs.vcm.layer.FeatureLayer}
+ * @extends {FeatureLayer}
  * @api stable
- * @memberOf vcs.vcm.layer
  */
 class Vector extends FeatureLayer {
   /**
@@ -127,7 +126,7 @@ class Vector extends FeatureLayer {
   static get originalFeatureSymbol() { return originalFeatureSymbol; }
 
   /**
-   * @returns {vcs.vcm.layer.Vector.Options}
+   * @returns {VectorOptions}
    */
   static getDefaultOptions() {
     return {
@@ -144,7 +143,7 @@ class Vector extends FeatureLayer {
   }
 
   /**
-   * @param {vcs.vcm.layer.Vector.Options} options
+   * @param {VectorOptions} options
    */
   constructor(options) {
     super(options);
@@ -156,10 +155,10 @@ class Vector extends FeatureLayer {
     ];
 
     const defaultOptions = Vector.getDefaultOptions();
-    /** @type {ol/source/Vector} */
+    /** @type {import("ol/source").Vector<import("ol/geom/Geometry").default>} */
     this.source = new VectorSource({});
 
-    /** @type {vcs.vcm.util.Projection} */
+    /** @type {Projection} */
     this.projection = new Projection(options.projection);
 
     /** @type {?number} */
@@ -172,7 +171,7 @@ class Vector extends FeatureLayer {
     this.dontUseTerrainForOblique =
       parseBoolean(options.dontUseTerrainForOblique, defaultOptions.dontUseTerrainForOblique);
 
-    /** @type {vcs.vcm.util.style.VectorStyleItem} */
+    /** @type {import("@vcmap/core").VectorStyleItem} */
     this.highlightStyle = /** @type {undefined} */ (defaultOptions.highlightStyle);
     if (options.highlightStyle) {
       this.highlightStyle = options.highlightStyle instanceof VectorStyleItem ?
@@ -205,7 +204,7 @@ class Vector extends FeatureLayer {
     this._onStyleChangeRemover = null;
 
     /**
-     * @type {vcs.vcm.layer.VectorProperties}
+     * @type {VectorProperties}
      * @api
      */
     this.vectorProperties = new VectorProperties({
@@ -224,7 +223,7 @@ class Vector extends FeatureLayer {
     }
 
     /**
-     * @type {vcs.vcm.util.style.Reference|vcs.vcm.util.style.StyleItem.Options|string}
+     * @type {Reference|StyleItemOptions|string}
      * @private
      */
     this._initialStyle = initialStyle;
@@ -275,8 +274,8 @@ class Vector extends FeatureLayer {
 
   /**
    * Returns the layers vcsMeta object
-   * @param {vcs.vcm.layer.GeoJSON.writeOptions=} options
-   * @returns {vcs.vcm.layer.VcsMeta}
+   * @param {GeoJSONwriteOptions=} options
+   * @returns {VcsMeta}
    * @api
    */
   getVcsMeta(options = {}) {
@@ -299,15 +298,15 @@ class Vector extends FeatureLayer {
   }
 
   /**
-   * Sets the meta values based on a {@link vcs.vcm.layer.VcsMeta} Object. Does not carry over the style
-   * @param {vcs.vcm.layer.VcsMeta} vcsMeta
+   * Sets the meta values based on a {@link VcsMeta} Object. Does not carry over the style
+   * @param {VcsMeta} vcsMeta
    */
   setVcsMeta(vcsMeta) { // XXX what about the style?
     this.vectorProperties.setVcsMeta(vcsMeta);
   }
 
   /**
-   * @returns {vcs.vcm.layer.Vector.ImplementationOptions}
+   * @returns {VectorImplementationOptions}
    */
   getImplementationOptions() {
     return {
@@ -321,8 +320,8 @@ class Vector extends FeatureLayer {
 
   /**
    * @inheritDoc
-   * @param {vcs.vcm.maps.VcsMap} map
-   * @returns {Array<vcs.vcm.layer.oblique.VectorOblique|vcs.vcm.layer.cesium.VectorCesium|vcs.vcm.layer.openlayers.VectorOpenlayers>}
+   * @param {import("@vcmap/core").VcsMap} map
+   * @returns {Array<VectorOblique|VectorCesium|VectorOpenlayers>}
    */
   createImplementationsForMap(map) {
     if (!this.visibility) {
@@ -345,9 +344,9 @@ class Vector extends FeatureLayer {
   }
 
   /**
-   * @param {(vcs.vcm.util.style.Reference|vcs.vcm.util.style.DeclarativeStyleItem.Options|vcs.vcm.util.style.ClusterStyleItem.Options|vcs.vcm.util.style.VectorStyleItem.Options|vcs.vcm.util.style.StyleItem|string)=} styleOptions
-   * @param {vcs.vcm.util.style.VectorStyleItem=} defaultStyle
-   * @returns {vcs.vcm.util.style.StyleItem}
+   * @param {(Reference|DeclarativeStyleItemOptions|VectorStyleItemOptions|import("@vcmap/core").StyleItem|string)=} styleOptions
+   * @param {import("@vcmap/core").VectorStyleItem=} defaultStyle
+   * @returns {import("@vcmap/core").StyleItem}
    */
   getStyleOrDefaultStyle(styleOptions, defaultStyle) {
     return super.getStyleOrDefaultStyle(styleOptions, defaultStyle || defaultVectorStyle.clone());
@@ -355,7 +354,7 @@ class Vector extends FeatureLayer {
 
   /**
    * sets the style of this layer
-   * @param {ol/style/Style|ol/style/StyleFunction|vcs.vcm.util.style.StyleItem|string} style
+   * @param {import("ol/style/Style").default|import("ol/style/Style").StyleFunction|import("@vcmap/core").StyleItem|string} style
    * @param {boolean=} silent
    */
   setStyle(style, silent) {
@@ -402,7 +401,7 @@ class Vector extends FeatureLayer {
 
   /**
    * sets the highlightstyle of this layer
-   * @param {ol/style/Style|ol/style/StyleFunction|vcs.vcm.util.style.VectorStyleItem} style
+   * @param {import("ol/style/Style").default|import("ol/style/Style").StyleFunction|import("@vcmap/core").VectorStyleItem} style
    * @api experimental
    */
   setHighlightStyle(style) {
@@ -419,7 +418,7 @@ class Vector extends FeatureLayer {
 
   /**
    * returns the openlayers vector source
-   * @returns {ol/source/Vector}
+   * @returns {import("ol/source").Vector<import("ol/geom/Geometry").default>}
    * @api
    */
   getSource() {
@@ -430,7 +429,7 @@ class Vector extends FeatureLayer {
    * add features to the vector layer and return an array with their ids.
    * The geometry will be mutated and transformed to EPSG 3857 mercator coordinate system
    *
-   * @param {Array<ol/Feature>} features
+   * @param {Array<import("ol").Feature<import("ol/geom/Geometry").default>>} features
    * @returns {Array<string|number>}
    * @api stable
    * @todo mechanism to enforce XYZ coordinate layout for internal usage
@@ -469,7 +468,7 @@ class Vector extends FeatureLayer {
         return feature;
       })
       .filter(f => f);
-    this.source.addFeatures(/** @type {Array<ol/Feature>} */ (toAdd));
+    this.source.addFeatures(/** @type {Array<import("ol").Feature<import("ol/geom/Geometry").default>>} */ (toAdd));
     return features.map(f => f.getId());
   }
 
@@ -497,7 +496,7 @@ class Vector extends FeatureLayer {
    * returns an array with features
    * feature geometries are always in EPSG 3857 mercator coordinate system
    * @param {Array<string|number>} ids
-   * @returns {Array<ol/Feature>}
+   * @returns {Array<import("ol").Feature<import("ol/geom/Geometry").default>>}
    * @api stable
    */
   getFeaturesById(ids) {
@@ -510,7 +509,7 @@ class Vector extends FeatureLayer {
    * returns an feature if found, otherwise null
    * feature geometries are always in EPSG 3857 mercator coordinate system
    * @param {string|number} id
-   * @returns {ol/Feature}
+   * @returns {import("ol").Feature<import("ol/geom/Geometry").default>}
    * @api stable
    */
   getFeatureById(id) {
@@ -520,7 +519,7 @@ class Vector extends FeatureLayer {
   /**
    * returns an array with features
    * Feature geometries are always in EPSG 3857 mercator coordinate system
-   * @returns {Array.<ol/Feature>}
+   * @returns {Array<import("ol").Feature<import("ol/geom/Geometry").default>>}
    * @api stable
    */
   getFeatures() {
@@ -530,7 +529,7 @@ class Vector extends FeatureLayer {
   /**
    * Returns the configured Extent of this layer or tries to calculate the extent based on the current features.
    * Returns null of no extent was configured and the layer is void of any features with a valid geometry.
-   * @returns {vcs.vcm.util.Extent|null}
+   * @returns {Extent|null}
    * @api
    */
   getZoomToExtent() {
@@ -549,7 +548,7 @@ class Vector extends FeatureLayer {
   }
 
   /**
-   * @param {ol/Feature} olFeature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} olFeature
    * @returns {?Object}
    */
   objectClickedHandler(olFeature) {
@@ -564,18 +563,18 @@ class Vector extends FeatureLayer {
   }
 
   /**
-   * @param {vcs.vcm.layer.Vector.ClickedObject} object
-   * @returns {?vcs.vcm.layer.GenericFeature}
+   * @param {VectorClickedObject} object
+   * @returns {?GenericFeature}
    */
   getGenericFeatureFromClickedObject(object) {
     return getGenericFeatureFromClickedObject(object, this);
   }
 
   /**
-   * @returns {vcs.vcm.layer.Vector.Options}
+   * @returns {VectorOptions}
    */
   getConfigObject() {
-    const config = /** @type {vcs.vcm.layer.Vector.Options} */ (super.getConfigObject());
+    const config = /** @type {VectorOptions} */ (super.getConfigObject());
     const defaultOptions = Vector.getDefaultOptions();
 
     if (this.projection.epsg !== getDefaultProjection().epsg) {

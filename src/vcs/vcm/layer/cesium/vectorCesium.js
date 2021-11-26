@@ -12,27 +12,26 @@ import { synchronizeFeatureVisibilityWithSource } from '../vectorHelpers.js';
  * represents a specific vector layer for cesium.
  * @class
  * @export
- * @extends {vcs.vcm.layer.LayerImplementation<vcs.vcm.maps.CesiumMap>}
- * @implements {vcs.vcm.layer.FeatureLayerImplementation}
- * @memberOf vcs.vcm.layer.cesium
+ * @extends {LayerImplementation<import("@vcmap/core").CesiumMap>}}
+ * @implements {FeatureLayerImplementation}
  */
 class VectorCesium extends LayerImplementation {
   static get className() { return 'vcs.vcm.layer.cesium.VectorCesium'; }
 
   /**
-   * @param {vcs.vcm.maps.CesiumMap} map
-   * @param {vcs.vcm.layer.Vector.ImplementationOptions} options
+   * @param {import("@vcmap/core").CesiumMap} map
+   * @param {VectorImplementationOptions} options
    */
   constructor(map, options) {
     super(map, options);
 
-    /** @type {vcs.vcm.layer.VectorProperties} */
+    /** @type {import("@vcmap/core").VectorProperties} */
     this.vectorProperties = options.vectorProperties;
-    /** @type {ol/source/Vector} */
+    /** @type {import("ol/source").Vector<import("ol/geom/Geometry").default>} */
     this.source = options.source;
-    /** @type {vcs.vcm.util.style.StyleItem} */
+    /** @type {import("@vcmap/core").StyleItem} */
     this.style = options.style;
-    /** @type {vcs.vcm.layer.FeatureVisibility} */
+    /** @type {import("@vcmap/core").FeatureVisibility} */
     this.featureVisibility = options.featureVisibility;
     /**
      * @type {Array<Function>}
@@ -46,30 +45,30 @@ class VectorCesium extends LayerImplementation {
     this._removeVectorPropertiesChangeHandler = () => {};
 
     /**
-     * @type {Cesium/PrimitiveCollection|Cesium/CustomDataSource}
+     * @type {import("@vcmap/cesium").PrimitiveCollection|import("@vcmap/cesium").CustomDataSource}
      * @protected
      */
     this._rootCollection = new PrimitiveCollection();
     this._rootCollection[vcsLayerName] = options.name;
 
     /**
-     * @type {Array<ol/events/EventsKey|Array<ol/events/EventsKey>>}
+     * @type {Array<import("ol/events").EventsKey|Array<import("ol/events").EventsKey>>}
      * @private
      */
     this._olListeners = [];
     /**
      * A set of ol.Features to add once the map is back to cesium
-     * @type {Set<ol/Feature>}
+     * @type {Set<import("ol").Feature<import("ol/geom/Geometry").default>>}
      * @private
      */
     this._featureToAdd = new Set();
     /**
-     * @type {vcs.vcm.layer.cesium.VectorContext|vcs.vcm.layer.cesium.ClusterContext|null}
+     * @type {import("@vcmap/core").VectorContext|import("@vcmap/core").ClusterContext|null}
      * @protected
      */
     this._context = null;
     /**
-     * @type {Cesium/Scene|null}
+     * @type {import("@vcmap/cesium").Scene|null}
      * @private
      */
     this._scene = null;
@@ -82,17 +81,17 @@ class VectorCesium extends LayerImplementation {
   _addListeners() {
     this._olListeners.push(this.source
       .on('addfeature', (event) => {
-        this._addFeature(/** @type {ol/source/VectorSourceEvent} */(event).feature);
+        this._addFeature(/** @type {import("ol/source/Vector").VectorSourceEvent} */(event).feature);
       }));
 
     this._olListeners.push(this.source
       .on('removefeature', (event) => {
-        this._removeFeature(/** @type {ol/source/VectorSourceEvent} */(event).feature);
+        this._removeFeature(/** @type {import("ol/source/Vector").VectorSourceEvent} */(event).feature);
       }));
 
     this._olListeners.push(this.source
       .on('changefeature', (event) => {
-        this._featureChanged(/** @type {ol/source/VectorSourceEvent} */(event).feature);
+        this._featureChanged(/** @type {import("ol/source/Vector").VectorSourceEvent} */(event).feature);
       }));
 
     this._removeVectorPropertiesChangeHandler =
@@ -100,12 +99,12 @@ class VectorCesium extends LayerImplementation {
   }
 
   /**
-   * @param {vcs.vcm.maps.CesiumMap} cesiumMap
+   * @param {import("@vcmap/core").CesiumMap} cesiumMap
    * @returns {Promise<void>}
    * @protected
    */
   async _setupContext(cesiumMap) {
-    const rootCollection = /** @type {Cesium/PrimitiveCollection} */ (this._rootCollection);
+    const rootCollection = /** @type {import("@vcmap/cesium").PrimitiveCollection} */ (this._rootCollection);
     this._context = new VectorContext(this._scene, rootCollection);
     cesiumMap.addPrimitiveCollection(rootCollection);
   }
@@ -125,7 +124,7 @@ class VectorCesium extends LayerImplementation {
   }
 
   /**
-   * @param {Array<ol/Feature>} features
+   * @param {Array<import("ol").Feature<import("ol/geom/Geometry").default>>} features
    * @private
    */
   _addFeatures(features) {
@@ -135,7 +134,7 @@ class VectorCesium extends LayerImplementation {
 
   /**
    * converts a feature and adds the associated primitives to the collection of primitives
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @private
    */
   _addFeature(feature) {
@@ -157,7 +156,7 @@ class VectorCesium extends LayerImplementation {
 
   /**
    * removes the primitive of the specified feature
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @private
    */
   _removeFeature(feature) {
@@ -167,7 +166,7 @@ class VectorCesium extends LayerImplementation {
 
   /**
    * called when a features property have changed
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @private
    */
   _featureChanged(feature) {
@@ -207,7 +206,7 @@ class VectorCesium extends LayerImplementation {
   }
 
   /**
-   * @param {vcs.vcm.util.style.StyleItem} style
+   * @param {import("@vcmap/core").StyleItem} style
    * @param {boolean=} silent
    */
   updateStyle(style, silent) {
@@ -224,7 +223,7 @@ class VectorCesium extends LayerImplementation {
    * @protected
    */
   _destroyCollection() {
-    this.map.removePrimitiveCollection(this._rootCollection);
+    this.map.removePrimitiveCollection(/** @type {undefined} */ (this._rootCollection)); // cast to undefined do to missing inheritance
   }
 
   /**

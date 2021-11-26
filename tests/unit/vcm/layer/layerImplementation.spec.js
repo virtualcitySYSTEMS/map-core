@@ -6,9 +6,9 @@ import LayerImplementation from '../../../../src/vcs/vcm/layer/layerImplementati
 
 describe('vcs.vcm.layer.LayerImplementation', () => {
   let map;
-  /** @type {vcs.vcm.layer.Layer} */
+  /** @type {import("@vcmap/core").Layer} */
   let layer;
-  /** @type {vcs.vcm.layer.LayerImplementation} */
+  /** @type {import("@vcmap/core").LayerImplementation} */
   let implementation;
 
   before(async () => {

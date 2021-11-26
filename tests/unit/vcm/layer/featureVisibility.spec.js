@@ -14,7 +14,7 @@ import VectorStyleItem, { vectorStyleSymbol } from '../../../../src/vcs/vcm/util
 import { getCesiumEventSpy, createDummyCesium3DTileFeature } from '../../helpers/cesiumHelpers.js';
 
 describe('vcs.vcm.layer.FeatureVisibility', () => {
-  /** @type {vcs.vcm.layer.FeatureVisibility} */
+  /** @type {import("@vcmap/core").FeatureVisibility} */
   let featureVisibility;
   let highlightStyle;
   let sandbox;
@@ -34,9 +34,9 @@ describe('vcs.vcm.layer.FeatureVisibility', () => {
   });
 
   describe('synchronizeFeatureVisibility', () => {
-    /** @type {vcs.vcm.layer.FeatureVisibility} */
+    /** @type {import("@vcmap/core").FeatureVisibility} */
     let source;
-    /** @type {vcs.vcm.layer.FeatureVisibility} */
+    /** @type {import("@vcmap/core").FeatureVisibility} */
     let destination;
 
     before(() => {

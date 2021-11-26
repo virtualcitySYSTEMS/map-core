@@ -5,11 +5,11 @@ import { wgs84ToMercatorTransformer } from '../../util/projection.js';
 import CanvasTileRenderer from '../../../../ol/render/canvas/canvasTileRenderer.js';
 
 /**
- * @param {ol/Extent} extent
- * @param {ol/Coordinate} center
+ * @param {import("ol/extent").Extent} extent
+ * @param {import("ol/coordinate").Coordinate} center
  * @param {Object} context
- * @param {ol/Size} tileSize
- * @returns {ol/CanvasTileRenderer}
+ * @param {import("ol/size").Size} tileSize
+ * @returns {import("ol").CanvasTileRenderer}
  */
 export function toContext(extent, center, context, tileSize) {
   const { canvas } = context;
@@ -29,10 +29,10 @@ export function toContext(extent, center, context, tileSize) {
 
 /**
  * creates a canvas and draws the features on the canvas;
- * @param {Array<ol/Feature>} features
- * @param {ol/Extent} extent
- * @param {Cesium/Cartographic} center
- * @param {ol/Size} tileSize
+ * @param {Array<import("ol").Feature<import("ol/geom/Geometry").default>>} features
+ * @param {import("ol/extent").Extent} extent
+ * @param {import("@vcmap/cesium").Cartographic} center
+ * @param {import("ol/size").Size} tileSize
  * @returns {HTMLCanvasElement}
  */
 export function getCanvasFromFeatures(features, extent, center, tileSize) {
@@ -45,8 +45,9 @@ export function getCanvasFromFeatures(features, extent, center, tileSize) {
 
   features.forEach((feature) => {
     const styleFunction = feature.getStyleFunction();
-    const featureStyles = /** @type {Array<ol/style/Style>} */(styleFunction(feature, 1));
+    const featureStyles = /** @type {Array<import("ol/style/Style").default>} */(styleFunction(feature, 1));
     featureStyles.forEach((styleToUse) => {
+      // @ts-ignore
       vectorContext.drawFeature(feature, styleToUse);
     });
   });
@@ -54,9 +55,9 @@ export function getCanvasFromFeatures(features, extent, center, tileSize) {
 }
 
 /**
- * @typedef {Object} vcs.vcm.layer.cesium.VectorTileImageryProvider.Options
- * @property {vcs.vcm.layer.tileProvider.TileProvider} tileProvider
- * @property {ol/Size} tileSize
+ * @typedef {Object} VectorTileImageryProviderOptions
+ * @property {import("@vcmap/core").TileProvider} tileProvider
+ * @property {import("ol/size").Size} tileSize
  * @api
  */
 
@@ -64,32 +65,31 @@ export function getCanvasFromFeatures(features, extent, center, tileSize) {
  * implementation of Cesium ImageryProvider Interface
  * @class
  * @export
- * @memberOf vcs.vcm.layer.cesium
  */
 class VectorTileImageryProvider {
   /**
-   * @param {vcs.vcm.layer.cesium.VectorTileImageryProvider.Options} options
+   * @param {VectorTileImageryProviderOptions} options
    */
   constructor(options) {
     /**
-     * @type {vcs.vcm.layer.tileProvider.TileProvider}
+     * @type {import("@vcmap/core").TileProvider}
      */
     this.tileProvider = options.tileProvider;
 
     /**
-     * @type {Cesium/WebMercatorTilingScheme}
+     * @type {import("@vcmap/cesium").WebMercatorTilingScheme}
      * @private
      */
     this._tilingScheme = this.tileProvider.tilingScheme;
 
     /**
-     * @type {ol/Size}
+     * @type {import("ol/size").Size}
      * @private
      */
     this._tileSize = options.tileSize;
 
     /**
-     * @type {Cesium/Event}
+     * @type {import("@vcmap/cesium").Event}
      * @private
      */
     this._errorEvent = new CesiumEvent();
@@ -151,7 +151,7 @@ class VectorTileImageryProvider {
   }
 
   /**
-   * @returns {Cesium/Rectangle}
+   * @returns {import("@vcmap/cesium").Rectangle}
    */
   get rectangle() {
     return this._tilingScheme.rectangle;
@@ -186,7 +186,7 @@ class VectorTileImageryProvider {
   }
 
   /**
-   * @returns {Cesium/TilingScheme}
+   * @returns {import("@vcmap/cesium").TilingScheme}
    */
   get tilingScheme() {
     return this._tilingScheme;
@@ -198,7 +198,7 @@ class VectorTileImageryProvider {
   }
 
   /**
-   * @returns {Cesium/Event}
+   * @returns {import("@vcmap/cesium").Event}
    */
   get errorEvent() {
     return this._errorEvent;
@@ -226,7 +226,7 @@ class VectorTileImageryProvider {
    * @param {number} x The tile X coordinate.
    * @param {number} y The tile Y coordinate.
    * @param {number} level The tile level.
-   * @returns {Promise.<HTMLImageElement|HTMLCanvasElement>|undefined} A promise for the image that will resolve when the image is available, or
+   * @returns {Promise<HTMLImageElement|HTMLCanvasElement>} A promise for the image that will resolve when the image is available, or
    *          undefined if there are too many active requests to the server, and the request
    *          should be retried later.  The resolved image may be either an
    *          Image or a Canvas DOM object.

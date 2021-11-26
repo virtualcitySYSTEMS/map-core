@@ -5,7 +5,7 @@ import { vcsLayerName } from '../../../../src/vcs/vcm/layer/layerSymbols.js';
 
 describe('vcs.vcm.layer.DataSource', () => {
   describe('handling of feature visibility', () => {
-    /** @type {vcs.vcm.layer.DataSource} */
+    /** @type {import("@vcmap/core").DataSource} */
     let layer;
 
     before(async () => {
@@ -54,7 +54,7 @@ describe('vcs.vcm.layer.DataSource', () => {
   });
 
   describe('handling of entities', () => {
-    /** @type {vcs.vcm.layer.DataSource} */
+    /** @type {import("@vcmap/core").DataSource} */
     let layer;
 
     before(async () => {

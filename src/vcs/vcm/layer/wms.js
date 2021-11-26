@@ -10,21 +10,21 @@ import Extent from '../util/extent.js';
 import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
- * @typedef {vcs.vcm.layer.RasterLayer.ImplementationOptions} vcs.vcm.layer.WMS.ImplementationOptions
+ * @typedef {RasterLayerImplementationOptions} WMSImplementationOptions
  * @property {Object<string, *>} parameters
  * @property {boolean} highResolution
- * @property {ol/Size} tileSize
+ * @property {import("ol/size").Size} tileSize
  * @property {string} version
  * @api
  */
 
 /**
- * @typedef {vcs.vcm.layer.RasterLayer.Options} vcs.vcm.layer.WMS.Options
+ * @typedef {RasterLayerOptions} WMSOptions
  * @property {string|undefined} layers -  string with comma separated names of the layers to display
  * @property {string} [version='1.1.1'] - WMS version (either 1.1.1 (default) or 1.3.0)
  * @property {Object<string, *>|string|undefined} parameters - key value pair of additional WMS parameters, url query notation possible
- * @property {vcs.vcm.util.featureProvider.WMSFeatureProvider.Options|undefined} featureInfo -  whether this layer should send getFeatureInfo requests to the service when objects are clicked.
- * @property {ol/Size} [tileSize=[256,256]]
+ * @property {WMSFeatureProviderOptions|undefined} featureInfo -  whether this layer should send getFeatureInfo requests to the service when objects are clicked.
+ * @property {import("ol/size").Size} [tileSize=[256,256]]
  * @property {boolean} [highResolution=false] - use higher resolution images (sofar only in 3D)
  * @api
  */
@@ -33,15 +33,14 @@ import { VcsClassRegistry } from '../classRegistry.js';
  * WMS layer for Cesium and Openlayers
  * @class
  * @export
- * @extends {vcs.vcm.layer.RasterLayer}
+ * @extends {RasterLayer}
  * @api stable
- * @memberOf vcs.vcm.layer
  */
 class WMS extends RasterLayer {
   static get className() { return 'vcs.vcm.layer.WMS'; }
 
   /**
-   * @returns {vcs.vcm.layer.WMS.Options}
+   * @returns {WMSOptions}
    */
   static getDefaultOptions() {
     return {
@@ -49,14 +48,14 @@ class WMS extends RasterLayer {
       version: '1.1.1',
       parameters: undefined,
       featureInfo: undefined,
-      tileSize: /** @type {ol/Size} */ ([256, 256]),
+      tileSize: /** @type {import("ol/size").Size} */ ([256, 256]),
       highResolution: false,
       layers: '',
     };
   }
 
   /**
-   * @param {vcs.vcm.layer.WMS.Options} options
+   * @param {WMSOptions} options
    */
   constructor(options) {
     super(options);
@@ -87,12 +86,12 @@ class WMS extends RasterLayer {
     }
     this.parameters.LAYERS = options.layers || defaultOptions.layers;
 
-    /** @type {ol/Size} */
+    /** @type {import("ol/size").Size} */
     this.tileSize = options.tileSize || defaultOptions.tileSize;
     /** @type {boolean} */
     this.highResolution = parseBoolean(options.highResolution, defaultOptions.highResolution);
     /**
-     * @type {vcs.vcm.util.featureProvider.WMSFeatureProvider.Options}
+     * @type {WMSFeatureProviderOptions}
      * @private
      */
     this._featureInfoOptions = options.featureInfo || defaultOptions.featureInfo;
@@ -143,7 +142,7 @@ class WMS extends RasterLayer {
   }
 
   /**
-   * @returns {vcs.vcm.layer.WMS.ImplementationOptions}
+   * @returns {WMSImplementationOptions}
    */
   getImplementationOptions() {
     return {
@@ -156,8 +155,8 @@ class WMS extends RasterLayer {
   }
 
   /**
-   * @param {vcs.vcm.maps.VcsMap} map
-   * @returns {Array<vcs.vcm.layer.cesium.WMSCesium|vcs.vcm.layer.openlayers.WMSOpenlayers>}
+   * @param {import("@vcmap/core").VcsMap} map
+   * @returns {Array<WMSCesium|WMSOpenlayers>}
    */
   createImplementationsForMap(map) {
     if (map instanceof CesiumMap) {
@@ -191,10 +190,10 @@ class WMS extends RasterLayer {
   }
 
   /**
-   * @returns {vcs.vcm.layer.WMS.Options}
+   * @returns {WMSOptions}
    */
   getConfigObject() {
-    const config = /** @type {vcs.vcm.layer.WMS.Options} */ (super.getConfigObject());
+    const config = /** @type {WMSOptions} */ (super.getConfigObject());
     const defaultOptions = WMS.getDefaultOptions();
 
     if (this.parameters.LAYERS) {
@@ -226,7 +225,7 @@ class WMS extends RasterLayer {
     }
 
     if (this.tileSize[0] !== defaultOptions.tileSize[0] || this.tileSize[1] !== defaultOptions.tileSize[1]) {
-      config.tileSize = /** @type {ol/Size} */ (this.tileSize.slice());
+      config.tileSize = /** @type {import("ol/size").Size} */ (this.tileSize.slice());
     }
 
     if (this.featureProvider && this.featureProvider instanceof WMSFeatureProvider) {
@@ -239,7 +238,7 @@ class WMS extends RasterLayer {
       }
       if (
         featureInfoConfig.extent &&
-        new Extent(/** @type {vcs.vcm.util.Extent.Options} */ (featureInfoConfig.extent)).equals(this.extent)
+        new Extent(/** @type {ExtentOptions} */ (featureInfoConfig.extent)).equals(this.extent)
       ) {
         delete featureInfoConfig.extent;
       }

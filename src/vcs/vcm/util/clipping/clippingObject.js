@@ -10,31 +10,30 @@ import LayerCollection from '../layerCollection.js';
 
 /**
  * @namespace clipping
- * @memberOf vcs.vcm.util
  * @export
  * @api
  */
 
 /**
  * Object to define an entity which is clipped by this ClippingObject
- * @typedef {Object} vcs.vcm.util.clipping.ClippingObject.EntityOption
+ * @typedef {Object} ClippingObjectEntityOption
  * @property {string} layerName
  * @property {string} entityId
  * @api
  */
 
 /**
- * @typedef {Object} vcs.vcm.util.clipping.ClippingObject.Options
+ * @typedef {Object} ClippingObjectOptions
  * @property {Array<string>|undefined} layerNames
- * @property {Array<vcs.vcm.util.clipping.ClippingObject.EntityOption>|undefined} entities
- * @property {Cesium/ClippingPlaneCollection|undefined} clippingPlaneCollection
+ * @property {Array<ClippingObjectEntityOption>|undefined} entities
+ * @property {import("@vcmap/cesium").ClippingPlaneCollection|undefined} clippingPlaneCollection
  * @property {boolean} [terrain=false]
  * @property {boolean} [local=false] - if not local, coordinates are expected in ECEF
  * @api
  */
 
 /**
- * @returns {vcs-logger/Logger}
+ * @returns {import("@vcsuite/logger").Logger}
  */
 function getLogger() {
   return getLoggerByName('vcs.vcm.util.clipping.ClippingObject');
@@ -44,27 +43,26 @@ const globeSymbol = Symbol('ClippingObjectGlobe');
 
 /**
  * The ClippingObject is a container for a Cesium.ClippingPlaneCollection. The container holds information on the
- * targeted Cesium objects, based on layerNames (for [CesiumTileset]{@link vcs.vcm.layer.CesiumTileset}) or
- * layerName and entity id for Cesium.DataSource which are part of an [DataSource]{@link vcs.vcm.layer.DataSource} layer.
- * Adding a ClippingObject to the [ClippingObjectManager]{@link vcs.vcm.util.clipping.ClippingObjectManager} applies the
+ * targeted Cesium objects, based on layerNames (for [CesiumTileset]{@link CesiumTileset}) or
+ * layerName and entity id for Cesium.DataSource which are part of an [DataSource]{@link DataSource} layer.
+ * Adding a ClippingObject to the [ClippingObjectManager]{@link ClippingObjectManager} applies the
  * objects Cesium.ClippingPlaneCollection where applicable. Once added, changes to the targets of the object are tracked.
  * To update the Cesium.ClippingPlaneCollection or its definitions, you must trigger an update by setting the clippingPlaneCollection
  * property to the new definition.
  * @class
  * @export
  * @api stable
- * @memberOf vcs.vcm.util.clipping
  */
 class ClippingObject {
   /**
-   * @param {vcs.vcm.util.clipping.ClippingObject.Options=} options
+   * @param {ClippingObjectOptions=} options
    */
   constructor(options = {}) {
     /** @type {string} */
     this.id = uuidv4();
 
     /**
-     * The current layerNames. Use add/removeLayer to manipulate.
+     * The current layerNames. Use add/removeimport("@vcmap/core").Layer to manipulate.
      * @type {Array<string>}
      * @readonly
      * @api
@@ -73,7 +71,7 @@ class ClippingObject {
 
     /**
      * The current entities and their respective layerNames. Use add/removeEntity to manipulate
-     * @type {Array<vcs.vcm.util.clipping.ClippingObject.EntityOption>}
+     * @type {Array<ClippingObjectEntityOption>}
      * @readonly
      * @api
      */
@@ -82,12 +80,12 @@ class ClippingObject {
     /**
      * Key is a semantic identifier, eg. layerName or layerName-entitiyId, depending on the target. Targets
      * represent Cesium Object which support the clippingPlanes API
-     * @type {Map<(string|symbol), Cesium/Entity|Cesium/Cesium3DTileset|Cesium/Globe>}
+     * @type {Map<(string|symbol), import("@vcmap/cesium").Entity|import("@vcmap/cesium").Cesium3DTileset|import("@vcmap/cesium").Globe>}
      */
     this.targets = new Map();
 
     /**
-     * @type {Cesium/ClippingPlaneCollection|null}
+     * @type {import("@vcmap/cesium").ClippingPlaneCollection|null}
      * @private
      */
     this._clippingPlaneCollection = options.clippingPlaneCollection || null;
@@ -104,20 +102,20 @@ class ClippingObject {
 
     /**
      * Event, raised on a change of targets
-     * @type {vcs.vcm.event.VcsEvent<void>}
+     * @type {VcsEvent<void>}
      * @api
      */
     this.targetsUpdated = new VcsEvent();
 
     /**
      * Event, raised on changes to the clippingPlaneCollection property
-     * @type {vcs.vcm.event.VcsEvent<void>}
+     * @type {VcsEvent<void>}
      * @api
      */
     this.clippingPlaneUpdated = new VcsEvent();
 
     /**
-     * @type {Set<vcs.vcm.layer.FeatureStore>}
+     * @type {Set<import("@vcmap/core").FeatureStore>}
      * @private
      */
     this._cachedFeatureStoreLayers = new Set();
@@ -128,12 +126,12 @@ class ClippingObject {
   /**
    * The current Cesium.ClippingPlaneCollection. To update the collection, set this property to the new definition.
    * @api
-   * @type {Cesium/ClippingPlaneCollection|null}
+   * @type {import("@vcmap/cesium").ClippingPlaneCollection|null}
    */
   get clippingPlaneCollection() { return this._clippingPlaneCollection; }
 
   /**
-   * @param {Cesium/ClippingPlaneCollection} clippingPlaneCollection
+   * @param {import("@vcmap/cesium").ClippingPlaneCollection} clippingPlaneCollection
    */
   set clippingPlaneCollection(clippingPlaneCollection) {
     this._clippingPlaneCollection = clippingPlaneCollection;
@@ -181,7 +179,7 @@ class ClippingObject {
   }
 
   /**
-   * @param {vcs.vcm.util.LayerCollection} layerCollection
+   * @param {import("@vcmap/core").LayerCollection} layerCollection
    */
   setLayerCollection(layerCollection) {
     check(layerCollection, LayerCollection);
@@ -196,7 +194,7 @@ class ClippingObject {
   }
 
   /**
-   * @param {vcs.vcm.layer.Layer} layer
+   * @param {import("@vcmap/core").Layer} layer
    */
   handleLayerChanged(layer) {
     const map = this._activeMap;
@@ -210,7 +208,7 @@ class ClippingObject {
             [];
 
           if (tilesets.length > 0) {
-            tilesets.forEach((tileset) => {
+            tilesets.forEach(/** @param {import("@vcmap/cesium").Cesium3DTileset} tileset */ (tileset) => {
               tileset.readyPromise.then((cesium3DTileset) => {
                 if (this.layerNames.includes(layer.name) && layer.active) {
                   this.targets.set(layer.name, cesium3DTileset);
@@ -246,7 +244,8 @@ class ClippingObject {
           .forEach((eo) => {
             const key = `${eo.layerName}-${eo.entityId}`;
             if (layer.active) {
-              const entity = /** @type {Cesium/CustomDataSource} */ (dataSource).entities.getById(eo.entityId);
+              const entity = /** @type {import("@vcmap/cesium").CustomDataSource} */ (dataSource)
+                .entities.getById(eo.entityId);
               if (entity) {
                 this.targets.set(key, entity);
                 raise = true;
@@ -267,15 +266,15 @@ class ClippingObject {
       }
     } else if (this.layerNames.includes(layer.name) && layer.className === 'vcs.vcm.layer.FeatureStore') {
       if (layer.active) {
-        this._cachedFeatureStoreLayers.add(/** @type {vcs.vcm.layer.FeatureStore} */ (layer));
-      } else if (this._cachedFeatureStoreLayers.has(/** @type {vcs.vcm.layer.FeatureStore} */ (layer))) {
-        this._cachedFeatureStoreLayers.delete(/** @type {vcs.vcm.layer.FeatureStore} */ (layer));
+        this._cachedFeatureStoreLayers.add(/** @type {import("@vcmap/core").FeatureStore} */ (layer));
+      } else if (this._cachedFeatureStoreLayers.has(/** @type {import("@vcmap/core").FeatureStore} */ (layer))) {
+        this._cachedFeatureStoreLayers.delete(/** @type {import("@vcmap/core").FeatureStore} */ (layer));
       }
     }
   }
 
   /**
-   * @param {vcs.vcm.maps.VcsMap|null} map
+   * @param {import("@vcmap/core").VcsMap|null} map
    */
   handleMapChanged(map) {
     if (map instanceof CesiumMap) {

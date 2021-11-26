@@ -7,58 +7,57 @@ import { parseGeoJSON, writeGeoJSONFeature } from './geojsonHelpers.js';
 import VcsObject from '../object.js';
 
 /**
- * @typedef {Object} vcs.vcm.layer.FeatureStore.TrackResults
- * @property {Array<ol/Feature>} add
- * @property {Array<ol/Feature>} edit
- * @property {Array<ol/Feature>} remove
+ * @typedef {Object} FeatureStoreTrackResults
+ * @property {Array<import("ol").Feature<import("ol/geom/Geometry").default>>} add
+ * @property {Array<import("ol").Feature<import("ol/geom/Geometry").default>>} edit
+ * @property {Array<import("ol").Feature<import("ol/geom/Geometry").default>>} remove
  * @api
  */
 
 /**
- * @typedef {Object} vcs.vcm.layer.FeatureStore.FeatureStoreChanges.Listeners
- * @property {ol/events/EventsKey|Array<ol/events/EventsKey>|null} addfeature
- * @property {ol/events/EventsKey|Array<ol/events/EventsKey>|null} changefeature
- * @property {ol/events/EventsKey|Array<ol/events/EventsKey>|null} removefeature
+ * @typedef {Object} FeatureStoreChangesListeners
+ * @property {import("ol/events").EventsKey|Array<import("ol/events").EventsKey>|null} addfeature
+ * @property {import("ol/events").EventsKey|Array<import("ol/events").EventsKey>|null} changefeature
+ * @property {import("ol/events").EventsKey|Array<import("ol/events").EventsKey>|null} removefeature
  */
 
 /**
- * @typedef {Object} vcs.vcm.layer.FeatureStore.FeatureStoreChanges.Values
+ * @typedef {Object} FeatureStoreChangesValues
  * @property {boolean} changed
  */
 
 /**
  * do not construct directly, use the layers .changeTracker instead
  * @class
- * @extends {vcs.vcm.VcsObject}
- * @memberOf vcs.vcm.layer.FeatureStore
+ * @extends {VcsObject}
  * @api
  */
 class FeatureStoreChanges extends VcsObject {
   static get className() { return 'vcs.vcm.layer.FeatureStoreChanges'; }
 
   /**
-   * @param {vcs.vcm.layer.FeatureStore} layer
+   * @param {import("@vcmap/core").FeatureStore} layer
    */
   constructor(layer) {
     super({});
 
-    /** @type {vcs.vcm.layer.FeatureStore} */
+    /** @type {import("@vcmap/core").FeatureStore} */
     this.layer = layer;
-    /** @type {vcs.vcm.layer.FeatureStore.FeatureStoreChanges.Listeners} */
+    /** @type {FeatureStoreChangesListeners} */
     this._changesListeners = {
       addfeature: null,
       changefeature: null,
       removefeature: null,
     };
-    /** @type {Set<ol/Feature>} */
+    /** @type {Set<import("ol").Feature<import("ol/geom/Geometry").default>>} */
     this._addedFeatures = new Set();
-    /** @type {Set<ol/Feature>} */
+    /** @type {Set<import("ol").Feature<import("ol/geom/Geometry").default>>} */
     this._editedFeatures = new Set();
-    /** @type {Set<ol/Feature>} */
+    /** @type {Set<import("ol").Feature<import("ol/geom/Geometry").default>>} */
     this._removedFeatures = new Set();
-    /** @type {Set<ol/Feature>} */
+    /** @type {Set<import("ol").Feature<import("ol/geom/Geometry").default>>} */
     this._convertedFeatures = new Set();
-    /** @type {vcs.vcm.layer.FeatureStore.FeatureStoreChanges.Values} */
+    /** @type {FeatureStoreChangesValues} */
     this.values = {
       changed: false,
     };
@@ -92,7 +91,7 @@ class FeatureStoreChanges extends VcsObject {
   }
 
   /**
-   * @returns {vcs.vcm.layer.FeatureStore.TrackResults}
+   * @returns {FeatureStoreTrackResults}
    */
   getChanges() {
     return {
@@ -105,7 +104,7 @@ class FeatureStoreChanges extends VcsObject {
   /**
    * commits the changes to the provided url. url should contain accessTokens and point to a featureStore layers bulk operation endpoint
    * @param {string} url
-   * @returns {Promise}
+   * @returns {Promise<void>}
    * @api
    */
   commitChanges(url) {
@@ -148,9 +147,10 @@ class FeatureStoreChanges extends VcsObject {
         success() {},
       });
     });
-    /** @type {Promise} */
+    /** @type {Promise<void>} */
     let promise = Promise.resolve();
     if (actions.length) {
+      // @ts-ignore
       promise = axios.post(url.toString(), actions.map(a => ({ action: a.action, feature: a.feature })))
         .then(({ data }) => {
           const failures = data.failedActions.map(({ index, error }) => {
@@ -177,7 +177,7 @@ class FeatureStoreChanges extends VcsObject {
       .then(() => {
         const promises = [];
         this._convertedFeatures.forEach((f) => { promises.push(this._resetFeature(f)); });
-        Promise.all(promises);
+        return Promise.all(promises);
       })
       .then(() => {
         this._resetValues();
@@ -190,10 +190,10 @@ class FeatureStoreChanges extends VcsObject {
 
   /**
    * resets all changes since the last commit or the beginning of tracking
-   * @returns {Promise}
+   * @returns {Promise<void>}
    * @api
    */
-  reset() {
+  async reset() {
     const promises = [];
     this._addedFeatures.forEach((f) => { promises.push(this._resetFeature(f)); });
     this._editedFeatures.forEach((f) => { promises.push(this._resetFeature(f)); });
@@ -210,8 +210,8 @@ class FeatureStoreChanges extends VcsObject {
   }
 
   /**
-   * @param {ol/Feature} feature
-   * @returns {Promise}
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+   * @returns {Promise<void>}
    * @private
    */
   _resetFeature(feature) {
@@ -271,7 +271,7 @@ class FeatureStoreChanges extends VcsObject {
   }
 
   /**
-   * @param {{feature: ol/Feature}} event
+   * @param {{feature: import("ol").Feature<import("ol/geom/Geometry").default>}} event
    * @private
    */
   _featureAdded(event) {
@@ -286,7 +286,7 @@ class FeatureStoreChanges extends VcsObject {
   }
 
   /**
-   * @param {{feature: ol/Feature}} event
+   * @param {{feature: import("ol").Feature<import("ol/geom/Geometry").default>}} event
    * @private
    */
   _featureChanged(event) {
@@ -299,7 +299,7 @@ class FeatureStoreChanges extends VcsObject {
   }
 
   /**
-   * @param {{feature: ol/Feature}} event
+   * @param {{feature: import("ol").Feature<import("ol/geom/Geometry").default>}} event
    * @private
    */
   _featureRemoved(event) {
@@ -316,7 +316,7 @@ class FeatureStoreChanges extends VcsObject {
 
   /**
    * tracks the change of removing a static feature
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @api
    */
   removeFeature(feature) {
@@ -327,7 +327,7 @@ class FeatureStoreChanges extends VcsObject {
 
   /**
    * adds an addition to the tracker. prefer use of .track
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @api
    */
   addFeature(feature) {
@@ -338,7 +338,7 @@ class FeatureStoreChanges extends VcsObject {
 
   /**
    * adds an edit to the tracker. prefer use of .track
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @api
    */
   editFeature(feature) {

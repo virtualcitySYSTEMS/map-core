@@ -2,24 +2,23 @@ import { removeFeatureFromMap, addPrimitiveToContext, removeArrayFromCollection 
 
 /**
  * @class
- * @memberOf vcs.vcm.layer.cesium
  */
 class ClusterContext {
   /**
-   * @param {Cesium/CustomDataSource} dataSource
+   * @param {import("@vcmap/cesium").CustomDataSource} dataSource
    */
   constructor(dataSource) {
-    /** @type {Cesium/EntityCollection} */
+    /** @type {import("@vcmap/cesium").EntityCollection} */
     this.entities = dataSource.entities;
-    /** @type {Map<ol/Feature, Array<Cesium/Entity>>} */
+    /** @type {Map<import("ol").Feature<import("ol/geom/Geometry").default>, Array<import("@vcmap/cesium").Entity>>} */
     this.featureToBillboardMap = new Map();
-    /** @type {Map<ol/Feature, Array<Cesium/Entity>>} */
+    /** @type {Map<import("ol").Feature<import("ol/geom/Geometry").default>, Array<import("@vcmap/cesium").Entity>>} */
     this.featureToLabelMap = new Map();
   }
 
   /**
-   * @param {Array<Cesium/Primitive|Cesium/GroundPrimitive|Cesium/GroundPolylinePrimitive|Cesium/ClassificationPrimitive|Cesium/Model>} primitives
-   * @param {ol/Feature} feature
+   * @param {Array<import("@vcmap/cesium").Primitive|import("@vcmap/cesium").GroundPrimitive|import("@vcmap/cesium").GroundPolylinePrimitive|import("@vcmap/cesium").ClassificationPrimitive|import("@vcmap/cesium").Model>} primitives
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @param {boolean=} allowPicking
    */
   // eslint-disable-next-line class-methods-use-this,no-unused-vars
@@ -27,7 +26,7 @@ class ClusterContext {
 
   /**
    * @param {Array<Object>} billboardOptions
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @param {boolean=} allowPicking
    */
   addBillboards(billboardOptions, feature, allowPicking) {
@@ -42,7 +41,7 @@ class ClusterContext {
 
   /**
    * @param {Array<Object>} labelOptions
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @param {boolean=} allowPicking
    */
   addLabels(labelOptions, feature, allowPicking) {
@@ -56,7 +55,7 @@ class ClusterContext {
   }
 
   /**
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    */
   removeFeature(feature) {
     removeFeatureFromMap(feature, this.featureToBillboardMap, this.entities);
@@ -65,11 +64,11 @@ class ClusterContext {
 
   /**
    * Caches the current cesium resources for a feature, removing them from the feature map
-   * @param {ol/Feature}feature
-   * @returns {vcs.vcm.layer.cesium.VectorContext.FeatureCache}
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>}feature
+   * @returns {VectorContextFeatureCache}
    */
   createFeatureCache(feature) {
-    /** @type {vcs.vcm.layer.cesium.VectorContext.FeatureCache} */
+    /** @type {VectorContextFeatureCache} */
     const cache = {};
     cache.billboards = this.featureToBillboardMap.get(feature);
     this.featureToBillboardMap.delete(feature);
@@ -79,7 +78,7 @@ class ClusterContext {
   }
 
   /**
-   * @param {vcs.vcm.layer.cesium.VectorContext.FeatureCache} cache
+   * @param {VectorContextFeatureCache} cache
    */
   clearFeatureCache(cache) {
     removeArrayFromCollection(this.entities, cache.billboards);

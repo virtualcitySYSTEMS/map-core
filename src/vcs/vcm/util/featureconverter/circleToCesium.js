@@ -18,7 +18,7 @@ import Projection from '../projection.js';
  * @param {number} height
  * @param {boolean} perPositionHeight
  * @param {number=} extrudedHeight
- * @returns {Array<Cesium/CircleGeometry>}
+ * @returns {Array<import("@vcmap/cesium").CircleGeometry>}
  * @private
  */
 export function createSolidGeometries(options, height, perPositionHeight, extrudedHeight) {
@@ -35,7 +35,7 @@ export function createSolidGeometries(options, height, perPositionHeight, extrud
  * @param {number} height
  * @param {boolean} perPositionHeight
  * @param {number=} extrudedHeight
- * @returns {Array<Cesium/CircleOutlineGeometry>}
+ * @returns {Array<import("@vcmap/cesium").CircleOutlineGeometry>}
  * @private
  */
 export function createOutlineGeometries(options, height, perPositionHeight, extrudedHeight) {
@@ -51,7 +51,7 @@ export function createOutlineGeometries(options, height, perPositionHeight, extr
  * @param {Object} options
  * @param {number} height
  * @param {boolean} perPositionHeight
- * @returns {Array<Cesium/CircleGeometry>}
+ * @returns {Array<import("@vcmap/cesium").CircleGeometry>}
  * @private
  */
 export function createFillGeometries(options, height, perPositionHeight) {
@@ -60,7 +60,7 @@ export function createFillGeometries(options, height, perPositionHeight) {
 
 /**
  * @param {Object} options
- * @param {ol/style/Style} style
+ * @param {import("ol/style/Style").default} style
  * @returns {{width: number, positions: Array}}
  * @private
  */
@@ -91,8 +91,8 @@ export function getLineGeometryOptions(options, style) {
 
 /**
  * @param {Object} options
- * @param {ol/style/Style} style
- * @returns {Array<Cesium/GroundPolylineGeometry>}
+ * @param {import("ol/style/Style").default} style
+ * @returns {Array<import("@vcmap/cesium").GroundPolylineGeometry>}
  * @private
  */
 export function createGroundLineGeometries(options, style) {
@@ -102,8 +102,8 @@ export function createGroundLineGeometries(options, style) {
 
 /**
  * @param {Object} options
- * @param {ol/style/Style} style
- * @returns {Array<Cesium/PolylineGeometry>}
+ * @param {import("ol/style/Style").default} style
+ * @returns {Array<import("@vcmap/cesium").PolylineGeometry>}
  * @private
  */
 export function createLineGeometries(options, style) {
@@ -113,9 +113,9 @@ export function createLineGeometries(options, style) {
 
 /**
  * extracts the center and radius from the CircleGeometry and converts it to Cartesian3/radius in m
- * @param {ol/geom/Circle} geometry
+ * @param {import("ol/geom/Circle").default} geometry
  * @param {number} positionHeightAdjustment
- * @returns {{center: Cesium/Cartesian3, radius: Number}}
+ * @returns {{center: import("@vcmap/cesium").Cartesian3, radius: Number}}
  * @private
  */
 export function getGeometryOptions(geometry, positionHeightAdjustment) {
@@ -143,8 +143,8 @@ export function getGeometryOptions(geometry, positionHeightAdjustment) {
 }
 
 /**
- * @param {Array<ol/geom/Circle>} geometries
- * @returns {Array<ol/Coordinate>}
+ * @param {Array<import("ol/geom/Circle").default>} geometries
+ * @returns {Array<import("ol/coordinate").Coordinate>}
  * @private
  */
 export function getCoordinates(geometries) {
@@ -154,12 +154,12 @@ export function getCoordinates(geometries) {
 }
 
 /**
- * @type {vcs.vcm.layer.Vector.GeometryFactoryType|null}
+ * @type {VectorGeometryFactoryType|null}
  */
 let geometryFactory = null;
 
 /**
- * @returns {vcs.vcm.layer.Vector.GeometryFactoryType}
+ * @returns {VectorGeometryFactoryType}
  */
 function getGeometryFactory() {
   if (!geometryFactory) {
@@ -178,7 +178,7 @@ function getGeometryFactory() {
 
 /**
  * validates if a point is renderable
- * @param {ol/geom/Circle} circle
+ * @param {import("ol/geom/Circle").default} circle
  * @returns {boolean}
  */
 export function validateCircle(circle) {
@@ -196,12 +196,12 @@ export function validateCircle(circle) {
 
 
 /**
- * @param {ol/Feature} feature
- * @param {ol/style/Style} style
- * @param {Array<ol/geom/Circle>} geometries
- * @param {vcs.vcm.layer.VectorProperties} vectorProperties
- * @param {Cesium/Scene} scene
- * @param {vcs.vcm.layer.cesium.VectorContext|vcs.vcm.layer.cesium.ClusterContext} context
+ * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+ * @param {import("ol/style/Style").default} style
+ * @param {Array<import("ol/geom/Circle").default>} geometries
+ * @param {import("@vcmap/core").VectorProperties} vectorProperties
+ * @param {import("@vcmap/cesium").Scene} scene
+ * @param {import("@vcmap/core").VectorContext|import("@vcmap/core").ClusterContext} context
  */
 export default function circleToCesium(feature, style, geometries, vectorProperties, scene, context) {
   if (!style.getFill() && !style.getStroke()) {

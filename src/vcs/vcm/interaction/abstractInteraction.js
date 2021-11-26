@@ -2,19 +2,19 @@ import { v4 as uuidv4 } from 'uuid';
 import { EventType, ModificationKeyType, PointerKeyType } from './interactionType.js';
 
 /**
- * @typedef {Object} vcs.vcm.interaction.ObliqueParameters
- * @property {ol/Coordinate} pixel - the image pixel clicked
+ * @typedef {Object} ObliqueParameters
+ * @property {import("ol/coordinate").Coordinate} pixel - the image pixel clicked
  * @property {boolean|undefined} estimate - true if the terrain could not be taken into account
  * @api
  */
 
 /**
- * @typedef {vcs.vcm.interaction.MapEvent} vcs.vcm.interaction.Event
- * @property {vcs.vcm.interaction.EventType} type
- * @property {undefined|ol/Feature|Cesium/Cesium3DTileFeature|Cesium/Cesium3DTilePointFeature} feature - a potential feature at said location
+ * @typedef {MapEvent} InteractionEvent
+ * @property {EventType} type
+ * @property {undefined|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature} feature - a potential feature at said location
  * @property {boolean|undefined} stopPropagation - if set to true, the event chain is interrupted
- * @property {undefined|vcs.vcm.interaction.ObliqueParameters} obliqueParameters - additional parameters from oblique if obliquemode is active
- * @property {Cesium/Ray|undefined} ray - potential ray
+ * @property {undefined|ObliqueParameters} obliqueParameters - additional parameters from oblique if obliquemode is active
+ * @property {import("@vcmap/cesium").Ray|undefined} ray - potential ray
  * @property {boolean|undefined} exactPosition - whether the position is exact, eg with translucentDepthPicking on
  * @api
  */
@@ -22,7 +22,6 @@ import { EventType, ModificationKeyType, PointerKeyType } from './interactionTyp
 /**
  * An abstract interface for all interactions
  * @class
- * @memberOf vcs.vcm.interaction
  * @export
  * @abstract
  * @api
@@ -38,7 +37,7 @@ class AbstractInteraction {
 
     /**
      * A bitmask representing the default events to listen to
-     * {@link vcs.vcm.interaction.EventType}, default is NONE
+     * {@link EventType}, default is NONE
      * @type {number}
      * @protected
      * @api
@@ -46,7 +45,7 @@ class AbstractInteraction {
     this._defaultActive = EventType.NONE;
 
     /**
-     * The current active bitmask for {@link vcs.vcm.interaction.EventType}
+     * The current active bitmask for {@link EventType}
      * @type {number}
      * @api
      */
@@ -54,7 +53,7 @@ class AbstractInteraction {
 
     /**
      * The default bitmask for modification keys to listen to,
-     * {@link vcs.vcm.interaction.ModificationKeyType} default is NONE
+     * {@link ModificationKeyType} default is NONE
      * @type {number}
      * @protected
      * @api
@@ -62,21 +61,21 @@ class AbstractInteraction {
     this._defaultModificationKey = ModificationKeyType.NONE;
 
     /**
-     * The current active {@link vcs.vcm.interaction.ModificationKeyType}
+     * The current active {@link ModificationKeyType}
      * @type {number}
      * @api
      */
     this.modificationKey = this._defaultModificationKey;
 
     /**
-     * default bitmask for pointer key {@link vcs.vcm.interaction.PointerKeyType}, starting value is LEFT
+     * default bitmask for pointer key {@link PointerKeyType}, starting value is LEFT
      * @type {number}
      * @protected
      */
     this._defaultPointerKey = PointerKeyType.LEFT;
 
     /**
-     * The currently active {@link vcs.vcm.interaction.PointerKeyType}
+     * The currently active {@link PointerKeyType}
      * @type {number}
      */
     this.pointerKey = this._defaultPointerKey;
@@ -84,8 +83,8 @@ class AbstractInteraction {
 
   /**
    * Main function, called when an event is raised for this interaction
-   * @param {vcs.vcm.interaction.Event} event
-   * @returns {Promise.<vcs.vcm.interaction.Event>}
+   * @param {InteractionEvent} event
+   * @returns {Promise<InteractionEvent>}
    * @api
    */
   // eslint-disable-next-line class-methods-use-this
@@ -96,7 +95,7 @@ class AbstractInteraction {
   /**
    * Sets the interaction active.
    * Use boolean (true|false) to toggle default behavior.
-   * Pass it a bitmask of {@link vcs.vcm.interaction.EventType}
+   * Pass it a bitmask of {@link EventType}
    * to change the active state.
    * Call without arguments to reset the default active, modification key and pointer Key behavior
    * @param {(boolean|number)=} active

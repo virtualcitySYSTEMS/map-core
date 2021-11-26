@@ -5,7 +5,7 @@ import Projection from '../util/projection.js';
 import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
- * @typedef {vcs.vcm.layer.Vector.Options} vcs.vcm.layer.WFS.Options
+ * @typedef {VectorOptions} WFSOptions
  * @property {string|Array<string>} featureType - required parameter of the featureType to load. Supply an array for multiples
  * @property {string} featureNS - required parameter, namespace used for the feature prefix
  * @property {string} featurePrefix - required parameter, feature prefix
@@ -17,15 +17,14 @@ import { VcsClassRegistry } from '../classRegistry.js';
  * WFS Vector Layer
  * @class
  * @export
- * @extends {vcs.vcm.layer.Vector}
+ * @extends {Vector}
  * @api
- * @memberOf vcs.vcm.layer
  */
 class WFS extends Vector {
   static get className() { return 'vcs.vcm.layer.WFS'; }
 
   /**
-   * @returns {vcs.vcm.layer.WFS.Options}
+   * @returns {WFSOptions}
    */
   static getDefaultOptions() {
     return {
@@ -38,7 +37,7 @@ class WFS extends Vector {
   }
 
   /**
-   * @param {vcs.vcm.layer.WFS.Options} options
+   * @param {WFSOptions} options
    */
   constructor(options) {
     const proj = new Projection(options.projection).getConfigObject();
@@ -61,14 +60,14 @@ class WFS extends Vector {
     /** @type {!Object} */
     this.getFeaturesOptions = options.getFeatureOptions || {};
 
-    /** @type {ol/format/WFS} */
+    /** @type {import("ol/format/WFS").default} */
     this.wfsFormat = new WFSFormat({
       featureNS: this.featureNS,
       featureType: this.featureType,
     });
 
     /**
-     * @type {Promise|null}
+     * @type {Promise<void>|null}
      * @private
      */
     this._dataFetchedPromise = null;
@@ -100,7 +99,7 @@ class WFS extends Vector {
 
   /**
    * Fetches the data for the layer. If data is already fetched returns a resolved Promise
-   * @returns {Promise}
+   * @returns {Promise<void>}
    * @api
    */
   fetchData() {
@@ -109,7 +108,7 @@ class WFS extends Vector {
     }
     if (this.url != null) {
       const requestDocument = this.wfsFormat
-        .writeGetFeature(/** @type {ol/format/WFSWriteGetFeatureOptions} */ ({
+        .writeGetFeature(/** @type {import("ol/format/WFS").WriteGetFeatureOptions} */ ({
           featureNS: this.featureNS,
           featurePrefix: this.featurePrefix,
           featureTypes: this.featureType,
@@ -147,10 +146,10 @@ class WFS extends Vector {
 
   /**
    * @inheritDoc
-   * @returns {vcs.vcm.layer.WFS.Options}
+   * @returns {WFSOptions}
    */
   getConfigObject() {
-    const config = /** @type {vcs.vcm.layer.WFS.Options} */ (super.getConfigObject());
+    const config = /** @type {WFSOptions} */ (super.getConfigObject());
 
     config.featureType = this.featureType.slice();
     config.featureNS = this.featureNS;

@@ -5,18 +5,17 @@ import LayerState from './layerState.js';
  * represents an implementation for a Layer for a specific Map
  * @class
  * @export
- * @extends {vcs.vcm.VcsObject}
+ * @extends {VcsObject}
  * @abstract
  * @api
- * @memberOf vcs.vcm.layer
- * @template {vcs.vcm.maps.VcsMap} T
+ * @template {import("@vcmap/core").VcsMap} T
  */
 class LayerImplementation extends VcsObject {
   static get className() { return 'vcs.vcm.layer.LayerImplementation'; }
 
   /**
    * @param {T} map
-   * @param {vcs.vcm.layer.Layer.ImplementationOptions} options
+   * @param {LayerImplementationOptions} options
    */
   constructor(map, options) {
     super(options);
@@ -28,7 +27,7 @@ class LayerImplementation extends VcsObject {
     this.url = options.url;
     /**
      * The current active state of the implementation
-     * @type {vcs.vcm.layer.LayerState}
+     * @type {LayerState}
      * @private
      */
     this._state = LayerState.INACTIVE;

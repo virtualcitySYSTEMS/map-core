@@ -5,7 +5,7 @@ import { vcsLayerName } from './layerSymbols.js';
 import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
- * @typedef {vcs.vcm.layer.DataSource.Options} vcs.vcm.layer.Czml.Options
+ * @typedef {DataSourceOptions} CzmlOptions
  * @property {string|undefined} sourceUri
  * @api
  */
@@ -13,14 +13,13 @@ import { VcsClassRegistry } from '../classRegistry.js';
 /**
  * @class
  * @export
- * @extends {vcs.vcm.layer.DataSource}
- * @memberOf vcs.vcm.layer
+ * @extends {DataSource}
  */
 class Czml extends DataSource {
   static get className() { return 'vcs.vcm.layer.Czml'; }
 
   /**
-   * @returns {vcs.vcm.layer.Czml.Options}
+   * @returns {CzmlOptions}
    */
   static getDefaultOptions() {
     return {
@@ -30,7 +29,7 @@ class Czml extends DataSource {
   }
 
   /**
-   * @param {vcs.vcm.layer.Czml.Options} options
+   * @param {CzmlOptions} options
    */
   constructor(options) {
     super(options);
@@ -46,7 +45,7 @@ class Czml extends DataSource {
     this._loadedReject = () => {};
     /**
      * A Promise resolving with the DataSource on load
-     * @type {Promise}
+     * @type {Promise<void>}
      * @api stable
      */
     this.loaded = new Promise(((resolve, reject) => {
@@ -78,7 +77,7 @@ class Czml extends DataSource {
    * @private
    */
   async _loadData() {
-    const loaded = /** @type {Cesium/CzmlDataSource} */ (this.dataSource)
+    const loaded = /** @type {import("@vcmap/cesium").CzmlDataSource} */ (this.dataSource)
       .load(this.url, this.sourceUri ? { sourceUri: this.sourceUri } : undefined);
     await new Promise((resolve, reject) => {
       loaded.then(resolve, reject);
@@ -101,10 +100,10 @@ class Czml extends DataSource {
 
   /**
    * @inheritDoc
-   * @returns {vcs.vcm.layer.Czml.Options}
+   * @returns {CzmlOptions}
    */
   getConfigObject() {
-    const config = /** @type {vcs.vcm.layer.Czml.Options} */ (super.getConfigObject());
+    const config = /** @type {CzmlOptions} */ (super.getConfigObject());
     if (this.sourceUri) {
       config.sourceUri = this.sourceUri;
     }

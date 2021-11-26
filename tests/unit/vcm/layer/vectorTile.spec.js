@@ -44,7 +44,7 @@ describe('vcs.vcm.layer.VectorTile', () => {
     let featureWithStyle;
     let highlightedFeature;
 
-    /** @type {vcs.vcm.layer.VectorTile} */
+    /** @type {import("@vcmap/core").VectorTile} */
     let vectorTile;
 
     before(() => {

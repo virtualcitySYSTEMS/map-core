@@ -3,7 +3,7 @@ import { parseGeoJSON } from '../geojsonHelpers.js';
 import TileProvider from './tileProvider.js';
 
 /**
- * @typedef {vcs.vcm.layer.tileProvider.TileProvider.Options} vcs.vcm.layer.tileProvider.StaticGeojsonTileProvider.Options
+ * @typedef {TileProviderOptions} StaticGeojsonTileProviderOptions
  * @property {string} url geojson
  * @api
  */
@@ -12,8 +12,7 @@ import TileProvider from './tileProvider.js';
  * Loads the provided geojson url and tiles the content in memory, data is only requested once
  *
  * @class
- * @memberOf vcs.vcm.layer.tileProvider
- * @extends {vcs.vcm.layer.tileProvider.TileProvider}
+ * @extends {TileProvider}
  * @export
  * @api
  */
@@ -25,7 +24,7 @@ class StaticGeojsonTileProvider extends TileProvider {
   static get className() { return 'vcs.vcm.layer.tileProvider.StaticGeojsonTileProvider'; }
 
   /**
-   * @returns {vcs.vcm.layer.tileProvider.StaticGeojsonTileProvider.Options}
+   * @returns {StaticGeojsonTileProviderOptions}
    */
   static getDefaultOptions() {
     return {
@@ -36,7 +35,7 @@ class StaticGeojsonTileProvider extends TileProvider {
   }
 
   /**
-   * @param {vcs.vcm.layer.tileProvider.StaticGeojsonTileProvider.Options} options
+   * @param {StaticGeojsonTileProviderOptions} options
    */
   constructor(options) {
     const defaultOptions = StaticGeojsonTileProvider.getDefaultOptions();
@@ -55,7 +54,7 @@ class StaticGeojsonTileProvider extends TileProvider {
    * @param {number} x
    * @param {number} y
    * @param {number} z
-   * @returns {Promise<Array<ol/Feature>>}
+   * @returns {Promise<Array<import("ol").Feature<import("ol/geom/Geometry").default>>>}
    */
   // eslint-disable-next-line no-unused-vars
   async loader(x, y, z) {

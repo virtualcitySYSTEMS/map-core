@@ -4,7 +4,7 @@ import VectorContext, { addPrimitiveToContext, setReferenceForPicking } from '..
 import { getMockScene } from '../../../helpers/cesiumHelpers.js';
 
 describe('vcs.vcm.layer.cesium.VectorContext', () => {
-  /** @type {vcs.vcm.layer.cesium.VectorContext} */
+  /** @type {import("@vcmap/core").VectorContext} */
   let vectorContext;
   let collection;
   let scene;

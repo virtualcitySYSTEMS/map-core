@@ -8,18 +8,17 @@ import { TilingScheme } from '../rasterLayer.js';
 import { isSameOrigin } from '../../util/urlHelpers.js';
 
 /**
- * WMTS implementation for {@link vcs.vcm.maps.Openlayers}.
+ * WMTS implementation for {@link Openlayers}.
  * @class
  * @export
- * @extends {vcs.vcm.layer.openlayers.RasterLayerOpenlayers}
- * @memberOf vcs.vcm.layer.openlayers
+ * @extends {RasterLayerOpenlayers}
  */
 class WMTSOpenlayers extends RasterLayerOpenlayers {
   static get className() { return 'vcs.vcm.layer.openlayers.WMTSOpenlayers'; }
 
   /**
-   * @param {vcs.vcm.maps.Openlayers} map
-   * @param {vcs.vcm.layer.WMTS.ImplementationOptions} options
+   * @param {import("@vcmap/core").Openlayers} map
+   * @param {WMTSImplementationOptions} options
    */
   constructor(map, options) {
     super(map, options);
@@ -45,7 +44,7 @@ class WMTSOpenlayers extends RasterLayerOpenlayers {
     this.tileMatrixSetID = options.tileMatrixSetID;
 
     /**
-     * @type {ol/Size}
+     * @type {import("ol/size").Size}
      */
     this.tileSize = options.tileSize;
 
@@ -71,7 +70,7 @@ class WMTSOpenlayers extends RasterLayerOpenlayers {
   }
 
   /**
-   * @returns {ol/layer/Tile}
+   * @returns {import("ol/layer/Tile").default}
    */
   getOLLayer() {
     const projection = this.tilingSchema === TilingScheme.GEOGRAPHIC ? wgs84Projection : mercatorProjection;

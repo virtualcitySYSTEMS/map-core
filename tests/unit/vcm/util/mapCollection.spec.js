@@ -173,7 +173,7 @@ describe('vcs.vcm.util.MapCollection', () => {
   });
 
   describe('setting the active map', () => {
-    /** @type {vcs.vcm.util.MapCollection} */
+    /** @type {import("@vcmap/core").MapCollection} */
     let mapCollection;
     let openlayers;
     let cesiumMap;

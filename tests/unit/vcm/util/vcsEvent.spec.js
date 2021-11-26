@@ -2,7 +2,7 @@ import VcsEvent from '../../../../src/vcs/vcm/event/vcsEvent.js';
 
 describe('vcs.vcm.util.VcsEvent', () => {
   let sandbox;
-  /** @type {vcs.vcm.util.VcsEvent} */
+  /** @type {import("@vcmap/core").VcsEvent} */
   let event;
 
   before(() => {

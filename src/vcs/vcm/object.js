@@ -2,10 +2,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { getLogger } from '@vcsuite/logger';
 
 /**
- * @typedef {Object} vcs.vcm.VcsObject.Options
- * @property {string|undefined} type - the type of object, typically only used in configs
- * @property {string|undefined} name - name of the object, if not given a uuid is generated, is used for the framework functions getObjectByName
- * @property {Object|undefined} properties - key value store for framework independent values per Object
+ * @typedef {Object} VcsObjectOptions
+ * @property {string|undefined} [type] - the type of object, typically only used in configs
+ * @property {string|undefined} [name] - name of the object, if not given a uuid is generated, is used for the framework functions getObjectByName
+ * @property {Object|undefined} [properties] - key value store for framework independent values per Object
  * @api
  */
 
@@ -13,13 +13,12 @@ import { getLogger } from '@vcsuite/logger';
  * baseclass for all Objects
  * @class
  * @api stable
- * @memberOf vcs.vcm
  */
 class VcsObject {
   static get className() { return 'vcs.vcm.Framework'; }
 
   /**
-   * @param {vcs.vcm.VcsObject.Options} options
+   * @param {VcsObjectOptions} options
    */
   constructor(options) {
     /**
@@ -49,7 +48,7 @@ class VcsObject {
   }
 
   /**
-   * @returns {vcsuite-logger/Logger}
+   * @returns {import("@vcsuite/logger").Logger}
    * @api
    */
   getLogger() {
@@ -57,7 +56,7 @@ class VcsObject {
   }
 
   /**
-   * @returns {vcs.vcm.VcsObject.Options}
+   * @returns {VcsObjectOptions}
    * @api
    */
   getConfigObject() {

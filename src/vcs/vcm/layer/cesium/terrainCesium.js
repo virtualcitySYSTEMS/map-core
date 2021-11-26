@@ -4,18 +4,17 @@ import { getTerrainProviderForUrl } from '../terrainHelpers.js';
 
 
 /**
- * Terrain implementation for {@link vcs.vcm.maps.CesiumMap}
+ * Terrain implementation for {@link CesiumMap}
  * @class
  * @export
- * @extends {vcs.vcm.layer.LayerImplementation<vcs.vcm.maps.CesiumMap>}
- * @memberOf vcs.vcm.layer.cesium
+ * @extends {LayerImplementation<import("@vcmap/core").CesiumMap>}}
  */
 class TerrainCesium extends LayerImplementation {
   static get className() { return 'vcs.vcm.layer.cesium.TerrainCesium'; }
 
   /**
-   * @param {vcs.vcm.maps.CesiumMap} map
-   * @param {vcs.vcm.layer.Terrain.ImplementationOptions} options
+   * @param {import("@vcmap/core").CesiumMap} map
+   * @param {TerrainImplementationOptions} options
    */
   constructor(map, options) {
     super(map, options);

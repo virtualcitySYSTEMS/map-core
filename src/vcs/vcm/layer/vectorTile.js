@@ -19,9 +19,9 @@ import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
  * synchronizes featureVisibility Symbols on the feature;
- * @param {vcs.vcm.layer.FeatureVisibility} featureVisibility
- * @param {vcs.vcm.layer.GlobalHider} globalHider
- * @param {ol/Feature} feature
+ * @param {import("@vcmap/core").FeatureVisibility} featureVisibility
+ * @param {import("@vcmap/core").GlobalHider} globalHider
+ * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
  */
 function synchronizeFeatureVisibility(featureVisibility, globalHider, feature) {
   const featureId = feature.getId();
@@ -43,26 +43,26 @@ function synchronizeFeatureVisibility(featureVisibility, globalHider, feature) {
 }
 
 /**
- * @typedef {vcs.vcm.layer.FeatureLayer.Options} vcs.vcm.layer.VectorTile.Options
- * @property {vcs.vcm.layer.tileProvider.TileProvider.Options} tileProvider
- * @property {vcs.vcm.util.style.VectorStyleItem.Options|vcs.vcm.util.style.VectorStyleItem|undefined} highlightStyle
- * @property {vcs.vcm.layer.VectorProperties.Options|undefined} vectorProperties
+ * @typedef {FeatureLayerOptions} VectorTileOptions
+ * @property {TileProviderOptions} tileProvider
+ * @property {VectorStyleItemOptions|import("@vcmap/core").VectorStyleItem|undefined} highlightStyle
+ * @property {VectorPropertiesOptions|undefined} vectorProperties
  * @property {number|undefined} minLevel used to restrict the zoom level visibility (minlevel does not allow rendering above tileProvider baseLevel)
  * @property {number|undefined} maxLevel used to restrict the zoom level visibility
  * @api
  */
 
 /**
- * @typedef {vcs.vcm.layer.FeatureLayer.ImplementationOptions} vcs.vcm.layer.VectorTile.ImplementationOptions
- * @property {vcs.vcm.layer.tileProvider.TileProvider} tileProvider
- * @property {ol/Size} tileSize
+ * @typedef {FeatureLayerImplementationOptions} VectorTileImplementationOptions
+ * @property {import("@vcmap/core").TileProvider} tileProvider
+ * @property {import("ol/size").Size} tileSize
  * @property {number} minLevel
  * @property {number} maxLevel
- * @property {vcs.vcm.util.Extent|undefined} extent
+ * @property {import("@vcmap/core").Extent|undefined} extent
  */
 
 /**
- * @typedef {vcs.vcm.layer.FeatureLayerImplementation} vcs.vcm.layer.VectorTileImplementation
+ * @typedef {FeatureLayerImplementation} VectorTileImplementation
  * @property {function(Array<string>):void} updateTiles
  */
 
@@ -70,9 +70,8 @@ function synchronizeFeatureVisibility(featureVisibility, globalHider, feature) {
  * VectorTile Layer for tiled vector Data. Can be connected to data with a TileProvider
  * @class
  * @export
- * @extends {vcs.vcm.layer.FeatureLayer}
+ * @extends {FeatureLayer}
  * @api stable
- * @memberOf vcs.vcm.layer
  */
 class VectorTile extends FeatureLayer {
   /**
@@ -82,7 +81,7 @@ class VectorTile extends FeatureLayer {
   static get className() { return 'vcs.vcm.layer.VectorTile'; }
 
   /**
-   * @returns {vcs.vcm.layer.VectorTile.Options}
+   * @returns {VectorTileOptions}
    */
   static getDefaultOptions() {
     return {
@@ -97,7 +96,7 @@ class VectorTile extends FeatureLayer {
 
 
   /**
-   * @param {vcs.vcm.layer.VectorTile.Options} options
+   * @param {VectorTileOptions} options
    */
   constructor(options) {
     super(options);
@@ -109,7 +108,7 @@ class VectorTile extends FeatureLayer {
 
     const defaultOptions = VectorTile.getDefaultOptions();
 
-    /** @type {vcs.vcm.util.style.VectorStyleItem} */
+    /** @type {VectorStyleItem} */
     this.highlightStyle = /** @type {undefined} */ (defaultOptions.highlightStyle);
     if (options.highlightStyle) {
       this.highlightStyle = options.highlightStyle instanceof VectorStyleItem ?
@@ -118,14 +117,14 @@ class VectorTile extends FeatureLayer {
     }
 
     /**
-     * @type {ol/Size}
+     * @type {import("ol/size").Size}
      * @private
      */
     this._tileSize = [256, 256];
 
     /**
      * at the moment only used for allowPicking, triggers a reload on change
-     * @type {vcs.vcm.layer.VectorProperties}
+     * @type {VectorProperties}
      * @api
      */
     this.vectorProperties = new VectorProperties({
@@ -134,13 +133,13 @@ class VectorTile extends FeatureLayer {
     });
 
     /**
-     * @type {vcs.vcm.layer.tileProvider.TileProvider.Options}
+     * @type {TileProviderOptions}
      * @private
      */
     this._tileProviderOptions = options.tileProvider;
 
     /**
-     * @type {vcs.vcm.layer.tileProvider.TileProvider}
+     * @type {import("@vcmap/core").TileProvider}
      * @api
      */
     this.tileProvider = undefined;
@@ -207,7 +206,7 @@ class VectorTile extends FeatureLayer {
 
 
   /**
-   * @param {ol/Feature} olFeature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} olFeature
    * @returns {?Object}
    */
   objectClickedHandler(olFeature) {
@@ -225,8 +224,8 @@ class VectorTile extends FeatureLayer {
   }
 
   /**
-   * @param {vcs.vcm.layer.Vector.ClickedObject} object
-   * @returns {?vcs.vcm.layer.GenericFeature}
+   * @param {VectorClickedObject} object
+   * @returns {?GenericFeature}
    */
   getGenericFeatureFromClickedObject(object) {
     return getGenericFeatureFromClickedObject(object, this);
@@ -242,12 +241,12 @@ class VectorTile extends FeatureLayer {
   }
 
   /**
-   * @param {vcs.vcm.layer.tileProvider.TileProvider.tileLoadedEvent} event
+   * @param {TileLoadedEvent} event
    * @private
    */
   _handleTileLoaded({ source }) {
     source.forEachFeature((feature) => {
-      const featureStyle = /** @type {ol/style/Style} */ (feature.getStyle());
+      const featureStyle = /** @type {import("ol/style/Style").default} */ (feature.getStyle());
       if (featureStyle && featureStyle instanceof Style) {
         featureStyle.setZIndex(this._getNextStyleZIndex());
       }
@@ -330,15 +329,15 @@ class VectorTile extends FeatureLayer {
   updateTiles(tileIds) {
     this.getImplementations()
       .forEach((impl) => {
-        /** @type {vcs.vcm.layer.VectorTileImplementation} */ (impl).updateTiles(tileIds);
+        /** @type {VectorTileImplementation} */ (impl).updateTiles(tileIds);
       });
   }
 
   /**
    * calculates the style the feature has to be rendered
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @param {number} resolution
-   * @returns {Array<ol/style/Style>}
+   * @returns {Array<import("ol/style/Style").default>}
    * @private
    */
   _featureStyle(feature, resolution) {
@@ -357,7 +356,7 @@ class VectorTile extends FeatureLayer {
   }
 
   /**
-   * @returns {vcs.vcm.layer.VectorTile.ImplementationOptions}
+   * @returns {VectorTileImplementationOptions}
    */
   getImplementationOptions() {
     return {
@@ -373,8 +372,8 @@ class VectorTile extends FeatureLayer {
 
   /**
    * @inheritDoc
-   * @param {vcs.vcm.maps.VcsMap} map
-   * @returns {Array<vcs.vcm.layer.cesium.VectorRasterTileCesium|vcs.vcm.layer.openlayers.VectorTileOpenlayers>}
+   * @param {import("@vcmap/core").VcsMap} map
+   * @returns {Array<VectorRasterTileCesium|VectorTileOpenlayers>}
    */
   createImplementationsForMap(map) {
     if (map instanceof CesiumMap) {
@@ -391,9 +390,9 @@ class VectorTile extends FeatureLayer {
   }
 
   /**
-   * @param {(vcs.vcm.util.style.Reference|vcs.vcm.util.style.DeclarativeStyleItem.Options|vcs.vcm.util.style.ClusterStyleItem.Options|vcs.vcm.util.style.VectorStyleItem.Options|vcs.vcm.util.style.StyleItem|string)=} styleOptions
-   * @param {vcs.vcm.util.style.VectorStyleItem=} defaultStyle
-   * @returns {vcs.vcm.util.style.StyleItem}
+   * @param {(Reference|DeclarativeStyleItemOptions|VectorStyleItemOptions|import("@vcmap/core").StyleItem|string)=} styleOptions
+   * @param {VectorStyleItem=} defaultStyle
+   * @returns {import("@vcmap/core").StyleItem}
    */
   getStyleOrDefaultStyle(styleOptions, defaultStyle) {
     return super.getStyleOrDefaultStyle(styleOptions, defaultStyle || defaultVectorStyle.clone());
@@ -401,7 +400,7 @@ class VectorTile extends FeatureLayer {
 
   /**
    * @inheritDoc
-   * @returns {Promise}
+   * @returns {Promise<void>}
    * @api stable
    */
   async activate() {
@@ -445,10 +444,10 @@ class VectorTile extends FeatureLayer {
 
   /**
    * @inheritDoc
-   * @returns {vcs.vcm.layer.VectorTile.Options}
+   * @returns {VectorTileOptions}
    */
   getConfigObject() {
-    const config = /** @type {vcs.vcm.layer.VectorTile.Options} */ (super.getConfigObject());
+    const config = /** @type {VectorTileOptions} */ (super.getConfigObject());
     const defaultOptions = VectorTile.getDefaultOptions();
 
     if (this._maxLevel !== defaultOptions.maxLevel) {

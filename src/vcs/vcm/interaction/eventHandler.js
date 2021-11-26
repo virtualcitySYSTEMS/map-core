@@ -13,39 +13,38 @@ import VcsEvent from '../event/vcsEvent.js';
 
 /**
  * @namespace interaction
- * @memberOf vcs.vcm
  * @api
  */
 
 /**
- * @typedef {Object} vcs.vcm.interaction.EventHandler.ExclusiveInteraction
+ * @typedef {Object} EventHandlerExclusiveInteraction
  * @property {string} id
- * @property {Array<vcs.vcm.interaction.AbstractInteraction>} interactions
+ * @property {Array<AbstractInteraction>} interactions
  * @property {Array<Function>} cb
  */
 
 /**
- * @typedef {Object} vcs.vcm.interaction.MapEvent
- * @property {vcs.vcm.interaction.PointerEventType} pointerEvent
- * @property {vcs.vcm.maps.VcsMap} map
- * @property {Cesium/Cartesian2} windowPosition
- * @property {vcs.vcm.interaction.ModificationKeyType} key
- * @property {vcs.vcm.interaction.PointerKeyType} pointer
- * @property {ol/Coordinate|undefined} position - position in web mercator coordinates
- * @property {ol/Coordinate|undefined} positionOrPixel - position in web mercator coordinates or image coordinates in Oblique Map Mode
+ * @typedef {Object} MapEvent
+ * @property {PointerEventType} pointerEvent
+ * @property {import("@vcmap/core").VcsMap} map
+ * @property {import("@vcmap/cesium").Cartesian2} windowPosition
+ * @property {import("@vcmap/core").ModificationKeyType} key
+ * @property {import("@vcmap/core").PointerKeyType} pointer
+ * @property {import("ol/coordinate").Coordinate|undefined} position - position in web mercator coordinates
+ * @property {import("ol/coordinate").Coordinate|undefined} positionOrPixel - position in web mercator coordinates or image coordinates in Oblique Map Mode
  * @property {boolean|undefined} multipleTouch - vcs:undocumented
  * @property {number|null|undefined} time - vcs:undocumented
  */
 
 /**
- * @typedef {Object} vcs.vcm.interaction.LastClick
- * @property {Cesium/Cartesian2} windowPosition - vcs:undocumented
+ * @typedef {Object} LastClick
+ * @property {import("@vcmap/cesium").Cartesian2} windowPosition - vcs:undocumented
  * @property {number|null} time - vcs:undocumented
  * @api
  */
 
 /**
- * @returns {vcsuite-logger/Logger}
+ * @returns {import("@vcsuite/logger").Logger}
  */
 function getLogger() {
   return getLoggerByName('vcs.vcm.interaction.EventHandler');
@@ -53,27 +52,26 @@ function getLogger() {
 
 /**
  * @class
- * @memberOf vcs.vcm.interaction
  */
 class EventHandler {
   constructor() {
     /**
-     * @type {vcs.vcm.interaction.CoordinateAtPixel}
+     * @type {CoordinateAtPixel}
      * @private
      */
     this._positionInteraction = new CoordinateAtPixel();
     /**
-     * @type {vcs.vcm.interaction.FeatureAtPixelInteraction}
+     * @type {FeatureAtPixelInteraction}
      * @private
      */
     this._featureInteraction = new FeatureAtPixelInteraction();
     /**
-     * @type {vcs.vcm.interaction.FeatureProviderInteraction}
+     * @type {FeatureProviderInteraction}
      * @private
      */
     this._featureProviderInteraction = new FeatureProviderInteraction();
     /**
-     * @type {vcs.vcm.interaction.InteractionChain}
+     * @type {InteractionChain}
      * @private
      */
     this._interactionChain = new InteractionChain([
@@ -93,13 +91,13 @@ class EventHandler {
     this.dragDuration = 100;
 
     /**
-     * @type {null|vcs.vcm.interaction.MapEvent}
+     * @type {null|MapEvent}
      * @private
      */
     this._lastDown = null;
 
     /**
-     * @type {vcs.vcm.interaction.LastClick}
+     * @type {LastClick}
      * @private
      */
     this._lastClick = {
@@ -108,7 +106,7 @@ class EventHandler {
     };
 
     /**
-     * @type {null|vcs.vcm.interaction.MapEvent}
+     * @type {null|MapEvent}
      * @private
      */
     this._dragging = null;
@@ -120,13 +118,13 @@ class EventHandler {
     this._running = false;
 
     /**
-     * @type {Array<vcs.vcm.interaction.Event>}
+     * @type {Array<InteractionEvent>}
      * @private
      */
     this._eventQueue = [];
 
     /**
-     * @type {vcs.vcm.interaction.EventHandler.ExclusiveInteraction|null}
+     * @type {EventHandlerExclusiveInteraction|null}
      * @private
      */
     this._exclusiveInteraction = null;
@@ -138,27 +136,27 @@ class EventHandler {
     this._multiples = false;
     /**
      * Event called, when exclusive events are removed
-     * @type {vcs.vcm.event.VcsEvent}
+     * @type {VcsEvent<void>}
      * @api
      */
     this.exclusiveRemoved = new VcsEvent();
     /**
      * Event called, when exclusive events are added
-     * @type {vcs.vcm.event.VcsEvent}
+     * @type {VcsEvent<void>}
      * @api
      */
     this.exclusiveAdded = new VcsEvent();
   }
 
   /**
-   * @type {vcs.vcm.interaction.CoordinateAtPixel}
+   * @type {CoordinateAtPixel}
    * @readonly
    * @api
    */
   get positionInteraction() { return this._positionInteraction; }
 
   /**
-   * @type {vcs.vcm.interaction.FeatureAtPixelInteraction}
+   * @type {FeatureAtPixelInteraction}
    * @readonly
    * @api
    */
@@ -167,14 +165,14 @@ class EventHandler {
   /**
    * @api
    * @readonly
-   * @type {vcs.vcm.interaction.FeatureProviderInteraction}
+   * @type {FeatureProviderInteraction}
    */
   get featureProviderInteraction() { return this._featureProviderInteraction; }
 
   /**
    * A copy of all the EventHandler interactions
    * @readonly
-   * @type {vcs.vcm.interaction.AbstractInteraction[]}
+   * @type {AbstractInteraction[]}
    * @api
    */
   get interactions() { return this._interactionChain.chain.slice(); }
@@ -183,8 +181,8 @@ class EventHandler {
    * Add a dynamic interaction to the interaction chain. This is the default methodology for
    * user map interactions, such as drawing or measuring. If another exclusive interaction is added,
    * this interaction is removed and a provided callback is called. Use the id parameter to add multiple interactions
-   * from the same source (if you don't wish to provide an {@link vcs.vcm.interaction.InteractionChain}
-   * @param {vcs.vcm.interaction.AbstractInteraction} interaction
+   * from the same source (if you don't wish to provide an {@link InteractionChain}
+   * @param {AbstractInteraction} interaction
    * @param {Function} removed - the callback for when the interaction is forcefully removed.
    * @param {number=} [index=3] - the position at which to push the interaction
    * @param {string=} id - an id to allow for multiple interactions to belong to the same exclusive registerer
@@ -238,7 +236,7 @@ class EventHandler {
 
   /**
    * Removes an exclusive interaction by its id
-   * @param {vcs.vcm.interaction.AbstractInteraction} interaction
+   * @param {AbstractInteraction} interaction
    * @param {string} id
    * @returns {number}
    * @private
@@ -266,7 +264,7 @@ class EventHandler {
   /**
    * Adds an interaction permanently to the interaction chain. Only add non-interferring
    * interactions in such a fashion (for instance for displaying the cursor position)
-   * @param {vcs.vcm.interaction.AbstractInteraction} interaction
+   * @param {AbstractInteraction} interaction
    * @param {number=} [index=3] - at what position this interaction should be added. By default, it is added after the featureProviderInteraction
    * @returns {function():number} function to remove the interaction with. returns number of removed interactions (0|1)
    * @api
@@ -280,8 +278,8 @@ class EventHandler {
   }
 
   /**
-   * Handles an event triggered by {@link vcs.vcm.maps.VcsMap.pointerInteractionEvent}
-   * @param {vcs.vcm.interaction.MapEvent} event
+   * Handles an event triggered by {@link import("@vcmap/core").VcsMap.pointerInteractionEvent}
+   * @param {MapEvent} event
    * @api
    */
   handleMapEvent(event) {
@@ -295,7 +293,7 @@ class EventHandler {
   }
 
   /**
-   * @param {vcs.vcm.interaction.MapEvent} event
+   * @param {MapEvent} event
    * @private
    */
   _mouseDown(event) {
@@ -311,7 +309,7 @@ class EventHandler {
   }
 
   /**
-   * @param {vcs.vcm.interaction.MapEvent} event
+   * @param {MapEvent} event
    * @private
    */
   _mouseUp(event) {
@@ -326,7 +324,7 @@ class EventHandler {
       return;
     }
 
-    const actualEvent = /** @type {vcs.vcm.interaction.Event} */ (event);
+    const actualEvent = /** @type {InteractionEvent} */ (event);
     if (this._dragging) {
       actualEvent.type = EventType.DRAGEND;
       actualEvent.key = this._dragging.key;
@@ -352,11 +350,11 @@ class EventHandler {
   }
 
   /**
-   * @param {vcs.vcm.interaction.MapEvent} event
+   * @param {MapEvent} event
    * @private
    */
   _mouseMove(event) {
-    let actualEvent = /** @type {vcs.vcm.interaction.Event} */ (event);
+    let actualEvent = /** @type {InteractionEvent} */ (event);
     if (this._lastDown) {
       if (this._dragging) {
         actualEvent.type = EventType.DRAG;
@@ -375,7 +373,7 @@ class EventHandler {
   }
 
   /**
-   * @param {vcs.vcm.interaction.Event} event
+   * @param {InteractionEvent} event
    * @param {boolean=} discardOnRunning if true the event will discarded if an eventHandler is already Running
    * @private
    */

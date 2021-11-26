@@ -23,10 +23,21 @@ import { createOrUpdateFromGeometry } from '../featureconverter/extent3d.js';
 import { enforceEndingVertex, enforceRightHand, getFlatCoordinatesFromGeometry } from '../geometryHelpers.js';
 
 /**
+ * Options to the define how Cesium.ClippingPlanes are created from a ol.Feature.
+ * @typedef {Object} CreationOptions
+ * @property {boolean|undefined} reverse - specify the clip direction. If true, everything outside the clippingPlaneCollection should be cut off
+ * @property {boolean|undefined} createVerticalPlanes - specify whether to create the vertical clipping planes
+ * @property {boolean|undefined} createTopPlane - specify whether to create the horizontal clipping plane on the top level of an extruded geometry
+ * @property {boolean|undefined} createBottomPlane - specify whether to create the horizontal clipping plane on the ground level
+ * @property {boolean|undefined} createEndingPlanes - create 2 planes at the end of a line with only two coordinates
+ * @api
+ */
+
+/**
  * Creates a Plane on p1 with the normal in the direction of P2
- * @param {Cesium/Cartesian3} p1
- * @param {Cesium/Cartesian3} p2
- * @returns {Cesium/ClippingPlane}
+ * @param {import("@vcmap/cesium").Cartesian3} p1
+ * @param {import("@vcmap/cesium").Cartesian3} p2
+ * @returns {import("@vcmap/cesium").ClippingPlane}
  */
 function createPlane(p1, p2) {
   const planeNormal = Cartesian3.subtract(p1, p2, new Cartesian3());
@@ -36,8 +47,8 @@ function createPlane(p1, p2) {
 }
 
 /**
- * @param {Array<ol/Coordinate>} coords
- * @returns {Array<Cesium/ClippingPlane>} clippingPlanes
+ * @param {Array<import("ol/coordinate").Coordinate>} coords
+ * @returns {Array<import("@vcmap/cesium").ClippingPlane>} clippingPlanes
  */
 function createVerticalPlanes(coords) {
   const clippingPlanes = [];
@@ -57,10 +68,10 @@ function createVerticalPlanes(coords) {
 }
 
 /**
- * @param {ol/Feature} feature
- * @param {Array<ol/Coordinate>} coords
- * @param {vcs.vcm.util.clipping.CreationOptions=} options
- * @returns {Array<Cesium/ClippingPlane>} clippingPlanes
+ * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+ * @param {Array<import("ol/coordinate").Coordinate>} coords
+ * @param {CreationOptions=} options
+ * @returns {Array<import("@vcmap/cesium").ClippingPlane>} clippingPlanes
  */
 function createHorizontalPlanes(feature, coords, options) {
   const clippingPlanes = [];
@@ -95,8 +106,8 @@ function createHorizontalPlanes(feature, coords, options) {
 /**
  * creates a plane for each point in the opposite direction of the other point.
  * only works for two coordinates
- * @param {Array<ol/Coordinate>} coords
- * @returns {Array<Cesium/ClippingPlane>} clippingPlanes
+ * @param {Array<import("ol/coordinate").Coordinate>} coords
+ * @returns {Array<import("@vcmap/cesium").ClippingPlane>} clippingPlanes
  */
 function createEndingPlanes(coords) {
   const clippingPlanes = [];
@@ -123,12 +134,11 @@ function createEndingPlanes(coords) {
 
 /**
  * create a Cesium ClippingPlaneCollection based on a given feature having a multi-curve, polygon, or extruded solid geometry
- * @param {ol/Feature} feature - base for calculating the clipping planes.
- * @param {vcs.vcm.util.clipping.CreationOptions=} options
- * @param {Cesium/Matrix4=} transformMatrix - 4x4 matrix specifying the transform of clipping planes from Earth's fixed frame to another one
- * @returns {Cesium/ClippingPlaneCollection|null}
+ * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature - base for calculating the clipping planes.
+ * @param {CreationOptions=} options
+ * @param {import("@vcmap/cesium").Matrix4=} transformMatrix - 4x4 matrix specifying the transform of clipping planes from Earth's fixed frame to another one
+ * @returns {import("@vcmap/cesium").ClippingPlaneCollection|null}
  * @api stable
- * @memberOf vcs.vcm.util.clipping
  * @export
  */
 export function createClippingPlaneCollection(feature, options = {}, transformMatrix) {
@@ -165,7 +175,7 @@ export function createClippingPlaneCollection(feature, options = {}, transformMa
   }
 
   if (transformMatrix) {
-    clippingPlanes.forEach((/** @type {Cesium/ClippingPlane} */ plane) => {
+    clippingPlanes.forEach((/** @type {import("@vcmap/cesium").ClippingPlane} */ plane) => {
       const result = Plane.transform(plane, transformMatrix);
       plane.normal = result.normal;
       plane.distance = result.distance;
@@ -173,7 +183,7 @@ export function createClippingPlaneCollection(feature, options = {}, transformMa
   }
 
   if (options.reverse) {
-    clippingPlanes.forEach((/** @type {Cesium/ClippingPlane} */ plane) => {
+    clippingPlanes.forEach((/** @type {import("@vcmap/cesium").ClippingPlane} */ plane) => {
       Cartesian3.negate(plane.normal, plane.normal);
       plane.distance *= -1;
     });
@@ -187,13 +197,12 @@ export function createClippingPlaneCollection(feature, options = {}, transformMa
 
 /**
  * copies the clippingplanes and the properties from source to result
- * @param {Cesium/ClippingPlaneCollection} source
- * @param {Cesium/ClippingPlaneCollection} result
- * @param {Cesium/Matrix4=} transformMatrix - 4x4 matrix specifying the transform of clipping planes from Earth's fixed frame to another one
- * @param {Cesium/Cartesian3=} originPoint - the origin point of the transformation target, so the plane distance can be set correctly
- * @returns {Cesium/ClippingPlaneCollection}
+ * @param {import("@vcmap/cesium").ClippingPlaneCollection} source
+ * @param {import("@vcmap/cesium").ClippingPlaneCollection} result
+ * @param {import("@vcmap/cesium").Matrix4=} transformMatrix - 4x4 matrix specifying the transform of clipping planes from Earth's fixed frame to another one
+ * @param {import("@vcmap/cesium").Cartesian3=} originPoint - the origin point of the transformation target, so the plane distance can be set correctly
+ * @returns {import("@vcmap/cesium").ClippingPlaneCollection}
  * @api stable
- * @memberOf vcs.vcm.util.clipping
  * @export
  */
 export function copyClippingPlanesToCollection(source, result, transformMatrix, originPoint) {
@@ -222,13 +231,14 @@ export function copyClippingPlanesToCollection(source, result, transformMatrix, 
 }
 
 /**
- * @param {Cesium/Globe|Cesium/Cesium3DTileset|Cesium/Entity} target
+ * @param {import("@vcmap/cesium").Globe|import("@vcmap/cesium").Cesium3DTileset|import("@vcmap/cesium").Entity} target
  */
 export function clearClippingPlanes(target) {
   if (target instanceof Entity) {
     if (target.model) {
       if (target.model.clippingPlanes) {
-        const entityClippingPlanes = (/** @type {Cesium/ConstantProperty} */ (target.model.clippingPlanes)).getValue();
+        const entityClippingPlanes =
+          (/** @type {import("@vcmap/cesium").ConstantProperty} */ (target.model.clippingPlanes)).getValue();
         entityClippingPlanes.removeAll();
       } else {
         target.model.clippingPlanes = new ConstantProperty(new ClippingPlaneCollection());
@@ -242,8 +252,8 @@ export function clearClippingPlanes(target) {
 }
 
 /**
- * @param {Cesium/Cesium3DTileset} cesium3DTileset
- * @param {Cesium/ClippingPlaneCollection} clippingPlaneCollection
+ * @param {import("@vcmap/cesium").Cesium3DTileset} cesium3DTileset
+ * @param {import("@vcmap/cesium").ClippingPlaneCollection} clippingPlaneCollection
  * @param {boolean=} local
  */
 function setTilesetClippingPlane(cesium3DTileset, clippingPlaneCollection, local) {
@@ -279,8 +289,8 @@ function setTilesetClippingPlane(cesium3DTileset, clippingPlaneCollection, local
 }
 
 /**
- * @param {Cesium/Globe} globe
- * @param {Cesium/ClippingPlaneCollection} clippingPlaneCollection
+ * @param {import("@vcmap/cesium").Globe} globe
+ * @param {import("@vcmap/cesium").ClippingPlaneCollection} clippingPlaneCollection
  */
 function setGlobeClippingPlanes(globe, clippingPlaneCollection) {
   clearClippingPlanes(globe);
@@ -289,14 +299,15 @@ function setGlobeClippingPlanes(globe, clippingPlaneCollection) {
 
 /**
  * apply a clippingPlaneCollection to an entity
- * @param {Cesium/Entity} entity
- * @param {Cesium/ClippingPlaneCollection} clippingPlaneCollection
+ * @param {import("@vcmap/cesium").Entity} entity
+ * @param {import("@vcmap/cesium").ClippingPlaneCollection} clippingPlaneCollection
  * @param {boolean=} local
  */
 function setEntityClippingPlanes(entity, clippingPlaneCollection, local) {
   if (entity.model) {
     clearClippingPlanes(entity);
-    const entityClippingPlanes = (/** @type {Cesium/ConstantProperty} */ (entity.model.clippingPlanes)).getValue();
+    const entityClippingPlanes =
+      (/** @type {import("@vcmap/cesium").ConstantProperty} */ (entity.model.clippingPlanes)).getValue();
     copyClippingPlanesToCollection(clippingPlaneCollection, entityClippingPlanes);
     if (!local) {
       const localToFixedFrame = entity.computeModelMatrix(JulianDate.now());
@@ -313,8 +324,8 @@ function setEntityClippingPlanes(entity, clippingPlaneCollection, local) {
 }
 
 /**
- * @param {Cesium/Globe|Cesium/Cesium3DTileset|Cesium/Entity} target
- * @param {Cesium/ClippingPlaneCollection} clippingPlaneCollection
+ * @param {import("@vcmap/cesium").Globe|import("@vcmap/cesium").Cesium3DTileset|import("@vcmap/cesium").Entity} target
+ * @param {import("@vcmap/cesium").ClippingPlaneCollection} clippingPlaneCollection
  * @param {boolean=} local
  */
 export function setClippingPlanes(target, clippingPlaneCollection, local) {
@@ -328,14 +339,13 @@ export function setClippingPlanes(target, clippingPlaneCollection, local) {
 }
 
 /**
- * Creates a new feature at the given coordinate, which can be set on a {@link vcs.vcm.util.clipping.ClippingObjectEditor}.
- * @param {ol/Coordinate} coordinate - in WGS84
- * @param {Cesium/Camera} camera
+ * Creates a new feature at the given coordinate, which can be set on a {@link ClippingObjectEditor}.
+ * @param {import("ol/coordinate").Coordinate} coordinate - in WGS84
+ * @param {import("@vcmap/cesium").Camera} camera
  * @param {boolean} [vertical=false]
  * @param {number} [offsetDistance=25] - the offset from the coordinate to use for the size of the geometry
- * @returns {ol/Feature} - the features geometry is in web mercator
+ * @returns {import("ol").Feature<import("ol/geom/Geometry").default>} - the features geometry is in web mercator
  * @api
- * @memberOf vcs.vcm.util.clipping
  * @export
  */
 export function createClippingFeature(coordinate, camera, vertical = false, offsetDistance = 25) {
@@ -374,13 +384,12 @@ export function createClippingFeature(coordinate, camera, vertical = false, offs
 
 /**
  * Gets the clipping options for the current feature to be infinite or not for the given feature created by
- * {@link vcs.vcm.util.clipping.createClippingFeature}.
- * @param {ol/Feature=} feature - the feature created by {@link vcs.vcm.util.clipping.createClippingFeature}
+ * {@link createClippingFeature}.
+ * @param {import("ol").Feature<import("ol/geom/Geometry").default>=} feature - the feature created by {@link createClippingFeature}
  * @param {boolean=} [infinite=false]
- * @returns {vcs.vcm.util.clipping.CreationOptions}
+ * @returns {CreationOptions}
  * @api
  * @export
- * @memberOf vcs.vcm.util.clipping
  */
 export function getClippingOptions(feature, infinite = false) {
   checkMaybe(feature, Feature);

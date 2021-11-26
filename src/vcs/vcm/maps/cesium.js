@@ -41,20 +41,21 @@ import CameraLimiter from './cameraLimiter.js';
 import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
- * @typedef {vcs.vcm.maps.VcsMap.Options} vcs.vcm.maps.CesiumMap.Options
+ * @typedef {VcsMapOptions} CesiumMapOptions
  * @property {boolean} [enableLightning=true] -  if true, lighting will be activated.
  * @property {number} [tileCacheSize=1] - the tilecache size of cesium terrain and tile layer
  * @property {boolean} [webGLaa=false] - activates webGL antialiasing (not every Browser respects this value)
- * @property {vcs.vcm.maps.CameraLimiter.Options|undefined} cameraLimiter
+ * @property {CameraLimiterOptions|undefined} cameraLimiter
  * @property {string|undefined} globeColor - the color of the globe, if no image is provided
  * @api
  */
 
 /**
  * Ensures, a primitive/imageryLayer/entity is part of a collection and placed at the correct location
- * @param {Cesium/PrimitiveCollection|Cesium/ImageryLayerCollection} cesiumCollection
- * @param {Cesium/PrimitiveCollection|Cesium/ImageryLayer|Cesium/Cesium3DTileset} item
- * @param {vcs.vcm.util.LayerCollection} layerCollection
+ * @param {import("@vcmap/cesium").PrimitiveCollection|import("@vcmap/cesium").ImageryLayerCollection} cesiumCollection
+ * @param {import("@vcmap/cesium").PrimitiveCollection|import("@vcmap/cesium").ImageryLayer|import("@vcmap/cesium").Cesium3DTileset} item
+ * @param {import("@vcmap/core").LayerCollection} layerCollection
+ * @private
  */
 export function ensureInCollection(cesiumCollection, item, layerCollection) {
   const targetIndex = layerCollection.indexOfKey(item[vcsLayerName]);
@@ -77,9 +78,10 @@ export function ensureInCollection(cesiumCollection, item, layerCollection) {
 }
 
 /**
- * @param {Cesium/DataSourceCollection} dataSourceCollection
- * @param {Cesium/CustomDataSource} dataSource
- * @param {vcs.vcm.util.LayerCollection} layerCollection
+ * @param {import("@vcmap/cesium").DataSourceCollection} dataSourceCollection
+ * @param {import("@vcmap/cesium").CustomDataSource} dataSource
+ * @param {import("@vcmap/core").LayerCollection} layerCollection
+ * @private
  */
 export async function ensureInDataSourceCollection(dataSourceCollection, dataSource, layerCollection) {
   const targetIndex = layerCollection.indexOfKey(dataSource[vcsLayerName]);
@@ -117,9 +119,10 @@ export async function ensureInDataSourceCollection(dataSourceCollection, dataSou
 }
 
 /**
- * @param {Cesium/PrimitiveCollection} primitiveCollection
- * @param {Cesium/PrimitiveCollection} item
- * @param {vcs.vcm.util.LayerCollection} layerCollection
+ * @param {import("@vcmap/cesium").PrimitiveCollection} primitiveCollection
+ * @param {import("@vcmap/cesium").PrimitiveCollection} item
+ * @param {import("@vcmap/core").LayerCollection} layerCollection
+ * @private
  */
 export function indexChangedOnPrimitive(primitiveCollection, item, layerCollection) {
   const { destroyPrimitives } = primitiveCollection;
@@ -130,9 +133,10 @@ export function indexChangedOnPrimitive(primitiveCollection, item, layerCollecti
 }
 
 /**
- * @param {Cesium/ImageryLayerCollection} imageryLayerCollection
- * @param {Cesium/ImageryLayer} item
- * @param {vcs.vcm.util.LayerCollection} layerCollection
+ * @param {import("@vcmap/cesium").ImageryLayerCollection} imageryLayerCollection
+ * @param {import("@vcmap/cesium").ImageryLayer} item
+ * @param {import("@vcmap/core").LayerCollection} layerCollection
+ * @private
  */
 export function indexChangedOnImageryLayer(imageryLayerCollection, item, layerCollection) {
   imageryLayerCollection.remove(item, false);
@@ -140,18 +144,20 @@ export function indexChangedOnImageryLayer(imageryLayerCollection, item, layerCo
 }
 
 /**
- * @param {Cesium/DataSourceCollection} dataSourceCollection
- * @param {Cesium/CustomDataSource} item
- * @param {vcs.vcm.util.LayerCollection} layerCollection
+ * @param {import("@vcmap/cesium").DataSourceCollection} dataSourceCollection
+ * @param {import("@vcmap/cesium").CustomDataSource} item
+ * @param {import("@vcmap/core").LayerCollection} layerCollection
+ * @private
  */
 export function indexChangedOnDataSource(dataSourceCollection, item, layerCollection) {
   ensureInDataSourceCollection(dataSourceCollection, item, layerCollection);
 }
 
 /**
- * @param {Cesium/DataSourceClock} source
- * @param {Cesium/Clock} target
- * @returns {Cesium/Event.RemoveCallback}
+ * @param {import("@vcmap/cesium").DataSourceClock} source
+ * @param {import("@vcmap/cesium").Clock} target
+ * @returns {import("@vcmap/cesium").Event.RemoveCallback}
+ * @private
  */
 export function synchronizeClock(source, target) {
   target.clockRange = source.clockRange;
@@ -169,7 +175,7 @@ export function synchronizeClock(source, target) {
 }
 
 /**
- * @param {Cesium/Cesium3DTileset} cesium3DTileset
+ * @param {import("@vcmap/cesium").Cesium3DTileset} cesium3DTileset
  * @param {boolean} debug
  */
 function setDebugOnCesium3DTileset(cesium3DTileset, debug) {
@@ -179,13 +185,13 @@ function setDebugOnCesium3DTileset(cesium3DTileset, debug) {
 }
 
 /**
- * @param {Array<Cesium/PrimitiveCollection|Cesium/Cesium3DTileset|Cesium/ImageryLayer|ol/layer/Layer|Cesium/CustomDataSource>} visualizations
+ * @param {Array<import("@vcmap/cesium").PrimitiveCollection|import("@vcmap/cesium").Cesium3DTileset|import("@vcmap/cesium").ImageryLayer|import("ol/layer/Layer").default|import("@vcmap/cesium").CustomDataSource>} visualizations
  * @param {boolean} debug
  */
 function setDebugOnVisualizations(visualizations, debug) {
   visualizations
     .filter(viz => viz instanceof Cesium3DTileset)
-    .forEach(/** @param {Cesium/Cesium3DTileset} tileset */ (tileset) => {
+    .forEach(/** @param {import("@vcmap/cesium").Cesium3DTileset} tileset */ (tileset) => {
       setDebugOnCesium3DTileset(tileset, debug);
     });
 }
@@ -194,15 +200,14 @@ function setDebugOnVisualizations(visualizations, debug) {
  * Cesium Globe Map Class (3D map)
  * @class
  * @export
- * @extends {vcs.vcm.maps.VcsMap}
+ * @extends {VcsMap}
  * @api stable
- * @memberOf vcs.vcm.maps
  */
 class CesiumMap extends VcsMap {
   static get className() { return 'vcs.vcm.maps.Cesium'; }
 
   /**
-   * @returns {vcs.vcm.maps.CesiumMap.Options}
+   * @returns {CesiumMapOptions}
    */
   static getDefaultOptions() {
     return {
@@ -216,7 +221,7 @@ class CesiumMap extends VcsMap {
   }
 
   /**
-   * @param {vcs.vcm.maps.CesiumMap.Options} options
+   * @param {CesiumMapOptions} options
    */
   constructor(options) {
     super(options);
@@ -224,14 +229,14 @@ class CesiumMap extends VcsMap {
     const defaultOptions = CesiumMap.getDefaultOptions();
     /**
      * the Cesium Viewer
-     * @type {?Cesium/CesiumWidget}
+     * @type {?import("@vcmap/cesium").CesiumWidget}
      * @private
      */
     this._cesiumWidget = null;
 
     /**
      * clock for animated data
-     * @type {Cesium/Clock}
+     * @type {import("@vcmap/cesium").Clock}
      */
     this.dataSourceDisplayClock = new Clock({ shouldAnimate: true });
 
@@ -239,7 +244,7 @@ class CesiumMap extends VcsMap {
     defaultClock.currentTime = this.dataSourceDisplayClock.currentTime;
     /**
      * default clock is set, when no datasource clock is active
-     * @type {Cesium/DataSourceClock}
+     * @type {import("@vcmap/cesium").DataSourceClock}
      * @private
      */
     this._defaultClock = defaultClock;
@@ -247,7 +252,7 @@ class CesiumMap extends VcsMap {
     /**
      * clocks of active data sources
      * the last clock of the array corresponds to the active dataSourceDisplayClock
-     * @type {Array<Cesium/DataSourceClock>}
+     * @type {Array<import("@vcmap/cesium").DataSourceClock>}
      * @private
      */
     this._dataSourceClocks = [];
@@ -265,7 +270,7 @@ class CesiumMap extends VcsMap {
     /** @type {number} */
     this.tileCacheSize = parseInteger(options.tileCacheSize, defaultOptions.tileCacheSize);
 
-    /** @type {Cesium/ScreenSpaceEventHandler} */
+    /** @type {import("@vcmap/cesium").ScreenSpaceEventHandler} */
     this.screenSpaceEventHandler = null;
     /**
      * @type {Array<function():void>}
@@ -274,7 +279,7 @@ class CesiumMap extends VcsMap {
     this._screenSpaceListeners = [];
 
     /**
-     * @type {Cesium/JulianDate}
+     * @type {import("@vcmap/cesium").JulianDate}
      */
     this.defaultJDate = JulianDate.fromDate(new Date(2014, 6, 20, 13, 0, 0, 0));
 
@@ -282,32 +287,32 @@ class CesiumMap extends VcsMap {
     this.webGLaa = parseBoolean(options.webGLaa, defaultOptions.webGLaa);
 
     /**
-     * @type {Cesium/Color}
+     * @type {import("@vcmap/cesium").Color}
      * @api
      */
     this.globeColor = Color.fromCssColorString(options.globeColor || defaultOptions.globeColor);
 
-    /** @type {Cesium/DataSourceDisplay|null} */
+    /** @type {import("@vcmap/cesium").DataSourceDisplay|null} */
     this._clusterDataSourceDisplay = null;
 
     /**
-     * @type {Cesium/TerrainProvider}
+     * @type {import("@vcmap/cesium").TerrainProvider}
      * @private
      */
     this._terrainProvider = null;
 
     /**
-     * @type {Cesium/TerrainProvider}
+     * @type {import("@vcmap/cesium").TerrainProvider}
      * @api
      */
     this.defaultTerrainProvider = null;
     /**
-     * @type {vcs.vcm.maps.CameraLimiter|null}
+     * @type {CameraLimiter|null}
      * @private
      */
     this._cameraLimiter = null;
     /**
-     * @type {vcs.vcm.maps.CameraLimiter.Options}
+     * @type {CameraLimiterOptions}
      * @private
      */
     this._cameraLimiterOptions = options.cameraLimiter || defaultOptions.cameraLimiter;
@@ -346,7 +351,7 @@ class CesiumMap extends VcsMap {
   }
 
   /**
-   * @returns {Cesium/TerrainProvider}
+   * @returns {import("@vcmap/cesium").TerrainProvider}
    * @api
    * @readonly
    */
@@ -356,7 +361,7 @@ class CesiumMap extends VcsMap {
 
   /**
    * A camera limit to not allow the camera to get too close to the globe.
-   * @type {vcs.vcm.maps.CameraLimiter|null}
+   * @type {CameraLimiter|null}
    * @api
    */
   get cameraLimiter() {
@@ -364,7 +369,7 @@ class CesiumMap extends VcsMap {
   }
 
   /**
-   * @param {vcs.vcm.maps.CameraLimiter|null} limiter
+   * @param {CameraLimiter|null} limiter
    */
   set cameraLimiter(limiter) {
     checkMaybe(limiter, CameraLimiter);
@@ -416,10 +421,10 @@ class CesiumMap extends VcsMap {
   }
 
   /**
-   * @param {vcs.vcm.interaction.ModificationKeyType} key
+   * @param {ModificationKeyType} key
    * @param {number} pointer
-   * @param {vcs.vcm.interaction.PointerEventType} pointerEvent
-   * @param {{ position: (Cesium/Cartesian2|undefined), endPosition: (Cesium/Cartesian2|undefined) }} csEvent
+   * @param {PointerEventType} pointerEvent
+   * @param {{ position: (import("@vcmap/cesium").Cartesian2|undefined), endPosition: (import("@vcmap/cesium").Cartesian2|undefined) }} csEvent
    * @private
    */
   _raisePointerInteraction(key, pointer, pointerEvent, csEvent) {
@@ -483,7 +488,7 @@ class CesiumMap extends VcsMap {
       this._cesiumWidget.scene.globe.tileCacheSize = this.tileCacheSize;
       this._cesiumWidget.scene.globe.baseColor = this.globeColor;
 
-      /** @type {Cesium/DataSourceDisplay} */
+      /** @type {import("@vcmap/cesium").DataSourceDisplay} */
       this.dataSourceDisplay = new DataSourceDisplay({
         scene: this._cesiumWidget.scene,
         dataSourceCollection: new DataSourceCollection(),
@@ -570,8 +575,8 @@ class CesiumMap extends VcsMap {
 
   /**
    * getHeight for coordinates
-   * @param {Array<ol/Coordinate>} positions - in web mercator
-   * @returns {Promise<Array<ol/Coordinate>>} the array of coordinates with heights updated in place
+   * @param {Array<import("ol/coordinate").Coordinate>} positions - in web mercator
+   * @returns {Promise<Array<import("ol/coordinate").Coordinate>>} the array of coordinates with heights updated in place
    * @api stable
    */
   getHeightFromTerrain(positions) {
@@ -579,7 +584,7 @@ class CesiumMap extends VcsMap {
     return terrainProvider.readyPromise.then(() => {
       if (terrainProvider.availability) {
         return getHeightFromTerrainProvider(
-          /** @type {Cesium/CesiumTerrainProvider} */(terrainProvider),
+          /** @type {import("@vcmap/cesium").CesiumTerrainProvider} */(terrainProvider),
           positions,
           mercatorProjection,
           positions,
@@ -591,7 +596,7 @@ class CesiumMap extends VcsMap {
 
   /**
    * @inheritDoc
-   * @returns {Promise<null|vcs.vcm.util.ViewPoint>}
+   * @returns {Promise<null|ViewPoint>}
    */
   async getViewPoint() {
     return this.getViewPointSync();
@@ -599,7 +604,7 @@ class CesiumMap extends VcsMap {
 
   /**
    * @inheritDoc
-   * @returns {vcs.vcm.util.ViewPoint|null}
+   * @returns {ViewPoint|null}
    */
   getViewPointSync() {
     if (!this._cesiumWidget || !this._cesiumWidget.scene || !this.target) {
@@ -638,7 +643,7 @@ class CesiumMap extends VcsMap {
   }
 
   /**
-   * @param {vcs.vcm.util.ViewPoint} viewpoint
+   * @param {ViewPoint} viewpoint
    * @param {number=} optMaximumHeight
    * @returns {Promise<void>}
    * @inheritDoc
@@ -695,8 +700,8 @@ class CesiumMap extends VcsMap {
         const flightOptions = {
           destination: cameraPosition,
           orientation: cameraOptions,
-          complete: resolve,
-          cancel: resolve,
+          complete: () => { resolve(); },
+          cancel: () => { resolve(); },
         };
 
         if (viewpoint.duration) {
@@ -722,7 +727,7 @@ class CesiumMap extends VcsMap {
 
   /**
    * @inheritDoc
-   * @param {ol/Coordinate} coordinate - in mercator
+   * @param {import("ol/coordinate").Coordinate} coordinate - in mercator
    * @returns {number}
    */
   getCurrentResolution(coordinate) {
@@ -754,7 +759,7 @@ class CesiumMap extends VcsMap {
 
   /**
    * set dataSource clock as display clock to visualize time dependent animation
-   * @param {Cesium/DataSourceClock} clock
+   * @param {import("@vcmap/cesium").DataSourceClock} clock
    * @api stable
    */
   setDataSourceDisplayClock(clock) {
@@ -771,7 +776,7 @@ class CesiumMap extends VcsMap {
 
   /**
    * unset dataSource clock
-   * @param {Cesium/DataSourceClock} clock
+   * @param {import("@vcmap/cesium").DataSourceClock} clock
    * @api stable
    */
   unsetDataSourceDisplayClock(clock) {
@@ -791,7 +796,7 @@ class CesiumMap extends VcsMap {
 
   /**
    * sets the position of the sun according to the day
-   * @param {Cesium/JulianDate} julianDate See the Cesium API
+   * @param {import("@vcmap/cesium").JulianDate} julianDate See the Cesium API
    * @api stable
    */
   setDay(julianDate) {
@@ -811,7 +816,7 @@ class CesiumMap extends VcsMap {
 
   /**
    * returns the cesium Widget Object
-   * @returns {Cesium/CesiumWidget}
+   * @returns {import("@vcmap/cesium").CesiumWidget}
    * @api stable
    */
   getCesiumWidget() {
@@ -820,7 +825,7 @@ class CesiumMap extends VcsMap {
 
   /**
    * returns the Entities Collection
-   * @returns {Cesium/EntityCollection}
+   * @returns {import("@vcmap/cesium").EntityCollection}
    * @api stable
    */
   getEntities() {
@@ -829,7 +834,7 @@ class CesiumMap extends VcsMap {
 
   /**
    * returns the dataSourceCollection associated with the scene
-   * @returns {Cesium/DataSourceCollection}
+   * @returns {import("@vcmap/cesium").DataSourceCollection}
    * @api stable
    */
   getDatasources() {
@@ -839,7 +844,7 @@ class CesiumMap extends VcsMap {
   /**
    * Returns the cluster dataSourceDisplays dataSources.
    * This datasource can only handle Entities with Billboards, Labels or Points.
-   * @returns {Cesium/DataSourceCollection}
+   * @returns {import("@vcmap/cesium").DataSourceCollection}
    * @api stable
    */
   getClusterDatasources() {
@@ -872,7 +877,7 @@ class CesiumMap extends VcsMap {
 
   /**
    * @inheritDoc
-   * @param {vcs.vcm.layer.Layer} layer
+   * @param {import("@vcmap/core").Layer} layer
    */
   indexChanged(layer) {
     const viz = this.getVisualizationsForLayer(layer);
@@ -891,7 +896,7 @@ class CesiumMap extends VcsMap {
 
   /**
    * Internal API used to register visualizations from layer implementations
-   * @param {Cesium/PrimitiveCollection|Cesium/Cesium3DTileset} primitiveCollection
+   * @param {import("@vcmap/cesium").PrimitiveCollection|import("@vcmap/cesium").Cesium3DTileset} primitiveCollection
    */
   addPrimitiveCollection(primitiveCollection) {
     if (this.validateVisualization(primitiveCollection)) {
@@ -905,7 +910,7 @@ class CesiumMap extends VcsMap {
 
   /**
    * Internal API to unregister the visualization for a layers implementation
-   * @param {Cesium/PrimitiveCollection} primitiveCollection
+   * @param {import("@vcmap/cesium").PrimitiveCollection} primitiveCollection
    */
   removePrimitiveCollection(primitiveCollection) { // XXX add destroy as boolean?
     this.removeVisualization(primitiveCollection);
@@ -914,7 +919,7 @@ class CesiumMap extends VcsMap {
 
   /**
    * Internal API used to register visualizations from layer implementations
-   * @param {Cesium/ImageryLayer} imageryLayer
+   * @param {import("@vcmap/cesium").ImageryLayer} imageryLayer
    */
   addImageryLayer(imageryLayer) {
     if (this.validateVisualization(imageryLayer)) {
@@ -925,7 +930,7 @@ class CesiumMap extends VcsMap {
 
   /**
    * Internal API used to unregister visualizations from layer implementations
-   * @param {Cesium/ImageryLayer} imageryLayer
+   * @param {import("@vcmap/cesium").ImageryLayer} imageryLayer
    */
   removeImageryLayer(imageryLayer) {
     this.removeVisualization(imageryLayer);
@@ -934,7 +939,7 @@ class CesiumMap extends VcsMap {
 
   /**
    * Internal API used to register visualizations from layer implementations
-   * @param {Cesium/CustomDataSource} dataSource
+   * @param {import("@vcmap/cesium").CustomDataSource} dataSource
    * @returns {Promise<void>}
    */
   async addDataSource(dataSource) {
@@ -946,7 +951,7 @@ class CesiumMap extends VcsMap {
 
   /**
    * Internal API used to unregister visualizations from layer implementations
-   * @param {Cesium/CustomDataSource} dataSource
+   * @param {import("@vcmap/cesium").CustomDataSource} dataSource
    */
   removeDataSource(dataSource) {
     this.removeVisualization(dataSource);
@@ -955,7 +960,7 @@ class CesiumMap extends VcsMap {
 
   /**
    * set the cesium TerrainProvider
-   * @param {Cesium/TerrainProvider} terrainProvider
+   * @param {import("@vcmap/cesium").TerrainProvider} terrainProvider
    * @api
    */
   setTerrainProvider(terrainProvider) {
@@ -966,7 +971,7 @@ class CesiumMap extends VcsMap {
 
   /**
    * unsets the TerrainProvider (changes to the default TerrainProvider if the given terranProvider is currently active)
-   * @param {Cesium/TerrainProvider} terrainProvider
+   * @param {import("@vcmap/cesium").TerrainProvider} terrainProvider
    * @api
    */
   unsetTerrainProvider(terrainProvider) {
@@ -978,7 +983,7 @@ class CesiumMap extends VcsMap {
 
   /**
    * returns the cesium DataSourceDisplay Object
-   * @returns {Cesium/DataSourceDisplay}
+   * @returns {import("@vcmap/cesium").DataSourceDisplay}
    * @api stable
    */
   getDataSourceDisplay() {
@@ -987,7 +992,7 @@ class CesiumMap extends VcsMap {
 
   /**
    * returns the cesium Viewer Object
-   * @returns {Cesium/Scene}
+   * @returns {import("@vcmap/cesium").Scene}
    * @api stable
    */
   getScene() {
@@ -995,7 +1000,7 @@ class CesiumMap extends VcsMap {
   }
 
   /**
-   * @returns {Cesium/CesiumWidget|*}
+   * @returns {import("@vcmap/cesium").CesiumWidget|*}
    * @deprecated 3.7
    */
   getViewer() {
@@ -1004,7 +1009,7 @@ class CesiumMap extends VcsMap {
   }
 
   /**
-   * @param {ol/Coordinate} coords in WGS84 degrees
+   * @param {import("ol/coordinate").Coordinate} coords in WGS84 degrees
    * @returns {boolean}
    * @api
    */
@@ -1052,7 +1057,7 @@ class CesiumMap extends VcsMap {
   /**
    * is called when the cesium Terrainprovider changes. Sets the .terrainProvider and deactivates currently
    * active Terrain layer if necessary
-   * @param {Cesium/TerrainProvider} terrainProvider
+   * @param {import("@vcmap/cesium").TerrainProvider} terrainProvider
    * @private
    */
   _terrainProviderChanged(terrainProvider) {
@@ -1088,11 +1093,11 @@ class CesiumMap extends VcsMap {
   }
 
   /**
-   * @returns {vcs.vcm.maps.CesiumMap.Options}
+   * @returns {CesiumMapOptions}
    * @api
    */
   getConfigObject() {
-    const config = /** @type {vcs.vcm.maps.CesiumMap.Options} */ (super.getConfigObject());
+    const config = /** @type {CesiumMapOptions} */ (super.getConfigObject());
     const defaultOptions = CesiumMap.getDefaultOptions();
 
     if (this.enableLightning !== defaultOptions.enableLightning) {

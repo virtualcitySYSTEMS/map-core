@@ -21,11 +21,11 @@ import { vcsLayerName } from '../../../../../src/vcs/vcm/layer/layerSymbols.js';
 
 describe('vcs.vcm.layer.cesium.CesiumTilesetCesium', () => {
   let sandbox;
-  /** @type {vcs.vcm.layer.CesiumTileset} */
+  /** @type {import("@vcmap/core").CesiumTileset} */
   let cesiumTileset;
-  /** @type {vcs.vcm.maps.CesiumMap} */
+  /** @type {import("@vcmap/core").CesiumMap} */
   let cesiumMap;
-  /** @type {vcs.vcm.layer.cesium.CesiumTilesetCesium} */
+  /** @type {import("@vcmap/core").CesiumTilesetCesium} */
   let cesiumTilesetCesium;
   let highlightStyle;
 

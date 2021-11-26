@@ -5,10 +5,10 @@ import { getLogger as getLoggerByName } from '@vcsuite/logger';
 import { check } from '@vcsuite/check';
 
 /**
- * @typedef {Object} vcs.vcm.util.Projection.Options
- * @property {string|number|undefined} epsg -  EPSG of the projection, for example: "EPSG:4326" if not specified, uses the framework projection
- * @property {string|undefined} proj4 - definition of the projection. See for example: {@link http://spatialreference.org/ref/epsg/4326/proj4/} proj4
- * @property {Array<string>|undefined} alias - aliases to define
+ * @typedef {Object} ProjectionOptions
+ * @property {string|number} [epsg] -  EPSG of the projection, for example: "EPSG:4326" if not specified, uses the framework projection
+ * @property {string|undefined|null} [proj4] - definition of the projection. See for example: {@link http://spatialreference.org/ref/epsg/4326/proj4/} proj4
+ * @property {Array<string>|undefined|null} [alias] - aliases to define
  * @api stable
  */
 
@@ -17,21 +17,21 @@ export const mercatorToWgs84Transformer = getTransform('EPSG:3857', 'EPSG:4326')
 
 
 /**
- * @returns {vcs-logger/Logger}
+ * @returns {import("@vcsuite/logger").Logger}
  */
 function getLogger() {
   return getLoggerByName('vcs.vcm.util.Projection');
 }
 
 /**
- * @type {vcs.vcm.util.Projection.Options}
+ * @type {ProjectionOptions}
  */
 let defaultProjectionOption = {
   epsg: 'EPSG:4326',
 };
 
 /**
- * @param {string} value
+ * @param {string|number} value
  * @param {string=} [prefix="EPSG:"]
  * @returns {string}
  */
@@ -44,7 +44,7 @@ function parseEPSGCode(value, prefix = 'EPSG:') {
 }
 
 /**
- * @param {vcs.vcm.util.Projection.Options} options
+ * @param {ProjectionOptions} options
  * @returns {boolean}
  */
 function validateProjectionOptions(options) {
@@ -69,8 +69,8 @@ function validateProjectionOptions(options) {
 }
 
 /**
- * @param {vcs.vcm.util.Projection.Options} options
- * @returns {vcs.vcm.util.Projection.Options} valid options
+ * @param {ProjectionOptions} options
+ * @returns {ProjectionOptions} valid options
  */
 function registerProjection(options) {
   const saneOptions = {};
@@ -97,8 +97,7 @@ function registerProjection(options) {
 /**
  * Set the default projections epsg and proj4. Does not update
  * projection created prior to this functions call.
- * @param {vcs.vcm.util.Projection.Options} options
- * @memberOf vcs.vcm.util.Projection
+ * @param {ProjectionOptions} options
  * @api
  * @export
  */
@@ -122,13 +121,12 @@ export function setDefaultProjectionOptions(options) {
  *         }
  *     </code></pre>
  * @api stable
- * @memberOf vcs.vcm.util
  */
 class Projection {
   /**
-   * @param {vcs.vcm.util.Projection.Options} options
+   * @param {ProjectionOptions} options
    */
-  constructor(options = {}) {
+  constructor(options = { epsg: '' }) {
     const saneOptions = registerProjection(options);
     /**
      * @type {string|null}
@@ -140,7 +138,7 @@ class Projection {
      * @type {string}
      * @private
      */
-    this._epsg = saneOptions.epsg;
+    this._epsg = /** @type {string} */ (saneOptions.epsg);
 
     if (!this.proj) {
       this._epsg = Projection.parseEPSGCode(defaultProjectionOption.epsg);
@@ -168,7 +166,7 @@ class Projection {
   }
 
   /**
-   * @type {ol/proj/Projection}
+   * @type {import("ol/proj/Projection").default}
    * @api
    * @readonly
    */
@@ -177,7 +175,7 @@ class Projection {
   }
 
   /**
-   * @returns {ol/proj/Projection}
+   * @returns {import("ol/proj/Projection").default}
    * @api
    * @deprecated 3.7
    */
@@ -187,7 +185,7 @@ class Projection {
   }
 
   /**
-   * @param {vcs.vcm.util.Projection} projection
+   * @param {Projection} projection
    * @returns {boolean}
    */
   equals(projection) {
@@ -196,10 +194,10 @@ class Projection {
 
   /**
    * @static
-   * @param {vcs.vcm.util.Projection} dest
-   * @param {vcs.vcm.util.Projection} source
-   * @param {ol/Coordinate} coords
-   * @returns {ol/Coordinate}
+   * @param {Projection} dest
+   * @param {Projection} source
+   * @param {import("ol/coordinate").Coordinate} coords
+   * @returns {import("ol/coordinate").Coordinate}
    * @api stable
    */
   static transform(dest, source, coords) {
@@ -213,9 +211,9 @@ class Projection {
   }
 
   /**
-   * @param {vcs.vcm.util.Projection} dest
-   * @param {ol/Coordinate} coords
-   * @returns {ol/Coordinate}
+   * @param {Projection} dest
+   * @param {import("ol/coordinate").Coordinate} coords
+   * @returns {import("ol/coordinate").Coordinate}
    * @api stable
    */
   transformTo(dest, coords) {
@@ -224,10 +222,10 @@ class Projection {
 
   /**
    * @static
-   * @param {vcs.vcm.util.Projection} dest
-   * @param {vcs.vcm.util.Projection} source
-   * @param {Array.<ol/Coordinate>} coords
-   * @returns {Array.<ol/Coordinate>}
+   * @param {Projection} dest
+   * @param {Projection} source
+   * @param {Array.<import("ol/coordinate").Coordinate>} coords
+   * @returns {Array.<import("ol/coordinate").Coordinate>}
    * @api stable
    */
   static transformCoordinates(dest, source, coords) {
@@ -241,18 +239,18 @@ class Projection {
   /**
    * returns a function to transform coordinates from source to dest
    * @static
-   * @param {vcs.vcm.util.Projection} dest
-   * @param {vcs.vcm.util.Projection} source
-   * @returns {ol/proj/TransformFunction}
+   * @param {Projection} dest
+   * @param {Projection} source
+   * @returns {import("ol/proj").TransformFunction}
    */
   static getTransformer(dest, source) {
     return getTransform(source.proj, dest.proj);
   }
 
   /**
-   * @param {vcs.vcm.util.Projection} source
-   * @param {ol/Coordinate} coords
-   * @returns {ol/Coordinate}
+   * @param {Projection} source
+   * @param {import("ol/coordinate").Coordinate} coords
+   * @returns {import("ol/coordinate").Coordinate}
    * @api stable
    */
   transformFrom(source, coords) {
@@ -261,7 +259,7 @@ class Projection {
 
   /**
    * Returns the object literal representation of this object
-   * @returns {vcs.vcm.util.Projection.Options}
+   * @returns {ProjectionOptions}
    * @api stable
    */
   getConfigObject() {
@@ -276,9 +274,9 @@ class Projection {
 
   /**
    * Fast transform from Web-Mercator to WGS84
-   * @param {ol/Coordinate} coords
+   * @param {import("ol/coordinate").Coordinate} coords
    * @param {boolean=} inPlace - whether to transform in place
-   * @returns {ol/Coordinate}
+   * @returns {import("ol/coordinate").Coordinate}
    * @api
    */
   static mercatorToWgs84(coords, inPlace) {
@@ -287,9 +285,9 @@ class Projection {
 
   /**
    * Fast transform from WGS84 to Web-Mercator
-   * @param {ol/Coordinate} coords
+   * @param {import("ol/coordinate").Coordinate} coords
    * @param {boolean=} inPlace - whether to transform in place
-   * @returns {ol/Coordinate}
+   * @returns {import("ol/coordinate").Coordinate}
    * @api
    */
   static wgs84ToMercator(coords, inPlace) {
@@ -298,7 +296,7 @@ class Projection {
 
   /**
    * validates projection options, combination of epsg code and proj4
-   * @param {vcs.vcm.util.Projection.Options} options
+   * @param {ProjectionOptions} options
    * @returns {boolean}
    * @api
    */
@@ -327,8 +325,7 @@ export default Projection;
 /**
  * Returns the default Projection.
  * @api stable
- * @memberOf vcs.vcm.util
- * @returns {vcs.vcm.util.Projection}
+ * @returns {Projection}
  * @export
  */
 export function getDefaultProjection() {
@@ -338,16 +335,14 @@ export function getDefaultProjection() {
 /**
  * wgs84 Projection EPSG Code: 4326
  * @api stable
- * @memberOf vcs.vcm.util
- * @type {vcs.vcm.util.Projection}
+ * @type {Projection}
  * @export
  */
 export const wgs84Projection = new Projection({ epsg: 4326 });
 /**
  * mercator Projection EPSG Code: 3857
  * @api stable
- * @memberOf vcs.vcm.util
- * @type {vcs.vcm.util.Projection}
+ * @type {Projection}
  * @export
  */
 export const mercatorProjection = new Projection({ epsg: 3857 });

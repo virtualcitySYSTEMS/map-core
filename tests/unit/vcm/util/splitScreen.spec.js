@@ -24,7 +24,7 @@ function waitForEvent(event, raise) {
 
 describe('vcs.vcm.util.SplitScreen', () => {
   let sandbox;
-  /** @type {vcs.vcm.util.SplitScreen} */
+  /** @type {import("@vcmap/core").SplitScreen} */
   let splitScreen;
   let cesiumMap;
   let openlayers;

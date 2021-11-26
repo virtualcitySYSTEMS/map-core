@@ -8,14 +8,14 @@ import { Color } from '@vcmap/cesium';
 import { getLogger as getLoggerByName } from '@vcsuite/logger';
 
 /**
- * @returns {vcs-logger/Logger}
+ * @returns {import("@vcsuite/logger").Logger}
  */
 function getLogger() {
   return getLoggerByName('vcs.vcm.util.style.StyleHelpers');
 }
 
 /**
- * @typedef {Object} vcs.vcm.util.style.FontObject
+ * @typedef {Object} FontObject
  * @property {string} fontStyle
  * @property {string} fontSize
  * @property {string} fontFamily
@@ -28,7 +28,6 @@ function getLogger() {
  * @enum {number}
  * @const
  * @export
- * @memberOf vcs.vcm.util.style
  * @property {number} NWSE
  * @property {number} SWNE
  * @property {number} DIAGONALCROSS
@@ -50,8 +49,7 @@ export const PatternType = {
  * Converts HEX colors to RGB
  * @param {string} h
  * @param {number=} opacity
- * @returns {ol/Color}
- * @memberOf vcs.vcm.util.style
+ * @returns {import("ol/color").Color}
  * @export
  */
 export function hexToOlColor(h, opacity) {
@@ -69,20 +67,19 @@ export function hexToOlColor(h, opacity) {
 }
 
 /**
- * @param {Cesium/Color} cesiumColor
- * @returns {ol/Color}
+ * @param {import("@vcmap/cesium").Color} cesiumColor
+ * @returns {import("ol/color").Color}
  */
 export function cesiumColorToColor(cesiumColor) {
   const color = cesiumColor.toBytes();
   color[3] /= 255;
-  return /** @type {ol/Color} */ (color);
+  return /** @type {import("ol/color").Color} */ (color);
 }
 
 /**
  * converts an openlayers color to a cesium Color
- * @param {ol/Color} olColor
- * @returns {Cesium/Color}
- * @memberOf vcs.vcm.util.style
+ * @param {import("ol/color").Color} olColor
+ * @returns {import("@vcmap/cesium").Color}
  * @api
  * @export
  */
@@ -92,10 +89,9 @@ export function olColorToCesiumColor(olColor) {
 
 /**
  * parses a color to an openlayers color
- * @param {ol/Color|ol/colorlike/ColorLike|Array<number>} color
- * @param {ol/Color=} defaultColor
- * @returns {ol/Color}
- * @memberOf vcs.vcm.util.style
+ * @param {import("ol/color").Color|import("ol/colorlike").ColorLike|Array<number>} color
+ * @param {import("ol/color").Color=} defaultColor
+ * @returns {import("ol/color").Color}
  * @api
  * @export
  */
@@ -104,7 +100,7 @@ export function parseColor(color, defaultColor) {
     if (color.length === 3) {
       color.push(1.0);
     }
-    return /** @type {ol/Color} */ (color);
+    return /** @type {import("ol/color").Color} */ (color);
   }
 
   if (typeof color === 'string') {
@@ -121,7 +117,7 @@ export function parseColor(color, defaultColor) {
       if (output.length === 3) {
         output.push(1.0);
       }
-      return /** @type {ol/Color} */ (output);
+      return /** @type {import("ol/color").Color} */ (output);
     }
   }
 
@@ -136,10 +132,9 @@ export function parseColor(color, defaultColor) {
 
 /**
  *
- * @param {ol/Color|ol/colorlike/ColorLike} color
- * @param {ol/Color} defaultColor
- * @returns {Cesium/Color}
- * @memberOf vcs.vcm.util.style
+ * @param {import("ol/color").Color|import("ol/colorlike").ColorLike} color
+ * @param {import("ol/color").Color} defaultColor
+ * @returns {import("@vcmap/cesium").Color}
  * @export
  */
 export function getCesiumColor(color, defaultColor) {
@@ -148,9 +143,8 @@ export function getCesiumColor(color, defaultColor) {
 }
 
 /**
- * @param {ol/Color|Array<number>|ol/colorlike/ColorLike} color
+ * @param {import("ol/color").Color|Array<number>|import("ol/colorlike").ColorLike} color
  * @returns {string}
- * @memberOf vcs.vcm.util.style
  * @export
  */
 export function getStringColor(color) {
@@ -158,10 +152,9 @@ export function getStringColor(color) {
 }
 
 /**
- * @param {vcs.vcm.util.style.VectorStyleItem.Fill} options
+ * @param {VectorStyleItemFill} options
  * @param {HTMLCanvasElement=} optCanvas
  * @returns {CanvasPattern}
- * @memberOf vcs.vcm.util.style
  * @export
  */
 export function createPattern(options, optCanvas) {
@@ -220,9 +213,8 @@ export function createPattern(options, optCanvas) {
 }
 
 /**
- * @param {ol/Color} color
+ * @param {import("ol/color").Color} color
  * @returns {string}
- * @memberOf vcs.vcm.util.style
  * @export
  */
 export function olColorToHex(color) {
@@ -238,7 +230,6 @@ export function olColorToHex(color) {
 /**
  * @param {string} colorValue
  * @returns {boolean}
- * @memberOf vcs.vcm.util.style
  * @export
  */
 export function validateHexColor(colorValue) {
@@ -246,9 +237,8 @@ export function validateHexColor(colorValue) {
 }
 
 /**
- * @param {string|vcs.vcm.util.style.FontObject} font
- * @returns {vcs.vcm.util.style.FontObject}
- * @memberOf vcs.vcm.util.style
+ * @param {string|FontObject} font
+ * @returns {FontObject}
  * @export
  */
 export function parseFont(font) {
@@ -318,9 +308,8 @@ export function parseFont(font) {
 }
 
 /**
- * @param {vcs.vcm.util.style.FontObject} fontObject
+ * @param {FontObject} fontObject
  * @returns {string}
- * @memberOf vcs.vcm.util.style
  * @export
  */
 export function combineFont(fontObject) {
@@ -360,9 +349,9 @@ export function combineFont(fontObject) {
 /**
  * tints the given canvas to the specified color
  * @param {CanvasRenderingContext2D} canvasContext
- * @param {ol/Color} color
- * @param {ol/Size} size
- * @param {ol/Size} [optOrigin=[0, 0]]
+ * @param {import("ol/color").Color} color
+ * @param {import("ol/size").Size} size
+ * @param {import("ol/size").Size} [optOrigin=[0, 0]]
  */
 export function colorInCanvas(canvasContext, color, size, optOrigin) {
   const origin = optOrigin || [0, 0];
@@ -381,14 +370,14 @@ export function colorInCanvas(canvasContext, color, size, optOrigin) {
 }
 
 /**
- * @param {ol/style/Text|ol/style/RegularShape} item
- * @returns {ol/style/FillOptions|undefined} // XXX FillOptions?
+ * @param {import("ol/style/Text").default|import("ol/style/RegularShape").default} item
+ * @returns {import("ol/style/Fill").Options|undefined} // XXX FillOptions?
  */
 export function getFillOptions(item) {
   if (item.getFill()) {
     let color = item.getFill().getColor();
     try {
-      color = /** @type {ol/Color} */ (parseColor(color).slice());
+      color = /** @type {import("ol/color").Color} */ (parseColor(color).slice());
     } catch (e) {
       getLogger().warning(e.message);
     }
@@ -398,14 +387,14 @@ export function getFillOptions(item) {
 }
 
 /**
- * @param {ol/style/Stroke} stroke
- * @returns {ol/style/StrokeOptions}
+ * @param {import("ol/style/Stroke").default} stroke
+ * @returns {import("ol/style/Stroke").Options}
  */
 export function getStrokeOptions(stroke) {
   let color = stroke.getColor();
   if (color) {
     try {
-      color = /** @type {ol/Color} */ (parseColor(color).slice());
+      color = /** @type {import("ol/color").Color} */ (parseColor(color).slice());
     } catch (e) {
       getLogger().warning(e.message);
     }
@@ -418,8 +407,8 @@ export function getStrokeOptions(stroke) {
 }
 
 /**
- * @param {ol/style/Text} text
- * @returns {vcs.vcm.util.style.VectorStyleItem.Text}
+ * @param {import("ol/style/Text").default} text
+ * @returns {VectorStyleItemText}
  */
 export function getTextOptions(text) {
   return {
@@ -433,8 +422,8 @@ export function getTextOptions(text) {
 }
 
 /**
- * @param {vcs.vcm.util.style.VectorStyleItem.Text} options
- * @returns {ol/style/Text}
+ * @param {VectorStyleItemText} options
+ * @returns {import("ol/style/Text").default}
  */
 export function getTextFromOptions(options) {
   const textOptions = { ...options };
@@ -447,16 +436,18 @@ export function getTextFromOptions(options) {
   if (textOptions.font && typeof textOptions.font !== 'string') {
     textOptions.font = combineFont(textOptions.font);
   }
-  return new OLText(/** @type {ol/style/TextOptions} */ (textOptions));
+  return new OLText(/** @type {import("ol/style/Text").Options} */ (textOptions));
 }
 
 /**
- * @param {ol/style/Text} textStyle
+ * @param {import("ol/style/Text").default} textStyle
  * @returns {{font: string, textShadow: string|undefined, color: string|undefined}}
  */
 export function getCssStyleFromTextStyle(textStyle) {
   const style = {
     font: textStyle.getFont(),
+    textShadow: undefined,
+    color: undefined,
   };
   if (textStyle.getStroke()) {
     let width = textStyle.getStroke().getWidth();
@@ -470,26 +461,26 @@ export function getCssStyleFromTextStyle(textStyle) {
   return style;
 }
 
-/** @type {ol/style/Style} */
+/** @type {import("ol/style/Style").default} */
 export const emptyStyle = new Style({});
 
 /**
- * @type {ol/Color}
+ * @type {import("ol/color").Color}
  */
 export const emptyColor = [0, 0, 0, 0];
 
 /**
- * @type {ol/Color}
+ * @type {import("ol/color").Color}
  */
 export const whiteColor = [255, 255, 255, 1];
 
 /**
- * @type {ol/Color}
+ * @type {import("ol/color").Color}
  */
 export const blackColor = [0, 0, 0, 1];
 
 /**
- * @returns {vcs.vcm.util.style.VectorStyleItem.Options}
+ * @returns {VectorStyleItemOptions}
  */
 export function getDefaultVectorStyleItemOptions() {
   return {

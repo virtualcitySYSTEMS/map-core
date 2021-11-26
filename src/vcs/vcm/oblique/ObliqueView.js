@@ -21,7 +21,7 @@ import { hasSameOrigin } from './helpers.js';
  */
 class ObliqueView {
   /**
-   * @param {ObliqueImageMeta} imageMeta
+   * @param {import("@vcmap/core").ObliqueImageMeta} imageMeta
    * @param {ObliqueViewOptions} options
    */
   constructor(imageMeta, options) {
@@ -96,7 +96,7 @@ class ObliqueView {
 
     /**
      * The layer of these images.
-     * @type {import("ol/layer/Tile").default}
+     * @type {import("ol/layer/Tile").default<import("ol/source/TileImage").default>}
      * @api
      */
     this.layer = new Tile({

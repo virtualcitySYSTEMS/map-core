@@ -8,28 +8,27 @@ import { mercatorProjection } from '../../util/projection.js';
  * represents a specific vectorTileLayer for openlayers.
  * @class
  * @export
- * @implements {vcs.vcm.layer.VectorTileImplementation}
- * @extends {vcs.vcm.layer.openlayers.LayerOpenlayers}
- * @memberOf vcs.vcm.layer.openlayers
+ * @implements {VectorTileImplementation}
+ * @extends {LayerOpenlayers}
  */
 class VectorTileOpenlayers extends LayerOpenlayers {
   static get className() { return 'vcs.vcm.layer.openlayers.VectorTileOpenlayers'; }
 
   /**
-   * @param {vcs.vcm.maps.Openlayers} map
-   * @param {vcs.vcm.layer.VectorTile.ImplementationOptions} options
+   * @param {import("@vcmap/core").Openlayers} map
+   * @param {VectorTileImplementationOptions} options
    */
   constructor(map, options) {
     super(map, options);
 
-    /** @type {vcs.vcm.layer.tileProvider.TileProvider} */
+    /** @type {import("@vcmap/core").TileProvider} */
     this.tileProvider = options.tileProvider;
 
-    /** @type {ol/source/VectorTile} */
+    /** @type {import("ol/source").VectorTile} */
     this.source = null;
 
     /**
-     * @type {ol/Size}
+     * @type {import("ol/size").Size}
      */
     this.tileSize = options.tileSize;
 
@@ -57,14 +56,14 @@ class VectorTileOpenlayers extends LayerOpenlayers {
     this.maxLevel = options.maxLevel;
 
     /**
-     * @type {vcs.vcm.util.Extent|undefined}
+     * @type {import("@vcmap/core").Extent|undefined}
      */
     this.extent = options.extent;
   }
 
   /**
    * @inheritDoc
-   * @returns {ol/layer/VectorTile}
+   * @returns {import("ol/layer/VectorTile").default}
    */
   getOLLayer() {
     this.source = new VectorTileSource({
@@ -72,7 +71,7 @@ class VectorTileOpenlayers extends LayerOpenlayers {
       maxZoom: 26,
       tileSize: this.tileSize,
       /**
-       * @param {ol/VectorTile} tile
+       * @param {import("ol/VectorTile").default} tile
        * @returns {Promise<void>}
        */
       tileLoadFunction: async (tile) => {
@@ -139,7 +138,7 @@ class VectorTileOpenlayers extends LayerOpenlayers {
   }
 
   /**
-   * @param {vcs.vcm.util.style.StyleItem} style
+   * @param {import("@vcmap/core").StyleItem} style
    * @param {boolean=} silent
    * @api
    */

@@ -22,8 +22,8 @@ import { circleFromCenterRadius } from '../../util/geometryHelpers.js';
 export const cesiumTilesetLastUpdated = Symbol('cesiumTilesetLastUpdated');
 
 /**
- * @param {Cesium/Cesium3DTileset} cesium3DTileset
- * @returns {ol/Extent} in mercator
+ * @param {import("@vcmap/cesium").Cesium3DTileset} cesium3DTileset
+ * @returns {import("ol/extent").Extent} in mercator
  */
 export function getExtentFromTileset(cesium3DTileset) {
   if (!cesium3DTileset.ready) {
@@ -42,7 +42,7 @@ export function getExtentFromTileset(cesium3DTileset) {
       CesiumMath.toDegrees(scratchNE.longitude),
       CesiumMath.toDegrees(scratchNE.latitude),
     ]);
-    return /** @type {ol.Extent} */ ([mercatorSW[0], mercatorSW[1], mercatorNE[0], mercatorNE[1]]);
+    return /** @type {import("ol/extent").Extent} */ ([mercatorSW[0], mercatorSW[1], mercatorNE[0], mercatorNE[1]]);
   }
 
   const { center, radius } = cesium3DTileset.boundingSphere;
@@ -57,40 +57,39 @@ export function getExtentFromTileset(cesium3DTileset) {
 }
 
 /**
- * represents the cesium implementation for a {@link vcs.vcm.layer.CesiumTileset} layer.
+ * represents the cesium implementation for a {@link CesiumTileset} layer.
  * @class
  * @export
- * @extends {vcs.vcm.layer.LayerImplementation<vcs.vcm.maps.CesiumMap>}
- * @implements {vcs.vcm.layer.FeatureLayerImplementation}
+ * @extends {LayerImplementation<import("@vcmap/core").CesiumMap>}}
+ * @implements {FeatureLayerImplementation}
  * @api stable
- * @memberOf vcs.vcm.layer.cesium
  */
 class CesiumTilesetCesium extends LayerImplementation {
   /** @type {string} */
   static get className() { return 'vcs.vcm.layer.cesium.CesiumTilesetCesium'; }
 
   /**
-   * @param {vcs.vcm.maps.CesiumMap} map
-   * @param {vcs.vcm.layer.CesiumTileset.ImplementationOptions} options
+   * @param {import("@vcmap/core").CesiumMap} map
+   * @param {CesiumTilesetImplementationOptions} options
    */
   constructor(map, options) {
     super(map, options);
 
-    /** @type {Cesium/Cesium3DTileset} */
+    /** @type {import("@vcmap/cesium").Cesium3DTileset} */
     this.cesium3DTileset = null;
     /** @type {Object} */
     this.tilesetOptions = options.tilesetOptions;
-    /** @type {Cesium/ImagerySplitDirection} */
+    /** @type {import("@vcmap/cesium").ImagerySplitDirection} */
     this.splitDirection = options.splitDirection;
-    /** @type {vcs.vcm.util.style.StyleItem} */
+    /** @type {import("@vcmap/core").StyleItem} */
     this.style = options.style;
-    /** @type {vcs.vcm.layer.FeatureVisibility} */
+    /** @type {import("@vcmap/core").FeatureVisibility} */
     this.featureVisibility = options.featureVisibility;
-    /** @type {Array<vcs.vcm.layer.CesiumTileset.TilesetProperties>} */
+    /** @type {Array<CesiumTilesetTilesetProperties>} */
     this.tilesetProperties = options.tilesetProperties;
-    /** @type {Cesium/Matrix4} */
+    /** @type {import("@vcmap/cesium").Matrix4} */
     this.modelMatrix = options.modelMatrix;
-    /** @type {ol/Coordinate} */
+    /** @type {import("ol/coordinate").Coordinate} */
     this.offset = options.offset;
     /**
      * @type {Promise<void>}
@@ -98,7 +97,7 @@ class CesiumTilesetCesium extends LayerImplementation {
      */
     this._initializedPromise = null;
     /**
-     * @type {Cesium/Cartesian3}
+     * @type {import("@vcmap/cesium").Cartesian3}
      * @private
      */
     this._originalOrigin = null;
@@ -116,7 +115,7 @@ class CesiumTilesetCesium extends LayerImplementation {
    */
   async initialize() {
     if (!this._initializedPromise) {
-      /** @type {Cesium/Cesium3DTileset} */
+      /** @type {import("@vcmap/cesium").Cesium3DTileset} */
       this.cesium3DTileset = new Cesium3DTileset(this.tilesetOptions);
       if (this.tilesetProperties) {
         this.tilesetProperties.forEach(({ key, value }) => {
@@ -171,7 +170,7 @@ class CesiumTilesetCesium extends LayerImplementation {
   }
 
   /**
-   * @param {Cesium/Matrix4=} modelMatrix
+   * @param {import("@vcmap/cesium").Matrix4=} modelMatrix
    */
   updateModelMatrix(modelMatrix) {
     this.modelMatrix = modelMatrix;
@@ -189,7 +188,7 @@ class CesiumTilesetCesium extends LayerImplementation {
   }
 
   /**
-   * @param {ol/Coordinate=} offset
+   * @param {import("ol/coordinate").Coordinate=} offset
    */
   updateOffset(offset) {
     this.offset = offset;
@@ -198,6 +197,7 @@ class CesiumTilesetCesium extends LayerImplementation {
 
   /**
    * @inheritDoc
+   * @returns {Promise<void>}
    */
   async activate() {
     await super.activate();
@@ -217,7 +217,7 @@ class CesiumTilesetCesium extends LayerImplementation {
   }
 
   /**
-   * @param {vcs.vcm.util.style.StyleItem} style
+   * @param {import("@vcmap/core").StyleItem} style
    * @param {boolean=} silent
    */
   // eslint-disable-next-line no-unused-vars
@@ -250,7 +250,7 @@ class CesiumTilesetCesium extends LayerImplementation {
   }
 
   /**
-   * @param {Cesium/ImagerySplitDirection} splitDirection
+   * @param {import("@vcmap/cesium").ImagerySplitDirection} splitDirection
    */
   updateSplitDirection(splitDirection) {
     const { splitScreen } = this.map;
@@ -268,7 +268,7 @@ class CesiumTilesetCesium extends LayerImplementation {
   }
 
   /**
-   * @param {Cesium/Cesium3DTile} tile
+   * @param {import("@vcmap/cesium").Cesium3DTile} tile
    */
   applyStyle(tile) {
     if (tile.content instanceof Composite3DTileContent) {
@@ -281,7 +281,7 @@ class CesiumTilesetCesium extends LayerImplementation {
   }
 
   /**
-   * @param {Cesium/Cesium3DTileContent} content
+   * @param {import("@vcmap/cesium").Cesium3DTileContent} content
    */
   styleContent(content) {
     if (
@@ -332,7 +332,8 @@ class CesiumTilesetCesium extends LayerImplementation {
   destroy() {
     if (this.cesium3DTileset) {
       if (this.map.initialized) {
-        this.map.removePrimitiveCollection(this.cesium3DTileset);
+        const toRemove = this.cesium3DTileset;
+        this.map.removePrimitiveCollection(/** @type {undefined} */ (toRemove)); // cast to undefined do to missing inheritance
       } else {
         this.cesium3DTileset.destroy();
       }

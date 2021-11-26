@@ -10,13 +10,12 @@ import {
 import VcsEvent from '../event/vcsEvent.js';
 
 /**
- * @type {vcs.vcm.layer.GlobalHider}
+ * @type {GlobalHider}
  */
 let instance;
 
 /**
  * @class
- * @memberOf vcs.vcm.layer
  */
 class GlobalHider {
   constructor() {
@@ -26,7 +25,7 @@ class GlobalHider {
      */
     this.hiddenObjects = {};
     /**
-     * @type {Object<string, Set<ol/Feature|Cesium/Cesium3DTileFeature|Cesium/Cesium3DTilePointFeature|Cesium/Entity>>}
+     * @type {Object<string, Set<import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature|import("@vcmap/cesium").Entity>>}
      * @private
      */
     this._hiddenObjectFeatures = {};
@@ -37,8 +36,8 @@ class GlobalHider {
     this.lastUpdated = Date.now();
     /**
      * An event raised when the hidden ids change. Is called with
-     * {@link vcs.vcm.layer.FeatureVisibility.FeatureVisibilityEvent} as its only argument
-     * @type {vcs.vcm.event.VcsEvent<vcs.vcm.layer.FeatureVisibility.FeatureVisibilityEvent>}
+     * {@link FeatureVisibilityEvent} as its only argument
+     * @type {VcsEvent<FeatureVisibilityEvent>}
      */
     this.changed = new VcsEvent();
   }
@@ -98,7 +97,7 @@ class GlobalHider {
 
   /**
    * @param {number|string} uuid
-   * @param {ol/Feature|Cesium/Cesium3DTileFeature|Cesium/Cesium3DTilePointFeature|Cesium/Entity} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature|import("@vcmap/cesium").Entity} feature
    */
   addFeature(uuid, feature) {
     if (!this._hiddenObjectFeatures[uuid]) {
@@ -112,7 +111,7 @@ class GlobalHider {
 
   /**
    * @param {string|number} uuid
-   * @param {ol/Feature|Cesium/Cesium3DTileFeature|Cesium/Cesium3DTilePointFeature|Cesium/Entity} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature|import("@vcmap/cesium").Entity} feature
    * @returns {boolean}
    */
   hasFeature(uuid, feature) {
@@ -135,8 +134,7 @@ class GlobalHider {
 }
 
 /**
- * @returns {vcs.vcm.layer.GlobalHider}
- * @memberOf vcs.vcm.layer.GlobalHider
+ * @returns {GlobalHider}
  * @export
  * @api
  */
@@ -148,8 +146,7 @@ export function getGlobalHider() {
 }
 
 /**
- * @returns {vcs.vcm.layer.GlobalHider}
- * @memberOf vcs.vcm.layer.GlobalHider
+ * @returns {GlobalHider}
  * @deprecated v4.1
  */
 export function getInstance() {

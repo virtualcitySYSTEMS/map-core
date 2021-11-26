@@ -8,14 +8,14 @@ import ClippingObjectManager from './clipping/clippingObjectManager.js';
 import SplitScreen from './splitScreen.js';
 
 /**
- * @typedef {Object} vcs.vcm.util.MapCollection.InitializationError
+ * @typedef {Object} MapCollectionInitializationError
  * @property {Error} error
- * @property {vcs.vcm.maps.VcsMap} map
+ * @property {import("@vcmap/core").VcsMap} map
  */
 
 /**
- * @param {vcs.vcm.maps.CesiumMap} cesiumMap
- * @param {vcs.vcm.maps.Openlayers} olMap
+ * @param {import("@vcmap/core").CesiumMap} cesiumMap
+ * @param {import("@vcmap/core").Openlayers} olMap
  * @returns {Promise<void>}
  */
 async function setCesiumToOLViewpoint(cesiumMap, olMap) {
@@ -43,16 +43,15 @@ async function setCesiumToOLViewpoint(cesiumMap, olMap) {
 /**
  * @class
  * @export
- * @memberOf vcs.vcm.util
- * @extends {vcs.vcm.util.Collection<vcs.vcm.maps.VcsMap>}
+ * @extends {Collection<import("@vcmap/core").VcsMap>}}
  */
 // ignored do to static issues, see https://github.com/microsoft/TypeScript/issues/4628
 // @ts-ignore
 class MapCollection extends Collection {
   /**
    * Creates a LayerCollection from an iterable of layers, such as an Array.
-   * @param {Iterable<vcs.vcm.maps.VcsMap>} iterable
-   * @returns {vcs.vcm.util.MapCollection}
+   * @param {Iterable<import("@vcmap/core").VcsMap>} iterable
+   * @returns {MapCollection}
    * @override
    * @api
    */
@@ -72,7 +71,7 @@ class MapCollection extends Collection {
     super();
 
     /**
-     * @type {vcs.vcm.maps.VcsMap}
+     * @type {import("@vcmap/core").VcsMap}
      * @private
      */
     this._activeMap = null;
@@ -86,7 +85,7 @@ class MapCollection extends Collection {
 
     /**
      * The map pointer event handler. The EventHandler is shared amongst all maps within the collection.
-     * @type {vcs.vcm.interaction.EventHandler}
+     * @type {EventHandler}
      * @api
      */
     this.eventHandler = new EventHandler();
@@ -94,14 +93,14 @@ class MapCollection extends Collection {
     /**
      * Collection of layers shared amongst the maps within this collection,
      * layers will be rendered if supported on the currently active map.
-     * @type {vcs.vcm.util.LayerCollection}
+     * @type {LayerCollection}
      * @api
      */
     this.layerCollection = new LayerCollection();
 
     /**
      * Called, if a map fails to initialize. The map causing the error will be removed from the collection.
-     * @type {vcs.vcm.event.VcsEvent<vcs.vcm.util.MapCollection.InitializationError>}
+     * @type {VcsEvent<MapCollectionInitializationError>}
      * @api
      */
     this.initializeError = new VcsEvent();
@@ -109,27 +108,27 @@ class MapCollection extends Collection {
     /**
      * Called, when a map (typically an oblique map) cannot show the current viewpoint. Is passed
      * the map which cannot show the current viewpoint.
-     * @type {vcs.vcm.event.VcsEvent<vcs.vcm.maps.VcsMap>}
+     * @type {VcsEvent<import("@vcmap/core").VcsMap>}
      * @api
      */
     this.fallbackMapActivated = new VcsEvent();
 
     /**
      * Called, when a map is activated. Is passed the activated map.
-     * @type {vcs.vcm.event.VcsEvent<vcs.vcm.maps.VcsMap>}
+     * @type {VcsEvent<import("@vcmap/core").VcsMap>}
      * @api
      */
     this.mapActivated = new VcsEvent();
 
     /**
      * Manages the clipping object for the maps in this collection.
-     * @type {vcs.vcm.util.clipping.ClippingObjectManager}
+     * @type {ClippingObjectManager}
      * @api
      */
     this.clippingObjectManager = new ClippingObjectManager(this.layerCollection);
 
     /**
-     * @type {vcs.vcm.util.SplitScreen}
+     * @type {SplitScreen}
      */
     this.splitScreen = new SplitScreen(this.clippingObjectManager);
 
@@ -142,7 +141,7 @@ class MapCollection extends Collection {
 
   /**
    * The currently active map
-   * @type {vcs.vcm.maps.VcsMap}
+   * @type {import("@vcmap/core").VcsMap}
    * @api
    * @readonly
    */
@@ -159,10 +158,10 @@ class MapCollection extends Collection {
   }
 
   /**
-   * Adds a map to the collection. This will set the collections target, {@link vcs.vcm.util.SplitScreen}
-   * and the collections {@link vcs.vcm.util.LayerCollection} on the map.
+   * Adds a map to the collection. This will set the collections target, {@link SplitScreen}
+   * and the collections {@link LayerCollection} on the map.
    * It will add map event listeners and pass them to the event handler of this collection.
-   * @param {vcs.vcm.maps.VcsMap} map
+   * @param {import("@vcmap/core").VcsMap} map
    * @returns {number|null}
    */
   add(map) {
@@ -180,7 +179,7 @@ class MapCollection extends Collection {
   /**
    * Removes the map from the collection. Will also set splitScreen & target to null and an empty layerCollection on the map,
    * if the map is currently part of the collection.
-   * @param {vcs.vcm.maps.VcsMap} map
+   * @param {import("@vcmap/core").VcsMap} map
    */
   remove(map) {
     if (this.has(map)) {
@@ -221,8 +220,8 @@ class MapCollection extends Collection {
   }
 
   /**
-   * @param {vcs.vcm.maps.VcsMap} map
-   * @returns {null|vcs.vcm.maps.VcsMap}
+   * @param {import("@vcmap/core").VcsMap} map
+   * @returns {null|import("@vcmap/core").VcsMap}
    * @private
    */
   _getFallbackMap(map) {
@@ -239,8 +238,8 @@ class MapCollection extends Collection {
   }
 
   /**
-   * @param {vcs.vcm.maps.VcsMap} map
-   * @returns {null|vcs.vcm.maps.VcsMap}
+   * @param {import("@vcmap/core").VcsMap} map
+   * @returns {null|import("@vcmap/core").VcsMap}
    * @private
    */
   _getFallbackMapOrDefault(map) {
@@ -270,8 +269,8 @@ class MapCollection extends Collection {
       map.className === 'vcs.vcm.maps.Openlayers'
     ) {
       await setCesiumToOLViewpoint(
-        /** @type {vcs.vcm.maps.CesiumMap} */ (this._activeMap),
-        /** @type {vcs.vcm.maps.Openlayers} */ (map),
+        /** @type {import("@vcmap/core").CesiumMap} */ (this._activeMap),
+        /** @type {import("@vcmap/core").Openlayers} */ (map),
       );
     }
 
@@ -331,7 +330,7 @@ class MapCollection extends Collection {
   /**
    * Returns all maps of a specified type
    * @param {string} type
-   * @returns {Array<vcs.vcm.maps.VcsMap>}
+   * @returns {Array<import("@vcmap/core").VcsMap>}
    * @api
    */
   getByType(type) {

@@ -10,8 +10,8 @@ import GeometryCollection from 'ol/geom/GeometryCollection.js';
 import Projection from './projection.js';
 
 /**
- * @param {ol/geom/SimpleGeometry} geometry
- * @returns {Array<ol/Coordinate>}
+ * @param {import("ol/geom/SimpleGeometry").default} geometry
+ * @returns {Array<import("ol/coordinate").Coordinate>}
  */
 export function getFlatCoordinatesFromSimpleGeometry(geometry) {
   const stride = geometry.getStride();
@@ -33,9 +33,9 @@ export function getFlatCoordinatesFromSimpleGeometry(geometry) {
 }
 
 /**
- * @param {ol/geom/Geometry} geometry
+ * @param {import("ol/geom/Geometry").default} geometry
  * @param {Array=} inputCoordinates
- * @returns {Array.<ol/Coordinate>}
+ * @returns {Array.<import("ol/coordinate").Coordinate>}
  */
 export function getFlatCoordinatesFromGeometry(geometry, inputCoordinates) {
   const coordinates = inputCoordinates || geometry.getCoordinates();
@@ -65,9 +65,9 @@ export function getFlatCoordinatesFromGeometry(geometry, inputCoordinates) {
 }
 
 /**
- * @param {ol/Coordinate} center
+ * @param {import("ol/coordinate").Coordinate} center
  * @param {number} radius
- * @returns {ol/geom/Circle}
+ * @returns {import("ol/geom/Circle").default}
  */
 export function circleFromCenterRadius(center, radius) {
   const offsetWGS84 = offset(Projection.mercatorToWgs84(center), radius, Math.PI / 2);
@@ -85,8 +85,8 @@ export function circleFromCenterRadius(center, radius) {
 }
 
 /**
- * @param {ol/geom/Geometry} geometry
- * @returns {ol/geom/Geometry}
+ * @param {import("ol/geom/Geometry").default} geometry
+ * @returns {import("ol/geom/Geometry").default}
  */
 export function convertGeometryToPolygon(geometry) {
   if (geometry instanceof Circle) {
@@ -98,7 +98,7 @@ export function convertGeometryToPolygon(geometry) {
 }
 
 /**
- * @param {Array<ol/Coordinate>} linearRing
+ * @param {Array<import("ol/coordinate").Coordinate>} linearRing
  */
 export function enforceEndingVertex(linearRing) {
   const [lastX, lastY] = linearRing[linearRing.length - 1];
@@ -108,7 +108,7 @@ export function enforceEndingVertex(linearRing) {
 }
 
 /**
- * @param {Array<ol/Coordinate>} linearRing
+ * @param {Array<import("ol/coordinate").Coordinate>} linearRing
  */
 export function removeEndingVertex(linearRing) {
   const [lastX, lastY] = linearRing[linearRing.length - 1];
@@ -118,7 +118,7 @@ export function removeEndingVertex(linearRing) {
 }
 
 /**
- * @param {ol/geom/Geometry} geometry
+ * @param {import("ol/geom/Geometry").default} geometry
  */
 export function removeEndingVertexFromGeometry(geometry) {
   if (geometry instanceof Polygon) {
@@ -159,8 +159,8 @@ function ringArea(ring) {
 
 /**
  * enforce a ring to be counter-clockwise
- * @param {Array<ol/Coordinate>} ring
- * @returns {Array<ol/Coordinate>}
+ * @param {Array<import("ol/coordinate").Coordinate>} ring
+ * @returns {Array<import("ol/coordinate").Coordinate>}
  */
 export function enforceRightHand(ring) {
   const area = ringArea(ring);

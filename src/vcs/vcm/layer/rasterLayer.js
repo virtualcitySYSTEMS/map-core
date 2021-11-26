@@ -9,7 +9,7 @@ import Extent from '../util/extent.js';
 import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
- * @typedef {vcs.vcm.layer.Layer.Options} vcs.vcm.layer.RasterLayer.Options
+ * @typedef {LayerOptions} RasterLayerOptions
  * @property {number|undefined} [minLevel=0] -  minLevel to show (if not specified, calculated from extent)
  * @property {number} [maxLevel=18] -  maxLevel to show
  * @property {string} [tilingSchema='geographic'] -  either "geographic" or "mercator"
@@ -19,19 +19,19 @@ import { VcsClassRegistry } from '../classRegistry.js';
  */
 
 /**
- * @typedef {vcs.vcm.layer.Layer.ImplementationOptions} vcs.vcm.layer.RasterLayer.ImplementationOptions
+ * @typedef {LayerImplementationOptions} RasterLayerImplementationOptions
  * @property {number} minLevel
  * @property {number} maxLevel
  * @property {string} tilingSchema
  * @property {number} opacity
- * @property {Cesium/ImagerySplitDirection} splitDirection
- * @property {vcs.vcm.util.Extent|undefined} extent
+ * @property {import("@vcmap/cesium").ImagerySplitDirection} splitDirection
+ * @property {Extent|undefined} extent
  */
 
 /**
- * @typedef {vcs.vcm.layer.LayerImplementation<vcs.vcm.maps.VcsMap>} vcs.vcm.layer.RasterLayerImplementation
+ * @typedef {import("@vcmap/core").LayerImplementation<import("@vcmap/core").VcsMap>} RasterLayerImplementation
  * @property {function(number):void} updateOpacity
- * @property {function(Cesium/ImagerySplitDirection):void} updateSplitDirection
+ * @property {function(import("@vcmap/cesium").ImagerySplitDirection):void} updateSplitDirection
  * @api
  */
 
@@ -41,7 +41,6 @@ import { VcsClassRegistry } from '../classRegistry.js';
  * @api
  * @property {string} GEOGRAPHIC
  * @property {string} MERCATOR
- * @memberOf vcs.vcm.layer.RasterLayer
  * @export
  */
 export const TilingScheme = {
@@ -52,7 +51,7 @@ export const TilingScheme = {
 /**
  * Gets the tiling scheme associated with this layerConfig
  * @param {Object} layerOptions
- * @returns {Cesium/WebMercatorTilingScheme|Cesium/GeographicTilingScheme}
+ * @returns {import("@vcmap/cesium").WebMercatorTilingScheme|import("@vcmap/cesium").GeographicTilingScheme}
  */
 export function getTilingScheme(layerOptions) {
   const tilingSchemeOptions = {};
@@ -69,8 +68,8 @@ export function getTilingScheme(layerOptions) {
 }
 
 /**
- * @param {vcs.vcm.util.Extent} extent
- * @param {Cesium/GeographicTilingScheme|Cesium/WebMercatorTilingScheme} tilingScheme
+ * @param {Extent} extent
+ * @param {import("@vcmap/cesium").GeographicTilingScheme|import("@vcmap/cesium").WebMercatorTilingScheme} tilingScheme
  * @param {number} maxLevel
  * @param {number} [minLevel=0]
  * @returns {number}
@@ -114,16 +113,15 @@ export function calculateMinLevel(extent, tilingScheme, maxLevel, minLevel = 0) 
  * for raster layers
  * @class
  * @export
- * @extends {vcs.vcm.layer.Layer}
- * @memberOf vcs.vcm.layer
- * @implements {vcs.vcm.layer.SplitLayer}
+ * @extends {Layer}
+ * @implements {SplitLayer}
  * @abstract
  */
 class RasterLayer extends Layer {
   static get className() { return 'vcs.vcm.layer.RasterLayer'; }
 
   /**
-   * @returns {vcs.vcm.layer.RasterLayer.Options}
+   * @returns {RasterLayerOptions}
    */
   static getDefaultOptions() {
     return {
@@ -137,7 +135,7 @@ class RasterLayer extends Layer {
   }
 
   /**
-   * @param {vcs.vcm.layer.RasterLayer.Options} options
+   * @param {RasterLayerOptions} options
    */
   constructor(options) {
     options.url = options.url || '';
@@ -145,7 +143,7 @@ class RasterLayer extends Layer {
     const defaultOptions = RasterLayer.getDefaultOptions();
     this.extent = this.extent || new Extent();
     /**
-     * The {@link vcs.vcm.layer.RasterLayer.TilingScheme} of this layer
+     * The {@link RasterLayer.TilingScheme} of this layer
      * @type {string}
      * @api
      */
@@ -168,7 +166,7 @@ class RasterLayer extends Layer {
      */
     this._opacity = parseNumberRange(options.opacity, defaultOptions.opacity, 0.0, 1.0);
 
-    /** @type {Cesium/ImagerySplitDirection} */
+    /** @type {import("@vcmap/cesium").ImagerySplitDirection} */
     this._splitDirection = ImagerySplitDirection.NONE;
 
     if (options.splitDirection) {
@@ -179,7 +177,7 @@ class RasterLayer extends Layer {
 
     /**
      * raised if the split direction changes, is passed the split direction as its only argument
-     * @type {vcs.vcm.event.VcsEvent<Cesium/ImagerySplitDirection>}
+     * @type {VcsEvent<import("@vcmap/cesium").ImagerySplitDirection>}
      * @api
      */
     this.splitDirectionChanged = new VcsEvent();
@@ -188,18 +186,18 @@ class RasterLayer extends Layer {
   /**
    * The split directions of this layer
    * @api
-   * @type {Cesium/ImagerySplitDirection}
+   * @type {import("@vcmap/cesium").ImagerySplitDirection}
    */
   get splitDirection() { return this._splitDirection; }
 
   /**
-   * @param {Cesium/ImagerySplitDirection} direction
+   * @param {import("@vcmap/cesium").ImagerySplitDirection} direction
    */
   set splitDirection(direction) {
     if (direction !== this._splitDirection) {
       this._splitDirection = direction;
       this.getImplementations().forEach((impl) => {
-        /** @type {vcs.vcm.layer.RasterLayerImplementation} */
+        /** @type {RasterLayerImplementation} */
         (impl).updateSplitDirection(direction);
       });
       this.splitDirectionChanged.raiseEvent(this._splitDirection);
@@ -221,17 +219,17 @@ class RasterLayer extends Layer {
     if (this._opacity !== parsedValue) {
       this._opacity = parsedValue;
       this.getImplementations().forEach((impl) => {
-        /** @type {vcs.vcm.layer.RasterLayerImplementation} */
+        /** @type {RasterLayerImplementation} */
         (impl).updateOpacity(parsedValue);
       });
     }
   }
 
   /**
-   * @returns {vcs.vcm.layer.RasterLayer.ImplementationOptions}
+   * @returns {RasterLayerImplementationOptions}
    */
   getImplementationOptions() {
-    const options = /** @type {vcs.vcm.layer.RasterLayer.ImplementationOptions} */ ({
+    const options = /** @type {RasterLayerImplementationOptions} */ ({
       ...super.getImplementationOptions(),
       minLevel: this.minLevel,
       maxLevel: this.maxLevel,
@@ -248,10 +246,10 @@ class RasterLayer extends Layer {
 
   /**
    * @inheritDoc
-   * @returns {vcs.vcm.layer.RasterLayer.Options}
+   * @returns {RasterLayerOptions}
    */
   getConfigObject() {
-    const config = /** @type {vcs.vcm.layer.RasterLayer.Options} */ (super.getConfigObject());
+    const config = /** @type {RasterLayerOptions} */ (super.getConfigObject());
     const defaultOptions = RasterLayer.getDefaultOptions();
 
     if (this.extent.equals(new Extent())) {

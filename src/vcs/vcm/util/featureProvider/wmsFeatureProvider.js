@@ -12,16 +12,16 @@ import { getWMSSource } from '../../layer/wmsHelpers.js';
 import Extent from '../extent.js';
 
 /**
- * @typedef {vcs.vcm.util.featureProvider.AbstractFeatureProvider.Options} vcs.vcm.util.featureProvider.WMSFeatureProvider.Options
+ * @typedef {AbstractFeatureProviderOptions} WMSFeatureProviderOptions
  * @property {string|undefined} [responseType='text/xml'] - the response type for the feature info
  * @property {Object|undefined} formatOptions - format options for the GeoJSON, WFS or GML format. To overwrite the gmlFormat option in WFS format, use 'GML', 'GML2' or 'GML3' as string
- * @property {vcs.vcm.util.Projection.Options|undefined} projection - the projection of the data, if not encoded in the response
+ * @property {ProjectionOptions|undefined} projection - the projection of the data, if not encoded in the response
  * @property {string} url
  * @property {string} [tilingSchema='geographic'] -  either "geographic" or "mercator"
  * @property {number} [maxLevel=18]
  * @property {number} [minLevel=0]
- * @property {ol/Size} [tileSize=[256,256]]
- * @property {vcs.vcm.util.Extent|vcs.vcm.util.Extent.Options|undefined} extent
+ * @property {import("ol/size").Size} [tileSize=[256,256]]
+ * @property {Extent|ExtentOptions|undefined} extent
  * @property {Object<string, string>} parameters
  * @property {string} [version='1.1.1']
  * @api
@@ -46,7 +46,7 @@ const geojsonFormats = [
 /**
  * @param {string} responseType
  * @param {Object} options
- * @returns {null|ol/format/FeatureFormat}
+ * @returns {null|import("ol/format/Feature").default}
  */
 export function getFormat(responseType, options = {}) {
   if (responseType === 'text/xml') {
@@ -68,14 +68,13 @@ export function getFormat(responseType, options = {}) {
 /**
  * @class
  * @export
- * @extends {vcs.vcm.util.featureProvider.AbstractFeatureProvider}
- * @memberOf vcs.vcm.util.featureProvider
+ * @extends {AbstractFeatureProvider}
  */
 class WMSFeatureProvider extends AbstractFeatureProvider {
   static get className() { return 'vcs.vcm.util.featureProvider.WMSFeatureProvider'; }
 
   /**
-   * @returns {vcs.vcm.util.featureProvider.WMSFeatureProvider.Options}
+   * @returns {WMSFeatureProviderOptions}
    */
   static getDefaultOptions() {
     return {
@@ -97,14 +96,14 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
 
   /**
    * @param {string} layerName
-   * @param {vcs.vcm.util.featureProvider.WMSFeatureProvider.Options} options
+   * @param {WMSFeatureProviderOptions} options
    */
   constructor(layerName, options) {
     super(layerName, options);
     const defaultOptions = WMSFeatureProvider.getDefaultOptions();
 
     /**
-     * @type {vcs.vcm.util.Extent|null}
+     * @type {import("@vcmap/core").Extent|null}
      */
     this.extent = null;
     if (options.extent) {
@@ -114,7 +113,7 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
         this.extent = new Extent(options.extent);
       }
     }
-    /** @type {vcs.vcm.layer.WMS.SourceOptions} */
+    /** @type {WMSSourceOptions} */
     this._wmsSourceOptions = {
       url: options.url,
       tilingSchema: options.tilingSchema || defaultOptions.tilingSchema,
@@ -126,7 +125,7 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
     };
     /**
      * The WMS Source used to generate getFeatureInfo urls
-     * @type {ol/source/TileWMS}
+     * @type {import("ol/source/TileWMS").default}
      * @api
      */
     this.wmsSource = getWMSSource(this._wmsSourceOptions);
@@ -142,31 +141,32 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
      */
     this._formatOptions = options.formatOptions || defaultOptions.formatOptions;
     /**
-     * The feature response format determined by the response type. Use formatOptions to configure the underlying ol.format.FeatureFormat
-     * @type {ol/format/FeatureFormat}
+     * The feature response format determined by the response type. Use formatOptions to configure the underlying ol.format.Feature
+     * @type {import("ol/format/Feature").default}
      * @api
      */
     this.featureFormat = getFormat(this.featureInfoResponseType, options.formatOptions);
     /**
      * The feature response projection, if not present in the response format.
-     * @type {vcs.vcm.util.Projection}
+     * @type {Projection}
      * @api
      */
     this.projection = options.projection ? new Projection(options.projection) : undefined;
   }
 
   /**
-   * @param {axios.AxiosResponse<*>} response
-   * @param {ol/Coordinate} coordinate
-   * @returns {Array<ol/Feature>}
+   * @param {import("axios").AxiosResponse<*>} response
+   * @param {import("ol/coordinate").Coordinate} coordinate
+   * @returns {Array<import("ol").Feature<import("ol/geom/Geometry").default>>}
    */
   featureResponseCallback(response, coordinate) {
     const { data } = response;
-    /** @type {Array<ol/Feature>} */
+    /** @type {Array<import("ol").Feature<import("ol/geom/Geometry").default>>} */
     let features;
 
     try {
-      features = /** @type {Array<ol/Feature>} */ (this.featureFormat.readFeatures(data, {
+      features = /** @type {Array<import("ol").Feature<import("ol/geom/Geometry").default>>} */
+      (this.featureFormat.readFeatures(data, {
         dataProjection: this.projection ? this.projection.proj : undefined,
         featureProjection: mercatorProjection.proj,
       }));
@@ -190,9 +190,9 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
 
   /**
    * @inheritDoc
-   * @param {ol/Coordinate} coordinate
+   * @param {import("ol/coordinate").Coordinate} coordinate
    * @param {number} resolution
-   * @returns {Promise<Array<ol/Feature>>}
+   * @returns {Promise<Array<import("ol").Feature<import("ol/geom/Geometry").default>>>}
    */
   async getFeaturesByCoordinate(coordinate, resolution) {
     const projection = this.wmsSource.getProjection();
@@ -220,10 +220,10 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
 
   /**
    * @inheritDoc
-   * @returns {vcs.vcm.util.featureProvider.WMSFeatureProvider.Options}
+   * @returns {WMSFeatureProviderOptions}
    */
   getConfigObject() {
-    const config = /** @type {vcs.vcm.util.featureProvider.WMSFeatureProvider.Options} */ (super.getConfigObject());
+    const config = /** @type {WMSFeatureProviderOptions} */ (super.getConfigObject());
     const defaultOptions = WMSFeatureProvider.getDefaultOptions();
     if (this.featureInfoResponseType !== defaultOptions.responseType) {
       config.responseType = this.featureInfoResponseType;

@@ -18,7 +18,7 @@ describe('vcs.vcm.maps.VcmMap', () => {
   });
 
   describe('creating a map', () => {
-    /** @type {vcs.vcm.maps.VcsMap} */
+    /** @type {import("@vcmap/core").VcsMap} */
     let map;
 
     before(() => {
@@ -181,7 +181,7 @@ describe('vcs.vcm.maps.VcmMap', () => {
   });
 
   describe('activating a map', () => {
-    /** @type {vcs.vcm.maps.VcsMap} */
+    /** @type {import("@vcmap/core").VcsMap} */
     let map;
 
     beforeEach(() => {
@@ -286,7 +286,7 @@ describe('vcs.vcm.maps.VcmMap', () => {
   });
 
   describe('deactivating a map', () => {
-    /** @type {vcs.vcm.maps.VcsMap} */
+    /** @type {import("@vcmap/core").VcsMap} */
     let map;
 
     beforeEach(async () => {
@@ -350,7 +350,7 @@ describe('vcs.vcm.maps.VcmMap', () => {
   });
 
   describe('destroying a map', () => {
-    /** @type {vcs.vcm.maps.VcsMap} */
+    /** @type {import("@vcmap/core").VcsMap} */
     let map;
     let layer;
 

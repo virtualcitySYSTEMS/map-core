@@ -3,37 +3,36 @@ import { EventType, ModificationKeyType, PointerKeyType } from './interactionTyp
 
 /**
  * @class
- * @extends {vcs.vcm.interaction.AbstractInteraction}
- * @memberOf vcs.vcm.interaction
+ * @extends {AbstractInteraction}
  * @export
  */
 class InteractionChain extends AbstractInteraction {
   /**
-   * @param {Array<vcs.vcm.interaction.AbstractInteraction>=} chain
+   * @param {Array<AbstractInteraction>=} chain
    */
   constructor(chain) {
     super();
     /**
      * The interactions to handle one after the other
-     * @type {Array<vcs.vcm.interaction.AbstractInteraction>}
+     * @type {Array<AbstractInteraction>}
      * @api
      */
     this.chain = chain || [];
     /**
      * @inheritDoc
-     * @type {vcs.vcm.interaction.EventType}
+     * @type {EventType}
      * @protected
      */
     this._defaultActive = EventType.ALL;
     /**
      * @inheritDoc
-     * @type {vcs.vcm.interaction.ModificationKeyType}
+     * @type {ModificationKeyType}
      * @protected
      */
     this._defaultModificationKey = ModificationKeyType.ALL;
     /**
      * @inheritDoc
-     * @type {vcs.vcm.interaction.PointerKeyType}
+     * @type {PointerKeyType}
      * @protected
      */
     this._defaultPointerKey = PointerKeyType.ALL;
@@ -42,7 +41,7 @@ class InteractionChain extends AbstractInteraction {
 
   /**
    * Add an interaction to the chain. Optionally passing an index where to add the interaction to.
-   * @param {vcs.vcm.interaction.AbstractInteraction} interaction
+   * @param {AbstractInteraction} interaction
    * @param {number=} index
    * @api
    */
@@ -56,7 +55,7 @@ class InteractionChain extends AbstractInteraction {
 
   /**
    * Removes an interaction from the chain, returning the index from which it was removed
-   * @param {vcs.vcm.interaction.AbstractInteraction} interaction
+   * @param {AbstractInteraction} interaction
    * @returns {number}
    * @api
    */
@@ -70,8 +69,8 @@ class InteractionChain extends AbstractInteraction {
 
   /**
    * @inheritDoc
-   * @param {vcs.vcm.interaction.Event} event
-   * @returns {Promise<vcs.vcm.interaction.Event>}
+   * @param {InteractionEvent} event
+   * @returns {Promise<InteractionEvent>}
    */
   pipe(event) {
     let promise = Promise.resolve(event);

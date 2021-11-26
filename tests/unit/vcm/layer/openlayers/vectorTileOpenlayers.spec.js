@@ -9,7 +9,7 @@ describe('vcs.vcm.layer.openlayers.VectorTileOpenlayers', () => {
   let sandbox;
   let openlayers;
   let vectorTile;
-  /** @type {vcs.vcm.layer.openlayers.VectorTileOpenlayers} */
+  /** @type {import("@vcmap/core").VectorTileOpenlayers} */
   let vectorTileOpenlayers;
 
   let sourceChangedSpy;

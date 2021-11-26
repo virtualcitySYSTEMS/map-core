@@ -6,14 +6,13 @@ import RasterLayerOpenlayers from './rasterLayerOpenlayers.js';
  * represents a specific OpenStreetMap layer for openlayers.
  * @class
  * @export
- * @extends {vcs.vcm.layer.openlayers.RasterLayerOpenlayers}
- * @memberOf vcs.vcm.layer.openlayers
+ * @extends {RasterLayerOpenlayers}
  */
 class OpenStreetMapOpenlayers extends RasterLayerOpenlayers {
   static get className() { return 'vcs.vcm.layer.openlayers.OpenStreetMapOpenlayers'; }
 
   /**
-   * @returns {ol/layer/Tile}
+   * @returns {import("ol/layer/Tile").default}
    */
   getOLLayer() {
     return new Tile({

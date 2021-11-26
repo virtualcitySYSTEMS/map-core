@@ -1,7 +1,6 @@
 /**
  * @class
  * @template {*} T
- * @memberOf vcs.vcm.event
  * @export
  * @api
  */

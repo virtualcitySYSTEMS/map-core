@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   Cartesian3,
   Matrix3,
@@ -20,20 +21,20 @@ const scratchColor = new Color();
 const scratchSplits = [1.0, 100000.0];
 
 /**
- * @typedef {Object} VcsCameraPrimitive.Options
- * @property {Cesium/Camera} camera
- * @property {Cesium/Color|undefined} [color=Cesium.Color.YELLOW]
+ * @typedef {Object} VcsCameraPrimitiveOptions
+ * @property {import("@vcmap/cesium").Camera} camera
+ * @property {import("@vcmap/cesium").Color|undefined} [color=Color.YELLOW]
  * @property {boolean|undefined} [show=true]
  * @property {boolean|undefined} [allowPicking=true]
  * @property {Object|undefined} id
  */
 
 /**
- * @memberOf Cesium
+ * @class
  */
 class VcsCameraPrimitive {
   /**
-   * @param {Cesium.VcsCameraPrimitive.Options} options
+   * @param {VcsCameraPrimitiveOptions} options
    */
   constructor(options) {
     this._outlinePrimitives = [];
@@ -142,5 +143,4 @@ class VcsCameraPrimitive {
   }
 }
 
-// Cesium.VcsCameraPrimitve = VcsCameraPrimitive;
 export default VcsCameraPrimitive;

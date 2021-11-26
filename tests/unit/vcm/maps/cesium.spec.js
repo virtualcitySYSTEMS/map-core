@@ -58,7 +58,7 @@ describe('vcs.vcm.maps.Cesium', () => {
     });
 
     describe('adding primitive collection', () => {
-      /** @type {vcs.vcm.maps.CesiumMap} */
+      /** @type {import("@vcmap/core").CesiumMap} */
       let map;
       let layerCollection;
 
@@ -130,7 +130,7 @@ describe('vcs.vcm.maps.Cesium', () => {
     });
 
     describe('removing of layers', () => {
-      /** @type {vcs.vcm.maps.CesiumMap} */
+      /** @type {import("@vcmap/core").CesiumMap} */
       let map;
       let layerCollection;
 
@@ -191,7 +191,7 @@ describe('vcs.vcm.maps.Cesium', () => {
     });
 
     describe('adding imagery layers', () => {
-      /** @type {vcs.vcm.maps.CesiumMap} */
+      /** @type {import("@vcmap/core").CesiumMap} */
       let map;
       let layerCollection;
 
@@ -263,7 +263,7 @@ describe('vcs.vcm.maps.Cesium', () => {
     });
 
     describe('removing of layers', () => {
-      /** @type {vcs.vcm.maps.CesiumMap} */
+      /** @type {import("@vcmap/core").CesiumMap} */
       let map;
       let layerCollection;
 
@@ -322,7 +322,7 @@ describe('vcs.vcm.maps.Cesium', () => {
     });
 
     describe('adding data sources', () => {
-      /** @type {vcs.vcm.maps.CesiumMap} */
+      /** @type {import("@vcmap/core").CesiumMap} */
       let map;
       let layerCollection;
 
@@ -392,7 +392,7 @@ describe('vcs.vcm.maps.Cesium', () => {
     });
 
     describe('removing of layers', () => {
-      /** @type {vcs.vcm.maps.CesiumMap} */
+      /** @type {import("@vcmap/core").CesiumMap} */
       let map;
       let layerCollection;
 

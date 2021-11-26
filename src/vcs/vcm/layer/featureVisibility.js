@@ -15,40 +15,40 @@ export const originalStyle = Symbol('originalStyle');
 
 /**
  * Set on an ol.Feature or Cesium.Cesium3DTileFeature to indicate that this features is highlighted.
- * Its value is a {@link vcs.vcm.util.style.VectorStyleItem}.
+ * Its value is a {@link VectorStyleItem}.
  * @type {symbol}
  */
 export const highlighted = Symbol('highlighted');
 
 /**
  * Is a boolean value set on ol.Feature or Cesium.Cesium3DTileFeature to indicate it is hidden
- * by the layers {@link vcs.vcm.layer.FeatureVisibility}.
+ * by the layers {@link FeatureVisibility}.
  * @type {symbol}
  */
 export const hidden = Symbol('hidden');
 
 /**
  * Is a boolean value set on ol.Feature or Cesium.Cesium3DTileFeature to indicate it is hidden
- * by the {@link vcs.vcm.layer.GlobalHider}
+ * by the {@link GlobalHider}
  * @type {symbol}
  */
 export const globalHidden = Symbol('globalHidden');
 
 /**
- * @typedef {Object} vcs.vcm.layer.HighlightedObject
- * @property {vcs.vcm.util.style.VectorStyleItem} style
- * @property {Set<ol/Feature|Cesium/Cesium3DTileFeature|Cesium/Cesium3DTilePointFeature>} features
+ * @typedef {Object} HighlightedObject
+ * @property {VectorStyleItem} style
+ * @property {Set<import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature>} features
  */
 
 /**
- * @typedef {Object} vcs.vcm.layer.FeatureVisibility.FeatureVisibilityEvent
- * @property {vcs.vcm.layer.FeatureVisibility.FeatureVisibilityAction} action
+ * @typedef {Object} FeatureVisibilityEvent
+ * @property {FeatureVisibilityAction} action
  * @property {Array<string>} ids
  * @api
  */
 
 /**
- * @param {Cesium/Cesium3DTileFeature|Cesium/Cesium3DTilePointFeature} feature
+ * @param {import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature} feature
  * @returns {boolean}
  */
 export function featureExists(feature) {
@@ -59,7 +59,8 @@ export function featureExists(feature) {
 }
 
 /**
- * @param {Cesium/Cesium3DTileFeature|Cesium/Cesium3DTilePointFeature|ol/Feature|Cesium/Entity} feature
+ * @param {import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Entity} feature
+ * @private
  */
 export function hideFeature(feature) {
   if (
@@ -76,7 +77,8 @@ export function hideFeature(feature) {
 
 /**
  * Caches the original style on the feature using the originalStyle symbol
- * @param {Cesium/Cesium3DTileFeature|Cesium/Cesium3DTilePointFeature|ol/Feature|Cesium/Entity} feature
+ * @param {import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Entity} feature
+ * @private
  */
 export function cacheOriginalStyle(feature) {
   if (!Reflect.has(feature, originalStyle)) {
@@ -92,7 +94,8 @@ export function cacheOriginalStyle(feature) {
 }
 
 /**
- * @param {Cesium/Cesium3DTileFeature|Cesium/Cesium3DTilePointFeature|ol/Feature|Cesium/Entity} feature
+ * @param {import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Entity} feature
+ * @private
  */
 export function resetOriginalStyle(feature) {
   if (!(feature[globalHidden] || feature[hidden] || feature[highlighted])) {
@@ -110,7 +113,8 @@ export function resetOriginalStyle(feature) {
 }
 
 /**
- * @param {Cesium/Cesium3DTileFeature|Cesium/Cesium3DTilePointFeature|ol/Feature|Cesium/Entity} feature
+ * @param {import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Entity} feature
+ * @private
  */
 export function highlightFeature(feature) {
   if (!(feature[globalHidden] || feature[hidden])) {
@@ -121,14 +125,15 @@ export function highlightFeature(feature) {
     ) {
       feature.color = style.cesiumFillColor;
     } else if (feature instanceof Feature) {
-      feature.setStyle(/** @type {ol/style/Style} */ (style.style));
+      feature.setStyle(/** @type {import("ol/style/Style").default} */ (style.style));
     }
   }
 }
 
 /**
  * Updates the cached original style
- * @param {Cesium/Cesium3DTileFeature|Cesium/Cesium3DTilePointFeature|ol/Feature} feature
+ * @param {import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature|import("ol").Feature<import("ol/geom/Geometry").default>} feature
+ * @private
  */
 export function updateOriginalStyle(feature) {
   delete feature[originalStyle];
@@ -141,7 +146,7 @@ export function updateOriginalStyle(feature) {
 }
 
 /**
- * @param {Cesium/Cesium3DTileFeature|Cesium/Cesium3DTilePointFeature|ol/Feature} feature
+ * @param {import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature|import("ol").Feature<import("ol/geom/Geometry").default>} feature
  */
 function unhighlightFeature(feature) {
   delete feature[highlighted];
@@ -149,8 +154,9 @@ function unhighlightFeature(feature) {
 }
 
 /**
- * @param {Cesium/Cesium3DTileFeature|Cesium/Cesium3DTilePointFeature|ol/Feature|Cesium/Entity} feature
+ * @param {import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Entity} feature
  * @param {symbol} symbol
+ * @private
  */
 export function showFeature(feature, symbol) {
   delete feature[symbol];
@@ -175,7 +181,6 @@ export function showFeature(feature, symbol) {
 /**
  * Enumeration of feature visibility actions.
  * @enum {number}
- * @memberOf vcs.vcm.layer.FeatureVisibility
  * @export
  * @api
  * @property {number} HIGHLIGHT
@@ -191,14 +196,14 @@ export const FeatureVisibilityAction = {
 };
 
 /**
- * @param {vcs.vcm.layer.FeatureVisibility} source
- * @param {vcs.vcm.layer.FeatureVisibility} destination
+ * @param {FeatureVisibility} source
+ * @param {FeatureVisibility} destination
  * @returns {Function}
  */
 export function synchronizeFeatureVisibility(source, destination) {
   function handler({ action, ids }) {
     if (action === FeatureVisibilityAction.HIGHLIGHT) {
-      /** @type {Object<string, vcs.vcm.util.style.VectorStyleItem>} */
+      /** @type {Object<string, VectorStyleItem>} */
       const toHighlight = {};
       ids.forEach((id) => {
         toHighlight[id] = source.highlightedObjects[id].style;
@@ -228,27 +233,26 @@ export function synchronizeFeatureVisibility(source, destination) {
 
 /**
  * @class
- * @memberOf vcs.vcm.layer
  */
 class FeatureVisibility {
   constructor() {
-    /** @type {Object<string, Set<(Cesium/Cesium3DTileFeature|ol/Feature|Cesium/Entity)>>} */
+    /** @type {Object<string, Set<(import("@vcmap/cesium").Cesium3DTileFeature|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Entity)>>} */
     this.hiddenObjects = {};
-    /** @type {Object<string, vcs.vcm.layer.HighlightedObject>} */
+    /** @type {Object<string, HighlightedObject>} */
     this.highlightedObjects = {};
     /** @type {number} */
     this.lastUpdated = Date.now();
     /**
      * An event raised when the hidden or highlighted ids change. Is called with
-     * {@link vcs.vcm.layer.FeatureVisibility.FeatureVisibilityEvent} as its only argument
-     * @type {vcs.vcm.event.VcsEvent<vcs.vcm.layer.FeatureVisibility.FeatureVisibilityEvent>}
+     * {@link FeatureVisibilityEvent} as its only argument
+     * @type {VcsEvent<FeatureVisibilityEvent>}
      */
     this.changed = new VcsEvent();
   }
 
   /**
-   * highlights a number of features by ID (Cesium/Cesium3DTileFeature|ol/Feature) with the given color.
-   * @param {Object<string, (vcs.vcm.util.style.VectorStyleItem|Cesium/Color|ol/style/Style)>} toHighlight
+   * highlights a number of features by ID (import("@vcmap/cesium").Cesium3DTileFeature|ol/Feature) with the given color.
+   * @param {Object<string, (VectorStyleItem|import("@vcmap/cesium").Color|import("ol/style/Style").default)>} toHighlight
    * @api stable
    */
   highlight(toHighlight) {
@@ -266,7 +270,7 @@ class FeatureVisibility {
           usedStyle.style = style;
         }
         // eslint-disable-next-line no-self-assign
-        usedStyle = /** @type {vcs.vcm.util.style.VectorStyleItem} */ (usedStyle);
+        usedStyle = /** @type {VectorStyleItem} */ (usedStyle);
 
         if (!this.highlightedObjects[id]) {
           this.highlightedObjects[id] = {
@@ -291,7 +295,7 @@ class FeatureVisibility {
   }
 
   /**
-   * unhighlights a number of features given by the ID (Cesium/Cesium3DTileFeature|ol/Feature)
+   * unhighlights a number of features given by the ID (import("@vcmap/cesium").Cesium3DTileFeature|import("ol").Feature<import("ol/geom/Geometry").default>)
    * @param {Array<string>} toUnHighlight Array with IDS to unhighlight
    * @api stable
    */
@@ -323,7 +327,7 @@ class FeatureVisibility {
 
   /**
    * @param {string|number} id
-   * @param {ol/Feature|Cesium/Cesium3DTileFeature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Cesium3DTileFeature} feature
    * @returns {boolean}
    */
   hasHighlightFeature(id, feature) {
@@ -332,7 +336,7 @@ class FeatureVisibility {
 
   /**
    * @param {string|number} id
-   * @param {ol/Feature|Cesium/Cesium3DTileFeature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Cesium3DTileFeature} feature
    */
   addHighlightFeature(id, feature) {
     if (this.highlightedObjects[id]) {
@@ -396,7 +400,7 @@ class FeatureVisibility {
 
   /**
    * @param {string|number} id
-   * @param {ol/Feature|Cesium/Cesium3DTileFeature|Cesium/Entity} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Entity} feature
    * @returns {boolean}
    */
   hasHiddenFeature(id, feature) {
@@ -405,7 +409,7 @@ class FeatureVisibility {
 
   /**
    * @param {string|number} id
-   * @param {ol/Feature|Cesium/Cesium3DTileFeature|Cesium/Entity} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Entity} feature
    */
   addHiddenFeature(id, feature) {
     if (this.hiddenObjects[id]) {

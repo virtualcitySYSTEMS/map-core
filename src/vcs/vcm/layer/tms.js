@@ -6,31 +6,30 @@ import TMSCesium from './cesium/tmsCesium.js';
 import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
- * @typedef {vcs.vcm.layer.RasterLayer.Options} vcs.vcm.layer.TMS.Options
+ * @typedef {RasterLayerOptions} TMSOptions
  * @property {string} [format=jpeg]
- * @property {ol/Size} [tileSize=[256, 256]]
+ * @property {import("ol/size").Size} [tileSize=[256, 256]]
  * @api
  */
 
 /**
- * @typedef {vcs.vcm.layer.RasterLayer.ImplementationOptions} vcs.vcm.layer.TMS.ImplementationOptions
+ * @typedef {RasterLayerImplementationOptions} TMSImplementationOptions
  * @property {string} format
- * @property {ol/Size} tileSize
+ * @property {import("ol/size").Size} tileSize
  */
 
 /**
  * TMS Layer
  * @class
  * @export
- * @extends {vcs.vcm.layer.RasterLayer}
+ * @extends {RasterLayer}
  * @api stable
- * @memberOf vcs.vcm.layer
  */
 class TMS extends RasterLayer {
   static get className() { return 'vcs.vcm.layer.TMS'; }
 
   /**
-   * @returns {vcs.vcm.layer.TMS.Options}
+   * @returns {TMSOptions}
    */
   static getDefaultOptions() {
     return {
@@ -42,7 +41,7 @@ class TMS extends RasterLayer {
   }
 
   /**
-   * @param {vcs.vcm.layer.TMS.Options} options
+   * @param {TMSOptions} options
    */
   constructor(options) {
     const defaultOptions = TMS.getDefaultOptions();
@@ -57,13 +56,13 @@ class TMS extends RasterLayer {
     /** @type {?string} */
     this.format = options.format || defaultOptions.format;
 
-    /** @type {ol/Size} */
+    /** @type {import("ol/size").Size} */
     this.tileSize = Array.isArray(options.tileSize) ? options.tileSize.slice() : defaultOptions.tileSize;
   }
 
   /**
    * @inheritDoc
-   * @returns {vcs.vcm.layer.TMS.ImplementationOptions}
+   * @returns {TMSImplementationOptions}
    */
   getImplementationOptions() {
     return {
@@ -75,8 +74,8 @@ class TMS extends RasterLayer {
 
   /**
    * @inheritDoc
-   * @param {vcs.vcm.maps.VcsMap} map
-   * @returns {Array<vcs.vcm.layer.openlayers.TMSOpenlayers|vcs.vcm.layer.cesium.TMSCesium>}
+   * @param {import("@vcmap/core").VcsMap} map
+   * @returns {Array<TMSOpenlayers|TMSCesium>}
    */
   createImplementationsForMap(map) {
     if (map instanceof Openlayers) {
@@ -91,10 +90,10 @@ class TMS extends RasterLayer {
 
   /**
    * @inheritDoc
-   * @returns {vcs.vcm.layer.TMS.Options}
+   * @returns {TMSOptions}
    */
   getConfigObject() {
-    const config = /** @type {vcs.vcm.layer.TMS.Options} */ (super.getConfigObject());
+    const config = /** @type {TMSOptions} */ (super.getConfigObject());
     const defaultOptions = TMS.getDefaultOptions();
 
     if (this.tilingSchema !== defaultOptions.tilingSchema) {

@@ -1,0 +1,27 @@
+{
+  "opts": {
+    "recurse": true,
+    "template": "@vcsuite/tsd-jsdoc/dist",
+    "destination": ".",
+    "outFile": "index.d.ts",
+    "strictDocumentation": true,
+    "private": true
+  },
+  "tags": {
+    "allowUnknownTags": true
+  },
+  "typescript": {
+    "moduleRoot": "src"
+  },
+  "plugins": [
+    "build/tsd/importToModule.js",
+    "build/tsd/exportedOnly.js",
+    "@vcsuite/tsd-jsdoc/dist/plugin"
+  ],
+  "source": {
+    "includePattern": "\\.js$",
+    "include":[
+      "src"
+    ]
+  }
+}

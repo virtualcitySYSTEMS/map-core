@@ -10,7 +10,7 @@ import VcsEvent from '../event/vcsEvent.js';
 import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
- * @typedef {vcs.vcm.layer.Layer.Options} vcs.vcm.layer.OpenStreetMap.Options
+ * @typedef {LayerOptions} OpenStreetMapOptions
  * @property {string|undefined} splitDirection - either 'left' or 'right', if omitted none is applied
  * @property {number} [opacity=1.0] - opacity between 0 and 1
  * @property {number} [maxLevel=19] - max level to load tiles at
@@ -21,16 +21,15 @@ import { VcsClassRegistry } from '../classRegistry.js';
  * OpenStreetMap Layer
  * @class
  * @export
- * @extends {vcs.vcm.layer.Layer}
+ * @extends {Layer}
  * @api stable
- * @memberOf vcs.vcm.layer
- * @implements {vcs.vcm.layer.SplitLayer}
+ * @implements {SplitLayer}
  */
 class OpenStreetMap extends Layer {
   static get className() { return 'vcs.vcm.layer.OpenStreetMap'; }
 
   /**
-   * @returns {vcs.vcm.layer.OpenStreetMap.Options}
+   * @returns {OpenStreetMapOptions}
    */
   static getDefaultOptions() {
     return {
@@ -42,13 +41,13 @@ class OpenStreetMap extends Layer {
   }
 
   /**
-   * @param {vcs.vcm.layer.OpenStreetMap.Options} options
+   * @param {OpenStreetMapOptions} options
    */
   constructor(options) {
     super(options);
     const defaultOptions = OpenStreetMap.getDefaultOptions();
     /**
-     * @type {Cesium/ImagerySplitDirection}
+     * @type {import("@vcmap/cesium").ImagerySplitDirection}
      * @private
      */
     this._splitDirection = ImagerySplitDirection.NONE;
@@ -72,7 +71,7 @@ class OpenStreetMap extends Layer {
 
     /**
      * raised if the split direction changes, is passed the split direction as its only argument
-     * @type {vcs.vcm.event.VcsEvent<Cesium/ImagerySplitDirection>}
+     * @type {VcsEvent<import("@vcmap/cesium").ImagerySplitDirection>}
      * @api
      */
     this.splitDirectionChanged = new VcsEvent();
@@ -87,18 +86,18 @@ class OpenStreetMap extends Layer {
 
   /**
    * @api
-   * @type {Cesium/ImagerySplitDirection}
+   * @type {import("@vcmap/cesium").ImagerySplitDirection}
    */
   get splitDirection() { return this._splitDirection; }
 
   /**
-   * @param {Cesium/ImagerySplitDirection} direction
+   * @param {import("@vcmap/cesium").ImagerySplitDirection} direction
    */
   set splitDirection(direction) {
     if (direction !== this._splitDirection) {
       this._splitDirection = direction;
       this.getImplementations().forEach((impl) => {
-        /** @type {vcs.vcm.layer.cesium.OpenStreetMapCesium|vcs.vcm.layer.openlayers.OpenStreetMapOpenlayers} */
+        /** @type {OpenStreetMapCesium|OpenStreetMapOpenlayers} */
         (impl).updateSplitDirection(this._splitDirection);
       });
       this.splitDirectionChanged.raiseEvent(this._splitDirection);
@@ -120,7 +119,7 @@ class OpenStreetMap extends Layer {
     if (this._opacity !== parsedValue) {
       this._opacity = parsedValue;
       this.getImplementations().forEach((impl) => {
-        /** @type {vcs.vcm.layer.cesium.OpenStreetMapCesium|vcs.vcm.layer.openlayers.OpenStreetMapOpenlayers} */
+        /** @type {OpenStreetMapCesium|OpenStreetMapOpenlayers} */
         (impl).updateOpacity(parsedValue);
       });
     }
@@ -128,7 +127,7 @@ class OpenStreetMap extends Layer {
 
   /**
    * @inheritDoc
-   * @returns {vcs.vcm.layer.RasterLayer.ImplementationOptions}
+   * @returns {RasterLayerImplementationOptions}
    */
   getImplementationOptions() {
     return {
@@ -143,8 +142,8 @@ class OpenStreetMap extends Layer {
 
   /**
    * @inheritDoc
-   * @param {vcs.vcm.maps.VcsMap} map
-   * @returns {Array<vcs.vcm.layer.openlayers.OpenStreetMapOpenlayers|vcs.vcm.layer.cesium.OpenStreetMapCesium>}
+   * @param {import("@vcmap/core").VcsMap} map
+   * @returns {Array<OpenStreetMapOpenlayers|OpenStreetMapCesium>}
    */
   createImplementationsForMap(map) {
     if (map instanceof Openlayers) {
@@ -159,10 +158,10 @@ class OpenStreetMap extends Layer {
 
   /**
    * @inheritDoc
-   * @returns {vcs.vcm.layer.OpenStreetMap.Options}
+   * @returns {OpenStreetMapOptions}
    */
   getConfigObject() {
-    const config = /** @type {vcs.vcm.layer.OpenStreetMap.Options} */ (super.getConfigObject());
+    const config = /** @type {OpenStreetMapOptions} */ (super.getConfigObject());
     const defaultOptions = OpenStreetMap.getDefaultOptions();
 
     if (this._splitDirection !== ImagerySplitDirection.NONE) {

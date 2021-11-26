@@ -4,17 +4,16 @@ import ClippingObject from './clippingObject.js';
 import CesiumMap from '../../maps/cesium.js';
 
 /**
- * ClippingObjectManager, a singleton Class for managing [ClippingObjects]{@link vcs.vcm.util.clipping.ClippingObject}. The manager takes care to only apply a
- * single [ClippingObject]{@link vcs.vcm.util.clipping.ClippingObject} to a target, such as a Cesium3DTileset or Entity.
- * The manager ensures, [ClippingObjects]{@link vcs.vcm.util.clipping.ClippingObject} which
- * can be manipulated by the user take precedence over other [ClippingObjects]{@link vcs.vcm.util.clipping.ClippingObject}.
- * [ClippingObjects]{@link vcs.vcm.util.clipping.ClippingObject} with the same target get
- * overwritten in the order they where added to the manager. Exclusive [ClippingObjects]{@link vcs.vcm.util.clipping.ClippingObject} are always applied last, even
- * if a default [ClippingObject]{@link vcs.vcm.util.clipping.ClippingObject} is added after.
+ * ClippingObjectManager, a singleton Class for managing [ClippingObjects]{@link ClippingObject}. The manager takes care to only apply a
+ * single [ClippingObject]{@link ClippingObject} to a target, such as a Cesium3DTileset or Entity.
+ * The manager ensures, [ClippingObjects]{@link ClippingObject} which
+ * can be manipulated by the user take precedence over other [ClippingObjects]{@link ClippingObject}.
+ * [ClippingObjects]{@link ClippingObject} with the same target get
+ * overwritten in the order they where added to the manager. Exclusive [ClippingObjects]{@link ClippingObject} are always applied last, even
+ * if a default [ClippingObject]{@link ClippingObject} is added after.
  * @class
  * @export
  * @api stable
- * @memberOf vcs.vcm.util.clipping
  */
 class ClippingObjectManager {
   static get className() {
@@ -23,22 +22,22 @@ class ClippingObjectManager {
 
   constructor(layerCollection) {
     /**
-     * @type {Set<vcs.vcm.util.clipping.ClippingObject>}
+     * @type {Set<ClippingObject>}
      * @private
      */
     this._defaultClippingObjects = new Set();
     /**
-     * @type {Array<vcs.vcm.util.clipping.ClippingObject>}
+     * @type {Array<ClippingObject>}
      * @private
      */
     this._exclusiveClippingObjects = null;
     /**
-     * @type {Map<(Cesium/Globe|Cesium/Entity|Cesium/Cesium3DTileset), vcs.vcm.util.clipping.ClippingObject>}
+     * @type {Map<(import("@vcmap/cesium").Globe|import("@vcmap/cesium").Entity|import("@vcmap/cesium").Cesium3DTileset), ClippingObject>}
      * @private
      */
     this._targetsMap = new Map();
     /**
-     * @type {Map<vcs.vcm.util.clipping.ClippingObject, Array<Function>>}
+     * @type {Map<ClippingObject, Array<Function>>}
      * @private
      */
     this._listenersMap = new Map();
@@ -61,7 +60,7 @@ class ClippingObjectManager {
     this._dirty = false;
     this._layerCollection = layerCollection;
     /**
-     * @type {vcs.vcm.maps.VcsMap|null}
+     * @type {import("@vcmap/core").VcsMap|null}
      * @private
      */
     this._activeMap = null;
@@ -75,7 +74,7 @@ class ClippingObjectManager {
   }
 
   /**
-   * Suspend updates, changes to managed [ClippingObjects]{@link vcs.vcm.util.clipping.ClippingObject} will not trigger a reset of targets or plane definitions
+   * Suspend updates, changes to managed [ClippingObjects]{@link ClippingObject} will not trigger a reset of targets or plane definitions
    * @type {boolean}
    * @api
    */
@@ -97,7 +96,7 @@ class ClippingObjectManager {
   }
 
   /**
-   * @param {vcs.vcm.layer.Layer} layer
+   * @param {import("@vcmap/core").Layer} layer
    * @private
    */
   _layerChanged(layer) {
@@ -110,7 +109,7 @@ class ClippingObjectManager {
   }
 
   /**
-   * @param {vcs.vcm.maps.VcsMap} map
+   * @param {import("@vcmap/core").VcsMap} map
    */
   mapActivated(map) {
     this.suspendUpdate = true;
@@ -123,12 +122,12 @@ class ClippingObjectManager {
   }
 
   /**
-   * Add a default [ClippingObject]{@link vcs.vcm.util.clipping.ClippingObject} to the manager. The order in which objects are added, determines their priority.
+   * Add a default [ClippingObject]{@link ClippingObject} to the manager. The order in which objects are added, determines their priority.
    * In case two objects have the same target, the one added last is applied. Should the last added object be removed,
-   * the first one is re-applied. An object may not be added if is already part of the manager, use [hasClippingObject]{@link vcs.vcm.util.clipping.ClippingObjectManager#hasClippingObject}
+   * the first one is re-applied. An object may not be added if is already part of the manager, use [hasClippingObject]{@link ClippingObjectManager#hasClippingObject}
    * to test.
    * @api
-   * @param {vcs.vcm.util.clipping.ClippingObject} clippingObject
+   * @param {ClippingObject} clippingObject
    * @throws ClippingObject is already managed
    */
   addClippingObject(clippingObject) {
@@ -152,9 +151,9 @@ class ClippingObjectManager {
   }
 
   /**
-   * Remove a default [ClippingObject]{@link vcs.vcm.util.clipping.ClippingObject} instance from the manager.
+   * Remove a default [ClippingObject]{@link ClippingObject} instance from the manager.
    * @api
-   * @param {vcs.vcm.util.clipping.ClippingObject} clippingObject
+   * @param {ClippingObject} clippingObject
    */
   removeClippingObject(clippingObject) {
     check(clippingObject, ClippingObject);
@@ -168,8 +167,8 @@ class ClippingObjectManager {
   }
 
   /**
-   * Test if a {@link vcs.vcm.util.clipping.ClippingObject} is part of managers context
-   * @param {vcs.vcm.util.clipping.ClippingObject} clippingObject
+   * Test if a {@link ClippingObject} is part of managers context
+   * @param {ClippingObject} clippingObject
    * @returns {boolean}
    * @api
    */
@@ -181,12 +180,12 @@ class ClippingObjectManager {
   }
 
   /**
-   * Sets an Array of [ClippingObjects]{@link vcs.vcm.util.clipping.ClippingObject} to be added to the managers context. Exclusive objects
-   * are intended for [ClippingObjects]{@link vcs.vcm.util.clipping.ClippingObject} which can be directly manipulated by the user. They
-   * are always applied last and will overwrite any managed default [ClippingObject]{@link vcs.vcm.util.clipping.ClippingObject} with the same targets.
+   * Sets an Array of [ClippingObjects]{@link ClippingObject} to be added to the managers context. Exclusive objects
+   * are intended for [ClippingObjects]{@link ClippingObject} which can be directly manipulated by the user. They
+   * are always applied last and will overwrite any managed default [ClippingObject]{@link ClippingObject} with the same targets.
    * The manager will only allow a single context (eg. one widget/plugin) for exclusive objects. Should the current context be switched or cleared, the provided
    * callback is called to inform the setting context of its removal.
-   * @param {Array<vcs.vcm.util.clipping.ClippingObject>} clippingObjects
+   * @param {Array<ClippingObject>} clippingObjects
    * @param {Function} removedCb
    * @throws ClippingObjects is already managed
    * @api
@@ -235,7 +234,7 @@ class ClippingObjectManager {
   }
 
   /**
-   * Clears the exclusive set of [ClippingObject]{@link vcs.vcm.util.clipping.ClippingObject}. If called with the silent flag, the
+   * Clears the exclusive set of [ClippingObject]{@link ClippingObject}. If called with the silent flag, the
    * removed callback is not called (eg. when removing exclusive clipping objects from the same context).
    * @param {boolean=} silent
    * @api
@@ -256,7 +255,7 @@ class ClippingObjectManager {
     const currentTargets = new Set(this._targetsMap.keys());
 
     /**
-     * @param {vcs.vcm.util.clipping.ClippingObject} clippingObject
+     * @param {ClippingObject} clippingObject
      */
     const setTargets = (clippingObject) => {
       clippingObject.targets.forEach((target) => {
@@ -284,7 +283,7 @@ class ClippingObjectManager {
   }
 
   /**
-   * @param {vcs.vcm.util.clipping.ClippingObject} clippingObject
+   * @param {ClippingObject} clippingObject
    * @private
    */
   _clippingPlaneUpdated(clippingObject) {

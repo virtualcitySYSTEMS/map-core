@@ -3,19 +3,18 @@ import { vcsLayerName } from '../layerSymbols.js';
 
 /**
  * @class
- * @extends {vcs.vcm.layer.LayerImplementation<vcs.vcm.maps.Oblique>}
+ * @extends {LayerImplementation<import("@vcmap/core").Oblique>}}
  * @abstract
- * @memberOf vcs.vcm.layer.oblique
  */
 class LayerOblique extends LayerImplementation {
   /**
-   * @param {vcs.vcm.maps.Oblique} map
-   * @param {vcs.vcm.layer.Layer.ImplementationOptions} options
+   * @param {import("@vcmap/core").Oblique} map
+   * @param {LayerImplementationOptions} options
    */
   constructor(map, options) {
     super(map, options);
     /**
-     * @type {ol/layer/Layer|null}
+     * @type {import("ol/layer").Layer<import("ol/source/Source").default>|null}
      */
     this.olLayer = null;
   }
@@ -57,7 +56,7 @@ class LayerOblique extends LayerImplementation {
   // eslint-disable-next-line jsdoc/require-returns-check
   /**
    * returns the ol Layer
-   * @returns {ol/layer/Layer}
+   * @returns {import("ol/layer").Layer<import("ol/source/Source").default>}
    */
   // eslint-disable-next-line class-methods-use-this
   getOLLayer() { throw new Error(); }

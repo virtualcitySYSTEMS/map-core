@@ -24,8 +24,8 @@ for (let i = 0; i < mercatorResolutionsToLevel.length; i++) {
 
 /**
  * transforms cesium geographic rectangle to mercator extent
- * @param {Cesium/Rectangle} rectangle in wgs84 radians
- * @returns {ol/Extent} extent in mercator
+ * @param {import("@vcmap/cesium").Rectangle} rectangle in wgs84 radians
+ * @returns {import("ol/extent").Extent} extent in mercator
  */
 export function rectangleToExtent(rectangle) {
   const baseSouthWestLevel = Rectangle.southwest(rectangle);
@@ -44,7 +44,7 @@ export function rectangleToExtent(rectangle) {
 }
 
 /**
- * @typedef {vcs.vcm.VcsObject.Options} vcs.vcm.layer.tileProvider.TileProvider.Options
+ * @typedef {VcsObjectOptions} TileProviderOptions
  * @property {number} [tileCacheSize=50] size of the LRU (least recently used) tileCache per baseLevel
  * @property {Array<number>} [baseLevels=[15]] baseLevels (these levels will be requested by the loader, all other child levels will be interpolated
  * @property {boolean} [trackFeaturesToTiles=true] tracks in which tile each feature exists. (features without an ID will be ignored). Better performance if deactivated, but does not allow for featureVisibility. Should be set to false if not unique featureID is provided.
@@ -54,9 +54,9 @@ export function rectangleToExtent(rectangle) {
  */
 
 /**
- * @typedef {Object} vcs.vcm.layer.tileProvider.TileProvider.tileLoadedEvent
+ * @typedef {Object} TileLoadedEvent
  * @property {string} tileId id of the tile
- * @property {ol/source/Vector} source vectorSource with the features.
+ * @property {import("ol/source").Vector<import("ol/geom/Geometry").default>} source vectorSource with the features.
  * @api
  */
 
@@ -65,8 +65,7 @@ export function rectangleToExtent(rectangle) {
  * TileProvider class
  *
  * @class
- * @memberOf vcs.vcm.layer.tileProvider
- * @extends {vcs.vcm.VcsObject}
+ * @extends {VcsObject}
  * @export
  * @api
  */
@@ -78,7 +77,7 @@ class TileProvider extends VcsObject {
   static get className() { return 'vcs.vcm.layer.tileProvider.TileProvider'; }
 
   /**
-   * @returns {vcs.vcm.layer.tileProvider.TileProvider.Options}
+   * @returns {TileProviderOptions}
    */
   static getDefaultOptions() {
     return {
@@ -91,7 +90,7 @@ class TileProvider extends VcsObject {
   }
 
   /**
-   * @param {vcs.vcm.layer.tileProvider.TileProvider.Options} options
+   * @param {TileProviderOptions} options
    */
   constructor(options) {
     super(options);
@@ -99,7 +98,7 @@ class TileProvider extends VcsObject {
 
     /**
      * Cesium Webmercator TilingScheme
-     * @type {Cesium/WebMercatorTilingScheme}
+     * @type {import("@vcmap/cesium").WebMercatorTilingScheme}
      * @api
      * @readonly
      */
@@ -127,7 +126,7 @@ class TileProvider extends VcsObject {
 
     /**
      * cache of tiles for each baseLevel
-     * @type {Map<number, ol/structs/LRUCache<Promise<ol/source/Vector>>>}
+     * @type {Map<number, LRUCache<Promise<import("ol/source").Vector<import("ol/geom/Geometry").default>>>>}
      * @api
      */
     this.cache = new Map();
@@ -138,7 +137,7 @@ class TileProvider extends VcsObject {
 
     /**
      * Caches the loaded sources for quick Access to all features.
-     * @type {Map<string, ol/source/Vector>}
+     * @type {Map<string, import("ol/source").Vector<import("ol/geom/Geometry").default>>}
      * @api
      */
     this.sourceCache = new Map();
@@ -172,7 +171,7 @@ class TileProvider extends VcsObject {
 
     /**
      * is raised for each loaded Tile; has the tileId and a ol/vector/Source as parameters
-     * @type {vcs.vcm.event.VcsEvent<vcs.vcm.layer.tileProvider.TileProvider.tileLoadedEvent>}
+     * @type {VcsEvent<TileLoadedEvent>}
      * @api
      */
     this.tileLoadedEvent = new VcsEvent();
@@ -206,7 +205,7 @@ class TileProvider extends VcsObject {
 
   /**
    * tracks Features if the features have ids.
-   * @param {Array<ol/Feature>} features
+   * @param {Array<import("ol").Feature<import("ol/geom/Geometry").default>>} features
    * @param {string} tileId
    * @private
    */
@@ -226,7 +225,7 @@ class TileProvider extends VcsObject {
 
   /**
    * untracks Features
-   * @param {Array<ol/Feature>} features
+   * @param {Array<import("ol").Feature<import("ol/geom/Geometry").default>>} features
    * @param {string} tileId
    * @private
    */
@@ -248,7 +247,7 @@ class TileProvider extends VcsObject {
   }
 
   /**
-   * @param {Promise<Array<ol/Feature>>} featuresPromise
+   * @param {Promise<Array<import("ol").Feature<import("ol/geom/Geometry").default>>>} featuresPromise
    * @param {number} baseLevel
    * @param {string} tileId
    * @returns {Promise<*>}
@@ -348,8 +347,8 @@ class TileProvider extends VcsObject {
 
   /**
    * @param {number} baseLevel
-   * @param {Cesium/Cartographic} tileCenter
-   * @returns {Promise<ol/source/Vector>|null}
+   * @param {import("@vcmap/cesium").Cartographic} tileCenter
+   * @returns {Promise<import("ol/source").Vector<import("ol/geom/Geometry").default>|null>}
    * @private
    */
   async _getSourceForBaseTile(baseLevel, tileCenter) {
@@ -368,9 +367,9 @@ class TileProvider extends VcsObject {
   /**
    * returns the features intersecting this coordinate. Depending on the resolution a buffer around the coordinate is requested.
    * The Buffer has the size of the resolution.
-   * @param {ol/Coordinate} coordinate in mercator
+   * @param {import("ol/coordinate").Coordinate} coordinate in mercator
    * @param {number} resolution in m per pixel
-   * @returns {Promise<Array<ol/Feature>>}
+   * @returns {Promise<Array<import("ol").Feature<import("ol/geom/Geometry").default>>>}
    * @api
    */
   async getFeaturesByCoordinate(coordinate, resolution) {
@@ -395,7 +394,7 @@ class TileProvider extends VcsObject {
    * @param {number} x
    * @param {number} y
    * @param {number} level - if the level is not a base level, will use the closest match
-   * @returns {Promise<Array<ol/Feature>>}
+   * @returns {Promise<Array<import("ol").Feature<import("ol/geom/Geometry").default>>>}
    * @api
    */
   async getFeaturesForTile(x, y, level) {
@@ -429,9 +428,9 @@ class TileProvider extends VcsObject {
 
   /**
    * Retrieves all features which intersect the given extent. Will load all intersecting tiles.
-   * @param {vcs.vcm.util.Extent} extent
+   * @param {import("@vcmap/core").Extent} extent
    * @param {number=} level - Optional level to request. Will use highest level if omitted. If the provided level is not a base level, will use the closest match.
-   * @returns {Promise<Array<ol/Feature>>}
+   * @returns {Promise<Array<import("ol").Feature<import("ol/geom/Geometry").default>>>}
    * @api
    */
   async getFeaturesForExtent(extent, level) {
@@ -459,7 +458,7 @@ class TileProvider extends VcsObject {
 
   /**
    * calls the given Function for Each feature currently in the cache
-   * @param {function(ol/Feature): void} callback
+   * @param {function(import("ol").Feature<import("ol/geom/Geometry").default>): void} callback
    * @api
    */
   forEachFeature(callback) {
@@ -487,13 +486,13 @@ class TileProvider extends VcsObject {
    * return fetch.get(url)
    *  .then(response => response.json())
    *  .then((data) => {
-   *     const { features } = vcs.vcm.layer.GeoJSON.parseGeoJSON(data.data, { dynamicStyle: true });
+   *     const { features } = GeoJSONparseGeoJSON(data.data, { dynamicStyle: true });
    *     return features;
    *   });
    * @param {number} x
    * @param {number} y
    * @param {number} z
-   * @returns {Promise<Array<ol/Feature>>}
+   * @returns {Promise<Array<import("ol").Feature<import("ol/geom/Geometry").default>>>}
    */
   // eslint-disable-next-line class-methods-use-this,no-unused-vars
   async loader(x, y, z) {
@@ -502,11 +501,11 @@ class TileProvider extends VcsObject {
 
   /**
    * @inheritDoc
-   * @returns {vcs.vcm.layer.tileProvider.TileProvider.Options}
+   * @returns {TileProviderOptions}
    * @api
    */
   getConfigObject() {
-    const config = /** @type {vcs.vcm.layer.tileProvider.TileProvider.Options} */ (super.getConfigObject());
+    const config = /** @type {TileProviderOptions} */ (super.getConfigObject());
     const defaultOptions = TileProvider.getDefaultOptions();
 
     if (defaultOptions.tileCacheSize !== this.tileCacheSize) {

@@ -13,7 +13,7 @@ import {
 
 describe('vcs.vcm.layer.GlobalHider', () => {
   let sandbox;
-  /** @type {vcs.vcm.layer.GlobalHider} */
+  /** @type {import("@vcmap/core").GlobalHider} */
   let GH;
 
   before(() => {

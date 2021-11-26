@@ -21,10 +21,10 @@ import { parseInteger, parseNumber } from '@vcsuite/parsers';
 import { getCesiumColor } from '../style/styleHelpers.js';
 
 /**
- * @param {Cesium/Scene} scene
- * @param {ol/style/Fill} fill
- * @param {ol/Feature} feature
- * @returns {Cesium/MaterialAppearance}
+ * @param {import("@vcmap/cesium").Scene} scene
+ * @param {import("ol/style/Fill").default} fill
+ * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+ * @returns {import("@vcmap/cesium").MaterialAppearance}
  */
 export function getMaterialAppearance(scene, fill, feature) {
   const options = {
@@ -61,10 +61,10 @@ export function getMaterialAppearance(scene, fill, feature) {
 /**
  *
  * @param {Object} options
- * @param {Array<Cesium/Geometry>} geometries
- * @param {Cesium/Color} color
- * @param {Cesium/ClassificationType} classificationType
- * @returns {Cesium/ClassificationPrimitive}
+ * @param {Array<import("@vcmap/cesium").Geometry>} geometries
+ * @param {import("@vcmap/cesium").Color} color
+ * @param {import("@vcmap/cesium").ClassificationType} classificationType
+ * @returns {import("@vcmap/cesium").ClassificationPrimitive}
  */
 export function createClassificationPrimitive(options, geometries, color, classificationType) {
   const instances = geometries.map(geometry => new GeometryInstance({
@@ -97,14 +97,14 @@ export function createClassificationPrimitive(options, geometries, color, classi
 
 /**
  *
- * @param {Cesium/Scene} scene
- * @param {vcs.vcm.layer.VectorProperties} vectorProperties
+ * @param {import("@vcmap/cesium").Scene} scene
+ * @param {import("@vcmap/core").VectorProperties} vectorProperties
  * @param {boolean} allowPicking
- * @param {ol/Feature} feature
- * @param {Array<Cesium/Geometry>} geometries
- * @param {ol/style/Style} style
+ * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+ * @param {Array<import("@vcmap/cesium").Geometry>} geometries
+ * @param {import("ol/style/Style").default} style
  * @param {boolean} groundPrimitive
- * @returns {Cesium/Primitive|Cesium/GroundPrimitive|Cesium/ClassificationPrimitive|null}
+ * @returns {import("@vcmap/cesium").Primitive|import("@vcmap/cesium").GroundPrimitive|import("@vcmap/cesium").ClassificationPrimitive|null}
  */
 export function createPrimitive(scene, vectorProperties, allowPicking, feature, geometries, style, groundPrimitive) {
   const classificationType = vectorProperties.getClassificationType(feature);
@@ -141,13 +141,13 @@ export function createPrimitive(scene, vectorProperties, allowPicking, feature, 
 
 /**
  *
- * @param {Cesium/Scene} scene
- * @param {vcs.vcm.layer.VectorProperties} vectorProperties
+ * @param {import("@vcmap/cesium").Scene} scene
+ * @param {import("@vcmap/core").VectorProperties} vectorProperties
  * @param {boolean} allowPicking
- * @param {ol/Feature} feature
- * @param {Array<Cesium/Geometry>} geometries
- * @param {ol/style/Style} style
- * @returns {Cesium/Primitive}
+ * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+ * @param {Array<import("@vcmap/cesium").Geometry>} geometries
+ * @param {import("ol/style/Style").default} style
+ * @returns {import("@vcmap/cesium").Primitive}
  */
 export function createOutlinePrimitive(scene, vectorProperties, allowPicking, feature, geometries, style) {
   const color = getCesiumColor(style.getStroke().getColor(), [0, 0, 0, 1]);
@@ -179,14 +179,14 @@ export function createOutlinePrimitive(scene, vectorProperties, allowPicking, fe
 
 /**
  *
- * @param {Cesium/Scene} scene
- * @param {vcs.vcm.layer.VectorProperties} vectorProperties
+ * @param {import("@vcmap/cesium").Scene} scene
+ * @param {import("@vcmap/core").VectorProperties} vectorProperties
  * @param {boolean} allowPicking
- * @param {ol/Feature} feature
- * @param {Array<Cesium/PolylineGeometry|Cesium/GroundPolylineGeometry>} geometries
- * @param {ol/style/Style} style
+ * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+ * @param {Array<import("@vcmap/cesium").PolylineGeometry|import("@vcmap/cesium").GroundPolylineGeometry>} geometries
+ * @param {import("ol/style/Style").default} style
  * @param {boolean} groundPrimitive
- * @returns {Cesium/Primitive|Cesium/GroundPolylinePrimitive|null}
+ * @returns {import("@vcmap/cesium").Primitive|import("@vcmap/cesium").GroundPolylinePrimitive|null}
  */
 export function createLinePrimitive(
   scene, vectorProperties, allowPicking, feature, geometries, style, groundPrimitive,
@@ -242,7 +242,7 @@ export function createLinePrimitive(
 /**
  * returns groundlevel or extracts the minimum height from the coordinates, returns 0 if no z coordinates are set
  * @param {number|null|undefined} groundLevel
- * @param {Array.<ol.Coordinate>=} coordinates
+ * @param {Array<import("ol/coordinate").Coordinate>=} coordinates
  * @returns {number}
  */
 export function getMinHeightOrGroundLevel(groundLevel, coordinates) {
@@ -323,9 +323,9 @@ export function validateStoreys(storeys, storeyHeights) {
 }
 
 /**
- * @param {ol/Feature} feature
- * @param {Cesium/HeightReference} heightReference
- * @param {vcs.vcm.layer.VectorProperties} vectorProperties
+ * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+ * @param {import("@vcmap/cesium").HeightReference} heightReference
+ * @param {import("@vcmap/core").VectorProperties} vectorProperties
  * @returns {number}
  */
 export function getHeightAboveGround(feature, heightReference, vectorProperties) {
@@ -336,10 +336,10 @@ export function getHeightAboveGround(feature, heightReference, vectorProperties)
 }
 
 /**
- * @param {ol/Feature} feature
- * @param {vcs.vcm.layer.VectorProperties} vectorProperties
- * @param {Array<ol/Coordinate>} coordinates
- * @returns {vcs.vcm.layer.Vector.HeightInfo}
+ * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+ * @param {import("@vcmap/core").VectorProperties} vectorProperties
+ * @param {Array<import("ol/coordinate").Coordinate>} coordinates
+ * @returns {VectorHeightInfo}
  */
 export function getHeightInfo(feature, vectorProperties, coordinates) {
   const extrudedHeight = vectorProperties.getExtrudedHeight(feature);
@@ -459,13 +459,13 @@ export function getStoreyOptions(storeyHeights, initialHeight, down, result) {
 
 /**
  *
- * @param {ol/Feature} feature
- * @param {ol/style/Style} style
- * @param {Array<ol/geom/SimpleGeometry>} geometries
- * @param {vcs.vcm.layer.VectorProperties} vectorProperties
- * @param {Cesium/Scene} scene
- * @param {vcs.vcm.layer.Vector.GeometryFactoryType} geometryFactory
- * @param {vcs.vcm.layer.cesium.VectorContext|vcs.vcm.layer.cesium.ClusterContext} context
+ * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+ * @param {import("ol/style/Style").default} style
+ * @param {Array<import("ol/geom/SimpleGeometry").default>} geometries
+ * @param {import("@vcmap/core").VectorProperties} vectorProperties
+ * @param {import("@vcmap/cesium").Scene} scene
+ * @param {VectorGeometryFactoryType} geometryFactory
+ * @param {import("@vcmap/core").VectorContext|import("@vcmap/core").ClusterContext} context
  */
 export function addPrimitivesToContext(
   feature, style, geometries, vectorProperties, scene, geometryFactory, context,

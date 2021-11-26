@@ -17,14 +17,14 @@ import { transformFromImage } from '../oblique/helpers.js';
 import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
- * @typedef {Object} vcs.vcm.maps.Oblique.ClickParameters
- * @property {ol/Pixel} pixel
+ * @typedef {Object} ObliqueClickParameters
+ * @property {import("ol/pixel").Pixel} pixel
  * @property {boolean|undefined} estimate
  * @api stable
  */
 
 /**
- * @typedef {vcs.vcm.maps.VcsMap.Options} vcs.vcm.maps.Oblique.Options
+ * @typedef {VcsMapOptions} ObliqueOptions
  * @property {boolean} [changeOnMoveEnd=false]
  * @property {number} [switchThreshold=0]
  * @property {boolean} [switchOnEdge=true]
@@ -41,8 +41,8 @@ const defaultHeadings = {
 
 /**
  * returns the direction which matches the heading of the viewpoint
- * @param {vcs.vcm.util.ViewPoint} viewpoint
- * @returns {vcs-oblique/ObliqueViewDirection}
+ * @param {ViewPoint} viewpoint
+ * @returns {import("@vcmap/core").ObliqueViewDirection}
  */
 export function getViewDirectionFromViewPoint(viewpoint) {
   const { heading } = viewpoint;
@@ -58,8 +58,9 @@ export function getViewDirectionFromViewPoint(viewpoint) {
 }
 
 /**
- * @param {vcs.vcm.util.ViewPoint} viewpoint
- * @returns {ol/Coordinate}
+ * @param {ViewPoint} viewpoint
+ * @returns {import("ol/coordinate").Coordinate}
+ * @private
  */
 export function getMercatorViewpointCenter(viewpoint) {
   const gpWGS84 = viewpoint.groundPosition || viewpoint.cameraPosition;
@@ -75,15 +76,14 @@ export function getMercatorViewpointCenter(viewpoint) {
  *
  * @class
  * @export
- * @extends {vcs.vcm.maps.BaseOLMap}
+ * @extends {BaseOLMap}
  * @api stable
- * @memberOf vcs.vcm.maps
  */
 class Oblique extends BaseOLMap {
   static get className() { return 'vcs.vcm.maps.Oblique'; }
 
   /**
-   * @returns {vcs.vcm.maps.Oblique.Options}
+   * @returns {ObliqueOptions}
    */
   static getDefaultOptions() {
     return {
@@ -96,7 +96,7 @@ class Oblique extends BaseOLMap {
   }
 
   /**
-   * @param {vcs.vcm.maps.Oblique.Options} options
+   * @param {ObliqueOptions} options
    */
   constructor(options) {
     super(options);
@@ -108,7 +108,7 @@ class Oblique extends BaseOLMap {
     this._defaultCollectionName = options.defaultCollectionName || defaultOptions.defaultCollectionName;
 
     /**
-     * @type  {vcs-oblique/ObliqueCollection|null}
+     * @type  {ObliqueCollection|null}
      * @private
      */
     this._loadingCollection = null;
@@ -135,7 +135,7 @@ class Oblique extends BaseOLMap {
 
     /**
      * An event raise, when the collection changes. Is passed the collection as its only argument.
-     * @type {vcs.vcm.event.VcsEvent<vcs-oblique/ObliqueCollection>}
+     * @type {VcsEvent<ObliqueCollection>}
      * @api
      */
     this.collectionChanged = new VcsEvent();
@@ -236,14 +236,14 @@ class Oblique extends BaseOLMap {
   }
 
   /**
-   * @type {vcs-oblique/ObliqueCollection}
+   * @type {ObliqueCollection}
    * @readonly
    * @api
    */
   get collection() { return this._obliqueProvider.collection; }
 
   /**
-   * @type {Cesium/Event}
+   * @type {import("@vcmap/cesium").Event}
    * @readonly
    * @api
    */
@@ -252,7 +252,7 @@ class Oblique extends BaseOLMap {
   }
 
   /**
-   * @type {vcs-oblique/ObliqueImage|null}
+   * @type {import("@vcmap/core").ObliqueImage|null}
    * @api
    * @readonly
    */
@@ -261,7 +261,7 @@ class Oblique extends BaseOLMap {
   }
 
   /**
-   * @param {vcs.vcm.util.ViewPoint} viewpoint
+   * @param {ViewPoint} viewpoint
    * @returns {Promise<boolean>}
    * @api
    */
@@ -287,7 +287,7 @@ class Oblique extends BaseOLMap {
   }
 
   /**
-   * @returns {vcs.vcm.util.Extent}
+   * @returns {Extent}
    */
   getExtentOfCurrentImage() {
     const image = this.currentImage;
@@ -305,7 +305,7 @@ class Oblique extends BaseOLMap {
   }
 
   /**
-   * @returns {vcs-oblique/ObliqueImage}
+   * @returns {import("@vcmap/core").ObliqueImage}
    * @api
    * @deprecated 4.0
    */
@@ -321,8 +321,8 @@ class Oblique extends BaseOLMap {
 
   /**
    * Sets a new oblique collection
-   * @param {vcs-oblique/ObliqueCollection} obliqueCollection
-   * @param {vcs.vcm.util.ViewPoint=} viewpoint
+   * @param {ObliqueCollection} obliqueCollection
+   * @param {ViewPoint=} viewpoint
    * @returns {Promise<void>}
    * @api
    */
@@ -347,8 +347,8 @@ class Oblique extends BaseOLMap {
 
   /**
    * Sets a new oblique collection
-   * @param {vcs-oblique/ObliqueCollection} obliqueCollection
-   * @param {vcs.vcm.util.ViewPoint=} viewpoint
+   * @param {ObliqueCollection} obliqueCollection
+   * @param {ViewPoint=} viewpoint
    * @returns {Promise<void>}
    * @private
    */
@@ -369,7 +369,7 @@ class Oblique extends BaseOLMap {
   /**
    * Sets an image by its name on the map
    * @param {string} imageName
-   * @param {ol/Coordinate=} optCenter
+   * @param {import("ol/coordinate").Coordinate=} optCenter
    * @returns {Promise<void>}
    * @api
    */
@@ -385,7 +385,7 @@ class Oblique extends BaseOLMap {
   }
 
   /**
-   * @returns {Promise<vcs.vcm.util.ViewPoint|null>}
+   * @returns {Promise<ViewPoint|null>}
    * @inheritDoc
    */
   async getViewPoint() {
@@ -406,7 +406,7 @@ class Oblique extends BaseOLMap {
 
   /**
    * @inheritDoc
-   * @returns {vcs.vcm.util.ViewPoint|null}
+   * @returns {ViewPoint|null}
    */
   getViewPointSync() {
     const image = this.currentImage;
@@ -427,8 +427,8 @@ class Oblique extends BaseOLMap {
   }
 
   /**
-   * @param {ol/Coordinate} groundPosition
-   * @returns {vcs.vcm.util.ViewPoint}
+   * @param {import("ol/coordinate").Coordinate} groundPosition
+   * @returns {ViewPoint}
    * @private
    */
   _computeViewpointInternal(groundPosition) {
@@ -455,7 +455,7 @@ class Oblique extends BaseOLMap {
   }
 
   /**
-   * @param {vcs.vcm.util.ViewPoint} viewpoint
+   * @param {ViewPoint} viewpoint
    * @returns {Promise<void>}
    * @inheritDoc
    */
@@ -475,7 +475,7 @@ class Oblique extends BaseOLMap {
   }
 
   /**
-   * @param {ol/Coordinate} coords in WGS84 degrees
+   * @param {import("ol/coordinate").Coordinate} coords in WGS84 degrees
    * @returns {boolean}
    * @api
    */
@@ -494,11 +494,11 @@ class Oblique extends BaseOLMap {
   }
 
   /**
-   * @returns {vcs.vcm.maps.Oblique.Options}
+   * @returns {ObliqueOptions}
    * @api
    */
   getConfigObject() {
-    const config = /** @type {vcs.vcm.maps.Oblique.Options} */ (super.getConfigObject());
+    const config = /** @type {ObliqueOptions} */ (super.getConfigObject());
     const defaultOptions = Oblique.getDefaultOptions();
 
     if (this.mapChangeEvent === 'movened') {

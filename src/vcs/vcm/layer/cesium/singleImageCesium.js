@@ -6,15 +6,14 @@ import { wgs84Projection } from '../../util/projection.js';
  * represents a specific Cesium SingleTileImagery Layer class.
  * @class
  * @export
- * @extends {vcs.vcm.layer.cesium.RasterLayerCesium}
- * @memberOf vcs.vcm.layer.cesium
+ * @extends {RasterLayerCesium}
  */
 class SingleImageCesium extends RasterLayerCesium {
   static get className() { return 'vcs.vcm.layer.cesium.singleImageLayer'; }
 
   /**
-   * @param {vcs.vcm.maps.CesiumMap} map
-   * @param {vcs.vcm.layer.SingleImage.ImplementationOptions} options
+   * @param {import("@vcmap/core").CesiumMap} map
+   * @param {SingleImageImplementationOptions} options
    */
   constructor(map, options) {
     super(map, options);
@@ -23,7 +22,7 @@ class SingleImageCesium extends RasterLayerCesium {
   }
 
   /**
-   * @returns {Cesium/ImageryLayer}
+   * @returns {import("@vcmap/cesium").ImageryLayer}
    */
   getCesiumLayer() {
     const options = {

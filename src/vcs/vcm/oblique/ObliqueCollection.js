@@ -5,7 +5,7 @@ import { getTransform } from 'ol/proj.js';
 import { createXYZ } from 'ol/tilegrid.js';
 import Feature from 'ol/Feature.js';
 import Polygon, { fromExtent } from 'ol/geom/Polygon.js';
-import { Vector } from 'ol/source.js';
+import Vector from 'ol/source/Vector.js';
 import { boundingExtent, buffer, containsCoordinate, getCenter } from 'ol/extent.js';
 import { Event as CesiumEvent } from '@vcmap/cesium';
 import { DataState, getStateFromStatesArray } from './ObliqueDataSet.js';
@@ -54,7 +54,7 @@ import { ObliqueViewDirection } from './ObliqueViewDirection.js';
 /**
  * @typedef {Object} ObliqueCollectionOptions
  * @property {string|undefined} name
- * @property {Array<ObliqueDataSet>} dataSets
+ * @property {Array<import("@vcmap/core").ObliqueDataSet>} dataSets
  * @property {number|undefined} maxZoom
  * @property {number|undefined} minZoom
  * @property {number|undefined} [scaleFactor=4]
@@ -63,8 +63,8 @@ import { ObliqueViewDirection } from './ObliqueViewDirection.js';
  */
 
 /**
- * @param {Array<ObliqueImage>} images
- * @returns {Array<import("ol/Feature").default>}
+ * @param {Array<import("@vcmap/core").ObliqueImage>} images
+ * @returns {Array<import("ol").Feature<import("ol/geom/Geometry").default>>}
  */
 function getImageFeatures(images) {
   return images.map((image) => {
@@ -80,7 +80,7 @@ function getImageFeatures(images) {
 
 /**
  * @param {Object<string, DataState>} tiles
- * @returns {Array<import("ol/Feature").default>}
+ * @returns {Array<import("ol").Feature<import("ol/geom/Geometry").default>>}
  */
 function getTileFeatures(tiles) {
   const tileGrid = createXYZ();
@@ -117,19 +117,19 @@ class ObliqueCollection {
 
     /**
      * Maps each direction to an RTree
-     * @type {Map<ObliqueViewDirection, RBush>}
+     * @type {Map<import("@vcmap/core").ObliqueViewDirection, RBush>}
      * @private
      */
     this._directionTrees = new Map();
     /**
      * Maps image name to image
-     * @type {Map<string, ObliqueImage>}
+     * @type {Map<string, import("@vcmap/core").ObliqueImage>}
      * @private
      */
     this._images = new Map();
     /**
      * Maps urls to general infos & cameras
-     * @type {Array<ObliqueDataSet>}
+     * @type {Array<import("@vcmap/core").ObliqueDataSet>}
      * @private
      */
     this._dataSets = [];
@@ -147,18 +147,18 @@ class ObliqueCollection {
 
     /**
      * Event raised when images are loaded. Is passed an Array of ObliqueImages as its only argument.
-     * @type {import("cesium").Event}
+     * @type {import("@vcmap/cesium").Event}
      * @api
      */
     this.imagesLoaded = new CesiumEvent();
 
     /**
-     * @type {import("ol/source/Vector").default|null}
+     * @type {import("ol/source").Vector<import("ol/geom/Geometry").default>|null}
      * @private
      */
     this._tileFeatureSource = null;
     /**
-     * @type {import("ol/source/Vector").default|null}
+     * @type {import("ol/source").Vector<import("ol/geom/Geometry").default>|null}
      * @private
      */
     this._imageFeatureSource = null;
@@ -170,7 +170,7 @@ class ObliqueCollection {
   }
 
   /**
-   * @type {Array<ObliqueDataSet>}
+   * @type {Array<import("@vcmap/core").ObliqueDataSet>}
    * @api
    * @readonly
    */
@@ -217,7 +217,7 @@ class ObliqueCollection {
 
   /**
    * All currently loaded images
-   * @type {Array<ObliqueImage>}
+   * @type {Array<import("@vcmap/core").ObliqueImage>}
    * @api
    * @readonly
    */
@@ -248,7 +248,7 @@ class ObliqueCollection {
   }
 
   /**
-   * @param {ObliqueDataSet} dataSet
+   * @param {import("@vcmap/core").ObliqueDataSet} dataSet
    * @returns {Promise<void>}
    * @private
    */
@@ -262,7 +262,7 @@ class ObliqueCollection {
 
   /**
    * Adds an oblique data set to this collection.
-   * @param {ObliqueDataSet} dataSet
+   * @param {import("@vcmap/core").ObliqueDataSet} dataSet
    * @private
    */
   _addDataSet(dataSet) {
@@ -275,7 +275,7 @@ class ObliqueCollection {
 
   /**
    * Adds an oblique data set to this collection.
-   * @param {ObliqueDataSet} dataSet
+   * @param {import("@vcmap/core").ObliqueDataSet} dataSet
    * @returns {Promise<void>}
    * @api
    */
@@ -303,7 +303,7 @@ class ObliqueCollection {
   }
 
   /**
-   * @param {Array<ObliqueImage>} images
+   * @param {Array<import("@vcmap/core").ObliqueImage>} images
    * @param {string=} tileCoordinate
    * @private
    */
@@ -355,6 +355,7 @@ class ObliqueCollection {
    * @api
    */
   getTiles() {
+    /** @type {Object<string, DataState>} */
     const tiles = {};
     this._dataSets.forEach((dataSet) => {
       Object.entries(dataSet.getTiles())
@@ -373,7 +374,7 @@ class ObliqueCollection {
   /**
    * Returns an image by its name, if it has been loaded
    * @param {string} name
-   * @returns {ObliqueImage}
+   * @returns {import("@vcmap/core").ObliqueImage}
    * @api
    */
   getImageByName(name) {
@@ -414,27 +415,27 @@ class ObliqueCollection {
   /**
    * Loads data for a given mercator Coordinate
    * @param {import("ol/coordinate").Coordinate} mercatorCoordinate - coordinate in web mercator
-   * @returns {Promise<Array<undefined>>}
+   * @returns {Promise<void>}
    * @api
    */
-  loadDataForCoordinate(mercatorCoordinate) {
-    return Promise.all(this._dataSets.map(i => i.loadDataForCoordinate(mercatorCoordinate)));
+  async loadDataForCoordinate(mercatorCoordinate) {
+    await Promise.all(this._dataSets.map(i => i.loadDataForCoordinate(mercatorCoordinate)));
   }
 
   /**
    * Loads all data tiles in the given extent
    * @param {import("ol/extent").Extent} extent
-   * @returns {Promise<Array<undefined>>}
+   * @returns {Promise<void>}
    * @api
    */
-  loadDataForExtent(extent) {
-    return Promise.all(this._dataSets.map(i => i.loadDataForExtent(extent)));
+  async loadDataForExtent(extent) {
+    await Promise.all(this._dataSets.map(i => i.loadDataForExtent(extent)));
   }
 
   /**
    * @param {import("ol/coordinate").Coordinate} mercatorCoordinate
-   * @param {ObliqueViewDirection} direction
-   * @returns {ObliqueImage|undefined}
+   * @param {import("@vcmap/core").ObliqueViewDirection} direction
+   * @returns {import("@vcmap/core").ObliqueImage|undefined}
    * @private
    */
   _getNextImageForCoordinate(mercatorCoordinate, direction) {
@@ -452,8 +453,8 @@ class ObliqueCollection {
    * Returns the <i>closest</i> image for the given location and direction (location and image extent must not overlap).
    * Returns undefined, if there are no images for the given direction
    * @param {import("ol/coordinate").Coordinate} mercatorCoordinate - coordinate in web mercator
-   * @param {ObliqueViewDirection} direction - the preferred direction if no image in that direction can be found, other direction will be queried
-   * @returns {ObliqueImage|undefined}
+   * @param {import("@vcmap/core").ObliqueViewDirection} direction - the preferred direction if no image in that direction can be found, other direction will be queried
+   * @returns {import("@vcmap/core").ObliqueImage|undefined}
    * @api
    */
   getImageForCoordinate(mercatorCoordinate, direction) {
@@ -471,8 +472,8 @@ class ObliqueCollection {
    * Loads all data for a location and then returns the <i>closest</i> image for the given location and direction (location and image extent must not overlap).
    * Returns undefined, if there are no images for the given direction
    * @param {import("ol/coordinate").Coordinate} mercatorCoordinate - coordinate in web mercator
-   * @param {ObliqueViewDirection} direction
-   * @returns {Promise<ObliqueImage|undefined>}
+   * @param {import("@vcmap/core").ObliqueViewDirection} direction
+   * @returns {Promise<import("@vcmap/core").ObliqueImage|undefined>}
    * @api
    */
   async loadImageForCoordinate(mercatorCoordinate, direction) {
@@ -483,7 +484,7 @@ class ObliqueCollection {
   /**
    * Checks, if an image exists for a given coordinated
    * @param {import("ol/coordinate").Coordinate} mercatorCoordinate - coordinate in web mercator
-   * @param {ObliqueViewDirection} direction
+   * @param {import("@vcmap/core").ObliqueViewDirection} direction
    * @returns {Promise<boolean>}
    * @api
    */
@@ -503,10 +504,10 @@ class ObliqueCollection {
    * Loads the image adjacent to a given image in a certain direction from the provided image.
    * Returns undefined if there are no images in that direction or there are no images for the direction
    * of the provided image.
-   * @param {ObliqueImage} image
+   * @param {import("@vcmap/core").ObliqueImage} image
    * @param {number} heading - 0 = east, PI / 2 = north, PI = west and PI * 1.5 = south
    * @param {number=} [deviation=PI/4]
-   * @returns {Promise<ObliqueImage|undefined>}
+   * @returns {Promise<import("@vcmap/core").ObliqueImage|undefined>}
    * @api
    */
   async loadAdjacentImage(image, heading, deviation = Math.PI / 4) {

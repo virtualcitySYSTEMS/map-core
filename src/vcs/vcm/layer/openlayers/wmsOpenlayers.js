@@ -6,15 +6,14 @@ import { getWMSSource } from '../wmsHelpers.js';
  * represents a specific Cesium WMSOpenlayers Layer class.
  * @class
  * @export
- * @extends {vcs.vcm.layer.openlayers.RasterLayerOpenlayers}
- * @memberOf vcs.vcm.layer.openlayers
+ * @extends {RasterLayerOpenlayers}
  */
 class WMSOpenlayers extends RasterLayerOpenlayers {
   static get className() { return 'vcs.vcm.layer.openlayers.WMSOpenlayers'; }
 
   /**
-   * @param {vcs.vcm.maps.Openlayers} map
-   * @param {vcs.vcm.layer.WMS.ImplementationOptions} options
+   * @param {import("@vcmap/core").Openlayers} map
+   * @param {WMSImplementationOptions} options
    */
   constructor(map, options) {
     super(map, options);
@@ -27,13 +26,13 @@ class WMSOpenlayers extends RasterLayerOpenlayers {
      */
     this.version = options.version;
     /**
-     * @type {ol/Size}
+     * @type {import("ol/size").Size}
      */
     this.tileSize = options.tileSize;
   }
 
   /**
-   * @returns {ol/layer/Tile}
+   * @returns {import("ol/layer/Tile").default}
    */
   getOLLayer() {
     return new Tile({

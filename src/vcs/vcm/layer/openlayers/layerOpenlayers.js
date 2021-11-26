@@ -2,23 +2,22 @@ import { vcsLayerName } from '../layerSymbols.js';
 import LayerImplementation from '../layerImplementation.js';
 
 /**
- * Layer implementation for {@link vcs.vcm.maps.CesiumMap}.
+ * Layer implementation for {@link CesiumMap}.
  * @class
  * @export
- * @extends {vcs.vcm.layer.LayerImplementation<vcs.vcm.maps.Openlayers>}
- * @memberOf vcs.vcm.layer.openlayers
+ * @extends {LayerImplementation<import("@vcmap/core").Openlayers>}}
  */
 class LayerOpenlayers extends LayerImplementation {
   static get className() { return 'vcs.vcm.layer.openlayers.LayerOpenlayers'; }
 
   /**
-   * @param {vcs.vcm.maps.Openlayers} map
-   * @param {vcs.vcm.layer.Layer.ImplementationOptions} options
+   * @param {import("@vcmap/core").Openlayers} map
+   * @param {LayerImplementationOptions} options
    */
   constructor(map, options) {
     super(map, options);
     /**
-     * @type {ol/layer/Layer|null}
+     * @type {import("ol/layer").Layer<import("ol/source/Source").default>|null}
      */
     this.olLayer = null;
   }
@@ -60,7 +59,7 @@ class LayerOpenlayers extends LayerImplementation {
   // eslint-disable-next-line jsdoc/require-returns-check
   /**
    * returns the ol Layer
-   * @returns {ol/layer/Layer}
+   * @returns {import("ol/layer").Layer<import("ol/source/Source").default>}
    */
   // eslint-disable-next-line class-methods-use-this
   getOLLayer() { throw new Error(); }

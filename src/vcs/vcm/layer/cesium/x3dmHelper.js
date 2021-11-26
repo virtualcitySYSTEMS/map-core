@@ -1,5 +1,5 @@
 /**
- * @param {Cesium/Cesium3DTileFeature|Cesium/Cesium3DTilePointFeature} feature
+ * @param {import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature} feature
  * @returns {Object}
  */
 export default function getJSONObjectFromObject(feature) {

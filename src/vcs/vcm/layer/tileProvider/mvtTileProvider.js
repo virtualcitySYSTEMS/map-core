@@ -6,7 +6,7 @@ import TileProvider, { rectangleToExtent } from './tileProvider.js';
 import { getURL } from './urlTemplateTileProvider.js';
 
 /**
- * @typedef {vcs.vcm.layer.tileProvider.TileProvider.Options} vcs.vcm.layer.tileProvider.MVTTileProvider.Options
+ * @typedef {TileProviderOptions} MVTTileProviderOptions
  * @property {string} url to pbf tiled datasource {x}, {y}, {z} are placeholders for x, y, zoom
  * @property {string|undefined} idProperty if property exists will be used to set the ID of the feature
  * @api
@@ -16,8 +16,7 @@ import { getURL } from './urlTemplateTileProvider.js';
  * Loads the pbf tiles
  *
  * @class
- * @memberOf vcs.vcm.layer.tileProvider
- * @extends {vcs.vcm.layer.tileProvider.TileProvider}
+ * @extends {TileProvider}
  * @export
  * @api
  */
@@ -29,7 +28,7 @@ class MVTTileProvider extends TileProvider {
   static get className() { return 'vcs.vcm.layer.tileProvider.MVTTileProvider'; }
 
   /**
-   * @returns {vcs.vcm.layer.tileProvider.MVTTileProvider.Options}
+   * @returns {MVTTileProviderOptions}
    */
   static getDefaultOptions() {
     return {
@@ -40,7 +39,7 @@ class MVTTileProvider extends TileProvider {
   }
 
   /**
-   * @param {vcs.vcm.layer.tileProvider.MVTTileProvider.Options} options
+   * @param {MVTTileProviderOptions} options
    */
   constructor(options) {
     const defaultOptions = MVTTileProvider.getDefaultOptions();
@@ -57,19 +56,18 @@ class MVTTileProvider extends TileProvider {
     this.idProperty = options.idProperty || defaultOptions.idProperty;
 
     /**
-     * @type {ol/format/MVT}
+     * @type {import("ol/format/MVT").default}
      * @private
      */
     this._MVTFormat = new MVT({ featureClass: Feature });
   }
-
 
   /**
    * @inheritDoc
    * @param {number} x
    * @param {number} y
    * @param {number} z
-   * @returns {Promise<Array<ol/Feature>>}
+   * @returns {Promise<Array<import("ol").Feature<import("ol/geom/Geometry").default>>>}
    */
   async loader(x, y, z) {
     const rectangle = this.tilingScheme.tileXYToRectangle(x, y, z);
@@ -77,7 +75,8 @@ class MVTTileProvider extends TileProvider {
     const extent = rectangleToExtent(rectangle);
     const center = getCenter(extent);
     const response = await axios.get(url, { responseType: 'arraybuffer' });
-    const features = /** @type {Array<ol/Feature>} */(this._MVTFormat.readFeatures(response.data));
+    const features = /** @type {Array<import("ol").Feature<import("ol/geom/Geometry").default>>} */
+      (this._MVTFormat.readFeatures(response.data));
     const sx = ((extent[2] - extent[0]) / 4096);
     const sy = -((extent[3] - extent[1]) / 4096);
     features.forEach((feature) => {

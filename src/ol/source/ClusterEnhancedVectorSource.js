@@ -3,12 +3,12 @@ import VectorSource from 'ol/source/Vector.js';
 
 /**
  * @class
- * @extends {ol/source/VectorSource}
+ * @extends {import("ol/source").Vector<import("ol/geom/Geometry").default>}
  * @memberOf ol
  */
 class ClusterEnhancedVectorSource extends VectorSource {
   /**
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @param {boolean=} silent
    */
   removeFeature(feature, silent) {
@@ -25,7 +25,7 @@ class ClusterEnhancedVectorSource extends VectorSource {
   }
 
   /**
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @param {boolean=} silent
    */
   addFeature(feature, silent) {

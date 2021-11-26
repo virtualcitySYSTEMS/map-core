@@ -8,7 +8,7 @@ import resetFramework from '../../helpers/resetFramework.js';
 
 describe('vcs.vcm.layer.OpenStreetMap', () => {
   let sandbox;
-  /** @type {vcs.vcm.layer.OpenStreetMap} */
+  /** @type {import("@vcmap/core").OpenStreetMap} */
   let openStreetMapLayer;
   let map;
 

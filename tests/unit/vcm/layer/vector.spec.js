@@ -17,7 +17,7 @@ import Extent from '../../../../src/vcs/vcm/util/extent.js';
 import { styleCollection } from '../../../../src/vcs/vcm/globalCollections.js';
 
 describe('vcs.vcm.layer.Vector', () => {
-  /** @type {vcs.vcm.layer.Vector} */
+  /** @type {import("@vcmap/core").Vector} */
   let VL;
   let sandbox;
 

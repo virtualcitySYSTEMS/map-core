@@ -7,38 +7,37 @@ import VcsEvent from '../../event/vcsEvent.js';
 
 /**
  * @namespace style
- * @memberOf vcs.vcm.util
  * @export
  * @api
  */
 
 /**
- * @typedef {Object} vcs.vcm.util.style.StyleItem.LegendEntry
+ * @typedef {Object} StyleItemLegendEntry
  * @property {string} color - the color to display
  * @property {string|Object<string, string>} name - the name to display for the given color
  * @api
  */
 
 /**
- * @typedef {vcs.vcm.VcsObject.Options} vcs.vcm.util.style.StyleItem.Options
- * @property {string|undefined} type - used in configuration to differentiate vector from declarative styles
+ * @typedef {VcsObjectOptions} StyleItemOptions
+ * @property {string|undefined} [type] - used in configuration to differentiate vector from declarative styles
  * @property {string|Object<string, string>|undefined} title - name is used when none is specifies
- * @property {Array<vcs.vcm.util.style.StyleItem.LegendEntry>|undefined} legend
- * @property {number} [colorBlendMode=Cesium/Cesium3DTileColorBlendMode.HIGHLIGHT] - colorBlendMode for 3D Tiledataset @see https://cesiumjs.org/Cesium/Build/Documentation/Cesium3DTileColorBlendMode.html
+ * @property {Array<StyleItemLegendEntry>|undefined} [legend]
+ * @property {number} [colorBlendMode=import("@vcmap/cesium").Cesium3DTileColorBlendMode.HIGHLIGHT] - colorBlendMode for 3D Tiledataset @see https://cesiumjs.org/import("@vcmap/cesium").Build/Documentation/Cesium3DTileColorBlendMode.html
  * @api
  */
 
 /**
- * @typedef {Object} vcs.vcm.util.style.Reference
- * @property {string} [type=vcs.vcm.util.style.StyleType.REFERENCE]
+ * @typedef {Object} Reference
+ * @property {string} [type=StyleType.REFERENCE]
  * @property {string} name
- * @property {string|undefined} url - vcs:undocumented this is not yet implemented
+ * @property {string|undefined} [url] - vcs:undocumented this is not yet implemented
  * @api
  */
 
 /**
- * @typedef {Object} vcs.vcm.util.style.StyleItem.Sections
- * @property {boolean|undefined} meta
+ * @typedef {Object} StyleItemSections
+ * @property {boolean|undefined} [meta]
  * @api
  */
 
@@ -48,7 +47,6 @@ import VcsEvent from '../../event/vcsEvent.js';
  * @property {string} VECTOR
  * @property {string} DECLARATIVE
  * @property {string} REFERENCE
- * @memberOf vcs.vcm.util.style
  * @export
  * @api
  */
@@ -62,7 +60,6 @@ export const StyleType = {
 /**
  * indicates, that this style is part of the config and can be referenced by name
  * @type {symbol}
- * @memberOf vcs.vcm.util.style
  * @export
  * @api
  */
@@ -74,14 +71,13 @@ export const referenceableStyleSymbol = Symbol('referencableStyleSymbol');
  * @export
  * @api
  * @abstract
- * @extends {vcs.vcm.VcsObject}
- * @memberOf vcs.vcm.util.style
+ * @extends {VcsObject}
  */
 class StyleItem extends VcsObject {
   static get className() { return 'vcs.vcm.util.style.StyleItem'; }
 
   /**
-   * @param {vcs.vcm.util.style.StyleItem.Options} options
+   * @param {StyleItemOptions} options
    */
   constructor(options) {
     super(options);
@@ -93,7 +89,7 @@ class StyleItem extends VcsObject {
 
     /**
      * Legend entries
-     * @type {Array<vcs.vcm.util.style.StyleItem.LegendEntry>}
+     * @type {Array<StyleItemLegendEntry>}
      * @api
      */
     this.legend = options.legend || [];
@@ -103,25 +99,25 @@ class StyleItem extends VcsObject {
 
     /**
      * The 3D representation of this style
-     * @type {Cesium/Cesium3DTileStyle}
+     * @type {import("@vcmap/cesium").Cesium3DTileStyle}
      * @api
      */
     this.cesiumStyle = new Cesium3DTileStyle({ show: true });
 
     /**
      * Fired on style updates
-     * @type {vcs.vcm.event.VcsEvent<void>}
+     * @type {VcsEvent<void>}
      * @api
      */
     this.styleChanged = new VcsEvent();
 
-    /** @type {Cesium/Cesium3DTileColorBlendMode} */
-    this.colorBlendMode = parseEnumValue(
+    /** @type {import("@vcmap/cesium").Cesium3DTileColorBlendMode} */
+    this.colorBlendMode = /** @type {import("@vcmap/cesium").Cesium3DTileColorBlendMode} */(parseEnumValue(
       options.colorBlendMode, Cesium3DTileColorBlendMode, Cesium3DTileColorBlendMode.HIGHLIGHT,
-    );
+    ));
 
     /**
-     * @type {ol/style/Style|ol/style/StyleFunction}
+     * @type {import("ol/style/Style").default|import("ol/style/Style").StyleFunction}
      * @protected
      */
     this._style = null;
@@ -129,13 +125,13 @@ class StyleItem extends VcsObject {
 
   /**
    * The 2D representation of this style
-   * @type {ol/style/Style|ol/style/StyleFunction}
+   * @type {import("ol/style/Style").default|import("ol/style/Style").StyleFunction}
    * @api
    */
   get style() { return this._style; }
 
   /**
-   * @param {ol/style/Style|ol/style/StyleFunction} style
+   * @param {import("ol/style/Style").default|import("ol/style/Style").StyleFunction} style
    */
   set style(style) { this._style = style; }
 
@@ -151,8 +147,8 @@ class StyleItem extends VcsObject {
 
   /**
    * Gets the options for this style item to be used in a config or vcsMeta
-   * @param {(vcs.vcm.util.style.VectorStyleItem.Sections|vcs.vcm.util.style.DeclarativeStyleItem.Sections)=} sections
-   * @returns {vcs.vcm.util.style.VectorStyleItem.Options|vcs.vcm.util.style.DeclarativeStyleItem.Options|vcs.vcm.util.style.ClusterStyleItem.Options}
+   * @param {(VectorStyleItemSections|DeclarativeStyleItemSections)=} sections
+   * @returns {VectorStyleItemOptions|DeclarativeStyleItemOptions}
    * @api
    */
   getOptions(sections) {
@@ -168,23 +164,23 @@ class StyleItem extends VcsObject {
 
   /**
    * Clones this style
-   * @param {vcs.vcm.util.style.StyleItem=} result
-   * @returns {vcs.vcm.util.style.StyleItem}
+   * @param {StyleItem=} result
+   * @returns {StyleItem}
    * @api
    */
   // eslint-disable-next-line class-methods-use-this
   clone(result) { return result; }
 
   /**
-   * @param {vcs.vcm.util.style.StyleItem} styleItem
-   * @returns {vcs.vcm.util.style.StyleItem}
+   * @param {StyleItem} styleItem
+   * @returns {StyleItem}
    * @api
    */
   // eslint-disable-next-line class-methods-use-this
   assign(styleItem) { return styleItem; }
 
   /**
-   * @param {vcs.vcm.util.style.StyleItem} styleItem
+   * @param {StyleItem} styleItem
    * @returns {boolean}
    * @api
    */
@@ -200,7 +196,7 @@ class StyleItem extends VcsObject {
 
   /**
    * gets a reference to this style by its name. should only be used for static styles, aka styles already part of the config
-   * @returns {vcs.vcm.util.style.Reference}
+   * @returns {Reference}
    * @api
    */
   getReference() {

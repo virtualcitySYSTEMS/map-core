@@ -31,19 +31,19 @@ import { isMobile } from '../util/isMobile.js';
 import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
- * @typedef {Object} vcs.vcm.layer.FeatureStore.StaticRepresentation
+ * @typedef {Object} FeatureStoreStaticRepresentation
  * @property {string|undefined} threeDim - 3D static representation of this layer
  * @property {string|undefined} twoDim - 2D static representation for this layer
  * @api
  */
 
 /**
- * @typedef {Object} vcs.vcm.layer.FeatureStore.Feature
+ * @typedef {Object} FeatureStoreFeature
  * @property {string} id - the mongo id
  * @property {Object} properties - the properties bag
  * @property {Object} geometry
  * @property {Object|undefined} vcsMeta
- * @property {vcs.vcm.layer.FeatureStore.featureStoreState} state
+ * @property {featureStoreState} state
  * @property {string} type - the featureType
  * @todo write vcsMeta for features
  * @todo set type to be one of an enum
@@ -52,20 +52,20 @@ import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
  * For further details see: {@link http://gitlab/vcsuite/virtualcityMAP/wikis/featureStore/layerSchema}
- * @typedef {vcs.vcm.layer.Vector.Options} vcs.vcm.layer.FeatureStore.LayerSchema
+ * @typedef {VectorOptions} FeatureStoreLayerSchema
  * @property {string} id - layer mongo id
  * @property {string} type
  * @property {string} featureType
- * @property {vcs.vcm.layer.FeatureStore.StaticRepresentation|undefined} staticRepresentation -  URLs to static representations for 2D and 3D maps
+ * @property {FeatureStoreStaticRepresentation|undefined} staticRepresentation -  URLs to static representations for 2D and 3D maps
  * @property {Array<string|number>} hiddenStaticFeatureIds -  an array of IDs of features to hide from the static representation
- * @property {Array<vcs.vcm.layer.FeatureStore.Feature>} features - the array of features to represent dynamic features
- * @property {vcs.vcm.layer.VcsMeta} vcsMeta -  vector style implemented by the map and base64-encoded png icons used for custom styles
+ * @property {Array<FeatureStoreFeature>} features - the array of features to represent dynamic features
+ * @property {VcsMeta} vcsMeta -  vector style implemented by the map and base64-encoded png icons used for custom styles
  * @todo write type enum
  * @api
  */
 
 /**
- * @typedef {vcs.vcm.layer.FeatureStore.LayerSchema} vcs.vcm.layer.FeatureStore.Options
+ * @typedef {FeatureStoreLayerSchema} FeatureStoreOptions
  * @property {Function|undefined} injectedFetchDynamicFeatureFunc - injected function for fetching dynamic features from a remote FeatureStore server
  * @api
  */
@@ -77,15 +77,14 @@ export const isTiledFeature = Symbol('isTiledFeature');
  * FeatureStore Layer
  * @class
  * @export
- * @extends {vcs.vcm.layer.Vector}
- * @memberOf vcs.vcm.layer
+ * @extends {Vector}
  * @api
  */
 class FeatureStore extends Vector {
   static get className() { return 'vcs.vcm.layer.FeatureStore'; }
 
   /**
-   * @returns {vcs.vcm.layer.FeatureStore.Options}
+   * @returns {FeatureStoreOptions}
    */
   static getDefaultOptions() {
     return {
@@ -106,7 +105,7 @@ class FeatureStore extends Vector {
 
   // XXX cant implement getConfigOptions do to non layer options. this will most likely go away in 4.0
   /**
-   * @param {vcs.vcm.layer.FeatureStore.Options} options
+   * @param {FeatureStoreOptions} options
    */
   constructor(options) {
     const defaultOptions = FeatureStore.getDefaultOptions();
@@ -130,14 +129,14 @@ class FeatureStore extends Vector {
     /** @type {string} */
     this.layerId = options.id;
 
-    /** @type {vcs.vcm.layer.FeatureStore.StaticRepresentation} */
+    /** @type {FeatureStoreStaticRepresentation} */
     this.staticRepresentation = options.staticRepresentation || defaultOptions.staticRepresentation;
 
     /** @type {Set<string|number>} */
     this.hiddenStaticFeatureIds = new Set(options.hiddenStaticFeatureIds || defaultOptions.hiddenStaticFeatureIds);
 
     /**
-     * @type {vcs.vcm.layer.FeatureStore.FeatureStoreChanges}
+     * @type {FeatureStoreChanges}
      * @api
      */
     this.changeTracker = new FeatureStoreChanges(this);
@@ -147,7 +146,7 @@ class FeatureStore extends Vector {
       Object.assign(vcsMeta, options.vcsMeta);
     }
 
-    /** @type {vcs.vcm.layer.VcsMeta} */
+    /** @type {VcsMeta} */
     this.vcsMeta = vcsMeta;
     this.setVcsMeta(this.vcsMeta);
 
@@ -157,7 +156,7 @@ class FeatureStore extends Vector {
     this.screenSpaceError = this.vcsMeta.screenSpaceError;
 
     /**
-     * @type {Cesium/Event.RemoveCallback}
+     * @type {import("@vcmap/cesium").Event.RemoveCallback}
      * @private
      */
     this._removeVectorPropertiesChangeHandler = this.vectorProperties.propertyChanged.addEventListener(() => {
@@ -167,12 +166,12 @@ class FeatureStore extends Vector {
     /**
      * a function to retrieve a single feature from the server
      * @type {Function|undefined}
-     * @returns {Promise}
+     * @returns {Promise<string|Object>}
      * @api
      */
     this.injectedFetchDynamicFeatureFunc = options.injectedFetchDynamicFeatureFunc;
     /**
-     * @type {vcs.vcm.layer.FeatureVisibility}
+     * @type {FeatureVisibility}
      * @private
      */
     this._staticFeatureVisibility = new FeatureVisibility();
@@ -206,7 +205,7 @@ class FeatureStore extends Vector {
      */
     this._twoDimStyleChanged = null;
     /**
-     * @type {ol/source/Vector}
+     * @type {import("ol/source").Vector<import("ol/geom/Geometry").default>}
      * @private
      */
     this._twoDimStaticSource = new VectorSource();
@@ -267,14 +266,16 @@ class FeatureStore extends Vector {
               feature[this._setEditing.symbol] = this._setEditing.featureType;
             }
           });
-        this._twoDimStaticSource.addFeatures(/** @type {Array<ol/Feature>} */ (features));
+        this._twoDimStaticSource.addFeatures(
+          /** @type {Array<import("ol").Feature<import("ol/geom/Geometry").default>>} */ (features),
+        );
       })();
     }
     return this._twoDimLoaded;
   }
 
   /**
-   * @returns {vcs.vcm.layer.Vector.ImplementationOptions}
+   * @returns {VectorImplementationOptions}
    * @private
    */
   _getTwoDimStaticImplOptions() {
@@ -286,14 +287,15 @@ class FeatureStore extends Vector {
   }
 
   /**
-   * @param {vcs.vcm.maps.VcsMap} map
-   * @returns {Array<vcs.vcm.layer.oblique.VectorOblique|vcs.vcm.layer.cesium.VectorCesium|vcs.vcm.layer.openlayers.VectorOpenlayers|vcs.vcm.layer.cesium.CesiumTilesetCesium>}
+   * @param {import("@vcmap/core").VcsMap} map
+   * @returns {Array<VectorOblique|import("@vcmap/core").VectorCesium|VectorOpenlayers|CesiumTilesetCesium>}
    */
   // @ts-ignore
   createImplementationsForMap(map) {
-    const impls = /** @type {Array<vcs.vcm.layer.LayerImplementation>} */ (super.createImplementationsForMap(map));
+    const impls = /** @type {Array<import("@vcmap/core").LayerImplementation>} */
+      (super.createImplementationsForMap(map));
     if (map instanceof CesiumMap && this.staticRepresentation && this.staticRepresentation.threeDim) {
-      impls.push(new CesiumTilesetCesium(map, /** @type {vcs.vcm.layer.CesiumTileset.ImplementationOptions} */ ({
+      impls.push(new CesiumTilesetCesium(map, /** @type {CesiumTilesetImplementationOptions} */ ({
         url: this.staticRepresentation.threeDim,
         tilesetOptions: {
           maximumScreenSpaceError: isMobile() ? this.screenSpaceErrorMobile : this.screenSpaceError,
@@ -320,7 +322,7 @@ class FeatureStore extends Vector {
       }
     }
     // eslint-disable-next-line max-len
-    return /** @type {Array<vcs.vcm.layer.oblique.VectorOblique|vcs.vcm.layer.cesium.VectorCesium|vcs.vcm.layer.openlayers.VectorOpenlayers|vcs.vcm.layer.cesium.CesiumTilesetCesium>} */ (impls);
+    return /** @type {Array<VectorOblique|import("@vcmap/core").VectorCesium|VectorOpenlayers|CesiumTilesetCesium>} */ (impls);
   }
 
   /**
@@ -335,7 +337,7 @@ class FeatureStore extends Vector {
 
   /**
    * @inheritDoc
-   * @returns {Promise}
+   * @returns {Promise<void>}
    * @api
    */
   async activate() {
@@ -369,7 +371,7 @@ class FeatureStore extends Vector {
 
   /**
    * @inheritDoc
-   * @param {string|ol/style/Style|ol/style/StyleFunction|vcs.vcm.util.style.StyleItem} style
+   * @param {string|import("ol/style/Style").default|import("ol/style/Style").StyleFunction|import("@vcmap/core").StyleItem} style
    * @param {boolean=} silent
    * @api
    */
@@ -403,7 +405,7 @@ class FeatureStore extends Vector {
 
   /**
    * @param {symbol} symbol
-   * @param {vcs.vcm.util.editor.FeatureType=} featureType
+   * @param {number=} featureType
    */
   setEditing(symbol, featureType) {
     this.getImplementations().forEach((impl) => {
@@ -440,7 +442,7 @@ class FeatureStore extends Vector {
   }
 
   /**
-   * @param {Object|ol/Feature|Cesium/Cesium3DTilePointFeature|Cesium/Cesium3DTileFeature} feature
+   * @param {Object|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Cesium3DTilePointFeature|import("@vcmap/cesium").Cesium3DTileFeature} feature
    * @returns {?Object}
    */
   objectClickedHandler(feature) {
@@ -453,13 +455,13 @@ class FeatureStore extends Vector {
   }
 
   /**
-   * @param {Object|vcs.vcm.layer.Vector.ClickedObject} object
-   * @returns {vcs.vcm.layer.GenericFeature}
+   * @param {Object|VectorClickedObject} object
+   * @returns {GenericFeature}
    */
   getGenericFeatureFromClickedObject(object) {
     if (object instanceof Feature) {
       // @ts-ignore
-      return super.getGenericFeatureFromClickedObject(/** @type {vcs.vcm.layer.Vector.ClickedObject} */ (object));
+      return super.getGenericFeatureFromClickedObject(/** @type {VectorClickedObject} */ (object));
     }
     const generic = CesiumTileset.prototype.getGenericFeatureFromClickedObject.call(this, object);
     generic.layerName = this.name;
@@ -469,7 +471,7 @@ class FeatureStore extends Vector {
 
   /**
    * @inheritDoc
-   * @returns {vcs.vcm.util.Extent|null}
+   * @returns {Extent|null}
    * @api
    */
   getZoomToExtent() {
@@ -479,7 +481,7 @@ class FeatureStore extends Vector {
     const extent = super.getZoomToExtent();
     const mercatorExtent = extent ? extent.getCoordinatesInProjection(mercatorProjection) : createEmpty();
     if (this.staticRepresentation.threeDim) {
-      const threeDImpl = /** @type {vcs.vcm.layer.cesium.CesiumTilesetCesium} */ (this.getImplementations()
+      const threeDImpl = /** @type {CesiumTilesetCesium} */ (this.getImplementations()
         .find((impl) => {
           return impl instanceof CesiumTilesetCesium && impl.cesium3DTileset;
         }));
@@ -530,7 +532,7 @@ class FeatureStore extends Vector {
    * switch an array of static features to dynamic features
    * This is done by hiding the static features and adding their dynamic counterparts to the FeatureStore layer
    * @param {string|number} [featureId] input static feature ID
-   * @returns {Promise<ol/Feature>}
+   * @returns {Promise<import("ol").Feature<import("ol/geom/Geometry").default>>}
    * @api
    */
   switchStaticFeatureToDynamic(featureId) {
@@ -592,10 +594,10 @@ class FeatureStore extends Vector {
 
   /**
    * @inheritDoc
-   * @returns {vcs.vcm.layer.FeatureStore.Options}
+   * @returns {FeatureStoreOptions}
    */
   getConfigObject() {
-    const config = /** @type {vcs.vcm.layer.FeatureStore.Options} */ (super.getConfigObject());
+    const config = /** @type {FeatureStoreOptions} */ (super.getConfigObject());
     const defaultOptions = FeatureStore.getDefaultOptions();
 
     delete config.projection;

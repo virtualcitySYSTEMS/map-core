@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "noEmit": true,
+    "types": [],
+    "strict": true,
+    "lib": ["es2020", "dom", "dom.iterable"]
+  },
+  "include": [
+    "index.ts",
+    "../../index.d.ts",
+    "../../build/types/cesium.d.ts",
+    "../../build/types/ol.d.ts"
+  ]
+}

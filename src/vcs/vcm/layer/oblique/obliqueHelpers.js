@@ -9,14 +9,14 @@ import { convertGeometryToPolygon, getFlatCoordinatesFromGeometry } from '../../
 import { transformFromImage } from '../../oblique/helpers.js';
 
 /**
- * @typedef {Object} vcs.vcm.layer.oblique.TransformationOptions
+ * @typedef {Object} TransformationOptions
  * @property {boolean|undefined} dontUseTerrain - whether to use the terrain or not
- * @property {vcs-oblique/ObliqueImage|undefined} image - the image to use, instead of the current image
- * @property {vcs.vcm.util.Projection|undefined} dataProjection - the projection of the input/output coordinates, assumes wgs84
+ * @property {import("@vcmap/core").ObliqueImage|undefined} image - the image to use, instead of the current image
+ * @property {import("ol/proj/Projection").default|undefined} dataProjection - the projection of the input/output coordinates, assumes wgs84
  */
 
 /**
- * @param {Array<ol/Coordinate>} coordinates
+ * @param {Array<import("ol/coordinate").Coordinate>} coordinates
  * @returns {number}
  */
 export function getLongestSide(coordinates) {
@@ -37,8 +37,8 @@ export function getLongestSide(coordinates) {
 }
 
 /**
- * @param {ol/Map} olMap
- * @param {vcs-oblique/ObliqueImage} image
+ * @param {import("ol/Map").default} olMap
+ * @param {import("@vcmap/core").ObliqueImage} image
  * @returns {{size: {height: number, width: number}, fovy: number, metersPerUnit: number}}
  */
 export function getResolutionOptions(olMap, image) {
@@ -63,8 +63,8 @@ export function getResolutionOptions(olMap, image) {
 }
 
 /**
- * @param {ol/Map} olMap
- * @param {vcs-oblique/ObliqueImage} image
+ * @param {import("ol/Map").default} olMap
+ * @param {import("@vcmap/core").ObliqueImage} image
  * @param {number} distance
  * @returns {number}
  */
@@ -79,17 +79,17 @@ export function getZoom(olMap, image, distance) {
 
 /**
  * converts a geometry in mercator format to image coordinates
- * @param {ol/geom/Geometry} inputSourceGeometry
- * @param {ol/geom/Geometry} destinationGeometry
- * @param {vcs-oblique/ObliqueImage} image
- * @returns {Promise.<ol/geom/Geometry>}
+ * @param {import("ol/geom/Geometry").default} inputSourceGeometry
+ * @param {import("ol/geom/Geometry").default} destinationGeometry
+ * @param {import("@vcmap/core").ObliqueImage} image
+ * @returns {Promise<import("ol/geom/Geometry").default>}
  */
 export async function mercatorGeometryToImageGeometry(inputSourceGeometry, destinationGeometry, image) {
   const sourceGeometry = inputSourceGeometry instanceof Circle ?
     fromCircle(inputSourceGeometry) :
     inputSourceGeometry;
   const coordinates = sourceGeometry.getCoordinates();
-  /** type {Array.<ol/Coordinate>} */
+  /** type {Array.<import("ol/coordinate").Coordinate>} */
   const flattenCoordinates = getFlatCoordinatesFromGeometry(sourceGeometry, coordinates);
   let transformer = getTransform(mercatorProjection.proj, image.meta.projection);
 
@@ -117,14 +117,14 @@ export async function mercatorGeometryToImageGeometry(inputSourceGeometry, desti
 
 /**
  * returns a cloned geometry geometry with coordinates to format to image coordinates
- * @param {ol/geom/Geometry} sourceGeometry
- * @param {ol/geom/Geometry} destinationGeometry
- * @param {vcs-oblique/ObliqueImage} image
- * @returns {Promise.<ol/geom/Geometry>}
+ * @param {import("ol/geom/Geometry").default} sourceGeometry
+ * @param {import("ol/geom/Geometry").default} destinationGeometry
+ * @param {import("@vcmap/core").ObliqueImage} image
+ * @returns {Promise<import("ol/geom/Geometry").default>}
  */
 export function imageGeometryToMercatorGeometry(sourceGeometry, destinationGeometry, image) {
   const coordinates = sourceGeometry.getCoordinates();
-  /** type {Array.<ol/Coordinate>} */
+  /** type {Array.<import("ol/coordinate").Coordinate>} */
   const flattenCoordinates = getFlatCoordinatesFromGeometry(sourceGeometry, coordinates);
   const promises = flattenCoordinates.map(coord => transformFromImage(image, coord)
     .then((coords) => {
@@ -140,9 +140,9 @@ export function imageGeometryToMercatorGeometry(sourceGeometry, destinationGeome
 }
 
 /**
- * @param {ol/Feature} feature
+ * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
  * @param {boolean} [retainRectangle=false]
- * @returns {ol/geom/Geometry}
+ * @returns {import("ol/geom/Geometry").default}
  */
 export function getPolygonizedGeometry(feature, retainRectangle = false) {
   const geom = feature.getGeometry();
@@ -159,8 +159,8 @@ export function getPolygonizedGeometry(feature, retainRectangle = false) {
 
 /**
  * sets the geometry from the originalfeature to the oblique feature
- * @param {ol/Feature} originalFeature
- * @param {ol/Feature} obliqueFeature
+ * @param {import("ol").Feature<import("ol/geom/Geometry").default>} originalFeature
+ * @param {import("ol").Feature<import("ol/geom/Geometry").default>} obliqueFeature
  */
 export function setNewGeometry(originalFeature, obliqueFeature) {
   const originalGeometry = originalFeature.getGeometry();

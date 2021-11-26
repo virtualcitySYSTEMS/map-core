@@ -3,7 +3,7 @@ import Feature from 'ol/Feature.js';
 import ClusterContext from '../../../../../src/vcs/vcm/layer/cesium/clusterContext.js';
 
 describe('vcs.vcm.layer.cesium.ClusterContext', () => {
-  /** @type {vcs.vcm.layer.cesium.ClusterContext} */
+  /** @type {import("@vcmap/core").ClusterContext} */
   let clusterContext;
   let dataSource;
 

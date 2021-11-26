@@ -8,13 +8,13 @@ import Extent from '../util/extent.js';
 import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
- * @typedef {vcs.vcm.layer.RasterLayer.Options} vcs.vcm.layer.SingleImage.Options
+ * @typedef {RasterLayerOptions} SingleImageOptions
  * @property {string|undefined} credit -  credit
  * @api
  */
 
 /**
- * @typedef {vcs.vcm.layer.RasterLayer.ImplementationOptions} vcs.vcm.layer.SingleImage.ImplementationOptions
+ * @typedef {RasterLayerImplementationOptions} SingleImageImplementationOptions
  * @property {string|undefined} credit
  */
 
@@ -22,15 +22,14 @@ import { VcsClassRegistry } from '../classRegistry.js';
  * Image layer for Cesium and Openlayers
  * @class
  * @export
- * @extends {vcs.vcm.layer.RasterLayer}
+ * @extends {RasterLayer}
  * @api stable
- * @memberOf vcs.vcm.layer
  */
 class SingleImage extends RasterLayer {
   static get className() { return 'vcs.vcm.layer.SingleImage'; }
 
   /**
-   * @returns {vcs.vcm.layer.SingleImage.Options}
+   * @returns {SingleImageOptions}
    */
   static getDefaultOptions() {
     return {
@@ -40,7 +39,7 @@ class SingleImage extends RasterLayer {
   }
 
   /**
-   * @param {vcs.vcm.layer.SingleImage.Options} options
+   * @param {SingleImageOptions} options
    */
   constructor(options) {
     super(options);
@@ -63,7 +62,7 @@ class SingleImage extends RasterLayer {
   }
 
   /**
-   * @returns {vcs.vcm.layer.SingleImage.ImplementationOptions}
+   * @returns {SingleImageImplementationOptions}
    */
   getImplementationOptions() {
     return {
@@ -73,8 +72,8 @@ class SingleImage extends RasterLayer {
   }
 
   /**
-   * @param {vcs.vcm.maps.VcsMap} map
-   * @returns {Array<vcs.vcm.layer.openlayers.SingleImageOpenlayers|vcs.vcm.layer.cesium.SingleImageCesium>}
+   * @param {import("@vcmap/core").VcsMap} map
+   * @returns {Array<SingleImageOpenlayers|SingleImageCesium>}
    */
   createImplementationsForMap(map) {
     if (map instanceof CesiumMap) {
@@ -87,7 +86,7 @@ class SingleImage extends RasterLayer {
 
   /**
    * sets the image extent
-   * @param {vcs.vcm.util.Extent} extent
+   * @param {Extent} extent
    * @api
    */
   setExtent(extent) {
@@ -102,10 +101,10 @@ class SingleImage extends RasterLayer {
 
   /**
    * @inheritDoc
-   * @returns {vcs.vcm.layer.SingleImage.Options}
+   * @returns {SingleImageOptions}
    */
   getConfigObject() {
-    const config = /** @type {vcs.vcm.layer.SingleImage.Options} */ (super.getConfigObject());
+    const config = /** @type {SingleImageOptions} */ (super.getConfigObject());
     delete config.tilingSchema;
 
     if (this.credit) {

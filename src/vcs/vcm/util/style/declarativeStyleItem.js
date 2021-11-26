@@ -16,53 +16,53 @@ import {
 import { originalFeatureSymbol } from '../../layer/vectorSymbols.js';
 
 /**
- * @typedef {Object} vcs.vcm.util.style.DeclarativeStyleItem.conditions
+ * @typedef {Object} DeclarativeStyleItemConditions
  * @property {Array<Array<string>|string>} conditions
  * @api
  */
 
 /**
- * @typedef {Object} vcs.vcm.util.style.DeclarativeStyleItem.DeclarativeStyleOptions
+ * @typedef {Object} DeclarativeStyleOptions
  * @property {Object|undefined} defines
- * @property {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|boolean|undefined} show
- * @property {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} color
- * @property {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} strokeColor - custom 2D ol condition
- * @property {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} strokeWidth - custom 2D ol condition
- * @property {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} scale
- * @property {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} pointOutlineWidth
- * @property {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} pointOutlineColor
- * @property {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} pointSize
- * @property {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} image - this should be an icon url
- * @property {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} font - a css font string
- * @property {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} labelStyle
- * @property {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} labelText
- * @property {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} labelColor
- * @property {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} labelOutlineWidth
- * @property {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} labelOutlineColor
- * @property {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} anchorLineEnabled
- * @property {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} anchorLineColor
- * @property {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} heightOffset
- * @property {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} verticalOrigin
- * @property {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} horizontalOrigin
- * @property {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} labelHorizontalOrigin
- * @property {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} labelVerticalOrigin
+ * @property {DeclarativeStyleItemConditions|string|boolean|undefined} show
+ * @property {DeclarativeStyleItemConditions|string|undefined} color
+ * @property {DeclarativeStyleItemConditions|string|undefined} strokeColor - custom 2D ol condition
+ * @property {DeclarativeStyleItemConditions|string|undefined} strokeWidth - custom 2D ol condition
+ * @property {DeclarativeStyleItemConditions|string|undefined} scale
+ * @property {DeclarativeStyleItemConditions|string|undefined} pointOutlineWidth
+ * @property {DeclarativeStyleItemConditions|string|undefined} pointOutlineColor
+ * @property {DeclarativeStyleItemConditions|string|undefined} pointSize
+ * @property {DeclarativeStyleItemConditions|string|undefined} image - this should be an icon url
+ * @property {DeclarativeStyleItemConditions|string|undefined} font - a css font string
+ * @property {DeclarativeStyleItemConditions|string|undefined} labelStyle
+ * @property {DeclarativeStyleItemConditions|string|undefined} labelText
+ * @property {DeclarativeStyleItemConditions|string|undefined} labelColor
+ * @property {DeclarativeStyleItemConditions|string|undefined} labelOutlineWidth
+ * @property {DeclarativeStyleItemConditions|string|undefined} labelOutlineColor
+ * @property {DeclarativeStyleItemConditions|string|undefined} anchorLineEnabled
+ * @property {DeclarativeStyleItemConditions|string|undefined} anchorLineColor
+ * @property {DeclarativeStyleItemConditions|string|undefined} heightOffset
+ * @property {DeclarativeStyleItemConditions|string|undefined} verticalOrigin
+ * @property {DeclarativeStyleItemConditions|string|undefined} horizontalOrigin
+ * @property {DeclarativeStyleItemConditions|string|undefined} labelHorizontalOrigin
+ * @property {DeclarativeStyleItemConditions|string|undefined} labelVerticalOrigin
  * @api
  */
 
 /**
- * @typedef {vcs.vcm.util.style.StyleItem.Options} vcs.vcm.util.style.DeclarativeStyleItem.Options
- * @property {vcs.vcm.util.style.DeclarativeStyleItem.DeclarativeStyleOptions|undefined} declarativeStyle
+ * @typedef {StyleItemOptions} DeclarativeStyleItemOptions
+ * @property {DeclarativeStyleOptions|undefined} declarativeStyle
  * @api
  */
 
 /**
- * @typedef {vcs.vcm.util.style.StyleItem.Sections} vcs.vcm.util.style.DeclarativeStyleItem.Sections
+ * @typedef {StyleItemSections} DeclarativeStyleItemSections
  * @property {boolean|undefined} defaults
  * @property {boolean|undefined} declarativeStyle
  * @api
  */
 
-/** @type {Cesium/Color} */
+/** @type {import("@vcmap/cesium").Color} */
 const scratchColor = new Color();
 
 const defaultText = new OLText({
@@ -73,9 +73,9 @@ const defaultText = new OLText({
 });
 
 /**
- * @param {Cesium/Cesium3DTileStyle} style
+ * @param {import("@vcmap/cesium").Cesium3DTileStyle} style
  * @param {string} key
- * @param {vcs.vcm.util.style.DeclarativeStyleItem.DeclarativeStyleOptions} options
+ * @param {DeclarativeStyleOptions} options
  */
 function addCustomProperty(style, key, options) {
   if (options[key].conditions) {
@@ -92,15 +92,14 @@ function addCustomProperty(style, key, options) {
  * Style Object {@see https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/Styling}
  * @class
  * @export
- * @extends {vcs.vcm.util.style.StyleItem}
+ * @extends {StyleItem}
  * @api stable
- * @memberOf vcs.vcm.util.style
  */
 class DeclarativeStyleItem extends StyleItem {
   static get className() { return 'vcs.vcm.util.style.DeclarativeStyleItem'; }
 
   /**
-   * @param {vcs.vcm.util.style.DeclarativeStyleItem.Options} options
+   * @param {DeclarativeStyleItemOptions} options
    */
   constructor(options) {
     super(options);
@@ -108,7 +107,7 @@ class DeclarativeStyleItem extends StyleItem {
     const declarativeStyle = options.declarativeStyle || {};
     declarativeStyle.show = declarativeStyle.show != null ? declarativeStyle.show : true;
 
-    /** @type {Cesium/Cesium3DTileStyle} */
+    /** @type {import("@vcmap/cesium").Cesium3DTileStyle} */
     this.cesiumStyle = new Cesium3DTileStyle(declarativeStyle);
 
     this._style = this._styleFunction.bind(this);
@@ -119,20 +118,20 @@ class DeclarativeStyleItem extends StyleItem {
     if (declarativeStyle.strokeWidth) {
       addCustomProperty(this.cesiumStyle, 'strokeWidth', declarativeStyle);
     }
-    /** @type {vcs.vcm.util.style.DeclarativeStyleItem.DeclarativeStyleOptions} */
+    /** @type {DeclarativeStyleOptions} */
     this._styleOptions = declarativeStyle;
 
-    /** @type {Map<string,ol/style/Circle>} */
+    /** @type {Map<string,import("ol/style/Circle").default>} */
     this._circleCache = new Map();
   }
 
   /**
-   * @param {vcs.vcm.util.style.DeclarativeStyleItem.Sections=} sections
-   * @returns {vcs.vcm.util.style.DeclarativeStyleItem.Options}
+   * @param {DeclarativeStyleItemSections=} sections
+   * @returns {DeclarativeStyleItemOptions}
    * @api
    */
   getOptions(sections) {
-    const options = /** @type {vcs.vcm.util.style.DeclarativeStyleItem.Options} */ (super.getOptions(sections));
+    const options = /** @type {DeclarativeStyleItemOptions} */ (super.getOptions(sections));
     options.type = StyleType.DECLARATIVE;
     const usedSections = sections || {
       declarativeStyle: true,
@@ -146,8 +145,8 @@ class DeclarativeStyleItem extends StyleItem {
   }
 
   /**
-   * @param {vcs.vcm.util.style.DeclarativeStyleItem=} result
-   * @returns {vcs.vcm.util.style.DeclarativeStyleItem}
+   * @param {DeclarativeStyleItem=} result
+   * @returns {DeclarativeStyleItem}
    * @api
    */
   clone(result) {
@@ -158,8 +157,8 @@ class DeclarativeStyleItem extends StyleItem {
   }
 
   /**
-   * @param {vcs.vcm.util.style.DeclarativeStyleItem} styleItem
-   * @returns {vcs.vcm.util.style.DeclarativeStyleItem}
+   * @param {DeclarativeStyleItem} styleItem
+   * @returns {DeclarativeStyleItem}
    * @api
    */
   assign(styleItem) {
@@ -169,8 +168,8 @@ class DeclarativeStyleItem extends StyleItem {
   }
 
   /**
-   * @param {ol/Feature} feature
-   * @returns {ol/style/Style}
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+   * @returns {import("ol/style/Style").default}
    * @private
    */
   _styleFunction(feature) {
@@ -208,8 +207,8 @@ class DeclarativeStyleItem extends StyleItem {
   }
 
   /**
-   * @param {ol/Feature} feature
-   * @returns {ol/style/Style}
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+   * @returns {import("ol/style/Style").default}
    * @private
    */
   _stylePolygon(feature) {
@@ -219,7 +218,7 @@ class DeclarativeStyleItem extends StyleItem {
       this.cesiumStyle.color.evaluate(feature, scratchColor) :
       Color.WHITE;
     if (color) {
-      style.setFill(new Fill({ color: cesiumColorToColor(color) }));
+      style.setFill(new Fill({ color: cesiumColorToColor(/** @type {import("@vcmap/cesium").Color} */ (color)) }));
     }
 
     this._evaluateStroke(feature, style);
@@ -227,8 +226,8 @@ class DeclarativeStyleItem extends StyleItem {
   }
 
   /**
-   * @param {ol/Feature} feature
-   * @returns {ol/style/Style}
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+   * @returns {import("ol/style/Style").default}
    * @private
    */
   _styleLineString(feature) {
@@ -241,14 +240,14 @@ class DeclarativeStyleItem extends StyleItem {
       Color.WHITE;
     if (color) {
       if (isExtruded) {
-        style.setFill(new Fill({ color: cesiumColorToColor(color) }));
+        style.setFill(new Fill({ color: cesiumColorToColor(/** @type {import("@vcmap/cesium").Color} */(color)) }));
       } else {
         const strokeWidth = this.cesiumStyle.strokeWidth ?
           this.cesiumStyle.strokeWidth.evaluate(feature) :
           1;
         style.setStroke(new Stroke({
           width: Number.isFinite(strokeWidth) ? strokeWidth : 1,
-          color: cesiumColorToColor(color),
+          color: cesiumColorToColor(/** @type {import("@vcmap/cesium").Color} */ (color)),
         }));
       }
     }
@@ -261,8 +260,8 @@ class DeclarativeStyleItem extends StyleItem {
   }
 
   /**
-   * @param {ol/Feature} feature
-   * @returns {ol/style/Style}
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+   * @returns {import("ol/style/Style").default}
    * @private
    */
   _stylePoint(feature) {
@@ -296,7 +295,10 @@ class DeclarativeStyleItem extends StyleItem {
               // @ts-ignore
               this.cesiumStyle.labelOutlineWidth.evaluate(feature) :
               1;
-            textStyle.setStroke(new Stroke({ color: cesiumColorToColor(outlineColor), width: outlineWidth }));
+            textStyle.setStroke(new Stroke({
+              color: cesiumColorToColor(/** @type {import("@vcmap/cesium").Color} */ (outlineColor)),
+              width: outlineWidth,
+            }));
           }
         }
         style.setText(textStyle);
@@ -339,7 +341,7 @@ class DeclarativeStyleItem extends StyleItem {
       if (!this._circleCache.has(circleCacheKey)) {
         const circleOptions = {
           radius,
-          fill: new Fill({ color: cesiumColorToColor(color) }),
+          fill: new Fill({ color: cesiumColorToColor(/** @type {import("@vcmap/cesium").Color} */ (color)) }),
         };
         if (width) {
           circleOptions.stroke = new Stroke({
@@ -364,8 +366,8 @@ class DeclarativeStyleItem extends StyleItem {
   }
 
   /**
-   * @param {ol/Feature} feature
-   * @param {ol/style/Style} style
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+   * @param {import("ol/style/Style").default} style
    * @private
    */
   _evaluateStroke(feature, style) {
@@ -385,7 +387,7 @@ class DeclarativeStyleItem extends StyleItem {
   }
 
   /**
-   * @type {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|boolean|undefined}
+   * @type {DeclarativeStyleItemConditions|string|boolean|undefined}
    * @api
    */
   get show() {
@@ -393,7 +395,7 @@ class DeclarativeStyleItem extends StyleItem {
   }
 
   /**
-   * @param {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|boolean|undefined} show
+   * @param {DeclarativeStyleItemConditions|string|boolean|undefined} show
    */
   set show(show) {
     this._styleOptions.show = show;
@@ -403,7 +405,7 @@ class DeclarativeStyleItem extends StyleItem {
   }
 
   /**
-   * @type {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined}
+   * @type {DeclarativeStyleItemConditions|string|undefined}
    * @api
    */
   get color() {
@@ -411,7 +413,7 @@ class DeclarativeStyleItem extends StyleItem {
   }
 
   /**
-   * @param {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} color
+   * @param {DeclarativeStyleItemConditions|string|undefined} color
    */
   set color(color) {
     this._styleOptions.color = color;
@@ -421,7 +423,7 @@ class DeclarativeStyleItem extends StyleItem {
   }
 
   /**
-   * @type {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined}
+   * @type {DeclarativeStyleItemConditions|string|undefined}
    * @api
    */
   get strokeColor() {
@@ -429,7 +431,7 @@ class DeclarativeStyleItem extends StyleItem {
   }
 
   /**
-   * @param {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} color
+   * @param {DeclarativeStyleItemConditions|string|undefined} color
    */
   set strokeColor(color) {
     this._styleOptions.strokeColor = color;
@@ -439,7 +441,7 @@ class DeclarativeStyleItem extends StyleItem {
   }
 
   /**
-   * @type {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined}
+   * @type {DeclarativeStyleItemConditions|string|undefined}
    * @api
    */
   get strokeWidth() {
@@ -447,7 +449,7 @@ class DeclarativeStyleItem extends StyleItem {
   }
 
   /**
-   * @param {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} width
+   * @param {DeclarativeStyleItemConditions|string|undefined} width
    */
   set strokeWidth(width) {
     this._styleOptions.strokeWidth = width;
@@ -457,7 +459,7 @@ class DeclarativeStyleItem extends StyleItem {
   }
 
   /**
-   * @type {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined}
+   * @type {DeclarativeStyleItemConditions|string|undefined}
    * @api
    */
   get image() {
@@ -465,7 +467,7 @@ class DeclarativeStyleItem extends StyleItem {
   }
 
   /**
-   * @param {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} src
+   * @param {DeclarativeStyleItemConditions|string|undefined} src
    */
   set image(src) {
     this._styleOptions.image = src;
@@ -475,7 +477,7 @@ class DeclarativeStyleItem extends StyleItem {
   }
 
   /**
-   * @type {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined}
+   * @type {DeclarativeStyleItemConditions|string|undefined}
    * @api
    */
   get labelText() {
@@ -483,7 +485,7 @@ class DeclarativeStyleItem extends StyleItem {
   }
 
   /**
-   * @param {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} text
+   * @param {DeclarativeStyleItemConditions|string|undefined} text
    */
   set labelText(text) {
     this._styleOptions.labelText = text;
@@ -493,7 +495,7 @@ class DeclarativeStyleItem extends StyleItem {
   }
 
   /**
-   * @type {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined}
+   * @type {DeclarativeStyleItemConditions|string|undefined}
    * @api
    */
   get labelColor() {
@@ -501,7 +503,7 @@ class DeclarativeStyleItem extends StyleItem {
   }
 
   /**
-   * @param {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} color
+   * @param {DeclarativeStyleItemConditions|string|undefined} color
    */
   set labelColor(color) {
     this._styleOptions.labelColor = color;
@@ -511,7 +513,7 @@ class DeclarativeStyleItem extends StyleItem {
   }
 
   /**
-   * @type {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined}
+   * @type {DeclarativeStyleItemConditions|string|undefined}
    * @api
    */
   get font() {
@@ -519,7 +521,7 @@ class DeclarativeStyleItem extends StyleItem {
   }
 
   /**
-   * @param {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} font
+   * @param {DeclarativeStyleItemConditions|string|undefined} font
    */
   set font(font) {
     this._styleOptions.font = font;
@@ -529,7 +531,7 @@ class DeclarativeStyleItem extends StyleItem {
   }
 
   /**
-   * @type {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined}
+   * @type {DeclarativeStyleItemConditions|string|undefined}
    * @api
    */
   get pointSize() {
@@ -537,7 +539,7 @@ class DeclarativeStyleItem extends StyleItem {
   }
 
   /**
-   * @param {vcs.vcm.util.style.DeclarativeStyleItem.conditions|string|undefined} pointSize
+   * @param {DeclarativeStyleItemConditions|string|undefined} pointSize
    */
   set pointSize(pointSize) {
     this._styleOptions.pointSize = pointSize;
@@ -558,7 +560,7 @@ class DeclarativeStyleItem extends StyleItem {
 export default DeclarativeStyleItem;
 
 /**
- * @type {vcs.vcm.util.style.DeclarativeStyleItem}
+ * @type {DeclarativeStyleItem}
  */
 export const defaultDeclarativeStyle = new DeclarativeStyleItem({
   declarativeStyle: {

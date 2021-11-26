@@ -34,8 +34,8 @@ export function getVersionFromImageJson(json) {
  * @param {ObliqueImageJson} json
  * @param {string} url
  * @param {(import("ol/proj/Projection").default|null)=} projection
- * @param {import("cesium").CesiumTerrainProvider=} terrainProvider
- * @returns {Array<ObliqueImageMeta>}
+ * @param {import("@vcmap/cesium").CesiumTerrainProvider=} terrainProvider
+ * @returns {Array<import("@vcmap/core").ObliqueImageMeta>}
  */
 export function parseImageMeta(json, url, projection, terrainProvider) {
   let size;
@@ -82,7 +82,7 @@ export function parseImageMeta(json, url, projection, terrainProvider) {
 
 /**
  * @param {ObliqueImageJson} json
- * @param {Array<ObliqueImageMeta>} imageMetas
+ * @param {Array<import("@vcmap/core").ObliqueImageMeta>} imageMetas
  * @returns {Array<ObliqueImage>}
  */
 export function parseImageData(json, imageMetas) {
@@ -164,13 +164,13 @@ export function parseImageData(json, imageMetas) {
 
 /**
  * @param {ObliqueImageJson} json
- * @param {Array<ObliqueImageMeta>} imageMetas
+ * @param {Array<import("@vcmap/core").ObliqueImageMeta>} imageMetas
  * @returns {Array<ObliqueImage>}
  */
 export function parseLegacyImageData(json, imageMetas) {
   const { cameraParameter } = json.generalImageInfo;
   const { version, buildNumber } = getVersionFromImageJson(json);
-  return json.images.map((img) => {
+  return /** @type {Array<*>} */ (json.images).map((img) => {
     const viewDirection = obliqueViewDirectionNames[img['view-direction']];
     const viewDirectionAngle = version >= 3.4 && buildNumber >= 18 ?
       img['view-directionAngle'] :

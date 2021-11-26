@@ -12,15 +12,13 @@ VcsClassRegistry.registerClass(MVTTileProvider.className, MVTTileProvider);
 /**
  * TileProvider
  * @namespace tileProvider
- * @memberOf vcs.vcm.layer
  * @api stable
  */
 
 /**
  * @param {Object} options
- * @returns {Promise<vcs.vcm.layer.tileProvider.TileProvider>}
+ * @returns {Promise<TileProvider>}
  * @api
- * @memberOf vcs.vcm.layer.tileProvider
  * @export
  */
 function factory(options) {

@@ -18,9 +18,9 @@ import resetFramework from '../../helpers/resetFramework.js';
 
 describe('vcs.vcm.layer.CesiumTileset', () => {
   let sandbox;
-  /** @type {vcs.vcm.layer.CesiumTileset} */
+  /** @type {import("@vcmap/core").CesiumTileset} */
   let cesiumTileset;
-  /** @type {vcs.vcm.maps.CesiumMap} */
+  /** @type {import("@vcmap/core").CesiumMap} */
   let cesiumMap;
 
   before(async () => {

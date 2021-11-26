@@ -5,9 +5,8 @@ import CesiumTileset from './cesiumTileset.js';
  * represents a specific Building layer for cesium.
  * @class
  * @export
- * @extends {vcs.vcm.layer.CesiumTileset}
+ * @extends {CesiumTileset}
  * @api stable
- * @memberOf vcs.vcm.layer
  */
 class Buildings extends CesiumTileset {
   /** @type {string} */

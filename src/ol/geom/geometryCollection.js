@@ -1,16 +1,17 @@
 import GeometryCollection from 'ol/geom/GeometryCollection.js';
+import GeometryLayout from 'ol/geom/GeometryLayout.js';
 import { check } from '@vcsuite/check';
 
 /**
- * @returns {Array<ol/Coordinate|Array<ol/Coordinate>|Array<Array<ol/Coordinate>>|Array<Array<Array<ol/Coordinate>>>>}
+ * @returns {Array<import("ol/coordinate").Coordinate|Array<import("ol/coordinate").Coordinate>|Array<Array<import("ol/coordinate").Coordinate>>|Array<Array<Array<import("ol/coordinate").Coordinate>>>>}
  */
 GeometryCollection.prototype.getCoordinates = function getCoordinates() {
   return this.getGeometries().map(g => g.getCoordinates());
 };
 
 /**
- * @param {Array<ol.Coordinate|Array<ol.Coordinate>|Array<Array<ol.Coordinate>>|Array<Array<Array<ol.Coordinate>>>>} coordinates
- * @param {ol/geom/GeometryLayout=} optLayout
+ * @param {Array<import("ol/coordinate").Coordinate|Array<import("ol/coordinate").Coordinate>|Array<Array<import("ol/coordinate").Coordinate>>|Array<Array<Array<import("ol/coordinate").Coordinate>>>>} coordinates
+ * @param {import("ol/geom/GeometryLayout").default=} optLayout
  */
 GeometryCollection.prototype.setCoordinates = function setCoordinates(coordinates, optLayout) {
   check(coordinates, Array);
@@ -21,12 +22,12 @@ GeometryCollection.prototype.setCoordinates = function setCoordinates(coordinate
 };
 
 /**
- * @returns {ol/geom/GeometryLayout}
+ * @returns {import("ol/geom/GeometryLayout").default}
  */
 GeometryCollection.prototype.getLayout = function getLayout() {
   const firstGeom = this.getGeometries()[0];
   if (firstGeom) {
     return firstGeom.getLayout();
   }
-  return 'XYZ';
+  return /** @type {undefined} */ (GeometryLayout.XYZ);
 };

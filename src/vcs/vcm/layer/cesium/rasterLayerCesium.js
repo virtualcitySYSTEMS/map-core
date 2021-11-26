@@ -2,25 +2,24 @@ import { vcsLayerName } from '../layerSymbols.js';
 import LayerImplementation from '../layerImplementation.js';
 
 /**
- * RasterLayer implementation for {@link vcs.vcm.maps.Openlayers}
+ * RasterLayer implementation for {@link Openlayers}
  * @class
  * @export
- * @extends {vcs.vcm.layer.LayerImplementation<vcs.vcm.maps.CesiumMap>}
- * @implements {vcs.vcm.layer.RasterLayerImplementation}
- * @memberOf vcs.vcm.layer.cesium
+ * @extends {LayerImplementation<import("@vcmap/core").CesiumMap>}}
+ * @implements {RasterLayerImplementation}
  */
 class RasterLayerCesium extends LayerImplementation {
   static get className() { return 'vcs.vcm.layer.cesium.RasterLayerCesium'; }
 
   /**
-   * @param {vcs.vcm.maps.CesiumMap} map
-   * @param {vcs.vcm.layer.RasterLayer.ImplementationOptions} options
+   * @param {import("@vcmap/core").CesiumMap} map
+   * @param {RasterLayerImplementationOptions} options
    */
   constructor(map, options) {
     super(map, options);
-    /** @type {Cesium/ImageryLayer|null} */
+    /** @type {import("@vcmap/cesium").ImageryLayer|null} */
     this.cesiumLayer = null;
-    /** @type {Cesium/ImagerySplitDirection} */
+    /** @type {import("@vcmap/cesium").ImagerySplitDirection} */
     this.splitDirection = options.splitDirection;
     /** @type {number} */
     this.minLevel = options.minLevel;
@@ -28,7 +27,7 @@ class RasterLayerCesium extends LayerImplementation {
     this.maxLevel = options.maxLevel;
     /** @type {string} */
     this.tilingSchema = options.tilingSchema;
-    /** @type {vcs.vcm.util.Extent} */
+    /** @type {import("@vcmap/core").Extent} */
     this.extent = options.extent;
     /** @type {number} */
     this.opacity = options.opacity;
@@ -49,7 +48,7 @@ class RasterLayerCesium extends LayerImplementation {
   }
 
   /**
-   * @param {Cesium/ImagerySplitDirection} splitDirection
+   * @param {import("@vcmap/cesium").ImagerySplitDirection} splitDirection
    */
   updateSplitDirection(splitDirection) {
     this.splitDirection = splitDirection;
@@ -60,7 +59,7 @@ class RasterLayerCesium extends LayerImplementation {
 
   // eslint-disable-next-line jsdoc/require-returns-check
   /**
-   * @returns {Cesium/ImageryLayer}
+   * @returns {import("@vcmap/cesium").ImageryLayer}
    */
   // eslint-disable-next-line class-methods-use-this
   getCesiumLayer() { throw new Error('implementation error'); }

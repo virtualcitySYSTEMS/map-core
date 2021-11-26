@@ -6,19 +6,18 @@ import { transformFromImage } from '../oblique/helpers.js';
 
 /**
  * @class
- * @extends {vcs.vcm.interaction.AbstractInteraction}
- * @memberOf vcs.vcm.interaction
+ * @extends {AbstractInteraction}
  */
 class CoordinateAtPixel extends AbstractInteraction {
   constructor() {
     super();
     /**
-     * @type {Cesium/Cartographic}
+     * @type {import("@vcmap/cesium").Cartographic}
      * @private
      */
     this._scratchCartographic = new Cartographic();
     /**
-     * @type {Cesium/Cartesian3}
+     * @type {import("@vcmap/cesium").Cartesian3}
      * @private
      */
     this._scratchCartesian = new Cartesian3();
@@ -31,8 +30,8 @@ class CoordinateAtPixel extends AbstractInteraction {
 
   /**
    * @inheritDoc
-   * @param {vcs.vcm.interaction.Event} event
-   * @returns {Promise<vcs.vcm.interaction.Event>}
+   * @param {InteractionEvent} event
+   * @returns {Promise<InteractionEvent>}
    */
   // eslint-disable-next-line class-methods-use-this
   async pipe(event) {
@@ -45,12 +44,12 @@ class CoordinateAtPixel extends AbstractInteraction {
   }
 
   /**
-   * @param {vcs.vcm.interaction.Event} event
-   * @returns {Promise<vcs.vcm.interaction.Event>}
+   * @param {InteractionEvent} event
+   * @returns {Promise<InteractionEvent>}
    * @private
    */
   _cesiumHandler(event) {
-    const cesiumMap = /** @type {vcs.vcm.maps.CesiumMap} */ (event.map);
+    const cesiumMap = /** @type {import("@vcmap/core").CesiumMap} */ (event.map);
     const scene = cesiumMap.getScene();
     event.ray = scene.camera.getPickRay(event.windowPosition);
     const pickResult = scene.globe.pick(event.ray, scene, this._scratchCartesian);
@@ -70,12 +69,12 @@ class CoordinateAtPixel extends AbstractInteraction {
   }
 
   /**
-   * @param {vcs.vcm.interaction.Event} event
-   * @returns {Promise<vcs.vcm.interaction.Event>}
+   * @param {InteractionEvent} event
+   * @returns {Promise<InteractionEvent>}
    * @private
    */
   static obliqueHandler(event) {
-    const obliqueMap = /** @type {vcs.vcm.maps.Oblique} */ (event.map);
+    const obliqueMap = /** @type {import("@vcmap/core").Oblique} */ (event.map);
     const image = obliqueMap.currentImage;
     if (image) {
       // don't use Terrain for coordinate Transformation if the event is a move or drag event,

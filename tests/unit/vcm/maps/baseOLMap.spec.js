@@ -25,7 +25,7 @@ describe('vcs.vcm.maps.BaseOLMap', () => {
   });
 
   describe('adding ol layers', () => {
-    /** @type {vcs.vcm.maps.BaseOLMap} */
+    /** @type {import("@vcmap/core").BaseOLMap} */
     let map;
     let layerCollection;
 
@@ -92,7 +92,7 @@ describe('vcs.vcm.maps.BaseOLMap', () => {
   });
 
   describe('removing of layers', () => {
-    /** @type {vcs.vcm.maps.BaseOLMap} */
+    /** @type {import("@vcmap/core").BaseOLMap} */
     let map;
     let layerCollection;
 
@@ -128,7 +128,7 @@ describe('vcs.vcm.maps.BaseOLMap', () => {
   });
 
   describe('getting current resolution', () => {
-    /** @type {vcs.vcm.maps.BaseOLMap} */
+    /** @type {import("@vcmap/core").BaseOLMap} */
     let map;
 
     beforeEach(async () => {

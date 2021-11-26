@@ -16,9 +16,9 @@ describe('vcs.vcm.layer.cesium.DataSourceCesium', () => {
   });
 
   describe('synchronizing of entity collections', () => {
-    /** @type {vcs.vcm.layer.DataSource} */
+    /** @type {import("@vcmap/core").DataSource} */
     let layer;
-    /** @type {vcs.vcm.layer.cesium.DataSourceCesium} */
+    /** @type {import("@vcmap/core").DataSourceCesium} */
     let impl;
     let initialEntity;
 

@@ -6,14 +6,14 @@ import TerrainCesium from './cesium/terrainCesium.js';
 import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
- * @typedef {vcs.vcm.layer.Layer.Options} vcs.vcm.layer.Terrain.Options
+ * @typedef {LayerOptions} TerrainOptions
  * @property {boolean} [requestVertexNormals=true] - if the terrain should be shaded
  * @property {boolean} [requestWaterMask=false] - if a watermask should be requested
  * @api
  */
 
 /**
- * @typedef {vcs.vcm.layer.Layer.ImplementationOptions} vcs.vcm.layer.Terrain.ImplementationOptions
+ * @typedef {LayerImplementationOptions} TerrainImplementationOptions
  * @property {boolean} requestVertexNormals
  * @property {boolean} requestWaterMask
  */
@@ -22,15 +22,14 @@ import { VcsClassRegistry } from '../classRegistry.js';
  * represents a terrain layer.
  * @class
  * @export
- * @extends {vcs.vcm.layer.Layer}
+ * @extends {Layer}
  * @api stable
- * @memberOf vcs.vcm.layer
  */
 class Terrain extends Layer {
   static get className() { return 'vcs.vcm.layer.Terrain'; }
 
   /**
-   * @returns {vcs.vcm.layer.Terrain.Options}
+   * @returns {TerrainOptions}
    */
   static getDefaultOptions() {
     return {
@@ -41,7 +40,7 @@ class Terrain extends Layer {
   }
 
   /**
-   * @param {vcs.vcm.layer.Terrain.Options} options
+   * @param {TerrainOptions} options
    */
   constructor(options) {
     super(options);
@@ -65,7 +64,7 @@ class Terrain extends Layer {
   }
 
   /**
-   * @returns {vcs.vcm.layer.Terrain.ImplementationOptions}
+   * @returns {TerrainImplementationOptions}
    */
   getImplementationOptions() {
     return {
@@ -77,8 +76,8 @@ class Terrain extends Layer {
 
   /**
    * @inheritDoc
-   * @param {vcs.vcm.maps.VcsMap} map
-   * @returns {Array<vcs.vcm.layer.cesium.TerrainCesium>}
+   * @param {import("@vcmap/core").VcsMap} map
+   * @returns {Array<TerrainCesium>}
    */
   createImplementationsForMap(map) {
     if (map instanceof CesiumMap) {
@@ -89,8 +88,8 @@ class Terrain extends Layer {
 
   /**
    * getHeight for coordinates
-   * @param {Array<ol/Coordinate>} coords - the height is added to the coordinates in place
-   * @returns {Promise}
+   * @param {Array<import("ol/coordinate").Coordinate>} coords - the height is added to the coordinates in place
+   * @returns {Promise<Array<import("ol/coordinate").Coordinate>>}
    * @api stable
    */
   getHeightForWGS84Coordinates(coords) {
@@ -103,10 +102,10 @@ class Terrain extends Layer {
   }
 
   /**
-   * @returns {vcs.vcm.layer.Terrain.Options}
+   * @returns {TerrainOptions}
    */
   getConfigObject() {
-    const config = /** @type {vcs.vcm.layer.Terrain.Options} */ (super.getConfigObject());
+    const config = /** @type {TerrainOptions} */ (super.getConfigObject());
     const defaultOptions = Terrain.getDefaultOptions();
 
     if (this.requestVertexNormals !== defaultOptions.requestVertexNormals) {

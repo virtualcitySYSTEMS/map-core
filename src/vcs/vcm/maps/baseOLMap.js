@@ -8,9 +8,10 @@ import { ModificationKeyType, PointerEventType, PointerKeyType } from '../intera
 import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
- * @param {ol/Collection<ol/layer/Layer>} layers
- * @param {ol/layer/Layer} layer
- * @param {vcs.vcm.util.LayerCollection} layerCollection
+ * @param {import("ol/Collection").default<import("ol/layer/Layer").default>} layers
+ * @param {import("ol/layer/Layer").default} layer
+ * @param {import("@vcmap/core").LayerCollection} layerCollection
+ * @private
  */
 export function ensureLayerInCollection(layers, layer, layerCollection) {
   const targetIndex = layerCollection.indexOfKey(layer[vcsLayerName]);
@@ -36,14 +37,13 @@ export function ensureLayerInCollection(layers, layer, layerCollection) {
  * @abstract
  * @api
  * @export
- * @extends {vcs.vcm.maps.VcsMap}
- * @memberOf vcs.vcm.maps
+ * @extends {VcsMap}
  */
 class BaseOLMap extends VcsMap {
   static get className() { return 'vcs.vcm.maps.BaseOLMap'; }
 
   /**
-   * @param {vcs.vcm.maps.VcsMap.Options} options
+   * @param {VcsMapOptions} options
    */
   constructor(options) {
     super(options);
@@ -51,18 +51,18 @@ class BaseOLMap extends VcsMap {
     /**
      * the openlayers map object, set after initialization
      * @private
-     * @type {ol/Map|null}
+     * @type {import("ol/Map").default|null}
      */
     this._olMap = null;
     /**
-     * @type {Array<ol/events/EventsKey>}
+     * @type {Array<import("ol/events").EventsKey>}
      * @private
      */
     this._olListeners = [];
   }
 
   /**
-   * @returns {ol/Map}
+   * @returns {import("ol/Map").default}
    * @readonly
    * @api
    */
@@ -71,8 +71,8 @@ class BaseOLMap extends VcsMap {
   }
 
   /**
-   * @param {ol/MapBrowserEvent} olEvent
-   * @param {vcs.vcm.interaction.PointerEventType} pointerEvent
+   * @param {import("ol/MapBrowserEvent").default} olEvent
+   * @param {PointerEventType} pointerEvent
    * @private
    */
   _raisePointerInteraction(olEvent, pointerEvent) {
@@ -130,15 +130,25 @@ class BaseOLMap extends VcsMap {
         target: this.mapElement,
       });
 
-      this._olListeners.push(/** @type {ol/events/EventsKey} */ (this.olMap.on('pointerdown', (event) => {
-        this._raisePointerInteraction(event, PointerEventType.DOWN);
-      })));
-      this._olListeners.push(/** @type {ol/events/EventsKey} */ (this.olMap.on('pointerup', (event) => {
-        this._raisePointerInteraction(event, PointerEventType.UP);
-      })));
-      this._olListeners.push(/** @type {ol/events/EventsKey} */ (this.olMap.on('pointermove', (event) => {
+      // @ts-ignore
+      const pointerDownListener = /** @type {import("ol/events").EventsKey} */ (this.olMap.on('pointerdown', (event) => {
+        this._raisePointerInteraction(
+          /** @type {import("ol/MapBrowserEvent").default}  */ (event),
+          PointerEventType.DOWN,
+        );
+      }));
+      // @ts-ignore
+      const pointerUpListener = /** @type {import("ol/events").EventsKey} */ (this.olMap.on('pointerup', (event) => {
+        this._raisePointerInteraction(
+          /** @type {import("ol/MapBrowserEvent").default}  */ (event),
+          PointerEventType.UP,
+        );
+      }));
+      // @ts-ignore
+      const pointerMoveListener = /** @type {import("ol/events").EventsKey} */ (this.olMap.on('pointermove', (event) => {
         this._raisePointerInteraction(event, PointerEventType.MOVE);
-      })));
+      }));
+      this._olListeners.push(pointerDownListener, pointerUpListener, pointerMoveListener);
     }
   }
 
@@ -155,13 +165,14 @@ class BaseOLMap extends VcsMap {
 
   /**
    * @inheritDoc
-   * @param {vcs.vcm.layer.Layer} layer
+   * @param {import("@vcmap/core").Layer} layer
    */
   indexChanged(layer) {
     const viz = this.getVisualizationsForLayer(layer);
     if (viz) {
-      viz.forEach(/** @param {ol/layer/Layer} olLayer */ (olLayer) => {
-        const layers = /** @type {ol/Collection<ol/layer/Layer>} */ (this._olMap.getLayers());
+      viz.forEach(/** @param {import("ol/layer/Layer").default<import("ol/source").Source>} olLayer */ (olLayer) => {
+        const layers = /** @type {import("ol/Collection").default<import("ol/layer/Layer").default<import("ol/source").Source>>} */
+          (this._olMap.getLayers());
         layers.remove(olLayer);
         ensureLayerInCollection(layers, olLayer, this.layerCollection);
       });
@@ -170,13 +181,14 @@ class BaseOLMap extends VcsMap {
 
   /**
    * Internal API for registering representations.
-   * @param {ol/layer/Layer} olLayer
+   * @param {import("ol/layer/Layer").default<import("ol/source").Source>} olLayer
    */
   addOLLayer(olLayer) {
     if (this.validateVisualization(olLayer)) {
       this.addVisualization(olLayer);
       ensureLayerInCollection(
-        /** @type {ol/Collection<ol/layer/Layer>} */ (this._olMap.getLayers()),
+        /** @type {import("ol/Collection").default<import("ol/layer/Layer").default<import("ol/source").Source>>} */
+        (this._olMap.getLayers()),
         olLayer,
         this.layerCollection,
       );
@@ -185,7 +197,7 @@ class BaseOLMap extends VcsMap {
 
   /**
    * Internal API for deregistering representations.
-   * @param {ol/layer/Layer} olLayer
+   * @param {import("ol/layer/Layer").default<import("ol/source").Source>} olLayer
    */
   removeOLLayer(olLayer) {
     this.removeVisualization(olLayer);
@@ -205,7 +217,7 @@ class BaseOLMap extends VcsMap {
 
   /**
    * @inheritDoc
-   * @param {ol/Coordinate} coordinate
+   * @param {import("ol/coordinate").Coordinate} coordinate
    * @returns {number}
    * @api
    */

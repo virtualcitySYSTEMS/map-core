@@ -6,14 +6,14 @@ import { getLogger as getLoggerByName } from '@vcsuite/logger';
 import VcsEvent from '../event/vcsEvent.js';
 
 /**
- * @returns {vcsuite-logger/Logger}
+ * @returns {import("@vcsuite/logger").Logger}
  */
 function getLogger() {
   return getLoggerByName('vcs.vcm.layer.VectorProperties');
 }
 
 /**
- * @typedef {Object} vcs.vcm.layer.VectorProperties.Options
+ * @typedef {Object} VectorPropertiesOptions
  * @property {string|undefined} [altitudeMode=relativeToGround] - (3D) Either "relativeToGround", "clampToGround" or 'absolute'
  * @property {boolean|undefined} [allowPicking=true] - if the features are pickable
  * @property {string|undefined} [classificationType=undefined] - (3D) the cesium classification type for this layer. one of 'both', 'terrain' or 'cesium3DTile'
@@ -41,7 +41,7 @@ function getLogger() {
  */
 
 /**
- * @typedef {Object} vcs.vcm.layer.VectorProperties.ModelOptions
+ * @typedef {Object} VectorPropertiesModelOptions
  * @property {string} url
  * @property {Array<number>} scale
  * @property {number} heading
@@ -51,7 +51,7 @@ function getLogger() {
  */
 
 /**
- * @enum {Cesium/HeightReference}
+ * @enum {import("@vcmap/cesium").HeightReference}
  * @const
  */
 export const AltitudeModeCesium = {
@@ -61,7 +61,7 @@ export const AltitudeModeCesium = {
 };
 
 /**
- * @enum {Cesium/ClassificationType}
+ * @enum {import("@vcmap/cesium").ClassificationType}
  * @const
  */
 export const ClassificationTypeCesium = {
@@ -72,8 +72,8 @@ export const ClassificationTypeCesium = {
 
 /**
  * @param {Array<number>} value
- * @param {Cesium/NearFarScalar|undefined} defaultValue
- * @returns {Cesium/NearFarScalar|undefined}
+ * @param {import("@vcmap/cesium").NearFarScalar|undefined} defaultValue
+ * @returns {import("@vcmap/cesium").NearFarScalar|undefined}
  */
 export function parseNearFarScalar(value, defaultValue) {
   if (Array.isArray(value)) {
@@ -89,8 +89,8 @@ export function parseNearFarScalar(value, defaultValue) {
 
 /**
  * @param {Array<number>} value
- * @param {Cesium/Cartesian3|undefined} defaultValue
- * @returns {Cesium/Cartesian3|undefined}
+ * @param {import("@vcmap/cesium").Cartesian3|undefined} defaultValue
+ * @returns {import("@vcmap/cesium").Cartesian3|undefined}
  */
 export function parseCartesian3(value, defaultValue) {
   if (Array.isArray(value)) {
@@ -128,7 +128,7 @@ export function parseStoreyHeights(storeyHeights, defaultStoreyHeights) {
 }
 
 /**
- * @param {Cesium/HeightReference} altitudeMode
+ * @param {import("@vcmap/cesium").HeightReference} altitudeMode
  * @returns {string}
  */
 export function getAltitudeModeOptions(altitudeMode) {
@@ -137,7 +137,7 @@ export function getAltitudeModeOptions(altitudeMode) {
 }
 
 /**
- * @param {Cesium/ClassificationType} classificationType
+ * @param {import("@vcmap/cesium").ClassificationType} classificationType
  * @returns {string}
  */
 export function getClassificationTypeOptions(classificationType) {
@@ -146,7 +146,7 @@ export function getClassificationTypeOptions(classificationType) {
 }
 
 /**
- * @param {Cesium/NearFarScalar} nearFarScalar
+ * @param {import("@vcmap/cesium").NearFarScalar} nearFarScalar
  * @returns {Array<number>|undefined}
  */
 export function getNearFarValueOptions(nearFarScalar) {
@@ -154,7 +154,7 @@ export function getNearFarValueOptions(nearFarScalar) {
 }
 
 /**
- * @param {Cesium/Cartesian3} cartesian3
+ * @param {import("@vcmap/cesium").Cartesian3} cartesian3
  * @returns {Array<number>|undefined}
  */
 export function getCartesian3Options(cartesian3) {
@@ -166,12 +166,11 @@ export function getCartesian3Options(cartesian3) {
  * @class
  * @export
  * @api stable
- * @memberOf vcs.vcm.layer
  */
 class VectorProperties {
   /**
    * Returns the default options for VectorProperties
-   * @returns {vcs.vcm.layer.VectorProperties.Options}
+   * @returns {VectorPropertiesOptions}
    * @api
    */
   static getDefaultOptions() {
@@ -204,12 +203,12 @@ class VectorProperties {
   }
 
   /**
-   * @param {vcs.vcm.layer.VectorProperties.Options} options
+   * @param {VectorPropertiesOptions} options
    */
   constructor(options) {
     const defaultValues = VectorProperties.getDefaultOptions();
     /**
-     * @type {Cesium/HeightReference}
+     * @type {import("@vcmap/cesium").HeightReference}
      * @private
      */
     this._altitudeMode = parseEnumKey(options.altitudeMode, AltitudeModeCesium, HeightReference.CLAMP_TO_GROUND);
@@ -221,20 +220,20 @@ class VectorProperties {
     this._allowPicking = parseBoolean(options.allowPicking, defaultValues.allowPicking);
 
     /**
-     * @type {Cesium/ClassificationType|undefined}
+     * @type {import("@vcmap/cesium").ClassificationType|undefined}
      * @private
      */
     this._classificationType = parseEnumKey(options.classificationType, ClassificationTypeCesium, undefined);
 
 
     /**
-     * @type {Cesium/NearFarScalar|undefined}
+     * @type {import("@vcmap/cesium").NearFarScalar|undefined}
      * @private
      */
     this._scaleByDistance = parseNearFarScalar(options.scaleByDistance, undefined);
 
     /**
-     * @type {Cesium/Cartesian3|undefined}
+     * @type {import("@vcmap/cesium").Cartesian3|undefined}
      * @private
      */
     this._eyeOffset = parseCartesian3(options.eyeOffset, undefined);
@@ -350,7 +349,7 @@ class VectorProperties {
 
     /**
      * Event raised when properties change. is passed an array of keys for the changed properties.
-     * @type {vcs.vcm.event.VcsEvent<Array<string>>}
+     * @type {VcsEvent<Array<string>>}
      * @readonly
      * @api
      */
@@ -358,7 +357,7 @@ class VectorProperties {
   }
 
   /**
-   * @type {Cesium/HeightReference}
+   * @type {import("@vcmap/cesium").HeightReference}
    * @api
    */
   get altitudeMode() {
@@ -366,7 +365,7 @@ class VectorProperties {
   }
 
   /**
-   * @param {Cesium/HeightReference} altitudeMode
+   * @param {import("@vcmap/cesium").HeightReference} altitudeMode
    */
   set altitudeMode(altitudeMode) {
     if (altitudeMode !== this._altitudeMode) {
@@ -377,8 +376,8 @@ class VectorProperties {
   }
 
   /**
-   * @param {ol/Feature} feature
-   * @returns {Cesium/HeightReference}
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+   * @returns {import("@vcmap/cesium").HeightReference}
    * @api
    */
   getAltitudeMode(feature) {
@@ -406,7 +405,7 @@ class VectorProperties {
   }
 
   /**
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @returns {boolean}
    * @api
    */
@@ -417,7 +416,7 @@ class VectorProperties {
 
 
   /**
-   * @type {Cesium/ClassificationType|undefined}
+   * @type {import("@vcmap/cesium").ClassificationType|undefined}
    * @api
    */
   get classificationType() {
@@ -425,7 +424,7 @@ class VectorProperties {
   }
 
   /**
-   * @param {Cesium/ClassificationType|undefined} classificationType
+   * @param {import("@vcmap/cesium").ClassificationType|undefined} classificationType
    */
   set classificationType(classificationType) {
     if (classificationType !== this._classificationType) {
@@ -436,8 +435,8 @@ class VectorProperties {
   }
 
   /**
-   * @param {ol/Feature} feature
-   * @returns {Cesium/ClassificationType|undefined}
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+   * @returns {import("@vcmap/cesium").ClassificationType|undefined}
    * @api
    */
   getClassificationType(feature) {
@@ -446,7 +445,7 @@ class VectorProperties {
   }
 
   /**
-   * @type {Cesium/NearFarScalar|undefined}
+   * @type {import("@vcmap/cesium").NearFarScalar|undefined}
    * @api
    */
   get scaleByDistance() {
@@ -454,7 +453,7 @@ class VectorProperties {
   }
 
   /**
-   * @param {Cesium/NearFarScalar|undefined} value
+   * @param {import("@vcmap/cesium").NearFarScalar|undefined} value
    */
   set scaleByDistance(value) {
     if (!NearFarScalar.equals(value, this._scaleByDistance)) {
@@ -465,8 +464,8 @@ class VectorProperties {
   }
 
   /**
-   * @param {ol/Feature} feature
-   * @returns {Cesium/NearFarScalar|undefined}
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+   * @returns {import("@vcmap/cesium").NearFarScalar|undefined}
    * @api
    */
   getScaleByDistance(feature) {
@@ -475,7 +474,7 @@ class VectorProperties {
   }
 
   /**
-   * @type {Cesium/Cartesian3|undefined}
+   * @type {import("@vcmap/cesium").Cartesian3|undefined}
    * @api
    */
   get eyeOffset() {
@@ -483,7 +482,7 @@ class VectorProperties {
   }
 
   /**
-   * @param {Cesium/Cartesian3|undefined} value
+   * @param {import("@vcmap/cesium").Cartesian3|undefined} value
    */
   set eyeOffset(value) {
     if (!Cartesian3.equals(this.eyeOffset, value)) {
@@ -494,8 +493,8 @@ class VectorProperties {
   }
 
   /**
-   * @param {ol/Feature} feature
-   * @returns {Cesium/Cartesian3}
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+   * @returns {import("@vcmap/cesium").Cartesian3}
    * @api
    */
   getEyeOffset(feature) {
@@ -530,7 +529,7 @@ class VectorProperties {
   }
 
   /**
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @returns {number}
    * @api
    */
@@ -559,7 +558,7 @@ class VectorProperties {
   }
 
   /**
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @returns {number}
    * @api
    */
@@ -588,7 +587,7 @@ class VectorProperties {
   }
 
   /**
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @returns {number|undefined}
    * @api
    */
@@ -617,7 +616,7 @@ class VectorProperties {
   }
 
   /**
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @returns {number}
    * @api
    */
@@ -646,7 +645,7 @@ class VectorProperties {
   }
 
   /**
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @returns {number}
    * @api
    */
@@ -675,7 +674,7 @@ class VectorProperties {
   }
 
   /**
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @returns {number}
    * @api
    */
@@ -704,7 +703,7 @@ class VectorProperties {
   }
 
   /**
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @returns {Array<number>}
    * @api
    */
@@ -733,7 +732,7 @@ class VectorProperties {
   }
 
   /**
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @returns {Array<number>}
    * @api
    */
@@ -784,7 +783,7 @@ class VectorProperties {
   }
 
   /**
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @returns {string}
    * @api
    */
@@ -814,7 +813,7 @@ class VectorProperties {
   }
 
   /**
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @returns {number}
    * @api
    */
@@ -844,7 +843,7 @@ class VectorProperties {
   }
 
   /**
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @returns {number}
    * @api
    */
@@ -874,7 +873,7 @@ class VectorProperties {
   }
 
   /**
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @returns {number}
    * @api
    */
@@ -904,7 +903,7 @@ class VectorProperties {
   }
 
   /**
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @returns {number}
    * @api
    */
@@ -934,7 +933,7 @@ class VectorProperties {
   }
 
   /**
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @returns {number}
    * @api
    */
@@ -964,7 +963,7 @@ class VectorProperties {
   }
 
   /**
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @returns {number}
    * @api
    */
@@ -997,7 +996,7 @@ class VectorProperties {
 
   /**
    * Get the features or the properties modelOptions. Returns an empty Object if both are undefined
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @returns {Object}
    * @api
    */
@@ -1033,7 +1032,7 @@ class VectorProperties {
   }
 
   /**
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @returns {string}
    * @api
    */
@@ -1043,8 +1042,8 @@ class VectorProperties {
   }
 
   /**
-   * @param {ol/Feature} feature
-   * @returns {vcs.vcm.layer.VectorProperties.ModelOptions|null}
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+   * @returns {VectorPropertiesModelOptions|null}
    * @api
    */
   getModel(feature) {
@@ -1069,7 +1068,7 @@ class VectorProperties {
 
   /**
    * resets values, either given, or default Value raises propertyChanged event once;
-   * @param {vcs.vcm.layer.VcsMeta} vcsMeta
+   * @param {VcsMeta} vcsMeta
    */
   setVcsMeta(vcsMeta) {
     const options = VectorProperties.getDefaultOptions();
@@ -1083,7 +1082,7 @@ class VectorProperties {
 
   /**
    * sets given values only raises propertyChanged event if a value has been set;
-   * @param {vcs.vcm.layer.VectorProperties.Options} options
+   * @param {VectorPropertiesOptions} options
    */
   setValues(options) {
     const defaultValues = VectorProperties.getDefaultOptions();
@@ -1274,10 +1273,10 @@ class VectorProperties {
   }
 
   /**
-   * @returns {vcs.vcm.layer.VectorProperties.Options}
+   * @returns {VectorPropertiesOptions}
    */
   getValues() {
-    /** @type {vcs.vcm.layer.VectorProperties.Options} */
+    /** @type {VectorPropertiesOptions} */
     const values = {
       altitudeMode: getAltitudeModeOptions(this.altitudeMode),
       allowPicking: this.allowPicking,
@@ -1306,12 +1305,12 @@ class VectorProperties {
   }
 
   /**
-   * @param {vcs.vcm.layer.VectorProperties.Options=} defaultOptions
-   * @returns {vcs.vcm.layer.VcsMeta}
+   * @param {VectorPropertiesOptions=} defaultOptions
+   * @returns {VcsMeta}
    */
   getVcsMeta(defaultOptions) {
     const defaultValues = defaultOptions || VectorProperties.getDefaultOptions();
-    /** @type {vcs.vcm.layer.VcsMeta} */
+    /** @type {VcsMeta} */
     const vcsMeta = {};
     if (getAltitudeModeOptions(this.altitudeMode) !== defaultValues.altitudeMode) {
       vcsMeta.altitudeMode = getAltitudeModeOptions(this.altitudeMode);

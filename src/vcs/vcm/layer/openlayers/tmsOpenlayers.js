@@ -6,29 +6,28 @@ import { TilingScheme } from '../rasterLayer.js';
 import { isSameOrigin } from '../../util/urlHelpers.js';
 
 /**
- * TMS implementation for {@link vcs.vcm.maps.Openlayers}.
+ * TMS implementation for {@link Openlayers}.
  * @class
  * @export
- * @extends {vcs.vcm.layer.openlayers.RasterLayerOpenlayers}
- * @memberOf vcs.vcm.layer.openlayers
+ * @extends {RasterLayerOpenlayers}
  */
 class TMSOpenlayers extends RasterLayerOpenlayers {
   static get className() { return 'vcs.vcm.layer.openlayers.TMSOpenlayers'; }
 
   /**
-   * @param {vcs.vcm.maps.Openlayers} map
-   * @param {vcs.vcm.layer.TMS.ImplementationOptions} options
+   * @param {import("@vcmap/core").Openlayers} map
+   * @param {TMSImplementationOptions} options
    */
   constructor(map, options) {
     super(map, options);
     /** @type {string} */
     this.format = options.format;
-    /** @type {ol/Size} */
+    /** @type {import("ol/size").Size} */
     this.tileSize = options.tileSize;
   }
 
   /**
-   * @returns {ol/layer/Tile}
+   * @returns {import("ol/layer/Tile").default}
    */
   getOLLayer() {
     const sourceOptions = {

@@ -16,7 +16,7 @@ describe('vcs.vcm.interaction.FeatureAtPixelInteraction', () => {
   let pick;
   let sceneStub;
   let render;
-  /** @type {vcs.vcm.interaction.FeatureAtPixelInteraction} */
+  /** @type {import("@vcmap/core").FeatureAtPixelInteraction} */
   let fap;
   let mercatorPosition;
   let cartesianPosition;

@@ -3,21 +3,20 @@ import { EventType, ModificationKeyType } from './interactionType.js';
 
 /**
  * @class
- * @extends {vcs.vcm.interaction.AbstractInteraction}
- * @memberOf vcs.vcm.interaction
+ * @extends {AbstractInteraction}
  */
 class FeatureProviderInteraction extends AbstractInteraction {
   constructor() {
     super();
     /**
      * @inheritDoc
-     * @type {vcs.vcm.interaction.ModificationKeyType|number}
+     * @type {ModificationKeyType|number}
      * @protected
      */
     this._defaultModificationKey = ModificationKeyType.ALL;
     /**
      * @inheritDoc
-     * @type {vcs.vcm.interaction.ModificationKeyType|number}
+     * @type {ModificationKeyType|number}
      * @protected
      */
     this._defaultActive = EventType.CLICK;
@@ -26,8 +25,8 @@ class FeatureProviderInteraction extends AbstractInteraction {
 
   /**
    * @inheritDoc
-   * @param {vcs.vcm.interaction.Event} event
-   * @returns {Promise.<vcs.vcm.interaction.Event>}
+   * @param {InteractionEvent} event
+   * @returns {Promise<InteractionEvent>}
    */
   // eslint-disable-next-line class-methods-use-this
   async pipe(event) {

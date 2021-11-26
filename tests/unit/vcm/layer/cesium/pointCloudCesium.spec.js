@@ -6,7 +6,7 @@ import resetFramework from '../../../helpers/resetFramework.js';
 
 describe('vcs.vcm.layer.cesium.PointCloudCesium', () => {
   let sandbox;
-  /** @type {vcs.vcm.layer.cesium.PointCloudCesium} */
+  /** @type {import("@vcmap/core").PointCloudCesium} */
   let PCL;
   let pointCloud;
   let map;

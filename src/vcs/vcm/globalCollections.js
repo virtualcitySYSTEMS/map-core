@@ -1,11 +1,11 @@
 import Collection from './util/collection.js';
 
 /**
- * @type {vcs.vcm.util.Collection<vcs.vcm.util.style.StyleItem>}
+ * @type {import("@vcmap/core").Collection<import("@vcmap/core").StyleItem>}
  */
 export const styleCollection = new Collection();
 
 /**
- * @type {vcs.vcm.util.Collection<vcs-oblique/ObliqueCollection>}
+ * @type {import("@vcmap/core").Collection<import("@vcmap/core").ObliqueCollection>}
  */
 export const obliqueCollectionCollection = new Collection();

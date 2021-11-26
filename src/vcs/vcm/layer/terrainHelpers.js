@@ -1,9 +1,9 @@
 import { CesiumTerrainProvider, Cartographic, Cartesian2, sampleTerrainMostDetailed, sampleTerrain } from '@vcmap/cesium';
 import { getTransform } from 'ol/proj.js';
-import { wgs84Projection } from '../util/projection.js';
+import Projection, { wgs84Projection } from '../util/projection.js';
 
 /**
- * @typedef {Object} vcs.vcm.layer.TerrainProvider.Options
+ * @typedef {Object} TerrainProviderOptions
  * @property {!string} url
  * @property {boolean|undefined} requestVertexNormals
  * @property {boolean|undefined} requestWaterMask
@@ -11,13 +11,13 @@ import { wgs84Projection } from '../util/projection.js';
  */
 
 /**
- * @type {Object<string, Cesium/CesiumTerrainProvider>}
+ * @type {Object<string, import("@vcmap/cesium").CesiumTerrainProvider>}
  */
 const terrainProviders = {};
 
 /**
- * @param {vcs.vcm.layer.TerrainProvider.Options} options
- * @returns {Cesium/CesiumTerrainProvider}
+ * @param {TerrainProviderOptions} options
+ * @returns {import("@vcmap/cesium").CesiumTerrainProvider}
  */
 export function getTerrainProviderForUrl(options) {
   if (!terrainProviders[options.url]) {
@@ -36,9 +36,9 @@ export function getTerrainProviderForUrl(options) {
 }
 
 /**
- * @param {Cesium/CesiumTerrainProvider} terrainProvider
- * @param {Array<Cesium/Cartographic>} positions
- * @returns {Promise<Array<Cesium/Cartographic>>}
+ * @param {import("@vcmap/cesium").CesiumTerrainProvider} terrainProvider
+ * @param {Array<import("@vcmap/cesium").Cartographic>} positions
+ * @returns {Promise<Array<import("@vcmap/cesium").Cartographic>>}
  */
 export function sampleCesiumTerrainMostDetailed(terrainProvider, positions) {
   return new Promise((resolve, reject) => {
@@ -51,10 +51,10 @@ export function sampleCesiumTerrainMostDetailed(terrainProvider, positions) {
 
 /**
  * updates the height of the positions in place.
- * @param {Cesium/CesiumTerrainProvider} terrainProvider
+ * @param {import("@vcmap/cesium").CesiumTerrainProvider} terrainProvider
  * @param {number} level
- * @param {Array<Cesium/Cartographic>} positions
- * @returns {Promise<Array<Cesium/Cartographic>>}
+ * @param {Array<import("@vcmap/cesium").Cartographic>} positions
+ * @returns {Promise<Array<import("@vcmap/cesium").Cartographic>>}
  */
 export function sampleCesiumTerrain(terrainProvider, level, positions) {
   return new Promise((resolve, reject) => {
@@ -67,16 +67,20 @@ export function sampleCesiumTerrain(terrainProvider, level, positions) {
 
 /**
  * changes input coordinate Array in place, new height can also be accessed by coordinates[x][2]
- * @param {Cesium/CesiumTerrainProvider} terrainProvider
- * @param {Array<ol/Coordinate>} coordinates
- * @param {(vcs.vcm.util.Projection|ol.proj.Projection)=} optSourceProjection - if input is not WGS84
- * @param {Array<ol/Coordinate>=} result
- * @returns {Promise<Array<ol/Coordinate>>}
+ * @param {import("@vcmap/cesium").CesiumTerrainProvider} terrainProvider
+ * @param {Array<import("ol/coordinate").Coordinate>} coordinates
+ * @param {(import("@vcmap/core").Projection|import("ol/proj/Projection").default)=} optSourceProjection - if input is not WGS84
+ * @param {Array<import("ol/coordinate").Coordinate>=} result
+ * @returns {Promise<Array<import("ol/coordinate").Coordinate>>}
  */
 export function getHeightFromTerrainProvider(terrainProvider, coordinates, optSourceProjection, result) {
-  const sourceTransformer = optSourceProjection ?
+  const usedProj = optSourceProjection instanceof Projection ?
+    optSourceProjection.proj :
+    optSourceProjection;
+
+  const sourceTransformer = usedProj ?
     getTransform(
-      optSourceProjection.proj ? optSourceProjection.proj : optSourceProjection,
+      usedProj,
       wgs84Projection.proj,
     ) :
     null;
@@ -102,9 +106,9 @@ export function getHeightFromTerrainProvider(terrainProvider, coordinates, optSo
 
 /**
  * checks, whether a terrain tile is available at given position or not
- * @param {Cesium/CesiumTerrainProvider} terrainProvider
+ * @param {import("@vcmap/cesium").CesiumTerrainProvider} terrainProvider
  * @param {number} level
- * @param {Cesium/Cartographic} position
+ * @param {import("@vcmap/cesium").Cartographic} position
  * @returns {boolean}
  */
 export function isTerrainTileAvailable(terrainProvider, level, position) {

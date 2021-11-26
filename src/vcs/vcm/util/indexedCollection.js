@@ -4,10 +4,9 @@ import Collection from './collection.js';
 /**
  * A generic array based collection. Implements the Symbol.iterator (e.g. [...collection])
  * @class
- * @memberOf vcs.vcm.util
  * @export
  * @template {*} T
- * @extends {vcs.vcm.util.Collection<T>}
+ * @extends {Collection<T>}
  * @api
  */
 class IndexedCollection extends Collection {
@@ -16,12 +15,12 @@ class IndexedCollection extends Collection {
    * @template {*} T
    * @param {Iterable<T>} iterable
    * @param {(string|symbol|boolean)=} [uniqueKey='name'] - a key to maintain uniquely within the collection. passing false disables uniqueness.
-   * @returns {vcs.vcm.util.IndexedCollection<T>}
+   * @returns {IndexedCollection<T>}
    * @override
    * @api
    */
   static from(iterable, uniqueKey) {
-    const collection = /** @type {vcs.vcm.util.IndexedCollection<T>} */ (new IndexedCollection(uniqueKey));
+    const collection = /** @type {IndexedCollection<T>} */ (new IndexedCollection(uniqueKey));
     if (iterable) {
       // eslint-disable-next-line no-restricted-syntax
       for (const i of iterable) {
@@ -39,7 +38,7 @@ class IndexedCollection extends Collection {
 
     /**
      * Event raised if an item is relocated within the collection. Is passed the moved item.
-     * @type {vcs.vcm.event.VcsEvent<T>}
+     * @type {VcsEvent<T>}
      * @api
      */
     this.moved = new VcsEvent();

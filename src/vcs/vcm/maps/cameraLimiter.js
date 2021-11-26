@@ -9,7 +9,7 @@ import {
 } from '../layer/terrainHelpers.js';
 
 /**
- * @typedef {Object} vcs.vcm.maps.CameraLimiter.Options
+ * @typedef {Object} CameraLimiterOptions
  * @property {string|undefined} terrainUrl - required if mode is distance.
  * @property {string|undefined} [mode="height"] - either "height" or "distance".
  * @property {number} [limit=200]
@@ -22,7 +22,6 @@ import {
  * @enum {string}
  * @property {string} HEIGHT
  * @property {string} DISTANCE
- * @memberOf vcs.vcm.maps.CameraLimiter
  */
 export const Mode = {
   HEIGHT: 'height',
@@ -32,7 +31,6 @@ export const Mode = {
 /**
  * Can limit a Cesium.Cameras position based on absolute height or distance to a given terrain
  * @class
- * @memberOf vcs.vcm.maps
  * @export
  * @api
  */
@@ -40,7 +38,7 @@ class CameraLimiter {
   static get className() { return 'vcs.vcm.maps.CameraLimiter'; }
 
   /**
-   * @returns {vcs.vcm.maps.CameraLimiter.Options}
+   * @returns {CameraLimiterOptions}
    */
   static getDefaultOptions() {
     return {
@@ -52,13 +50,13 @@ class CameraLimiter {
   }
 
   /**
-   * @param {vcs.vcm.maps.CameraLimiter.Options} options
+   * @param {CameraLimiterOptions} options
    */
   constructor(options) {
     const defaultOptions = CameraLimiter.getDefaultOptions();
     /**
      * The mode to use. When using DISTANCE mode, be sure to have a terrainProvider set.
-     * @type {vcs.vcm.maps.CameraLimiter.Mode}
+     * @type {Mode}
      * @api
      */
     this.mode = parseEnumValue(options.mode, Mode, defaultOptions.mode);
@@ -68,7 +66,7 @@ class CameraLimiter {
      */
     this._terrainUrl = options.terrainUrl || defaultOptions.terrainUrl;
     /**
-     * @type {Cesium/CesiumTerrainProvider|null}
+     * @type {import("@vcmap/cesium").CesiumTerrainProvider|null}
      * @private
      */
     this._terrainProvider = this._terrainUrl ? getTerrainProviderForUrl({ url: this._terrainUrl }) : null;
@@ -86,7 +84,7 @@ class CameraLimiter {
     this.level = options.level === null ? null : parseInteger(options.level, defaultOptions.level);
     /**
      * last checked camera position
-     * @type {Cesium/Cartographic}
+     * @type {import("@vcmap/cesium").Cartographic}
      */
     this.lastCheckedPosition = new Cartographic();
     /**
@@ -124,8 +122,8 @@ class CameraLimiter {
   }
 
   /**
-   * @param {Cesium/Cartographic} cameraCartographic
-   * @returns {Promise<Array<Cesium/Cartographic>>}
+   * @param {import("@vcmap/cesium").Cartographic} cameraCartographic
+   * @returns {Promise<Array<import("@vcmap/cesium").Cartographic>>}
    * @private
    */
   _limitWithLevel(cameraCartographic) {
@@ -136,8 +134,8 @@ class CameraLimiter {
   }
 
   /**
-   * @param {Cesium/Cartographic} cameraCartographic
-   * @returns {Promise<Array<Cesium/Cartographic>>}
+   * @param {import("@vcmap/cesium").Cartographic} cameraCartographic
+   * @returns {Promise<Array<import("@vcmap/cesium").Cartographic>>}
    * @private
    */
   _limitMostDetailed(cameraCartographic) {
@@ -145,7 +143,7 @@ class CameraLimiter {
   }
 
   /**
-   * @param {Cesium/Cartographic} cameraCartographic
+   * @param {import("@vcmap/cesium").Cartographic} cameraCartographic
    * @returns {Promise<void>}
    * @private
    */
@@ -164,7 +162,7 @@ class CameraLimiter {
 
   /**
    * Limits the given camera based on this limiters specs.
-   * @param {Cesium/Camera} camera
+   * @param {import("@vcmap/cesium").Camera} camera
    * @api
    * @returns {Promise<void>}
    */
@@ -194,7 +192,7 @@ class CameraLimiter {
   }
 
   /**
-   * @returns {vcs.vcm.maps.CameraLimiter.Options}
+   * @returns {CameraLimiterOptions}
    */
   getConfigObject() {
     const config = {};

@@ -37,6 +37,15 @@ lint:
   script:
     - npm run lint
 
+type-check:
+  <<: *after_build_definition
+  stage: test
+  only:
+    - /^(feature-.*|hotfix-.*|master|release-.*)$/
+  script:
+    - npm run build-tsd
+    - npm run type-check
+
 audit:
   <<: *after_build_definition
   stage: test

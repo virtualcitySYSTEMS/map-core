@@ -5,16 +5,16 @@ import VectorStyleItem from './vectorStyleItem.js';
 import { styleCollection } from '../../globalCollections.js';
 
 /**
- * @returns {vcs-logger/Logger}
+ * @returns {import("@vcsuite/logger").Logger}
  */
 function getLogger() {
   return getLoggerByName('vcs.vcm.util.style.styleFactory');
 }
 
 /**
- * @param {(vcs.vcm.util.style.Reference|vcs.vcm.util.style.DeclarativeStyleItem.Options|vcs.vcm.util.style.VectorStyleItem.Options|vcs.vcm.util.style.ClusterStyleItem.Options|vcs.vcm.util.style.StyleItem|string)=} styleOptions
- * @param {(vcs.vcm.util.style.VectorStyleItem|vcs.vcm.util.style.ClusterStyleItem|vcs.vcm.util.style.DeclarativeStyleItem)=} defaultStyle
- * @returns {vcs.vcm.util.style.StyleItem}
+ * @param {(Reference|DeclarativeStyleItemOptions|VectorStyleItemOptions|StyleItem|string)=} styleOptions
+ * @param {(VectorStyleItem|DeclarativeStyleItem)=} defaultStyle
+ * @returns {StyleItem}
  */
 // eslint-disable-next-line import/prefer-default-export
 export function getStyleOrDefaultStyle(styleOptions, defaultStyle) {
@@ -26,13 +26,13 @@ export function getStyleOrDefaultStyle(styleOptions, defaultStyle) {
     getLogger().warning(`could not find style with name ${styleOptions}`);
   } else if (styleOptions && (styleOptions instanceof StyleItem)) {
     return styleOptions;
-  } else if (styleOptions) { // DeclarativeStyleItem.Options || VectorStyleItem.Options || ClusterStyleItem.Options
+  } else if (styleOptions) { // DeclarativeStyleItemOptions || VectorStyleItemOptions || ClusterStyleItemOptions
     if (
-      /** @type {vcs.vcm.util.style.DeclarativeStyleItem.Options} */ (styleOptions).type === StyleType.DECLARATIVE ||
-      /** @type {vcs.vcm.util.style.DeclarativeStyleItem.Options} */ (styleOptions).declarativeStyle) {
-      return new DeclarativeStyleItem(/** @type {vcs.vcm.util.style.DeclarativeStyleItem.Options} */ (styleOptions));
-    } else if (/** @type {vcs.vcm.util.style.Reference} */ (styleOptions).type === StyleType.REFERENCE) {
-      const { name } = /** @type {vcs.vcm.util.style.Reference} */ (styleOptions);
+      /** @type {DeclarativeStyleItemOptions} */ (styleOptions).type === StyleType.DECLARATIVE ||
+      /** @type {DeclarativeStyleItemOptions} */ (styleOptions).declarativeStyle) {
+      return new DeclarativeStyleItem(/** @type {DeclarativeStyleItemOptions} */ (styleOptions));
+    } else if (/** @type {Reference} */ (styleOptions).type === StyleType.REFERENCE) {
+      const { name } = /** @type {Reference} */ (styleOptions);
       const styleItem = styleCollection.getByKey(name);
       if (styleItem) {
         return styleItem;
@@ -40,7 +40,7 @@ export function getStyleOrDefaultStyle(styleOptions, defaultStyle) {
       getLogger().warning(`could not find style with name ${name}`);
     } else {
       // @ts-ignore
-      const vectorStyle = new VectorStyleItem(/** @type {vcs.vcm.util.style.VectorStyleItem.Options} */ styleOptions);
+      const vectorStyle = new VectorStyleItem(/** @type {VectorStyleItemOptions} */ styleOptions);
       return defaultStyle instanceof VectorStyleItem ? defaultStyle.assign(vectorStyle) : vectorStyle;
     }
   }

@@ -28,7 +28,7 @@ describe('vcs.vcm.maps.CameraLimiter', () => {
   });
 
   describe('DISTANCE mode', () => {
-    /** @type {vcs.vcm.maps.CameraLimiter} */
+    /** @type {import("@vcmap/core").CameraLimiter} */
     let cameraLimiter;
     beforeEach(() => {
       setTerrainServer(sandbox.useFakeServer());

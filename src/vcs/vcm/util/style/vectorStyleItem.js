@@ -26,46 +26,46 @@ import {
 import { getShapeFromOptions } from './shapesCategory.js';
 
 /**
- * @typedef {Object} vcs.vcm.util.style.VectorStyleItem.Pattern
- * @property {vcs.vcm.util.style.PatternType} type
- * @property {ol/Color|ol/colorlike/ColorLike} color
+ * @typedef {Object} VectorStyleItemPattern
+ * @property {PatternType} type
+ * @property {import("ol/color").Color|import("ol/colorlike").ColorLike} color
  * @property {number} width
  * @property {number} size
  * @api
  */
 
 /**
- * @typedef {Object} vcs.vcm.util.style.VectorStyleItem.Fill
- * @property {ol/Color|ol/colorlike/ColorLike} color
- * @property {vcs.vcm.util.style.VectorStyleItem.Pattern|undefined} pattern
+ * @typedef {Object} VectorStyleItemFill
+ * @property {import("ol/color").Color|import("ol/colorlike").ColorLike} color
+ * @property {VectorStyleItemPattern|undefined} pattern
  * @api
  */
 
 /**
  * This is either <b>olx.style.IconOptions</b> or <b>olx.style.CircleOptions</b>
- * @typedef {Object} vcs.vcm.util.style.VectorStyleItem.Image
+ * @typedef {Object} VectorStyleItemImage
  * @property {string|undefined} src
- * @property {number|ol/Size|undefined} scale
+ * @property {number|import("ol/size").Size|undefined} scale
  * @property {number|undefined} opacity
- * @property {ol/Color|ol/colorlike/ColorLike|undefined} color
- * @property {ol/style/FillOptions|ol/style/Fill|undefined} fill
- * @property {ol/style/StrokeOptions|ol/style/Stroke|undefined} stroke
+ * @property {import("ol/color").Color|import("ol/colorlike").ColorLike|undefined} color
+ * @property {import("ol/style/Fill").Options|import("ol/style/Fill").default|undefined} fill
+ * @property {import("ol/style/Stroke").Options|import("ol/style/Stroke").default|undefined} stroke
  * @property {number|undefined} radius
  * @property {number|undefined} points
  * @property {number|undefined} angle
  * @property {Array<number>|undefined} anchor
- * @property {vcs.vcm.util.style.VectorStyleItem.Image|undefined} circle - vcs:undocumented legacy
- * @property {vcs.vcm.util.style.VectorStyleItem.Image|undefined} icon - vcs:undocumented legacy
+ * @property {VectorStyleItemImage|undefined} circle - vcs:undocumented legacy
+ * @property {VectorStyleItemImage|undefined} icon - vcs:undocumented legacy
  * @property {string|undefined} currentImage - vcs:undocumented styleEditor
  * @api
  */
 
 /**
- * @typedef {Object} vcs.vcm.util.style.VectorStyleItem.Text
+ * @typedef {Object} VectorStyleItemText
  * @property {string|undefined} text
- * @property {string|vcs.vcm.util.style.FontObject|undefined} font
- * @property {ol/style/FillOptions|ol/style/Fill|undefined} fill
- * @property {ol/style/StrokeOptions|ol/style/Stroke|undefined} stroke
+ * @property {string|FontObject|undefined} font
+ * @property {import("ol/style/Fill").Options|import("ol/style/Fill").default|undefined} fill
+ * @property {import("ol/style/Stroke").Options|import("ol/style/Stroke").default|undefined} stroke
  * @property {string|undefined} textBaseline
  * @property {number|undefined} offsetX
  * @property {number|undefined} offsetY
@@ -73,7 +73,7 @@ import { getShapeFromOptions } from './shapesCategory.js';
  */
 
 /**
- * @typedef {Object} vcs.vcm.util.style.VectorStyleItem.Exclusion
+ * @typedef {Object} VectorStyleItemExclusion
  * @property {boolean} fill
  * @property {boolean} stroke
  * @property {boolean} image
@@ -81,7 +81,7 @@ import { getShapeFromOptions } from './shapesCategory.js';
  */
 
 /**
- * @typedef {vcs.vcm.util.style.StyleItem.Sections} vcs.vcm.util.style.VectorStyleItem.Sections
+ * @typedef {StyleItemSections} VectorStyleItemSections
  * @property {boolean|undefined} fill
  * @property {boolean|undefined} stroke
  * @property {boolean|undefined} text
@@ -95,7 +95,6 @@ import { getShapeFromOptions } from './shapesCategory.js';
  * @property {number} POLYGON
  * @property {number} POLYLINE
  * @property {number} POINT
- * @memberOf vcs.vcm.util.style.VectorStyleItem.olcsGeometryType
  */
 export const olcsGeometryType = {
   POLYGON: 1,
@@ -104,11 +103,11 @@ export const olcsGeometryType = {
 };
 
 /**
- * @typedef {vcs.vcm.util.style.StyleItem.Options} vcs.vcm.util.style.VectorStyleItem.Options
- * @property {vcs.vcm.util.style.VectorStyleItem.Fill|false|undefined} fill
- * @property {ol/style/StrokeOptions|false|undefined} stroke
- * @property {vcs.vcm.util.style.VectorStyleItem.Image|false|undefined} image
- * @property {vcs.vcm.util.style.VectorStyleItem.Text|undefined} text
+ * @typedef {StyleItemOptions} VectorStyleItemOptions
+ * @property {VectorStyleItemFill|false|undefined} fill
+ * @property {import("ol/style/Stroke").Options|false|undefined} stroke
+ * @property {VectorStyleItemImage|false|undefined} image
+ * @property {VectorStyleItemText|undefined} text
  * @property {string|undefined} label
  * @api
  */
@@ -119,14 +118,12 @@ export const olcsGeometryType = {
  * the style on the layer is not a DeclarativeStyle
  * @type {symbol}
  * @export
- * @memberOf vcs.vcm.util.style
  */
 export const vectorStyleSymbol = Symbol('VcsVectorStyleItem');
 
 /**
  * @class
- * @extends {vcs.vcm.util.style.StyleItem}
- * @memberOf vcs.vcm.util.style
+ * @extends {StyleItem}
  * @export
  * @api
  */
@@ -134,14 +131,14 @@ class VectorStyleItem extends StyleItem {
   static get className() { return 'vcs.vcm.util.style.VectorStyleItem'; }
 
   /**
-   * @param {vcs.vcm.util.style.VectorStyleItem.Options} options
+   * @param {VectorStyleItemOptions} options
    */
   constructor(options) {
     super(options);
 
     this.validateOptions(options);
     /**
-     * @type {vcs.vcm.util.style.VectorStyleItem.Exclusion}
+     * @type {VectorStyleItemExclusion}
      * @api
      */
     this.exclude = {
@@ -150,24 +147,24 @@ class VectorStyleItem extends StyleItem {
       image: options.image === false,
     };
     /**
-     * @type {vcs.vcm.util.style.VectorStyleItem.Fill|null}
+     * @type {VectorStyleItemFill|null}
      * @private
      */
     this._fillOptions = null;
     /**
-     * @type {ol/style/Fill|undefined}
+     * @type {import("ol/style/Fill").default|undefined}
      * @private
      */
     this._fill = undefined;
 
     /**
-     * @type {ol/style/Stroke|undefined}
+     * @type {import("ol/style/Stroke").default|undefined}
      * @private
      */
     this._stroke = options.stroke ? new Stroke(options.stroke) : undefined;
 
     /**
-     * @type {ol/style/Text|undefined}
+     * @type {import("ol/style/Text").default|undefined}
      * @private
      */
     this._text = undefined;
@@ -183,24 +180,24 @@ class VectorStyleItem extends StyleItem {
     this.label = this._label;
 
     /**
-     * @type {Cesium/Color}
+     * @type {import("@vcmap/cesium").Color}
      * @private
      */
     this._cesiumColor = new Color();
 
     /**
-     * @type {ol/style/Icon|ol/style/RegularShape|undefined}
+     * @type {import("ol/style/Icon").default|import("ol/style/RegularShape").default|undefined}
      * @private
      */
     this._image = undefined;
     if (options.image) {
       this._image = options.image.radius ?
         getShapeFromOptions({ ...options.image }) :
-        new Icon(/** @type {ol/style/IconOptions} */ (options.image));
+        new Icon(/** @type {import("ol/style/Icon").Options} */ (options.image));
     }
 
     /**
-     * @type {ol/style/Style|ol/style/StyleFunction}
+     * @type {import("ol/style/Style").default|import("ol/style/Style").StyleFunction}
      */
     this._style = new Style({
       image: this._image,
@@ -217,7 +214,7 @@ class VectorStyleItem extends StyleItem {
   }
 
   /**
-   * @param {vcs.vcm.util.style.VectorStyleItem.Options} options
+   * @param {VectorStyleItemOptions} options
    */
   validateOptions(options) {
     const checkColor = (option) => {
@@ -227,7 +224,7 @@ class VectorStyleItem extends StyleItem {
         check(option.color.length, [3, 4]);
       } catch (e) {
         this.getLogger().error(e.message);
-        option.color = /** @type {ol/Color} */ ([255, 255, 255, 0.4]);
+        option.color = /** @type {import("ol/color").Color} */ ([255, 255, 255, 0.4]);
       }
     };
 
@@ -295,17 +292,17 @@ class VectorStyleItem extends StyleItem {
 
   /**
    * the current fill color, not the pattern
-   * @type {ol/Color|null}
+   * @type {import("ol/color").Color|null}
    * @api
    */
   get fillColor() {
-    return this._fillOptions ? /** @type {ol/Color} */ (this._fillOptions.color) : null;
+    return this._fillOptions ? /** @type {import("ol/color").Color} */ (this._fillOptions.color) : null;
   }
 
   /**
    * the current fill color as a cesium color
    * @readonly
-   * @type {Cesium/Color}
+   * @type {import("@vcmap/cesium").Color}
    * @api
    */
   get cesiumFillColor() {
@@ -320,7 +317,7 @@ class VectorStyleItem extends StyleItem {
   }
 
   /**
-   * @param {(ol/Color|ol/colorlike/ColorLike)=} color
+   * @param {(import("ol/color").Color|import("ol/colorlike").ColorLike)=} color
    */
   set fillColor(color) {
     this.exclude.fill = false;
@@ -344,7 +341,7 @@ class VectorStyleItem extends StyleItem {
   }
 
   /**
-   * @type {vcs.vcm.util.style.VectorStyleItem.Pattern}
+   * @type {VectorStyleItemPattern}
    * @api
    */
   get pattern() {
@@ -352,7 +349,7 @@ class VectorStyleItem extends StyleItem {
   }
 
   /**
-   * @param {vcs.vcm.util.style.VectorStyleItem.Pattern} patternOptions
+   * @param {VectorStyleItemPattern} patternOptions
    */
   set pattern(patternOptions) {
     if (!this._fillOptions) {
@@ -374,13 +371,13 @@ class VectorStyleItem extends StyleItem {
   }
 
   /**
-   * @type {ol/style/Stroke}
+   * @type {import("ol/style/Stroke").default}
    * @api
    */
   get stroke() { return this._stroke; }
 
   /**
-   * @param {ol/style/Stroke=} stroke
+   * @param {import("ol/style/Stroke").default=} stroke
    */
   set stroke(stroke) {
     this.exclude.stroke = false;
@@ -416,13 +413,13 @@ class VectorStyleItem extends StyleItem {
   }
 
   /**
-   * @type {ol/style/Text}
+   * @type {import("ol/style/Text").default}
    * @api
    */
   get text() { return this._text; }
 
   /**
-   * @param {ol/style/Text=} text
+   * @param {import("ol/style/Text").default=} text
    */
   set text(text) {
     if (this._style instanceof Style) {
@@ -436,13 +433,13 @@ class VectorStyleItem extends StyleItem {
   }
 
   /**
-   * @type {(ol/style/Icon|ol/style/RegularShape)}
+   * @type {(import("ol/style/Icon").default|import("ol/style/RegularShape").default)}
    * @api
    */
   get image() { return this._image; }
 
   /**
-   * @param {(ol/style/Icon|ol/style/RegularShape)=} image
+   * @param {(import("ol/style/Icon").default|import("ol/style/RegularShape").default)=} image
    */
   set image(image) {
     this.exclude.image = false;
@@ -457,13 +454,13 @@ class VectorStyleItem extends StyleItem {
   }
 
   /**
-   * @type {ol/style/Style|ol/style/StyleFunction}
+   * @type {import("ol/style/Style").default|import("ol/style/Style").StyleFunction}
    * @api
    */
   get style() { return this._style; }
 
   /**
-   * @param {ol/style/Style|ol/style/StyleFunction} style
+   * @param {import("ol/style/Style").default|import("ol/style/Style").StyleFunction} style
    */
   set style(style) {
     checkMaybe(style, [Style, Function]);
@@ -471,7 +468,7 @@ class VectorStyleItem extends StyleItem {
       this._stroke = style.getStroke();
       this._fill = style.getFill();
       this._text = style.getText();
-      this._image = /** @type {ol/style/Icon|ol/style/Circle} */ (style.getImage());
+      this._image = /** @type {import("ol/style/Icon").default|import("ol/style/Circle").default} */ (style.getImage());
     } else {
       this._stroke = undefined;
       this._fill = undefined;
@@ -692,15 +689,15 @@ class VectorStyleItem extends StyleItem {
   }
 
   /**
-   * @param {vcs.vcm.util.style.VectorStyleItem=} result
-   * @returns {vcs.vcm.util.style.VectorStyleItem}
+   * @param {VectorStyleItem=} result
+   * @returns {VectorStyleItem}
    * @api
    */
   clone(result) {
     if (result) {
       result.style = this._style instanceof Style ? this._style.clone() : this._style;
       if (this._fillOptions && this._fillOptions.color) {
-        result.fillColor = /** @type {ol/Color} */ (this._fillOptions.color).slice();
+        result.fillColor = /** @type {import("ol/color").Color} */ (this._fillOptions.color).slice();
         if (this._fillOptions.pattern) {
           result.pattern = { ...this._fillOptions.pattern };
         }
@@ -717,8 +714,8 @@ class VectorStyleItem extends StyleItem {
   }
 
   /**
-   * @param {vcs.vcm.util.style.VectorStyleItem} result
-   * @returns {vcs.vcm.util.style.VectorStyleItem}
+   * @param {VectorStyleItem} result
+   * @returns {VectorStyleItem}
    * @api
    */
   assign(result) {
@@ -758,15 +755,15 @@ class VectorStyleItem extends StyleItem {
   }
 
   /**
-   * @param {vcs.vcm.util.style.VectorStyleItem.Sections=} sections
-   * @returns {vcs.vcm.util.style.VectorStyleItem.Options}
+   * @param {VectorStyleItemSections=} sections
+   * @returns {VectorStyleItemOptions}
    * @api
    */
   getOptions(sections) {
     // TODO clean default, only copy relevant keys
-    const options = /** @type {vcs.vcm.util.style.VectorStyleItem.Options} */ (super.getOptions(sections));
+    const options = /** @type {VectorStyleItemOptions} */ (super.getOptions(sections));
     options.type = StyleType.VECTOR;
-    /** @type {vcs.vcm.util.style.VectorStyleItem.Sections} */
+    /** @type {VectorStyleItemSections} */
     const usedSections = sections || {
       fill: true,
       stroke: true,
@@ -777,7 +774,7 @@ class VectorStyleItem extends StyleItem {
     if (usedSections.fill) {
       if (this._fillOptions) {
         options.fill = {
-          color: /** @type {ol/Color} */ (parseColor(this._fillOptions.color).slice()),
+          color: /** @type {import("ol/color").Color} */ (parseColor(this._fillOptions.color).slice()),
         };
         if (this._fillOptions.pattern) {
           options.fill.pattern = { ...this._fillOptions.pattern };
@@ -837,8 +834,8 @@ class VectorStyleItem extends StyleItem {
   }
 
   /**
-   * @param {ol/Feature} feature
-   * @returns {vcs.vcm.util.style.VectorStyleItem.Options}
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+   * @returns {VectorStyleItemOptions}
    */
   getOptionsForFeature(feature) {
     const type = feature.getGeometry().getType();
@@ -906,20 +903,18 @@ class VectorStyleItem extends StyleItem {
 export default VectorStyleItem;
 
 /**
- * @type {vcs.vcm.util.style.VectorStyleItem}
- * @memberOf vcs.vcm.util.style.VectorStyleItem
+ * @type {VectorStyleItem}
  * @export
  */
 export const defaultVectorStyle = new VectorStyleItem(getDefaultVectorStyleItemOptions());
 
 /**
- * @param {Cesium/Color} cesiumColor
- * @returns {vcs.vcm.util.style.VectorStyleItem}
+ * @param {import("@vcmap/cesium").Color} cesiumColor
+ * @returns {VectorStyleItem}
  * @export
- * @memberOf vcs.vcm.util.style.VectorStyleItem
  */
 export function fromCesiumColor(cesiumColor) {
-  const color = /** @type {ol/Color} */ (cesiumColor.toBytes());
+  const color = /** @type {import("ol/color").Color} */ (cesiumColor.toBytes());
   color[3] /= 255;
   return new VectorStyleItem({
     fill: { color },

@@ -8,14 +8,13 @@ import { originalFeatureSymbol } from '../layer/vectorSymbols.js';
 
 /**
  * @class
- * @extends {vcs.vcm.interaction.AbstractInteraction}
- * @memberOf vcs.vcm.interaction
+ * @extends {AbstractInteraction}
  */
 class FeatureAtPixelInteraction extends AbstractInteraction {
   constructor() {
     super();
     /**
-     * @type {vcs.vcm.interaction.EventType|number}
+     * @type {EventType|number}
      * @private
      */
     this._pickPosition = EventType.CLICK;
@@ -50,19 +49,19 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
 
     /**
      * @inheritDoc
-     * @type {vcs.vcm.interaction.ModificationKeyType|number}
+     * @type {ModificationKeyType|number}
      * @protected
      */
     this._defaultModificationKey = ModificationKeyType.ALL;
     /**
      * @inheritDoc
-     * @type {vcs.vcm.interaction.ModificationKeyType|number}
+     * @type {ModificationKeyType|number}
      * @protected
      */
     this._defaultActive = EventType.ALL ^ EventType.MOVE;
 
     /**
-     * @type {ol/Feature|Object|null}
+     * @type {import("ol").Feature<import("ol/geom/Geometry").default>|Object|null}
      * @private
      */
     this._draggingFeature = null;
@@ -70,7 +69,7 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
   }
 
   /**
-   * Bitmask of {@link vcs.vcm.interaction.EventType} for which events to pick the position
+   * Bitmask of {@link EventType} for which events to pick the position
    * @type {number}
    * @api
    */
@@ -84,7 +83,7 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
   }
 
   /**
-   * Bitmask of {@link vcs.vcm.interaction.EventType} for which to never pick positions.
+   * Bitmask of {@link EventType} for which to never pick positions.
    * @type {number}
    * @api
    */
@@ -99,8 +98,8 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
 
   /**
    * @inheritDoc
-   * @param {vcs.vcm.interaction.Event} event
-   * @returns {Promise<vcs.vcm.interaction.Event>}
+   * @param {InteractionEvent} event
+   * @returns {Promise<InteractionEvent>}
    */
   async pipe(event) {
     if (event.type & EventType.DRAG && !(this._pickPosition & EventType.DRAG)) {
@@ -144,19 +143,19 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
   }
 
   /**
-   * @param {vcs.vcm.interaction.Event} event
-   * @returns {Promise.<vcs.vcm.interaction.Event>}
+   * @param {InteractionEvent} event
+   * @returns {Promise<InteractionEvent>}
    * @private
    */
   _openlayersHandler(event) {
-    /** @type {null|ol/Feature} */
+    /** @type {null|import("ol").Feature<import("ol/geom/Geometry").default>} */
     let found = null;
-    /** @type {null|ol/layer.Layer} */
+    /** @type {null|import("ol/layer/Layer").default} */
     let foundLayer = null;
-    /** @type {vcs.vcm.maps.Openlayers} */ (event.map).olMap
+    /** @type {import("@vcmap/core").Openlayers} */ (event.map).olMap
       .forEachFeatureAtPixel([event.windowPosition.x, event.windowPosition.y], (feat, layer) => {
         if (feat && (feat.get('olcs_allowPicking') == null || feat.get('olcs_allowPicking') === true)) {
-          found = /** @type {ol/Feature} */ (feat);
+          found = /** @type {import("ol").Feature<import("ol/geom/Geometry").default>} */ (feat);
           foundLayer = layer;
         }
         return true;
@@ -172,16 +171,16 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
   }
 
   /**
-   * @param {vcs.vcm.interaction.Event} event
-   * @returns {Promise.<vcs.vcm.interaction.Event>}
+   * @param {InteractionEvent} event
+   * @returns {Promise<InteractionEvent>}
    * @private
    */
   _obliqueHandler(event) {
-    /** @type {null|ol/Feature} */
+    /** @type {null|import("ol").Feature<import("ol/geom/Geometry").default>} */
     let found = null;
-    /** @type {null|ol/layer/Layer} */
+    /** @type {null|import("ol/layer/Layer").default} */
     let foundLayer = null;
-    /** @type {vcs.vcm.maps.Oblique} */ (event.map).olMap
+    /** @type {import("@vcmap/core").Oblique} */ (event.map).olMap
       .forEachFeatureAtPixel([event.windowPosition.x, event.windowPosition.y], (feat, layer) => {
         if (feat) {
           found = feat[originalFeatureSymbol] || feat;
@@ -201,12 +200,12 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
   }
 
   /**
-   * @param {vcs.vcm.interaction.Event} event
-   * @returns {Promise.<vcs.vcm.interaction.Event>}
+   * @param {InteractionEvent} event
+   * @returns {Promise<InteractionEvent>}
    * @private
    */
   _cesiumHandler(event) {
-    const cesiumMap = /** @type {vcs.vcm.maps.CesiumMap} */ (event.map);
+    const cesiumMap = /** @type {import("@vcmap/core").CesiumMap} */ (event.map);
     const scene = cesiumMap.getScene();
 
     const object = scene.pick(event.windowPosition, this.hitTolerance, this.hitTolerance);

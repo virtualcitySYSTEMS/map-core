@@ -10,7 +10,6 @@ import Extent from './extent.js';
  * @param {number} right
  * @param {number} epsilon
  * @returns {boolean}
- * @memberOf vcs.vcm.util
  * @export
  */
 export function propertyEqualsEpsilon(left, right, epsilon) {
@@ -23,7 +22,6 @@ export function propertyEqualsEpsilon(left, right, epsilon) {
  * @param {number} right angle in degree
  * @param {number} epsilon in degree
  * @returns {boolean}
- * @memberOf vcs.vcm.util
  * @export
  */
 export function angleEqualsEpsilon(left, right, epsilon) {
@@ -34,11 +32,10 @@ export function angleEqualsEpsilon(left, right, epsilon) {
 
 /**
  * compares two coordinates componentwise
- * @param {ol.Coordinate} left
- * @param {ol.Coordinate} right
+ * @param {import("ol/coordinate").Coordinate} left
+ * @param {import("ol/coordinate").Coordinate} right
  * @param {number} epsilon
  * @returns {boolean}
- * @memberOf vcs.vcm.util
  * @export
  */
 export function coordinateEqualsEpsilon(left, right, epsilon) {
@@ -47,9 +44,9 @@ export function coordinateEqualsEpsilon(left, right, epsilon) {
 }
 
 /**
- * @typedef {vcs.vcm.VcsObject.Options} vcs.vcm.util.ViewPoint.Options
- * @property {ol/Coordinate|undefined} cameraPosition - ol3 coordinate array with xyz coordinates (z value is mandatory)
- * @property {ol/Coordinate|undefined} groundPosition - ol3 coordinate array with xyz coordinates (z value is optional)
+ * @typedef {VcsObjectOptions} ViewPointOptions
+ * @property {import("ol/coordinate").Coordinate|undefined} cameraPosition - ol3 coordinate array with xyz coordinates (z value is mandatory)
+ * @property {import("ol/coordinate").Coordinate|undefined} groundPosition - ol3 coordinate array with xyz coordinates (z value is optional)
  * @property {number|undefined} distance - distance between the camera position and the target
  * @property {number} [heading=0] - angle between 0 and 360 degree
  * @property {number} [pitch=-90] - angle between 0 and 360 degree
@@ -64,15 +61,14 @@ export function coordinateEqualsEpsilon(left, right, epsilon) {
  * A Viewpoint Object
  * @class
  * @export
- * @extends {vcs.vcm.VcsObject}
- * @memberOf vcs.vcm.util
+ * @extends {VcsObject}
  * @api stable
  */
 class ViewPoint extends VcsObject {
   static get className() { return 'vcs.vcm.util.ViewPoint'; }
 
   /**
-   * @param {vcs.vcm.util.ViewPoint.Options} options
+   * @param {ViewPointOptions} options
    */
   constructor(options) {
     super(options);
@@ -80,7 +76,7 @@ class ViewPoint extends VcsObject {
     /**
      * position of the camera (optional) (cameraPosition needs  x, y, and height value)
      * either a cameraPosition or a groundPosition have to be provided
-     * @type {?ol/Coordinate}
+     * @type {?import("ol/coordinate").Coordinate}
      * @api
      */
     this.cameraPosition = null;
@@ -91,7 +87,7 @@ class ViewPoint extends VcsObject {
     /**
      * groundPosition, point on the ground the camera looks at (optional)
      * either a cameraPosition or a groundPosition have to be provided
-     * @type {?ol/Coordinate}
+     * @type {?import("ol/coordinate").Coordinate}
      * @api
      */
     this.groundPosition = null;
@@ -150,7 +146,7 @@ class ViewPoint extends VcsObject {
 
   /**
    * The current easing function
-   * @type {Cesium/EasingFunction.Callback|null}
+   * @type {import("@vcmap/cesium").EasingFunction.Callback|null}
    * @api
    * @readonly
    */
@@ -159,7 +155,7 @@ class ViewPoint extends VcsObject {
   }
 
   /**
-   * @returns {vcs.vcm.util.ViewPoint.Options} returns a options object. This object can be used to reconstruct a new viewpoint
+   * @returns {ViewPointOptions} returns a options object. This object can be used to reconstruct a new viewpoint
    * @api stable
    */
   getConfigObject() {
@@ -179,7 +175,7 @@ class ViewPoint extends VcsObject {
 
   /**
    * clones the viewpoint
-   * @returns {vcs.vcm.util.ViewPoint} viewpoint
+   * @returns {ViewPoint} viewpoint
    * @api stable
    */
   clone() {
@@ -203,8 +199,8 @@ class ViewPoint extends VcsObject {
 
   /**
    * Creates a viewpoint based on an extent
-   * @param {ol/Extent|vcs.vcm.util.Extent} extent
-   * @returns {?vcs.vcm.util.ViewPoint}
+   * @param {import("ol/extent").Extent|Extent} extent
+   * @returns {?ViewPoint}
    * @api
    */
   static createViewPointFromExtent(extent) {
@@ -243,7 +239,7 @@ class ViewPoint extends VcsObject {
   /**
    * creates a new ViewPoint Object from url Paramter
    * @param {Object} urlParameter
-   * @returns {vcs.vcm.util.ViewPoint}
+   * @returns {ViewPoint}
    */
   static parseURLparameter(urlParameter) {
     let { cameraPosition, groundPosition } = urlParameter;
@@ -282,7 +278,7 @@ class ViewPoint extends VcsObject {
   /**
    * Checks if this Viewpoint is Valid
    * @api stable
-   * @throws {vcs.vcm.util.InvalidArgument} on invalid viewpoint
+   * @throws {InvalidArgument} on invalid viewpoint
    * @returns {boolean}
    */
   isValid() {
@@ -315,7 +311,7 @@ class ViewPoint extends VcsObject {
 
   /**
    * compares the provided Viewpoint with this viewpoint componentwise
-   * @param {vcs.vcm.util.ViewPoint} other
+   * @param {ViewPoint} other
    * @param {number} [epsilon=0]
    * @returns {boolean}
    */

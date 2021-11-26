@@ -3,9 +3,9 @@ import Projection from '../projection.js';
 import { createOrUpdateFromGeometry } from '../featureconverter/extent3d.js';
 
 /**
- * @param {vcs.vcm.layer.Vector.ClickedObject} feature
- * @param {vcs.vcm.layer.Layer} layer
- * @returns {?vcs.vcm.layer.GenericFeature}
+ * @param {VectorClickedObject} feature
+ * @param {import("@vcmap/core").Layer} layer
+ * @returns {?GenericFeature}
  */
 // eslint-disable-next-line import/prefer-default-export
 export function getGenericFeatureFromProvidedFeature(feature, layer) {

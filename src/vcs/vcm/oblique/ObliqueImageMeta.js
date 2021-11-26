@@ -11,7 +11,7 @@ import { cartesian2DDistance } from '../util/math.js';
  * @property {Array<number>} tileResolution
  * @property {import("ol/proj/Projection").default} projection
  * @property {string} url
- * @property {import("cesium").CesiumTerrainProvider} terrainProvider
+ * @property {import("@vcmap/cesium").CesiumTerrainProvider} terrainProvider
  * @property {string} name
  * @property {string|undefined} [format='jpg']
  * @api
@@ -48,47 +48,40 @@ class ObliqueImageMeta {
      * The size of the images associated with this meta data
      * @type {import("ol/size").Size}
      * @api
-     * @readonly
      */
     this.size = options.size;
     /**
      * The tile size of the images associated with this meta data
      * @type {import("ol/size").Size}
      * @api
-     * @readonly
      */
     this.tileSize = options.tileSize;
     /**
      * The tile resolutions of the images associated with this meta data
      * @type {Array<number>}
      * @api
-     * @readonly
      */
     this.tileResolution = options.tileResolution;
     /**
      * The world projection of the images associated with this meta
      * @type {import("ol/proj/Projection").default}
      * @api
-     * @readonly
      */
     this.projection = options.projection;
     /**
      * @type {string}
      * @api
-     * @readonly
      */
     this.url = options.url;
     /**
      * An optional terrain provider
-     * @type {import("cesium").CesiumTerrainProvider}
+     * @type {import("@vcmap/cesium").CesiumTerrainProvider}
      * @api
-     * @readonly
      */
     this.terrainProvider = options.terrainProvider;
     /**
      * @type {string}
      * @api
-     * @readonly
      */
     this.format = options.format || 'jpg';
   }

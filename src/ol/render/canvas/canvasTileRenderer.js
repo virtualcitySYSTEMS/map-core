@@ -1,3 +1,4 @@
+// @ts-nocheck
 import CanvasImmediateRenderer from 'ol/render/canvas/Immediate.js';
 import { intersects } from 'ol/extent.js';
 import { transformGeom2D } from 'ol/geom/SimpleGeometry.js';
@@ -5,7 +6,7 @@ import { transform2D } from 'ol/geom/flat/transform.js';
 
 /**
  * @class
- * @extends {ol/render/canvas/Immediate}
+ * @extends {CanvasImmediateRenderer}
  * @memberOf ol
  * @exports
  * Tile Renderer Implementation of openlayers CanvasImmediateRenderer
@@ -15,11 +16,11 @@ class CanvasTileRenderer extends CanvasImmediateRenderer {
   /**
    * @param {CanvasRenderingContext2D} context Context.
    * @param {number} pixelRatio Pixel ratio.
-   * @param {ol/Extent} extent Extent.
-   * @param {ol/Transform} transform Transform.
+   * @param {import("ol/extent").Extent} extent Extent.
+   * @param {import("ol/transform").Transform} transform Transform.
    * @param {number} viewRotation View rotation.
    * @param {number=} squaredTolerance Optional squared tolerance for simplification.
-   * @param {ol/proj/TransformFunction=} userTransform Transform from user to view projection.
+   * @param {import("ol/proj").TransformFunction=} userTransform Transform from user to view projection.
    * @param {number} [scaleY=1] Scale value for Scaling Circles, Images, Text in Y direction.
    */
   constructor(
@@ -42,27 +43,28 @@ class CanvasTileRenderer extends CanvasImmediateRenderer {
 
     /**
      * @private
-     * @type {ol/Size}
+     * @type {import("ol/size").Size}
      */
     this.scaledImageScale_ = [0, 0];
 
     /**
      * @private
-     * @type {ol/Size}
+     * @type {import("ol/size").Size}
      */
     this.scaledTextScale_ = [0, 0];
   }
 
   /**
    * @private
-   * @type {ol/Size}
+   * @type {import("ol/size").Size}
    */
   get imageScale_() {
     return this.scaledImageScale_;
   }
 
   /**
-   * @param {ol/Size} value
+   * @private
+   * @param {import("ol/size").Size} value
    */
   set imageScale_(value) {
     const imageScale = value || [1, 1];
@@ -74,14 +76,15 @@ class CanvasTileRenderer extends CanvasImmediateRenderer {
 
   /**
    * @private
-   * @type {ol/Size}
+   * @type {import("ol/size").Size}
    */
   get textScale_() {
     return this.scaledTextScale_;
   }
 
   /**
-   * @param {ol/Size} value
+   * @private
+   * @param {import("ol/size").Size} value
    */
   set textScale_(value) {
     const textScale = value || [1, 1];
@@ -127,7 +130,7 @@ class CanvasTileRenderer extends CanvasImmediateRenderer {
    *
    * takes the mercator yscale into account and draws a ellipse instead of a circle.
    *
-   * @param {ol/geom/Circle} geometry Circle geometry.
+   * @param {import("ol/geom/Circle").default} geometry Circle geometry.
    * @api
    */
   drawCircle(geometry) {

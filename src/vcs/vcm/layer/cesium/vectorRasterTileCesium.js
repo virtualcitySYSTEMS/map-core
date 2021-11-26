@@ -7,9 +7,8 @@ import { wgs84Projection } from '../../util/projection.js';
  * represents a rasterized tiled vector layer implementation for cesium.
  * @class
  * @export
- * @extends {vcs.vcm.layer.RasterLayerCesium}
- * @implements {vcs.vcm.layer.VectorTileImplementation}
- * @memberOf vcs.vcm.layer.cesium
+ * @extends {RasterLayerCesium}
+ * @implements {VectorTileImplementation}
  */
 class VectorRasterTileCesium extends RasterLayerCesium {
   static get className() {
@@ -17,11 +16,11 @@ class VectorRasterTileCesium extends RasterLayerCesium {
   }
 
   /**
-   * @param {vcs.vcm.maps.CesiumMap} map
-   * @param {vcs.vcm.layer.VectorTile.ImplementationOptions} options
+   * @param {import("@vcmap/core").CesiumMap} map
+   * @param {VectorTileImplementationOptions} options
    */
   constructor(map, options) {
-    /** @type {vcs.vcm.layer.RasterLayer.ImplementationOptions} */
+    /** @type {RasterLayerImplementationOptions} */
     const rasterLayerOptions = {
       ...options,
       tilingSchema: 'mercator',
@@ -29,11 +28,11 @@ class VectorRasterTileCesium extends RasterLayerCesium {
       opacity: undefined,
     };
     super(map, rasterLayerOptions);
-    /** @type {vcs.vcm.layer.tileProvider.TileProvider} */
+    /** @type {import("@vcmap/core").TileProvider} */
     this.tileProvider = options.tileProvider;
 
     /**
-     * @type {ol/Size}
+     * @type {import("ol/size").Size}
      */
     this.tileSize = options.tileSize;
 
@@ -44,13 +43,13 @@ class VectorRasterTileCesium extends RasterLayerCesium {
     this._reloadTimeout = null;
 
     /**
-     * @type {vcs.vcm.layer.cesium.VectorTileImageryProvider}
+     * @type {VectorTileImageryProvider}
      */
     this.imageryProvider = null;
   }
 
   /**
-   * @returns {Cesium/ImageryLayer}
+   * @returns {import("@vcmap/cesium").ImageryLayer}
    */
   getCesiumLayer() {
     this.imageryProvider = new VectorTileImageryProvider({
@@ -104,7 +103,7 @@ class VectorRasterTileCesium extends RasterLayerCesium {
   }
 
   /**
-   * @param {vcs.vcm.util.style.StyleItem} style
+   * @param {import("@vcmap/core").StyleItem} style
    * @param {boolean=} silent
    * @api
    */

@@ -91,18 +91,18 @@ export function extendFlatCoordinates(
 }
 
 /**
- * @param {ol/geom/Geometry} geometry Geometry.
+ * @param {import("ol/geom/Geometry").default} geometry Geometry.
  * @param {Array<number>=} optExtent Extent.
  * @returns {Array<number>} Extent.
  */
 export function createOrUpdateFromGeometry(geometry, optExtent) {
   const extent = optExtent || createEmpty3D();
   if (geometry.getType() === GeometryType.GEOMETRY_COLLECTION) {
-    /** @type {ol/geom/GeometryCollection} */ (geometry)
+    /** @type {import("ol/geom/GeometryCollection").default} */ (geometry)
       .getGeometriesArray().forEach((geom) => { createOrUpdateFromGeometry(geom, extent); });
   } else if (geometry.getType() === GeometryType.CIRCLE) {
-    const flatCoordinates = /** @type {ol/geom/Circle} */ (geometry).getFlatCoordinates();
-    const stride = /** @type {ol/geom/Circle} */ (geometry).getStride();
+    const flatCoordinates = /** @type {import("ol/geom/Circle").default} */ (geometry).getFlatCoordinates();
+    const stride = /** @type {import("ol/geom/Circle").default} */ (geometry).getStride();
     const radius = flatCoordinates[stride] - flatCoordinates[0];
     extendXY(
       extent,
@@ -118,15 +118,15 @@ export function createOrUpdateFromGeometry(geometry, optExtent) {
       extendZ(extent, flatCoordinates[2]);
     }
   } else {
-    const flatCoordinates = /** @type {ol/geom/SimpleGeometry} */ (geometry).getFlatCoordinates();
-    const stride = /** @type {ol/geom/SimpleGeometry} */ (geometry).getStride();
+    const flatCoordinates = /** @type {import("ol/geom/SimpleGeometry").default} */ (geometry).getFlatCoordinates();
+    const stride = /** @type {import("ol/geom/SimpleGeometry").default} */ (geometry).getStride();
     extendFlatCoordinates(extent, flatCoordinates, stride);
   }
   return extent;
 }
 
 /**
- * @param {vcs.vcm.layer.Vector.HeightInfo} heightInfo
+ * @param {VectorHeightInfo} heightInfo
  * @param {Array<number>} optExtent
  */
 export function createOrUpdateFromHeightInfo(heightInfo, optExtent) {
@@ -147,7 +147,7 @@ export function createOrUpdateFromHeightInfo(heightInfo, optExtent) {
 
 /**
  * @param {Array<number>} extent Extent.
- * @returns {ol/Extent} Extent.
+ * @returns {import("ol/extent").Extent} Extent.
  */
 export function make2D(extent) {
   return [extent[0], extent[1], extent[3], extent[4]];

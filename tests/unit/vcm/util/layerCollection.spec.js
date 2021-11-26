@@ -251,7 +251,7 @@ describe('vcs.vcm.util.LayerCollection', () => {
   });
 
   describe('handling changes to zIndex', () => {
-    /** @type {vcs.vcm.util.LayerCollection} */
+    /** @type {import("@vcmap/core").LayerCollection} */
     let layerCollection;
     let layer5;
     let layer6;

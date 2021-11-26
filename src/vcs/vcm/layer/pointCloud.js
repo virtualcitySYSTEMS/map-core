@@ -7,19 +7,19 @@ import PointCloudCesium from './cesium/pointCloudCesium.js';
 import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
- * @typedef {vcs.vcm.layer.CesiumTileset.Options} vcs.vcm.layer.PointCloud.Options
+ * @typedef {CesiumTilesetOptions} PointCloudOptions
  * @property {number|string|undefined} pointSize - Pointsize of the pointcloud in pixel default is 1
  * @api
  */
 
 /**
- * @typedef {vcs.vcm.layer.CesiumTileset.ImplementationOptions} vcs.vcm.layer.PointCloud.ImplementationOptions
+ * @typedef {CesiumTilesetImplementationOptions} PointCloudImplementationOptions
  * @property {string|number|undefined} pointSize
  * @api
  */
 
 /**
- * @type {vcs.vcm.util.style.DeclarativeStyleItem}
+ * @type {DeclarativeStyleItem}
  */
 export const defaultPointCloudStyle = new DeclarativeStyleItem({});
 
@@ -33,15 +33,14 @@ export const defaultPointCloudStyle = new DeclarativeStyleItem({});
  *
  * @class
  * @export
- * @extends {vcs.vcm.layer.CesiumTileset}
+ * @extends {CesiumTileset}
  * @api stable
- * @memberOf vcs.vcm.layer
  */
 class PointCloud extends CesiumTileset {
   static get className() { return 'vcs.vcm.layer.PointCloud'; }
 
   /**
-   * @returns {vcs.vcm.layer.PointCloud.Options}
+   * @returns {PointCloudOptions}
    */
   static getDefaultOptions() {
     return {
@@ -51,7 +50,7 @@ class PointCloud extends CesiumTileset {
   }
 
   /**
-   * @param {vcs.vcm.layer.PointCloud.Options} options
+   * @param {PointCloudOptions} options
    */
   constructor(options) {
     super(options);
@@ -73,9 +72,9 @@ class PointCloud extends CesiumTileset {
 
   /**
    * @inheritDoc
-   * @param {(vcs.vcm.util.style.Reference|vcs.vcm.util.style.DeclarativeStyleItem.Options|vcs.vcm.util.style.VectorStyleItem.Options|vcs.vcm.util.style.ClusterStyleItem.Options|vcs.vcm.util.style.StyleItem|string)=} styleOptions
-   * @param {(vcs.vcm.util.style.VectorStyleItem|vcs.vcm.util.style.ClusterStyleItem|vcs.vcm.util.style.DeclarativeStyleItem)=} defaultStyle
-   * @returns {vcs.vcm.util.style.StyleItem}
+   * @param {(Reference|DeclarativeStyleItemOptions|VectorStyleItemOptions|import("@vcmap/core").StyleItem|string)=} styleOptions
+   * @param {(VectorStyleItem|DeclarativeStyleItem)=} defaultStyle
+   * @returns {import("@vcmap/core").StyleItem}
    */
   getStyleOrDefaultStyle(styleOptions, defaultStyle) {
     return super.getStyleOrDefaultStyle(styleOptions, defaultStyle || defaultPointCloudStyle);
@@ -94,12 +93,12 @@ class PointCloud extends CesiumTileset {
     checkMaybe(size, [Number, String]);
     this._pointSize = size;
     this.getImplementations().forEach((impl) => {
-      /** @type {vcs.vcm.layer.cesium.PointCloudCesium} */ (impl).updatePointSize(size);
+      /** @type {PointCloudCesium} */ (impl).updatePointSize(size);
     });
   }
 
   /**
-   * @returns {vcs.vcm.layer.PointCloud.ImplementationOptions}
+   * @returns {PointCloudImplementationOptions}
    */
   getImplementationOptions() {
     return {
@@ -109,8 +108,8 @@ class PointCloud extends CesiumTileset {
   }
 
   /**
-   * @param {vcs.vcm.maps.VcsMap} map
-   * @returns {Array<vcs.vcm.layer.cesium.PointCloudCesium>}
+   * @param {import("@vcmap/core").VcsMap} map
+   * @returns {Array<PointCloudCesium>}
    */
   createImplementationsForMap(map) {
     if (map instanceof CesiumMap) {
@@ -131,7 +130,7 @@ class PointCloud extends CesiumTileset {
 
   /**
    * Sets a new declarative style. Cannot set a Vector style on PointCloud layers.
-   * @param {string|ol/style/Style|ol/style/StyleFunction|vcs.vcm.util.style.StyleItem} style
+   * @param {string|import("ol/style/Style").default|import("ol/style/Style").StyleFunction|import("@vcmap/core").StyleItem} style
    * @param {boolean=} silent
    * @api
    */
@@ -145,10 +144,10 @@ class PointCloud extends CesiumTileset {
 
   /**
    * @inheritDoc
-   * @returns {vcs.vcm.layer.PointCloud.Options}
+   * @returns {PointCloudOptions}
    */
   getConfigObject() {
-    const config = /** @type {vcs.vcm.layer.PointCloud.Options} */ (super.getConfigObject());
+    const config = /** @type {PointCloudOptions} */ (super.getConfigObject());
     const defaultOptions = PointCloud.getDefaultOptions();
 
     if (this.defaultPointSize !== defaultOptions.pointSize) {

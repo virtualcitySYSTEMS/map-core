@@ -1,14 +1,14 @@
 import Projection from './projection.js';
 
 /**
- * @typedef {vcs.vcm.util.Projection.Options} vcs.vcm.util.Extent.Options
- * @property {ol/Extent|undefined} coordinates - if not specified, the extent of the projection is used
+ * @typedef {ProjectionOptions} ExtentOptions
+ * @property {import("ol/extent").Extent|undefined} coordinates - if not specified, the extent of the projection is used
  * @api
  */
 
 /**
  * checks extent validity, point extent is also valid
- * @param {ol/Extent} extent
+ * @param {import("ol/extent").Extent} extent
  * @returns {boolean}
  */
 function checkExtentValidity(extent) {
@@ -32,40 +32,39 @@ function checkExtentValidity(extent) {
  * Extent Class
  * @class
  * @export
- * @memberOf vcs.vcm.util
  * @api
  */
 class Extent {
   /**
-   * @param {vcs.vcm.util.Extent.Options=} options object
+   * @param {ExtentOptions=} options object
    */
   constructor(options = {}) {
-    /** @type {vcs.vcm.util.Projection} */
+    /** @type {Projection} */
     this.projection = new Projection({
       epsg: options.epsg,
       proj4: options.proj4,
       alias: options.alias,
     });
 
-    /** @type {ol/Extent|null} */
+    /** @type {import("ol/extent").Extent|null} */
     this.extent = options.coordinates || this.projection.proj.getExtent();
   }
 
   /**
-   * @param {vcs.vcm.util.Projection} destination
-   * @param {ol/Extent=} result
-   * @returns {ol/Extent}
+   * @param {Projection} destination
+   * @param {import("ol/extent").Extent=} result
+   * @returns {import("ol/extent").Extent}
    */
   getCoordinatesInProjection(destination, result) {
     if (destination.epsg === this.projection.epsg) { // TODO aliases?!
       const extent = result ? result.splice(0, 4, ...this.extent) : this.extent.slice();
-      return /** @type {ol/Extent} */ (extent);
+      return /** @type {import("ol/extent").Extent} */ (extent);
     }
     const transformer = Projection
       .getTransformer(destination, this.projection);
     const target = result || [];
     transformer(this.extent, target, 2);
-    return /** @type {ol/Extent} */ (target);
+    return /** @type {import("ol/extent").Extent} */ (target);
   }
 
   /**
@@ -77,21 +76,21 @@ class Extent {
   }
 
   /**
-   * @returns {vcs.vcm.util.Extent.Options}
+   * @returns {ExtentOptions}
    */
   getConfigObject() {
     return { coordinates: this.extent.slice(), ...this.projection.getConfigObject() };
   }
 
   /**
-   * @returns {vcs.vcm.util.Extent}
+   * @returns {Extent}
    */
   clone() {
     return new Extent(this.getConfigObject());
   }
 
   /**
-   * @param {vcs.vcm.util.Extent} extent
+   * @param {Extent} extent
    * @returns {boolean}
    */
   equals(extent) {
@@ -108,7 +107,7 @@ class Extent {
   /**
    * validates extent options, checks for valid projection and the geometry of the given coordinates.
    * The Coordinate extent is also valid if its a point extent
-   * @param {vcs.vcm.util.Extent.Options} options
+   * @param {ExtentOptions} options
    * @returns {boolean}
    * @api
    */
@@ -117,7 +116,7 @@ class Extent {
   }
 
   /**
-   * @type {ol/Extent}
+   * @type {import("ol/extent").Extent}
    */
   static get WGS_84_EXTENT() { return [-180, -90, 180, 90]; }
 }

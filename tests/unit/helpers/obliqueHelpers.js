@@ -16,12 +16,12 @@ export const mercatorCoordinates = [1488644.796500772, 6892246.018669462, 0];
 
 /**
  * cached oblique Projection
- * @type {vcs.vcm.util.Projection}
+ * @type {Projection}
  */
 let obliqueProjection = null;
 
 /**
- * @returns {vcs.vcm.util.ViewPoint}
+ * @returns {ViewPoint}
  */
 function getStartingViewpoint() {
   return new ViewPoint({
@@ -62,8 +62,8 @@ export function getObliqueDataSet(server) {
 
 
 /**
- * @param {Array<vcs-oblique/obliqueDataSet>=} obliqueDataSets
- * @returns {vcs-oblique/getObliqueCollection}
+ * @param {Array<ObliqueDataSet>=} obliqueDataSets
+ * @returns {ObliqueCollection}
  */
 export function getObliqueCollection(obliqueDataSets) {
   const dataSets = obliqueDataSets || [getObliqueDataSet()];
@@ -75,9 +75,9 @@ export function getObliqueCollection(obliqueDataSets) {
 }
 
 /**
- * @param {vcs.vcm.maps.Oblique.Options} mapOptions
+ * @param {ObliqueOptions} mapOptions
  * @param {Object=} server optional server, if provided the map will be initialized with a terrainProvider
- * @returns {Promise<vcs.vcm.maps.Oblique>}
+ * @returns {Promise<Oblique>}
  */
 export async function getObliqueMap(mapOptions = {}, server) {
   const obliqueDataSet = getObliqueDataSet(server);
@@ -91,8 +91,8 @@ export async function getObliqueMap(mapOptions = {}, server) {
 /**
  * @param {vcs.vcm.Framework} framework
  * @param {Object=} server optional server, if provided the map will be initialized with a terrainProvider
- * @param {vcs.vcm.util.ViewPoint=} startingVP
- * @returns {Promise<vcs.vcm.maps.Oblique>}
+ * @param {ViewPoint=} startingVP
+ * @returns {Promise<Oblique>}
  */
 export async function setObliqueMap(framework, server, startingVP) {
   const map = await getObliqueMap({

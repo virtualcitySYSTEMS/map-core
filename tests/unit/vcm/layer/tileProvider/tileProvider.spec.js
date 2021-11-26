@@ -10,7 +10,7 @@ import resetFramework from '../../../helpers/resetFramework.js';
 describe('vcs.vcm.layer.tileProvider.TileProvider', () => {
   let sandbox;
 
-  /** @type {vcs.vcm.layer.tileProvider.TileProvider} */
+  /** @type {import("@vcmap/core").TileProvider} */
   let tileProvider;
 
   before(() => {

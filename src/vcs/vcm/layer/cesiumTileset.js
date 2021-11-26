@@ -15,42 +15,41 @@ import { referenceableStyleSymbol } from '../util/style/styleItem.js';
 import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
- * @typedef {vcs.vcm.layer.Layer.Options} vcs.vcm.layer.CesiumTileset.Options
+ * @typedef {LayerOptions} CesiumTilesetOptions
  * @property {number|undefined} [screenSpaceError=16] -  relates inversely to the depth over which the layer is activated
  * @property {number|undefined} [screenSpaceErrorMobile=32] -  relates inversely to the depth over which the layer is activated
  * @property {number|undefined} [maximumMemoryUsage=16] - sets the cesium maximumMemoryUsage Parameter (Is when the cached tiles exceed this value cesium starts to clear the cached tiles)
  * @property {Object|undefined} tilesetOptions
- * @property {vcs.vcm.util.style.VectorStyleItem|vcs.vcm.util.style.VectorStyleItem.Options|undefined} highlightStyle
- * @property {vcs.vcm.layer.FeatureVisibility|undefined} featureVisibility
+ * @property {import("@vcmap/core").VectorStyleItem|VectorStyleItemOptions|undefined} highlightStyle
+ * @property {import("@vcmap/core").FeatureVisibility|undefined} featureVisibility
  * @property {string|undefined} splitDirection - either 'left' or 'right', if omitted none is applied
- * @property {ol/Coordinate|undefined} offset - an offset of x, y, z. x and y in degrees longitude/latitude respectively
+ * @property {import("ol/coordinate").Coordinate|undefined} offset - an offset of x, y, z. x and y in degrees longitude/latitude respectively
  * @api
  */
 
 /**
- * @typedef {Object} vcs.vcm.layer.CesiumTileset.TilesetProperties
+ * @typedef {Object} CesiumTilesetTilesetProperties
  * @property {string|symbol} key
  * @property {*} value
  * @api
  */
 
 /**
- * @typedef {vcs.vcm.layer.FeatureLayer.ImplementationOptions} vcs.vcm.layer.CesiumTileset.ImplementationOptions
+ * @typedef {FeatureLayerImplementationOptions} CesiumTilesetImplementationOptions
  * @property {Object|undefined} tilesetOptions
- * @property {Cesium/ImagerySplitDirection} splitDirection
- * @property {Array<vcs.vcm.layer.CesiumTileset.TilesetProperties>|undefined} tilesetProperties
- * @property {Cesium/Matrix4|undefined} modelMatrix
- * @property {ol/Coordinate|undefined} offset
+ * @property {import("@vcmap/cesium").ImagerySplitDirection} splitDirection
+ * @property {Array<CesiumTilesetTilesetProperties>|undefined} tilesetProperties
+ * @property {import("@vcmap/cesium").Matrix4|undefined} modelMatrix
+ * @property {import("ol/coordinate").Coordinate|undefined} offset
  * @api
  */
 
 /**
  * represents a specific Building layer for cesium.
  * @class
- * @extends {vcs.vcm.layer.FeatureLayer}
- * @implements {vcs.vcm.layer.SplitLayer}
+ * @extends {FeatureLayer}
+ * @implements {SplitLayer}
  * @api stable
- * @memberOf vcs.vcm.layer
  * @export
  */
 class CesiumTileset extends FeatureLayer {
@@ -58,7 +57,7 @@ class CesiumTileset extends FeatureLayer {
   static get className() { return 'vcs.vcm.layer.CesiumTileset'; }
 
   /**
-   * @returns {vcs.vcm.layer.CesiumTileset.Options}
+   * @returns {CesiumTilesetOptions}
    */
   static getDefaultOptions() {
     return {
@@ -74,7 +73,7 @@ class CesiumTileset extends FeatureLayer {
   }
 
   /**
-   * @param {vcs.vcm.layer.CesiumTileset.Options} options
+   * @param {CesiumTilesetOptions} options
    */
   constructor(options) {
     super(options);
@@ -86,12 +85,12 @@ class CesiumTileset extends FeatureLayer {
       this.url = `${this.url.replace(/\/$/, '')}/tileset.json`;
     }
 
-    /** @type {vcs.vcm.util.style.VectorStyleItem} */
+    /** @type {VectorStyleItem} */
     this.highlightStyle = null;
     if (options.highlightStyle) {
       this.highlightStyle = options.highlightStyle instanceof VectorStyleItem ?
         options.highlightStyle :
-        new VectorStyleItem(/** @type {vcs.vcm.util.style.VectorStyleItem.Options} */ (options.highlightStyle));
+        new VectorStyleItem(/** @type {VectorStyleItemOptions} */ (options.highlightStyle));
     }
     /** @type {number} */
     this.screenSpaceError = parseInteger(options.screenSpaceError, defaultOptions.screenSpaceError);
@@ -112,7 +111,7 @@ class CesiumTileset extends FeatureLayer {
       ...tilesetOptions,
     };
 
-    /** @type {Cesium/ImagerySplitDirection} */
+    /** @type {import("@vcmap/cesium").ImagerySplitDirection} */
     this._splitDirection = ImagerySplitDirection.NONE;
 
     if (options.splitDirection) {
@@ -123,19 +122,19 @@ class CesiumTileset extends FeatureLayer {
 
     /**
      * raised if the split direction changes, is passed the split direction as its only argument
-     * @type {vcs.vcm.event.VcsEvent<Cesium/ImagerySplitDirection>}
+     * @type {VcsEvent<import("@vcmap/cesium").ImagerySplitDirection>}
      * @api
      */
     this.splitDirectionChanged = new VcsEvent();
 
     /**
-     * @type {Cesium/Matrix4|undefined}
+     * @type {import("@vcmap/cesium").Matrix4|undefined}
      * @private
      */
     this._modelMatrix = undefined;
 
     /**
-     * @type {ol/Coordinate|undefined}
+     * @type {import("ol/coordinate").Coordinate|undefined}
      * @private
      */
     this._offset = options.offset || defaultOptions.offset;
@@ -145,21 +144,21 @@ class CesiumTileset extends FeatureLayer {
    * A model matrix to apply to each cesium3DTileset created from this layer.
    * This will overwrite any modelMatrix calculated by the offset property.
    * @api
-   * @returns {Cesium/Matrix4|undefined}
+   * @returns {import("@vcmap/cesium").Matrix4|undefined}
    */
   get modelMatrix() {
     return this._modelMatrix;
   }
 
   /**
-   * @param {Cesium/Matrix4|undefined} modelMatrix
+   * @param {import("@vcmap/cesium").Matrix4|undefined} modelMatrix
    */
   set modelMatrix(modelMatrix) {
     checkMaybe(modelMatrix, Matrix4);
 
     this._modelMatrix = modelMatrix;
     this.getImplementations()
-      .forEach(/** @param {vcs.vcm.layer.cesium.CesiumTilesetCesium} impl */ (impl) => {
+      .forEach(/** @param {CesiumTilesetCesium} impl */ (impl) => {
         impl.updateModelMatrix(modelMatrix);
       });
   }
@@ -169,38 +168,38 @@ class CesiumTileset extends FeatureLayer {
    * If a modelMatrix is defined on this layer, setting an offset will not take effect until you
    * set the modelMatrix to undefined.
    * @api
-   * @type {ol/Coordinate|undefined}
+   * @type {import("ol/coordinate").Coordinate|undefined}
    */
   get offset() {
     return this._offset;
   }
 
   /**
-   * @param {ol/Coordinate|undefined} offset
+   * @param {import("ol/coordinate").Coordinate|undefined} offset
    */
   set offset(offset) {
     checkMaybe(offset, [Number]);
 
     this._offset = offset;
     this.getImplementations()
-      .forEach(/** @param {vcs.vcm.layer.cesium.CesiumTilesetCesium} impl */ (impl) => {
+      .forEach(/** @param {CesiumTilesetCesium} impl */ (impl) => {
         impl.updateOffset(offset);
       });
   }
 
   /**
    * @api
-   * @type {Cesium/ImagerySplitDirection}
+   * @type {import("@vcmap/cesium").ImagerySplitDirection}
    */
   get splitDirection() { return this._splitDirection; }
 
   /**
-   * @param {Cesium/ImagerySplitDirection} direction
+   * @param {import("@vcmap/cesium").ImagerySplitDirection} direction
    */
   set splitDirection(direction) {
     if (direction !== this._splitDirection) {
       this.getImplementations().forEach((impl) => {
-        /** @type {vcs.vcm.layer.cesium.CesiumTilesetCesium} */ (impl).updateSplitDirection(direction);
+        /** @type {CesiumTilesetCesium} */ (impl).updateSplitDirection(direction);
       });
       this._splitDirection = direction;
       this.splitDirectionChanged.raiseEvent(this._splitDirection);
@@ -209,7 +208,7 @@ class CesiumTileset extends FeatureLayer {
 
   /**
    * @inheritDoc
-   * @returns {vcs.vcm.layer.CesiumTileset.ImplementationOptions}
+   * @returns {CesiumTilesetImplementationOptions}
    */
   getImplementationOptions() {
     return {
@@ -223,8 +222,8 @@ class CesiumTileset extends FeatureLayer {
 
   /**
    * @inheritDoc
-   * @param {vcs.vcm.maps.VcsMap} map
-   * @returns {Array<vcs.vcm.layer.cesium.CesiumTilesetCesium>}
+   * @param {import("@vcmap/core").VcsMap} map
+   * @returns {Array<CesiumTilesetCesium>}
    */
   createImplementationsForMap(map) {
     if (map instanceof CesiumMap) {
@@ -235,7 +234,7 @@ class CesiumTileset extends FeatureLayer {
 
   /**
    * @inheritDoc
-   * @param {Cesium/Cesium3DTileFeature|Cesium/Cesium3DTilePointFeature} object
+   * @param {import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature} object
    * @returns {?Object}
    */
   objectClickedHandler(object) {
@@ -254,7 +253,7 @@ class CesiumTileset extends FeatureLayer {
   /**
    * Returns the configured Extent of this layer or tries to calculate the extent based on tileset.
    * Returns null of no extent was configured and the layers tileset is not yet loaded or ready.
-   * @returns {vcs.vcm.util.Extent|null}
+   * @returns {Extent|null}
    * @api
    */
   getZoomToExtent() {
@@ -262,7 +261,7 @@ class CesiumTileset extends FeatureLayer {
     if (metaExtent) {
       return metaExtent;
     }
-    const impl = /** @type {vcs.vcm.layer.cesium.CesiumTilesetCesium} */ (this.getImplementations()[0]);
+    const impl = /** @type {CesiumTilesetCesium} */ (this.getImplementations()[0]);
     if (impl) {
       const threeDimExtent = getExtentFromTileset(impl.cesium3DTileset);
 
@@ -300,7 +299,7 @@ class CesiumTileset extends FeatureLayer {
    */
   setMaximumScreenSpaceError(value) {
     this.getImplementations()
-      .forEach(/** @param {vcs.vcm.layer.cesium.CesiumTilesetCesium} impl */(impl) => {
+      .forEach(/** @param {CesiumTilesetCesium} impl */(impl) => {
         if (impl.cesium3DTileset) {
           impl.cesium3DTileset.maximumScreenSpaceError = value;
         }
@@ -308,10 +307,10 @@ class CesiumTileset extends FeatureLayer {
   }
 
   /**
-   * @returns {vcs.vcm.layer.CesiumTileset.Options}
+   * @returns {CesiumTilesetOptions}
    */
   getConfigObject() {
-    /** @type {vcs.vcm.layer.CesiumTileset.Options} */
+    /** @type {CesiumTilesetOptions} */
     const config = super.getConfigObject();
     const defaultOptions = CesiumTileset.getDefaultOptions();
     if (this.highlightStyle) {

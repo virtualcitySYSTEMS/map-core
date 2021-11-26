@@ -8,7 +8,7 @@ import WMTSCesium from './cesium/wmtsCesium.js';
 import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
- * @typedef {vcs.vcm.layer.RasterLayer.Options} vcs.vcm.layer.WMTS.Options
+ * @typedef {RasterLayerOptions} WMTSOptions
  * @property {string} layer
  * @property {string|undefined} style
  * @property {string|undefined} format
@@ -18,17 +18,17 @@ import { VcsClassRegistry } from '../classRegistry.js';
  * @property {number} [numberOfLevelZeroTilesX=1]
  * @property {number} [numberOfLevelZeroTilesY=1]
  * @property {Object|undefined} openlayersOptions
- * @property {ol/Size} [tileSize=[256,256]]
+ * @property {import("ol/size").Size} [tileSize=[256,256]]
  * @api
  */
 
 /**
- * @typedef {vcs.vcm.layer.RasterLayer.ImplementationOptions} vcs.vcm.layer.WMTS.ImplementationOptions
+ * @typedef {RasterLayerImplementationOptions} WMTSImplementationOptions
  * @property {string} layer
  * @property {string} style
  * @property {string} format
  * @property {string} tileMatrixSetID
- * @property {ol/Size} tileSize
+ * @property {import("ol/size").Size} tileSize
  * @property {number} numberOfLevelZeroTilesX
  * @property {number} numberOfLevelZeroTilesY
  * @property {Array<string>} matrixIds
@@ -61,15 +61,14 @@ function getMatrixIds(matrixIds, maxLevel, prefix) {
  * WMTS layer
  * @class
  * @export
- * @extends {vcs.vcm.layer.RasterLayer}
+ * @extends {RasterLayer}
  * @api stable
- * @memberOf vcs.vcm.layer
  */
 class WMTS extends RasterLayer {
   static get className() { return 'vcs.vcm.layer.WMTS'; }
 
   /**
-   * @returns {vcs.vcm.layer.WMTS.Options}
+   * @returns {WMTSOptions}
    */
   static getDefaultOptions() {
     return {
@@ -84,12 +83,12 @@ class WMTS extends RasterLayer {
       tileMatrixSetID: '',
       openlayersOptions: {},
       matrixIds: [],
-      tileSize: /** @type {ol.Size} */ ([256, 256]),
+      tileSize: /** @type {import("ol/size").Size} */ ([256, 256]),
     };
   }
 
   /**
-   * @param {vcs.vcm.layer.WMTS.Options} options
+   * @param {WMTSOptions} options
    */
   constructor(options) {
     const defaultOptions = WMTS.getDefaultOptions();
@@ -134,13 +133,13 @@ class WMTS extends RasterLayer {
     /** @type {Array.<string> | null} */
     this.matrixIds = Array.isArray(options.matrixIds) ? options.matrixIds : defaultOptions.matrixIds;
 
-    /** @type {ol/Size} */
+    /** @type {import("ol/size").Size} */
     this.tileSize = options.tileSize || defaultOptions.tileSize;
   }
 
   /**
    * @inheritDoc
-   * @returns {vcs.vcm.layer.WMTS.ImplementationOptions}
+   * @returns {WMTSImplementationOptions}
    */
   getImplementationOptions() {
     return {
@@ -159,8 +158,8 @@ class WMTS extends RasterLayer {
 
   /**
    * @inheritDoc
-   * @param {vcs.vcm.maps.VcsMap} map
-   * @returns {Array<vcs.vcm.layer.openlayers.WMTSOpenlayers|vcs.vcm.layer.cesium.WMTSCesium>}
+   * @param {import("@vcmap/core").VcsMap} map
+   * @returns {Array<WMTSOpenlayers|WMTSCesium>}
    */
   createImplementationsForMap(map) {
     if (map instanceof Openlayers) {
@@ -175,10 +174,10 @@ class WMTS extends RasterLayer {
 
   /**
    * @inheritDoc
-   * @returns {vcs.vcm.layer.WMTS.Options}
+   * @returns {WMTSOptions}
    */
   getConfigObject() {
-    const config = /** @type {vcs.vcm.layer.WMTS.Options} */ (super.getConfigObject());
+    const config = /** @type {WMTSOptions} */ (super.getConfigObject());
     const defaultOptions = WMTS.getDefaultOptions();
 
     if (this.tilingSchema !== defaultOptions.tilingSchema) {
@@ -224,7 +223,7 @@ class WMTS extends RasterLayer {
     }
 
     if (this.tileSize[0] !== defaultOptions.tileSize[0] || this.tileSize[1] !== defaultOptions.tileSize[1]) {
-      config.tileSize = /** @type {ol/Size} */ (this.tileSize.slice());
+      config.tileSize = /** @type {import("ol/size").Size} */ (this.tileSize.slice());
     }
 
     return config;

@@ -9,7 +9,7 @@ import { styleCollection } from '../../../../src/vcs/vcm/globalCollections.js';
 
 describe('vcs.vcm.layer.FeatureLayer', () => {
   let sandbox;
-  /** @type {vcs.vcm.layer.FeatureLayer} */
+  /** @type {import("@vcmap/core").FeatureLayer} */
   let featureLayer;
 
   before(() => {

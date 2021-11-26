@@ -7,7 +7,7 @@ import { EventType } from '../../../../src/vcs/vcm/interaction/interactionType.j
 describe('vcs.vcm.interaction.EventHandler', () => {
   let sinonBox;
   let windowPosition;
-  /** @type {vcs.vcm.interaction.EventHandler} */
+  /** @type {import("@vcmap/core").EventHandler} */
   let EH;
 
   before(() => {

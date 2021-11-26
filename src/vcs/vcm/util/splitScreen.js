@@ -15,11 +15,10 @@ import Openlayers from '../maps/openlayers.js';
 /**
  * @class
  * @api
- * @memberOf vcs.vcm.util
  */
 class SplitScreen {
   /**
-   * @param {vcs.vcm.util.clipping.ClippingObjectManager} clippingObjectManager
+   * @param {import("@vcmap/core").ClippingObjectManager} clippingObjectManager
    */
   constructor(clippingObjectManager) {
     /**
@@ -28,11 +27,11 @@ class SplitScreen {
      */
     this._position = 0.5;
     /**
-     * @type {Cesium/Scene|null}
+     * @type {import("@vcmap/cesium").Scene|null}
      */
     this.scene = null;
     /**
-     * @type {ol/Map|null}
+     * @type {import("ol/Map").default|null}
      */
     this.olMap = null;
     /**
@@ -41,11 +40,11 @@ class SplitScreen {
      */
     this.initialized = false;
     /**
-     * @type {vcs.vcm.util.clipping.ClippingObject}
+     * @type {ClippingObject}
      */
     this.leftScreenClippingObject = new ClippingObject();
     /**
-     * @type {vcs.vcm.util.clipping.ClippingObject}
+     * @type {ClippingObject}
      */
     this.rightScreenClippingObject = new ClippingObject();
     /**
@@ -69,7 +68,7 @@ class SplitScreen {
     ];
 
     /**
-     * @type {vcs.vcm.util.clipping.ClippingObjectManager}
+     * @type {import("@vcmap/core").ClippingObjectManager}
      * @private
      */
     this._clippingObjectManager = clippingObjectManager;
@@ -130,7 +129,7 @@ class SplitScreen {
   }
 
   /**
-   * @param {vcs.vcm.maps.VcsMap} map
+   * @param {import("@vcmap/core").VcsMap} map
    */
   mapActivated(map) {
     if (map instanceof CesiumMap) {
@@ -146,12 +145,12 @@ class SplitScreen {
 
   /**
    * calculate a clipping plane from the current swipe position for the given Cesium3DTileset
-   * @returns {Cesium/ClippingPlane}
+   * @returns {import("@vcmap/cesium").ClippingPlane}
    * @private
    */
   _calcClippingPlane() {
     const { camera } = this.scene;
-    const { fov, near } = /** @type {Cesium/PerspectiveFrustum} */ (camera.frustum);
+    const { fov, near } = /** @type {import("@vcmap/cesium").PerspectiveFrustum} */ (camera.frustum);
     const screenWidth = this.scene.canvas.width || 1;
     const screenHeight = this.scene.canvas.height || 1;
     let pixelSize;
@@ -195,8 +194,8 @@ class SplitScreen {
 
   /**
    * Gets the clipping object for a split direction
-   * @param {Cesium/ImagerySplitDirection} splitDirection
-   * @returns {vcs.vcm.util.clipping.ClippingObject|null}
+   * @param {import("@vcmap/cesium").ImagerySplitDirection} splitDirection
+   * @returns {ClippingObject|null}
    * @api
    */
   getClippingObjectForDirection(splitDirection) {

@@ -4,18 +4,17 @@ import { wgs84Projection } from '../../util/projection.js';
 import { TilingScheme } from '../rasterLayer.js';
 
 /**
- * TMS implementation for {@link vcs.vcm.maps.CesiumMap}.
+ * TMS implementation for {@link CesiumMap}.
  * @class
  * @export
- * @extends {vcs.vcm.layer.cesium.RasterLayerCesium}
- * @memberOf vcs.vcm.layer.cesium
+ * @extends {RasterLayerCesium}
  */
 class TMSCesium extends RasterLayerCesium {
   static get className() { return 'vcs.vcm.layer.cesium.TMSCesium'; }
 
   /**
-   * @param {vcs.vcm.maps.CesiumMap} map
-   * @param {vcs.vcm.layer.TMS.ImplementationOptions} options
+   * @param {import("@vcmap/core").CesiumMap} map
+   * @param {TMSImplementationOptions} options
    */
   constructor(map, options) {
     super(map, options);
@@ -24,7 +23,7 @@ class TMSCesium extends RasterLayerCesium {
   }
 
   /**
-   * @returns {Cesium/ImageryLayer}
+   * @returns {import("@vcmap/cesium").ImageryLayer}
    */
   getCesiumLayer() {
     const options = {

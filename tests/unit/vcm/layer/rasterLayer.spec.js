@@ -33,7 +33,7 @@ describe('vcs.vcm.layer.RasterLayer.calculateMinLevel', () => {
 
 describe('vcs.vcm.layer.RasterLayer', () => {
   let sandbox;
-  /** @type {vcs.vcm.layer.RasterLayer} */
+  /** @type {import("@vcmap/core").RasterLayer} */
   let ARL;
 
   before(() => {

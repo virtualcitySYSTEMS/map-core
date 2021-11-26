@@ -5,20 +5,19 @@ import VcsEvent from '../event/vcsEvent.js';
 
 /**
  * A collection of layers. Manages rendering order and layer exclusivity. Emits state changes for convenience. Passed to
- * {@link vcs.vcm.maps.Map} for layers available to said map. Layers must have unique names.
+ * {@link Map} for layers available to said map. Layers must have unique names.
  * @class
  * @export
- * @memberOf vcs.vcm.util
  * @api
- * @extends {vcs.vcm.util.IndexedCollection<vcs.vcm.layer.Layer>}
+ * @extends {IndexedCollection<import("@vcmap/core").Layer>}}
  */
 // ignored do to static issues, see https://github.com/microsoft/TypeScript/issues/4628
 // @ts-ignore
 class LayerCollection extends IndexedCollection {
   /**
    * Creates a LayerCollection from an iterable of layers, such as an Array.
-   * @param {Iterable<vcs.vcm.layer.Layer>} iterable
-   * @returns {vcs.vcm.util.LayerCollection}
+   * @param {Iterable<import("@vcmap/core").Layer>} iterable
+   * @returns {LayerCollection}
    * @override
    * @api
    */
@@ -55,21 +54,21 @@ class LayerCollection extends IndexedCollection {
 
     /**
      * Event raised, when a layer of this collection changes its state. Passed the layer.
-     * @type {vcs.vcm.event.VcsEvent<vcs.vcm.layer.Layer>}
+     * @type {VcsEvent<import("@vcmap/core").Layer>}
      * @api
      */
     this.stateChanged = new VcsEvent();
 
     /**
      * The exclusive manager for this collection. Layers within this collection are automatically added and tracked.
-     * @type {vcs.vcm.util.ExclusiveManager}
+     * @type {ExclusiveManager}
      * @api
      */
     this.exclusiveManager = new ExclusiveManager();
   }
 
   /**
-   * @param {vcs.vcm.layer.Layer} layer
+   * @param {import("@vcmap/core").Layer} layer
    * @private
    */
   _listenToLayerEvents(layer) {
@@ -89,8 +88,8 @@ class LayerCollection extends IndexedCollection {
     });
 
     const listeners = [stateListener, zIndexListener, exclusiveGroupsListener];
-    if (/** @type {vcs.vcm.layer.SplitLayer} */ (layer).splitDirectionChanged) {
-      listeners.push(/** @type {vcs.vcm.layer.SplitLayer} */ (layer).splitDirectionChanged.addEventListener(() => {
+    if (/** @type {SplitLayer} */ (layer).splitDirectionChanged) {
+      listeners.push(/** @type {SplitLayer} */ (layer).splitDirectionChanged.addEventListener(() => {
         this.exclusiveManager.handleSplitDirectionChanged(layer);
       }));
     }
@@ -111,7 +110,7 @@ class LayerCollection extends IndexedCollection {
   /**
    * This is callback for a layers zIndex changed. It reevaluates the array given the new zIndex
    * an moves the specified layer to its new location determined by findeZIndexPosition or the end of the array failing that.
-   * @param {vcs.vcm.layer.Layer} layer
+   * @param {import("@vcmap/core").Layer} layer
    * @private
    */
   _zIndexChanged(layer) {
@@ -133,7 +132,7 @@ class LayerCollection extends IndexedCollection {
    * Ensures the local z index is consisten with the neighbours of a given layer.
    * e.g. the layer on elower must have a lower or equal zIndex
    * and the one higher a higher or equal zIndex.
-   * @param {vcs.vcm.layer.Layer} layer
+   * @param {import("@vcmap/core").Layer} layer
    * @private
    */
   _ensureLocalZIndex(layer) {
@@ -155,7 +154,7 @@ class LayerCollection extends IndexedCollection {
 
   /**
    * Adds a layer to the collection. Can optionally be passed an index at which to insert the layer.
-   * @param {vcs.vcm.layer.Layer} layer
+   * @param {import("@vcmap/core").Layer} layer
    * @param {number=} index
    * @returns {number|null} returns the layer index or null, if the layers name is not unique
    * @api
@@ -177,7 +176,7 @@ class LayerCollection extends IndexedCollection {
 
   /**
    * Removes a layer from the collection.
-   * @param {vcs.vcm.layer.Layer} layer
+   * @param {import("@vcmap/core").Layer} layer
    * @api
    */
   remove(layer) {

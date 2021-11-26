@@ -1,14 +1,13 @@
 /**
- * Tracks layer exclusivity, added to every {@link vcs.vcm.util.LayerCollection}.
+ * Tracks layer exclusivity, added to every {@link LayerCollection}.
  * @class
- * @memberOf vcs.vcm.util
  * @api
  */
 class ExclusiveManager {
   constructor() {
     /**
      * The layers managed by this manager. The key is the group.
-     * @type {Map<(string|symbol), Set<vcs.vcm.layer.Layer>>}
+     * @type {Map<(string|symbol), Set<import("@vcmap/core").Layer>>}
      * @api
      */
     this.layers = new Map();
@@ -17,7 +16,7 @@ class ExclusiveManager {
   /**
    * registers a Layer as Exclusive, the activation of a layer triggers the deactivation of all other exclusive Layers.
    * The layer collection adds exclusive layers to the manager on adding the layer to the collection.
-   * @param {vcs.vcm.layer.Layer} layer - layer to register
+   * @param {import("@vcmap/core").Layer} layer - layer to register
    * @api
    */
   registerLayer(layer) {
@@ -39,7 +38,7 @@ class ExclusiveManager {
 
   /**
    * Removes a layer from tracking. Layer collections remove the layer once they are removed from them.
-   * @param {vcs.vcm.layer.Layer} layer - layer to unregister
+   * @param {import("@vcmap/core").Layer} layer - layer to unregister
    * @api
    */
   unregisterLayer(layer) {
@@ -52,7 +51,7 @@ class ExclusiveManager {
   }
 
   /**
-   * @param {vcs.vcm.layer.Layer} layer
+   * @param {import("@vcmap/core").Layer} layer
    */
   handleSplitDirectionChanged(layer) {
     if (layer.active) {
@@ -62,20 +61,20 @@ class ExclusiveManager {
 
   /**
    * handles the changing of a layer
-   * @param {vcs.vcm.layer.Layer} layer
+   * @param {import("@vcmap/core").Layer} layer
    */
   handleLayerActivated(layer) {
     const { exclusiveGroups } = layer;
     if (exclusiveGroups.length > 0) {
-      const splitDirection = /** @type {vcs.vcm.layer.SplitLayer} */ (layer).splitDirection || 0;
+      const splitDirection = /** @type {SplitLayer} */ (layer).splitDirection || 0;
       exclusiveGroups.forEach((group) => {
         if (this.layers.has(group)) {
           this.layers.get(group).forEach((groupLayer) => {
             if (
               groupLayer !== layer && !(
                 splitDirection &&
-                /** @type {vcs.vcm.layer.SplitLayer} */ (groupLayer).splitDirection &&
-                /** @type {vcs.vcm.layer.SplitLayer} */ (groupLayer).splitDirection !== splitDirection
+                /** @type {SplitLayer} */ (groupLayer).splitDirection &&
+                /** @type {SplitLayer} */ (groupLayer).splitDirection !== splitDirection
               )
             ) {
               groupLayer.deactivate();
@@ -87,7 +86,7 @@ class ExclusiveManager {
   }
 
   /**
-   * @param {vcs.vcm.layer.Layer} layer
+   * @param {import("@vcmap/core").Layer} layer
    */
   handleExclusiveGroupsChanged(layer) {
     [...this.layers.values()].forEach((set) => {
@@ -99,7 +98,7 @@ class ExclusiveManager {
   /**
    * Gets all layers in the given group
    * @param {string} group
-   * @returns {Array<vcs.vcm.layer.Layer>}
+   * @returns {Array<import("@vcmap/core").Layer>}
    * @api
    */
   getActiveLayersForGroup(group) {

@@ -21,8 +21,8 @@ export const fvLastUpdated = Symbol('FVlastUpdated');
 export const globalHiderLastUpdated = Symbol('GlobalHiderLastUpdated');
 
 /**
- * @param {vcs.vcm.layer.FeatureVisibility} featureVisibility
- * @param {ol/source/Vector} source
+ * @param {import("@vcmap/core").FeatureVisibility} featureVisibility
+ * @param {import("ol/source").Vector<import("ol/geom/Geometry").default>} source
  */
 export function updateFeatureVisibility(featureVisibility, source) {
   Object.keys(featureVisibility.highlightedObjects)
@@ -44,8 +44,8 @@ export function updateFeatureVisibility(featureVisibility, source) {
 }
 
 /**
- * @param {vcs.vcm.layer.GlobalHider} globalHider
- * @param {ol/source/Vector} source
+ * @param {import("@vcmap/core").GlobalHider} globalHider
+ * @param {import("ol/source").Vector<import("ol/geom/Geometry").default>} source
  */
 export function updateGlobalHider(globalHider, source) {
   Object.keys(globalHider.hiddenObjects)
@@ -59,9 +59,9 @@ export function updateGlobalHider(globalHider, source) {
 }
 
 /**
- * @param {vcs.vcm.layer.FeatureVisibility} featureVisibility
- * @param {ol/source/Vector} source
- * @param {vcs.vcm.layer.GlobalHider} globalHider
+ * @param {import("@vcmap/core").FeatureVisibility} featureVisibility
+ * @param {import("ol/source").Vector<import("ol/geom/Geometry").default>} source
+ * @param {import("@vcmap/core").GlobalHider} globalHider
  * @returns {Array<Function>}
  */
 export function synchronizeFeatureVisibilityWithSource(featureVisibility, source, globalHider) {
@@ -127,9 +127,9 @@ export function synchronizeFeatureVisibilityWithSource(featureVisibility, source
 }
 
 /**
- * @param {vcs.vcm.layer.Vector.ClickedObject} object
- * @param {vcs.vcm.layer.Vector|vcs.vcm.layer.VectorTile} layer
- * @returns {?vcs.vcm.layer.GenericFeature}
+ * @param {VectorClickedObject} object
+ * @param {import("@vcmap/core").Vector|import("@vcmap/core").VectorTile} layer
+ * @returns {?GenericFeature}
  */
 export function getGenericFeatureFromClickedObject(object, layer) {
   if (!(object instanceof Feature)) {

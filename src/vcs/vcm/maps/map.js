@@ -8,25 +8,25 @@ import VcsEvent from '../event/vcsEvent.js';
 import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
- * @namespace vcs.vcm.maps
+ * @namespace maps
  * @api stable
  */
 
 /**
- * @typedef {vcs.vcm.VcsObject.Options} vcs.vcm.maps.VcsMap.Options
+ * @typedef {VcsObjectOptions} VcsMapOptions
  * @property {string|undefined} fallbackMap - the name of the fallback map to use, e.g. in case there is no oblique image at the activation viewpoint
- * @property {vcs.vcm.util.LayerCollection|undefined} layerCollection - layerCollection to use, if not provided an empty Collection will be created.
+ * @property {import("@vcmap/core").LayerCollection|undefined} layerCollection - layerCollection to use, if not provided an empty Collection will be created.
  * @property {string|HTMLElement|undefined} target - the HTMLElement to render the map into
  * @api
  */
 
 /**
- * @typedef {Object} vcs.vcm.maps.ClickPosition
+ * @typedef {Object} ClickPosition
  * @property {number} latitude
  * @property {number} longitude
  * @property {number|undefined} height
  * @property {number|undefined} groundLevel
- * @property {vcs.vcm.maps.Oblique.ClickParameters|undefined} obliqueParameters
+ * @property {ObliqueClickParameters|undefined} obliqueParameters
  * @property {boolean|undefined} exactPosition
  * @api stable
  */
@@ -40,9 +40,8 @@ const specificLayerImpl = {};
  * Map Base Class, each different map is derived from this abstract base class.
  * @abstract
  * @class
- * @extends {vcs.vcm.VcsObject}
+ * @extends {VcsObject}
  * @api stable
- * @memberOf vcs.vcm.maps
  */
 class VcsMap extends VcsObject {
   static get className() { return 'vcs.vcm.maps.VcsMap'; }
@@ -50,7 +49,7 @@ class VcsMap extends VcsObject {
   static get specificLayerImpl() { return specificLayerImpl; }
 
   /**
-   * @returns {vcs.vcm.maps.VcsMap.Options}
+   * @returns {VcsMapOptions}
    */
   static getDefaultOptions() {
     return {
@@ -59,7 +58,7 @@ class VcsMap extends VcsObject {
   }
 
   /**
-   * @param {vcs.vcm.maps.VcsMap.Options} options
+   * @param {VcsMapOptions} options
    */
   constructor(options) {
     super(options);
@@ -84,8 +83,8 @@ class VcsMap extends VcsObject {
 
     /**
      * The layer collection of this map. LayerCollections can be shared among maps.
-     * When adding the map to a {@link vcs.vcm.util.MapCollection}, the layer collection of the {@link vcs.vcm.util.MapCollection} will be set.
-     * @type {vcs.vcm.util.LayerCollection}
+     * When adding the map to a {@link MapCollection}, the layer collection of the {@link MapCollection} will be set.
+     * @type {LayerCollection}
      * @private
      */
     this._layerCollection = options.layerCollection || new LayerCollection();
@@ -132,32 +131,32 @@ class VcsMap extends VcsObject {
     this.fallbackMap = options.fallbackMap || null;
 
     /**
-     * @type {Map<string, Set<Cesium/CustomDataSource|Cesium/CzmlDataSource|Cesium/PrimitiveCollection|Cesium/Cesium3DTileset|Cesium/ImageryLayer|ol/layer/Layer>>}
+     * @type {Map<string, Set<import("@vcmap/cesium").CustomDataSource|import("@vcmap/cesium").CzmlDataSource|import("@vcmap/cesium").PrimitiveCollection|import("@vcmap/cesium").Cesium3DTileset|import("@vcmap/cesium").ImageryLayer|import("ol/layer/Layer").default<import("ol/source").Source>>>}
      * @private
      */
     this._visualizations = new Map();
 
     /**
-     * @type {vcs.vcm.maps.MapState}
+     * @type {MapState}
      * @private
      */
     this._state = MapState.INACTIVE;
 
     /**
-     * Event raised when the maps state changes. Is passed the {@link vcs.vcm.maps.MapState} as its only argument.
-     * @type {vcs.vcm.event.VcsEvent<vcs.vcm.maps.MapState>}
+     * Event raised when the maps state changes. Is passed the {@link MapState} as its only argument.
+     * @type {VcsEvent<MapState>}
      * @api
      */
     this.stateChanged = new VcsEvent();
     /**
-     * Event raised then the map has a pointer interaction. Raises {@link vcs.vcm.interaction.MapEvent}.
-     * @type {vcs.vcm.event.VcsEvent<vcs.vcm.interaction.MapEvent>}
+     * Event raised then the map has a pointer interaction. Raises {@link MapEvent}.
+     * @type {VcsEvent<MapEvent>}
      * @api
      */
     this.pointerInteractionEvent = new VcsEvent();
     /**
      * If present, the split screen to use on this map. Is set by the mapCollection
-     * @type {vcs.vcm.util.SplitScreen|null}
+     * @type {import("@vcmap/core").SplitScreen|null}
      * @api
      */
     this.splitScreen = null;
@@ -195,9 +194,9 @@ class VcsMap extends VcsObject {
 
   /**
    * The layer collection of this map. LayerCollections can be shared among maps.
-   * When adding the map to a {@link vcs.vcm.util.MapCollection}, the layer collection of the {@link vcs.vcm.util.MapCollection} will be set.
+   * When adding the map to a {@link MapCollection}, the layer collection of the {@link MapCollection} will be set.
    * When setting the layer colleciton, the destroyLayerCollection flag is automatically set to false.
-   * @type {vcs.vcm.util.LayerCollection}
+   * @type {LayerCollection}
    * @api
    */
   get layerCollection() {
@@ -205,7 +204,7 @@ class VcsMap extends VcsObject {
   }
 
   /**
-   * @param {vcs.vcm.util.LayerCollection} layerCollection
+   * @param {LayerCollection} layerCollection
    */
   set layerCollection(layerCollection) {
     check(layerCollection, LayerCollection);
@@ -225,8 +224,8 @@ class VcsMap extends VcsObject {
   }
 
   /**
-   * Determines whether this map can show this viewpoint. Returns true in any other map then {@link vcs.vcm.maps.Oblique}
-   * @param {vcs.vcm.util.ViewPoint} viewpoint
+   * Determines whether this map can show this viewpoint. Returns true in any other map then {@link Oblique}
+   * @param {import("@vcmap/core").ViewPoint} viewpoint
    * @returns {Promise<boolean>}
    * @api
    */
@@ -261,14 +260,14 @@ class VcsMap extends VcsObject {
 
   /**
    * is called if a layer changes its position in the layerCollection.
-   * @param {vcs.vcm.layer.Layer} layer
+   * @param {import("@vcmap/core").Layer} layer
    */
   // eslint-disable-next-line no-unused-vars,class-methods-use-this
   indexChanged(layer) {}
 
   /**
    * is called if a layer is added to the layerCollection.
-   * @param {vcs.vcm.layer.Layer} layer
+   * @param {import("@vcmap/core").Layer} layer
    * @private
    */
   _layerAdded(layer) {
@@ -279,7 +278,7 @@ class VcsMap extends VcsObject {
 
   /**
    * is called if a layer is added to the layerCollection.
-   * @param {vcs.vcm.layer.Layer} layer
+   * @param {import("@vcmap/core").Layer} layer
    * @private
    */
   _layerRemoved(layer) {
@@ -289,7 +288,7 @@ class VcsMap extends VcsObject {
   /**
    * Validates a visualization. A visualization must have the vcsLayeName symbol set and a layer with said name must be
    * part of the maps layerCollection.
-   * @param {Cesium/CustomDataSource|Cesium/PrimitiveCollection|Cesium/Cesium3DTileset|Cesium/ImageryLayer|ol/layer/Layer} item
+   * @param {import("@vcmap/cesium").CustomDataSource|import("@vcmap/cesium").PrimitiveCollection|import("@vcmap/cesium").Cesium3DTileset|import("@vcmap/cesium").ImageryLayer|import("ol/layer/Layer").default<import("ol/source").Source>} item
    * @returns {boolean}
    */
   validateVisualization(item) {
@@ -304,7 +303,7 @@ class VcsMap extends VcsObject {
 
   /**
    * Adds a visualization to the visualizations map for its layer. The visualization must be valid, use validateVisualization first
-   * @param {Cesium/CustomDataSource|Cesium/PrimitiveCollection|Cesium/Cesium3DTileset|Cesium/ImageryLayer|ol/layer/Layer} item
+   * @param {import("@vcmap/cesium").CustomDataSource|import("@vcmap/cesium").PrimitiveCollection|import("@vcmap/cesium").Cesium3DTileset|import("@vcmap/cesium").ImageryLayer|import("ol/layer/Layer").default<import("ol/source").Source>} item
    */
   addVisualization(item) {
     if (!this.validateVisualization(item)) {
@@ -319,7 +318,7 @@ class VcsMap extends VcsObject {
 
   /**
    * Removes a visualization
-   * @param {Cesium/PrimitiveCollection|Cesium/Cesium3DTileset|Cesium/ImageryLayer|ol/layer/Layer|Cesium/CustomDataSource} item
+   * @param {import("@vcmap/cesium").PrimitiveCollection|import("@vcmap/cesium").Cesium3DTileset|import("@vcmap/cesium").ImageryLayer|import("ol/layer/Layer").default<import("ol/source").Source>|import("@vcmap/cesium").CustomDataSource} item
    */
   removeVisualization(item) {
     const layerName = item[vcsLayerName];
@@ -334,8 +333,8 @@ class VcsMap extends VcsObject {
 
   /**
    * Gets the visualizations for a specific layer.
-   * @param {vcs.vcm.layer.Layer} layer
-   * @returns {Set<Cesium/PrimitiveCollection|Cesium/Cesium3DTileset|Cesium/ImageryLayer|ol/layer/Layer|Cesium/CustomDataSource>}
+   * @param {import("@vcmap/core").Layer} layer
+   * @returns {Set<import("@vcmap/cesium").PrimitiveCollection|import("@vcmap/cesium").Cesium3DTileset|import("@vcmap/cesium").ImageryLayer|import("ol/layer/Layer").default<import("ol/source").Source>|import("@vcmap/cesium").CustomDataSource>}
    * @api
    */
   getVisualizationsForLayer(layer) {
@@ -344,7 +343,7 @@ class VcsMap extends VcsObject {
 
   /**
    * Get all visualizations added to this map.
-   * @returns {Array<Cesium/PrimitiveCollection|Cesium/Cesium3DTileset|Cesium/ImageryLayer|ol/layer/Layer|Cesium/CustomDataSource>}
+   * @returns {Array<import("@vcmap/cesium").PrimitiveCollection|import("@vcmap/cesium").Cesium3DTileset|import("@vcmap/cesium").ImageryLayer|import("ol/layer/Layer").default<import("ol/source").Source>|import("@vcmap/cesium").CustomDataSource>}
    * @api
    */
   getVisualizations() {
@@ -403,7 +402,7 @@ class VcsMap extends VcsObject {
 
   /**
    * sets the view to the given viewpoint
-   * @param {vcs.vcm.util.ViewPoint} viewpoint
+   * @param {import("@vcmap/core").ViewPoint} viewpoint
    * @param {number=} optMaximumHeight during animation (can be used to get rid of the bunny hop)
    * gotoViewPoint
    * @returns {Promise<void>}
@@ -418,7 +417,7 @@ class VcsMap extends VcsObject {
   /**
    * Returns the most precise viewpoint possible in Oblique.
    * @api
-   * @returns {Promise<vcs.vcm.util.ViewPoint|null>}
+   * @returns {Promise<import("@vcmap/core").ViewPoint|null>}
    */
   // eslint-disable-next-line class-methods-use-this
   async getViewPoint() {
@@ -428,7 +427,7 @@ class VcsMap extends VcsObject {
   /**
    * Returns an approximate viewpoint in Oblique, not requesting terrain.
    * @api
-   * @returns {vcs.vcm.util.ViewPoint|null}
+   * @returns {import("@vcmap/core").ViewPoint|null}
    */
   // eslint-disable-next-line class-methods-use-this
   getViewPointSync() {
@@ -437,7 +436,7 @@ class VcsMap extends VcsObject {
 
   /**
    * Resolution in meters per pixe
-   * @param {ol/Coordinate} coordinate - coordinate in mercator for which to determine resolution. only required in 3D
+   * @param {import("ol/coordinate").Coordinate} coordinate - coordinate in mercator for which to determine resolution. only required in 3D
    * @returns {number}
    * @api
    */
@@ -447,7 +446,7 @@ class VcsMap extends VcsObject {
   }
 
   /**
-   * @param {ol/Coordinate} coords in WGS84 degrees
+   * @param {import("ol/coordinate").Coordinate} coords in WGS84 degrees
    * @returns {boolean}
    * @api
    */
@@ -462,11 +461,11 @@ class VcsMap extends VcsObject {
   requestRender() {}
 
   /**
-   * @returns {vcs.vcm.maps.VcsMap.Options}
+   * @returns {VcsMapOptions}
    * @api
    */
   getConfigObject() {
-    const config = /** @type {vcs.vcm.maps.VcsMap.Options} */ (super.getConfigObject());
+    const config = /** @type {VcsMapOptions} */ (super.getConfigObject());
     if (this.fallbackMap) {
       config.fallbackMap = this.fallbackMap;
     }

@@ -11,7 +11,6 @@ export const featureStoreStateSymbol = Symbol('vcsFeatureType');
  * @property {string} EDITED
  * @api
  * @export
- * @memberOf vcs.vcm.layer.FeatureStore
  */
 export const featureStoreState = {
   DYNAMIC: 'dynamic',

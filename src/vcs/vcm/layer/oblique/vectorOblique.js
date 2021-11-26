@@ -20,36 +20,35 @@ import { synchronizeFeatureVisibilityWithSource } from '../vectorHelpers.js';
  * represents a specific vector layer for oblique.
  * @class
  * @export
- * @extends {vcs.vcm.layer.oblique.LayerOblique}
- * @implements {vcs.vcm.layer.FeatureLayerImplementation}
- * @memberOf vcs.vcm.layer.oblique
+ * @extends {LayerOblique}
+ * @implements {FeatureLayerImplementation}
  */
 class VectorOblique extends LayerOblique {
   static get className() { return 'vcs.vcm.layer.oblique.VectorOblique'; }
 
   /**
-   * @param {vcs.vcm.maps.Oblique} map
-   * @param {vcs.vcm.layer.Vector.ImplementationOptions} options
+   * @param {import("@vcmap/core").Oblique} map
+   * @param {VectorImplementationOptions} options
    */
   constructor(map, options) {
     super(map, options);
 
-    /** @type {ol/source/Vector} */
+    /** @type {import("ol/source").Vector<import("ol/geom/Geometry").default>} */
     this.obliqueSource = new VectorSource({});
 
     /**
-     * @type {Object<string, Object<string, ol/events/EventsKey>>}
+     * @type {Object<string, Object<string, import("ol/events").EventsKey>>}
      * @private
      */
     this._featureListeners = {};
     /**
-     * @type {Array<ol/events/EventsKey>}
+     * @type {Array<import("ol/events").EventsKey>}
      * @private
      */
     this._sourceListener = [];
     /**
      * The extent of the current image for which features where fetched
-     * @type {ol/Extent|null}
+     * @type {import("ol/extent").Extent|null}
      */
     this.currentExtent = null;
     /**
@@ -74,30 +73,30 @@ class VectorOblique extends LayerOblique {
      */
     this._featureVisibilityListeners = [];
     /**
-     * @type {vcs.vcm.layer.GlobalHider}
+     * @type {import("@vcmap/core").GlobalHider}
      */
     this.globalHider = getGlobalHider();
     /**
-     * @type {ol/source/Vector}
+     * @type {import("ol/source").Vector<import("ol/geom/Geometry").default>}
      */
     this.source = options.source;
     /**
-     * @type {vcs.vcm.util.style.StyleItem}
+     * @type {import("@vcmap/core").StyleItem}
      */
     this.style = options.style;
     /**
-     * @type {vcs.vcm.layer.FeatureVisibility}
+     * @type {import("@vcmap/core").FeatureVisibility}
      */
     this.featureVisibility = options.featureVisibility;
     /**
-     * @type {ol/layer/Vector|null}
+     * @type {import("ol/layer").Vector<import("ol/source").Vector<import("ol/geom/Geometry").default>>|null}
      */
     this.olLayer = null;
   }
 
   /**
    * @inheritDoc
-   * @returns {ol/layer/Vector}
+   * @returns {import("ol/layer").Vector<import("ol/source").Vector<import("ol/geom/Geometry").default>>}
    */
   getOLLayer() {
     return new OLVectorLayer({
@@ -108,7 +107,7 @@ class VectorOblique extends LayerOblique {
   }
 
   /**
-   * @param {vcs.vcm.util.style.StyleItem} style
+   * @param {import("@vcmap/core").StyleItem} style
    * @param {boolean=} silent
    */
   // eslint-disable-next-line no-unused-vars
@@ -129,7 +128,7 @@ class VectorOblique extends LayerOblique {
   }
 
   /**
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @returns {boolean}
    * @private
    */
@@ -148,18 +147,18 @@ class VectorOblique extends LayerOblique {
    * @protected
    */
   _addSourceListeners() {
-    this._sourceListener.push(/** @type {ol/events/EventsKey} */ (this.source.on('addfeature', /** @param {ol/source/VectorSourceEvent} event */ (event) => {
+    this._sourceListener.push(/** @type {import("ol/events").EventsKey} */ (this.source.on('addfeature', /** @param {import("ol/source/Vector").VectorSourceEvent} event */ (event) => {
       const { feature } = event;
       if (this._featureInExtent(feature)) {
         this.addFeature(event.feature);
       }
     })));
 
-    this._sourceListener.push(/** @type {ol/events/EventsKey} */ (this.source.on('removefeature', /** @param {ol/source/VectorSourceEvent} event */ (event) => {
+    this._sourceListener.push(/** @type {import("ol/events").EventsKey} */ (this.source.on('removefeature', /** @param {import("ol/source/Vector").VectorSourceEvent} event */ (event) => {
       this.removeFeature(event.feature);
     })));
 
-    this._sourceListener.push(/** @type {ol/events/EventsKey} */ (this.source.on('changefeature', /** @param {ol/source/VectorSourceEvent} event */ (event) => {
+    this._sourceListener.push(/** @type {import("ol/events").EventsKey} */ (this.source.on('changefeature', /** @param {import("ol/source/Vector").VectorSourceEvent} event */ (event) => {
       const { feature } = event;
       const newFeatureId = feature.getId();
       if (!this._featureListeners[newFeatureId] && this._featureInExtent(feature)) {
@@ -189,7 +188,7 @@ class VectorOblique extends LayerOblique {
   }
 
   /**
-   * @param {ol/Feature} originalFeature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} originalFeature
    * @returns {Promise<void>}
    * @private
    */
@@ -233,9 +232,9 @@ class VectorOblique extends LayerOblique {
   }
 
   /**
-   * @param {Object<string, ol/events/EventsKey>} listeners
-   * @param {ol/Feature} originalFeature
-   * @param {ol/Feature} obliqueFeature
+   * @param {Object<string, import("ol/events").EventsKey>} listeners
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} originalFeature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} obliqueFeature
    * @private
    */
   _originalGeometryChanged(listeners, originalFeature, obliqueFeature) {
@@ -243,25 +242,25 @@ class VectorOblique extends LayerOblique {
     unByKey(listeners.obliqueGeometryChanged);
     setNewGeometry(originalFeature, obliqueFeature);
     this.updateObliqueGeometry(originalFeature, obliqueFeature);
-    listeners.originalGeometryChanged = /** @type {ol/events/EventsKey} */ (originalFeature
+    listeners.originalGeometryChanged = /** @type {import("ol/events").EventsKey} */ (originalFeature
       .getGeometry().on('change', this.updateObliqueGeometry.bind(this, originalFeature, obliqueFeature)));
-    listeners.obliqueGeometryChanged = /** @type {ol/events/EventsKey} */ (obliqueFeature
+    listeners.obliqueGeometryChanged = /** @type {import("ol/events").EventsKey} */ (obliqueFeature
       .getGeometry().on('change', this.updateMercatorGeometry.bind(this, originalFeature, obliqueFeature)));
   }
 
   /**
-   * @param {ol/Feature} originalFeature
-   * @param {ol/Feature} obliqueFeature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} originalFeature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} obliqueFeature
    * @private
    */
   _setFeatureListeners(originalFeature, obliqueFeature) {
     const featureId = obliqueFeature.getId();
     const listeners = {
-      originalFeatureGeometryChanged: /** @type {ol/events/EventsKey} */ (originalFeature.on('change:geometry', () => {
+      originalFeatureGeometryChanged: /** @type {import("ol/events").EventsKey} */ (originalFeature.on('change:geometry', () => {
         const originalGeometry = originalFeature.getGeometry();
         if (originalGeometry[actuallyIsCircle]) {
           unByKey(listeners.originalGeometryChanged);
-          listeners.originalGeometryChanged = /** @type {ol/events/EventsKey} */ (originalFeature
+          listeners.originalGeometryChanged = /** @type {import("ol/events").EventsKey} */ (originalFeature
             .getGeometry().on('change', () => {
               if (this._updatingMercator[featureId]) {
                 return;
@@ -273,19 +272,19 @@ class VectorOblique extends LayerOblique {
         }
         this._originalGeometryChanged(listeners, originalFeature, obliqueFeature);
       })),
-      originalFeatureChanged: /** @type {ol/events/EventsKey} */ (originalFeature
+      originalFeatureChanged: /** @type {import("ol/events").EventsKey} */ (originalFeature
         .on('change', () => { obliqueFeature.setStyle(originalFeature.getStyle()); })),
-      originalGeometryChanged: /** @type {ol/events/EventsKey} */ (originalFeature
+      originalGeometryChanged: /** @type {import("ol/events").EventsKey} */ (originalFeature
         .getGeometry().on('change', this.updateObliqueGeometry.bind(this, originalFeature, obliqueFeature))),
-      obliqueGeometryChanged: /** @type {ol/events/EventsKey} */ (obliqueFeature
+      obliqueGeometryChanged: /** @type {import("ol/events").EventsKey} */ (obliqueFeature
         .getGeometry().on('change', this.updateMercatorGeometry.bind(this, originalFeature, obliqueFeature))),
     };
     this._featureListeners[featureId] = listeners;
   }
 
   /**
-   * @param {ol/Feature} originalFeature
-   * @param {ol/Feature} obliqueFeature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} originalFeature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} obliqueFeature
    * @returns {Promise<void>}
    * @private
    */
@@ -303,8 +302,8 @@ class VectorOblique extends LayerOblique {
   }
 
   /**
-   * @param {ol/Feature} originalFeature
-   * @param {ol/Feature} obliqueFeature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} originalFeature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} obliqueFeature
    */
   updateObliqueGeometry(originalFeature, obliqueFeature) {
     const id = originalFeature.getId();
@@ -320,8 +319,8 @@ class VectorOblique extends LayerOblique {
   }
 
   /**
-   * @param {ol/Feature} originalFeature
-   * @param {ol/Feature} obliqueFeature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} originalFeature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} obliqueFeature
    */
   updateMercatorGeometry(originalFeature, obliqueFeature) {
     const id = originalFeature.getId();
@@ -396,7 +395,7 @@ class VectorOblique extends LayerOblique {
   }
 
   /**
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @private
    */
   removeFeature(feature) {

@@ -4,7 +4,6 @@ let nextBit = 1;
  * Provides inforamtion to other interaction plugins for creating bitmasks
  * @class
  * @export
- * @memberOf vcs.vcm.interaction
  */
 export class BitCounter {
   /**
@@ -20,7 +19,6 @@ export class BitCounter {
 /**
  * Enumeration of modification key types
  * @enum {number}
- * @memberOf vcs.vcm.interaction
  * @export
  * @property {number} NONE
  * @property {number} ALT
@@ -44,7 +42,6 @@ ModificationKeyType.ALL = ModificationKeyType.NONE |
 
 /**
  * Enumeration of pointer event types
- * @memberOf vcs.vcm.interaction
  * @enum {number}
  * @property {number} NONE
  * @property {number} CLICK
@@ -83,7 +80,6 @@ EventType.ALL = Object.values(EventType)
 
 /**
  * Enumeration of pointer keys.
- * @memberOf vcs.vcm.interaction
  * @enum {number}
  * @property {number} LEFT
  * @property {number} RIGHT
@@ -106,7 +102,6 @@ PointerKeyType.ALL = PointerKeyType.LEFT |
 /**
  * Enumeration of pointer key events.
  * @enum {number}
- * @memberOf vcs.vcm.interaction
  * @property {number} DOWN
  * @property {number} UP
  * @property {number} MOVE

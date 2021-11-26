@@ -7,15 +7,14 @@ import { wgs84Projection } from '../../util/projection.js';
  * represents a specific Cesium WMSCesium Layer class.
  * @class
  * @export
- * @extends {vcs.vcm.layer.cesium.RasterLayerCesium}
- * @memberOf vcs.vcm.layer.cesium
+ * @extends {RasterLayerCesium}
  */
 class WMSCesium extends RasterLayerCesium {
   static get className() { return 'vcs.vcm.layer.cesium.WMSCesium'; }
 
   /**
-   * @param {vcs.vcm.maps.CesiumMap} map
-   * @param {vcs.vcm.layer.WMS.ImplementationOptions} options
+   * @param {import("@vcmap/core").CesiumMap} map
+   * @param {WMSImplementationOptions} options
    */
   constructor(map, options) {
     super(map, options);
@@ -28,7 +27,7 @@ class WMSCesium extends RasterLayerCesium {
      */
     this.highResolution = options.highResolution;
     /**
-     * @type {ol/Size}
+     * @type {import("ol/size").Size}
      */
     this.tileSize = options.tileSize;
   }

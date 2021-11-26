@@ -12,7 +12,7 @@ import { mercatorProjection } from '../util/projection.js';
  * @typedef {Object} ObliqueViewPoint
  * @property {import("ol/coordinate").Coordinate} center - in mercator
  * @property {number} zoom
- * @property {ObliqueViewDirection} direction
+ * @property {import("@vcmap/core").ObliqueViewDirection} direction
  * @api
  */
 
@@ -42,28 +42,28 @@ class ObliqueProvider {
    */
   constructor(olMap) {
     this._active = false;
-    /** @type {ObliqueImage|string|null} */
+    /** @type {import("@vcmap/core").ObliqueImage|string|null} */
     this._loadingImage = null;
     /** @type {import("ol").Map} */
     this._olMap = olMap;
     this._viewCache = new Map();
     /**
-     * @type {ObliqueImage|null}
+     * @type {import("@vcmap/core").ObliqueImage|null}
      */
     this._currentImage = null; // XXX defaultImage
     /**
-     * @type {ObliqueView|null}
+     * @type {import("@vcmap/core").ObliqueView|null}
      * @private
      */
     this._currentView = null;
-    /** @type {ObliqueCollection} */
+    /** @type {import("@vcmap/core").ObliqueCollection} */
     this._collection = null; // XXX should we also make a default collection?
     /** @type {string} */
     this._mapChangeEvent = 'postrender';
 
     /**
      * Event raised once a new image is set on the provider. Will be passed the new image as the only argument.
-     * @type {import("cesium").Event}
+     * @type {import("@vcmap/cesium").Event}
      * @api
      */
     this.imageChanged = new CesiumEvent();
@@ -102,6 +102,7 @@ class ObliqueProvider {
       if (this._postRenderListener) {
         unByKey(this._postRenderListener);
       }
+      // @ts-ignore
       this._postRenderListener = this._olMap.on(this._mapChangeEvent, this._postRenderHandler.bind(this));
     }
   }
@@ -124,14 +125,14 @@ class ObliqueProvider {
 
   /**
    * @readonly
-   * @type {ObliqueImage|null}
+   * @type {import("@vcmap/core").ObliqueImage|null}
    * @api
    */
   get currentImage() { return this._currentImage; }
 
   /**
    * @readonly
-   * @type {ObliqueCollection|null}
+   * @type {import("@vcmap/core").ObliqueCollection|null}
    * @api
    */
   get collection() { return this._collection; }
@@ -139,7 +140,7 @@ class ObliqueProvider {
   /**
    * Set a new collection. The collection must be loaded.
    * If a previous collection was set, the current image and its resources will be removed from the olMap.
-   * @param {ObliqueCollection} collection
+   * @param {import("@vcmap/core").ObliqueCollection} collection
    * @api
    */
   setCollection(collection) {
@@ -167,6 +168,7 @@ class ObliqueProvider {
       this._active = true;
       this._setCurrentView();
       if (!this._postRenderListener) {
+        // @ts-ignore
         this._postRenderListener = this._olMap.on(this._mapChangeEvent, this._postRenderHandler.bind(this));
       }
     }
@@ -260,7 +262,7 @@ class ObliqueProvider {
 
   /**
    * Sets the current image
-   * @param {ObliqueImage} image
+   * @param {import("@vcmap/core").ObliqueImage} image
    * @param {import("ol/coordinate").Coordinate=} optCenter - mercator coordinates of an optional center to use. uses the images center if undefined
    * @returns {Promise<boolean>}
    * @api
@@ -317,7 +319,7 @@ class ObliqueProvider {
   }
 
   /**
-   * @param {ObliqueView=} previousView
+   * @param {import("@vcmap/core").ObliqueView=} previousView
    * @private
    */
   _setCurrentView(previousView) {
@@ -350,7 +352,7 @@ class ObliqueProvider {
   /**
    * Sets a new image based on a ground coordinate and a direction.
    * @param {import("ol/coordinate").Coordinate} coordinate
-   * @param {ObliqueViewDirection} direction
+   * @param {import("@vcmap/core").ObliqueViewDirection} direction
    * @param {number} [zoom=2]
    * @returns {Promise<void>}
    * @api
@@ -360,7 +362,7 @@ class ObliqueProvider {
       throw new Error('cannot set the view without an oblique collection.');
     }
 
-    let usedCoordinate = coordinate.slice();
+    const usedCoordinate = coordinate.slice();
     const coordinateHash = `${coordinate.join('')}${direction}${zoom}`;
     this._loadingImage = coordinateHash;
     const image = await this._collection.loadImageForCoordinate(coordinate, direction);
@@ -369,9 +371,14 @@ class ObliqueProvider {
         return;
       }
       this._loadingImage = image;
-      if (!usedCoordinate[2] && image.terrainProvider) {
-        usedCoordinate =
-          await getHeightFromTerrainProvider(image.terrainProvider, [usedCoordinate], mercatorProjection);
+      if (!usedCoordinate[2] && image.meta.terrainProvider) {
+        const transformResult = [usedCoordinate];
+        await getHeightFromTerrainProvider(
+          image.meta.terrainProvider,
+          transformResult,
+          mercatorProjection,
+          transformResult,
+        );
       }
       if (this._loadingImage !== image) {
         return;

@@ -11,7 +11,7 @@ import { setOpenlayersMap } from '../../../helpers/openlayers.js';
 
 describe('vcs.vcm.util.clipping.ClippingObject', () => {
   let sandbox;
-  /** @type {vcs.vcm.util.clipping.ClippingObject} */
+  /** @type {import("@vcmap/core").ClippingObject} */
   let CO;
   let cesiumMap;
 

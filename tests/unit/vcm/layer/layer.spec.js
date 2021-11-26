@@ -10,7 +10,7 @@ import { setCurrentLocale } from '../../../../src/vcs/vcm/util/locale.js';
 describe('vcs.vcm.layer.Layer', () => {
   let sandbox;
 
-  /** @type {vcs.vcm.layer.Layer} */
+  /** @type {import("@vcmap/core").Layer} */
   let AL;
   let map;
 

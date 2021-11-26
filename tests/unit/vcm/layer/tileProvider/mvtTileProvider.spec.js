@@ -9,7 +9,7 @@ describe('vcs.vcm.layer.tileProvider.MVTTileProvider', () => {
   let axiosStub;
   let featureNorthEast;
   let featureSouthWest;
-  /** @type {vcs.vcm.layer.tileProvider.MVTTileProvider} */
+  /** @type {import("@vcmap/core").MVTTileProvider} */
   let tileProvider;
 
   before(() => {

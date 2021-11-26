@@ -4,9 +4,8 @@ import RegularShape from 'ol/style/RegularShape.js';
 import Circle from 'ol/style/Circle.js';
 
 /**
- * @param {vcs.vcm.util.style.VectorStyleItem.Image} options
- * @returns {ol/style/RegularShape|ol/style/Circle}
- * @memberOf vcs.vcm.util.style
+ * @param {VectorStyleItemImage} options
+ * @returns {import("ol/style/RegularShape").default|import("ol/style/Circle").default}
  * @export
  */
 
@@ -18,22 +17,21 @@ export function getShapeFromOptions(options) {
     options.stroke = new Stroke(options.stroke);
   }
   return options.points ?
-    new RegularShape(/** @type {ol/style/RegularShapeOptions} */ (options)) :
-    new Circle(/** @type {ol/style/CircleOptions} */ (options));
+    new RegularShape(/** @type {import("ol/style/RegularShape").Options} */ (options)) :
+    new Circle(/** @type {import("ol/style/Circle").Options} */ (options));
 }
 
 /**
  * @class
- * @memberOf vcs.vcm.util.style
  */
 class ShapeCategory {
   constructor() {
-    /** @type {Array<vcs.vcm.util.style.VectorStyleItem.Image>} */
+    /** @type {Array<VectorStyleItemImage>} */
     this.shapes = [];
   }
 
   /**
-   * @param {vcs.vcm.util.style.VectorStyleItem.Image} options
+   * @param {VectorStyleItemImage} options
    */
   addImage(options) {
     const shape = getShapeFromOptions({ ...options });
@@ -45,7 +43,6 @@ class ShapeCategory {
 }
 
 /**
- * @memberOf vcs.vcm.util.style
  * @export
  * TODO refactor to getdefaultShapeCategory...
  */

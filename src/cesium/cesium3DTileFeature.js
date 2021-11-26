@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Cesium3DTileFeature } from '@vcmap/cesium';
 
 /**

@@ -6,7 +6,7 @@ import { setCurrentLocale } from '../../../../../src/vcs/vcm/util/locale.js';
 describe('vcs.vcm.layer.tileProvider.URLTemplateTileProvider', () => {
   let sandbox;
   let axiosStub;
-  /** @type {vcs.vcm.layer.tileProvider.URLTemplateTileProvider} */
+  /** @type {import("@vcmap/core").URLTemplateTileProvider} */
   let tileProvider;
 
   before(async () => {

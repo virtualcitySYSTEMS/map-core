@@ -10,7 +10,7 @@ import VcsMap from './map.js';
 import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
- * @typedef {vcs.vcm.maps.VcsMap.Options} vcs.vcm.maps.Openlayers.Options
+ * @typedef {VcsMapOptions} OpenlayersOptions
  * @property {boolean} [fixedNorthOrientation=true] -  sets whether the openlayers map has a fixed orientation towards north (default true)
  * @api stable
  */
@@ -19,9 +19,8 @@ import { VcsClassRegistry } from '../classRegistry.js';
  * Openlayers Map Class (2D map)
  * @class
  * @export
- * @extends {vcs.vcm.maps.BaseOLMap}
+ * @extends {BaseOLMap}
  * @api stable
- * @memberOf vcs.vcm.maps
  */
 class Openlayers extends BaseOLMap {
   /**
@@ -30,7 +29,7 @@ class Openlayers extends BaseOLMap {
   static get className() { return 'vcs.vcm.maps.Openlayers'; }
 
   /**
-   * @returns {vcs.vcm.maps.Openlayers.Options}
+   * @returns {OpenlayersOptions}
    */
   static getDefaultOptions() {
     return {
@@ -40,7 +39,7 @@ class Openlayers extends BaseOLMap {
   }
 
   /**
-   * @param {vcs.vcm.maps.Openlayers.Options} options
+   * @param {OpenlayersOptions} options
    */
   constructor(options) {
     super(options);
@@ -67,7 +66,7 @@ class Openlayers extends BaseOLMap {
 
   /**
    * @inheritDoc
-   * @returns {Promise<vcs.vcm.util.ViewPoint>}
+   * @returns {Promise<ViewPoint>}
    */
   async getViewPoint() {
     return this.getViewPointSync();
@@ -75,7 +74,7 @@ class Openlayers extends BaseOLMap {
 
   /**
    * @inheritDoc
-   * @returns {vcs.vcm.util.ViewPoint}
+   * @returns {ViewPoint}
    */
   getViewPointSync() {
     const view = this.olMap.getView();
@@ -110,7 +109,7 @@ class Openlayers extends BaseOLMap {
   }
 
   /**
-   * @param {vcs.vcm.util.ViewPoint} viewpoint
+   * @param {ViewPoint} viewpoint
    * @returns {Promise<void>}
    * @inheritDoc
    */
@@ -171,7 +170,7 @@ class Openlayers extends BaseOLMap {
   }
 
   /**
-   * @param {ol/Coordinate} coords in WGS84 degrees
+   * @param {import("ol/coordinate").Coordinate} coords in WGS84 degrees
    * @returns {boolean}
    * @api
    */
@@ -187,11 +186,11 @@ class Openlayers extends BaseOLMap {
   }
 
   /**
-   * @returns {vcs.vcm.maps.Openlayers.Options}
+   * @returns {OpenlayersOptions}
    * @api
    */
   getConfigObject() {
-    const config = /** @type {vcs.vcm.maps.Openlayers.Options} */ (super.getConfigObject());
+    const config = /** @type {OpenlayersOptions} */ (super.getConfigObject());
 
     const defaultOptions = Openlayers.getDefaultOptions();
     if (this.fixedNorthOrientation !== defaultOptions.fixedNorthOrientation) {

@@ -3,23 +3,22 @@ import { unByKey } from 'ol/Observable.js';
 import LayerOpenlayers from './layerOpenlayers.js';
 
 /**
- * RasterLayer implementation for {@link vcs.vcm.maps.Openlayers}
+ * RasterLayer implementation for {@link Openlayers}
  * @class
- * @memberOf vcs.vcm.layer.openlayers
- * @extends {vcs.vcm.layer.openlayers.LayerOpenlayers}
- * @implements {vcs.vcm.layer.RasterLayerImplementation}
+ * @extends {LayerOpenlayers}
+ * @implements {RasterLayerImplementation}
  * @abstract
  */
 class RasterLayerOpenlayers extends LayerOpenlayers {
   static get className() { return 'vcs.vcm.layer.openlayers.RasterLayerOpenlayers'; }
 
   /**
-   * @param {vcs.vcm.maps.Openlayers} map
-   * @param {vcs.vcm.layer.RasterLayer.ImplementationOptions} options
+   * @param {import("@vcmap/core").Openlayers} map
+   * @param {RasterLayerImplementationOptions} options
    */
   constructor(map, options) {
     super(map, options);
-    /** @type {Cesium/ImagerySplitDirection} */
+    /** @type {import("@vcmap/cesium").ImagerySplitDirection} */
     this.splitDirection = options.splitDirection;
     /** @type {number} */
     this.minLevel = options.minLevel;
@@ -27,12 +26,12 @@ class RasterLayerOpenlayers extends LayerOpenlayers {
     this.maxLevel = options.maxLevel;
     /** @type {string} */
     this.tilingSchema = options.tilingSchema;
-    /** @type {vcs.vcm.util.Extent} */
+    /** @type {import("@vcmap/core").Extent} */
     this.extent = options.extent;
     /** @type {number} */
     this.opacity = options.opacity;
     /**
-     * @type {Array<ol/events/EventsKey>|null}
+     * @type {Array<import("ol/events").EventsKey>|null}
      * @private
      */
     this._splitDirectionRenderListeners = null;
@@ -60,7 +59,7 @@ class RasterLayerOpenlayers extends LayerOpenlayers {
   }
 
   /**
-   * @param {Cesium/ImagerySplitDirection} splitDirection
+   * @param {import("@vcmap/cesium").ImagerySplitDirection} splitDirection
    */
   updateSplitDirection(splitDirection) {
     this.splitDirection = splitDirection;
@@ -72,18 +71,22 @@ class RasterLayerOpenlayers extends LayerOpenlayers {
       } else if (splitDirection !== ImagerySplitDirection.NONE && !this._splitDirectionRenderListeners) {
         this._splitDirectionRenderListeners = [];
         this._splitDirectionRenderListeners
-          .push(/** @type {ol/events/EventsKey} */ (this.olLayer.on('prerender', this._splitPreCompose.bind(this))));
+          .push(/** @type {import("ol/events").EventsKey} */
+            (this.olLayer.on('prerender', this._splitPreCompose.bind(this))),
+          );
         this._splitDirectionRenderListeners
-          .push(/** @type {ol/events/EventsKey} */ (this.olLayer.on('postrender', (/** @type {ol/render/Event} */ event) => {
-            event.context.restore();
-          })));
+          .push(/** @type {import("ol/events").EventsKey} */
+            (this.olLayer.on('postrender', (/** @type {import("ol/render/Event").default} */ event) => {
+              event.context.restore();
+            })),
+          );
         this.olLayer.changed();
       }
     }
   }
 
   /**
-   * @param {ol/render/Event} event
+   * @param {import("ol/render/Event").default} event
    * @private
    */
   _splitPreCompose(event) {

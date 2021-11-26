@@ -5,7 +5,7 @@ import Projection, { wgs84Projection } from '../util/projection.js';
 import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
- * @typedef {vcs.vcm.layer.Vector.Options} vcs.vcm.layer.GeoJSON.Options
+ * @typedef {VectorOptions} GeoJSONOptions
  * @property {Array<Object>|undefined} features - an array of GeoJSON features to parse
  * @api
  */
@@ -21,15 +21,14 @@ export const featureFromOptions = Symbol('featureFromOptions');
  * GeoJSON layer for Cesium, Openlayers and Oblique
  * @class
  * @export
- * @extends {vcs.vcm.layer.Vector}
+ * @extends {Vector}
  * @api stable
- * @memberOf vcs.vcm.layer
  */
 class GeoJSON extends Vector {
   static get className() { return 'vcs.vcm.layer.GeoJSON'; }
 
   /**
-   * @returns {vcs.vcm.layer.GeoJSON.Options}
+   * @returns {GeoJSONOptions}
    */
   static getDefaultOptions() {
     return {
@@ -40,7 +39,7 @@ class GeoJSON extends Vector {
   }
 
   /**
-   * @param {vcs.vcm.layer.GeoJSON.Options} options
+   * @param {GeoJSONOptions} options
    */
   constructor(options) {
     const defaultOptions = GeoJSON.getDefaultOptions();
@@ -49,7 +48,7 @@ class GeoJSON extends Vector {
     super(options);
 
     /**
-     * @type {Promise|null}
+     * @type {Promise<void>|null}
      * @private
      */
     this._dataFetchedPromise = null;
@@ -148,10 +147,10 @@ class GeoJSON extends Vector {
 
   /**
    * @inheritDoc
-   * @returns {vcs.vcm.layer.GeoJSON.Options}
+   * @returns {GeoJSONOptions}
    */
   getConfigObject() {
-    const config = /** @type {vcs.vcm.layer.GeoJSON.Options} */ (super.getConfigObject());
+    const config = /** @type {GeoJSONOptions} */ (super.getConfigObject());
     const defaultOptions = GeoJSON.getDefaultOptions();
 
     const defaultProjection = new Projection(defaultOptions.projection);

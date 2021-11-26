@@ -16,9 +16,9 @@ function createDummyOlFeature(index) {
 
 describe('vcs.vcm.layer.FeatureStore.FeatureStoreChanges', () => {
   let sandbox;
-  /** @type {vcs.vcm.layer.FeatureStore} */
+  /** @type {import("@vcmap/core").FeatureStore} */
   let FSL;
-  /** @type {vcs.vcm.layer.FeatureStore.FeatureStoreChanges} */
+  /** @type {import("@vcmap/core").FeatureStoreChanges} */
   let FSC;
   let feature;
 

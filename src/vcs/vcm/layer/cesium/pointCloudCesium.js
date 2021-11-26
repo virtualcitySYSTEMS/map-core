@@ -11,16 +11,15 @@ import CesiumTilesetCesium from './cesiumTilesetCesium.js';
  *
  * @class
  * @export
- * @extends {vcs.vcm.layer.cesium.CesiumTilesetCesium}
+ * @extends {CesiumTilesetCesium}
  * @api stable
- * @memberOf vcs.vcm.layer.cesium
  */
 class PointCloudCesium extends CesiumTilesetCesium {
   static get className() { return 'vcs.vcm.layer.cesium.PointCloud'; }
 
   /**
-   * @param {vcs.vcm.maps.CesiumMap} map
-   * @param {vcs.vcm.layer.PointCloud.ImplementationOptions} options
+   * @param {import("@vcmap/core").CesiumMap} map
+   * @param {PointCloudImplementationOptions} options
    */
   constructor(map, options) {
     super(map, options);

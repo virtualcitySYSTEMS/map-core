@@ -2,22 +2,21 @@ import AbstractFeatureProvider from './abstractFeatureProvider.js';
 
 
 /**
- * @typedef {vcs.vcm.util.featureProvider.AbstractFeatureProvider.Options} vcs.vcm.util.featureProvider.TileProviderFeatureProvider.Options
- * @property {vcs.vcm.layer.tileProvider.TileProvider} tileProvider
+ * @typedef {AbstractFeatureProviderOptions} TileProviderFeatureProviderOptions
+ * @property {import("@vcmap/core").TileProvider} tileProvider
  * @api
  */
 
 /**
  * @class
- * @extends {vcs.vcm.util.featureProvider.AbstractFeatureProvider}
- * @memberOf vcs.vcm.util.featureProvider
+ * @extends {AbstractFeatureProvider}
  */
 class TileProviderFeatureProvider extends AbstractFeatureProvider {
   static get className() { return 'vcs.vcm.util.featureProvider.TileProviderFeatureProvider'; }
 
   /**
    * @param {string} layerName
-   * @param {vcs.vcm.util.featureProvider.TileProviderFeatureProvider.Options} options
+   * @param {TileProviderFeatureProviderOptions} options
    */
   constructor(layerName, options) {
     super(layerName, options);
@@ -31,7 +30,7 @@ class TileProviderFeatureProvider extends AbstractFeatureProvider {
 
     /**
      * TileProvider
-     * @type {vcs.vcm.layer.tileProvider.TileProvider}
+     * @type {import("@vcmap/core").TileProvider}
      * @api
      */
     this.tileProvider = options.tileProvider;
@@ -40,9 +39,9 @@ class TileProviderFeatureProvider extends AbstractFeatureProvider {
 
   /**
    * @inheritDoc
-   * @param {ol/Coordinate} coordinate
+   * @param {import("ol/coordinate").Coordinate} coordinate
    * @param {number} resolution
-   * @returns {Promise<Array<ol/Feature>>}
+   * @returns {Promise<Array<import("ol").Feature<import("ol/geom/Geometry").default>>>}
    */
   async getFeaturesByCoordinate(coordinate, resolution) {
     const features = await this.tileProvider.getFeaturesByCoordinate(coordinate, resolution);

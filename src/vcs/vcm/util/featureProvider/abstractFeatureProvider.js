@@ -9,32 +9,30 @@ import { isProvidedFeature, showProvidedFeature } from './featureProviderSymbols
 
 /**
  * @namespace featureProvider
- * @memberOf vcs.vcm.util
  */
 
 /**
- * @typedef {vcs.vcm.VcsObject.Options} vcs.vcm.util.featureProvider.AbstractFeatureProvider.Options
- * @property {vcs.vcm.util.style.StyleItem.Options|vcs.vcm.util.style.StyleItem|undefined} style - the style to apply to features created by this feature provider
+ * @typedef {VcsObjectOptions} AbstractFeatureProviderOptions
+ * @property {import("@vcmap/core").StyleItemOptions|import("@vcmap/core").StyleItem|undefined} style - the style to apply to features created by this feature provider
  * @property {Object|undefined} genericFeatureProperties - generic properties to add to features created by this feature provider
- * @property {vcs.vcm.layer.VectorProperties|vcs.vcm.layer.VectorProperties.Options|undefined} vectorProperties - the vector properties of the features. Allow picking is false by default.
+ * @property {import("@vcmap/core").VectorProperties|import("@vcmap/core").VectorPropertiesOptions|undefined} vectorProperties - the vector properties of the features. Allow picking is false by default.
  * @property {boolean} [showGeometry=false] - show the resulting geometry in the map
  * @property {Array<string>} [mapTypes=[]] - can be used to constrict the featureProvider to specific mapTypes empty array means no restriction
  */
 
 /**
- * An abstract class providing features for {@link vcs.vcm.layer.Layer}s which cannot provide features directly, but can provide features for
+ * An abstract class providing features for {@link Layer}s which cannot provide features directly, but can provide features for
  * a given location, e.g. WMS with a getFeatureInfo configuration. In this case, a feature provider can be created for this layer.
  * @class
  * @export
  * @abstract
- * @memberOf vcs.vcm.util.featureProvider
  * @api
  */
 class AbstractFeatureProvider extends VcsObject {
   static get className() { return 'vcs.vcm.util.featureProvider.AbstractFeatureProvider'; }
 
   /**
-   * @returns {vcs.vcm.util.featureProvider.AbstractFeatureProvider.Options}
+   * @returns {AbstractFeatureProviderOptions}
    */
   static getDefaultOptions() {
     return {
@@ -49,7 +47,7 @@ class AbstractFeatureProvider extends VcsObject {
 
   /**
    * @param {string} layerName
-   * @param {vcs.vcm.util.featureProvider.AbstractFeatureProvider.Options} options
+   * @param {AbstractFeatureProviderOptions} options
    */
   constructor(layerName, options) {
     super(options);
@@ -62,7 +60,7 @@ class AbstractFeatureProvider extends VcsObject {
     this.layerName = layerName;
     /**
      * The style set on features created by this provider
-     * @type {vcs.vcm.util.style.StyleItem|undefined}
+     * @type {import("@vcmap/core").StyleItem|undefined}
      * @api
      */
     this.style = options.style ?
@@ -76,7 +74,7 @@ class AbstractFeatureProvider extends VcsObject {
     this.showGeometry = parseBoolean(options.showGeometry, defaultOptions.showGeometry);
     /**
      * The vector properties assigned to features created by this provider
-     * @type {vcs.vcm.layer.VectorProperties}
+     * @type {import("@vcmap/core").VectorProperties}
      * @api
      */
     this.vectorProperties = options.vectorProperties instanceof VectorProperties ?
@@ -99,7 +97,7 @@ class AbstractFeatureProvider extends VcsObject {
 
   /**
    * checks if the featureProvider is supported for provided Map
-   * @param {vcs.vcm.maps.VcsMap} map
+   * @param {import("@vcmap/core").VcsMap} map
    * @returns {boolean}
    * @api stable
    */
@@ -111,8 +109,8 @@ class AbstractFeatureProvider extends VcsObject {
   /**
    * Ensures the feature has an ID, applies all vectorProperties and adds the generic properties, style and the vcsLayerName
    * and isProvidedFeature symbols to the feature
-   * @param {ol/Feature} feature
-   * @returns {ol/Feature}
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+   * @returns {import("ol").Feature<import("ol/geom/Geometry").default>}
    * @api
    */
   getProviderFeature(feature) {
@@ -141,9 +139,9 @@ class AbstractFeatureProvider extends VcsObject {
    * This method must be overwritten by any implementations. Before returning the array of features, be sure to use the getProviderFeature
    * on each feature to ensure all properties and symbols required by the VCM architecture
    * to handle your feature is called: (e.g. <code>return features.map(f => this.getProviderFeature(f)</code>);
-   * @param {ol/Coordinate} coordinate - in mercator
+   * @param {import("ol/coordinate").Coordinate} coordinate - in mercator
    * @param {number} resolution - meters per pixel for the given location
-   * @returns {Promise<Array<ol/Feature>>}
+   * @returns {Promise<Array<import("ol").Feature<import("ol/geom/Geometry").default>>>}
    * @api
    */
   // eslint-disable-next-line no-unused-vars,class-methods-use-this
@@ -153,12 +151,12 @@ class AbstractFeatureProvider extends VcsObject {
 
   /**
    * Returns the object required to configure this feature provider.
-   * @returns {vcs.vcm.util.featureProvider.AbstractFeatureProvider.Options}
+   * @returns {AbstractFeatureProviderOptions}
    * @api
    */
   getConfigObject() {
     const config =
-      /** @type {vcs.vcm.util.featureProvider.AbstractFeatureProvider.Options} */ (super.getConfigObject());
+      /** @type {AbstractFeatureProviderOptions} */ (super.getConfigObject());
 
     const defaultOptions = AbstractFeatureProvider.getDefaultOptions();
     delete config.name; // the name is irrelevant, since its the layers name

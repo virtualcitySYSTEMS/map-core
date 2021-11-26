@@ -3,7 +3,7 @@ import VectorStyleItem from '../../../../src/vcs/vcm/util/style/vectorStyleItem.
 
 describe('vcs.vcm.layer.PointCloud', () => {
   let sandbox;
-  /** @type {vcs.vcm.layer.PointCloud} */
+  /** @type {import("@vcmap/core").PointCloud} */
   let PCL;
 
   before(() => {

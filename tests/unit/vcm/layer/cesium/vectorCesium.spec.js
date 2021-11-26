@@ -16,9 +16,9 @@ describe('vcs.vcm.layer.cesium.VectorCesium', () => {
   let sandbox;
   let cesiumMap;
   let openlayers;
-  /** @type {vcs.vcm.layer.Vector} */
+  /** @type {import("@vcmap/core").Vector} */
   let commonLayer;
-  /** @type {vcs.vcm.layer.cesium.VectorCesium} */
+  /** @type {import("@vcmap/core").VectorCesium} */
   let vectorLayer;
 
   let feature;

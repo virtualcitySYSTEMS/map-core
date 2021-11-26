@@ -3,9 +3,9 @@ import DeclarativeStyleItem from './declarativeStyleItem.js';
 import { referenceableStyleSymbol } from './styleItem.js';
 
 /**
- * @param {vcs.vcm.util.style.VectorStyleItem.Options} obj
+ * @param {VectorStyleItemOptions} obj
  * @param {Array<string>=} embeddedIcons
- * @returns {vcs.vcm.util.style.VectorStyleItem.Options}
+ * @returns {VectorStyleItemOptions}
  */
 export function embedIconsInStyle(obj, embeddedIcons) {
   if (
@@ -30,9 +30,9 @@ export function embedIconsInStyle(obj, embeddedIcons) {
 }
 
 /**
- * @param {vcs.vcm.util.style.StyleItem} style
- * @param {vcs.vcm.layer.VcsMeta=} vcsMeta
- * @returns {vcs.vcm.layer.VcsMeta}
+ * @param {import("@vcmap/core").StyleItem} style
+ * @param {VcsMeta=} vcsMeta
+ * @returns {VcsMeta}
  */
 function writeStyle(style, vcsMeta = {}) {
   if (style[referenceableStyleSymbol]) { // XXX this should be configurable. In some cases, writting out the actual style would be desirable

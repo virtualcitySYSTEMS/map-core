@@ -7,7 +7,7 @@ import testGeoJSON from '../testGeoJSON.json';
 describe('vcs.vcm.layer.tileProvider.StaticGeojsonTileProvider', () => {
   let sandbox;
   let axiosStub;
-  /** @type {vcs.vcm.layer.tileProvider.StaticGeojsonTileProvider} */
+  /** @type {import("@vcmap/core").StaticGeojsonTileProvider} */
   let tileProvider;
 
   before(() => {

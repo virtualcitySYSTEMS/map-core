@@ -19,11 +19,11 @@ import {
 
 describe('vcs.vcm.layer.oblique.VectorOblique', () => {
   let sandbox;
-  /** @type {vcs.vcm.layer.Vector} */
+  /** @type {import("@vcmap/core").Vector} */
   let VL;
-  /** @type {vcs.vcm.layer.oblique.VectorOblique} */
+  /** @type {import("@vcmap/core").VectorOblique} */
   let OVL;
-  /** @type {vcs.vcm.maps.Oblique} */
+  /** @type {import("@vcmap/core").Oblique} */
   let map;
   let debounceTimeout;
 

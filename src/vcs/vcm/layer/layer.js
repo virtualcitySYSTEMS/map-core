@@ -10,12 +10,7 @@ import { getCurrentLocale, getLocaleChangedEvent } from '../util/locale.js';
 import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
- * @namespace vcs.vcm.layer
- * @api stable
- */
-
-/**
- * @typedef {Object} vcs.vcm.layer.GenericFeature
+ * @typedef {Object} GenericFeature
  * @property {number} longitude
  * @property {number} latitude
  * @property {number} height
@@ -26,71 +21,69 @@ import { VcsClassRegistry } from '../classRegistry.js';
  */
 
 /**
- * @typedef {vcs.vcm.layer.Layer} vcs.vcm.layer.SplitLayer
- * @property {Cesium/ImagerySplitDirection} splitDirection
- * @property {vcs.vcm.event.VcsEvent<Cesium/ImagerySplitDirection>} splitDirectionChanged
+ * @typedef {import("@vcmap/core").Layer} SplitLayer
+ * @property {import("@vcmap/cesium").ImagerySplitDirection} splitDirection
+ * @property {VcsEvent<import("@vcmap/cesium").ImagerySplitDirection>} splitDirectionChanged
  */
 
 /**
- * @typedef {Object} vcs.vcm.layer.CopyrightOptions
+ * @typedef {Object} CopyrightOptions
  * @property {string|undefined} provider
  * @property {string|undefined} url
  * @property {string|undefined} year
  * @api
  */
 
+// TODO add flight options if flight is moved to core
 /**
- * @typedef {vcs.vcm.layer.VectorProperties.Options} vcs.vcm.layer.VcsMeta
+ * @typedef {VectorPropertiesOptions} VcsMeta
  * @property {string|undefined} version - the version of the vcsMeta schema
- * @property {vcs.vcm.util.style.VectorStyleItem.Options|vcs.vcm.util.style.DeclarativeStyleItem.Options|vcs.vcm.util.style.Reference|undefined} style
+ * @property {VectorStyleItemOptions|DeclarativeStyleItemOptions|Reference|undefined} style
  * @property {Array<string>|undefined} embeddedIcons
  * @property {number|undefined} screenSpaceError
- * @property {vcs.vcm.util.flight.FlightInstance.Meta|undefined} flightOptions
+ * @property {*|undefined} flightOptions
  * @property {string|undefined} baseUrl
  * @api
  */
 
 /**
- * @typedef {vcs.vcm.VcsObject.Options} vcs.vcm.layer.Layer.Options
+ * @typedef {VcsObjectOptions} LayerOptions
  * @property {string|undefined} name - the name of the layer, used to retrieve the layer from the framework. if not specified, a uuid is generated
  * @property {boolean} [activeOnStartup=false] -  if true the layer will be activated on initialization
  * @property {boolean} [allowPicking=true] - whether to allow picking on this layer
  * @property {number|undefined} zIndex - zIndex of this layer
- * @property {vcs.vcm.util.Extent.Options|undefined} extent - metadata on the data extent of the layer.
+ * @property {ExtentOptions|undefined} extent - metadata on the data extent of the layer.
  * @property {Array<string|symbol>|undefined} [exclusiveGroups=[]] -
  * @property {Array<string>|undefined} mapNames - the map names on which this layer is shown, all if empty
  * @property {string|Object|undefined} url - for most layers, a resource url will be needed
  * @property {Array<string>|undefined} hiddenObjectIds - an array of building ids which should be hidden if this layer is active
- * @property {vcs.vcm.layer.CopyrightOptions|undefined} copyright
+ * @property {CopyrightOptions|undefined} copyright
  * @api
  */
 
 /**
  * The options passed to a layer implementation.
- * @typedef {Object} vcs.vcm.layer.Layer.ImplementationOptions
+ * @typedef {Object} LayerImplementationOptions
  * @property {string} name
  * @property {string} url
  * @api
  */
 
 /**
- * Layer implementations for the {@link vcs.vcm.maps.CesiumMap} map
+ * Layer implementations for the {@link CesiumMap} map
  * @namespace cesium
- * @memberOf vcs.vcm.layer
  * @api stable
  */
 
 /**
- * Layer implementations for the {@link vcs.vcm.maps.Oblique} map
+ * Layer implementations for the {@link Oblique} map
  * @namespace oblique
- * @memberOf vcs.vcm.layer
  * @api stable
  */
 
 /**
- * Layer implementations for the {@link vcs.vcm.maps.Openlayers} map
+ * Layer implementations for the {@link Openlayers} map
  * @namespace openlayers
- * @memberOf vcs.vcm.layer
  * @api stable
  */
 
@@ -104,13 +97,12 @@ export const vcsMetaVersion = '2.0';
 /**
  * Abstract base class for Layers.
  * To create a layer Implementation the function `createImplementationsForMap` has to be implemented.
- * To receive implementation options, implement `getImplementationOptions`
+ * To receive implementation options, implement `geImplementationOptions`
  * @abstract
  * @class
  * @export
- * @extends {vcs.vcm.VcsObject}
+ * @extends {VcsObject}
  * @api stable
- * @memberOf vcs.vcm.layer
  */
 class Layer extends VcsObject {
   /** @type {string} */
@@ -123,7 +115,7 @@ class Layer extends VcsObject {
    */
   static get vcsLayerNameSymbol() { return vcsLayerName; }
 
-  /** @returns {vcs.vcm.layer.Layer.Options} */
+  /** @returns {LayerOptions} */
   static getDefaultOptions() {
     return {
       name: undefined,
@@ -139,7 +131,7 @@ class Layer extends VcsObject {
   }
 
   /**
-   * @param {vcs.vcm.layer.Layer.Options} options
+   * @param {LayerOptions} options
    */
   constructor(options) {
     super(options);
@@ -147,8 +139,8 @@ class Layer extends VcsObject {
 
     /**
      * Metadata on the extent of the data in this layer. Depending on the implementation, data is only requested
-     * for this extent (e.g. {@see vcs.vcm.layer.RasterLayer})
-     * @type {vcs.vcm.util.Extent|null}
+     * for this extent (e.g. {@see RasterLayer})
+     * @type {Extent|null}
      * @api
      */
     this.extent = options.extent ? new Extent(options.extent) : null;
@@ -164,12 +156,12 @@ class Layer extends VcsObject {
      */
     this._allowPicking = parseBoolean(options.allowPicking, defaultOptions.allowPicking);
     /**
-     * @type {vcs.vcm.layer.LayerState}
+     * @type {LayerState}
      * @private
      */
     this._state = LayerState.INACTIVE;
     /**
-     * @type {Promise|null}
+     * @type {Promise<void>|null}
      * @private
      */
     this._loadingPromise = null;
@@ -214,7 +206,7 @@ class Layer extends VcsObject {
 
     /**
      * Called when the zIndex of this layer is changed. Is passed the new zIndex as its only argument.
-     * @type {vcs.vcm.event.VcsEvent<number>}
+     * @type {VcsEvent<number>}
      * @api
      */
     this.zIndexChanged = new VcsEvent();
@@ -238,41 +230,41 @@ class Layer extends VcsObject {
 
     /**
      * event raised if the exclusives group of the layer changes. is passed the array of exclusive groups as its only argument
-     * @type {vcs.vcm.event.VcsEvent<Array<string|symbol>>}
+     * @type {VcsEvent<Array<string|symbol>>}
      * @api
      */
     this.exclusiveGroupsChanged = new VcsEvent();
 
-    /** @type {vcs.vcm.layer.GlobalHider} */
+    /** @type {import("@vcmap/core").GlobalHider} */
     this.globalHider = getGlobalHider();
 
     /**
-     * @type {vcs.vcm.layer.CopyrightOptions|undefined}
+     * @type {CopyrightOptions|undefined}
      */
     this.copyright = options.copyright || defaultOptions.copyright;
 
     /**
-     * @type {Map<vcs.vcm.maps.VcsMap, Array<vcs.vcm.layer.LayerImplementation>>}
+     * @type {Map<import("@vcmap/core").VcsMap, Array<import("@vcmap/core").LayerImplementation>>}
      * @private
      */
     this._implementations = new Map();
 
     /**
-     * @type {Set<vcs.vcm.maps.VcsMap>}
+     * @type {Set<import("@vcmap/core").VcsMap>}
      * @private
      */
     this._activeMaps = new Set();
 
     /**
-     * Event raised, if the layers state changes. Is passed the vcs.vcm.layer.LayerState as its only parameter
-     * @type {vcs.vcm.event.VcsEvent<vcs.vcm.layer.LayerState>}
+     * Event raised, if the layers state changes. Is passed the LayerState as its only parameter
+     * @type {VcsEvent<LayerState>}
      * @api
      */
     this.stateChanged = new VcsEvent();
 
     /**
      * An optional feature provider to provider features based on click events.
-     * @type {vcs.vcm.util.featureProvider.AbstractFeatureProvider}
+     * @type {import("@vcmap/core").AbstractFeatureProvider}
      * @api
      */
     this.featureProvider = undefined;
@@ -308,7 +300,7 @@ class Layer extends VcsObject {
 
   /**
    * @api
-   * @type {vcs.vcm.layer.LayerState}
+   * @type {LayerState}
    * @readonly
    */
   get state() {
@@ -416,8 +408,8 @@ class Layer extends VcsObject {
 
   /**
    * creates an array of layer implementations for the given map.
-   * @param {vcs.vcm.maps.VcsMap} map Map
-   * @returns {Array<vcs.vcm.layer.LayerImplementation>} return the specific implementation
+   * @param {import("@vcmap/core").VcsMap} map Map
+   * @returns {Array<import("@vcmap/core").LayerImplementation<import("@vcmap/core").VcsMap>>} return the specific implementation
    */
   // eslint-disable-next-line class-methods-use-this,no-unused-vars
   createImplementationsForMap(map) {
@@ -426,8 +418,8 @@ class Layer extends VcsObject {
 
   /**
    * creates or returns a cached array of layer implementations for the given map.
-   * @param {vcs.vcm.maps.VcsMap} map initialized Map
-   * @returns {Array<vcs.vcm.layer.LayerImplementation>} return the specific implementation
+   * @param {import("@vcmap/core").VcsMap} map initialized Map
+   * @returns {Array<import("@vcmap/core").LayerImplementation<import("@vcmap/core").VcsMap>>} return the specific implementation
    * @api
    */
   getImplementationsForMap(map) {
@@ -443,7 +435,7 @@ class Layer extends VcsObject {
 
   /**
    * Returns all implementation of this layer for all maps
-   * @returns {Array<vcs.vcm.layer.LayerImplementation>}
+   * @returns {Array<import("@vcmap/core").LayerImplementation<import("@vcmap/core").VcsMap>>}
    * @api
    */
   getImplementations() {
@@ -451,7 +443,7 @@ class Layer extends VcsObject {
   }
 
   /**
-   * @returns {vcs.vcm.layer.Layer.ImplementationOptions}
+   * @returns {LayerImplementationOptions}
    */
   getImplementationOptions() {
     return {
@@ -490,7 +482,7 @@ class Layer extends VcsObject {
 
   /**
    * returns the Extent of this layer
-   * @returns {vcs.vcm.util.Extent}
+   * @returns {Extent}
    * @api stable
    */
   getExtent() {
@@ -499,7 +491,7 @@ class Layer extends VcsObject {
 
   /**
    * returns the Extent of this layer or null, if the layers extent was not defined or cannot be established
-   * @returns {vcs.vcm.util.Extent|null}
+   * @returns {Extent|null}
    * @api stable
    */
   getZoomToExtent() {
@@ -535,7 +527,7 @@ class Layer extends VcsObject {
   /**
    * is called from the map when the map is activated, and this layer is in the layerCollection of the map.
    * Will create an implementation if it does not exits and will forward the activation call to the implementation.
-   * @param {vcs.vcm.maps.VcsMap} map
+   * @param {import("@vcmap/core").VcsMap} map
    * @returns {Promise<void>}
    */
   async mapActivated(map) {
@@ -549,7 +541,7 @@ class Layer extends VcsObject {
   /**
    * is called from the map when the map is deactivated, and this layer is in the layerCollection of the map.
    * will forward deactivation call to the map specific implementation
-   * @param {vcs.vcm.maps.VcsMap} map
+   * @param {import("@vcmap/core").VcsMap} map
    */
   mapDeactivated(map) {
     this.getLogger().debug(`Layer: ${this.name} mapDeactivated is called from Map: ${map.name}`);
@@ -565,7 +557,7 @@ class Layer extends VcsObject {
   /**
    * is called when a layer is removed from the layer collection of a map or said map is destroyed.
    * destroys the associated implementation.
-   * @param {vcs.vcm.maps.VcsMap} map
+   * @param {import("@vcmap/core").VcsMap} map
    */
   removedFromMap(map) {
     this._activeMaps.delete(map);
@@ -578,7 +570,7 @@ class Layer extends VcsObject {
 
   /**
    * checks if the currently active map supports this layer
-   * @param {vcs.vcm.maps.VcsMap} map
+   * @param {import("@vcmap/core").VcsMap} map
    * @returns {boolean}
    * @api stable
    */
@@ -589,7 +581,7 @@ class Layer extends VcsObject {
   }
 
   /**
-   * @param {vcs.vcm.maps.VcsMap} map
+   * @param {import("@vcmap/core").VcsMap} map
    * @returns {Promise<void>}
    * @private
    */
@@ -640,7 +632,7 @@ class Layer extends VcsObject {
    * and updates the map. The returned promise resolves, once the layer & any _implementations are initialized
    * and all data is loaded.
    * Once the promise resolves, the layer can still be inactive, if deactivate was called while initializing the layer.
-   * @returns {Promise}
+   * @returns {Promise<void>}
    * @api stable
    */
   activate() {
@@ -686,10 +678,10 @@ class Layer extends VcsObject {
   }
 
   /**
-   * @returns {vcs.vcm.layer.Layer.Options}
+   * @returns {LayerOptions}
    */
   getConfigObject() {
-    /** @type {vcs.vcm.layer.Layer.Options} */
+    /** @type {LayerOptions} */
     const config = super.getConfigObject();
     const defaultOptions = Layer.getDefaultOptions();
 

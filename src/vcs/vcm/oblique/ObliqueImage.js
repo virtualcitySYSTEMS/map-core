@@ -5,16 +5,16 @@ import { getHeightFromTerrainProvider } from '../layer/terrainHelpers.js';
 /**
  * @typedef {Object} ObliqueImageOptions
  * @property {!string} name
- * @property {ObliqueViewDirection} viewDirection
+ * @property {import("@vcmap/core").ObliqueViewDirection} viewDirection
  * @property {number} viewDirectionAngle
  * @property {!Array<import("ol/coordinate").Coordinate>} groundCoordinates
  * @property {!import("ol/coordinate").Coordinate} centerPointOnGround
- * @property {!ObliqueImageMeta} meta
- * @property {import("cesium").Cartesian3|undefined} projectionCenter
- * @property {import("cesium").Matrix3|undefined} pToRealworld
- * @property {import("cesium").Matrix4|undefined} pToImage
- * @property {import("ol/proj/Projection").default} projection
- * @property {import("cesium").CesiumTerrainProvider|undefined} terrainProvider
+ * @property {!import("@vcmap/core").ObliqueImageMeta} meta
+ * @property {import("@vcmap/cesium").Cartesian3|undefined} projectionCenter
+ * @property {import("@vcmap/cesium").Matrix3|undefined} pToRealworld
+ * @property {import("@vcmap/cesium").Matrix4|undefined} pToImage
+ * @property {import("ol/proj/Projection").default|undefined} [projection]
+ * @property {import("@vcmap/cesium").CesiumTerrainProvider|undefined} terrainProvider
  * @api
  */
 
@@ -36,14 +36,14 @@ class ObliqueImage {
 
     /**
      * Meta information shared across multiple images.
-     * @type {ObliqueImageMeta}
+     * @type {import("@vcmap/core").ObliqueImageMeta}
      * @api
      */
     this.meta = options.meta;
 
     /**
      * viewDirection
-     * @type {ObliqueViewDirection}
+     * @type {import("@vcmap/core").ObliqueViewDirection}
      * @api
      */
     this.viewDirection = options.viewDirection;
@@ -71,20 +71,20 @@ class ObliqueImage {
 
     /**
      * The transformation matrix image to real world (in image world projection).
-     * @type {import("cesium").Matrix3}
+     * @type {import("@vcmap/cesium").Matrix3}
      * @api
      */
     this.pToRealworld = options.pToRealworld || null;
 
     /**
      * The transformation matrix real to image (in image world projection).
-     * @type {import("cesium").Matrix4}
+     * @type {import("@vcmap/cesium").Matrix4}
      */
     this.pToImage = options.pToImage || null;
 
     /**
      * The projection center in image world projection
-     * @type {import("cesium").Cartesian3}
+     * @type {import("@vcmap/cesium").Cartesian3}
      * @api
      */
     this.projectionCenter = options.projectionCenter || null;

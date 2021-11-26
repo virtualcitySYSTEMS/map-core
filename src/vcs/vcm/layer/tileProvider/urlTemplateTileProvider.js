@@ -5,7 +5,7 @@ import TileProvider from './tileProvider.js';
 import { getCurrentLocale } from '../../util/locale.js';
 
 /**
- * @typedef {vcs.vcm.layer.tileProvider.TileProvider.Options} vcs.vcm.layer.tileProvider.URLTemplateTileProvider.Options
+ * @typedef {TileProviderOptions} URLTemplateTileProviderOptions
  * @property {string} url  url Template in the form `http://myFeatureSource/layer/getFeatures?minx={minx}&miny={miny}&maxx={maxx}&maxy={maxy}` or `http://myFeatureSource/layer/getFeatures?x={x}&y={y}&level={z}`
  * @api
  */
@@ -19,7 +19,7 @@ import { getCurrentLocale } from '../../util/locale.js';
  * @param {number} x
  * @param {number} y
  * @param {number} z
- * @param {Cesium/Rectangle=} tilingExtent
+ * @param {import("@vcmap/cesium").Rectangle=} tilingExtent
  * @returns {string}
  */
 export function getURL(url, x, y, z, tilingExtent) {
@@ -53,8 +53,7 @@ export function getURL(url, x, y, z, tilingExtent) {
  * {locale} can be used to request locale aware content.
  *
  * @class
- * @memberOf vcs.vcm.layer.tileProvider
- * @extends {vcs.vcm.layer.tileProvider.TileProvider}
+ * @extends {TileProvider}
  * @export
  * @api
  */
@@ -66,7 +65,7 @@ class URLTemplateTileProvider extends TileProvider {
   static get className() { return 'vcs.vcm.layer.tileProvider.URLTemplateTileProvider'; }
 
   /**
-   * @returns {vcs.vcm.layer.tileProvider.URLTemplateTileProvider.Options}
+   * @returns {URLTemplateTileProviderOptions}
    */
   static getDefaultOptions() {
     return {
@@ -76,7 +75,7 @@ class URLTemplateTileProvider extends TileProvider {
   }
 
   /**
-   * @param {vcs.vcm.layer.tileProvider.URLTemplateTileProvider.Options} options
+   * @param {URLTemplateTileProviderOptions} options
    */
   constructor(options) {
     const defaultOptions = URLTemplateTileProvider.getDefaultOptions();
@@ -93,7 +92,7 @@ class URLTemplateTileProvider extends TileProvider {
    * @param {number} x
    * @param {number} y
    * @param {number} z
-   * @returns {Promise<Array<ol/Feature>>}
+   * @returns {Promise<Array<import("ol").Feature<import("ol/geom/Geometry").default>>>}
    */
   async loader(x, y, z) {
     const rectangle = this.tilingScheme.tileXYToRectangle(x, y, z);

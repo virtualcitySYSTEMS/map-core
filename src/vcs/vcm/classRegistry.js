@@ -3,18 +3,17 @@ import { getLogger } from '@vcsuite/logger';
 
 /**
  * @class
- * @memberOf vcs.vcm
  * @api
  */
 class ClassRegistry {
   constructor() {
     /**
-     * @type {Map<string, function():(function(new: *, ...*=)|Promise<function(new: *, ...*=)>)>}
+     * @type {Map<string, function():(function(new: *, ...*)|Promise<function(new: *, ...*)>)>}
      * @private
      */
     this._classMap = new Map();
     /**
-     * @type {vcsuite-logger/Logger}
+     * @type {import("@vcsuite/logger").Logger}
      */
     this.logger = getLogger('vcs.vcm.ClassRegistry');
   }
@@ -22,7 +21,7 @@ class ClassRegistry {
   /**
    * Register a class by its class name.
    * @param {string} className
-   * @param {function(new: *, ...*=)} ctor
+   * @param {function(new: *, ...*)} ctor
    * @api
    */
   registerClass(className, ctor) {
@@ -38,7 +37,7 @@ class ClassRegistry {
 
   /**
    * @param {string} className
-   * @param {function():Promise<function(new: *, ...*=)>} cb - a callback providing a promise which returns the constructor on resolve.
+   * @param {function():Promise<function(new: *, ...*)>} cb - a callback providing a promise which returns the constructor on resolve.
    * used for lazy loading modules, e.g
    * <code>ClassRegistry.registerDeferredClass(() => import('my-module').then(({ default: MyCtor }) => MyCtor));</code>
    * @api
@@ -53,7 +52,7 @@ class ClassRegistry {
   /**
    * Gets the constructor for a registered class or undefined, if no such class was registerd
    * @param {string} className
-   * @returns {function(new: *, ...*=)|Promise<function(new: *, ...*=)>|undefined}
+   * @returns {function(new: *, ...*)|Promise<*>|undefined}
    * @api
    */
   getClass(className) {
@@ -65,7 +64,7 @@ class ClassRegistry {
 
   /**
    * @param {string} className
-   * @param {...*=} args
+   * @param {...*} args
    * @returns {Promise<*>}
    * @api
    */
@@ -82,14 +81,14 @@ class ClassRegistry {
 
   /**
    * @param {string} className
-   * @param {...*=} args
+   * @param {...*} args
    * @returns {*}
    * @deprecated 4.0
    */
   createSync(className, ...args) {
     check(className, String);
 
-    const Ctor = /** @type {function(new: *, ...*=)} */ (this.getClass(className));
+    const Ctor = /** @type {function(new: *, ...*)} */ (this.getClass(className));
     if (!Ctor) {
       this.logger.error(`could not find constructor ${className}`);
       return undefined;
@@ -102,7 +101,6 @@ export default ClassRegistry;
 
 /**
  * @export
- * @memberOf vcs.vcm.
- * @type {vcs.vcm.ClassRegistry}
+ * @type {ClassRegistry}
  */
 export const VcsClassRegistry = new ClassRegistry();

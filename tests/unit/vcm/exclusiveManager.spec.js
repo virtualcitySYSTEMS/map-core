@@ -6,7 +6,7 @@ import resetFramework from '../helpers/resetFramework.js';
 
 describe('vcs.vcm.ExclusiveManager', () => {
   let sandbox;
-  /** @type {vcs.vcm.util.ExclusiveManager} */
+  /** @type {import("@vcmap/core").ExclusiveManager} */
   let EM;
 
   before(() => {

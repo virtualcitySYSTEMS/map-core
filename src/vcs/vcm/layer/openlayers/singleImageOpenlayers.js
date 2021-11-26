@@ -8,15 +8,14 @@ import { isSameOrigin } from '../../util/urlHelpers.js';
  * represents a specific OpenLayers SingleImageLayer Layer class.
  * @class
  * @export
- * @extends {vcs.vcm.layer.openlayers.RasterLayerOpenlayers}
- * @memberOf vcs.vcm.layer.openlayers
+ * @extends {RasterLayerOpenlayers}
  */
 class SingleImageOpenlayers extends RasterLayerOpenlayers {
   static get className() { return 'vcs.vcm.layer.openlayers.SingleImageOpenlayers'; }
 
   /**
-   * @param {vcs.vcm.maps.Openlayers} map
-   * @param {vcs.vcm.layer.SingleImage.ImplementationOptions} options
+   * @param {import("@vcmap/core").Openlayers} map
+   * @param {SingleImageImplementationOptions} options
    */
   constructor(map, options) {
     super(map, options);
@@ -27,7 +26,7 @@ class SingleImageOpenlayers extends RasterLayerOpenlayers {
 
   /**
    * returns the ol Layer
-   * @returns {ol/layer/Layer}
+   * @returns {import("ol/layer/Layer").default}
    */
   getOLLayer() {
     const options = {

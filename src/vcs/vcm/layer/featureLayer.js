@@ -12,41 +12,40 @@ import { styleCollection } from '../globalCollections.js';
 import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
- * @typedef {vcs.vcm.layer.Layer.Options} vcs.vcm.layer.FeatureLayer.Options
- * @property {vcs.vcm.util.style.DeclarativeStyleItem.Options|vcs.vcm.util.style.VectorStyleItem.Options|vcs.vcm.util.style.ClusterStyleItem.Options|vcs.vcm.util.style.StyleItem|string|undefined} style
+ * @typedef {LayerOptions} FeatureLayerOptions
+ * @property {DeclarativeStyleItemOptions|VectorStyleItemOptions|import("@vcmap/core").StyleItem|string|undefined} style
  * @property {string|undefined} activeStyleName - vcs:undocumented
  * @property {Object|undefined} genericFeatureProperties - properties to add to generic features, eg for display in the balloon
  * @property {number} [balloonHeightOffset=10]
- * @property {vcs.vcm.layer.FeatureVisibility|undefined} featureVisibility - vcs:undocumented
+ * @property {FeatureVisibility|undefined} featureVisibility - vcs:undocumented
  * @api
  */
 
 /**
- * @typedef {vcs.vcm.layer.Layer.ImplementationOptions} vcs.vcm.layer.FeatureLayer.ImplementationOptions
- * @property {vcs.vcm.layer.FeatureVisibility} featureVisibility
- * @property {vcs.vcm.util.style.StyleItem} style
+ * @typedef {LayerImplementationOptions} FeatureLayerImplementationOptions
+ * @property {FeatureVisibility} featureVisibility
+ * @property {import("@vcmap/core").StyleItem} style
  * @api
  */
 
 /**
  * Event called on a layers <b>styleChanged</b> property, when a layers style changes, with the following parameters.
- * @typedef {Object} vcs.vcm.layer.FeatureLayer.StyleChangedEvent
- * @property {vcs.vcm.util.style.StyleItem} newStyle
- * @property {vcs.vcm.util.style.StyleItem|undefined} oldStyle
+ * @typedef {Object} FeatureLayer.StyleChangedEvent
+ * @property {import("@vcmap/core").StyleItem} newStyle
+ * @property {import("@vcmap/core").StyleItem|undefined} oldStyle
  * @api
  */
 
 /**
- * @typedef {vcs.vcm.layer.LayerImplementation<vcs.vcm.maps.VcsMap>} vcs.vcm.layer.FeatureLayerImplementation
- * @property {function(vcs.vcm.util.style.StyleItem, boolean=):void} updateStyle
+ * @typedef {import("@vcmap/core").LayerImplementation<import("@vcmap/core").VcsMap>} FeatureLayerImplementation
+ * @property {function(import("@vcmap/core").StyleItem, boolean=):void} updateStyle
  */
 
 /**
  * Base class for all layers representing features, e.g. Vector, Buildings, POIs
  * @class
- * @memberOf vcs.vcm.layer
  * @abstract
- * @extends {vcs.vcm.layer.Layer}
+ * @extends {Layer}
  * @export
  * @api
  */
@@ -55,7 +54,7 @@ class FeatureLayer extends Layer {
   static get className() { return 'vcs.vcm.layer.FeatureLayer'; }
 
   /**
-   * @returns {vcs.vcm.layer.FeatureLayer.Options}
+   * @returns {FeatureLayerOptions}
    */
   static getDefaultOptions() {
     return {
@@ -67,25 +66,25 @@ class FeatureLayer extends Layer {
   }
 
   /**
-   * @param {vcs.vcm.layer.FeatureLayer.Options} options
+   * @param {FeatureLayerOptions} options
    */
   constructor(options) {
     super(options);
     const defaultOptions = FeatureLayer.getDefaultOptions();
 
     /**
-     * @type {vcs.vcm.util.style.StyleItem}
+     * @type {import("@vcmap/core").StyleItem}
      * @private
      */
     this._style = this.getStyleOrDefaultStyle(options.activeStyleName || options.style);
     /**
-     * @type {vcs.vcm.util.style.StyleItem}
+     * @type {import("@vcmap/core").StyleItem}
      * @private
      */
     this._defaultStyle = this._style;
     /**
      * An event, called when the style of the layer changes. Is passed the new style item as its value.
-     * @type {vcs.vcm.event.VcsEvent<vcs.vcm.util.style.StyleItem>}
+     * @type {VcsEvent<import("@vcmap/core").StyleItem>}
      * @api
      */
     this.styleChanged = new VcsEvent();
@@ -104,14 +103,14 @@ class FeatureLayer extends Layer {
 
     /**
      * FeatureVisibility tracks the highlighting and hiding of features on this layer
-     * @type {vcs.vcm.layer.FeatureVisibility}
+     * @type {FeatureVisibility}
      */
     this.featureVisibility = options.featureVisibility || new FeatureVisibility();
   }
 
   /**
    * The style the layer had at construction
-   * @type {vcs.vcm.util.style.StyleItem}
+   * @type {import("@vcmap/core").StyleItem}
    * @api
    * @readonly
    */
@@ -122,7 +121,7 @@ class FeatureLayer extends Layer {
   /**
    * style, use setStyle to change
    * @api
-   * @type {vcs.vcm.util.style.StyleItem}
+   * @type {import("@vcmap/core").StyleItem}
    * @readonly
    */
   get style() {
@@ -139,7 +138,7 @@ class FeatureLayer extends Layer {
   }
 
   /**
-   * @returns {vcs.vcm.layer.FeatureLayer.ImplementationOptions}
+   * @returns {FeatureLayerImplementationOptions}
    */
   getImplementationOptions() {
     return {
@@ -150,7 +149,7 @@ class FeatureLayer extends Layer {
   }
 
   /**
-   * @param {Object|ol/Feature|Cesium/Cesium3DTilePointFeature|Cesium/Cesium3DTileFeature|vcs.vcm.layer.DataSource.PickedObject} object
+   * @param {Object|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Cesium3DTilePointFeature|import("@vcmap/cesium").Cesium3DTileFeature|DataSourcePickedObject} object
    * @returns {?Object}
    */
   // eslint-disable-next-line no-unused-vars,class-methods-use-this
@@ -161,8 +160,8 @@ class FeatureLayer extends Layer {
   /**
    * This is called by the selectBehavior to create generic features from clicked objects
    * needs to be implemented by each layer which has clickable objects
-   * @param {Object|vcs.vcm.layer.Vector.ClickedObject|ol/Feature} object
-   * @returns {vcs.vcm.layer.GenericFeature}
+   * @param {Object|VectorClickedObject|import("ol").Feature<import("ol/geom/Geometry").default>} object
+   * @returns {GenericFeature}
    */
   // eslint-disable-next-line no-unused-vars
   getGenericFeatureFromClickedObject(object) { // XXX remove after event implementation
@@ -181,9 +180,9 @@ class FeatureLayer extends Layer {
   }
 
   /**
-   * @param {(vcs.vcm.util.style.Reference|vcs.vcm.util.style.DeclarativeStyleItem.Options|vcs.vcm.util.style.VectorStyleItem.Options|vcs.vcm.util.style.ClusterStyleItem.Options|vcs.vcm.util.style.StyleItem|string)=} styleOptions
-   * @param {(vcs.vcm.util.style.VectorStyleItem|vcs.vcm.util.style.ClusterStyleItem|vcs.vcm.util.style.DeclarativeStyleItem)=} defaultStyle
-   * @returns {vcs.vcm.util.style.StyleItem}
+   * @param {(Reference|DeclarativeStyleItemOptions|VectorStyleItemOptions|import("@vcmap/core").StyleItem|string)=} styleOptions
+   * @param {(import("@vcmap/core").VectorStyleItem|import("@vcmap/core").DeclarativeStyleItem)=} defaultStyle
+   * @returns {import("@vcmap/core").StyleItem}
    */
   // eslint-disable-next-line class-methods-use-this
   getStyleOrDefaultStyle(styleOptions, defaultStyle) {
@@ -192,7 +191,7 @@ class FeatureLayer extends Layer {
 
   /**
    * Sets the style based on a styleName on a layer
-   * @param {string|ol/style/Style|ol/style/StyleFunction|vcs.vcm.util.style.StyleItem} style
+   * @param {string|import("ol/style/Style").default|import("ol/style/Style").StyleFunction|import("@vcmap/core").StyleItem} style
    * @param {boolean=} silent
    * @api
    */
@@ -210,11 +209,11 @@ class FeatureLayer extends Layer {
       this._style = style;
     } else {
       this._style = new VectorStyleItem({});
-      this._style.style = /** @type {ol/style/Style} */ (style);
+      this._style.style = /** @type {import("ol/style/Style").default} */ (style);
     }
     this.getImplementations()
       .forEach((impl) => {
-        /** @type {vcs.vcm.layer.FeatureLayerImplementation} */ (impl).updateStyle(this._style, silent);
+        /** @type {FeatureLayerImplementation} */ (impl).updateStyle(this._style, silent);
       });
     this.styleChanged.raiseEvent(this._style);
   }
@@ -228,10 +227,10 @@ class FeatureLayer extends Layer {
   }
 
   /**
-   * @returns {vcs.vcm.layer.FeatureLayer.Options}
+   * @returns {FeatureLayerOptions}
    */
   getConfigObject() {
-    const config = /** @type {vcs.vcm.layer.FeatureLayer.Options} */ (super.getConfigObject());
+    const config = /** @type {FeatureLayerOptions} */ (super.getConfigObject());
     if (!this.getStyleOrDefaultStyle().equals(this._style)) {
       if (this._style[referenceableStyleSymbol]) {
         config.style = this.style.getReference();

@@ -9,8 +9,8 @@ import LayerImplementation from '../layerImplementation.js';
 import { vcsLayerName } from '../layerSymbols.js';
 
 /**
- * @param {Cesium/EntityCollection} source
- * @param {Cesium/EntityCollection} destination
+ * @param {import("@vcmap/cesium").EntityCollection} source
+ * @param {import("@vcmap/cesium").EntityCollection} destination
  * @returns {Function}
  */
 function synchronizeEntityCollections(source, destination) {
@@ -26,28 +26,27 @@ function synchronizeEntityCollections(source, destination) {
 /**
  * @class
  * @export
- * @extends {vcs.vcm.layer.LayerImplementation<vcs.vcm.maps.CesiumMap>}
- * @memberOf vcs.vcm.layer.cesium
+ * @extends {LayerImplementation<import("@vcmap/core").CesiumMap>}}
  */
 class DataSourceCesium extends LayerImplementation {
   /**
-   * @param {vcs.vcm.maps.CesiumMap} map
-   * @param {vcs.vcm.layer.DataSource.ImplementationOptions} options
+   * @param {import("@vcmap/core").CesiumMap} map
+   * @param {DataSourceImplementationOptions} options
    */
   constructor(map, options) {
     super(map, options);
 
     /**
-     * @type {Cesium/CustomDataSource|Cesium/CzmlDataSource}
+     * @type {import("@vcmap/cesium").CustomDataSource|import("@vcmap/cesium").CzmlDataSource}
      */
     this.dataSource = new CustomDataSource(this.name);
     this.dataSource[vcsLayerName] = this.name;
     /**
-     * @type {Cesium/EntityCollection}
+     * @type {import("@vcmap/cesium").EntityCollection}
      */
     this.entities = options.entities;
     /**
-     * @type {Cesium/DataSourceClock|undefined}
+     * @type {import("@vcmap/cesium").DataSourceClock|undefined}
      */
     this.clock = options.clock;
     /**

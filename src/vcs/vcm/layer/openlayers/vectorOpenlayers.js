@@ -7,41 +7,40 @@ import { getGlobalHider } from '../globalHider.js';
  * represents a specific vectorlayer for openlayers.
  * @class
  * @export
- * @implements {vcs.vcm.layer.FeatureLayerImplementation}
- * @extends {vcs.vcm.layer.openlayers.LayerOpenlayers}
- * @memberOf vcs.vcm.layer.openlayers
+ * @implements {FeatureLayerImplementation}
+ * @extends {LayerOpenlayers}
  */
 class VectorOpenlayers extends LayerOpenlayers {
   static get className() { return 'vcs.vcm.layer.openlayers.VectorOpenlayers'; }
 
   /**
-   * @param {vcs.vcm.maps.Openlayers} map
-   * @param {vcs.vcm.layer.Vector.ImplementationOptions} options
+   * @param {import("@vcmap/core").Openlayers} map
+   * @param {VectorImplementationOptions} options
    */
   constructor(map, options) {
     super(map, options);
-    /** @type {ol/source/Vector} */
+    /** @type {import("ol/source").Vector<import("ol/geom/Geometry").default>} */
     this.source = options.source;
-    /** @type {vcs.vcm.util.style.StyleItem} */
+    /** @type {import("@vcmap/core").StyleItem} */
     this.style = options.style;
     /** @type {number} */
     this.maxResolution = options.maxResolution;
     /** @type {number} */
     this.minResolution = options.minResolution;
-    /** @type {vcs.vcm.layer.FeatureVisibility} */
+    /** @type {import("@vcmap/core").FeatureVisibility} */
     this.featureVisibility = options.featureVisibility;
     /**
      * @type {Array<Function>}
      * @private
      */
     this._featureVisibilityListeners = [];
-    /** @type {ol/layer/Vector|null} */
+    /** @type {import("ol/layer/Vector").default<import("ol/source").Vector<import("ol/geom/Geometry").default>>|null} */
     this.olLayer = null;
     this.globalHider = getGlobalHider();
   }
 
   /**
-   * @param {vcs.vcm.util.style.StyleItem} style
+   * @param {import("@vcmap/core").StyleItem} style
    * @param {boolean=} silent
    */
   // eslint-disable-next-line no-unused-vars
@@ -54,7 +53,7 @@ class VectorOpenlayers extends LayerOpenlayers {
 
   /**
    * @inheritDoc
-   * @returns {ol/layer/Vector}
+   * @returns {import("ol/layer/Vector").default<import("ol/source").Vector<import("ol/geom/Geometry").default>>}
    */
   getOLLayer() {
     const olLayer = new OLVectorLayer({

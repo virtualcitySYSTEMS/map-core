@@ -27,8 +27,8 @@ import { getCesiumColor } from '../style/styleHelpers.js';
 import { sampleCesiumTerrainMostDetailed } from '../../layer/terrainHelpers.js';
 
 /**
- * @param {Array<ol/geom/Point>} geometries
- * @returns {Array<ol/Coordinate>}
+ * @param {Array<import("ol/geom/Point").default>} geometries
+ * @returns {Array<import("ol/coordinate").Coordinate>}
  * @private
  */
 export function getCoordinates(geometries) {
@@ -38,10 +38,10 @@ export function getCoordinates(geometries) {
 }
 
 /**
- * @param {ol/Feature} feature
- * @param {ol/style/Style} style
- * @param {Cesium/HeightReference} heightReference
- * @param {vcs.vcm.layer.VectorProperties} vectorProperties
+ * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+ * @param {import("ol/style/Style").default} style
+ * @param {import("@vcmap/cesium").HeightReference} heightReference
+ * @param {import("@vcmap/core").VectorProperties} vectorProperties
  * @returns {Object|null}
  */
 export function getBillboardOptions(feature, style, heightReference, vectorProperties) {
@@ -90,11 +90,11 @@ export function getBillboardOptions(feature, style, heightReference, vectorPrope
 
 /**
  * extracts cesium label options from a feature and style
- * @param {ol/Feature} feature
- * @param {ol/style/Style} style style.getText().getFill() is set by default to be #333,
+ * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+ * @param {import("ol/style/Style").default} style style.getText().getFill() is set by default to be #333,
  * if no fill is required set Fill empty by using style.getText().setFill()
- * @param {Cesium/HeightReference} heightReference
- * @param {vcs.vcm.layer.VectorProperties} vectorProperties
+ * @param {import("@vcmap/cesium").HeightReference} heightReference
+ * @param {import("@vcmap/core").VectorProperties} vectorProperties
  * @returns {Object|null}
  */
 export function getLabelOptions(feature, style, heightReference, vectorProperties) {
@@ -178,12 +178,12 @@ export function getLabelOptions(feature, style, heightReference, vectorPropertie
 }
 
 /**
- * @param {ol/Feature} feature
- * @param {Array<ol/Coordinate>} wgs84Positions
- * @param {Array<Cesium/Cartesian3>} positions
- * @param {vcs.vcm.layer.VectorProperties} vectorProperties
- * @param {Cesium/Scene} scene
- * @returns {null|Array<Cesium/Model>}
+ * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+ * @param {Array<import("ol/coordinate").Coordinate>} wgs84Positions
+ * @param {Array<import("@vcmap/cesium").Cartesian3>} positions
+ * @param {import("@vcmap/core").VectorProperties} vectorProperties
+ * @param {import("@vcmap/cesium").Scene} scene
+ * @returns {null|Array<import("@vcmap/cesium").Model>}
  */
 export function getModelOptions(feature, wgs84Positions, positions, vectorProperties, scene) {
   const modelOptions = vectorProperties.getModel(feature);
@@ -205,7 +205,10 @@ export function getModelOptions(feature, wgs84Positions, positions, vectorProper
       });
 
       if (!wgs84Positions[index][2]) {
-        sampleCesiumTerrainMostDetailed(scene.globe.terrainProvider, [Cartographic.fromCartesian(position)])
+        sampleCesiumTerrainMostDetailed(
+          /** @type {import("@vcmap/cesium").CesiumTerrainProvider} */ (scene.globe.terrainProvider),
+          [Cartographic.fromCartesian(position)],
+        )
           .then(([cartoWithNewHeight]) => {
             if (!model.isDestroyed()) {
               model.modelMatrix = Matrix4.multiply(
@@ -231,7 +234,7 @@ export function getModelOptions(feature, wgs84Positions, positions, vectorProper
 
 /**
  * validates if a point is renderable
- * @param {ol/geom/Point} point
+ * @param {import("ol/geom/Point").default} point
  * @returns {boolean}
  */
 export function validatePoint(point) {
@@ -247,9 +250,9 @@ export function validatePoint(point) {
 
 /**
  * returns positions (cartesian3) and WGS84 coordinates
- * @param {Array<ol/Coordinate>} coordinates
- * @param {vcs.vcm.layer.Vector.HeightInfo} heightInfo
- * @returns {{positions:Array<Cesium/Cartesian3>, wgs84Positions:Array<ol/Coordinate>}}
+ * @param {Array<import("ol/coordinate").Coordinate>} coordinates
+ * @param {VectorHeightInfo} heightInfo
+ * @returns {{positions:Array<import("@vcmap/cesium").Cartesian3>, wgs84Positions:Array<import("ol/coordinate").Coordinate>}}
  */
 export function getCartesian3AndWGS84FromCoordinates(coordinates, heightInfo) {
   const wgs84Positions = new Array(coordinates.length);
@@ -273,11 +276,11 @@ export function getCartesian3AndWGS84FromCoordinates(coordinates, heightInfo) {
 }
 
 /**
- * @param {Array<ol/Coordinate>} wgs84Positions
- * @param {vcs.vcm.layer.Vector.HeightInfo} heightInfo
- * @param {Array<Cesium/Cartesian3>} positions
- * @param {ol/style/Style} style
- * @returns {Array<Cesium/PolylineGeometry>}
+ * @param {Array<import("ol/coordinate").Coordinate>} wgs84Positions
+ * @param {VectorHeightInfo} heightInfo
+ * @param {Array<import("@vcmap/cesium").Cartesian3>} positions
+ * @param {import("ol/style/Style").default} style
+ * @returns {Array<import("@vcmap/cesium").PolylineGeometry>}
  * @private
  */
 export function getLineGeometries(wgs84Positions, heightInfo, positions, style) {
@@ -296,12 +299,12 @@ export function getLineGeometries(wgs84Positions, heightInfo, positions, style) 
 }
 
 /**
- * @param {ol/Feature} feature
- * @param {ol/style/Style} style
- * @param {Array<ol/geom/Point>} geometries
- * @param {vcs.vcm.layer.VectorProperties} vectorProperties
- * @param {Cesium/Scene} scene
- * @param {vcs.vcm.layer.cesium.VectorContext|vcs.vcm.layer.cesium.ClusterContext} context
+ * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+ * @param {import("ol/style/Style").default} style
+ * @param {Array<import("ol/geom/Point").default>} geometries
+ * @param {import("@vcmap/core").VectorProperties} vectorProperties
+ * @param {import("@vcmap/cesium").Scene} scene
+ * @param {import("@vcmap/core").VectorContext|import("@vcmap/core").ClusterContext} context
  */
 export default function pointToCesium(feature, style, geometries, vectorProperties, scene, context) {
   if (!style.getImage() && !(style.getText() && style.getText().getText())) {

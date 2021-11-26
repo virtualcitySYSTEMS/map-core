@@ -8,22 +8,22 @@ import { getGlobalHider } from './globalHider.js';
 import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
- * @typedef {vcs.vcm.layer.Layer.Options} vcs.vcm.layer.DataSource.Options
+ * @typedef {LayerOptions} DataSourceOptions
  * @property {Object|undefined} genericFeatureProperties
  * @api
  */
 
 /**
- * @typedef {Object} vcs.vcm.layer.DataSource.PickedObject
- * @property {Cesium/Entity} id
- * @property {vcs.vcm.maps.ClickPosition} clickedPosition
+ * @typedef {Object} DataSourcePickedObject
+ * @property {import("@vcmap/cesium").Entity} id
+ * @property {ClickPosition} clickedPosition
  * @property {Object} attributes
  */
 
 /**
- * @typedef {vcs.vcm.layer.Layer.ImplementationOptions} vcs.vcm.layer.DataSource.ImplementationOptions
- * @property {Cesium/EntityCollection} entities
- * @property {Cesium/DataSourceClock|undefined} clock
+ * @typedef {LayerImplementationOptions} DataSourceImplementationOptions
+ * @property {import("@vcmap/cesium").EntityCollection} entities
+ * @property {import("@vcmap/cesium").DataSourceClock|undefined} clock
  * @api
  */
 
@@ -31,15 +31,14 @@ import { VcsClassRegistry } from '../classRegistry.js';
  * Represents a layer of Cesium.Entity
  * @class
  * @export
- * @extends {vcs.vcm.layer.Layer}
+ * @extends {Layer}
  * @api stable
- * @memberOf vcs.vcm.layer
  */
 class DataSource extends Layer {
   static get className() { return 'vcs.vcm.layer.DataSource'; }
 
   /**
-   * @returns {vcs.vcm.layer.DataSource.Options}
+   * @returns {DataSourceOptions}
    */
   static getDefaultOptions() {
     return {
@@ -49,19 +48,19 @@ class DataSource extends Layer {
   }
 
   /**
-   * @param {vcs.vcm.layer.DataSource.Options} options
+   * @param {DataSourceOptions} options
    */
   constructor(options) {
     super(options);
     const defaultOptions = DataSource.getDefaultOptions();
     /**
      * The entities of this layer. Use the `addEntity` API to add Enitities to ensure interoperability with vcm interfaces
-     * @type {Cesium/EntityCollection}
+     * @type {import("@vcmap/cesium").EntityCollection}
      * @api
      */
     this.entities = new EntityCollection();
     /**
-     * @type {Cesium/DataSourceClock|undefined}
+     * @type {import("@vcmap/cesium").DataSourceClock|undefined}
      */
     this.clock = undefined;
     /**
@@ -72,7 +71,7 @@ class DataSource extends Layer {
 
     /**
      * The feature visibility of this layer. NOTE: Entities cannot be highlighted at this moment.
-     * @type {vcs.vcm.layer.FeatureVisibility}
+     * @type {FeatureVisibility}
      * @api
      */
     this.featureVisibility = new FeatureVisibility();
@@ -140,7 +139,7 @@ class DataSource extends Layer {
   }
 
   /**
-   * @returns {vcs.vcm.layer.DataSource.ImplementationOptions}
+   * @returns {DataSourceImplementationOptions}
    */
   getImplementationOptions() {
     return {
@@ -151,8 +150,8 @@ class DataSource extends Layer {
   }
 
   /**
-   * @param {vcs.vcm.maps.CesiumMap} map
-   * @returns {Array<vcs.vcm.layer.cesium.DataSourceCesium>}
+   * @param {CesiumMap} map
+   * @returns {Array<DataSourceCesium>}
    */
   createImplementationsForMap(map) {
     if (map instanceof CesiumMap) {
@@ -163,7 +162,7 @@ class DataSource extends Layer {
 
   /**
    * adds an entity
-   * @param {Cesium/Entity.ConstructorOptions|Cesium/Entity} options - Cesium Entity options or the entity
+   * @param {import("@vcmap/cesium").Entity.ConstructorOptions|import("@vcmap/cesium").Entity} options - Cesium Entity options or the entity
    * @param {?Object=} attributes - a set of properties, typically used for rendering a balloon
    * @param {boolean=} allowPicking - whether to override the layers allowPicking setting for this entity
    * @returns {null|string} the entities id
@@ -184,7 +183,7 @@ class DataSource extends Layer {
    */
   flyToEntity(id) {
     this.getImplementations().forEach((impl) => {
-      /** @type {vcs.vcm.layer.cesium.DataSourceCesium} */ (impl).flyToEntity(id);
+      /** @type {DataSourceCesium} */ (impl).flyToEntity(id);
     });
   }
 
@@ -198,7 +197,7 @@ class DataSource extends Layer {
   }
 
   /**
-   * @param {vcs.vcm.layer.DataSource.PickedObject} object
+   * @param {DataSourcePickedObject} object
    * @returns {?Object}
    */
   objectClickedHandler(object) {
@@ -216,8 +215,8 @@ class DataSource extends Layer {
   }
 
   /**
-   * @param {vcs.vcm.layer.DataSource.PickedObject} object
-   * @returns {vcs.vcm.layer.GenericFeature}
+   * @param {DataSourcePickedObject} object
+   * @returns {GenericFeature}
    */
   getGenericFeatureFromClickedObject(object) {
     const attributes = { ...this._genericFeatureProperties, ...object.attributes || {} };
@@ -234,10 +233,10 @@ class DataSource extends Layer {
 
   /**
    * @inheritDoc
-   * @returns {vcs.vcm.layer.DataSource.Options}
+   * @returns {DataSourceOptions}
    */
   getConfigObject() {
-    const config = /** @type {vcs.vcm.layer.DataSource.Options} */ (super.getConfigObject());
+    const config = /** @type {DataSourceOptions} */ (super.getConfigObject());
     if (Object.keys(this._genericFeatureProperties).length > 0) {
       config.genericFeatureProperties = { ...this._genericFeatureProperties };
     }

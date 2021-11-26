@@ -9,9 +9,9 @@ import resetFramework from '../../../helpers/resetFramework.js';
 
 describe('vcs.vcm.layer.openlayers.RasterLayerOpenlayers', () => {
   let sandbox;
-  /** @type {vcs.vcm.layer.RasterLayer} */
+  /** @type {import("@vcmap/core").RasterLayer} */
   let commonLayer;
-  /** @type {vcs.vcm.layer.openlayers.RasterLayerOpenlayers} */
+  /** @type {import("@vcmap/core").RasterLayerOpenlayers} */
   let ARL;
   let openlayers;
   let olLayer;

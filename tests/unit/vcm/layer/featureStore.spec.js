@@ -22,7 +22,7 @@ import Extent from '../../../../src/vcs/vcm/util/extent.js';
 import { wgs84Projection } from '../../../../src/vcs/vcm/util/projection.js';
 
 describe('vcs.vcm.layer.FeatureStore', () => {
-  /** @type {vcs.vcm.layer.FeatureStore} */
+  /** @type {import("@vcmap/core").FeatureStore} */
   let FS;
   let cesiumMap;
   let openlayer;

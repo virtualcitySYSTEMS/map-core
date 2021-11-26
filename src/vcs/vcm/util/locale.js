@@ -1,12 +1,12 @@
 import VcsEvent from '../event/vcsEvent.js';
 
 /**
- * @type {vcs.vcm.event.VcsEvent<string>}
+ * @type {VcsEvent<string>}
  */
 let localeChangedEvent;
 
 /**
- * @returns {vcs.vcm.event.VcsEvent<string>}
+ * @returns {VcsEvent<string>}
  */
 export function getLocaleChangedEvent() {
   if (!localeChangedEvent) {

@@ -1,23 +1,23 @@
 import { PrimitiveCollection, BillboardCollection, LabelCollection } from '@vcmap/cesium';
 
 /**
- * @typedef {Object} vcs.vcm.layer.cesium.VectorContext.FeatureCache
- * @property {Array<Cesium/Primitive|Cesium/GroundPrimitive|Cesium/GroundPolylinePrimitive|Cesium/ClassificationPrimitive|Cesium/Model>|undefined} primitives
- * @property {Array<Cesium/Billboard|Cesium/Entity>|undefined} billboards
- * @property {Array<Cesium/Label|Cesium/Entity>|undefined} labels
+ * @typedef {Object} VectorContextFeatureCache
+ * @property {Array<import("@vcmap/cesium").Primitive|import("@vcmap/cesium").GroundPrimitive|import("@vcmap/cesium").GroundPolylinePrimitive|import("@vcmap/cesium").ClassificationPrimitive|import("@vcmap/cesium").Model>|undefined} primitives
+ * @property {Array<import("@vcmap/cesium").Billboard|import("@vcmap/cesium").Entity>|undefined} billboards
+ * @property {Array<import("@vcmap/cesium").Label|import("@vcmap/cesium").Entity>|undefined} labels
  */
 
 /**
- * @param {ol/Feature} feature
- * @param {Cesium/Primitive|Cesium/GroundPrimitive|Cesium/GroundPolylinePrimitive|Cesium/ClassificationPrimitive|Cesium/Label|Cesium/Billboard|Cesium/Entity|Cesium/Model} primitive
+ * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+ * @param {import("@vcmap/cesium").Primitive|import("@vcmap/cesium").GroundPrimitive|import("@vcmap/cesium").GroundPolylinePrimitive|import("@vcmap/cesium").ClassificationPrimitive|import("@vcmap/cesium").Label|import("@vcmap/cesium").Billboard|import("@vcmap/cesium").Entity|import("@vcmap/cesium").Model} primitive
  */
 export function setReferenceForPicking(feature, primitive) {
   primitive.olFeature = feature;
 }
 
 /**
- * @param {Cesium/PrimitiveCollection|Cesium/BillboardCollection|Cesium/LabelCollection|Cesium/EntityCollection=} collection
- * @param {Array<Cesium/Primitive|Cesium/GroundPrimitive|Cesium/GroundPolylinePrimitive|Cesium/ClassificationPrimitive|Cesium/Billboard|Cesium/Label|Cesium/Entity|Cesium/Model>=} array
+ * @param {import("@vcmap/cesium").PrimitiveCollection|import("@vcmap/cesium").BillboardCollection|import("@vcmap/cesium").LabelCollection|import("@vcmap/cesium").EntityCollection=} collection
+ * @param {Array<import("@vcmap/cesium").Primitive|import("@vcmap/cesium").GroundPrimitive|import("@vcmap/cesium").GroundPolylinePrimitive|import("@vcmap/cesium").ClassificationPrimitive|import("@vcmap/cesium").Billboard|import("@vcmap/cesium").Label|import("@vcmap/cesium").Entity|import("@vcmap/cesium").Model>=} array
  */
 export function removeArrayFromCollection(collection, array) {
   if (array) {
@@ -28,9 +28,9 @@ export function removeArrayFromCollection(collection, array) {
 }
 
 /**
- * @param {ol/Feature} feature
- * @param {Map<ol/Feature, Array<Cesium/Primitive|Cesium/GroundPrimitive|Cesium/GroundPolylinePrimitive|Cesium/ClassificationPrimitive|Cesium/Billboard|Cesium/Label|Cesium/Entity|Cesium/Model>>} featuresMap
- * @param {Cesium/PrimitiveCollection|Cesium/BillboardCollection|Cesium/LabelCollection|Cesium/EntityCollection} primitiveCollection
+ * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+ * @param {Map<import("ol").Feature<import("ol/geom/Geometry").default>, Array<import("@vcmap/cesium").Primitive|import("@vcmap/cesium").GroundPrimitive|import("@vcmap/cesium").GroundPolylinePrimitive|import("@vcmap/cesium").ClassificationPrimitive|import("@vcmap/cesium").Billboard|import("@vcmap/cesium").Label|import("@vcmap/cesium").Entity|import("@vcmap/cesium").Model>>} featuresMap
+ * @param {import("@vcmap/cesium").PrimitiveCollection|import("@vcmap/cesium").BillboardCollection|import("@vcmap/cesium").LabelCollection|import("@vcmap/cesium").EntityCollection} primitiveCollection
  */
 export function removeFeatureFromMap(feature, featuresMap, primitiveCollection) {
   removeArrayFromCollection(primitiveCollection, featuresMap.get(feature));
@@ -38,11 +38,11 @@ export function removeFeatureFromMap(feature, featuresMap, primitiveCollection) 
 }
 
 /**
- * @param {Array<Cesium/Primitive|Cesium/GroundPrimitive|Cesium/GroundPolylinePrimitive|Cesium/ClassificationPrimitive|Cesium/Entity.ConstructorOptions|Cesium/Model|Object>} primitives
- * @param {ol/Feature} feature
+ * @param {Array<import("@vcmap/cesium").Primitive|import("@vcmap/cesium").GroundPrimitive|import("@vcmap/cesium").GroundPolylinePrimitive|import("@vcmap/cesium").ClassificationPrimitive|import("@vcmap/cesium").Entity.ConstructorOptions|import("@vcmap/cesium").Model|Object>} primitives
+ * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
  * @param {boolean} allowPicking
- * @param {Cesium/BillboardCollection|Cesium/LabelCollection|Cesium/PrimitiveCollection|Cesium/EntityCollection} primitiveCollection
- * @param {Map<ol/Feature, Array<Cesium/Billboard|Cesium/Label|Cesium/Primitive|Cesium/GroundPrimitive|Cesium/GroundPolylinePrimitive|Cesium/ClassificationPrimitive|Cesium/Entity|Cesium/Model>>} featureMap
+ * @param {import("@vcmap/cesium").BillboardCollection|import("@vcmap/cesium").LabelCollection|import("@vcmap/cesium").PrimitiveCollection|import("@vcmap/cesium").EntityCollection} primitiveCollection
+ * @param {Map<import("ol").Feature<import("ol/geom/Geometry").default>, Array<import("@vcmap/cesium").Billboard|import("@vcmap/cesium").Label|import("@vcmap/cesium").Primitive|import("@vcmap/cesium").GroundPrimitive|import("@vcmap/cesium").GroundPolylinePrimitive|import("@vcmap/cesium").ClassificationPrimitive|import("@vcmap/cesium").Entity|import("@vcmap/cesium").Model>>} featureMap
  */
 export function addPrimitiveToContext(primitives, feature, allowPicking, primitiveCollection, featureMap) {
   if (primitives.length) {
@@ -63,25 +63,24 @@ export function addPrimitiveToContext(primitives, feature, allowPicking, primiti
 
 /**
  * @class
- * @memberOf vcs.vcm.layer.cesium
  */
 class VectorContext {
   /**
-   * @param {Cesium/Scene} scene
-   * @param {Cesium/PrimitiveCollection} rootCollection
+   * @param {import("@vcmap/cesium").Scene} scene
+   * @param {import("@vcmap/cesium").PrimitiveCollection} rootCollection
    */
   constructor(scene, rootCollection) {
-    /** @type {Cesium/PrimitiveCollection} */
+    /** @type {import("@vcmap/cesium").PrimitiveCollection} */
     this.primitives = new PrimitiveCollection();
-    /** @type {Cesium/BillboardCollection} */
+    /** @type {import("@vcmap/cesium").BillboardCollection} */
     this.billboards = new BillboardCollection({ scene });
-    /** @type {Cesium/LabelCollection} */
+    /** @type {import("@vcmap/cesium").LabelCollection} */
     this.labels = new LabelCollection({ scene });
-    /** @type {Map<ol/Feature, Array<Cesium/Primitive|Cesium/GroundPrimitive|Cesium/GroundPolylinePrimitive|Cesium/ClassificationPrimitive|Cesium/Model>>} */
+    /** @type {Map<import("ol").Feature<import("ol/geom/Geometry").default>, Array<import("@vcmap/cesium").Primitive|import("@vcmap/cesium").GroundPrimitive|import("@vcmap/cesium").GroundPolylinePrimitive|import("@vcmap/cesium").ClassificationPrimitive|import("@vcmap/cesium").Model>>} */
     this.featureToPrimitiveMap = new Map();
-    /** @type {Map<ol/Feature, Array<Cesium/Billboard>>} */
+    /** @type {Map<import("ol").Feature<import("ol/geom/Geometry").default>, Array<import("@vcmap/cesium").Billboard>>} */
     this.featureToBillboardMap = new Map();
-    /** @type {Map<ol/Feature, Array<Cesium/Label>>} */
+    /** @type {Map<import("ol").Feature<import("ol/geom/Geometry").default>, Array<import("@vcmap/cesium").Label>>} */
     this.featureToLabelMap = new Map();
 
     rootCollection.add(this.primitives);
@@ -90,8 +89,8 @@ class VectorContext {
   }
 
   /**
-   * @param {Array<Cesium/Primitive|Cesium/GroundPrimitive|Cesium/GroundPolylinePrimitive|Cesium/ClassificationPrimitive|Cesium/Model>} primitives
-   * @param {ol/Feature} feature
+   * @param {Array<import("@vcmap/cesium").Primitive|import("@vcmap/cesium").GroundPrimitive|import("@vcmap/cesium").GroundPolylinePrimitive|import("@vcmap/cesium").ClassificationPrimitive|import("@vcmap/cesium").Model>} primitives
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @param {boolean=} allowPicking
    */
   addPrimitives(primitives, feature, allowPicking) {
@@ -100,7 +99,7 @@ class VectorContext {
 
   /**
    * @param {Array<Object>} billboardOptions
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @param {boolean=} allowPicking
    */
   addBillboards(billboardOptions, feature, allowPicking) {
@@ -109,7 +108,7 @@ class VectorContext {
 
   /**
    * @param {Array<Object>} labelOptions
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @param {boolean=} allowPicking
    */
   addLabels(labelOptions, feature, allowPicking) {
@@ -117,7 +116,7 @@ class VectorContext {
   }
 
   /**
-   * @param {ol/Feature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    */
   removeFeature(feature) {
     removeFeatureFromMap(feature, this.featureToPrimitiveMap, this.primitives);
@@ -127,11 +126,11 @@ class VectorContext {
 
   /**
    * Caches the current cesium resources for a feature, removing them from the feature map
-   * @param {ol/Feature}feature
-   * @returns {vcs.vcm.layer.cesium.VectorContext.FeatureCache}
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>}feature
+   * @returns {VectorContextFeatureCache}
    */
   createFeatureCache(feature) {
-    /** @type {vcs.vcm.layer.cesium.VectorContext.FeatureCache} */
+    /** @type {VectorContextFeatureCache} */
     const cache = {};
     cache.primitives = this.featureToPrimitiveMap.get(feature);
     this.featureToPrimitiveMap.delete(feature);
@@ -143,7 +142,7 @@ class VectorContext {
   }
 
   /**
-   * @param {vcs.vcm.layer.cesium.VectorContext.FeatureCache} cache
+   * @param {VectorContextFeatureCache} cache
    */
   clearFeatureCache(cache) {
     removeArrayFromCollection(this.primitives, cache.primitives);

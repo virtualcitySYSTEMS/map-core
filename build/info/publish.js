@@ -1,0 +1,1 @@
+exports.publish = function publish() {};

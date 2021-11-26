@@ -44,7 +44,7 @@ class ObliqueDataSet {
   /**
    * @param {string} url
    * @param {import("ol/proj/Projection").default} projection
-   * @param {import("cesium").CesiumTerrainProvider=} terrainProvider
+   * @param {import("@vcmap/cesium").CesiumTerrainProvider=} terrainProvider
    */
   constructor(url, projection, terrainProvider) {
     /** @type {string} */
@@ -57,17 +57,17 @@ class ObliqueDataSet {
     this.baseUrl = this.url.replace(/\/?([^/]+\.json)?$/, '');
     /** @type {import("ol/proj/Projection").default} */
     this.projection = projection;
-    /** @type {import("cesium").CesiumTerrainProvider|undefined} */
+    /** @type {import("@vcmap/cesium").CesiumTerrainProvider|undefined} */
     this.terrainProvider = terrainProvider;
     /**
-     * @type {Array<ObliqueImageMeta>}
+     * @type {Array<import("@vcmap/core").ObliqueImageMeta>}
      * @private
      */
     this._imageMetas = [];
     /**
      * Event raised when images are loaded. Is passed an Array of ObliqueImages as the first argument and optionally
      * a string representing the tile coordinate ("z/x/y"), if the images where loaded for a tile.
-     * @type {import("cesium").Event}
+     * @type {import("@vcmap/cesium").Event}
      * @api
      */
     this.imagesLoaded = new CesiumEvent();
@@ -85,13 +85,13 @@ class ObliqueDataSet {
     this._tileGrid = createXYZ();
 
     /**
-     * @type {Array<ObliqueImage>}
+     * @type {Array<import("@vcmap/core").ObliqueImage>}
      * @private
      */
     this._images = [];
 
     /**
-     * @type {vcs.vcm.layer.CopyrightOptions|undefined}
+     * @type {CopyrightOptions|undefined}
      * @api
      */
     this.copyright = undefined;
@@ -101,7 +101,7 @@ class ObliqueDataSet {
    * The loaded images of this DataSet
    * @api
    * @readonly
-   * @type {Array<ObliqueImage>}
+   * @type {Array<import("@vcmap/core").ObliqueImage>}
    */
   get images() {
     return this._images.slice();
@@ -141,6 +141,7 @@ class ObliqueDataSet {
    * @api
    */
   getTiles() {
+    /** @type {Object<string, DataState>} */
     const tiles = {};
     this._tiles.forEach((state, tile) => {
       tiles[tile] = state;
@@ -215,7 +216,7 @@ class ObliqueDataSet {
     let minDistance = Infinity;
     let minTile = null;
     [...this._tiles.keys()].forEach((tile) => {
-      const tileCoord = tile.split('/');
+      const tileCoord = tile.split('/').map(Number);
       const dist = cartesian2DDistance([actualTile[1], actualTile[2]], [tileCoord[1], tileCoord[2]]);
       if (dist < minDistance) {
         minDistance = dist;

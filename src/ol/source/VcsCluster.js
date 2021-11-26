@@ -2,7 +2,7 @@ import Cluster from 'ol/source/Cluster.js';
 
 /**
  * @class
- * @extends {ol/source/Cluster}
+ * @extends {import("ol/source/Cluster").default}
  * @memberOf ol
  */
 class VcsCluster extends Cluster {

@@ -1,7 +1,7 @@
 import CesiumTilesetCesium from './cesium/cesiumTilesetCesium.js';
 
 /**
- * @param {vcs.vcm.layer.cesium.CesiumTilesetCesium} impl
+ * @param {CesiumTilesetCesium} impl
  * @param {number=} timeout
  * @returns {Promise<void>}
  */
@@ -26,12 +26,12 @@ function waitForImplTilesLoaded(impl, timeout) {
 }
 
 /**
- * @param {vcs.vcm.layer.CesiumTileset|vcs.vcm.layer.FeatureStore} layer
+ * @param {import("@vcmap/core").CesiumTileset|import("@vcmap/core").FeatureStore} layer
  * @param {number=} timeout
  * @returns {Promise<void>}
  */
 export async function tiledLayerLoaded(layer, timeout) {
-  const impls = /** @type {Array<vcs.vcm.layer.cesium.CesiumTilesetCesium>} */
+  const impls = /** @type {Array<CesiumTilesetCesium>} */
     (layer.getImplementations().filter(i => i instanceof CesiumTilesetCesium));
   if (!layer.active || impls.every(i => i.cesium3DTileset.tilesLoaded)) {
     return;
@@ -41,9 +41,9 @@ export async function tiledLayerLoaded(layer, timeout) {
 }
 
 /**
- * @param {Cesium/Globe} globe
+ * @param {import("@vcmap/cesium").Globe} globe
  * @param {number=} timeout
- * @returns {Promise}
+ * @returns {Promise<void>}
  */
 export function globeLoaded(globe, timeout) {
   if (globe.tilesLoaded) {

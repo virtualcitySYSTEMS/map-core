@@ -31,7 +31,7 @@ describe('vcs.vcm.maps.Oblique', () => {
   });
 
   describe('initializing an oblique map', () => {
-    /** @type {vcs.vcm.maps.Oblique} */
+    /** @type {import("@vcmap/core").Oblique} */
     let map;
 
     before(async () => {
@@ -68,7 +68,7 @@ describe('vcs.vcm.maps.Oblique', () => {
   });
 
   describe('checking data availability for a viewpoint', () => {
-    /** @type {vcs.vcm.maps.Oblique} */
+    /** @type {import("@vcmap/core").Oblique} */
     let map;
     let vp;
 
@@ -123,7 +123,7 @@ describe('vcs.vcm.maps.Oblique', () => {
     });
 
     describe('with an active map', () => {
-      /** @type {vcs.vcm.maps.Oblique} */
+      /** @type {import("@vcmap/core").Oblique} */
       let map;
 
       before(async () => {
@@ -156,7 +156,7 @@ describe('vcs.vcm.maps.Oblique', () => {
 
   describe('activating the map', () => {
     describe('without viewpoint for the first time', () => {
-      /** @type {vcs.vcm.maps.Oblique} */
+      /** @type {import("@vcmap/core").Oblique} */
       let map;
 
       before(async () => {
@@ -197,7 +197,7 @@ describe('vcs.vcm.maps.Oblique', () => {
     });
 
     describe('with a viewpoint', () => {
-      /** @type {vcs.vcm.maps.Oblique} */
+      /** @type {import("@vcmap/core").Oblique} */
       let map;
 
       before(async () => {
@@ -246,7 +246,7 @@ describe('vcs.vcm.maps.Oblique', () => {
   });
 
   describe('setting a collection', () => {
-    /** @type {vcs.vcm.maps.Oblique} */
+    /** @type {import("@vcmap/core").Oblique} */
     let map;
 
     before(async () => {
@@ -317,7 +317,7 @@ describe('vcs.vcm.maps.Oblique', () => {
   });
 
   describe('setting an image', () => {
-    /** @type {vcs.vcm.maps.Oblique} */
+    /** @type {import("@vcmap/core").Oblique} */
     let map;
 
     before(async () => {
@@ -495,7 +495,7 @@ describe('vcs.vcm.maps.Oblique', () => {
   });
 
   describe('disabling movement', () => {
-    /** @type {vcs.vcm.maps.Oblique} */
+    /** @type {import("@vcmap/core").Oblique} */
     let map;
     let currentImage;
 

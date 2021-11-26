@@ -8,13 +8,19 @@ import { getHeightFromTerrainProvider } from '../layer/terrainHelpers.js';
 import { cartesian2DDistance } from '../util/math.js';
 
 /**
- * @type {import("cesium").Cartesian2}
+ * @type {import("@vcmap/cesium").Cartesian2}
  */
 let scratchCartesian2A = new Cartesian2();
 /**
- * @type {import("cesium").Cartesian2}
+ * @type {import("@vcmap/cesium").Cartesian2}
  */
 let scratchCartesian2B = new Cartesian2();
+
+/**
+ * @typedef {Object} PickTerrainReturn
+ * @property {boolean} estimate
+ * @property {import("ol/coordinate").Coordinate} coords
+ */
 
 /**
  * sorts the corner points of the json after [lower left, lower right, upper right, upper left]
@@ -58,8 +64,8 @@ export function sortRealWordEdgeCoordinates(inputCornerPoints, sortDirection = f
 }
 
 /**
- * @param {Array<import("ol/coordinate").Coordinate>} v1
- * @param {Array<import("ol/coordinate").Coordinate>} v2
+ * @param {import("ol/coordinate").Coordinate} v1
+ * @param {import("ol/coordinate").Coordinate} v2
  * @returns {number|null}
  */
 function angleBetweenTwo2DVectors(v1, v2) {
@@ -284,7 +290,7 @@ export function transformCWIFC(inputOrigin, inputTarget, originIsImage, coordina
 }
 
 /**
- * @typedef {Object} TransformationOptions
+ * @typedef {Object} ImageTransformationOptions
  * @property {boolean|undefined} [dontUseTerrain]
  * @property {import("ol/proj/Projection").default|undefined} [dataProjection] - the projection of the input/output coordinates, assumes image source projection
  * @property {number|undefined} [terrainErrorThreshold=1] - the transformToWorld process iterativly calculates a new Height Value from the terrainProvider until the difference to the new height value is smaller
@@ -295,9 +301,9 @@ export function transformCWIFC(inputOrigin, inputTarget, originIsImage, coordina
 /**
  * Always returns a Promise. When the input coordinates contain a height, it will use this height to compute the image coordinates
  * When not, it will try to get the terrainHeight in case a terrain is defined and use the height from there, to compute the image coordinates
- * @param {ObliqueImage} image
+ * @param {import("@vcmap/core").ObliqueImage} image
  * @param {import("ol/coordinate").Coordinate} worldCoordinate if not in web mercatpr, specify data-projection in options
- * @param {TransformationOptions=} options
+ * @param {ImageTransformationOptions=} options
  * @returns {Promise<{coords: import("ol/coordinate").Coordinate, height: number, estimate: (boolean|undefined)}>}
  * @export
  */
@@ -339,7 +345,7 @@ export function transformToImage(image, worldCoordinate, options = {}) {
 
 /**
  * @typedef {Object} PickTerrainOptions
- * @property {ObliqueImage} image
+ * @property {import("@vcmap/core").ObliqueImage} image
  * @property {import("ol/coordinate").Coordinate} worldCoordinate
  * @property {import("ol/coordinate").Coordinate} imageCoordinate
  * @property {number} height
@@ -350,7 +356,7 @@ export function transformToImage(image, worldCoordinate, options = {}) {
 
 /**
  * @param {PickTerrainOptions} pickTerrainOptions
- * @returns {Promise<Array<import("ol/coordinate").Coordinate> | {estimate: boolean, coords: *}>}
+ * @returns {Promise<PickTerrainReturn>}
  */
 function pickTerrain(pickTerrainOptions) {
   pickTerrainOptions.count += 1;
@@ -393,13 +399,13 @@ function pickTerrain(pickTerrainOptions) {
 /**
  * Always returns a deferred.
  * it will try to get the terrainHeight in case a terrain is defined.
- * @param {ObliqueImage} image
+ * @param {import("@vcmap/core").ObliqueImage} image
  * @param {import("ol/coordinate").Coordinate} imageCoordinate
- * @param {TransformationOptions=} options
- * @returns {Promise<{coords: import("ol/coordinate").Coordinate, estimate: (boolean|undefined)}>} return coordinates are in mercator if not specified in options
+ * @param {ImageTransformationOptions=} options
+ * @returns {Promise<PickTerrainReturn>} return coordinates are in mercator if not specified in options
  * @export
  */
-export function transformFromImage(image, imageCoordinate, options = {}) {
+export async function transformFromImage(image, imageCoordinate, options = {}) {
   const wgs84Projection = getProjection('EPSG:4326');
   const initialWorldCoords = transform(
     image.transformImage2RealWorld(imageCoordinate, image.averageHeight),
@@ -410,8 +416,9 @@ export function transformFromImage(image, imageCoordinate, options = {}) {
   const terrainErrorThreshold = options.terrainErrorThreshold || 1;
   const terrainErrorCountThreshold = options.terrainErrorCountThreshold || 3;
 
-  const promise = !options.dontUseTerrain && image.meta.terrainProvider ?
-    pickTerrain({
+  let coordsObj = { coords: initialWorldCoords, estimate: true };
+  if (!options.dontUseTerrain && image.meta.terrainProvider) {
+    coordsObj = await pickTerrain({
       worldCoordinate: initialWorldCoords,
       imageCoordinate,
       image,
@@ -419,16 +426,13 @@ export function transformFromImage(image, imageCoordinate, options = {}) {
       height: image.averageHeight,
       terrainErrorThreshold,
       terrainErrorCountThreshold,
-    }) :
-    Promise.resolve({ coords: initialWorldCoords, estimate: true });
-
-  return promise
-    .then((coordsObj) => {
-      coordsObj.coords = options.dataProjection ?
-        transform(coordsObj.coords, wgs84Projection, options.dataProjection) :
-        transform(coordsObj.coords, wgs84Projection, getProjection('EPSG:3857'));
-      return coordsObj;
     });
+  }
+
+  coordsObj.coords = options.dataProjection ?
+    transform(coordsObj.coords, wgs84Projection, options.dataProjection) :
+    transform(coordsObj.coords, wgs84Projection, getProjection('EPSG:3857'));
+  return coordsObj;
 }
 
 /**
@@ -452,7 +456,7 @@ export function hasSameOrigin(url) {
 
 /**
  * destroys a cesium Event Emitter, (removes all listeners)
- * @param {import("cesium").Event} cesiumEvent
+ * @param {import("@vcmap/cesium").Event} cesiumEvent
  */
 export function destroyCesiumEvent(cesiumEvent) {
   // @ts-ignore

@@ -4,18 +4,17 @@ import { wgs84Projection } from '../../util/projection.js';
 import { getTilingScheme } from '../rasterLayer.js';
 
 /**
- * represents a specific WMTS Implementation for {@link vcs.vcm.maps.CesiumMap}.
+ * represents a specific WMTS Implementation for {@link CesiumMap}.
  * @class
  * @export
- * @extends {vcs.vcm.layer.cesium.RasterLayerCesium}
- * @memberOf vcs.vcm.layer.cesium
+ * @extends {RasterLayerCesium}
  */
 class WMTSCesium extends RasterLayerCesium {
   static get className() { return 'vcs.vcm.layer.cesium.WMTSCesium'; }
 
   /**
-   * @param {vcs.vcm.maps.CesiumMap} map
-   * @param {vcs.vcm.layer.WMTS.ImplementationOptions} options
+   * @param {import("@vcmap/core").CesiumMap} map
+   * @param {WMTSImplementationOptions} options
    */
   constructor(map, options) {
     super(map, options);
@@ -41,7 +40,7 @@ class WMTSCesium extends RasterLayerCesium {
     this.tileMatrixSetID = options.tileMatrixSetID;
 
     /**
-     * @type {ol/Size}
+     * @type {import("ol/size").Size}
      */
     this.tileSize = options.tileSize;
 
@@ -63,7 +62,7 @@ class WMTSCesium extends RasterLayerCesium {
 
 
   /**
-   * @returns {Cesium/ImageryLayer}
+   * @returns {import("@vcmap/cesium").ImageryLayer}
    */
   getCesiumLayer() {
     // This is a bug in Cesium, they cant cope with {Layer} placeholder..

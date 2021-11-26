@@ -23,13 +23,13 @@ import { circleFromCenterRadius, enforceEndingVertex, removeEndingVertexFromGeom
 const featureProjection = 'EPSG:3857';
 
 /**
- * @type {ol/format/GeoJSON}
+ * @type {import("ol/format/GeoJSON").default}
  * @private
  */
 let format;
 
 /**
- * @returns {ol/format/GeoJSON}
+ * @returns {import("ol/format/GeoJSON").default}
  */
 function getFormat() {
   if (!format) {
@@ -39,38 +39,38 @@ function getFormat() {
 }
 
 /**
- * @returns {vcsuite-logger/Logger}
+ * @returns {import("@vcsuite/logger").Logger}
  */
 function getLogger() {
   return getLoggerByName('vcs.vcm.layer.GeoJSONHelper');
 }
 
 /**
- * @typedef {Object} vcs.vcm.layer.GeoJSON.Data
- * @property {Array<ol/Feature>} features
- * @property {vcs.vcm.util.style.StyleItem|undefined} style
- * @property {vcs.vcm.layer.VcsMeta|undefined} vcsMeta
+ * @typedef {Object} GeoJSONData
+ * @property {Array<import("ol").Feature<import("ol/geom/Geometry").default>>} features
+ * @property {import("@vcmap/core").StyleItem|undefined} style
+ * @property {VcsMeta|undefined} vcsMeta
  * @api
  */
 
 /**
- * @typedef {vcs.vcm.layer.GeoJSON.readOptions} vcs.vcm.layer.GeoJSON.internalReadOptions
- * @property {ol.ReadOptions|undefined} formatOptions
+ * @typedef {GeoJSONreadOptions} GeoJSONinternalReadOptions
+ * @property {import("ol/format/Feature").ReadOptions|undefined} formatOptions
  * @property {Array<string>|undefined} embeddedIcons
  */
 
 /**
- * @typedef {Object} vcs.vcm.layer.GeoJSON.readOptions
- * @property {vcs.vcm.util.Projection|undefined} targetProjection - projection of the output features, if undefined Mercator will be used
- * @property {vcs.vcm.util.Projection|undefined} dataProjection - projection of the input dataset if undefined WGS84 will be assumed
+ * @typedef {Object} GeoJSONreadOptions
+ * @property {Projection|undefined} targetProjection - projection of the output features, if undefined Mercator will be used
+ * @property {Projection|undefined} dataProjection - projection of the input dataset if undefined WGS84 will be assumed
  * @property {boolean} [dynamicStyle=false]
  * @property {boolean} [readLegacyStyleOptions=false]
  * @property {boolean} [dontReadStyle=false]
- * @property {vcs.vcm.util.style.VectorStyleItem|undefined} defaultStyle
+ * @property {VectorStyleItem|undefined} defaultStyle
  */
 
 /**
- * @typedef {Object} vcs.vcm.layer.GeoJSON.writeOptions
+ * @typedef {Object} GeoJSONwriteOptions
  * @property {boolean} [asObject=false] - whether to write an object or a string
  * @property {boolean} [writeStyle=false] - whether to include vcsStyle options
  * @property {boolean} [writeDefaultStyle=false] - whether to output the default style. if the style of a layer is the default layer it is not written.
@@ -84,7 +84,6 @@ function getLogger() {
 /**
  * @param {Object} geojson
  * @returns {string|null}
- * @memberOf vcs.vcm.layer.GeoJSON
  * @export
  */
 export function getEPSGCodeFromGeojson(geojson) {
@@ -105,8 +104,7 @@ export function getEPSGCodeFromGeojson(geojson) {
 
 /**
  * updates legacy features to the new olcesium namespaceing olcs_
- * @param {ol/Feature} feature
- * @memberOf vcs.vcm.layer.GeoJSON
+ * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
  * @export
  */
 export function updateLegacyFeature(feature) {
@@ -137,8 +135,8 @@ export function updateLegacyFeature(feature) {
 
 /**
  * @param {Object} geometryObj
- * @param {vcs.vcm.layer.GeoJSON.internalReadOptions} options
- * @returns {ol/Feature}
+ * @param {GeoJSONinternalReadOptions} options
+ * @returns {import("ol").Feature<import("ol/geom/Geometry").default>}
  */
 function readGeometry(geometryObj, options) {
   const geometry = getFormat().readGeometry(geometryObj, options.formatOptions);
@@ -150,9 +148,9 @@ function readGeometry(geometryObj, options) {
 }
 
 /**
- * @param {vcs.vcm.util.style.VectorStyleItem.Options} object
- * @param {vcs.vcm.layer.GeoJSON.internalReadOptions} options
- * @returns {vcs.vcm.util.style.VectorStyleItem.Options}
+ * @param {VectorStyleItemOptions} object
+ * @param {GeoJSONinternalReadOptions} options
+ * @returns {VectorStyleItemOptions}
  * @todo this could also be done for declarative styles image and conditions could be checked?
  */
 function setEmbeddedIcons(object, options) {
@@ -173,7 +171,7 @@ function setEmbeddedIcons(object, options) {
 /**
  * @param {Object} properties
  * @param {string} geometryType
- * @returns {vcs.vcm.util.style.VectorStyleItem.Options|undefined}
+ * @returns {VectorStyleItemOptions|undefined}
  */
 function parseLegacyStyleOptions(properties, geometryType) {
   const color = properties.color ? parseColor(properties.color) : false;
@@ -190,7 +188,7 @@ function parseLegacyStyleOptions(properties, geometryType) {
     const fillColor = color ? color.slice() : [255, 255, 255, 0.4];
     fillColor[3] = opacity;
     return {
-      fill: { color: /** @type {ol/Color} */ (fillColor) },
+      fill: { color: /** @type {import("ol/color").Color} */ (fillColor) },
       stroke: {
         color: color || parseColor('#3399CC'),
         width,
@@ -223,8 +221,8 @@ function parseLegacyStyleOptions(properties, geometryType) {
 }
 /**
  * @param {Object} featureObj
- * @param {vcs.vcm.layer.GeoJSON.internalReadOptions} options
- * @returns {ol/Feature|null}
+ * @param {GeoJSONinternalReadOptions} options
+ * @returns {import("ol").Feature<import("ol/geom/Geometry").default>|null}
  */
 function readFeature(featureObj, options) {
   if (!featureObj.geometry) {
@@ -292,10 +290,9 @@ function readFeature(featureObj, options) {
 /**
  * parses a string to GeoJSON
  * @param {string|Object} input
- * @param {vcs.vcm.layer.GeoJSON.readOptions=} readOptions
- * @returns {vcs.vcm.layer.GeoJSON.Data}
+ * @param {GeoJSONreadOptions=} readOptions
+ * @returns {GeoJSONData}
  * @throws SyntaxError
- * @memberOf vcs.vcm.layer.GeoJSON
  * @export
  * @api
  */
@@ -304,7 +301,7 @@ export function parseGeoJSON(input, readOptions = {}) {
 
   const epsgCode = getEPSGCodeFromGeojson(geoJSON);
   const defaultDataProjection = epsgCode ? { epsg: epsgCode } : readOptions.dataProjection;
-  /** @type {vcs.vcm.layer.GeoJSON.internalReadOptions} */
+  /** @type {GeoJSONinternalReadOptions} */
   const options = {
     formatOptions: {
       dataProjection: defaultDataProjection ?
@@ -366,8 +363,8 @@ export function parseGeoJSON(input, readOptions = {}) {
 }
 
 /**
- * @param {ol/Feature} feature
- * @param {vcs.vcm.layer.GeoJSON.writeOptions=} options
+ * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+ * @param {GeoJSONwriteOptions=} options
  * @param {Array=} embeddedIcons
  * @returns {Object}
  */
@@ -429,10 +426,9 @@ export function writeGeoJSONFeature(feature, options = {}, embeddedIcons) {
 
 /**
  * Writes all the features of the current layer to GeoJSON
- * @param {vcs.vcm.layer.GeoJSON.Data} data
- * @param {vcs.vcm.layer.GeoJSON.writeOptions=} options
+ * @param {GeoJSONData} data
+ * @param {GeoJSONwriteOptions=} options
  * @returns {string|Object}
- * @memberOf vcs.vcm.layer.GeoJSON
  * @export
  */
 export function writeGeoJSON(data, options = {}) { // how to handel embedded icons when they are not set on the vcsMeta but options is true?

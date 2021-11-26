@@ -48,8 +48,8 @@ export function initialBearingBetweenCoords(coords1, coords2) {
 
 /**
  * returns distance between two coordinates
- * @param {ol/Coordinate} point0
- * @param {ol/Coordinate} point1
+ * @param {import("ol/coordinate").Coordinate} point0
+ * @param {import("ol/coordinate").Coordinate} point1
  * @returns {number}
  */
 export function cartesian2DDistance(point0, point1) {
@@ -59,8 +59,8 @@ export function cartesian2DDistance(point0, point1) {
 }
 
 /**
- * @param {ol/Coordinate} p1
- * @param {ol/Coordinate} p2
+ * @param {import("ol/coordinate").Coordinate} p1
+ * @param {import("ol/coordinate").Coordinate} p2
  * @returns {number}
  */
 export function cartesian3DDistance(p1, p2) {

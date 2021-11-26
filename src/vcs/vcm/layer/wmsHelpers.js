@@ -5,20 +5,20 @@ import { mercatorProjection, wgs84Projection } from '../util/projection.js';
 import { isSameOrigin } from '../util/urlHelpers.js';
 
 /**
- * @typedef {Object} vcs.vcm.layer.WMS.SourceOptions
+ * @typedef {Object} WMSSourceOptions
  * @property {string} url
  * @property {string} tilingSchema -  either "geographic" or "mercator"
  * @property {number} maxLevel
  * @property {number} minLevel
- * @property {ol/Size} tileSize
- * @property {vcs.vcm.util.Extent|undefined} extent
+ * @property {import("ol/size").Size} tileSize
+ * @property {import("@vcmap/core").Extent|undefined} extent
  * @property {Object<string, string>} parameters
  * @property {string} version
  */
 
 /**
- * @param {vcs.vcm.layer.WMS.SourceOptions} options
- * @returns {ol/source/TileWMS}
+ * @param {WMSSourceOptions} options
+ * @returns {import("ol/source/TileWMS").default}
  */
 // eslint-disable-next-line import/prefer-default-export
 export function getWMSSource(options) {

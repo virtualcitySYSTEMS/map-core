@@ -18,7 +18,7 @@ import { getFlatCoordinatesFromSimpleGeometry } from '../geometryHelpers.js';
  * @param {number} height
  * @param {boolean} perPositionHeight
  * @param {number=} extrudedHeight
- * @returns {Array<Cesium/PolygonGeometry>}
+ * @returns {Array<import("@vcmap/cesium").PolygonGeometry>}
  * @private
  */
 export function createSolidGeometries(options, height, perPositionHeight, extrudedHeight) {
@@ -38,7 +38,7 @@ export function createSolidGeometries(options, height, perPositionHeight, extrud
  * @param {number} height
  * @param {boolean} perPositionHeight
  * @param {number=} extrudedHeight
- * @returns {Array<Cesium/PolygonOutlineGeometry>}
+ * @returns {Array<import("@vcmap/cesium").PolygonOutlineGeometry>}
  * @private
  */
 export function createOutlineGeometries(options, height, perPositionHeight, extrudedHeight) {
@@ -55,7 +55,7 @@ export function createOutlineGeometries(options, height, perPositionHeight, extr
  * @param {Object} options
  * @param {number} height
  * @param {boolean} perPositionHeight
- * @returns {Array<Cesium/PolygonGeometry>}
+ * @returns {Array<import("@vcmap/cesium").PolygonGeometry>}
  * @private
  */
 export function createFillGeometries(options, height, perPositionHeight) {
@@ -64,7 +64,7 @@ export function createFillGeometries(options, height, perPositionHeight) {
 
 /**
  * @param {Object} options
- * @param {ol/style/Style} style
+ * @param {import("ol/style/Style").default} style
  * @returns {Array<Object>}
  * @private
  */
@@ -86,7 +86,7 @@ export function getLineGeometryOptions(options, style) {
 
 /**
  * @param {Object} options
- * @param {ol/style/Style} style
+ * @param {import("ol/style/Style").default} style
  * @returns {Array<GroundPolylineGeometry>}
  * @private
  */
@@ -98,7 +98,7 @@ export function createGroundLineGeometries(options, style) {
 
 /**
  * @param {Object} options
- * @param {ol/style/Style} style
+ * @param {import("ol/style/Style").default} style
  * @returns {Array<PolylineGeometry>}
  * @private
  */
@@ -110,7 +110,7 @@ export function createLineGeometries(options, style) {
 
 
 /**
- * @param {ol/geom/Polygon} geometry
+ * @param {import("ol/geom/Polygon").default} geometry
  * @param {number} positionHeightAdjustment
  * @returns {Object}
  * @private
@@ -144,8 +144,8 @@ export function getGeometryOptions(geometry, positionHeightAdjustment) {
 }
 
 /**
- * @param {Array<ol/geom/Polygon>} geometries
- * @returns {Array<ol/Coordinate>}
+ * @param {Array<import("ol/geom/Polygon").default>} geometries
+ * @returns {Array<import("ol/coordinate").Coordinate>}
  * @private
  */
 export function getCoordinates(geometries) {
@@ -157,12 +157,12 @@ export function getCoordinates(geometries) {
 }
 
 /**
- * @type {vcs.vcm.layer.Vector.GeometryFactoryType|null}
+ * @type {VectorGeometryFactoryType|null}
  */
 let geometryFactory = null;
 
 /**
- * @returns {vcs.vcm.layer.Vector.GeometryFactoryType}
+ * @returns {VectorGeometryFactoryType}
  */
 function getGeometryFactory() {
   if (!geometryFactory) {
@@ -182,7 +182,7 @@ function getGeometryFactory() {
 /**
  * TODO maybe add validation Functions to Openlayers
  * validates if a polygon is renderable
- * @param {ol/geom/Polygon} polygon
+ * @param {import("ol/geom/Polygon").default} polygon
  * @returns {boolean}
  */
 export function validatePolygon(polygon) {
@@ -210,12 +210,12 @@ export function validatePolygon(polygon) {
 
 /**
  * converts a polygon to a a cesium primitive, with optional labels
- * @param {ol/Feature} feature
- * @param {ol/style/Style} style
- * @param {Array<ol/geom/Polygon>} geometries
- * @param {vcs.vcm.layer.VectorProperties} vectorProperties
- * @param {Cesium/Scene} scene
- * @param {vcs.vcm.layer.cesium.VectorContext|vcs.vcm.layer.cesium.ClusterContext} context
+ * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+ * @param {import("ol/style/Style").default} style
+ * @param {Array<import("ol/geom/Polygon").default>} geometries
+ * @param {import("@vcmap/core").VectorProperties} vectorProperties
+ * @param {import("@vcmap/cesium").Scene} scene
+ * @param {import("@vcmap/core").VectorContext|import("@vcmap/core").ClusterContext} context
  */
 export default function polygonToCesium(feature, style, geometries, vectorProperties, scene, context) {
   if (!style.getFill() && !style.getStroke()) {
