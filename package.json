@@ -28,7 +28,8 @@
     "src/",
     "LICENSE.md",
     "README.md",
-    "index.js"
+    "index.js",
+    "index.d.ts"
   ],
   "author": "Virtual City Systems",
   "license": "MIT",
