@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
+import RBush from 'rbush';
 import { Rectangle, Math as CesiumMath, WebMercatorTilingScheme, Cartographic } from '@vcmap/cesium';
-import VectorSource from 'ol/source/Vector.js';
 import LRUCache from 'ol/structs/LRUCache.js';
 import { buffer, createOrUpdateFromCoordinate } from 'ol/extent.js';
 import { parseBoolean, parseInteger } from '@vcsuite/parsers';
@@ -12,6 +12,15 @@ import {
 } from '../../util/projection.js';
 import VcsObject from '../../object.js';
 import VcsEvent from '../../event/vcsEvent.js';
+
+/**
+ * @typedef {Object} tileProviderRTreeEntry
+ * @property {number} minX
+ * @property {number} minY
+ * @property {number} maxX
+ * @property {number} maxY
+ * @property {import("ol").Feature<import("ol/geom/Geometry").default>} value
+ */
 
 /**
  * resolutions to levels
@@ -49,14 +58,13 @@ export function rectangleToExtent(rectangle) {
  * @property {Array<number>} [baseLevels=[15]] baseLevels (these levels will be requested by the loader, all other child levels will be interpolated
  * @property {boolean} [trackFeaturesToTiles=true] tracks in which tile each feature exists. (features without an ID will be ignored). Better performance if deactivated, but does not allow for featureVisibility. Should be set to false if not unique featureID is provided.
  * @property {boolean} [allowTileAggregation=true] allows aggregation of tiles if requested minLevel is lower than provided baseLevels ( if true, allows for aggregating up to two levels (16 child tiles) into a tile)
- * @property {boolean} [useSpatialIndex=true] uses spatial indices for tile cache. Can be deactivated if baseLevels fit directly to increase performance. Also if deactivated the order of the features will be kept.
  * @api
  */
 
 /**
  * @typedef {Object} TileLoadedEvent
  * @property {string} tileId id of the tile
- * @property {import("ol/source").Vector<import("ol/geom/Geometry").default>} source vectorSource with the features.
+ * @property {import("rbush").default<tileProviderRTreeEntry>} rtree rbush rTree with the features, use rtree.all().map(item => item.value);
  * @api
  */
 
@@ -85,7 +93,6 @@ class TileProvider extends VcsObject {
       baseLevels: [15],
       trackFeaturesToTiles: true,
       allowTileAggregation: true,
-      useSpatialIndex: true,
     };
   }
 
@@ -126,7 +133,7 @@ class TileProvider extends VcsObject {
 
     /**
      * cache of tiles for each baseLevel
-     * @type {Map<number, LRUCache<Promise<import("ol/source").Vector<import("ol/geom/Geometry").default>>>>}
+     * @type {Map<number, LRUCache<Promise<import("rbush").default<tileProviderRTreeEntry>>>>}
      * @api
      */
     this.cache = new Map();
@@ -136,11 +143,11 @@ class TileProvider extends VcsObject {
     });
 
     /**
-     * Caches the loaded sources for quick Access to all features.
-     * @type {Map<string, import("ol/source").Vector<import("ol/geom/Geometry").default>>}
+     * Caches the loaded rTrees for quick Access to all features.
+     * @type {Map<string, import("rbush").default<tileProviderRTreeEntry>>}
      * @api
      */
-    this.sourceCache = new Map();
+    this.rtreeCache = new Map();
 
     /**
      * @type {boolean}
@@ -156,12 +163,6 @@ class TileProvider extends VcsObject {
     this.allowTileAggregation = parseBoolean(options.allowTileAggregation, defaultOptions.allowTileAggregation);
 
     /**
-     * @type {boolean}
-     * @api
-     */
-    this.useSpatialIndex = parseBoolean(options.useSpatialIndex, defaultOptions.useSpatialIndex);
-
-    /**
      * set of currently loaded featureIds with the corresponding tileIds
      * @type {Map<string, Set<string>>}
      * @api
@@ -170,7 +171,7 @@ class TileProvider extends VcsObject {
     this.featureIdToTileIds = new Map();
 
     /**
-     * is raised for each loaded Tile; has the tileId and a ol/vector/Source as parameters
+     * is raised for each loaded Tile; has the tileId and a rtree as parameters
      * @type {VcsEvent<TileLoadedEvent>}
      * @api
      */
@@ -254,30 +255,45 @@ class TileProvider extends VcsObject {
    * @private
    */
   _addTilePromiseToCache(featuresPromise, baseLevel, tileId) {
-    const sourcePromise = featuresPromise.then((features) => {
+    const rtreePromise = featuresPromise.then((features) => {
       features.forEach((feature) => {
         if (!feature.getId()) {
           feature.setId(uuidv4());
         }
       });
-      const tileSource = new VectorSource({ features, useSpatialIndex: this.useSpatialIndex });
-      this.tileLoadedEvent.raiseEvent({ tileId, source: tileSource });
+      const rtree = new RBush(features.length);
+      rtree.load(features.map((feature) => {
+        const geometry = feature.getGeometry();
+        if (geometry) {
+          const extent = geometry.getExtent();
+          const item = {
+            minX: extent[0],
+            minY: extent[1],
+            maxX: extent[2],
+            maxY: extent[3],
+            value: feature,
+          };
+          return item;
+        }
+        return null;
+      }).filter(item => item));
+      this.tileLoadedEvent.raiseEvent({ tileId, rtree });
       this._trackFeatures(features, tileId);
-      this.sourceCache.set(tileId, tileSource);
-      return tileSource;
+      this.rtreeCache.set(tileId, rtree);
+      return rtree;
     }).catch(() => {
       // Discussion, do we want to go on on tileLoadFailure ?
       this.getLogger().warning(`Could not load Tile ${tileId}`);
-      const tileSource = new VectorSource({ features: [] });
-      this.sourceCache.set(tileId, tileSource);
-      return tileSource;
+      const rtree = new RBush();
+      this.rtreeCache.set(tileId, rtree);
+      return rtree;
     });
 
-    this.cache.get(baseLevel).set(tileId, sourcePromise);
+    this.cache.get(baseLevel).set(tileId, rtreePromise);
     if (this.cache.get(baseLevel).canExpireCache()) {
-      return Promise.all([sourcePromise, this._removeLastTileFromCache(baseLevel)]);
+      return Promise.all([rtreePromise, this._removeLastTileFromCache(baseLevel)]);
     }
-    return sourcePromise;
+    return rtreePromise;
   }
 
   /**
@@ -287,13 +303,15 @@ class TileProvider extends VcsObject {
    */
   _removeLastTileFromCache(baseLevel) {
     const tileIdToRemove = this.cache.get(baseLevel).peekLastKey();
-    const sourcePromise = this.cache.get(baseLevel).pop();
-    if (sourcePromise) {
-      return sourcePromise.then((source) => {
-        if (source) {
-          this._unTrackFeatures(source.getFeatures(), tileIdToRemove);
-          this.sourceCache.delete(tileIdToRemove);
-          source.clear(true);
+    const rtreePromise = this.cache.get(baseLevel).pop();
+    if (rtreePromise) {
+      return rtreePromise.then((rtree) => {
+        if (rtree) {
+          this.rtreeCache.delete(tileIdToRemove);
+          setTimeout(() => {
+            this._unTrackFeatures(rtree.all().map(item => item.value), tileIdToRemove);
+            rtree.clear();
+          }, 0);
         }
       });
     }
@@ -348,10 +366,10 @@ class TileProvider extends VcsObject {
   /**
    * @param {number} baseLevel
    * @param {import("@vcmap/cesium").Cartographic} tileCenter
-   * @returns {Promise<import("ol/source").Vector<import("ol/geom/Geometry").default>|null>}
+   * @returns {Promise<import("rbush").default<tileProviderRTreeEntry>|null>}
    * @private
    */
-  async _getSourceForBaseTile(baseLevel, tileCenter) {
+  async _getRtreeForBaseTile(baseLevel, tileCenter) {
     const baseTile = this.tilingScheme.positionToTileXY(tileCenter, baseLevel);
     const baseTileCacheKey = this.getCacheKey(baseTile.x, baseTile.y, baseLevel);
     if (this.cache.has(baseLevel)) {
@@ -378,12 +396,14 @@ class TileProvider extends VcsObject {
     const wgs84Coordinate = mercatorToWgs84Transformer(coordinate);
     const cartographic = Cartographic.fromDegrees(wgs84Coordinate[0], wgs84Coordinate[1]);
     const baseLevel = this.getBaseLevelForResolution(resolution, cartographic.latitude);
-    const source = await this._getSourceForBaseTile(baseLevel, cartographic);
-    if (source) {
-      const features = [];
-      source.forEachFeatureIntersectingExtent(extent, (feature) => {
-        features.push(feature);
-      });
+    const rtree = await this._getRtreeForBaseTile(baseLevel, cartographic);
+    if (rtree) {
+      const features = rtree.search({
+        minX: extent[0],
+        minY: extent[1],
+        maxX: extent[2],
+        maxY: extent[3],
+      }).map(item => item.value);
       return features;
     }
     return [];
@@ -402,13 +422,19 @@ class TileProvider extends VcsObject {
     const tileCenter = Rectangle.center(rectangle);
     const baseLevel = this.getBaseLevel(level);
     if (baseLevel != null) {
-      const source = await this._getSourceForBaseTile(baseLevel, tileCenter);
-      if (source) {
+      const rtree = await this._getRtreeForBaseTile(baseLevel, tileCenter);
+      if (rtree) {
         if (level === baseLevel) {
-          return source.getFeatures();
+          return rtree.all().map(item => item.value);
         } else {
           const extent = rectangleToExtent(rectangle);
-          return source.getFeaturesInExtent(extent);
+          const features = rtree.search({
+            minX: extent[0],
+            minY: extent[1],
+            maxX: extent[2],
+            maxY: extent[3],
+          }).map(item => item.value);
+          return features;
         }
       }
     } else if (this.allowTileAggregation && (this.baseLevels[this.baseLevels.length - 1] - level) <= 2) {
@@ -462,8 +488,8 @@ class TileProvider extends VcsObject {
    * @api
    */
   forEachFeature(callback) {
-    this.sourceCache.forEach((source) => {
-      source.forEachFeature(callback);
+    this.rtreeCache.forEach((rtree) => {
+      rtree.all().map(item => item.value).forEach(callback);
     });
   }
 
@@ -527,18 +553,18 @@ class TileProvider extends VcsObject {
    * @api
    */
   async clearCache() {
-    const sourcePromises = [];
+    const rtreePromises = [];
     this.cache.forEach((lruCache) => {
-      lruCache.forEach((sourcePromise) => {
-        sourcePromises.push(sourcePromise);
+      lruCache.forEach((rtreePromise) => {
+        rtreePromises.push(rtreePromise);
       });
       lruCache.clear();
     });
-    await Promise.all(sourcePromises);
-    this.sourceCache.forEach((source) => {
-      source.clear(true);
+    await Promise.all(rtreePromises);
+    this.rtreeCache.forEach((rtree) => {
+      rtree.clear();
     });
-    this.sourceCache.clear();
+    this.rtreeCache.clear();
     this.featureIdToTileIds.clear();
   }
 

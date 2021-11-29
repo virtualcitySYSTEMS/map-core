@@ -244,8 +244,8 @@ class VectorTile extends FeatureLayer {
    * @param {TileLoadedEvent} event
    * @private
    */
-  _handleTileLoaded({ source }) {
-    source.forEachFeature((feature) => {
+  _handleTileLoaded({ rtree }) {
+    rtree.all().map(item => item.value).forEach((feature) => {
       const featureStyle = /** @type {import("ol/style/Style").default} */ (feature.getStyle());
       if (featureStyle && featureStyle instanceof Style) {
         featureStyle.setZIndex(this._getNextStyleZIndex());
@@ -276,9 +276,10 @@ class VectorTile extends FeatureLayer {
           const tileIds = this.tileProvider.featureIdToTileIds.get(id);
           if (tileIds) {
             tileIds.forEach((tileId) => {
-              const source = this.tileProvider.sourceCache.get(tileId);
-              const feature = source.getFeatureById(id);
-              if (feature) {
+              const rtree = this.tileProvider.rtreeCache.get(tileId);
+              const tileProviderRTreeEntry = rtree.all().find(item => item.value.getId() === id);
+              if (tileProviderRTreeEntry) {
+                const feature = tileProviderRTreeEntry.value;
                 tileIdsChanged.add(tileId);
                 if (action === FeatureVisibilityAction.HIGHLIGHT) {
                   feature[highlighted] = this.featureVisibility.highlightedObjects[id].style;
@@ -302,9 +303,10 @@ class VectorTile extends FeatureLayer {
           const tileIds = this.tileProvider.featureIdToTileIds.get(id);
           if (tileIds) {
             tileIds.forEach((tileId) => {
-              const source = this.tileProvider.sourceCache.get(tileId);
-              const feature = source.getFeatureById(id);
-              if (feature) {
+              const rtree = this.tileProvider.rtreeCache.get(tileId);
+              const tileProviderRTreeEntry = rtree.all().find(item => item.value.getId() === id);
+              if (tileProviderRTreeEntry) {
+                const feature = tileProviderRTreeEntry.value;
                 tileIdsChanged.add(tileId);
                 if (action === FeatureVisibilityAction.HIDE) {
                   feature[globalHidden] = true;

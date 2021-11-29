@@ -64,9 +64,9 @@ describe('vcs.vcm.layer.tileProvider.TileProvider', () => {
     it('should reduce the tileCache', async () => {
       await tileProviderTileCache.getFeaturesForTile(1, 1, 10);
       await tileProviderTileCache.getFeaturesForTile(1, 2, 10);
-      expect(tileProviderTileCache.sourceCache.size).to.be.equal(2);
+      expect(tileProviderTileCache.rtreeCache.size).to.be.equal(2);
       await tileProviderTileCache.setTileCacheSize(1);
-      expect(tileProviderTileCache.sourceCache.size).to.be.equal(1);
+      expect(tileProviderTileCache.rtreeCache.size).to.be.equal(1);
     });
 
     it('should extent the tileCache', async () => {
@@ -74,10 +74,10 @@ describe('vcs.vcm.layer.tileProvider.TileProvider', () => {
       await tileProviderTileCache.getFeaturesForTile(1, 1, 10);
       await tileProviderTileCache.getFeaturesForTile(1, 2, 10);
       await tileProviderTileCache.getFeaturesForTile(1, 3, 10);
-      expect(tileProviderTileCache.sourceCache.size).to.be.equal(2);
+      expect(tileProviderTileCache.rtreeCache.size).to.be.equal(2);
       await tileProviderTileCache.setTileCacheSize(3);
       await tileProviderTileCache.getFeaturesForTile(1, 1, 10);
-      expect(tileProviderTileCache.sourceCache.size).to.be.equal(3);
+      expect(tileProviderTileCache.rtreeCache.size).to.be.equal(3);
     });
   });
 
@@ -171,32 +171,32 @@ describe('vcs.vcm.layer.tileProvider.TileProvider', () => {
     it('should respect max Cache Size and unload tiles', async () => {
       await tileProvider.setTileCacheSize(1);
       await tileProvider.getFeaturesForTile(1, 1, 10);
-      expect(tileProvider.sourceCache.has('10/1/1')).to.be.true;
+      expect(tileProvider.rtreeCache.has('10/1/1')).to.be.true;
       await tileProvider.getFeaturesForTile(1, 2, 10);
-      expect(tileProvider.sourceCache.has('10/1/1')).to.be.false;
+      expect(tileProvider.rtreeCache.has('10/1/1')).to.be.false;
       await tileProvider.setTileCacheSize(2);
     });
 
     it('should load unloaded tile again', async () => {
       await tileProvider.setTileCacheSize(1);
       await tileProvider.getFeaturesForTile(1, 1, 10);
-      expect(tileProvider.sourceCache.has('10/1/1')).to.be.true;
+      expect(tileProvider.rtreeCache.has('10/1/1')).to.be.true;
       await tileProvider.getFeaturesForTile(1, 2, 10);
-      expect(tileProvider.sourceCache.has('10/1/1')).to.be.false;
+      expect(tileProvider.rtreeCache.has('10/1/1')).to.be.false;
       await tileProvider.getFeaturesForTile(1, 1, 10);
-      expect(tileProvider.sourceCache.has('10/1/1')).to.be.true;
+      expect(tileProvider.rtreeCache.has('10/1/1')).to.be.true;
     });
 
     it('should fill the sourceCache', async () => {
       await tileProvider.getFeaturesForTile(1, 1, 10);
-      expect(tileProvider.sourceCache.has(tileProvider.getCacheKey(1, 1, 10))).to.be.true;
+      expect(tileProvider.rtreeCache.has(tileProvider.getCacheKey(1, 1, 10))).to.be.true;
     });
 
     it('should clear unloaded Tiles from the sourceCache', async () => {
       await tileProvider.getFeaturesForTile(1, 1, 10);
-      expect(tileProvider.sourceCache.has(tileProvider.getCacheKey(1, 1, 10))).to.be.true;
+      expect(tileProvider.rtreeCache.has(tileProvider.getCacheKey(1, 1, 10))).to.be.true;
       await tileProvider.getFeaturesForTile(1, 2, 10);
-      expect(tileProvider.sourceCache.has(tileProvider.getCacheKey(1, 1, 10))).to.be.false;
+      expect(tileProvider.rtreeCache.has(tileProvider.getCacheKey(1, 1, 10))).to.be.false;
     });
   });
 
@@ -298,6 +298,7 @@ describe('vcs.vcm.layer.tileProvider.TileProvider', () => {
         await tileProvider.getFeaturesForTile(1, 1, 10);
         expect(tileProvider.featureIdToTileIds.has('id1')).to.be.true;
         await tileProvider.getFeaturesForTile(2, 1, 10);
+        await new Promise(res => setTimeout(res, 0)); // cleanup is not synchronous.
         expect(tileProvider.featureIdToTileIds.has('id1')).to.be.false;
       });
     });
