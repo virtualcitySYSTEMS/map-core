@@ -35,7 +35,6 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^18.0.0",
     "@rollup/plugin-node-resolve": "^11.2.1",
-    "@types/rbush": "^3.0.0",
     "@vcmap/cesium": "^1.87.3",
     "@vcsuite/eslint-config": "^2.0.3",
     "@vcsuite/tsd-jsdoc": "^1.0.2",
@@ -78,6 +77,7 @@
     "*.d.ts"
   ],
   "dependencies": {
+    "@types/rbush": "^3.0.0",
     "@vcsuite/check": "^1.0.3",
     "@vcsuite/logger": "^1.0.1",
     "@vcsuite/parsers": "^1.0.1",
