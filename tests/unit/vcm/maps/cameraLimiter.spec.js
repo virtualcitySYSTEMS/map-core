@@ -95,7 +95,7 @@ describe('vcs.vcm.maps.CameraLimiter', () => {
   describe('configuring the camera limiter', () => {
     describe('of an unconfigured limiter', () => {
       it('should return an empty object', () => {
-        const config = new CameraLimiter({}).getConfigObject();
+        const config = new CameraLimiter({}).toJSON();
         expect(config).to.be.empty;
       });
     });
@@ -111,7 +111,7 @@ describe('vcs.vcm.maps.CameraLimiter', () => {
           level: null,
           limit: 1000,
         };
-        outputConfig = new CameraLimiter(inputConfig).getConfigObject();
+        outputConfig = new CameraLimiter(inputConfig).toJSON();
       });
 
       it('should configure mode', () => {

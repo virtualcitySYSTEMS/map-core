@@ -146,8 +146,8 @@ class PointCloud extends CesiumTileset {
    * @inheritDoc
    * @returns {PointCloudOptions}
    */
-  getConfigObject() {
-    const config = /** @type {PointCloudOptions} */ (super.getConfigObject());
+  toJSON() {
+    const config = /** @type {PointCloudOptions} */ (super.toJSON());
     const defaultOptions = PointCloud.getDefaultOptions();
 
     if (this.defaultPointSize !== defaultOptions.pointSize) {

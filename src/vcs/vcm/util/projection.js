@@ -262,7 +262,7 @@ class Projection {
    * @returns {ProjectionOptions}
    * @api stable
    */
-  getConfigObject() {
+  toJSON() {
     const configObject = {
       epsg: this.epsg,
     };

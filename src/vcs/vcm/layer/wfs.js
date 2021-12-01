@@ -40,7 +40,7 @@ class WFS extends Vector {
    * @param {WFSOptions} options
    */
   constructor(options) {
-    const proj = new Projection(options.projection).getConfigObject();
+    const proj = new Projection(options.projection).toJSON();
     proj.alias = [`http://www.opengis.net/gml/srs/epsg.xml#${/** @type {string} */ (proj.epsg).match(/\d+/)[0]}`];
     options.projection = proj;
     super(options);
@@ -148,8 +148,8 @@ class WFS extends Vector {
    * @inheritDoc
    * @returns {WFSOptions}
    */
-  getConfigObject() {
-    const config = /** @type {WFSOptions} */ (super.getConfigObject());
+  toJSON() {
+    const config = /** @type {WFSOptions} */ (super.toJSON());
 
     config.featureType = this.featureType.slice();
     config.featureNS = this.featureNS;

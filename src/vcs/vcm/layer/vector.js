@@ -538,7 +538,7 @@ class Vector extends FeatureLayer {
       return metaExtent;
     }
     const extent = new Extent({
-      ...mercatorProjection.getConfigObject(),
+      ...mercatorProjection.toJSON(),
       coordinates: this.source.getExtent(),
     });
     if (extent.isValid()) {
@@ -573,12 +573,12 @@ class Vector extends FeatureLayer {
   /**
    * @returns {VectorOptions}
    */
-  getConfigObject() {
-    const config = /** @type {VectorOptions} */ (super.getConfigObject());
+  toJSON() {
+    const config = /** @type {VectorOptions} */ (super.toJSON());
     const defaultOptions = Vector.getDefaultOptions();
 
     if (this.projection.epsg !== getDefaultProjection().epsg) {
-      config.projection = this.projection.getConfigObject();
+      config.projection = this.projection.toJSON();
     }
 
     if (this.maxResolution !== defaultOptions.maxResolution) {

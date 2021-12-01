@@ -78,15 +78,15 @@ class Extent {
   /**
    * @returns {ExtentOptions}
    */
-  getConfigObject() {
-    return { coordinates: this.extent.slice(), ...this.projection.getConfigObject() };
+  toJSON() {
+    return { coordinates: this.extent.slice(), ...this.projection.toJSON() };
   }
 
   /**
    * @returns {Extent}
    */
   clone() {
-    return new Extent(this.getConfigObject());
+    return new Extent(this.toJSON());
   }
 
   /**

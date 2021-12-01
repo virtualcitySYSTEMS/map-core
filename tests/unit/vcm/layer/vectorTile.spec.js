@@ -254,7 +254,7 @@ describe('vcs.vcm.layer.VectorTile', () => {
         },
       };
       vectorTile = new VectorTile(options);
-      configObject = vectorTile.getConfigObject();
+      configObject = vectorTile.toJSON();
     });
 
     after(() => {
@@ -284,7 +284,7 @@ describe('vcs.vcm.layer.VectorTile', () => {
 
     it('should not export default Options', () => {
       const defaultVectorTile = new VectorTile({});
-      expect(defaultVectorTile.getConfigObject()).to.be.deep.equal({
+      expect(defaultVectorTile.toJSON()).to.be.deep.equal({
         name: defaultVectorTile.name,
         type: defaultVectorTile.className,
       });

@@ -1096,8 +1096,8 @@ class CesiumMap extends VcsMap {
    * @returns {CesiumMapOptions}
    * @api
    */
-  getConfigObject() {
-    const config = /** @type {CesiumMapOptions} */ (super.getConfigObject());
+  toJSON() {
+    const config = /** @type {CesiumMapOptions} */ (super.toJSON());
     const defaultOptions = CesiumMap.getDefaultOptions();
 
     if (this.enableLightning !== defaultOptions.enableLightning) {
@@ -1117,7 +1117,7 @@ class CesiumMap extends VcsMap {
     }
 
     if (this._cameraLimiter) {
-      config.cameraLimiter = this._cameraLimiter.getConfigObject();
+      config.cameraLimiter = this._cameraLimiter.toJSON();
     } else if (this._cameraLimiterOptions && !this.initialized) {
       config.cameraLimiter = this._cameraLimiterOptions;
     }

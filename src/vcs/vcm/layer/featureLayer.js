@@ -229,8 +229,8 @@ class FeatureLayer extends Layer {
   /**
    * @returns {FeatureLayerOptions}
    */
-  getConfigObject() {
-    const config = /** @type {FeatureLayerOptions} */ (super.getConfigObject());
+  toJSON() {
+    const config = /** @type {FeatureLayerOptions} */ (super.toJSON());
     if (!this.getStyleOrDefaultStyle().equals(this._style)) {
       if (this._style[referenceableStyleSymbol]) {
         config.style = this.style.getReference();

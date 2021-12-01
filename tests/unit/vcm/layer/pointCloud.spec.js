@@ -47,7 +47,7 @@ describe('vcs.vcm.layer.PointCloud', () => {
   describe('getting config objects', () => {
     describe('of a default object', () => {
       it('should return an object with type and name for default layers', () => {
-        const config = PCL.getConfigObject();
+        const config = PCL.toJSON();
         expect(config).to.have.all.keys('name', 'type');
       });
     });
@@ -62,7 +62,7 @@ describe('vcs.vcm.layer.PointCloud', () => {
           pointSize: 3,
         };
         configuredLayer = new PointCloud(inputConfig);
-        outputConfig = configuredLayer.getConfigObject();
+        outputConfig = configuredLayer.toJSON();
       });
 
       after(() => {

@@ -93,7 +93,7 @@ class FeatureStore extends Vector {
       featureType: 'simple',
       features: [],
       ...Vector.getDefaultOptions(),
-      projection: mercatorProjection.getConfigObject(),
+      projection: mercatorProjection.toJSON(),
       staticRepresentation: {},
       hiddenStaticFeatureIds: [],
       vcsMeta: {
@@ -497,7 +497,7 @@ class FeatureStore extends Vector {
     }
 
     const actualExtent = new Extent({
-      ...mercatorProjection.getConfigObject(),
+      ...mercatorProjection.toJSON(),
       coordinates: mercatorExtent,
     });
 
@@ -596,8 +596,8 @@ class FeatureStore extends Vector {
    * @inheritDoc
    * @returns {FeatureStoreOptions}
    */
-  getConfigObject() {
-    const config = /** @type {FeatureStoreOptions} */ (super.getConfigObject());
+  toJSON() {
+    const config = /** @type {FeatureStoreOptions} */ (super.toJSON());
     const defaultOptions = FeatureStore.getDefaultOptions();
 
     delete config.projection;

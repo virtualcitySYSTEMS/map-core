@@ -222,7 +222,7 @@ describe('vcs.vcm.layer.FeatureStore', () => {
 
     it('should return the configured extent', () => {
       FS.extent = new Extent({
-        ...wgs84Projection.getConfigObject(),
+        ...wgs84Projection.toJSON(),
         coordinates: [2, 2, 5, 5],
       });
       const vcsExtent = FS.getZoomToExtent();
@@ -522,7 +522,7 @@ describe('vcs.vcm.layer.FeatureStore', () => {
   describe('getting a config', () => {
     describe('of a default object', () => {
       it('should return an object with type and name for default layers', () => {
-        const config = FS.getConfigObject();
+        const config = FS.toJSON();
         expect(config).to.have.all.keys('name', 'type');
       });
     });
@@ -544,7 +544,7 @@ describe('vcs.vcm.layer.FeatureStore', () => {
           hiddenStaticFeatureIds: ['one', 'two'],
         };
         configuredLayer = new FeatureStore(inputConfig);
-        outputConfig = configuredLayer.getConfigObject();
+        outputConfig = configuredLayer.toJSON();
       });
 
       after(() => {

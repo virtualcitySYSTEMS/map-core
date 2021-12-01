@@ -44,7 +44,7 @@ describe('vcs.vcm.layer.SingleImage', () => {
     describe('of a default object', () => {
       it('should return an object with type and name for default layers', () => {
         const defaultLayer = new SingleImage({});
-        const config = defaultLayer.getConfigObject();
+        const config = defaultLayer.toJSON();
         expect(config).to.have.all.keys('name', 'type');
         defaultLayer.destroy();
       });
@@ -60,7 +60,7 @@ describe('vcs.vcm.layer.SingleImage', () => {
           credit: 'test',
         };
         configuredLayer = new SingleImage(inputConfig);
-        outputConfig = configuredLayer.getConfigObject();
+        outputConfig = configuredLayer.toJSON();
       });
 
       after(() => {

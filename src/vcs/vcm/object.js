@@ -59,7 +59,7 @@ class VcsObject {
    * @returns {VcsObjectOptions}
    * @api
    */
-  getConfigObject() {
+  toJSON() {
     const config = {
       type: this.className,
       name: this.name,

@@ -46,7 +46,7 @@ describe('vcs.vcm.layer.Czml', () => {
     describe('of a default object', () => {
       it('should return an object with type and name for default layers', () => {
         const configuredLayer = new Czml({});
-        const config = configuredLayer.getConfigObject();
+        const config = configuredLayer.toJSON();
         expect(config).to.have.all.keys('name', 'type');
         configuredLayer.destroy();
       });
@@ -62,7 +62,7 @@ describe('vcs.vcm.layer.Czml', () => {
           sourceUri: 'http://localhost',
         };
         configuredLayer = new Czml(inputConfig);
-        outputConfig = configuredLayer.getConfigObject();
+        outputConfig = configuredLayer.toJSON();
       });
 
       after(() => {

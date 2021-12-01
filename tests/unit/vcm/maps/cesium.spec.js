@@ -944,7 +944,7 @@ describe('vcs.vcm.maps.Cesium', () => {
   describe('getting of a config object', () => {
     it('should only return name and type of a default cesium map', () => {
       const map = new CesiumMap({});
-      const config = map.getConfigObject();
+      const config = map.toJSON();
       expect(config).to.have.all.keys('name', 'type');
       map.destroy();
     });
@@ -952,7 +952,7 @@ describe('vcs.vcm.maps.Cesium', () => {
     it('should return the config of a set camera limiter', () => {
       const map = new CesiumMap({});
       map.cameraLimiter = new CameraLimiter({ level: null });
-      const config = map.getConfigObject();
+      const config = map.toJSON();
       expect(config)
         .to.have.property('cameraLimiter')
         .and.to.have.property('level', null);
@@ -978,7 +978,7 @@ describe('vcs.vcm.maps.Cesium', () => {
           },
         };
         map = new CesiumMap(inputConfig);
-        outputConfig = map.getConfigObject();
+        outputConfig = map.toJSON();
       });
 
       after(() => {

@@ -464,8 +464,8 @@ class VcsMap extends VcsObject {
    * @returns {VcsMapOptions}
    * @api
    */
-  getConfigObject() {
-    const config = /** @type {VcsMapOptions} */ (super.getConfigObject());
+  toJSON() {
+    const config = /** @type {VcsMapOptions} */ (super.toJSON());
     if (this.fallbackMap) {
       config.fallbackMap = this.fallbackMap;
     }

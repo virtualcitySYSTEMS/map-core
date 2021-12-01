@@ -55,7 +55,7 @@ describe('vcs.vcm.util.featureProvider.WMSFeatureProvider', () => {
             LAYERS: 'one',
           },
           responseType: 'application/json',
-          projection: mercatorProjection.getConfigObject(),
+          projection: mercatorProjection.toJSON(),
         },
       );
       features = await provider.getFeaturesByCoordinate([0, 0, 0], 2);
@@ -136,7 +136,7 @@ describe('vcs.vcm.util.featureProvider.WMSFeatureProvider', () => {
     describe('of a default feature provider', () => {
       it('should return the type, url and parameters', () => {
         const provider = new WMSFeatureProvider('test', {});
-        const config = provider.getConfigObject();
+        const config = provider.toJSON();
         expect(config).to.have.all.keys(['type', 'url', 'parameters']);
         provider.destroy();
       });
@@ -163,12 +163,12 @@ describe('vcs.vcm.util.featureProvider.WMSFeatureProvider', () => {
           },
           extent: {
             coordinates: [0, 0, 1, 1],
-            ...mercatorProjection.getConfigObject(),
+            ...mercatorProjection.toJSON(),
           },
-          projection: mercatorProjection.getConfigObject(),
+          projection: mercatorProjection.toJSON(),
         };
         const provider = new WMSFeatureProvider('test', inputConfig);
-        outputConfig = provider.getConfigObject();
+        outputConfig = provider.toJSON();
         provider.destroy();
       });
 

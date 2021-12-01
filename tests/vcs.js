@@ -22,7 +22,7 @@ const body = document.getElementsByTagName('body')[0];
 body.appendChild(balloonContainer);
 body.appendChild(mapContainer);
 body.appendChild(overviewMapDiv);
-setDefaultProjectionOptions(mercatorProjection.getConfigObject());
+setDefaultProjectionOptions(mercatorProjection.toJSON());
 setupCesiumContextLimits();
 
 before(() => {

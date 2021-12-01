@@ -4,7 +4,7 @@ describe('vcs.vcm.layer.Terrain', () => {
   describe('getting config objects', () => {
     describe('of a default object', () => {
       it('should return an object with type and name for default layers', () => {
-        const config = (new Terrain({})).getConfigObject();
+        const config = (new Terrain({})).toJSON();
         expect(config).to.have.all.keys('name', 'type');
       });
     });
@@ -20,7 +20,7 @@ describe('vcs.vcm.layer.Terrain', () => {
           requestWaterMask: true,
         };
         configuredLayer = new Terrain(inputConfig);
-        outputConfig = configuredLayer.getConfigObject();
+        outputConfig = configuredLayer.toJSON();
       });
 
       after(() => {

@@ -60,7 +60,7 @@ describe('vcs.vcm.layer.OpenStreetMap', () => {
   describe('getting config objects', () => {
     describe('of a default object', () => {
       it('should return an object with type and name for default layers', () => {
-        const config = openStreetMapLayer.getConfigObject();
+        const config = openStreetMapLayer.toJSON();
         expect(config).to.have.all.keys('name', 'type');
       });
     });
@@ -77,7 +77,7 @@ describe('vcs.vcm.layer.OpenStreetMap', () => {
           splitDirection: 'left',
         };
         configuredLayer = new OpenStreetMap(inputConfig);
-        outputConfig = configuredLayer.getConfigObject();
+        outputConfig = configuredLayer.toJSON();
       });
 
       after(() => {

@@ -266,7 +266,7 @@ class CesiumTileset extends FeatureLayer {
       const threeDimExtent = getExtentFromTileset(impl.cesium3DTileset);
 
       const actualExtent = new Extent({
-        ...mercatorProjection.getConfigObject(),
+        ...mercatorProjection.toJSON(),
         coordinates: threeDimExtent,
       });
 
@@ -309,9 +309,9 @@ class CesiumTileset extends FeatureLayer {
   /**
    * @returns {CesiumTilesetOptions}
    */
-  getConfigObject() {
+  toJSON() {
     /** @type {CesiumTilesetOptions} */
-    const config = super.getConfigObject();
+    const config = super.toJSON();
     const defaultOptions = CesiumTileset.getDefaultOptions();
     if (this.highlightStyle) {
       config.highlightStyle = this.highlightStyle[referenceableStyleSymbol] ?

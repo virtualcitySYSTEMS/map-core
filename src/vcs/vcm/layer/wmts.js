@@ -176,8 +176,8 @@ class WMTS extends RasterLayer {
    * @inheritDoc
    * @returns {WMTSOptions}
    */
-  getConfigObject() {
-    const config = /** @type {WMTSOptions} */ (super.getConfigObject());
+  toJSON() {
+    const config = /** @type {WMTSOptions} */ (super.toJSON());
     const defaultOptions = WMTS.getDefaultOptions();
 
     if (this.tilingSchema !== defaultOptions.tilingSchema) {

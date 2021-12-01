@@ -160,8 +160,8 @@ class OpenStreetMap extends Layer {
    * @inheritDoc
    * @returns {OpenStreetMapOptions}
    */
-  getConfigObject() {
-    const config = /** @type {OpenStreetMapOptions} */ (super.getConfigObject());
+  toJSON() {
+    const config = /** @type {OpenStreetMapOptions} */ (super.toJSON());
     const defaultOptions = OpenStreetMap.getDefaultOptions();
 
     if (this._splitDirection !== ImagerySplitDirection.NONE) {

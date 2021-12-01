@@ -102,8 +102,8 @@ class Czml extends DataSource {
    * @inheritDoc
    * @returns {CzmlOptions}
    */
-  getConfigObject() {
-    const config = /** @type {CzmlOptions} */ (super.getConfigObject());
+  toJSON() {
+    const config = /** @type {CzmlOptions} */ (super.toJSON());
     if (this.sourceUri) {
       config.sourceUri = this.sourceUri;
     }

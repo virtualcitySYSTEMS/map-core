@@ -31,7 +31,7 @@ describe('VCSObject', () => {
         properties: myProperties,
         name: myName,
       });
-      expect(vcsObject.getConfigObject()).to.deep.equal({
+      expect(vcsObject.toJSON()).to.deep.equal({
         type: 'vcs.vcm.Framework',
         properties: myProperties,
         name: myName,
@@ -42,7 +42,7 @@ describe('VCSObject', () => {
       const vcsObject = new VcsObject({
         name: 'test',
       });
-      expect(vcsObject.getConfigObject()).to.have.all.keys('name', 'type');
+      expect(vcsObject.toJSON()).to.have.all.keys('name', 'type');
     });
   });
 

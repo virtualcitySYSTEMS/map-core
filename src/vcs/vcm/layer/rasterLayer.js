@@ -248,8 +248,8 @@ class RasterLayer extends Layer {
    * @inheritDoc
    * @returns {RasterLayerOptions}
    */
-  getConfigObject() {
-    const config = /** @type {RasterLayerOptions} */ (super.getConfigObject());
+  toJSON() {
+    const config = /** @type {RasterLayerOptions} */ (super.toJSON());
     const defaultOptions = RasterLayer.getDefaultOptions();
 
     if (this.extent.equals(new Extent())) {

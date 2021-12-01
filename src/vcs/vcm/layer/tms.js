@@ -92,8 +92,8 @@ class TMS extends RasterLayer {
    * @inheritDoc
    * @returns {TMSOptions}
    */
-  getConfigObject() {
-    const config = /** @type {TMSOptions} */ (super.getConfigObject());
+  toJSON() {
+    const config = /** @type {TMSOptions} */ (super.toJSON());
     const defaultOptions = TMS.getDefaultOptions();
 
     if (this.tilingSchema !== defaultOptions.tilingSchema) {

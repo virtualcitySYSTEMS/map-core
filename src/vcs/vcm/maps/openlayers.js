@@ -189,8 +189,8 @@ class Openlayers extends BaseOLMap {
    * @returns {OpenlayersOptions}
    * @api
    */
-  getConfigObject() {
-    const config = /** @type {OpenlayersOptions} */ (super.getConfigObject());
+  toJSON() {
+    const config = /** @type {OpenlayersOptions} */ (super.toJSON());
 
     const defaultOptions = Openlayers.getDefaultOptions();
     if (this.fixedNorthOrientation !== defaultOptions.fixedNorthOrientation) {

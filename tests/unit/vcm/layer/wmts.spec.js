@@ -4,7 +4,7 @@ describe('vcs.vcm.layer.WMTS', () => {
   describe('getting config objects', () => {
     describe('of a default object', () => {
       it('should return an object with type and name for default layers', () => {
-        const config = (new WMTS({})).getConfigObject();
+        const config = (new WMTS({})).toJSON();
         expect(config).to.have.all.keys('name', 'type');
       });
     });
@@ -29,7 +29,7 @@ describe('vcs.vcm.layer.WMTS', () => {
           tileSize: [512, 512],
         };
         configuredLayer = new WMTS(inputConfig);
-        outputConfig = configuredLayer.getConfigObject();
+        outputConfig = configuredLayer.toJSON();
       });
 
       after(() => {

@@ -680,9 +680,9 @@ class Layer extends VcsObject {
   /**
    * @returns {LayerOptions}
    */
-  getConfigObject() {
+  toJSON() {
     /** @type {LayerOptions} */
-    const config = super.getConfigObject();
+    const config = super.toJSON();
     const defaultOptions = Layer.getDefaultOptions();
 
     if (this.activeOnStartup !== defaultOptions.activeOnStartup) {
@@ -706,7 +706,7 @@ class Layer extends VcsObject {
     }
 
     if (this.extent && this.extent.isValid()) {
-      config.extent = this.extent.getConfigObject();
+      config.extent = this.extent.toJSON();
     }
 
     if (this._exclusiveGroups.length > 0) {

@@ -126,7 +126,7 @@ describe('vcs.vcm.util.featureProvider.AbstractFeatureProvider', () => {
     describe('of a default feature provider', () => {
       it('should return the type', () => {
         const provider = new AbstractFeatureProvider(layerName, {});
-        const config = provider.getConfigObject();
+        const config = provider.toJSON();
         expect(config).to.have.all.keys(['type']);
         provider.destroy();
       });
@@ -150,7 +150,7 @@ describe('vcs.vcm.util.featureProvider.AbstractFeatureProvider', () => {
           },
         };
         const provider = new AbstractFeatureProvider(layerName, inputConfig);
-        outputConfig = provider.getConfigObject();
+        outputConfig = provider.toJSON();
         provider.destroy();
       });
 

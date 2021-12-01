@@ -104,8 +104,8 @@ class Terrain extends Layer {
   /**
    * @returns {TerrainOptions}
    */
-  getConfigObject() {
-    const config = /** @type {TerrainOptions} */ (super.getConfigObject());
+  toJSON() {
+    const config = /** @type {TerrainOptions} */ (super.toJSON());
     const defaultOptions = Terrain.getDefaultOptions();
 
     if (this.requestVertexNormals !== defaultOptions.requestVertexNormals) {

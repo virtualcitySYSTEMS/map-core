@@ -222,8 +222,8 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
    * @inheritDoc
    * @returns {WMSFeatureProviderOptions}
    */
-  getConfigObject() {
-    const config = /** @type {WMSFeatureProviderOptions} */ (super.getConfigObject());
+  toJSON() {
+    const config = /** @type {WMSFeatureProviderOptions} */ (super.toJSON());
     const defaultOptions = WMSFeatureProvider.getDefaultOptions();
     if (this.featureInfoResponseType !== defaultOptions.responseType) {
       config.responseType = this.featureInfoResponseType;
@@ -234,7 +234,7 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
     }
 
     if (this.projection !== defaultOptions.projection) {
-      config.projection = this.projection.getConfigObject();
+      config.projection = this.projection.toJSON();
     }
 
     config.url = this._wmsSourceOptions.url;
@@ -259,7 +259,7 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
       config.tileSize = this._wmsSourceOptions.tileSize.slice();
     }
     if (this.extent) {
-      config.extent = this.extent.getConfigObject();
+      config.extent = this.extent.toJSON();
     }
 
     return config;

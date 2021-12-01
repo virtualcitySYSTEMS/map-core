@@ -115,7 +115,7 @@ describe('vcs.vcm.layer.DataSource', () => {
   describe('getting a config', () => {
     describe('of a default object', () => {
       it('should return an object with type and name for default layers', () => {
-        const config = new DataSource({}).getConfigObject();
+        const config = new DataSource({}).toJSON();
         expect(config).to.have.all.keys('name', 'type');
       });
     });
@@ -132,7 +132,7 @@ describe('vcs.vcm.layer.DataSource', () => {
           },
         };
         configuredLayer = new DataSource(inputConfig);
-        outputConfig = configuredLayer.getConfigObject();
+        outputConfig = configuredLayer.toJSON();
       });
 
       after(() => {

@@ -192,8 +192,8 @@ class WMS extends RasterLayer {
   /**
    * @returns {WMSOptions}
    */
-  getConfigObject() {
-    const config = /** @type {WMSOptions} */ (super.getConfigObject());
+  toJSON() {
+    const config = /** @type {WMSOptions} */ (super.toJSON());
     const defaultOptions = WMS.getDefaultOptions();
 
     if (this.parameters.LAYERS) {
@@ -229,7 +229,7 @@ class WMS extends RasterLayer {
     }
 
     if (this.featureProvider && this.featureProvider instanceof WMSFeatureProvider) {
-      const featureInfoConfig = this.featureProvider.getConfigObject();
+      const featureInfoConfig = this.featureProvider.toJSON();
       if (this.tileSize[0] === featureInfoConfig.tileSize[0] || this.tileSize[1] === featureInfoConfig.tileSize[1]) {
         delete featureInfoConfig.tileSize;
       }

@@ -79,7 +79,7 @@ describe('vcs.vcm.layer.RasterLayer', () => {
   describe('getting config objects', () => {
     describe('of a default object', () => {
       it('should return an object with type and name for default layers', () => {
-        const config = ARL.getConfigObject();
+        const config = ARL.toJSON();
         expect(config).to.have.all.keys('name', 'type');
       });
     });
@@ -96,10 +96,10 @@ describe('vcs.vcm.layer.RasterLayer', () => {
           tilingSchema: 'mercator',
           opacity: 0.5,
           splitDirection: 'left',
-          projection: mercatorProjection.getConfigObject(),
+          projection: mercatorProjection.toJSON(),
         };
         configuredLayer = new RasterLayer(inputConfig);
-        outputConfig = configuredLayer.getConfigObject();
+        outputConfig = configuredLayer.toJSON();
       });
 
       after(() => {
@@ -143,7 +143,7 @@ describe('vcs.vcm.layer.RasterLayer', () => {
 
     it('should update all implementations, if the opacity changes', async () => {
       const map = await getOpenlayersMap();
-      const impl = new AbstractRasterLayerOL(map, ARL.getConfigObject());
+      const impl = new AbstractRasterLayerOL(map, ARL.toJSON());
       ARL._implementations.set(map, [impl]);
       const updateOpacity = sandbox.spy(impl, 'updateOpacity');
       ARL.opacity = 0.5;

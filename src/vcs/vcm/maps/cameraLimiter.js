@@ -194,7 +194,7 @@ class CameraLimiter {
   /**
    * @returns {CameraLimiterOptions}
    */
-  getConfigObject() {
+  toJSON() {
     const config = {};
     const defaultOptions = CameraLimiter.getDefaultOptions();
     if (this.terrainUrl) {

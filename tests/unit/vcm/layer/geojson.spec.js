@@ -155,7 +155,7 @@ describe('vcs.vcm.layer.GeoJSON', () => {
   describe('getting a config', () => {
     describe('of a default object', () => {
       it('should return an object with type and name for default layers', () => {
-        const config = new GeoJSON({}).getConfigObject();
+        const config = new GeoJSON({}).toJSON();
         expect(config).to.have.all.keys('name', 'type');
       });
     });
@@ -171,7 +171,7 @@ describe('vcs.vcm.layer.GeoJSON', () => {
           features: [JSON.parse(JSON.stringify(testGeoJSON.featureWithStyle))],
         };
         configuredLayer = new GeoJSON(inputConfig);
-        outputConfig = configuredLayer.getConfigObject();
+        outputConfig = configuredLayer.toJSON();
       });
 
       after(() => {
@@ -195,7 +195,7 @@ describe('vcs.vcm.layer.GeoJSON', () => {
           features: [feature],
         });
         await layer.initialize();
-        const config = layer.getConfigObject();
+        const config = layer.toJSON();
         expect(config).to.have.property('features')
           .and.to.have.lengthOf(1);
 

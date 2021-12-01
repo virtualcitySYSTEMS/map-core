@@ -185,7 +185,7 @@ describe('vcs.vcm.layer.CesiumTileset', () => {
       );
 
       cesiumTileset.extent = new Extent({
-        ...wgs84Projection.getConfigObject(),
+        ...wgs84Projection.toJSON(),
         coordinates: [0, 0, 1, 1],
       });
       const featureExtent = cesiumTileset.getZoomToExtent();
@@ -235,7 +235,7 @@ describe('vcs.vcm.layer.CesiumTileset', () => {
     describe('of a default object', () => {
       it('should return an object with type and name for default layers', () => {
         const defaultLayer = new CesiumTileset({});
-        const config = defaultLayer.getConfigObject();
+        const config = defaultLayer.toJSON();
         expect(config).to.have.all.keys('name', 'type');
         defaultLayer.destroy();
       });
@@ -265,7 +265,7 @@ describe('vcs.vcm.layer.CesiumTileset', () => {
           offset: [0, 0, 20],
         };
         configuredLayer = new CesiumTileset(inputConfig);
-        outputConfig = configuredLayer.getConfigObject();
+        outputConfig = configuredLayer.toJSON();
       });
 
       after(() => {

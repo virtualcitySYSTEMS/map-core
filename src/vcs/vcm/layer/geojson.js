@@ -33,7 +33,7 @@ class GeoJSON extends Vector {
   static getDefaultOptions() {
     return {
       ...Vector.getDefaultOptions(),
-      projection: wgs84Projection.getConfigObject(),
+      projection: wgs84Projection.toJSON(),
       features: undefined,
     };
   }
@@ -149,13 +149,13 @@ class GeoJSON extends Vector {
    * @inheritDoc
    * @returns {GeoJSONOptions}
    */
-  getConfigObject() {
-    const config = /** @type {GeoJSONOptions} */ (super.getConfigObject());
+  toJSON() {
+    const config = /** @type {GeoJSONOptions} */ (super.toJSON());
     const defaultOptions = GeoJSON.getDefaultOptions();
 
     const defaultProjection = new Projection(defaultOptions.projection);
     if (!this.projection.equals(defaultProjection)) {
-      config.projection = this.projection.getConfigObject();
+      config.projection = this.projection.toJSON();
     } else {
       delete config.projection;
     }

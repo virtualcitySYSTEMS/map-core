@@ -341,7 +341,7 @@ describe('vcs.vcm.layer.Layer', () => {
   describe('getting a config', () => {
     describe('of a default object', () => {
       it('should return an object with type and name for default layers', () => {
-        const config = AL.getConfigObject();
+        const config = AL.toJSON();
         expect(config).to.have.all.keys('name', 'type');
       });
     });
@@ -369,7 +369,7 @@ describe('vcs.vcm.layer.Layer', () => {
           },
         };
         configuredLayer = new Layer(inputConfig);
-        outputConfig = configuredLayer.getConfigObject();
+        outputConfig = configuredLayer.toJSON();
       });
 
       after(() => {

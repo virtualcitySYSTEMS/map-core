@@ -530,8 +530,8 @@ class TileProvider extends VcsObject {
    * @returns {TileProviderOptions}
    * @api
    */
-  getConfigObject() {
-    const config = /** @type {TileProviderOptions} */ (super.getConfigObject());
+  toJSON() {
+    const config = /** @type {TileProviderOptions} */ (super.toJSON());
     const defaultOptions = TileProvider.getDefaultOptions();
 
     if (defaultOptions.tileCacheSize !== this.tileCacheSize) {

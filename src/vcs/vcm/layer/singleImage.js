@@ -103,8 +103,8 @@ class SingleImage extends RasterLayer {
    * @inheritDoc
    * @returns {SingleImageOptions}
    */
-  getConfigObject() {
-    const config = /** @type {SingleImageOptions} */ (super.getConfigObject());
+  toJSON() {
+    const config = /** @type {SingleImageOptions} */ (super.toJSON());
     delete config.tilingSchema;
 
     if (this.credit) {

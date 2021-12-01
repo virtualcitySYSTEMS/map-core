@@ -51,7 +51,7 @@ describe('vcs.vcm.layer.WMS', () => {
     describe('of a default object', () => {
       it('should return an object with type and name for default layers', () => {
         const layer = new WMS({});
-        const config = layer.getConfigObject();
+        const config = layer.toJSON();
         expect(config).to.have.all.keys('name', 'type');
         layer.destroy();
       });
@@ -77,7 +77,7 @@ describe('vcs.vcm.layer.WMS', () => {
           },
         };
         configuredLayer = new WMS(inputConfig);
-        outputConfig = configuredLayer.getConfigObject();
+        outputConfig = configuredLayer.toJSON();
       });
 
       after(() => {
@@ -129,7 +129,7 @@ describe('vcs.vcm.layer.WMS', () => {
         };
         configuredLayer = new WMS(inputConfig);
         await configuredLayer.initialize();
-        outputConfig = configuredLayer.getConfigObject();
+        outputConfig = configuredLayer.toJSON();
       });
 
       after(() => {

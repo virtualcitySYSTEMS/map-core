@@ -235,8 +235,8 @@ class DataSource extends Layer {
    * @inheritDoc
    * @returns {DataSourceOptions}
    */
-  getConfigObject() {
-    const config = /** @type {DataSourceOptions} */ (super.getConfigObject());
+  toJSON() {
+    const config = /** @type {DataSourceOptions} */ (super.toJSON());
     if (Object.keys(this._genericFeatureProperties).length > 0) {
       config.genericFeatureProperties = { ...this._genericFeatureProperties };
     }

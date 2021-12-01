@@ -154,9 +154,9 @@ class AbstractFeatureProvider extends VcsObject {
    * @returns {AbstractFeatureProviderOptions}
    * @api
    */
-  getConfigObject() {
+  toJSON() {
     const config =
-      /** @type {AbstractFeatureProviderOptions} */ (super.getConfigObject());
+      /** @type {AbstractFeatureProviderOptions} */ (super.toJSON());
 
     const defaultOptions = AbstractFeatureProvider.getDefaultOptions();
     delete config.name; // the name is irrelevant, since its the layers name

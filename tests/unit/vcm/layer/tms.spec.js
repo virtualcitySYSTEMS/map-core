@@ -4,7 +4,7 @@ describe('vcs.vcm.layer.TMS', () => {
   describe('getting config objects', () => {
     describe('of a default object', () => {
       it('should return an object with type and name for default layers', () => {
-        const config = (new TMS({})).getConfigObject();
+        const config = (new TMS({})).toJSON();
         expect(config).to.have.all.keys('name', 'type');
       });
     });
@@ -21,7 +21,7 @@ describe('vcs.vcm.layer.TMS', () => {
           tileSize: [512, 512],
         };
         configuredLayer = new TMS(inputConfig);
-        outputConfig = configuredLayer.getConfigObject();
+        outputConfig = configuredLayer.toJSON();
       });
 
       after(() => {

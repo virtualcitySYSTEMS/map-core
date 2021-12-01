@@ -163,6 +163,23 @@ class StyleItem extends VcsObject {
   }
 
   /**
+   * @inheritDoc
+   * @returns {StyleItemOptions}
+   */
+  toJSON() {
+    const config = { ...super.toJSON(), ...this.getOptions() };
+    if (this.title) {
+      config.title = this.title;
+    }
+
+    if (this.legend.length > 0) {
+      config.legend = this.legend.slice();
+    }
+
+    return config;
+  }
+
+  /**
    * Clones this style
    * @param {StyleItem=} result
    * @returns {StyleItem}

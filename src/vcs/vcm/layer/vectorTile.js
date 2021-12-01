@@ -448,8 +448,8 @@ class VectorTile extends FeatureLayer {
    * @inheritDoc
    * @returns {VectorTileOptions}
    */
-  getConfigObject() {
-    const config = /** @type {VectorTileOptions} */ (super.getConfigObject());
+  toJSON() {
+    const config = /** @type {VectorTileOptions} */ (super.toJSON());
     const defaultOptions = VectorTile.getDefaultOptions();
 
     if (this._maxLevel !== defaultOptions.maxLevel) {
@@ -466,7 +466,7 @@ class VectorTile extends FeatureLayer {
     }
 
     if (this.tileProvider) {
-      const tileProviderConfig = this.tileProvider.getConfigObject();
+      const tileProviderConfig = this.tileProvider.toJSON();
       config.tileProvider = tileProviderConfig;
     } else if (this._tileProviderOptions) {
       config.tileProvider = this._tileProviderOptions;

@@ -497,8 +497,8 @@ class Oblique extends BaseOLMap {
    * @returns {ObliqueOptions}
    * @api
    */
-  getConfigObject() {
-    const config = /** @type {ObliqueOptions} */ (super.getConfigObject());
+  toJSON() {
+    const config = /** @type {ObliqueOptions} */ (super.toJSON());
     const defaultOptions = Oblique.getDefaultOptions();
 
     if (this.mapChangeEvent === 'movened') {

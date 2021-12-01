@@ -69,7 +69,7 @@ describe('vcs.vcm.layer.FeatureLayer', () => {
   describe('getting a config', () => {
     describe('of a default object', () => {
       it('should return an object with type and name for default layers', () => {
-        const config = featureLayer.getConfigObject();
+        const config = featureLayer.toJSON();
         expect(config).to.have.all.keys('name', 'type');
       });
     });
@@ -92,7 +92,7 @@ describe('vcs.vcm.layer.FeatureLayer', () => {
           },
         };
         configuredLayer = new FeatureLayer(inputConfig);
-        outputConfig = configuredLayer.getConfigObject();
+        outputConfig = configuredLayer.toJSON();
       });
 
       after(() => {

@@ -158,9 +158,9 @@ class ViewPoint extends VcsObject {
    * @returns {ViewPointOptions} returns a options object. This object can be used to reconstruct a new viewpoint
    * @api stable
    */
-  getConfigObject() {
+  toJSON() {
     return {
-      ...super.getConfigObject(),
+      ...super.toJSON(),
       distance: this.distance,
       cameraPosition: this.cameraPosition ? this.cameraPosition.slice() : null,
       groundPosition: this.groundPosition ? this.groundPosition.slice() : null,
@@ -179,7 +179,7 @@ class ViewPoint extends VcsObject {
    * @api stable
    */
   clone() {
-    return new ViewPoint(this.getConfigObject());
+    return new ViewPoint(this.toJSON());
   }
 
   /**
