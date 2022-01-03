@@ -6,6 +6,7 @@ import LayerImplementation from '../../../../src/vcs/vcm/layer/layerImplementati
 import { getCesiumEventSpy } from '../../helpers/cesiumHelpers.js';
 import { getOpenlayersMap, setOpenlayersMap } from '../../helpers/openlayers.js';
 import { setCurrentLocale } from '../../../../src/vcs/vcm/util/locale.js';
+import Extent from '../../../../src/vcs/vcm/util/extent.js';
 
 describe('vcs.vcm.layer.Layer', () => {
   let sandbox;
@@ -359,11 +360,11 @@ describe('vcs.vcm.layer.Layer', () => {
           hiddenObjectIds: ['hidden'],
           url: 'http://localhost',
           exclusiveGroups: ['myGroup'],
-          extent: {
+          extent: new Extent({
             coordinates: [0, 0, 1, 1],
             epsg: 'EPSG:25833',
             proj4: '+proj=utm +zone=33 +ellps=GRS80 +units=m +no_defs',
-          },
+          }).toJSON(),
           copyright: {
             provider: 'test',
           },

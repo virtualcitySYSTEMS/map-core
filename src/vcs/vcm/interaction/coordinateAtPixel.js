@@ -85,7 +85,7 @@ class CoordinateAtPixel extends AbstractInteraction {
       if (Number.isFinite(pixel[0]) && Number.isFinite(pixel[1])) {
         return transformFromImage(image, pixel, {
           dontUseTerrain: !!move,
-          dataProjection: mercatorProjection.proj,
+          dataProjection: mercatorProjection,
         }).then((coordinates) => {
           event.obliqueParameters = { pixel };
           event.position = coordinates.coords;

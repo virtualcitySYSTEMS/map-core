@@ -1,4 +1,3 @@
-import { get as getProjection } from 'ol/proj.js';
 import { boundingExtent } from 'ol/extent.js';
 import Feature from 'ol/Feature.js';
 import ObliqueCollection from '../../../../src/vcs/vcm/oblique/ObliqueCollection.js';
@@ -7,6 +6,7 @@ import imageJson from '../../../data/oblique/imageData/imagev35.json';
 import setTiledObliqueImageServer, { tiledMercatorCoordinate, tiledMercatorCoordinate2 } from '../../helpers/obliqueData.js';
 import { ObliqueViewDirection } from '../../../../src/vcs/vcm/oblique/ObliqueViewDirection.js';
 import { getCesiumEventSpy } from '../../helpers/cesiumHelpers.js';
+import Projection from '../../../../src/vcs/vcm/util/projection.js';
 
 describe('ObliqueCollection', () => {
   let projection;
@@ -14,7 +14,7 @@ describe('ObliqueCollection', () => {
   let sandbox;
 
   before(() => {
-    projection = getProjection('EPSG:25833');
+    projection = new Projection({ epsg: 'EPSG:25833' });
     url = 'http://localhost/tiledOblique/image.json';
     sandbox = sinon.createSandbox();
   });
@@ -41,6 +41,15 @@ describe('ObliqueCollection', () => {
           dataSets: [dataSet],
         });
         expect(obliqueCollection.dataSets).to.include(dataSet);
+      });
+
+      it('should add passed in serialized data sets', () => {
+        obliqueCollection = new ObliqueCollection({
+          dataSets: [{ url }],
+        });
+        expect(obliqueCollection.dataSets).to.have.lengthOf(1);
+        expect(obliqueCollection.dataSets[0]).to.be.an.instanceOf(ObliqueDataSet);
+        expect(obliqueCollection.dataSets[0]).to.have.property('url', url);
       });
 
       it('should add a loaded data set, adding its images', () => {
@@ -405,6 +414,76 @@ describe('ObliqueCollection', () => {
         const { imageFeatureSource } = obliqueCollection;
         const image = imageFeatureSource.getFeatureById('025_070_119003689');
         expect(image.get('viewDirection')).to.equal(ObliqueViewDirection.NORTH);
+      });
+    });
+  });
+
+  describe('serialization', () => {
+    describe('of an empty collection', () => {
+      it('should return an object with type and name for default layers', () => {
+        const config = new ObliqueCollection({}).toJSON();
+        expect(config).to.have.all.keys('name', 'type');
+      });
+    });
+
+    describe('of a configured collection', () => {
+      let outputConfig;
+      let inputConfig;
+
+      before(() => {
+        inputConfig = {
+          name: 'foo',
+          maxZoom: 5,
+          minZoom: 1,
+          hideLevels: 1,
+          scaleFactor: 2,
+          dataSets: [
+            {
+              url: 'https://localhost/dataset1/image.json',
+            },
+            {
+              url: 'http://localhost/dataset2/image.json',
+              projection: {
+                epsg: 'EPSG:4326',
+              },
+            },
+            {
+              url: 'http://localhost/dataset3/image.json',
+              terrainProvider: {
+                url: 'http://localhost/terrain-provider',
+              },
+            },
+          ],
+        };
+
+        outputConfig = new ObliqueCollection(inputConfig).toJSON();
+      });
+
+      it('should configure maxZoom', () => {
+        expect(outputConfig).to.have.property('maxZoom', inputConfig.maxZoom);
+      });
+
+      it('should configure minZoom', () => {
+        expect(outputConfig).to.have.property('minZoom', inputConfig.minZoom);
+      });
+
+      it('should configure hideLevels', () => {
+        expect(outputConfig).to.have.property('hideLevels', inputConfig.hideLevels);
+      });
+
+      it('should configure scaleFactor', () => {
+        expect(outputConfig).to.have.property('scaleFactor', inputConfig.scaleFactor);
+      });
+
+      it('should serialize dataSets', () => {
+        expect(outputConfig.dataSets).to.be.an('array').and.have.lengthOf(3);
+        expect(outputConfig.dataSets[0]).to.have.property('url', inputConfig.dataSets[0].url);
+        expect(outputConfig.dataSets[1]).to.have.property('url', inputConfig.dataSets[1].url);
+        expect(outputConfig.dataSets[1]).to.have.property('projection')
+          .and.to.have.property('epsg', inputConfig.dataSets[1].projection.epsg);
+        expect(outputConfig.dataSets[2]).to.have.property('url', inputConfig.dataSets[2].url);
+        expect(outputConfig.dataSets[2]).to.have.property('terrainProvider')
+          .and.to.have.property('url', inputConfig.dataSets[2].terrainProvider.url);
       });
     });
   });

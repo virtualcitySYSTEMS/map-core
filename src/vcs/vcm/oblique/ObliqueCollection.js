@@ -1,15 +1,17 @@
+import { parseInteger, parseNumber } from '@vcsuite/parsers';
 import RBush from 'rbush';
 import knn from 'rbush-knn';
-import { v4 as uuidv4 } from 'uuid';
 import { getTransform } from 'ol/proj.js';
 import { createXYZ } from 'ol/tilegrid.js';
 import Feature from 'ol/Feature.js';
 import Polygon, { fromExtent } from 'ol/geom/Polygon.js';
 import Vector from 'ol/source/Vector.js';
 import { boundingExtent, buffer, containsCoordinate, getCenter } from 'ol/extent.js';
-import { Event as CesiumEvent } from '@vcmap/cesium';
-import { DataState, getStateFromStatesArray } from './ObliqueDataSet.js';
+import VcsEvent from '../event/vcsEvent.js';
+import ObliqueDataSet, { DataState, getStateFromStatesArray } from './ObliqueDataSet.js';
 import { ObliqueViewDirection } from './ObliqueViewDirection.js';
+import { mercatorProjection } from '../util/projection.js';
+import VcsObject from '../object.js';
 
 /**
  * @typedef {Object} ObliqueCameraOptions
@@ -52,13 +54,19 @@ import { ObliqueViewDirection } from './ObliqueViewDirection.js';
  */
 
 /**
- * @typedef {Object} ObliqueCollectionOptions
- * @property {string|undefined} name
- * @property {Array<import("@vcmap/core").ObliqueDataSet>} dataSets
- * @property {number|undefined} maxZoom
- * @property {number|undefined} minZoom
+ * @typedef {Object} ObliqueDataSetOptions
+ * @property {string} url
+ * @property {ProjectionOptions} [projection]
+ * @property {TerrainProviderOptions} [terrainProvider]
+ */
+
+/**
+ * @typedef {VcsObjectOptions} ObliqueCollectionOptions
+ * @property {Array<import("@vcmap/core").ObliqueDataSet|ObliqueDataSetOptions>} [dataSets]
+ * @property {number|undefined} [maxZoom]
+ * @property {number|undefined} [minZoom]
  * @property {number|undefined} [scaleFactor=4]
- * @property {number|undefined} hideLevels
+ * @property {number|undefined} [hideLevels]
  * @api
  */
 
@@ -68,7 +76,7 @@ import { ObliqueViewDirection } from './ObliqueViewDirection.js';
  */
 function getImageFeatures(images) {
   return images.map((image) => {
-    const transform = getTransform(image.meta.projection, 'EPSG:3857');
+    const transform = getTransform(image.meta.projection.proj, mercatorProjection.proj);
     const feature = new Feature({
       geometry: new Polygon([image.groundCoordinates.map(c => transform(c.slice(0, 2)))]),
       viewDirection: image.viewDirection,
@@ -103,18 +111,28 @@ function getTileFeatures(tiles) {
  * @class
  * @export
  */
-class ObliqueCollection {
+class ObliqueCollection extends VcsObject {
+  static get className() { return 'oblique.ObliqueCollection'; }
+
+  /**
+   * @returns {ObliqueCollectionOptions}
+   */
+  static getDefaultOptions() {
+    return {
+      maxZoom: 0,
+      minZoom: 0,
+      scaleFactor: 4,
+      dataSets: undefined,
+      hideLevels: 0,
+    };
+  }
+
   /**
    * @param {ObliqueCollectionOptions} options
    */
   constructor(options) {
-    /**
-     * The unique name of the collection
-     * @type {string}
-     * @api
-     */
-    this.name = options.name || uuidv4();
-
+    super(options);
+    const defaultOptions = ObliqueCollection.getDefaultOptions();
     /**
      * Maps each direction to an RTree
      * @type {Map<import("@vcmap/core").ObliqueViewDirection, RBush>}
@@ -136,10 +154,10 @@ class ObliqueCollection {
 
     /** @type {ObliqueViewOptions} */
     this.viewOptions = {
-      maxZoom: options.maxZoom || 0,
-      minZoom: options.minZoom || 0,
-      scaleFactor: options.scaleFactor || 4,
-      hideLevels: options.hideLevels || 0,
+      maxZoom: parseInteger(options.maxZoom, defaultOptions.maxZoom),
+      minZoom: parseInteger(options.minZoom, defaultOptions.minZoom),
+      scaleFactor: parseNumber(options.scaleFactor, defaultOptions.scaleFactor),
+      hideLevels: parseInteger(options.hideLevels, defaultOptions.hideLevels),
     };
 
     /** @type {boolean} */
@@ -147,10 +165,10 @@ class ObliqueCollection {
 
     /**
      * Event raised when images are loaded. Is passed an Array of ObliqueImages as its only argument.
-     * @type {import("@vcmap/cesium").Event}
+     * @type {import("@vcmap/core").VcsEvent<Array<import("@vcmap/core").ObliqueImage>>}
      * @api
      */
-    this.imagesLoaded = new CesiumEvent();
+    this.imagesLoaded = new VcsEvent();
 
     /**
      * @type {import("ol/source").Vector<import("ol/geom/Geometry").default>|null}
@@ -262,11 +280,18 @@ class ObliqueCollection {
 
   /**
    * Adds an oblique data set to this collection.
-   * @param {import("@vcmap/core").ObliqueDataSet} dataSet
+   * @param {import("@vcmap/core").ObliqueDataSet|ObliqueDataSetOptions} dataSetOptions
    * @private
    */
-  _addDataSet(dataSet) {
-    dataSet.imagesLoaded.addEventListener((images, tileCoordinate) => {
+  _addDataSet(dataSetOptions) {
+    /** @type {import("@vcmap/core").ObliqueDataSet} */
+    let dataSet;
+    if (dataSetOptions instanceof ObliqueDataSet) {
+      dataSet = dataSetOptions;
+    } else {
+      dataSet = new ObliqueDataSet(dataSetOptions.url, dataSetOptions.projection, dataSetOptions.terrainProvider);
+    }
+    dataSet.imagesLoaded.addEventListener(({ images, tileCoordinate }) => {
       this._loadImages(images, tileCoordinate);
     });
     this._loadImages(dataSet.images);
@@ -279,7 +304,7 @@ class ObliqueCollection {
    * @returns {Promise<void>}
    * @api
    */
-  async addDataSet(dataSet) {
+  async addDataSet(dataSet) { // XXX check for dataset here?
     if (this._loadingPromise) {
       await this._loadingPromise;
       await this._loadDataSet(dataSet);
@@ -322,7 +347,7 @@ class ObliqueCollection {
         directions.set(image.viewDirection, []);
       }
 
-      const transform = getTransform(image.meta.projection, 'EPSG:3857');
+      const transform = getTransform(image.meta.projection.proj, mercatorProjection.proj);
       const coord = image.centerPointOnGround.slice(0, 2);
       transform(coord, coord);
       directions.get(image.viewDirection).push({
@@ -491,7 +516,7 @@ class ObliqueCollection {
   async hasImageAtCoordinate(mercatorCoordinate, direction) {
     const image = await this.loadImageForCoordinate(mercatorCoordinate, direction);
     if (image) {
-      const transform = getTransform('EPSG:3857', image.meta.projection);
+      const transform = getTransform(mercatorProjection.proj, image.meta.projection.proj);
       const internalCoordinates = mercatorCoordinate.slice(0, 2);
       transform(internalCoordinates, internalCoordinates);
       const extent = boundingExtent(image.groundCoordinates);
@@ -513,7 +538,7 @@ class ObliqueCollection {
   async loadAdjacentImage(image, heading, deviation = Math.PI / 4) {
     const tree = this._directionTrees.get(image.viewDirection);
     if (tree) {
-      const transform = getTransform(image.meta.projection, 'EPSG:3857');
+      const transform = getTransform(image.meta.projection.proj, mercatorProjection.proj);
       const coords = image.groundCoordinates.map(c => transform(c.slice(0, 2)));
       const extent = boundingExtent(coords);
       await this.loadDataForExtent(buffer(extent, 200));
@@ -566,6 +591,33 @@ class ObliqueCollection {
       this._imageFeatureSource.clear(true);
       this._imageFeatureSource = null;
     }
+    this.imagesLoaded.destroy();
+  }
+
+  /**
+   * @returns {ObliqueCollectionOptions}
+   */
+  toJSON() {
+    /** @type {ObliqueCollectionOptions} */
+    const config = super.toJSON();
+    const defaultOptions = ObliqueCollection.getDefaultOptions();
+    if (this.viewOptions.maxZoom !== defaultOptions.maxZoom) {
+      config.maxZoom = this.viewOptions.maxZoom;
+    }
+    if (this.viewOptions.minZoom !== defaultOptions.minZoom) {
+      config.minZoom = this.viewOptions.minZoom;
+    }
+    if (this.viewOptions.scaleFactor !== defaultOptions.scaleFactor) {
+      config.scaleFactor = this.viewOptions.scaleFactor;
+    }
+    if (this.viewOptions.hideLevels !== defaultOptions.hideLevels) {
+      config.hideLevels = this.viewOptions.hideLevels;
+    }
+
+    if (this.dataSets.length > 0) {
+      config.dataSets = this.dataSets.map(d => d.toJSON());
+    }
+    return config;
   }
 }
 

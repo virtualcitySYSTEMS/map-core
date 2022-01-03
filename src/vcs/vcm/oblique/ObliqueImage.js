@@ -13,7 +13,7 @@ import { getHeightFromTerrainProvider } from '../layer/terrainHelpers.js';
  * @property {import("@vcmap/cesium").Cartesian3|undefined} projectionCenter
  * @property {import("@vcmap/cesium").Matrix3|undefined} pToRealworld
  * @property {import("@vcmap/cesium").Matrix4|undefined} pToImage
- * @property {import("ol/proj/Projection").default|undefined} [projection]
+ * @property {import("@vcmap/core").Projection|undefined} [projection]
  * @property {import("@vcmap/cesium").CesiumTerrainProvider|undefined} terrainProvider
  * @api
  */

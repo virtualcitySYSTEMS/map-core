@@ -53,9 +53,12 @@ export function getObliqueDataSet(server) {
   }
   let terrainProvider;
   if (server) {
-    terrainProvider = getTerrainProvider(server);
+    getTerrainProvider(server);
+    terrainProvider = {
+      url: 'http://localhost/terrain/',
+    };
   }
-  const obliqueDataSet = new ObliqueDataSet('http://localhost/', obliqueProjection.proj, terrainProvider);
+  const obliqueDataSet = new ObliqueDataSet('http://localhost/', obliqueProjection, terrainProvider);
   obliqueDataSet.initialize(imageJson);
   return obliqueDataSet;
 }

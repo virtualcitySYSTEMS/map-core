@@ -1,12 +1,12 @@
-import { Event as CesiumEvent } from '@vcmap/cesium';
 import { getTransform } from 'ol/proj.js';
 import View from 'ol/View.js';
 import { unByKey } from 'ol/Observable.js';
 import { DataState } from './ObliqueDataSet.js';
 import OLView from './ObliqueView.js';
-import { destroyCesiumEvent, transformFromImage } from './helpers.js';
+import { transformFromImage } from './helpers.js';
 import { getHeightFromTerrainProvider } from '../layer/terrainHelpers.js';
 import { mercatorProjection } from '../util/projection.js';
+import VcsEvent from '../event/vcsEvent.js';
 
 /**
  * @typedef {Object} ObliqueViewPoint
@@ -63,10 +63,10 @@ class ObliqueProvider {
 
     /**
      * Event raised once a new image is set on the provider. Will be passed the new image as the only argument.
-     * @type {import("@vcmap/cesium").Event}
+     * @type {import("@vcmap/core").VcsEvent<import("@vcmap/core").ObliqueImage>}
      * @api
      */
-    this.imageChanged = new CesiumEvent();
+    this.imageChanged = new VcsEvent();
     /**
      * Whether the post render handler should switch on image edge. Setting
      * this to false will suspend all post render handler switches.
@@ -232,7 +232,7 @@ class ObliqueProvider {
       }
       const pulledCenter = this._pullCoordinateToImageCenter(imageCoordinates.slice());
       const worldCoords = this._currentImage.transformImage2RealWorld(pulledCenter).slice(0, 2);
-      const transform = getTransform(this._currentImage.meta.projection, 'EPSG:3857');
+      const transform = getTransform(this._currentImage.meta.projection.proj, mercatorProjection.proj);
       const mercatorCoords = transform(worldCoords);
       const buffer = 200; // XXX make configurable?
       const extent = [
@@ -299,7 +299,10 @@ class ObliqueProvider {
     const [width, height] = this._currentImage.meta.size;
     let center = [width / 2, height / 2];
     if (optCenter) {
-      const worldCenter = getTransform('EPSG:3857', this._currentImage.meta.projection)(optCenter.slice(0, 2));
+      const worldCenter = getTransform(
+        mercatorProjection.proj,
+        this._currentImage.meta.projection.proj,
+      )(optCenter.slice(0, 2));
       const imageCenter = this._currentImage.transformRealWorld2Image(worldCenter, optCenter[2]);
       imageCenter[0] = withinBounds(imageCenter[0], width);
       imageCenter[1] = withinBounds(imageCenter[1], height);
@@ -424,7 +427,7 @@ class ObliqueProvider {
       this._postRenderListener = null;
     }
 
-    destroyCesiumEvent(this.imageChanged);
+    this.imageChanged.destroy();
     this._collection = null;
     this._olMap = null;
   }

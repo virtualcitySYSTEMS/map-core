@@ -3,12 +3,15 @@ import { register } from 'ol/proj/proj4.js';
 import proj4 from 'proj4';
 import { getLogger as getLoggerByName } from '@vcsuite/logger';
 import { check } from '@vcsuite/check';
+import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {Object} ProjectionOptions
+ * @property {string} [type]
  * @property {string|number} [epsg] -  EPSG of the projection, for example: "EPSG:4326" if not specified, uses the framework projection
  * @property {string|undefined|null} [proj4] - definition of the projection. See for example: {@link http://spatialreference.org/ref/epsg/4326/proj4/} proj4
  * @property {Array<string>|undefined|null} [alias] - aliases to define
+ * @property {string|undefined} [prefix='EPSG:'] - an alternate prefix to use for custom projection
  * @api stable
  */
 
@@ -36,7 +39,8 @@ let defaultProjectionOption = {
  * @returns {string}
  */
 function parseEPSGCode(value, prefix = 'EPSG:') {
-  const matches = `${value}`.match(/^(?:epsg:)?(\d+)/i);
+  const regex = new RegExp(`^(?:${prefix})?(\\d+)`, 'i');
+  const matches = `${value}`.match(regex);
   if (matches && matches[1]) {
     return `${prefix}${matches[1]}`;
   }
@@ -73,9 +77,11 @@ function validateProjectionOptions(options) {
  * @returns {ProjectionOptions} valid options
  */
 function registerProjection(options) {
-  const saneOptions = {};
+  const saneOptions = {
+    prefix: options.prefix,
+  };
   if (options.epsg) {
-    saneOptions.epsg = parseEPSGCode(options.epsg);
+    saneOptions.epsg = parseEPSGCode(options.epsg, options.prefix);
     if (saneOptions.epsg) {
       if (options.proj4) {
         saneOptions.proj4 = options.proj4;
@@ -124,6 +130,11 @@ export function setDefaultProjectionOptions(options) {
  */
 class Projection {
   /**
+   * @returns {string}
+   */
+  static get className() { return 'vcs.vcm.util.Projection'; }
+
+  /**
    * @param {ProjectionOptions} options
    */
   constructor(options = { epsg: '' }) {
@@ -143,6 +154,20 @@ class Projection {
     if (!this.proj) {
       this._epsg = Projection.parseEPSGCode(defaultProjectionOption.epsg);
     }
+
+    /**
+     * Cached for toJSON
+     * @type {Array<string>}
+     * @private
+     */
+    this._alias = saneOptions.alias;
+
+    /**
+     * Cached for toJSON
+     * @type {string}
+     * @private
+     */
+    this._prefix = saneOptions.prefix;
   }
 
   /**
@@ -264,10 +289,17 @@ class Projection {
    */
   toJSON() {
     const configObject = {
+      type: Projection.className,
       epsg: this.epsg,
     };
     if (this.proj4) {
       configObject.proj4 = this.proj4;
+    }
+    if (Array.isArray(this._alias) && this._alias.length > 0) {
+      configObject.alias = this._alias.slice();
+    }
+    if (this._prefix) {
+      configObject.prefix = this._prefix;
     }
     return configObject;
   }
@@ -346,3 +378,5 @@ export const wgs84Projection = new Projection({ epsg: 4326 });
  * @export
  */
 export const mercatorProjection = new Projection({ epsg: 3857 });
+
+VcsClassRegistry.registerClass(Projection.className, Projection);

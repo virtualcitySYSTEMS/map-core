@@ -6,6 +6,7 @@ import GML3 from 'ol/format/GML3.js';
 import Point from 'ol/geom/Point.js';
 import WMSFeatureProvider, { getFormat } from '../../../../../src/vcs/vcm/util/featureProvider/wmsFeatureProvider.js';
 import { mercatorProjection } from '../../../../../src/vcs/vcm/util/projection.js';
+import Extent from '../../../../../src/vcs/vcm/util/extent.js';
 
 describe('vcs.vcm.util.featureProvider.WMSFeatureProvider', () => {
   describe('getFeaturesByCoordinate', () => {
@@ -161,10 +162,10 @@ describe('vcs.vcm.util.featureProvider.WMSFeatureProvider', () => {
           formatOptions: {
             geometryName: 'foo',
           },
-          extent: {
+          extent: new Extent({
             coordinates: [0, 0, 1, 1],
             ...mercatorProjection.toJSON(),
-          },
+          }).toJSON(),
           projection: mercatorProjection.toJSON(),
         };
         const provider = new WMSFeatureProvider('test', inputConfig);

@@ -1,9 +1,16 @@
-import { Event as CesiumEvent } from '@vcmap/cesium';
 import axios from 'axios';
 import { createXYZ } from 'ol/tilegrid.js';
-import { destroyCesiumEvent } from './helpers.js';
 import { cartesian2DDistance } from '../util/math.js';
 import { parseImageData, parseImageMeta, parseLegacyImageData, getVersionFromImageJson } from './parseImageJson.js';
+import VcsEvent from '../event/vcsEvent.js';
+import { getTerrainProviderForUrl } from '../layer/terrainHelpers.js';
+import Projection from '../util/projection.js';
+
+/**
+ * @typedef {Object} ObliqueDataSetImagesLoaded
+ * @property {Array<import("@vcmap/core").ObliqueImage>} images - the loaded images
+ * @property {string} [tileCoordinate] - an optional tile coordinate
+ */
 
 /**
  * Enumeration of data set states
@@ -43,10 +50,10 @@ export function getStateFromStatesArray(states) {
 class ObliqueDataSet {
   /**
    * @param {string} url
-   * @param {import("ol/proj/Projection").default} projection
-   * @param {import("@vcmap/cesium").CesiumTerrainProvider=} terrainProvider
+   * @param {import("@vcmap/core").Projection|ProjectionOptions=} projection
+   * @param {TerrainProviderOptions=} terrainProviderOptions
    */
-  constructor(url, projection, terrainProvider) {
+  constructor(url, projection, terrainProviderOptions) {
     /** @type {string} */
     this.url = url;
     if (!/\.json$/.test(this.url)) {
@@ -55,22 +62,36 @@ class ObliqueDataSet {
 
     /** @type {string} */
     this.baseUrl = this.url.replace(/\/?([^/]+\.json)?$/, '');
-    /** @type {import("ol/proj/Projection").default} */
-    this.projection = projection;
-    /** @type {import("@vcmap/cesium").CesiumTerrainProvider|undefined} */
-    this.terrainProvider = terrainProvider;
+
+    let projectionObject = projection;
+    if (projectionObject && !(projectionObject instanceof Projection)) {
+      projectionObject = new Projection(projectionObject);
+    }
+    /** @type {import("@vcmap/core").Projection} */
+    this.projection = /** @type {import("@vcmap/core").Projection} */ (projectionObject);
+    /**
+     * @type {TerrainProviderOptions}
+     * @private
+     */
+    this._terrainProviderOptions = terrainProviderOptions ? { ...terrainProviderOptions } : undefined;
+    /**
+     * @type {import("@vcmap/cesium").CesiumTerrainProvider|undefined}
+     * @private
+     */
+    this._terrainProvider = this._terrainProviderOptions ?
+      getTerrainProviderForUrl(this._terrainProviderOptions) :
+      undefined;
     /**
      * @type {Array<import("@vcmap/core").ObliqueImageMeta>}
      * @private
      */
     this._imageMetas = [];
     /**
-     * Event raised when images are loaded. Is passed an Array of ObliqueImages as the first argument and optionally
-     * a string representing the tile coordinate ("z/x/y"), if the images where loaded for a tile.
-     * @type {import("@vcmap/cesium").Event}
+     * Event raised when images are loaded.
+     * @type {import("@vcmap/core").VcsEvent<ObliqueDataSetImagesLoaded>}
      * @api
      */
-    this.imagesLoaded = new CesiumEvent();
+    this.imagesLoaded = new VcsEvent();
     /** @type {Map<string, DataState>} */
     this._tiles = new Map();
     /** @type {Map<string, Promise<void>>} */
@@ -116,6 +137,14 @@ class ObliqueDataSet {
    */
   get state() {
     return this._state;
+  }
+
+  /**
+   * @type {import("@vcmap/cesium").CesiumTerrainProvider|undefined}
+   * @readonly
+   */
+  get terrainProvider() {
+    return this._terrainProvider;
   }
 
   /**
@@ -194,7 +223,7 @@ class ObliqueDataSet {
       }
       if (images.length > 0) {
         this._images = images;
-        this.imagesLoaded.raiseEvent(images);
+        this.imagesLoaded.raiseEvent({ images });
       }
     }
   }
@@ -303,7 +332,7 @@ class ObliqueDataSet {
         const images = parseImageData(data, this._imageMetas);
         if (images.length > 0) {
           this._images = this._images.concat(images);
-          this.imagesLoaded.raiseEvent(images, stringTileCoordinates);
+          this.imagesLoaded.raiseEvent({ images, tileCoordinate: stringTileCoordinates });
         }
       })
       .catch((err) => {
@@ -344,13 +373,27 @@ class ObliqueDataSet {
   }
 
   destroy() {
-    destroyCesiumEvent(this.imagesLoaded);
+    this.imagesLoaded.destroy();
     this._images = [];
     this._imageMetas = [];
     this._tiles.clear();
     this._loadingPromises.clear();
     this._tileGrid = null;
-    this.terrainProvider = null;
+    this._terrainProvider = null;
+  }
+
+  /**
+   * @returns {ObliqueDataSetOptions}
+   */
+  toJSON() {
+    const config = { url: this.url };
+    if (this.projection) {
+      config.projection = this.projection.toJSON();
+    }
+    if (this._terrainProviderOptions) {
+      config.terrainProvider = { ...this._terrainProviderOptions };
+    }
+    return config;
   }
 }
 

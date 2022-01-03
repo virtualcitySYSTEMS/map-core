@@ -36,6 +36,11 @@ function checkExtentValidity(extent) {
  */
 class Extent {
   /**
+   * @type {string}
+   */
+  static get className() { return 'vcs.vcm.util.Extent'; }
+
+  /**
    * @param {ExtentOptions=} options object
    */
   constructor(options = {}) {
@@ -44,6 +49,7 @@ class Extent {
       epsg: options.epsg,
       proj4: options.proj4,
       alias: options.alias,
+      prefix: options.prefix,
     });
 
     /** @type {import("ol/extent").Extent|null} */
@@ -79,7 +85,11 @@ class Extent {
    * @returns {ExtentOptions}
    */
   toJSON() {
-    return { coordinates: this.extent.slice(), ...this.projection.toJSON() };
+    return {
+      coordinates: this.extent.slice(),
+      ...this.projection.toJSON(),
+      type: Extent.className,
+    };
   }
 
   /**

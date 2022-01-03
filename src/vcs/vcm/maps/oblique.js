@@ -1,5 +1,5 @@
 import { boundingExtent, containsXY } from 'ol/extent.js';
-import { get as getProjection, getTransform, transform, transformExtent } from 'ol/proj.js';
+import { getTransform, transform, transformExtent } from 'ol/proj.js';
 import { check } from '@vcsuite/check';
 import { parseBoolean, parseNumber } from '@vcsuite/parsers';
 import Extent from '../util/extent.js';
@@ -243,7 +243,7 @@ class Oblique extends BaseOLMap {
   get collection() { return this._obliqueProvider.collection; }
 
   /**
-   * @type {import("@vcmap/cesium").Event}
+   * @type {import("@vcmap/core").VcsEvent<import("@vcmap/core").ObliqueImage>}
    * @readonly
    * @api
    */
@@ -294,7 +294,7 @@ class Oblique extends BaseOLMap {
     if (image) {
       const coords = boundingExtent(image.groundCoordinates);
       return new Extent({
-        coordinates: transformExtent(coords, image.meta.projection, mercatorProjection.proj),
+        coordinates: transformExtent(coords, image.meta.projection.proj, mercatorProjection.proj),
         epsg: 'EPSG:3857',
       });
     }
@@ -399,7 +399,7 @@ class Oblique extends BaseOLMap {
       return null;
     }
 
-    const transformationOptions = { dataProjection: getProjection('EPSG:4326') };
+    const transformationOptions = { dataProjection: wgs84Projection };
     const { coords } = await transformFromImage(image, viewCenter, transformationOptions);
     return this._computeViewpointInternal(coords);
   }
@@ -421,7 +421,7 @@ class Oblique extends BaseOLMap {
 
     const gpInternalProjection = image.transformImage2RealWorld(gpImageCoordinates, image.averageHeight);
 
-    const transfrom = getTransform(image.meta.projection, wgs84Projection.proj);
+    const transfrom = getTransform(image.meta.projection.proj, wgs84Projection.proj);
     const gpWGS84 = transfrom(gpInternalProjection.slice(0, 2));
     return this._computeViewpointInternal(gpWGS84);
   }
@@ -489,7 +489,7 @@ class Oblique extends BaseOLMap {
     const bl = image.transformImage2RealWorld([extent[0], extent[1]]);
     const ur = image.transformImage2RealWorld([extent[2], extent[3]]);
     const bbox = [bl[0], bl[1], ur[0], ur[1]];
-    const transformedBbox = transformExtent(bbox, image.meta.projection, wgs84Projection.proj);
+    const transformedBbox = transformExtent(bbox, image.meta.projection.proj, wgs84Projection.proj);
     return containsXY(transformedBbox, coords[0], coords[1]);
   }
 

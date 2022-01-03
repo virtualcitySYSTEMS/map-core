@@ -91,7 +91,7 @@ export async function mercatorGeometryToImageGeometry(inputSourceGeometry, desti
   const coordinates = sourceGeometry.getCoordinates();
   /** type {Array.<import("ol/coordinate").Coordinate>} */
   const flattenCoordinates = getFlatCoordinatesFromGeometry(sourceGeometry, coordinates);
-  let transformer = getTransform(mercatorProjection.proj, image.meta.projection);
+  let transformer = getTransform(mercatorProjection.proj, image.meta.projection.proj);
 
   let updatedPositions = [];
   if (image.meta.terrainProvider) {
@@ -99,7 +99,7 @@ export async function mercatorGeometryToImageGeometry(inputSourceGeometry, desti
       Projection.mercatorToWgs84(coord, true);
       return Cartographic.fromDegrees(coord[0], coord[1]);
     });
-    transformer = getTransform(wgs84Projection.proj, image.meta.projection);
+    transformer = getTransform(wgs84Projection.proj, image.meta.projection.proj);
     updatedPositions = await sampleTerrainMostDetailed(image.meta.terrainProvider, cartographicCoordinates);
   }
 

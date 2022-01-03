@@ -28,6 +28,7 @@ describe('vcs.vcm.util.Projection', () => {
         expect(projection.epsg).to.equal('EPSG:3857');
       });
     });
+
     describe('should parse proj4 Code', () => {
       let epsg;
       let proj4Option;
@@ -72,7 +73,16 @@ describe('vcs.vcm.util.Projection', () => {
         expect(spy).to.have.been.calledWith('test2Alias');
       });
     });
-
+    describe('handling of custom prefixes', () => {
+      it('should allow custom prefixes', () => {
+        const projection = new Projection({
+          epsg: 'FOO:25833',
+          proj4: '+proj=utm +zone=33 +ellps=GRS80 +units=m +no_defs',
+          prefix: 'FOO:',
+        });
+        expect(projection).to.have.property('epsg', 'FOO:25833');
+      });
+    });
     describe('should use project Default Projection on invalid options', () => {
       it('should return default projection', () => {
         setDefaultProjectionOptions({ epsg: 3857 });
@@ -140,11 +150,51 @@ describe('vcs.vcm.util.Projection', () => {
       expect(Projection.parseEPSGCode(undefined)).to.equal('');
       expect(Projection.parseEPSGCode('EPSGasd:4326')).to.equal('');
     });
-    it('should add an prefix to a valid epsg code', () => {
-      expect(Projection.parseEPSGCode('4326', '')).to.equal('4326');
-      expect(Projection.parseEPSGCode(4326, '')).to.equal('4326');
-      expect(Projection.parseEPSGCode('epsg:4326', '')).to.equal('4326');
-      expect(Projection.parseEPSGCode('EPSG:4326', '')).to.equal('4326');
+    it('should handle custom prefixes, adding a prefix to a numeric', () => {
+      expect(Projection.parseEPSGCode('4326', 'FOO:')).to.equal('FOO:4326');
+      expect(Projection.parseEPSGCode(4326, 'FOO:')).to.equal('FOO:4326');
+      expect(Projection.parseEPSGCode('FOO:4326', 'FOO:')).to.equal('FOO:4326');
+      expect(Projection.parseEPSGCode('epsg:4326', '')).to.equal('');
+      expect(Projection.parseEPSGCode('EPSG:4326', '')).to.equal('');
+    });
+  });
+  describe('serialization', () => {
+    describe('of an empty collection', () => {
+      it('should return an object with type and name for default layers', () => {
+        const config = new Projection({}).toJSON();
+        expect(config).to.have.all.keys('epsg', 'type');
+      });
+    });
+
+    describe('of a configured collection', () => {
+      let outputConfig;
+      let inputConfig;
+
+      before(() => {
+        inputConfig = {
+          epsg: 'FOO:10111',
+          alias: ['CRS:FOO'],
+          proj4: '+proj=longlat +datum=WGS84 +no_defs ',
+          prefix: 'FOO:',
+        };
+        outputConfig = new Projection(inputConfig).toJSON();
+      });
+
+      it('should configure epsg', () => {
+        expect(outputConfig).to.have.property('epsg', inputConfig.epsg);
+      });
+
+      it('should configure proj4', () => {
+        expect(outputConfig).to.have.property('proj4', inputConfig.proj4);
+      });
+
+      it('should configure prefix', () => {
+        expect(outputConfig).to.have.property('prefix', inputConfig.prefix);
+      });
+
+      it('should configure alias', () => {
+        expect(outputConfig).to.have.property('alias').and.to.have.members(inputConfig.alias);
+      });
     });
   });
 });

@@ -1,11 +1,18 @@
-import { v4 as uuidv4 } from 'uuid';
-import proj4 from 'proj4';
-import { register } from 'ol/proj/proj4.js';
-import { get as getProjection } from 'ol/proj.js';
 import { Matrix3, Cartesian3, Matrix4 } from '@vcmap/cesium';
 import ObliqueImage from './ObliqueImage.js';
 import { obliqueViewDirectionNames } from './ObliqueViewDirection.js';
 import ImageMeta from './ObliqueImageMeta.js';
+import Projection from '../util/projection.js';
+
+let customObliqueProjectionId = 0;
+
+/**
+ * @returns {number}
+ */
+function getNextObliqueProjectionId() {
+  customObliqueProjectionId += 1;
+  return customObliqueProjectionId;
+}
 
 /**
  * @param {Object} json
@@ -33,7 +40,7 @@ export function getVersionFromImageJson(json) {
 /**
  * @param {ObliqueImageJson} json
  * @param {string} url
- * @param {(import("ol/proj/Projection").default|null)=} projection
+ * @param {import("@vcmap/core").Projection=} projection
  * @param {import("@vcmap/cesium").CesiumTerrainProvider=} terrainProvider
  * @returns {Array<import("@vcmap/core").ObliqueImageMeta>}
  */
@@ -47,10 +54,11 @@ export function parseImageMeta(json, url, projection, terrainProvider) {
   let imageProjection = projection;
   const imageMetas = [];
   if (!imageProjection && json.generalImageInfo.crs) {
-    const crsUuid = uuidv4();
-    proj4.defs(crsUuid, json.generalImageInfo.crs);
-    register(proj4);
-    imageProjection = getProjection(crsUuid);
+    imageProjection = new Projection({
+      epsg: getNextObliqueProjectionId(),
+      prefix: 'OBLIQUE:',
+      proj4: json.generalImageInfo.crs,
+    });
   }
 
   const defaultOptions = {

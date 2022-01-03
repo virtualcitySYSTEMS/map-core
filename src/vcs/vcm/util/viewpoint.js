@@ -3,6 +3,7 @@ import { parseBoolean, parseNumber } from '@vcsuite/parsers';
 import Projection, { wgs84Projection } from './projection.js';
 import VcsObject from '../object.js';
 import Extent from './extent.js';
+import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
  * compares two numeric properties
@@ -331,3 +332,5 @@ class ViewPoint extends VcsObject {
 }
 
 export default ViewPoint;
+
+VcsClassRegistry.registerClass(ViewPoint.className, ViewPoint);

@@ -1,11 +1,12 @@
 /* eslint no-underscore-dangle: ["error", { "allow": ["_listeners", "_scopes", "_toRemove"] }] */
 /* eslint-disable no-continue */
 import { boundingExtent, getBottomLeft, getBottomRight, getTopLeft, getTopRight } from 'ol/extent.js';
-import { get as getProjection, transform } from 'ol/proj.js';
+import { transform } from 'ol/proj.js';
 import { Cartesian2 } from '@vcmap/cesium';
 import { ObliqueViewDirection } from './ObliqueViewDirection.js';
 import { getHeightFromTerrainProvider } from '../layer/terrainHelpers.js';
 import { cartesian2DDistance } from '../util/math.js';
+import { mercatorProjection, wgs84Projection } from '../util/projection.js';
 
 /**
  * @type {import("@vcmap/cesium").Cartesian2}
@@ -292,7 +293,7 @@ export function transformCWIFC(inputOrigin, inputTarget, originIsImage, coordina
 /**
  * @typedef {Object} ImageTransformationOptions
  * @property {boolean|undefined} [dontUseTerrain]
- * @property {import("ol/proj/Projection").default|undefined} [dataProjection] - the projection of the input/output coordinates, assumes image source projection
+ * @property {import("@vcmap/core").Projection|undefined} [dataProjection] - the projection of the input/output coordinates, assumes image source projection
  * @property {number|undefined} [terrainErrorThreshold=1] - the transformToWorld process iterativly calculates a new Height Value from the terrainProvider until the difference to the new height value is smaller
  * @property {number|undefined} [terrainErrorCountThreshold=3] - how often the  transformToWorld process iterativly calculates a new Height Value from the terrainProvider
  * @api
@@ -313,8 +314,8 @@ export function transformToImage(image, worldCoordinate, options = {}) {
     gpInternalCoordinates = worldCoordinate;
   } else {
     gpInternalCoordinates = options.dataProjection ?
-      transform(worldCoordinate, options.dataProjection, image.meta.projection) :
-      transform(worldCoordinate, 'EPSG:3857', image.meta.projection);
+      transform(worldCoordinate, options.dataProjection.proj, image.meta.projection.proj) :
+      transform(worldCoordinate, mercatorProjection.proj, image.meta.projection.proj);
   }
 
   function useAverageHeight() {
@@ -369,14 +370,14 @@ function pickTerrain(pickTerrainOptions) {
     count,
     height,
   } = pickTerrainOptions;
-  const wgs84Projection = getProjection('EPSG:4326');
+
   return getHeightFromTerrainProvider(image.meta.terrainProvider, [worldCoordinate])
     .then(([worldCoordinateWithHeights]) => {
       if (worldCoordinateWithHeights[2] != null) {
         const newWorldCoords = transform(
           image.transformImage2RealWorld(imageCoordinate, worldCoordinateWithHeights[2]),
-          image.meta.projection,
-          wgs84Projection,
+          image.meta.projection.proj,
+          wgs84Projection.proj,
         );
         newWorldCoords[2] = worldCoordinateWithHeights[2];
         if (
@@ -406,11 +407,10 @@ function pickTerrain(pickTerrainOptions) {
  * @export
  */
 export async function transformFromImage(image, imageCoordinate, options = {}) {
-  const wgs84Projection = getProjection('EPSG:4326');
   const initialWorldCoords = transform(
     image.transformImage2RealWorld(imageCoordinate, image.averageHeight),
-    image.meta.projection,
-    wgs84Projection,
+    image.meta.projection.proj,
+    wgs84Projection.proj,
   );
 
   const terrainErrorThreshold = options.terrainErrorThreshold || 1;
@@ -430,8 +430,8 @@ export async function transformFromImage(image, imageCoordinate, options = {}) {
   }
 
   coordsObj.coords = options.dataProjection ?
-    transform(coordsObj.coords, wgs84Projection, options.dataProjection) :
-    transform(coordsObj.coords, wgs84Projection, getProjection('EPSG:3857'));
+    transform(coordsObj.coords, wgs84Projection.proj, options.dataProjection.proj) :
+    transform(coordsObj.coords, wgs84Projection.proj, mercatorProjection.proj);
   return coordsObj;
 }
 
@@ -452,32 +452,4 @@ export function hasSameOrigin(url) {
   const currentUri = new URL(window.location.href);
   const uri = new URL(url);
   return currentUri.host.toLowerCase() === uri.host.toLocaleLowerCase();
-}
-
-/**
- * destroys a cesium Event Emitter, (removes all listeners)
- * @param {import("@vcmap/cesium").Event} cesiumEvent
- */
-export function destroyCesiumEvent(cesiumEvent) {
-  // @ts-ignore
-  for (let i = 0; i < cesiumEvent._listeners.length; i++) {
-    // @ts-ignore
-    cesiumEvent._listeners[i] = undefined;
-  }
-  // @ts-ignore
-  for (let i = 0; i < cesiumEvent._scopes.length; i++) {
-    // @ts-ignore
-    cesiumEvent._scopes[i] = undefined;
-  }
-  // @ts-ignore
-  for (let i = 0; i < cesiumEvent._toRemove.length; i++) {
-    // @ts-ignore
-    cesiumEvent._toRemove[i] = undefined;
-  }
-  // @ts-ignore
-  cesiumEvent._listeners.length = 0;
-  // @ts-ignore
-  cesiumEvent._scopes.length = 0;
-  // @ts-ignore
-  cesiumEvent._toRemove.length = 0;
 }

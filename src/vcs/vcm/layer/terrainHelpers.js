@@ -1,6 +1,6 @@
 import { CesiumTerrainProvider, Cartographic, Cartesian2, sampleTerrainMostDetailed, sampleTerrain } from '@vcmap/cesium';
 import { getTransform } from 'ol/proj.js';
-import Projection, { wgs84Projection } from '../util/projection.js';
+import { wgs84Projection } from '../util/projection.js';
 
 /**
  * @typedef {Object} TerrainProviderOptions
@@ -69,18 +69,14 @@ export function sampleCesiumTerrain(terrainProvider, level, positions) {
  * changes input coordinate Array in place, new height can also be accessed by coordinates[x][2]
  * @param {import("@vcmap/cesium").CesiumTerrainProvider} terrainProvider
  * @param {Array<import("ol/coordinate").Coordinate>} coordinates
- * @param {(import("@vcmap/core").Projection|import("ol/proj/Projection").default)=} optSourceProjection - if input is not WGS84
+ * @param {import("@vcmap/core").Projection=} optSourceProjection - if input is not WGS84
  * @param {Array<import("ol/coordinate").Coordinate>=} result
  * @returns {Promise<Array<import("ol/coordinate").Coordinate>>}
  */
 export function getHeightFromTerrainProvider(terrainProvider, coordinates, optSourceProjection, result) {
-  const usedProj = optSourceProjection instanceof Projection ?
-    optSourceProjection.proj :
-    optSourceProjection;
-
-  const sourceTransformer = usedProj ?
+  const sourceTransformer = optSourceProjection ?
     getTransform(
-      usedProj,
+      optSourceProjection.proj,
       wgs84Projection.proj,
     ) :
     null;

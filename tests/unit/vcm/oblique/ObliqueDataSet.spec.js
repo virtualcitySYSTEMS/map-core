@@ -1,4 +1,3 @@
-import { get as getProjection } from 'ol/proj.js';
 import { boundingExtent } from 'ol/extent.js';
 import Circle from 'ol/geom/Circle.js';
 import ObliqueDataSet, { DataState } from '../../../../src/vcs/vcm/oblique/ObliqueDataSet.js';
@@ -11,6 +10,7 @@ import setTiledObliqueImageServer, {
   tiledMercatorCoordinate2,
 } from '../../helpers/obliqueData.js';
 import { getCesiumEventSpy } from '../../helpers/cesiumHelpers.js';
+import Projection from '../../../../src/vcs/vcm/util/projection.js';
 
 describe('ObliqueDataSet', () => {
   let sandbox;
@@ -19,7 +19,7 @@ describe('ObliqueDataSet', () => {
 
   before(() => {
     sandbox = sinon.createSandbox();
-    projection = getProjection('EPSG:25833');
+    projection = new Projection({ epsg: 'EPSG:25833' });
     url = 'http://localhost/image.json';
   });
 
@@ -40,7 +40,7 @@ describe('ObliqueDataSet', () => {
       const spy = getCesiumEventSpy(sandbox, obliqueDataSet.imagesLoaded);
       obliqueDataSet.initialize(legacyImageJson);
       expect(spy).to.have.been.calledOnce;
-      expect(spy).to.have.been.calledWith(obliqueDataSet.images);
+      expect(spy).to.have.been.calledWith({ images: obliqueDataSet.images });
     });
   });
 
@@ -57,7 +57,7 @@ describe('ObliqueDataSet', () => {
       const spy = getCesiumEventSpy(sandbox, obliqueDataSet.imagesLoaded);
       obliqueDataSet.initialize(imageJson);
       expect(spy).to.have.been.calledOnce;
-      expect(spy).to.have.been.calledWith(obliqueDataSet.images);
+      expect(spy).to.have.been.calledWith({ images: obliqueDataSet.images });
     });
   });
 
@@ -275,7 +275,7 @@ describe('ObliqueDataSet', () => {
         const spy = getCesiumEventSpy(sandbox, obliqueDataSet.imagesLoaded);
         await obliqueDataSet.loadDataForCoordinate(tiledMercatorCoordinate);
         expect(spy).to.have.been.calledOnce;
-        expect(spy).to.have.been.calledWith(obliqueDataSet.images, '12/2200/1343');
+        expect(spy).to.have.been.calledWith({ images: obliqueDataSet.images, tileCoordinate: '12/2200/1343' });
       });
     });
 
@@ -297,9 +297,9 @@ describe('ObliqueDataSet', () => {
       it('should emit imagesLoaded for the every loaded tile', async () => {
         const spy = sandbox.spy();
         let allImages = [];
-        const listener = obliqueDataSet.imagesLoaded.addEventListener((images, tileCoord) => {
+        const listener = obliqueDataSet.imagesLoaded.addEventListener(({ images, tileCoordinate }) => {
           allImages = allImages.concat(images);
-          expect(tileCoordinates).to.include(tileCoord);
+          expect(tileCoordinates).to.include(tileCoordinate);
           spy();
         });
         await obliqueDataSet.loadDataForExtent(mercatorExtent);
@@ -307,6 +307,14 @@ describe('ObliqueDataSet', () => {
         expect(allImages).to.have.members(obliqueDataSet.images);
         listener();
       });
+    });
+  });
+
+  describe('serialization', () => {
+    it('should serialize', () => {
+      const config = new ObliqueDataSet(url, projection).toJSON();
+      expect(config).to.have.property('url', url);
+      expect(config).to.have.property('projection').and.to.eql(projection.toJSON());
     });
   });
 });

@@ -1,8 +1,6 @@
-import { get as getProjection } from 'ol/proj.js';
 import OLMap from 'ol/Map.js';
 import View from 'ol/View.js';
 import TileLayer from 'ol/layer/Tile.js';
-import { CesiumTerrainProvider } from '@vcmap/cesium';
 import ObliqueCollection from '../../../../src/vcs/vcm/oblique/ObliqueCollection.js';
 import ObliqueDataSet, { DataState } from '../../../../src/vcs/vcm/oblique/ObliqueDataSet.js';
 import ObliqueProvider from '../../../../src/vcs/vcm/oblique/ObliqueProvider.js';
@@ -11,6 +9,8 @@ import { ObliqueViewDirection } from '../../../../src/vcs/vcm/oblique/ObliqueVie
 import { setTerrainServer } from '../../helpers/terrain/terrainData.js';
 import imageJson from '../../../data/oblique/imageData/imagev35.json';
 import { getCesiumEventSpy } from '../../helpers/cesiumHelpers.js';
+import Projection from '../../../../src/vcs/vcm/util/projection.js';
+import { getTerrainProviderForUrl } from '../../../../src/vcs/vcm/layer/terrainHelpers.js';
 
 describe('ObliqueProvider', () => {
   let sandbox;
@@ -23,7 +23,7 @@ describe('ObliqueProvider', () => {
     olMap = new OLMap({ target, view: new View() });
     sandbox = sinon.createSandbox();
     url = 'http://localhost/tiledOblique/image.json';
-    projection = getProjection('EPSG:25833');
+    projection = new Projection({ epsg: 'EPSG:25833' });
   });
 
   after(() => {
@@ -183,7 +183,7 @@ describe('ObliqueProvider', () => {
     beforeEach(async () => {
       obliqueProvider = new ObliqueProvider(olMap);
       collection = new ObliqueCollection({
-        dataSets: [new ObliqueDataSet('http://localhost/tiledOblique/image.json', getProjection('EPSG:25833'))],
+        dataSets: [new ObliqueDataSet('http://localhost/tiledOblique/image.json', projection)],
       });
       setTiledObliqueImageServer(sandbox.useFakeServer());
       await collection.load();
@@ -222,9 +222,9 @@ describe('ObliqueProvider', () => {
 
     before(async () => {
       setTerrainServer(sandbox.useFakeServer());
-      const terrainProvider = new CesiumTerrainProvider({ url: 'http://localhost/terrain' });
+      const terrainProvider = getTerrainProviderForUrl({ url: 'http://localhost/terrain' });
       await terrainProvider.readyPromise;
-      const dataSet = new ObliqueDataSet(url, projection, terrainProvider);
+      const dataSet = new ObliqueDataSet(url, projection, { url: 'http://localhost/terrain' });
       dataSet.initialize(imageJson);
       collection = new ObliqueCollection({ dataSets: [dataSet] });
       await collection.load();

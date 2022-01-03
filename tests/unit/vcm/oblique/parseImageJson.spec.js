@@ -7,6 +7,7 @@ import imageJson from '../../../data/oblique/imageData/imagev35.json';
 import imageJsonPerImageSize from '../../../data/oblique/imageData/imagev35PerImageSize.json';
 import tiledImageData from '../../../data/oblique/tiledImageData/image.json';
 import { ObliqueViewDirection } from '../../../../src/vcs/vcm/oblique/ObliqueViewDirection.js';
+import Projection from '../../../../src/vcs/vcm/util/projection.js';
 
 describe('parsers', () => {
   let sandbox;
@@ -24,7 +25,7 @@ describe('parsers', () => {
       let imageMetas;
 
       before(() => {
-        imageMetas = parseImageMeta(legacyImageJson, 'http://localhost', getProjection('EPSG:25833'));
+        imageMetas = parseImageMeta(legacyImageJson, 'http://localhost', new Projection({ epsg: 'EPSG:25833' }));
       });
 
       it('should parse each cameras info', () => {
@@ -59,7 +60,7 @@ describe('parsers', () => {
       let imageMetas;
 
       before(() => {
-        imageMetas = parseImageMeta(tiledImageData, getProjection('EPSG:25833'), 'http://localhost');
+        imageMetas = parseImageMeta(tiledImageData, new Projection({ epsg: 'EPSG:25833' }), 'http://localhost');
       });
 
       it('should parse each cameras info', () => {
@@ -92,21 +93,25 @@ describe('parsers', () => {
 
     describe('CRS handling', () => {
       it('should add a the projection with a random identifier, if not passed a default projection', () => {
-        const defs = sandbox.spy(proj4, 'defs');
         const imageMetas = parseImageMeta(tiledImageData, 'http://localhost');
-        expect(defs).to.have.been.calledOnce;
-        const [id] = defs.getCall(0).args;
-        const projection = getProjection(id);
+        const count = Object.keys(proj4.defs)
+          .filter(key => key.startsWith('OBLIQUE:'))
+          .length;
+        const projection = getProjection(`OBLIQUE:${count}`);
         imageMetas.forEach((meta) => {
-          expect(meta.projection).to.equal(projection);
+          expect(meta.projection.proj).to.equal(projection);
         });
-        defs.restore();
       });
 
       it('should ignore the image json crs, if passed a projection', () => {
-        const defs = sandbox.spy(proj4, 'defs');
-        parseImageMeta(tiledImageData, 'http://localhost', getProjection('EPSG:25833'));
-        expect(defs).to.not.have.been.called;
+        const preCount = Object.keys(proj4.defs)
+          .filter(key => key.startsWith('OBLIQUE:'))
+          .length;
+        parseImageMeta(tiledImageData, 'http://localhost', new Projection({ epsg: 'EPSG:25833' }));
+        const postCount = Object.keys(proj4.defs)
+          .filter(key => key.startsWith('OBLIQUE:'))
+          .length;
+        expect(preCount).to.equal(postCount);
       });
     });
 
@@ -120,7 +125,7 @@ describe('parsers', () => {
           availableTiles: tiledImageData.availableTiles,
         };
         delete noCamera.generalImageInfo.cameraParameter;
-        imageMetas = parseImageMeta(noCamera, getProjection('EPSG:25833'), 'http://localhost');
+        imageMetas = parseImageMeta(noCamera, new Projection({ epsg: 'EPSG:25833' }), 'http://localhost');
       });
 
       it('should create a default meta, if no cameras are present', () => {
@@ -143,7 +148,7 @@ describe('parsers', () => {
     let images;
 
     before(() => {
-      imageMetas = parseImageMeta(imageJson, 'http://localhost', getProjection('EPSG:25833'));
+      imageMetas = parseImageMeta(imageJson, 'http://localhost', new Projection({ epsg: 'EPSG:25833' }));
       images = parseImageData(imageJson, imageMetas);
     });
 
@@ -202,7 +207,7 @@ describe('parsers', () => {
     let images;
 
     before(() => {
-      imageMetas = parseImageMeta(legacyImageJson, 'http://localhost', getProjection('EPSG:25833'));
+      imageMetas = parseImageMeta(legacyImageJson, 'http://localhost', new Projection({ epsg: 'EPSG:25833' }));
       images = parseLegacyImageData(legacyImageJson, imageMetas);
     });
 
@@ -274,7 +279,7 @@ describe('parsers', () => {
     let images;
 
     before(() => {
-      imageMetas = parseImageMeta(imageJsonPerImageSize, 'http://localhost', getProjection('EPSG:25833'));
+      imageMetas = parseImageMeta(imageJsonPerImageSize, 'http://localhost', new Projection({ epsg: 'EPSG:25833' }));
       images = parseImageData(imageJsonPerImageSize, imageMetas);
     });
 
