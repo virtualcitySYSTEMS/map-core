@@ -301,5 +301,13 @@ describe('vcs.vcm.util.LayerCollection', () => {
       layer5.zIndex = -1;
       expect(layerCollection.indexOf(layer5)).to.equal(0);
     });
+
+    it('should maintain the position, if the zIndex changes but the position does not', () => {
+      const indexOfLayer3 = layerCollection.indexOf(layer3);
+      layer3.zIndex = 3;
+      expect(layerCollection.indexOf(layer3)).to.equal(indexOfLayer3);
+      layer3.zIndex = 1;
+      expect(layerCollection.indexOf(layer3)).to.equal(indexOfLayer3);
+    });
   });
 });
