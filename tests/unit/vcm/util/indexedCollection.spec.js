@@ -155,6 +155,16 @@ describe('vcs.vcm.util.IndexedCollection', () => {
     });
   });
 
+  describe('removing', () => {
+    it('should set the previous index symbol on a removed item', () => {
+      const item = { name: 'bar' };
+      const collection = IndexedCollection.from([{ name: 'foo' }, item, { name: 'baz' }]);
+      const currentIndex = collection.indexOf(item);
+      collection.remove(item);
+      expect(item).to.have.property(collection.previousIndexSymbol, currentIndex);
+    });
+  });
+
   describe('index manipulation', () => {
     let collection;
     let array;

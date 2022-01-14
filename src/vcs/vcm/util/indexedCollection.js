@@ -42,7 +42,21 @@ class IndexedCollection extends Collection {
      * @api
      */
     this.moved = new VcsEvent();
+
+    /**
+     * @type {symbol}
+     * @private
+     */
+    this._previousIndexSymbol = Symbol('previousIndex');
   }
+
+  /**
+   * Get the symbol which is attached to an item prior to its removal. If an item is removed, the current index of the item
+   * is set on the item with this symbol.
+   * @type {symbol}
+   * @readonly
+   */
+  get previousIndexSymbol() { return this._previousIndexSymbol; }
 
   /**
    * Returns an item at index.
@@ -74,6 +88,15 @@ class IndexedCollection extends Collection {
       return actualIndex;
     }
     return null;
+  }
+
+  /**
+   * @inheritDoc
+   * @param {T} item
+   */
+  remove(item) {
+    item[this._previousIndexSymbol] = this._array.indexOf(item);
+    super.remove(item);
   }
 
   /**

@@ -44,9 +44,6 @@ class LayerCollection extends IndexedCollection {
     this._layerEventListeners = {};
 
     /**
-     * A symbol to describe the local z index of a layer. The local z index must not equal the layers z index, but is
-     * always consistent in comparison to the neighbouring layers. If a layer is moved other then by z index, the collection
-     * ensures consistency by setting a new local z index if needed.
      * @type {symbol}
      * @private
      */
@@ -66,6 +63,15 @@ class LayerCollection extends IndexedCollection {
      */
     this.exclusiveManager = new ExclusiveManager();
   }
+
+  /**
+   * A symbol to describe the local z index of a layer. The local z index must not equal the layers z index, but is
+   * always consistent in comparison to the neighbouring layers. If a layer is moved other then by z index, the collection
+   * ensures consistency by setting a new local z index if needed.
+   * @type {symbol}
+   * @readonly
+   */
+  get zIndexSymbol() { return this._zIndexSymbol; }
 
   /**
    * @param {import("@vcmap/core").Layer} layer
