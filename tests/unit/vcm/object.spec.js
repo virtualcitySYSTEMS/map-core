@@ -3,12 +3,12 @@ import VcsObject from '../../../src/vcs/vcm/object.js';
 
 describe('VCSObject', () => {
   describe('constructor', () => {
-    it('should use vcs.vcm.Framework as fallback className', () => {
+    it('should use vcs.vcm.VcsObject as fallback className', () => {
       const myClassName = undefined;
       const vcsObject = new VcsObject({
         className: myClassName,
       });
-      expect(vcsObject.className).to.equal('vcs.vcm.Framework');
+      expect(vcsObject.className).to.equal('vcs.vcm.VcsObject');
     });
     it('should parse name option', () => {
       const myName = 'name';
@@ -32,7 +32,7 @@ describe('VCSObject', () => {
         name: myName,
       });
       expect(vcsObject.toJSON()).to.deep.equal({
-        type: 'vcs.vcm.Framework',
+        type: 'vcs.vcm.VcsObject',
         properties: myProperties,
         name: myName,
       });
@@ -49,11 +49,11 @@ describe('VCSObject', () => {
   describe('className', () => {
     it('should return the default className on the vcsObject Instance', () => {
       const vcsObject = new VcsObject({});
-      expect(vcsObject.className).to.equal('vcs.vcm.Framework');
+      expect(vcsObject.className).to.equal('vcs.vcm.VcsObject');
     });
 
     it('should return the default className on the vcsObject Class', () => {
-      expect(VcsObject.className).to.equal('vcs.vcm.Framework');
+      expect(VcsObject.className).to.equal('vcs.vcm.VcsObject');
     });
 
     describe('classWithoutClassName', () => {
@@ -61,11 +61,11 @@ describe('VCSObject', () => {
 
       it('should return the default className on an Instance', () => {
         const testClass = new ClassWithoutClassName({});
-        expect(testClass.className).to.equal('vcs.vcm.Framework');
+        expect(testClass.className).to.equal('vcs.vcm.VcsObject');
       });
 
       it('should return the default className on the Class', () => {
-        expect(ClassWithoutClassName.className).to.equal('vcs.vcm.Framework');
+        expect(ClassWithoutClassName.className).to.equal('vcs.vcm.VcsObject');
       });
     });
 

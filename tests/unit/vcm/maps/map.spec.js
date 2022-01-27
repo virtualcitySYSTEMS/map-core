@@ -72,12 +72,12 @@ describe('vcs.vcm.maps.VcmMap', () => {
     afterEach(() => {
       map.destroy();
       layerCollection.destroy();
+      sandbox.restore();
     });
 
     after(() => {
       layer1.destroy();
       layer2.destroy();
-      sandbox.restore();
     });
 
     describe('adding of a layer', () => {
@@ -111,6 +111,80 @@ describe('vcs.vcm.maps.VcmMap', () => {
         const indexChanged = sandbox.spy(map, 'indexChanged');
         layerCollection.lower(layer2);
         expect(indexChanged).to.have.been.calledOnce;
+      });
+    });
+
+    describe('setting a new layer collection', () => {
+      let otherLayerCollection;
+
+      beforeEach(() => {
+        otherLayerCollection = new LayerCollection();
+        map.layerCollection = otherLayerCollection;
+      });
+
+      afterEach(() => {
+        otherLayerCollection.destroy();
+      });
+
+      it('should call removedFromMap for all layers currently in the collection', () => {
+        const removedFromMap = sandbox.spy(layer1, 'removedFromMap');
+        otherLayerCollection.add(layer1);
+        const yetAnotherCollection = new LayerCollection();
+        map.layerCollection = yetAnotherCollection;
+        expect(removedFromMap).to.have.been.calledOnceWith(map);
+        yetAnotherCollection.destroy();
+      });
+
+      describe('adding of a layer', () => {
+        beforeEach(async () => {
+          await map.activate();
+        });
+
+        it('should call map activated on the layer added to the new collection', () => {
+          const mapActivated = sandbox.spy(layer1, 'mapActivated');
+          otherLayerCollection.add(layer1);
+          expect(mapActivated).to.have.been.calledOnceWith(map);
+        });
+
+        it('should not call map activated on the layer added to the previous collection', () => {
+          const mapActivated = sandbox.spy(layer2, 'mapActivated');
+          layerCollection.add(layer1);
+          expect(mapActivated).to.not.have.been.called;
+        });
+      });
+
+      describe('removing a layer', () => {
+        it('should call removedFromMap on layers removed from the new collection', () => {
+          const removedFromMap = sandbox.spy(layer1, 'removedFromMap');
+          otherLayerCollection.add(layer1);
+          otherLayerCollection.remove(layer1);
+          expect(removedFromMap).to.have.been.calledOnceWith(map);
+        });
+
+        it('should not call removedFromMap on layers removed from the previous collection', () => {
+          const removedFromMap = sandbox.spy(layer2, 'removedFromMap');
+          layerCollection.add(layer1);
+          layerCollection.remove(layer1);
+          expect(removedFromMap).to.not.have.been.called;
+        });
+      });
+
+      describe('moving layers within the collection', () => {
+        it('should call index changed on layers within the new collection', () => {
+          otherLayerCollection.add(layer1);
+          otherLayerCollection.add(layer2);
+          const indexChanged = sandbox.spy(map, 'indexChanged');
+          otherLayerCollection.lower(layer2);
+          expect(indexChanged).to.have.been.calledOnce;
+        });
+
+        it('should not call index changed on layers within the previous collection', () => {
+          layerCollection.add(layer1);
+          layerCollection.add(layer2);
+          const indexChanged = sandbox.spy(map, 'indexChanged');
+          layerCollection.lower(layer2);
+          expect(indexChanged).to.not.have.been.called;
+        });
       });
     });
   });

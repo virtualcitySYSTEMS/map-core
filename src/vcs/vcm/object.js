@@ -15,7 +15,7 @@ import { getLogger } from '@vcsuite/logger';
  * @api stable
  */
 class VcsObject {
-  static get className() { return 'vcs.vcm.Framework'; }
+  static get className() { return 'vcs.vcm.VcsObject'; }
 
   /**
    * @param {VcsObjectOptions} options

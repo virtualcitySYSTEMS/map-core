@@ -101,17 +101,9 @@ class VcsMap extends VcsObject {
      * @type {Array<Function>}
      * @private
      */
-    this._collectionListeners = [
-      this.layerCollection.moved.addEventListener((layer) => {
-        this.indexChanged(layer);
-      }),
-      this.layerCollection.added.addEventListener((layer) => {
-        this._layerAdded(layer);
-      }),
-      this.layerCollection.removed.addEventListener((layer) => {
-        this._layerRemoved(layer);
-      }),
-    ];
+    this._collectionListeners = [];
+
+    this._setLayerCollectionListeners();
 
     /** @type {boolean} */
     this.initialized = false;
@@ -221,6 +213,29 @@ class VcsMap extends VcsObject {
         l.mapActivated(this);
       });
     }
+
+    this._setLayerCollectionListeners();
+  }
+
+  /**
+   * @private
+   */
+  _setLayerCollectionListeners() {
+    this._collectionListeners.forEach((cb) => {
+      cb();
+    });
+
+    this._collectionListeners = [
+      this.layerCollection.moved.addEventListener((layer) => {
+        this.indexChanged(layer);
+      }),
+      this.layerCollection.added.addEventListener((layer) => {
+        this._layerAdded(layer);
+      }),
+      this.layerCollection.removed.addEventListener((layer) => {
+        this._layerRemoved(layer);
+      }),
+    ];
   }
 
   /**
