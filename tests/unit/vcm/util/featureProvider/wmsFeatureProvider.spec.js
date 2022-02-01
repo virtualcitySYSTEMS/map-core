@@ -164,7 +164,7 @@ describe('vcs.vcm.util.featureProvider.WMSFeatureProvider', () => {
           },
           extent: new Extent({
             coordinates: [0, 0, 1, 1],
-            ...mercatorProjection.toJSON(),
+            projection: mercatorProjection.toJSON(),
           }).toJSON(),
           projection: mercatorProjection.toJSON(),
         };

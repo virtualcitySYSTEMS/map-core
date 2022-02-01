@@ -295,12 +295,12 @@ class Oblique extends BaseOLMap {
       const coords = boundingExtent(image.groundCoordinates);
       return new Extent({
         coordinates: transformExtent(coords, image.meta.projection.proj, mercatorProjection.proj),
-        epsg: 'EPSG:3857',
+        projection: mercatorProjection.toJSON(),
       });
     }
     return new Extent({
       coordinates: [-18924313.4349, -15538711.0963, 18924313.4349, 15538711.0963],
-      epsg: 'EPSG:3857',
+      projection: mercatorProjection.toJSON(),
     });
   }
 

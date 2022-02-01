@@ -23,7 +23,7 @@ import {
  * @property {string} HEIGHT
  * @property {string} DISTANCE
  */
-export const Mode = {
+export const CameraLimiterMode = {
   HEIGHT: 'height',
   DISTANCE: 'distance',
 };
@@ -42,7 +42,7 @@ class CameraLimiter {
    */
   static getDefaultOptions() {
     return {
-      mode: Mode.HEIGHT,
+      mode: CameraLimiterMode.HEIGHT,
       terrainUrl: undefined,
       limit: 200,
       level: 12,
@@ -56,10 +56,10 @@ class CameraLimiter {
     const defaultOptions = CameraLimiter.getDefaultOptions();
     /**
      * The mode to use. When using DISTANCE mode, be sure to have a terrainProvider set.
-     * @type {Mode}
+     * @type {CameraLimiterMode}
      * @api
      */
-    this.mode = parseEnumValue(options.mode, Mode, defaultOptions.mode);
+    this.mode = parseEnumValue(options.mode, CameraLimiterMode, defaultOptions.mode);
     /**
      * @type {string|null}
      * @private
@@ -170,7 +170,7 @@ class CameraLimiter {
     let promise = Promise.resolve();
     const cameraCartographic = Cartographic.fromCartesian(camera.position);
     if (cameraCartographic) {
-      if (this.mode === Mode.DISTANCE && this._terrainProvider) {
+      if (this.mode === CameraLimiterMode.DISTANCE && this._terrainProvider) {
         promise = this._updateTerrainHeight(cameraCartographic);
         if (this._terrainHeight && (cameraCartographic.height - this._terrainHeight) < this.limit) {
           const newHeight = this._terrainHeight + this.limit;

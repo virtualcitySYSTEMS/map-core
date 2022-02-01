@@ -1,8 +1,10 @@
 import Projection from './projection.js';
 
 /**
- * @typedef {ProjectionOptions} ExtentOptions
- * @property {import("ol/extent").Extent|undefined} coordinates - if not specified, the extent of the projection is used
+ * @typedef {Object} ExtentOptions
+ * @property {string} [type]
+ * @property {import("ol/extent").Extent|undefined} [coordinates] - if not specified, the extent of the projection is used
+ * @property {ProjectionOptions} [projection] - if not specified the default projection is assumed
  * @api
  */
 
@@ -45,12 +47,7 @@ class Extent {
    */
   constructor(options = {}) {
     /** @type {Projection} */
-    this.projection = new Projection({
-      epsg: options.epsg,
-      proj4: options.proj4,
-      alias: options.alias,
-      prefix: options.prefix,
-    });
+    this.projection = new Projection(options.projection);
 
     /** @type {import("ol/extent").Extent|null} */
     this.extent = options.coordinates || this.projection.proj.getExtent();
@@ -87,7 +84,7 @@ class Extent {
   toJSON() {
     return {
       coordinates: this.extent.slice(),
-      ...this.projection.toJSON(),
+      projection: this.projection.toJSON(),
       type: Extent.className,
     };
   }
@@ -122,7 +119,7 @@ class Extent {
    * @api
    */
   static validateOptions(options) {
-    return Projection.validateOptions(options) && checkExtentValidity(options.coordinates);
+    return Projection.validateOptions(options.projection || {}) && checkExtentValidity(options.coordinates);
   }
 
   /**

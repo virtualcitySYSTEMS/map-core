@@ -5,7 +5,7 @@ import { getCesiumEventSpy } from '../../helpers/cesiumHelpers.js';
 import Extent from '../../../../src/vcs/vcm/util/extent.js';
 import { getOpenlayersMap } from '../../helpers/openlayers.js';
 import AbstractRasterLayerOL from '../../../../src/vcs/vcm/layer/openlayers/rasterLayerOpenlayers.js';
-import { mercatorProjection } from '../../../../src/vcs/vcm/util/projection.js';
+import { mercatorProjection, wgs84Projection } from '../../../../src/vcs/vcm/util/projection.js';
 
 describe('vcs.vcm.layer.RasterLayer.calculateMinLevel', () => {
   describe('calculating min level', () => {
@@ -13,7 +13,7 @@ describe('vcs.vcm.layer.RasterLayer.calculateMinLevel', () => {
       it('should not alter min level', () => {
         const minLevel = calculateMinLevel(new Extent({
           coordinates: [],
-          epsg: 'EPSG:4326',
+          projection: wgs84Projection.toJSON(),
         }), new GeographicTilingScheme(), 18, 0);
         expect(minLevel).to.equal(0);
       });
@@ -23,7 +23,7 @@ describe('vcs.vcm.layer.RasterLayer.calculateMinLevel', () => {
       it('should reduce the min level to a reasonable size', () => {
         const minLevel = calculateMinLevel(new Extent({
           coordinates: [12, 51, 13, 53],
-          epsg: 'EPSG:4326',
+          projection: wgs84Projection.toJSON(),
         }), new GeographicTilingScheme(), 18, 0);
         expect(minLevel).to.equal(7);
       });

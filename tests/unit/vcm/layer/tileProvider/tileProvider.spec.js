@@ -4,7 +4,7 @@ import Point from 'ol/geom/Point.js';
 import Feature from 'ol/Feature.js';
 import TileProvider, { mercatorResolutionsToLevel } from '../../../../../src/vcs/vcm/layer/tileProvider/tileProvider.js';
 import Extent from '../../../../../src/vcs/vcm/util/extent.js';
-import Projection from '../../../../../src/vcs/vcm/util/projection.js';
+import Projection, { wgs84Projection } from '../../../../../src/vcs/vcm/util/projection.js';
 import resetFramework from '../../../helpers/resetFramework.js';
 
 describe('vcs.vcm.layer.tileProvider.TileProvider', () => {
@@ -205,7 +205,10 @@ describe('vcs.vcm.layer.tileProvider.TileProvider', () => {
     let extent;
 
     before(() => {
-      extent = new Extent({ epsg: 4326, coordinates: [13.3, 52, 13.3005, 52.005] });
+      extent = new Extent({
+        projection: wgs84Projection.toJSON(),
+        coordinates: [13.3, 52, 13.3005, 52.005],
+      });
     });
 
     beforeEach(() => {

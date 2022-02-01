@@ -55,7 +55,7 @@ describe('vcs.vcm.layer.Vector', () => {
       const polygonExtent = [0, 0, 1, 1];
       VL.source.addFeature(new Feature({ geometry: fromExtent(polygonExtent) }));
       VL.extent = new Extent({
-        ...wgs84Projection.toJSON(),
+        projection: wgs84Projection.toJSON(),
         coordinates: [2, 2, 5, 5],
       });
       const extent = VL.getZoomToExtent();

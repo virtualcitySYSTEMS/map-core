@@ -185,7 +185,7 @@ describe('vcs.vcm.layer.CesiumTileset', () => {
       );
 
       cesiumTileset.extent = new Extent({
-        ...wgs84Projection.toJSON(),
+        projection: wgs84Projection.toJSON(),
         coordinates: [0, 0, 1, 1],
       });
       const featureExtent = cesiumTileset.getZoomToExtent();

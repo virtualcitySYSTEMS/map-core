@@ -538,7 +538,7 @@ class Vector extends FeatureLayer {
       return metaExtent;
     }
     const extent = new Extent({
-      ...mercatorProjection.toJSON(),
+      projection: mercatorProjection.toJSON(),
       coordinates: this.source.getExtent(),
     });
     if (extent.isValid()) {

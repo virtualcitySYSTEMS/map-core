@@ -266,7 +266,7 @@ class CesiumTileset extends FeatureLayer {
       const threeDimExtent = getExtentFromTileset(impl.cesium3DTileset);
 
       const actualExtent = new Extent({
-        ...mercatorProjection.toJSON(),
+        projection: mercatorProjection.toJSON(),
         coordinates: threeDimExtent,
       });
 

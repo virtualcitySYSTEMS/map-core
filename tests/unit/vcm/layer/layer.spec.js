@@ -362,8 +362,10 @@ describe('vcs.vcm.layer.Layer', () => {
           exclusiveGroups: ['myGroup'],
           extent: new Extent({
             coordinates: [0, 0, 1, 1],
-            epsg: 'EPSG:25833',
-            proj4: '+proj=utm +zone=33 +ellps=GRS80 +units=m +no_defs',
+            projection: {
+              epsg: 'EPSG:25833',
+              proj4: '+proj=utm +zone=33 +ellps=GRS80 +units=m +no_defs',
+            },
           }).toJSON(),
           copyright: {
             provider: 'test',

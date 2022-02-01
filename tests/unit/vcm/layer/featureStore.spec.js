@@ -222,7 +222,7 @@ describe('vcs.vcm.layer.FeatureStore', () => {
 
     it('should return the configured extent', () => {
       FS.extent = new Extent({
-        ...wgs84Projection.toJSON(),
+        projection: wgs84Projection.toJSON(),
         coordinates: [2, 2, 5, 5],
       });
       const vcsExtent = FS.getZoomToExtent();

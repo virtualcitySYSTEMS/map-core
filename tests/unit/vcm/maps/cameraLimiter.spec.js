@@ -1,7 +1,7 @@
 import { Cartographic, Ellipsoid } from '@vcmap/cesium';
 import { setCesiumMap } from '../../helpers/cesiumHelpers.js';
 import { getFramework } from '../../helpers/framework.js';
-import CameraLimiter, { Mode } from '../../../../src/vcs/vcm/maps/cameraLimiter.js';
+import CameraLimiter, { CameraLimiterMode } from '../../../../src/vcs/vcm/maps/cameraLimiter.js';
 import resetFramework from '../../helpers/resetFramework.js';
 import { setTerrainServer } from '../../helpers/terrain/terrainData.js';
 import Projection from '../../../../src/vcs/vcm/util/projection.js';
@@ -33,7 +33,7 @@ describe('vcs.vcm.maps.CameraLimiter', () => {
     beforeEach(() => {
       setTerrainServer(sandbox.useFakeServer());
       cameraLimiter = new CameraLimiter({
-        mode: Mode.DISTANCE,
+        mode: CameraLimiterMode.DISTANCE,
         terrainUrl: 'http://localhost/terrain/',
       });
       const position = Projection.mercatorToWgs84(mercatorCoordinates);
@@ -106,7 +106,7 @@ describe('vcs.vcm.maps.CameraLimiter', () => {
 
       before(() => {
         inputConfig = {
-          mode: Mode.DISTANCE,
+          mode: CameraLimiterMode.DISTANCE,
           terrainUrl: 'http://localhost/terrain/',
           level: null,
           limit: 1000,

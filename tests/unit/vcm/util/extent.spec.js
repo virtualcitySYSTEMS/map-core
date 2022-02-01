@@ -14,7 +14,7 @@ describe('vcs.vcm.util.Extent', () => {
   describe('constructor', () => {
     it('should create an extent based on an epsg code and coordiantes', () => {
       const EX = new Extent({
-        epsg: 'EPSG:4326',
+        projection: wgs84Projection.toJSON(),
         coordinates: [0, 0, 1, 1],
       });
       expect(EX).to.have.property('extent').and.to.have.members([0, 0, 1, 1]);
@@ -22,14 +22,14 @@ describe('vcs.vcm.util.Extent', () => {
     });
 
     it('it should assign the projections validity extent to the extent, if there are no input coordinates', () => {
-      const EX = new Extent({ epsg: 'EPSG:4326' });
+      const EX = new Extent({ projection: wgs84Projection.toJSON() });
       expect(EX).to.have.property('extent').and.to.have.members([-180, -90, 180, 90]);
     });
   });
 
   describe('getCoordinatesInProjection', () => {
     it('should return the extent in a given projection', () => {
-      const EX = new Extent({ epsg: 'EPSG:4326' });
+      const EX = new Extent({ projection: wgs84Projection.toJSON() });
       const mercatorProj = mercatorProjection;
       const mercatorWorld = EX.getCoordinatesInProjection(mercatorProj);
       expect(mercatorWorld)
@@ -37,7 +37,7 @@ describe('vcs.vcm.util.Extent', () => {
     });
 
     it('should mutate a result', () => {
-      const EX = new Extent({ epsg: 'EPSG:4326' });
+      const EX = new Extent({ projection: wgs84Projection.toJSON() });
       const mercatorProj = mercatorProjection;
       const mercatorWorld = [];
       EX.getCoordinatesInProjection(mercatorProj, mercatorWorld);
@@ -46,7 +46,7 @@ describe('vcs.vcm.util.Extent', () => {
     });
 
     it('should return a copy of the extent, if the extents are the same', () => {
-      const EX = new Extent({ epsg: 'EPSG:4326' });
+      const EX = new Extent({ projection: wgs84Projection.toJSON() });
       const wgs84 = wgs84Projection;
       const getTransformer = sandbox.spy(Projection, 'getTransformer');
       const result = EX.getCoordinatesInProjection(wgs84);
@@ -56,7 +56,7 @@ describe('vcs.vcm.util.Extent', () => {
     });
 
     it('should copy the extent onto a result, if the extents are the same', () => {
-      const EX = new Extent({ epsg: 'EPSG:4326' });
+      const EX = new Extent({ projection: wgs84Projection.toJSON() });
       const wgs84 = wgs84Projection;
       const getTransformer = sandbox.spy(Projection, 'getTransformer');
       const result = [0, 0, 0, 0];
@@ -114,30 +114,36 @@ describe('vcs.vcm.util.Extent', () => {
   describe('validateOptions', () => {
     it('should return false on invalid coordinate parameters', () => {
       const options = {
-        epsg: 4326,
+        projection: wgs84Projection.toJSON(),
         coordinates: ['asd'],
       };
       expect(Extent.validateOptions(options)).to.be.false;
     });
     it('should return true on valid coordinates parameters', () => {
       const options = {
-        epsg: 4326,
+        projection: {
+          epsg: 4326,
+        },
         coordinates: [0, 0, 1, 1],
       };
       expect(Extent.validateOptions(options)).to.be.true;
     });
     it('should return false on invalid projection parameters', () => {
       const options = {
-        epsg: 'asdasd',
-        proj4: 'asdasd',
+        projection: {
+          epsg: 'asdasd',
+          proj4: 'asdasd',
+        },
         coordinates: [0, 0, 1, 1],
       };
       expect(Extent.validateOptions(options)).to.be.false;
     });
     it('should return true on valid projection parameters', () => {
       const options = {
-        epsg: '25833',
-        proj4: '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs ',
+        projection: {
+          epsg: '25833',
+          proj4: '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs ',
+        },
         coordinates: [0, 0, 1, 1],
       };
       expect(Extent.validateOptions(options)).to.be.true;
@@ -171,11 +177,11 @@ describe('vcs.vcm.util.Extent', () => {
     it('should be false for extents with differing projections', () => {
       const e1 = new Extent({
         coordinates: [0, 0, 1, 1],
-        epsg: 3857,
+        epsg: mercatorProjection.toJSON(),
       });
       const e2 = new Extent({
         coordinates: [0, 0, 1, 1],
-        epsg: 4326,
+        projection: wgs84Projection.toJSON(),
       });
       expect(e1.equals(e2)).to.be.false;
     });

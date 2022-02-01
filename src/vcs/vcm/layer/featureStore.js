@@ -497,7 +497,7 @@ class FeatureStore extends Vector {
     }
 
     const actualExtent = new Extent({
-      ...mercatorProjection.toJSON(),
+      projection: mercatorProjection.toJSON(),
       coordinates: mercatorExtent,
     });
 

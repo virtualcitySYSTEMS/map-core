@@ -6,6 +6,7 @@ import CesiumMap from '../maps/cesium.js';
 import Openlayers from '../maps/openlayers.js';
 import Extent from '../util/extent.js';
 import { VcsClassRegistry } from '../classRegistry.js';
+import { wgs84Projection } from '../util/projection.js';
 
 /**
  * @typedef {RasterLayerOptions} SingleImageOptions
@@ -50,7 +51,7 @@ class SingleImage extends RasterLayer {
     if (!this.extent.isValid()) {
       this.getLogger().warning(`layer ${this.name} was constructed with an invalid extent, defaulting to global extent`);
       this.extent = new Extent({
-        epsg: 'EPSG:4326',
+        projection: wgs84Projection.toJSON(),
         coordinates: [-180, -90, 180, 90],
       });
     }
