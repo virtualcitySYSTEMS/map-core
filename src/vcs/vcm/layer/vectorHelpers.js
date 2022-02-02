@@ -6,7 +6,7 @@ import { FeatureVisibilityAction } from './featureVisibility.js';
 import Projection from '../util/projection.js';
 import { getHeightInfo } from '../util/featureconverter/featureconverterHelper.js';
 import { getFlatCoordinatesFromGeometry } from '../util/geometryHelpers.js';
-import { createOrUpdateFromGeometry, createOrUpdateFromHeightInfo } from '../util/featureconverter/extent3d.js';
+import Extent3D from '../util/featureconverter/extent3D.js';
 
 /**
  * Added to ol.source.Vector to determine, when the source has last had an update to its features visibility.
@@ -170,9 +170,9 @@ export function getGenericFeatureFromClickedObject(object, layer) {
     const coordinates = getFlatCoordinatesFromGeometry(geometry);
     const heightInfo = getHeightInfo(object, layer.vectorProperties, coordinates);
     if (heightInfo.perPositionHeight || heightInfo.extruded) {
-      const extent = createOrUpdateFromGeometry(geometry);
-      createOrUpdateFromHeightInfo(heightInfo, extent);
-      heightOffset = extent[5];
+      const extent = Extent3D.fromGeometry(geometry);
+      extent.extendWithHeightInfo(heightInfo);
+      heightOffset = extent.maxZ;
     }
     // edge case points are rendered depending on the terrain, so we set relativeToGround to true.
     // In this case the heightAboveGroundAdjustment is also just an Offset.

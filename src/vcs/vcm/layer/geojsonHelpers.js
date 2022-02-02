@@ -16,7 +16,7 @@ import { StyleType } from '../util/style/styleItem.js';
 import writeStyle, { embedIconsInStyle } from '../util/style/writeStyle.js';
 import DeclarativeStyleItem from '../util/style/declarativeStyleItem.js';
 import { vcsMetaVersion } from './layer.js';
-import { createOrUpdateFromGeometry } from '../util/featureconverter/extent3d.js';
+import Extent3D from '../util/featureconverter/extent3D.js';
 import { styleCollection } from '../globalCollections.js';
 import { circleFromCenterRadius, enforceEndingVertex, removeEndingVertexFromGeometry } from '../util/geometryHelpers.js';
 
@@ -117,8 +117,8 @@ export function updateLegacyFeature(feature) {
     if (feature.get('drawingType')) {
       feature.set('olcs_extrudedHeight', feature.get('extrudedHeight'), true);
     } else {
-      const extent = createOrUpdateFromGeometry(feature.getGeometry());
-      const minHeight = Number.isFinite(extent[2]) ? extent[2] : 0;
+      const extent = Extent3D.fromGeometry(feature.getGeometry());
+      const minHeight = Number.isFinite(extent.minZ) ? extent.minZ : 0;
       feature.set('olcs_extrudedHeight', feature.get('extrudedHeight') - minHeight, true);
     }
     feature.unset('extrudedHeight', true);

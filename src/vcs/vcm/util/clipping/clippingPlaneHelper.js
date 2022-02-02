@@ -19,7 +19,7 @@ import Polygon from 'ol/geom/Polygon.js';
 
 import { check, checkMaybe } from '@vcsuite/check';
 import Projection, { mercatorProjection, wgs84Projection } from '../projection.js';
-import { createOrUpdateFromGeometry } from '../featureconverter/extent3d.js';
+import Extent3D from '../featureconverter/extent3D.js';
 import { enforceEndingVertex, enforceRightHand, getFlatCoordinatesFromGeometry } from '../geometryHelpers.js';
 
 /**
@@ -75,9 +75,9 @@ function createVerticalPlanes(coords) {
  */
 function createHorizontalPlanes(feature, coords, options) {
   const clippingPlanes = [];
-  const extent = createOrUpdateFromGeometry(feature.getGeometry());
-  let min = Number.isFinite(extent[2]) ? extent[2] : 0;
-  let max = Number.isFinite(extent[5]) ? extent[5] : 0;
+  const extent = Extent3D.fromGeometry(feature.getGeometry());
+  let min = Number.isFinite(extent.minZ) ? extent.minZ : 0;
+  let max = Number.isFinite(extent.maxZ) ? extent.maxZ : 0;
   const extruded = feature.get('olcs_extrudedHeight');
   if (extruded) {
     max += extruded;

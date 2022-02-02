@@ -1,6 +1,6 @@
 import { getCenter } from 'ol/extent.js';
 import Projection from '../projection.js';
-import { createOrUpdateFromGeometry } from '../featureconverter/extent3d.js';
+import Extent3D from '../featureconverter/extent3D.js';
 
 /**
  * @param {VectorClickedObject} feature
@@ -32,9 +32,8 @@ export function getGenericFeatureFromProvidedFeature(feature, layer) {
 
   let heightOffset = clickedPosition.height;
   if (!isModel) {
-    const extent = createOrUpdateFromGeometry(geometry);
-    const max = Number.isFinite(extent[5]) ? extent[5] : 0;
-    heightOffset = max;
+    const extent = Extent3D.fromGeometry(geometry);
+    heightOffset = Number.isFinite(extent.maxZ) ? extent.maxZ : 0;
   }
   const relativeToGround = !isModel && feature.get('olcs_altitudeMode') === 'relativeToGround';
 
