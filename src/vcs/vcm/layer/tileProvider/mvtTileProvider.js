@@ -1,9 +1,9 @@
-import axios from 'axios';
 import MVT from 'ol/format/MVT.js';
 import Feature from 'ol/Feature.js';
 import { getCenter } from 'ol/extent.js';
 import TileProvider, { rectangleToExtent } from './tileProvider.js';
 import { getURL } from './urlTemplateTileProvider.js';
+import { requestArrayBuffer } from '../../util/fetch.js';
 
 /**
  * @typedef {TileProviderOptions} MVTTileProviderOptions
@@ -74,9 +74,9 @@ class MVTTileProvider extends TileProvider {
     const url = getURL(this.url, x, y, z, rectangle);
     const extent = rectangleToExtent(rectangle);
     const center = getCenter(extent);
-    const response = await axios.get(url, { responseType: 'arraybuffer' });
+    const data = await requestArrayBuffer(url);
     const features = /** @type {Array<import("ol").Feature<import("ol/geom/Geometry").default>>} */
-      (this._MVTFormat.readFeatures(response.data));
+      (this._MVTFormat.readFeatures(data));
     const sx = ((extent[2] - extent[0]) / 4096);
     const sy = -((extent[3] - extent[1]) / 4096);
     features.forEach((feature) => {

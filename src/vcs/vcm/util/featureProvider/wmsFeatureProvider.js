@@ -1,4 +1,3 @@
-import axios from 'axios';
 import GML2 from 'ol/format/GML2.js';
 import WFS from 'ol/format/WFS.js';
 import GeoJSON from 'ol/format/GeoJSON.js';
@@ -10,6 +9,7 @@ import AbstractFeatureProvider from './abstractFeatureProvider.js';
 import Projection, { mercatorProjection } from '../projection.js';
 import { getWMSSource } from '../../layer/wmsHelpers.js';
 import Extent from '../extent.js';
+import { requestJson } from '../fetch.js';
 
 /**
  * @typedef {AbstractFeatureProviderOptions} WMSFeatureProviderOptions
@@ -155,12 +155,11 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
   }
 
   /**
-   * @param {import("axios").AxiosResponse<*>} response
+   * @param {import("ol/format/GeoJSON").GeoJSONObject} data
    * @param {import("ol/coordinate").Coordinate} coordinate
    * @returns {Array<import("ol").Feature<import("ol/geom/Geometry").default>>}
    */
-  featureResponseCallback(response, coordinate) {
-    const { data } = response;
+  featureResponseCallback(data, coordinate) {
     /** @type {Array<import("ol").Feature<import("ol/geom/Geometry").default>>} */
     let features;
 
@@ -211,8 +210,14 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
     );
 
     if (url) {
-      const response = await axios.get(url);
-      return this.featureResponseCallback(response, coordinate)
+      let data;
+      try {
+        data = await requestJson(url);
+      } catch (ex) {
+        this.getLogger().error(`Failed fetching WMS FeatureInfo ${url}`);
+        return [];
+      }
+      return this.featureResponseCallback(data, coordinate)
         .map(f => this.getProviderFeature(f));
     }
     return [];

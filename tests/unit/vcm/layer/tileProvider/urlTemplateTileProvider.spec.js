@@ -1,60 +1,93 @@
-import axios from 'axios';
-import URLTemplateTileProvider from '../../../../../src/vcs/vcm/layer/tileProvider/urlTemplateTileProvider.js';
+import nock from 'nock';
+import Feature from 'ol/Feature.js';
+import URLTemplateTileProvider, { getURL } from '../../../../../src/vcs/vcm/layer/tileProvider/urlTemplateTileProvider.js';
 import resetFramework from '../../../helpers/resetFramework.js';
 import { setCurrentLocale } from '../../../../../src/vcs/vcm/util/locale.js';
+import Projection from '../../../../../src/vcs/vcm/util/projection.js';
 
 describe('vcs.vcm.layer.tileProvider.URLTemplateTileProvider', () => {
-  let sandbox;
-  let axiosStub;
+  let response;
   /** @type {import("@vcmap/core").URLTemplateTileProvider} */
   let tileProvider;
+  const xyz = [1, 2, 3];
 
   before(async () => {
-    sandbox = sinon.createSandbox();
+    response = {
+      type: 'FeatureCollection',
+      crs: {
+        type: 'WGS84',
+        properties: {
+          name: 'EPSG:4326',
+        },
+      },
+      features: [
+        {
+          type: 'Feature',
+          id: 'test',
+          geometry: {
+            type: 'Point',
+            coordinates: Projection.mercatorToWgs84([0.5, 0.5, 0]),
+          },
+        },
+      ],
+    };
     tileProvider = new URLTemplateTileProvider({
-      url: 'testURL',
+      url: 'http://myFeatureSource/layer/getFeatures?x={x}&y={y}&level={z}',
       tileCacheSize: 10,
       baseLevels: [10],
     });
   });
 
-  beforeEach(() => {
-    axiosStub = sandbox.stub(axios, 'get').resolves({ data: {} });
-  });
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   after(() => {
     tileProvider.destroy();
     resetFramework();
+    nock.cleanAll();
   });
 
   describe('loader', () => {
+    let scope;
+    let loaded;
+
+    before(() => {
+      scope = nock('http://myFeatureSource')
+        .get('/layer/getFeatures')
+        .query({ x: 1, y: 2, level: 3 })
+        .reply(200, response);
+    });
+
+    after(() => {
+      scope.done();
+    });
+
+    it('should load response data', async () => {
+      loaded = await tileProvider.loader(...xyz);
+      expect(loaded).to.have.length(1);
+      expect(loaded[0]).to.be.instanceOf(Feature);
+    });
+  });
+
+  describe('getUrl', () => {
+    let url;
+
     it('should request data with url', async () => {
-      tileProvider.url = 'myURL';
-      await tileProvider.loader(1, 2, 3);
-      expect(axiosStub).to.have.been.calledWith('myURL');
+      url = getURL('myUrl', ...xyz, tileProvider.tilingScheme.tileXYToRectangle(...xyz));
+      expect(url).to.contain('myUrl');
     });
 
     it('should replace tile coordinates placeholder in requested url', async () => {
-      tileProvider.url = '{x},{y},{z}';
-      await tileProvider.loader(1, 2, 3);
-      expect(axiosStub).to.have.been.calledWith('1,2,3');
+      url = getURL('{x},{y},{z}', ...xyz, tileProvider.tilingScheme.tileXYToRectangle(...xyz));
+      expect(url).to.contain('1,2,3');
     });
 
     it('should replace locale placeholder in requested url', async () => {
-      tileProvider.url = '{locale}';
       setCurrentLocale('nl');
-      await tileProvider.loader(1, 2, 3);
-      expect(axiosStub).to.have.been.calledWith('nl');
+      url = getURL('{locale}', ...xyz, tileProvider.tilingScheme.tileXYToRectangle(...xyz));
+      expect(url).to.contain('nl');
     });
 
     it('should replace extent placeholder in requested url', async () => {
-      tileProvider.url = '{minx},{miny},{maxx},{maxy}';
-      await tileProvider.loader(1, 2, 3);
-      expect(axiosStub).to.have.been.calledWith('-135,40.979898069620134,-90,66.51326044311185');
+      url = getURL('{minx},{miny},{maxx},{maxy}', ...xyz, tileProvider.tilingScheme.tileXYToRectangle(...xyz));
+      expect(url).to.contain('-135,40.979898069620134,-90,66.51326044311185');
     });
   });
 });

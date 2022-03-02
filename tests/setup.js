@@ -3,6 +3,7 @@ import sinonChai from 'sinon-chai';
 import sinon from 'sinon';
 import canvas from 'canvas';
 import canvasBindings from 'canvas/lib/bindings.js';
+import fetch from 'node-fetch';
 
 chai.use(sinonChai);
 
@@ -16,6 +17,7 @@ global.canvaslibrary = canvas;
 global.CESIUM_BASE_URL = 'cesium/Source/';
 global.FileReader = window.FileReader;
 global.DOMParser = window.DOMParser;
+global.fetch = fetch;
 
 Object.assign(canvas, {
   CanvasGradient: canvasBindings.CanvasGradient,

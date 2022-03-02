@@ -1,7 +1,8 @@
 import fs from 'fs';
 import { CesiumTerrainProvider } from '@vcmap/cesium';
-import layerJSON from '../../../data/terrain/layer.json';
+import importJSON from '../importJSON.js';
 
+const layerJson = await importJSON('./tests/data/terrain/layer.json');
 const terrainFiles = {
   1388006485: './tests/data/terrain/13/8800/6485.terrain',
   1388006486: './tests/data/terrain/13/8800/6486.terrain',
@@ -9,34 +10,34 @@ const terrainFiles = {
   1388016486: './tests/data/terrain/13/8801/6486.terrain',
 };
 
-const fileCache = new Map();
-
 /**
- * serves http://localhost/terrain/
- * @param {Object} server
+ * serves http://myTerrainProvider/terrain/
+ * @param {import("nock").Scope} scope
  */
-export function setTerrainServer(server) {
-  if (!fileCache.size) {
-    Object.entries(terrainFiles).forEach(([key, value]) => {
-      fileCache.set(key, fs.readFileSync(value).buffer);
-    });
-  }
-  server.autoRespond = true;
-  server.respondImmediately = true;
-  server.respondWith(/terrain\/layer.json/, (res) => {
-    res.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(layerJSON));
-  });
-  server.respondWith(/terrain\/(\d{2})\/(\d{4})\/(\d{4})\.terrain/, (res, x, y, z) => {
-    res.respond(200, { 'Content-Type': 'application/vnd.quantized-mesh' }, fileCache.get(`${x}${y}${z}`));
-  });
+export function setTerrainServer(scope) {
+  scope
+    .get('/terrain/layer.json')
+    .reply(200, layerJson, { 'Content-Type': 'application/json' })
+    .get(/terrain\/(\d{2})\/(\d{4})\/(\d{4})\.terrain.*/)
+    .reply((uri) => {
+      const [x, y] = uri.match(/(\d{4})/g);
+      const terrainFile = terrainFiles[`13${x}${y}`];
+      const res = terrainFile ? fs.createReadStream(terrainFiles[`13${x}${y}`]) : Buffer.from('');
+      return [
+        200,
+        res,
+        { 'Content-Type': 'application/vnd.quantized-mesh' },
+      ];
+    })
+    .persist();
 }
 
 /**
- * @param {Object} server
+ * @param {Scope} scope
  * @returns {cesium/CesiumTerrainProvider}
  */
-export function getTerrainProvider(server) {
-  setTerrainServer(server);
+export function getTerrainProvider(scope) {
+  setTerrainServer(scope);
   return new CesiumTerrainProvider({
     url: 'http://localhost/terrain/',
   });

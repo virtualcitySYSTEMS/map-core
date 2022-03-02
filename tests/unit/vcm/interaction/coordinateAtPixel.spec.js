@@ -1,3 +1,4 @@
+import nock from 'nock';
 import { EventType } from '../../../../src/vcs/vcm/interaction/interactionType.js';
 import CoordinateAtPixel from '../../../../src/vcs/vcm/interaction/coordinateAtPixel.js';
 import { getObliqueMap, setObliqueMap } from '../../helpers/obliqueHelpers.js';
@@ -7,6 +8,7 @@ import resetFramework from '../../helpers/resetFramework.js';
 describe('vcs.vcm.interaction.CoordinateAtPixel', () => {
   after(() => {
     resetFramework();
+    nock.cleanAll();
   });
 
   describe('~obliqueHandler', () => {
@@ -35,19 +37,12 @@ describe('vcs.vcm.interaction.CoordinateAtPixel', () => {
   });
 
   describe('with terrainProvider', () => {
-    let sandbox;
+    let scope;
     let map;
 
-    before(() => {
-      sandbox = sinon.createSandbox();
-    });
-
-    beforeEach(async () => {
-      map = await setObliqueMap(getFramework(), sandbox.useFakeServer());
-    });
-
-    afterEach(() => {
-      sandbox.restore();
+    before(async () => {
+      scope = nock('http://localhost');
+      map = await setObliqueMap(getFramework(), scope);
     });
 
     it('should use exact coordinate transformation on CLICK', async () => {

@@ -1,9 +1,6 @@
 import { boundingExtent } from 'ol/extent.js';
 import Circle from 'ol/geom/Circle.js';
 import ObliqueDataSet, { DataState } from '../../../../src/vcs/vcm/oblique/ObliqueDataSet.js';
-import legacyImageJson from '../../../data/oblique/imageData/imagev34.json';
-import imageJson from '../../../data/oblique/imageData/imagev35.json';
-import tiledImageData from '../../../data/oblique/tiledImageData/image.json';
 import setTiledObliqueImageServer, {
   tiledMercatorCoordinate,
   imagev35MercatorCoordinate,
@@ -11,6 +8,11 @@ import setTiledObliqueImageServer, {
 } from '../../helpers/obliqueData.js';
 import { getCesiumEventSpy } from '../../helpers/cesiumHelpers.js';
 import Projection from '../../../../src/vcs/vcm/util/projection.js';
+import importJSON from '../../helpers/importJSON.js';
+
+const imageJson = await importJSON('./tests/data/oblique/imageData/imagev35.json');
+const legacyImageJson = await importJSON('./tests/data/oblique/imageData/imagev34.json');
+const tiledImageData = await importJSON('./tests/data/oblique/tiledImageData/image.json');
 
 describe('ObliqueDataSet', () => {
   let sandbox;
@@ -141,7 +143,7 @@ describe('ObliqueDataSet', () => {
 
     before(async () => {
       obliqueDataSet = new ObliqueDataSet('http://localhost/tiledOblique/image.json', projection);
-      setTiledObliqueImageServer(sandbox.useFakeServer());
+      setTiledObliqueImageServer();
       await obliqueDataSet.load();
     });
 
@@ -161,7 +163,7 @@ describe('ObliqueDataSet', () => {
 
     it('should set the state loading before resolving the request', async () => {
       const obliqueDataSet2 = new ObliqueDataSet('http://localhost/tiledOblique', projection);
-      setTiledObliqueImageServer(sandbox.useFakeServer());
+      setTiledObliqueImageServer();
       const promise = obliqueDataSet2.load();
       expect(obliqueDataSet2.state).to.equal(DataState.LOADING);
       await promise;
@@ -212,7 +214,7 @@ describe('ObliqueDataSet', () => {
     beforeEach(() => {
       obliqueDataSet = new ObliqueDataSet('http://localhost/tiledOblique', projection);
       obliqueDataSet.initialize(tiledImageData);
-      setTiledObliqueImageServer(sandbox.useFakeServer());
+      setTiledObliqueImageServer();
     });
 
     afterEach(() => {

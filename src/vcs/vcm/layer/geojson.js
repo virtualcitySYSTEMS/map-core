@@ -1,8 +1,8 @@
-import axios from 'axios';
 import Vector from './vector.js';
 import { parseGeoJSON, writeGeoJSONFeature } from './geojsonHelpers.js';
 import Projection, { wgs84Projection } from '../util/projection.js';
 import { VcsClassRegistry } from '../classRegistry.js';
+import { requestJson } from '../util/fetch.js';
 
 /**
  * @typedef {VectorOptions} GeoJSONOptions
@@ -111,10 +111,8 @@ class GeoJSON extends Vector {
     }
 
     if (this.url) {
-      this._dataFetchedPromise = axios.get(this.url)
-        .then((response) => {
-          this._parseGeojsonData(response.data);
-        })
+      this._dataFetchedPromise = requestJson(this.url)
+        .then(data => this._parseGeojsonData(data))
         .catch((err) => {
           this.getLogger().warning(`Could not send request for loading layer content (${err.message})`);
           return Promise.reject(err);

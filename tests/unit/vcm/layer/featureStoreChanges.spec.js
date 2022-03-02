@@ -1,7 +1,8 @@
+import nock from 'nock';
 import Feature from 'ol/Feature.js';
 import Point from 'ol/geom/Point.js';
-import axios from 'axios';
 import FeatureStore from '../../../../src/vcs/vcm/layer/featureStore.js';
+import { createCommitActions } from '../../../../src/vcs/vcm/layer/featureStoreChanges.js';
 import { featureStoreState, featureStoreStateSymbol } from '../../../../src/vcs/vcm/layer/featureStoreState.js';
 
 function createDummyOlFeature(index) {
@@ -239,19 +240,10 @@ describe('vcs.vcm.layer.FeatureStore.FeatureStoreChanges', () => {
   });
 
   describe('commitChanges', () => {
-    let post;
+    let scope;
+    let actions;
     let features;
     let changes;
-
-    beforeEach(() => {
-      post = sandbox.stub(axios, 'post')
-        .resolves({
-          data: {
-            insertedIds: [],
-            failedActions: [],
-          },
-        });
-    });
 
     afterEach(() => { // it should always clear the values;
       changes = FSC.getChanges();
@@ -261,110 +253,128 @@ describe('vcs.vcm.layer.FeatureStore.FeatureStoreChanges', () => {
       expect(FSC.values.changed).to.be.false;
     });
 
-    it('should reset converted features', () => {
+    after(() => nock.cleanAll());
+
+    it('should reset converted features', async () => {
       features = createDummyOlFeature(1);
       FSC._convertedFeatures.add(features[0]);
       const resetFeature = sandbox.spy(FSC, '_resetFeature');
-      return FSC.commitChanges('test')
-        .then(() => {
-          expect(resetFeature).to.have.been.calledWith(features[0]);
-          expect(FSC._convertedFeatures).to.be.empty;
-        });
+      await FSC.commitChanges('test');
+      expect(resetFeature).to.have.been.calledWith(features[0]);
+      expect(FSC._convertedFeatures).to.be.empty;
     });
 
-    it('should not call post, if there are no actions', () => {
-      return FSC.commitChanges('test')
-        .then(() => {
-          expect(post).to.not.have.been.called;
-        });
+    it('should not call post, if there are no actions', async () => {
+      const request = await FSC.commitChanges('test');
+      expect(request).to.be.undefined;
     });
 
     describe('add', () => {
-      beforeEach(() => {
+      before(async () => {
+        scope = nock('http://myFeatureStore')
+          .post('/commitChanges')
+          .reply(200, {
+            insertedIds: [{ _id: 0 }, { _id: 1 }],
+            failedActions: [],
+          });
         features = createDummyOlFeature(2);
         FSC._addedFeatures.add(features[0]);
         FSC._addedFeatures.add(features[1]);
-        post.resolves({
-          data: {
-            insertedIds: [{ _id: 0 }, { _id: 1 }],
-            failedActions: [],
-          },
+        actions = createCommitActions(FSC._addedFeatures, FSC._editedFeatures, FSC._removedFeatures);
+        await FSC.commitChanges('http://myFeatureStore/commitChanges');
+      });
+
+      after(() => scope.done());
+
+      it('should add an add action for each _addedFeature', () => {
+        expect(actions).to.have.length(2);
+        actions.forEach((action) => {
+          expect(action).to.have.property('action', 'add');
+          expect(action).to.have.property('feature').and.to.be.an('object');
         });
       });
 
-      it('should add an add action for each _addedFeature', () => FSC.commitChanges('test')
-        .then(() => {
-          expect(post).to.have.been.called;
-          const actions = post.getCall(0).args[1];
-          expect(actions).to.have.length(2);
-          actions.forEach((action) => {
-            expect(action).to.have.property('action', 'add');
-            expect(action).to.have.property('feature').and.to.be.an('object');
-          });
-        }));
+      it('should set the ID based on the returned insertedIds', () => {
+        features.forEach((f, index) => {
+          expect(f.getId()).to.equal(index);
+        });
+      });
 
-      it('should set the ID based on the returned insertedIds', () => FSC.commitChanges('test')
-        .then(() => {
-          features.forEach((f, index) => {
-            expect(f.getId()).to.equal(index);
-          });
-        }));
-
-      it('should set the features type to dynamic', () => FSC.commitChanges('test')
-        .then(() => {
-          features.forEach((f) => {
-            expect(f).to.have.property(featureStoreStateSymbol, featureStoreState.DYNAMIC);
-          });
-        }));
+      it('should set the features type to dynamic', () => {
+        features.forEach((f) => {
+          expect(f).to.have.property(featureStoreStateSymbol, featureStoreState.DYNAMIC);
+        });
+      });
     });
 
     describe('edit', () => {
-      beforeEach(() => {
+      before(async () => {
+        scope = nock('http://myFeatureStore')
+          .post('/commitChanges')
+          .reply(200, {
+            insertedIds: [{ _id: 0 }, { _id: 1 }],
+            failedActions: [],
+          });
         features = createDummyOlFeature(2);
         FSC._editedFeatures.add(features[0]);
         FSC._editedFeatures.add(features[1]);
+        features[0][featureStoreStateSymbol] = featureStoreState.STATIC;
+        actions = createCommitActions(FSC._addedFeatures, FSC._editedFeatures, FSC._removedFeatures);
+        await FSC.commitChanges('http://myFeatureStore/commitChanges');
       });
+
+      after(() => scope.done());
 
       it('should set the state symbol for static features to edited', () => {
-        features[0][featureStoreStateSymbol] = featureStoreState.STATIC;
-        return FSC.commitChanges('test')
-          .then(() => {
-            expect(features[0]).to.have.property(featureStoreStateSymbol, featureStoreState.EDITED);
-          });
+        expect(features[0]).to.have.property(featureStoreStateSymbol, featureStoreState.EDITED);
       });
 
-      it('should append the feature id as _id', () => FSC.commitChanges('test')
-        .then(() => {
-          expect(post).to.have.been.called;
-          const actions = post.getCall(0).args[1];
-          expect(actions).to.have.length(2);
-          actions.forEach((action, index) => {
-            expect(action).to.have.property('action', 'edit');
-            expect(action).to.have.property('feature').and.to.be.an('object').and.to.have.property('_id', `id${index}`);
-          });
-        }));
+      it('should append the feature id as _id', () => {
+        expect(actions).to.have.length(2);
+        actions.forEach((action, index) => {
+          expect(action).to.have.property('action', 'edit');
+          expect(action).to.have.property('feature').and.to.be.an('object').and.to.have.property('_id', `id${index}`);
+        });
+      });
     });
 
     describe('remove', () => {
-      it('should send the features ids', () => {
+      before(async () => {
+        scope = nock('http://myFeatureStore')
+          .post('/commitChanges')
+          .reply(200, {
+            insertedIds: [{ _id: 0 }, { _id: 1 }],
+            failedActions: [],
+          });
         features = createDummyOlFeature(2);
         FSC._removedFeatures.add(features[0]);
         FSC._removedFeatures.add(features[1]);
-        return FSC.commitChanges('test')
-          .then(() => {
-            expect(post).to.have.been.called;
-            const actions = post.getCall(0).args[1];
-            expect(actions).to.have.length(2);
-            actions.forEach((action, index) => {
-              expect(action).to.have.property('action', 'remove');
-              expect(action).to.have.property('feature').and.to.be.an('object').and.to.have.property('_id', `id${index}`);
-            });
-          });
+        actions = createCommitActions(FSC._addedFeatures, FSC._editedFeatures, FSC._removedFeatures);
+        await FSC.commitChanges('http://myFeatureStore/commitChanges');
+      });
+
+      after(() => scope.done());
+
+      it('should send the features ids', () => {
+        expect(actions).to.have.length(2);
+        actions.forEach((action, index) => {
+          expect(action).to.have.property('action', 'remove');
+          expect(action).to.have.property('feature').and.to.be.an('object').and.to.have.property('_id', `id${index}`);
+        });
       });
     });
 
     describe('error handling', () => {
-      beforeEach(() => {
+      let resetFeatures;
+
+      before(async () => {
+        resetFeatures = sandbox.spy(FSC, '_resetFeature');
+        scope = nock('http://myFeatureStore')
+          .post('/commitChanges')
+          .reply(200, {
+            insertedIds: [{ _id: 'test1' }],
+            failedActions: [{ index: 0, error: 'error' }, { index: 2, error: 'error' }, { index: 4, error: 'error' }],
+          });
         features = createDummyOlFeature(6);
         features[2][featureStoreStateSymbol] = featureStoreState.STATIC;
         features[3][featureStoreStateSymbol] = featureStoreState.STATIC;
@@ -374,32 +384,22 @@ describe('vcs.vcm.layer.FeatureStore.FeatureStoreChanges', () => {
         FSC._editedFeatures.add(features[3]);
         FSC._removedFeatures.add(features[4]);
         FSC._removedFeatures.add(features[5]);
-        post.resolves({
-          data: {
-            insertedIds: [{ _id: 'test1' }],
-            failedActions: [{ index: 0, error: 'error' }, { index: 2, error: 'error' }, { index: 4, error: 'error' }],
-          },
-        });
+        await FSC.commitChanges('http://myFeatureStore/commitChanges');
       });
 
-      it('should only succeed non-failed features', () => FSC.commitChanges('test')
-        .then(() => {
-          expect(features[0].getId()).to.equal('id0');
-          expect(features[1].getId()).to.equal('test1');
-          expect(features[2]).to.have.property(featureStoreStateSymbol, featureStoreState.STATIC);
-          expect(features[3]).to.have.property(featureStoreStateSymbol, featureStoreState.EDITED);
-        }));
+      it('should only succeed non-failed features', () => {
+        expect(features[0].getId()).to.equal('id0');
+        expect(features[1].getId()).to.equal('test1');
+        expect(features[2]).to.have.property(featureStoreStateSymbol, featureStoreState.STATIC);
+        expect(features[3]).to.have.property(featureStoreStateSymbol, featureStoreState.EDITED);
+      });
 
       it('should reset failed features', () => {
-        const resetFeatures = sandbox.spy(FSC, '_resetFeature');
-        return FSC.commitChanges('test')
-          .then(() => {
-            expect(resetFeatures).to.have.been.calledThrice;
-            [0, 2, 4].forEach((fIndex, index) => {
-              const call = resetFeatures.getCall(index);
-              expect(call).to.have.been.calledWith(features[fIndex]);
-            });
-          });
+        expect(resetFeatures).to.have.been.calledThrice;
+        [0, 2, 4].forEach((fIndex, index) => {
+          const call = resetFeatures.getCall(index);
+          expect(call).to.have.been.calledWith(features[fIndex]);
+        });
       });
     });
   });

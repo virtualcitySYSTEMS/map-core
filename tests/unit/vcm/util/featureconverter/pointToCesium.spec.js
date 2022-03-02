@@ -1,3 +1,4 @@
+import nock from 'nock';
 import Point from 'ol/geom/Point.js';
 import Polygon from 'ol/geom/Polygon.js';
 import Feature from 'ol/Feature.js';
@@ -31,7 +32,7 @@ import pointToCesium, {
   validatePoint,
   getBillboardOptions, getLabelOptions, getCartesian3AndWGS84FromCoordinates, getLineGeometries, getModelOptions,
 } from '../../../../../src/vcs/vcm/util/featureconverter/pointToCesium.js';
-import { blackPixelURI, redPixelURI } from '../../../helpers/imageHelpers.js';
+import { blackPixelURI } from '../../../helpers/imageHelpers.js';
 import { getCesiumColor } from '../../../../../src/vcs/vcm/util/style/styleHelpers.js';
 import Projection from '../../../../../src/vcs/vcm/util/projection.js';
 import VectorContext from '../../../../../src/vcs/vcm/layer/cesium/vectorContext.js';
@@ -39,6 +40,10 @@ import { getMockScene } from '../../../helpers/cesiumHelpers.js';
 import { getTerrainProvider } from '../../../helpers/terrain/terrainData.js';
 
 describe('vcs.vcm.util.featureConverter.pointToCesium', () => {
+  after(() => {
+    nock.cleanAll();
+  });
+
   describe('getCoordinates', () => {
     it('should return a array with the coordinates of all geometries', () => {
       const point = new Point([50, 50, 3]);
@@ -151,7 +156,6 @@ describe('vcs.vcm.util.featureConverter.pointToCesium', () => {
     describe('icon Style', () => {
       let iconStyle;
       let image;
-      let server;
 
       before(() => {
         image = document.createElement('img');
@@ -165,16 +169,6 @@ describe('vcs.vcm.util.featureConverter.pointToCesium', () => {
           }),
         });
         billboardOptions = getBillboardOptions(feature, iconStyle, heightReference, vectorProperties);
-        server = sinon.fakeServer.create();
-        server.respondWith([
-          200,
-          { 'Content-Type': 'image/png' },
-          redPixelURI,
-        ]);
-      });
-
-      after(() => {
-        server.restore();
       });
 
       it('should set image to a Promise if the icon has not been loaded ', () => {
@@ -385,6 +379,7 @@ describe('vcs.vcm.util.featureConverter.pointToCesium', () => {
 
     after(() => {
       scene.destroy();
+      nock.cleanAll();
     });
 
     it('should create a model with the feature modelUrl', () => {
@@ -399,9 +394,9 @@ describe('vcs.vcm.util.featureConverter.pointToCesium', () => {
     });
 
     it('should set a 2D point onto the terrain', (done) => {
-      const server = sinon.createFakeServer();
       const scene2 = getMockScene();
-      scene2.globe.terrainProvider = getTerrainProvider(server);
+      const scope = nock('http://localhost');
+      scene2.globe.terrainProvider = getTerrainProvider(scope);
       const twoD = [[13.374517914005413, 52.501750770534045, 0]];
       const [twoDModel] = getModelOptions(
         feature,
@@ -420,7 +415,6 @@ describe('vcs.vcm.util.featureConverter.pointToCesium', () => {
           .fromCartesian(Matrix4.getTranslation(twoDModel.modelMatrix, new Cartesian3()));
 
         expect(cartographicAfter.height).to.not.equal(0);
-        server.restore();
         done();
       }, 500);
     });

@@ -1,14 +1,17 @@
 /* eslint-disable camelcase */
-import t2199_1342 from '../../data/oblique/tiledImageData/12/2199/1342.json';
-import t2199_1343 from '../../data/oblique/tiledImageData/12/2199/1343.json';
-import t2199_1344 from '../../data/oblique/tiledImageData/12/2199/1344.json';
-import t2200_1342 from '../../data/oblique/tiledImageData/12/2200/1342.json';
-import t2200_1343 from '../../data/oblique/tiledImageData/12/2200/1343.json';
-import t2200_1344 from '../../data/oblique/tiledImageData/12/2200/1344.json';
-import t2201_1342 from '../../data/oblique/tiledImageData/12/2201/1342.json';
-import t2201_1343 from '../../data/oblique/tiledImageData/12/2201/1343.json';
-import t2201_1344 from '../../data/oblique/tiledImageData/12/2201/1344.json';
-import imageJsonTiled from '../../data/oblique/tiledImageData/image.json';
+import nock from 'nock';
+import importJSON from './importJSON.js';
+
+const t2199_1342 = await importJSON('./tests/data/oblique/tiledImageData/12/2199/1342.json');
+const t2199_1343 = await importJSON('./tests/data/oblique/tiledImageData/12/2199/1343.json');
+const t2199_1344 = await importJSON('./tests/data/oblique/tiledImageData/12/2199/1344.json');
+const t2200_1342 = await importJSON('./tests/data/oblique/tiledImageData/12/2200/1342.json');
+const t2200_1343 = await importJSON('./tests/data/oblique/tiledImageData/12/2200/1343.json');
+const t2200_1344 = await importJSON('./tests/data/oblique/tiledImageData/12/2200/1344.json');
+const t2201_1342 = await importJSON('./tests/data/oblique/tiledImageData/12/2201/1342.json');
+const t2201_1343 = await importJSON('./tests/data/oblique/tiledImageData/12/2201/1343.json');
+const t2201_1344 = await importJSON('./tests/data/oblique/tiledImageData/12/2201/1344.json');
+const imageJsonTiled = await importJSON('./tests/data/oblique/tiledImageData/image.json');
 
 const tiledImageData = {
   12: {
@@ -48,15 +51,26 @@ export const imagev35MercatorCoordinate = [1488644.796500772, 6892246.018669462,
 
 /**
  * serves http://localhost/tiledOblique/image.json
- * @param {Object} server
+ * @param {import("nock").Scope=} optScope
+ * @returns {import("nock").Scope} scope
  */
-export default function setTiledObliqueImageServer(server) {
-  server.autoRespond = true;
-  server.respondImmediately = true;
-  server.respondWith(/tiledOblique\/12\/(\d{4})\/(\d{4})\.json/, (res, x, y) => {
-    res.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(tiledImageData['12'][x][y]));
-  });
-  server.respondWith(/tiledOblique\/image.json/, (res) => {
-    res.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(imageJsonTiled));
-  });
+export default function getTiledObliqueImageServer(optScope) {
+  return (optScope || nock('http://localhost'))
+    .persist()
+    .get('/tiledOblique/image.json')
+    .reply(
+      200,
+      JSON.stringify(imageJsonTiled),
+      // zlib.gzipSync(Buffer.from(JSON.stringify(imageJsonTiled))),
+      { 'Content-Type': 'application/json' },
+    )
+    .get(/tiledOblique\/12\/(\d{4})\/(\d{4})\.json/)
+    .reply((uri) => {
+      const [x, y] = uri.match(/(\d{4})/g);
+      return [
+        200,
+        JSON.stringify(tiledImageData['12'][x][y]),
+        { 'Content-Type': 'application/json' },
+      ];
+    });
 }

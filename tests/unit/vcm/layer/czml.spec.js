@@ -1,7 +1,9 @@
 import { JulianDate, DataSourceClock } from '@vcmap/cesium';
-import dynamicPoint from '../../../data/dynamicPointCzml.json';
 import Czml from '../../../../src/vcs/vcm/layer/czml.js';
 import { vcsLayerName } from '../../../../src/vcs/vcm/layer/layerSymbols.js';
+import importJSON from '../../helpers/importJSON.js';
+
+const dynamicPoint = await importJSON('./tests/data/dynamicPointCzml.json');
 
 describe('vcs.vcm.layer.Czml', () => {
   describe('loading of data', () => {

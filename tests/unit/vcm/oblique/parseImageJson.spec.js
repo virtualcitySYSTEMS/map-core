@@ -2,12 +2,14 @@ import proj4 from 'proj4';
 import { get as getProjection } from 'ol/proj.js';
 import { Cartesian3, Matrix4, Matrix3 } from '@vcmap/cesium';
 import { parseImageData, parseImageMeta, parseLegacyImageData } from '../../../../src/vcs/vcm/oblique/parseImageJson.js';
-import legacyImageJson from '../../../data/oblique/imageData/imagev34.json';
-import imageJson from '../../../data/oblique/imageData/imagev35.json';
-import imageJsonPerImageSize from '../../../data/oblique/imageData/imagev35PerImageSize.json';
-import tiledImageData from '../../../data/oblique/tiledImageData/image.json';
 import { ObliqueViewDirection } from '../../../../src/vcs/vcm/oblique/ObliqueViewDirection.js';
 import Projection from '../../../../src/vcs/vcm/util/projection.js';
+import importJSON from '../../helpers/importJSON.js';
+
+const imageJson = await importJSON('./tests/data/oblique/imageData/imagev35.json');
+const legacyImageJson = await importJSON('./tests/data/oblique/imageData/imagev34.json');
+const imageJsonPerImageSize = await importJSON('./tests/data/oblique/imageData/imagev35PerImageSize.json');
+const tiledImageData = await importJSON('./tests/data/oblique/tiledImageData/image.json');
 
 describe('parsers', () => {
   let sandbox;

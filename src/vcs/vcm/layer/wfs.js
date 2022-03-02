@@ -1,8 +1,8 @@
 import WFSFormat from 'ol/format/WFS.js';
-import axios from 'axios';
 import Vector from './vector.js';
 import Projection from '../util/projection.js';
 import { VcsClassRegistry } from '../classRegistry.js';
+import { requestJson } from '../util/fetch.js';
 
 /**
  * @typedef {VectorOptions} WFSOptions
@@ -116,14 +116,14 @@ class WFS extends Vector {
           ...this.getFeaturesOptions,
         }));
       const postData = new XMLSerializer().serializeToString(requestDocument);
-      this._dataFetchedPromise = axios.post(this.url, postData, {
+      this._dataFetchedPromise = requestJson(this.url, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/text+xml',
         },
+        body: JSON.stringify(postData),
       })
-        .then((response) => {
-          this._parseWFSData(response.data);
-        })
+        .then(data => this._parseWFSData(data))
         .catch((err) => {
           this.getLogger().info(`Could not send request for loading layer content (${err.message})`);
           return Promise.reject(err);

@@ -17,11 +17,12 @@ import {
 import TweenCollection from '@vcmap/cesium/Source/Scene/TweenCollection.js';
 import ContextLimits from '@vcmap/cesium/Source/Renderer/ContextLimits.js';
 
-import defaultTileset from '../../../examples/data/buildings/tileset.json';
 import CesiumTilesetLayer from '../../../src/vcs/vcm/layer/cesiumTileset.js';
 import DataSource from '../../../src/vcs/vcm/layer/dataSource.js';
 import CesiumMap from '../../../src/vcs/vcm/maps/cesium.js';
+import importJSON from './importJSON.js';
 
+const defaultTileset = await importJSON('./examples/data/buildings/tileset.json');
 defaultTileset.root.children = [];
 defaultTileset.properties = {};
 

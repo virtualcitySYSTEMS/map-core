@@ -4,8 +4,8 @@ import { fromExtent } from 'ol/geom/Polygon.js';
 import Point from 'ol/geom/Point.js';
 import Style from 'ol/style/Style.js';
 
+import nock from 'nock';
 import FeatureStore, { isTiledFeature } from '../../../../src/vcs/vcm/layer/featureStore.js';
-import testGeoJSON from './testGeoJSON.json';
 import { getFramework } from '../../helpers/framework.js';
 import Vector from '../../../../src/vcs/vcm/layer/vector.js';
 import VectorStyleItem, { vectorStyleSymbol, defaultVectorStyle } from '../../../../src/vcs/vcm/util/style/vectorStyleItem.js';
@@ -20,6 +20,9 @@ import CesiumTileset from '../../../../src/vcs/vcm/layer/cesiumTileset.js';
 import { vcsLayerName } from '../../../../src/vcs/vcm/layer/layerSymbols.js';
 import Extent from '../../../../src/vcs/vcm/util/extent.js';
 import { wgs84Projection } from '../../../../src/vcs/vcm/util/projection.js';
+import importJSON from '../../helpers/importJSON.js';
+
+const testGeoJSON = await importJSON('./tests/data/testGeoJSON.json');
 
 describe('vcs.vcm.layer.FeatureStore', () => {
   /** @type {import("@vcmap/core").FeatureStore} */
@@ -570,18 +573,16 @@ describe('vcs.vcm.layer.FeatureStore', () => {
 
   describe('loading of 2D static data', () => {
     let featureStore;
+    let scope;
 
     before(async () => {
-      const server = sandbox.useFakeServer();
-      server.autoRespond = true;
-      server.respondImmediately = true;
-      server.respondWith('/static.json', (res) => {
-        res.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(testGeoJSON.featureCollection));
-      });
+      scope = nock('http://myFeatureProvider')
+        .get('/static.json')
+        .reply(200, JSON.stringify(testGeoJSON.featureCollection));
 
       featureStore = new FeatureStore({
         staticRepresentation: {
-          twoDim: '/static.json',
+          twoDim: 'http://myFeatureProvider/static.json',
         },
       });
       await featureStore._loadTwoDim();
@@ -589,7 +590,10 @@ describe('vcs.vcm.layer.FeatureStore', () => {
 
     after(() => {
       featureStore.destroy();
+      nock.cleanAll();
     });
+
+    afterEach(() => scope.done());
 
     it('should load all features into the static feature source', () => {
       expect(featureStore._twoDimStaticSource.getFeatures()).to.have.lengthOf(2);

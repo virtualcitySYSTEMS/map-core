@@ -1,10 +1,10 @@
-import axios from 'axios';
 import { createXYZ } from 'ol/tilegrid.js';
 import { cartesian2DDistance } from '../util/math.js';
 import { parseImageData, parseImageMeta, parseLegacyImageData, getVersionFromImageJson } from './parseImageJson.js';
 import VcsEvent from '../event/vcsEvent.js';
 import { getTerrainProviderForUrl } from '../layer/terrainHelpers.js';
 import Projection from '../util/projection.js';
+import { requestJson } from '../util/fetch.js';
 
 /**
  * @typedef {Object} ObliqueDataSetImagesLoaded
@@ -156,9 +156,10 @@ class ObliqueDataSet {
     if (!this._loadingPromise) {
       this._state = DataState.LOADING;
 
-      this._loadingPromise = axios.get(this.url)
-        .then(({ data }) => {
-          this._initialize(data);
+      this._loadingPromise = requestJson(this.url)
+        .then(data => this._initialize(data))
+        .catch((err) => {
+          return Promise.reject(err);
         });
     }
     return this._loadingPromise;
@@ -326,9 +327,8 @@ class ObliqueDataSet {
     }
 
     this._tiles.set(stringTileCoordinates, DataState.LOADING);
-    const promise = axios
-      .get(`${this.baseUrl}/${stringTileCoordinates}.json`)
-      .then(({ data }) => {
+    const promise = requestJson(`${this.baseUrl}/${stringTileCoordinates}.json`)
+      .then((data) => {
         const images = parseImageData(data, this._imageMetas);
         if (images.length > 0) {
           this._images = this._images.concat(images);

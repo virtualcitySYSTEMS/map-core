@@ -2,11 +2,13 @@ import Projection from '../../../src/vcs/vcm/util/projection.js';
 import Oblique from '../../../src/vcs/vcm/maps/oblique.js';
 import ViewPoint from '../../../src/vcs/vcm/util/viewpoint.js';
 
-import imageJson from '../../data/oblique/imageData/imagev35.json';
 import { getTerrainProvider } from './terrain/terrainData.js';
 import { obliqueCollectionCollection } from '../../../src/vcs/vcm/globalCollections.js';
 import ObliqueCollection from '../../../src/vcs/vcm/oblique/ObliqueCollection.js';
 import ObliqueDataSet from '../../../src/vcs/vcm/oblique/ObliqueDataSet.js';
+import importJSON from './importJSON.js';
+
+const imageJson = await importJSON('./tests/data/oblique/imageData/imagev35.json');
 
 /**
  * Center point of first image
@@ -41,10 +43,10 @@ function getStartingViewpoint() {
 
 /**
  * returns an oblique Dataset
- * @param {Object=} server if provided the dataset is initialized with a terrainProvider
+ * @param {Scope=} scope if provided the dataset is initialized with a terrainProvider
  * @returns {vcs-oblique/ObliqueDataSet}
  */
-export function getObliqueDataSet(server) {
+export function getObliqueDataSet(scope) {
   if (!obliqueProjection) {
     obliqueProjection = new Projection({
       epsg: 'EPSG:25833',
@@ -52,8 +54,8 @@ export function getObliqueDataSet(server) {
     });
   }
   let terrainProvider;
-  if (server) {
-    getTerrainProvider(server);
+  if (scope) {
+    getTerrainProvider(scope);
     terrainProvider = {
       url: 'http://localhost/terrain/',
     };
@@ -79,11 +81,11 @@ export function getObliqueCollection(obliqueDataSets) {
 
 /**
  * @param {ObliqueOptions} mapOptions
- * @param {Object=} server optional server, if provided the map will be initialized with a terrainProvider
+ * @param {Scope=} scope optional server, if provided the map will be initialized with a terrainProvider
  * @returns {Promise<Oblique>}
  */
-export async function getObliqueMap(mapOptions = {}, server) {
-  const obliqueDataSet = getObliqueDataSet(server);
+export async function getObliqueMap(mapOptions = {}, scope) {
+  const obliqueDataSet = getObliqueDataSet(scope);
   const obliqueCollection = getObliqueCollection([obliqueDataSet]);
   const map = new Oblique(mapOptions);
   await map.initialize();
@@ -93,15 +95,15 @@ export async function getObliqueMap(mapOptions = {}, server) {
 
 /**
  * @param {vcs.vcm.Framework} framework
- * @param {Object=} server optional server, if provided the map will be initialized with a terrainProvider
+ * @param {Scope=} scope optional server, if provided the map will be initialized with a terrainProvider
  * @param {ViewPoint=} startingVP
  * @returns {Promise<Oblique>}
  */
-export async function setObliqueMap(framework, server, startingVP) {
+export async function setObliqueMap(framework, scope, startingVP) {
   const map = await getObliqueMap({
     layerCollection: framework.layerCollection,
     target: framework.mapcontainer,
-  }, server);
+  }, scope);
   framework.addMap(map);
   obliqueCollectionCollection.add(map.collection);
   await framework.activateMap(map.name);

@@ -1,3 +1,4 @@
+import nock from 'nock';
 import OLMap from 'ol/Map.js';
 import View from 'ol/View.js';
 import TileLayer from 'ol/layer/Tile.js';
@@ -7,13 +8,17 @@ import ObliqueProvider from '../../../../src/vcs/vcm/oblique/ObliqueProvider.js'
 import setTiledObliqueImageServer, { tiledMercatorCoordinate, tiledMercatorCoordinate2, imagev35MercatorCoordinate } from '../../helpers/obliqueData.js';
 import { ObliqueViewDirection } from '../../../../src/vcs/vcm/oblique/ObliqueViewDirection.js';
 import { setTerrainServer } from '../../helpers/terrain/terrainData.js';
-import imageJson from '../../../data/oblique/imageData/imagev35.json';
 import { getCesiumEventSpy } from '../../helpers/cesiumHelpers.js';
 import Projection from '../../../../src/vcs/vcm/util/projection.js';
 import { getTerrainProviderForUrl } from '../../../../src/vcs/vcm/layer/terrainHelpers.js';
+import { transformFromImage } from '../../../../src/vcs/vcm/oblique/helpers.js';
+import importJSON from '../../helpers/importJSON.js';
+
+const imageJson = await importJSON('./tests/data/oblique/imageData/imagev35.json');
 
 describe('ObliqueProvider', () => {
   let sandbox;
+  let scope;
   let olMap;
   let projection;
   let url;
@@ -23,11 +28,11 @@ describe('ObliqueProvider', () => {
     olMap = new OLMap({ target, view: new View() });
     sandbox = sinon.createSandbox();
     url = 'http://localhost/tiledOblique/image.json';
-    projection = new Projection({ epsg: 'EPSG:25833' });
+    projection = new Projection({ epsg: 'EPSG:25833', proj4: '+proj=utm +zone=33 +ellps=GRS80 +units=m +no_defs ' });
   });
 
   after(() => {
-    sandbox.restore();
+    nock.cleanAll();
     olMap.setTarget(null);
   });
 
@@ -185,7 +190,7 @@ describe('ObliqueProvider', () => {
       collection = new ObliqueCollection({
         dataSets: [new ObliqueDataSet('http://localhost/tiledOblique/image.json', projection)],
       });
-      setTiledObliqueImageServer(sandbox.useFakeServer());
+      setTiledObliqueImageServer();
       await collection.load();
       obliqueProvider.setCollection(collection);
       obliqueProvider.activate();
@@ -202,16 +207,27 @@ describe('ObliqueProvider', () => {
       expect(obliqueProvider.loading).to.be.false;
     });
 
-    it('should load data at the current center, if it is PENDING', () => {
+    it('should load data at the current center, if it is PENDING', async () => {
       olMap.getView().setCenter([0, 0]);
       olMap.renderSync();
       expect(collection.getTiles()).to.have.property('12/2199/1344', DataState.LOADING);
+      await collection.loadDataForExtent([
+        1486725.4975735783,
+        6887267.44966054,
+        1487125.4975735783,
+        6887667.44966054,
+      ]); // wait for extent to be loaded before destroying.
     });
 
-    it('should load the next image, if the data is READY', () => {
+    it('should load the next image, if the data is READY', async () => {
       olMap.getView().setCenter(obliqueProvider.currentImage.meta.size);
       olMap.renderSync();
       expect(obliqueProvider.loading).to.be.true;
+      const mercatorCoords = await transformFromImage(
+        obliqueProvider.currentImage,
+        obliqueProvider.currentImage.meta.size,
+      );
+      await collection.loadDataForCoordinate(mercatorCoords);
     });
   });
 
@@ -221,10 +237,12 @@ describe('ObliqueProvider', () => {
     let image;
 
     before(async () => {
-      setTerrainServer(sandbox.useFakeServer());
-      const terrainProvider = getTerrainProviderForUrl({ url: 'http://localhost/terrain' });
+      scope = nock('http://localhost');
+      setTerrainServer(scope);
+      setTiledObliqueImageServer(scope);
+      const terrainProvider = getTerrainProviderForUrl({ url: 'http://localhost/terrain/' });
       await terrainProvider.readyPromise;
-      const dataSet = new ObliqueDataSet(url, projection, { url: 'http://localhost/terrain' });
+      const dataSet = new ObliqueDataSet(url, projection, { url: 'http://localhost/terrain/' });
       dataSet.initialize(imageJson);
       collection = new ObliqueCollection({ dataSets: [dataSet] });
       await collection.load();

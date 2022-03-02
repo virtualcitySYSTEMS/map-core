@@ -1,10 +1,10 @@
-import axios from 'axios';
 import { unByKey } from 'ol/Observable.js';
 import Feature from 'ol/Feature.js';
 import { check } from '@vcsuite/check';
 import { featureStoreState, featureStoreStateSymbol } from './featureStoreState.js';
 import { parseGeoJSON, writeGeoJSONFeature } from './geojsonHelpers.js';
 import VcsObject from '../object.js';
+import { requestJson } from '../util/fetch.js';
 
 /**
  * @typedef {Object} FeatureStoreTrackResults
@@ -25,6 +25,65 @@ import VcsObject from '../object.js';
  * @typedef {Object} FeatureStoreChangesValues
  * @property {boolean} changed
  */
+
+/**
+ * @typedef {Object} CommitAction
+ * @property {string} action
+ * @property {import("ol/format/GeoJSON").GeoJSONFeature} feature
+ * @property {import("ol").Feature<import("ol/geom/Geometry").default>} original
+ * @property {function(string=):void} success
+ */
+
+/**
+ * @param {Set<import("ol").Feature<import("ol/geom/Geometry").default>>} added
+ * @param {Set<import("ol").Feature<import("ol/geom/Geometry").default>>} edited
+ * @param {Set<import("ol").Feature<import("ol/geom/Geometry").default>>} removed
+ * @returns {Array<CommitAction>}
+ * @private
+ */
+export function createCommitActions(added, edited, removed) {
+  const actions = [];
+  added.forEach((f) => {
+    const feature = writeGeoJSONFeature(f, { writeStyle: true });
+    actions.push({
+      action: 'add',
+      feature,
+      original: f,
+      success(data) {
+        f.setId(data);
+        f[featureStoreStateSymbol] = featureStoreState.DYNAMIC;
+      },
+    });
+  });
+
+  edited.forEach((f) => {
+    const feature = writeGeoJSONFeature(f, { writeStyle: true });
+    feature._id = f.getId();
+    feature.geomety = 'test'; // XXX why test???
+    actions.push({
+      action: 'edit',
+      original: f,
+      feature,
+      success() {
+        if (f[featureStoreStateSymbol] === featureStoreState.STATIC) {
+          f[featureStoreStateSymbol] = featureStoreState.EDITED;
+        }
+      },
+    });
+  });
+
+  removed.forEach((f) => {
+    const _id = f.getId();
+    actions.push({
+      original: f,
+      action: 'remove',
+      feature: { _id },
+      success() {},
+    });
+  });
+
+  return actions;
+}
 
 /**
  * do not construct directly, use the layers .changeTracker instead
@@ -107,85 +166,42 @@ class FeatureStoreChanges extends VcsObject {
    * @returns {Promise<void>}
    * @api
    */
-  commitChanges(url) {
-    const actions = [];
-    this._addedFeatures.forEach((f) => {
-      const feature = writeGeoJSONFeature(f, { writeStyle: true });
-      actions.push({
-        action: 'add',
-        feature,
-        original: f,
-        success(data) {
-          f.setId(data);
-          f[featureStoreStateSymbol] = featureStoreState.DYNAMIC;
+  async commitChanges(url) {
+    const actions = createCommitActions(this._addedFeatures, this._editedFeatures, this._removedFeatures);
+    if (actions.length > 0) {
+      const data = await requestJson(url.toString(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify(actions.map(a => ({ action: a.action, feature: a.feature }))),
       });
-    });
 
-    this._editedFeatures.forEach((f) => {
-      const feature = writeGeoJSONFeature(f, { writeStyle: true });
-      feature._id = f.getId();
-      feature.geomety = 'test';
-      actions.push({
-        action: 'edit',
-        original: f,
-        feature,
-        success() {
-          if (f[featureStoreStateSymbol] === featureStoreState.STATIC) {
-            f[featureStoreStateSymbol] = featureStoreState.EDITED;
+      const failures = data.failedActions.map(({ index, error }) => {
+        const action = actions[index];
+        this.getLogger().log(`failed action ${action.action}: ${error}`);
+        actions[index] = null;
+        return this._resetFeature(action.original);
+      });
+
+      actions
+        .filter(a => a)
+        .forEach(({ action, success }) => {
+          if (action === 'add') {
+            success(data.insertedIds.shift()._id); // XXX should this be shift or should we find the index?
+          } else {
+            success();
           }
-        },
-      });
-    });
-
-    this._removedFeatures.forEach((f) => {
-      const _id = f.getId();
-      actions.push({
-        original: f,
-        action: 'remove',
-        feature: { _id },
-        success() {},
-      });
-    });
-    /** @type {Promise<void>} */
-    let promise = Promise.resolve();
-    if (actions.length) {
-      // @ts-ignore
-      promise = axios.post(url.toString(), actions.map(a => ({ action: a.action, feature: a.feature })))
-        .then(({ data }) => {
-          const failures = data.failedActions.map(({ index, error }) => {
-            const action = actions[index];
-            this.getLogger().log(`failed action ${action.action}: ${error}`);
-            actions[index] = null;
-            return this._resetFeature(action.original);
-          });
-
-          actions
-            .filter(a => a)
-            .forEach(({ action, success }) => {
-              if (action === 'add') {
-                success(data.insertedIds.shift()._id); // XXX should this be shift or should we find the index?
-              } else {
-                success();
-              }
-            });
-          return Promise.all(failures);
         });
-    }
-
-    return promise
-      .then(() => {
-        const promises = [];
-        this._convertedFeatures.forEach((f) => { promises.push(this._resetFeature(f)); });
-        return Promise.all(promises);
-      })
-      .then(() => {
-        this._resetValues();
-      })
-      .catch((err) => {
-        this._resetValues();
+      await Promise.all(failures);
+    } else {
+      try {
+        await Promise.all([...this._convertedFeatures].map(async (f) => { await this._resetFeature(f); }));
+      } catch (err) {
         this.getLogger().error(err.message);
-      });
+      }
+      this._resetValues();
+    }
   }
 
   /**

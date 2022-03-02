@@ -1,4 +1,5 @@
 import { Cartographic, Ellipsoid } from '@vcmap/cesium';
+import nock from 'nock';
 import { setCesiumMap } from '../../helpers/cesiumHelpers.js';
 import { getFramework } from '../../helpers/framework.js';
 import CameraLimiter, { CameraLimiterMode } from '../../../../src/vcs/vcm/maps/cameraLimiter.js';
@@ -9,6 +10,7 @@ import { mercatorCoordinates } from '../../helpers/obliqueHelpers.js';
 
 describe('vcs.vcm.maps.CameraLimiter', () => {
   let sandbox;
+  let scope;
   let sampleTerrain;
   let sampleTerrainMostDetailed;
   let camera;
@@ -25,13 +27,19 @@ describe('vcs.vcm.maps.CameraLimiter', () => {
 
   after(() => {
     resetFramework();
+    nock.cleanAll();
   });
 
   describe('DISTANCE mode', () => {
     /** @type {import("@vcmap/core").CameraLimiter} */
     let cameraLimiter;
+
+    before(() => {
+      scope = nock('http://localhost');
+      setTerrainServer(scope);
+    });
+
     beforeEach(() => {
-      setTerrainServer(sandbox.useFakeServer());
       cameraLimiter = new CameraLimiter({
         mode: CameraLimiterMode.DISTANCE,
         terrainUrl: 'http://localhost/terrain/',

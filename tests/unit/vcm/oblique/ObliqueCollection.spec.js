@@ -1,12 +1,15 @@
+import nock from 'nock';
 import { boundingExtent } from 'ol/extent.js';
 import Feature from 'ol/Feature.js';
 import ObliqueCollection from '../../../../src/vcs/vcm/oblique/ObliqueCollection.js';
 import ObliqueDataSet, { DataState } from '../../../../src/vcs/vcm/oblique/ObliqueDataSet.js';
-import imageJson from '../../../data/oblique/imageData/imagev35.json';
-import setTiledObliqueImageServer, { tiledMercatorCoordinate, tiledMercatorCoordinate2 } from '../../helpers/obliqueData.js';
+import getTiledObliqueImageServer, { tiledMercatorCoordinate, tiledMercatorCoordinate2 } from '../../helpers/obliqueData.js';
 import { ObliqueViewDirection } from '../../../../src/vcs/vcm/oblique/ObliqueViewDirection.js';
 import { getCesiumEventSpy } from '../../helpers/cesiumHelpers.js';
 import Projection from '../../../../src/vcs/vcm/util/projection.js';
+import importJSON from '../../helpers/importJSON.js';
+
+const imageJson = await importJSON('./tests/data/oblique/imageData/imagev35.json');
 
 describe('ObliqueCollection', () => {
   let projection;
@@ -14,13 +17,14 @@ describe('ObliqueCollection', () => {
   let sandbox;
 
   before(() => {
-    projection = new Projection({ epsg: 'EPSG:25833' });
+    projection = new Projection({ epsg: 'EPSG:25833', proj4: '+proj=utm +zone=33 +ellps=GRS80 +units=m +no_defs ' });
     url = 'http://localhost/tiledOblique/image.json';
     sandbox = sinon.createSandbox();
   });
 
   afterEach(() => {
     sandbox.restore();
+    nock.cleanAll();
   });
 
   describe('adding datasets', () => {
@@ -122,7 +126,7 @@ describe('ObliqueCollection', () => {
       describe('with a loaded collection', () => {
         beforeEach(async () => {
           await obliqueCollection.load();
-          setTiledObliqueImageServer(sandbox.useFakeServer());
+          getTiledObliqueImageServer();
         });
 
         it('should load the dataset', async () => {
@@ -146,7 +150,7 @@ describe('ObliqueCollection', () => {
     beforeEach(() => {
       dataSet = new ObliqueDataSet(url, projection);
       obliqueCollection = new ObliqueCollection({ dataSets: [dataSet] });
-      setTiledObliqueImageServer(sandbox.useFakeServer());
+      getTiledObliqueImageServer();
     });
 
     afterEach(() => {
@@ -179,7 +183,7 @@ describe('ObliqueCollection', () => {
     beforeEach(async () => {
       dataSet = new ObliqueDataSet(url, projection);
       obliqueCollection = new ObliqueCollection({ dataSets: [dataSet] });
-      setTiledObliqueImageServer(sandbox.useFakeServer());
+      getTiledObliqueImageServer();
       await obliqueCollection.load();
     });
 
@@ -218,7 +222,7 @@ describe('ObliqueCollection', () => {
     beforeEach(async () => {
       dataSet = new ObliqueDataSet(url, projection);
       obliqueCollection = new ObliqueCollection({ dataSets: [dataSet] });
-      setTiledObliqueImageServer(sandbox.useFakeServer());
+      getTiledObliqueImageServer();
       await obliqueCollection.load();
     });
 
@@ -258,7 +262,7 @@ describe('ObliqueCollection', () => {
     beforeEach(async () => {
       dataSet = new ObliqueDataSet(url, projection);
       obliqueCollection = new ObliqueCollection({ dataSets: [dataSet] });
-      setTiledObliqueImageServer(sandbox.useFakeServer());
+      getTiledObliqueImageServer();
       await obliqueCollection.load();
     });
 
@@ -283,7 +287,7 @@ describe('ObliqueCollection', () => {
     beforeEach(async () => {
       dataSet = new ObliqueDataSet(url, projection);
       obliqueCollection = new ObliqueCollection({ dataSets: [dataSet] });
-      setTiledObliqueImageServer(sandbox.useFakeServer());
+      getTiledObliqueImageServer();
       await obliqueCollection.load();
     });
 
@@ -338,8 +342,8 @@ describe('ObliqueCollection', () => {
       });
 
       it('should return undefined, if there is no image adjacent to a given image', async () => {
-        const coord = [tiledMercatorCoordinate2[0] - 2000, tiledMercatorCoordinate2[1] + 2000];
-        const image = obliqueCollection.loadImageForCoordinate(coord, ObliqueViewDirection.NORTH);
+        const coord = [tiledMercatorCoordinate2[0] - 50000, tiledMercatorCoordinate2[1] + 50000];
+        const image = await obliqueCollection.loadImageForCoordinate(coord, ObliqueViewDirection.NORTH);
         const adjacentImage = await obliqueCollection.loadAdjacentImage(image, Math.PI / 2);
         expect(adjacentImage).to.be.undefined;
       });
@@ -352,9 +356,9 @@ describe('ObliqueCollection', () => {
       let dataSet;
 
       before(async () => {
-        setTiledObliqueImageServer(sandbox.useFakeServer());
         dataSet = new ObliqueDataSet(url, projection);
         obliqueCollection = new ObliqueCollection({ dataSets: [dataSet] });
+        getTiledObliqueImageServer();
         await obliqueCollection.load();
       });
 
@@ -374,7 +378,7 @@ describe('ObliqueCollection', () => {
       });
 
       it('should set the tiles state on the feature', async () => {
-        setTiledObliqueImageServer(sandbox.useFakeServer());
+        getTiledObliqueImageServer();
         const { tileFeatureSource } = obliqueCollection;
         const tile = tileFeatureSource.getFeatureById('12/2199/1342');
         expect(tile.get('state')).to.equal(DataState.PENDING);
@@ -388,7 +392,7 @@ describe('ObliqueCollection', () => {
       let dataSet;
 
       before(async () => {
-        setTiledObliqueImageServer(sandbox.useFakeServer());
+        getTiledObliqueImageServer();
         dataSet = new ObliqueDataSet(url, projection);
         obliqueCollection = new ObliqueCollection({ dataSets: [dataSet] });
         await obliqueCollection.load();

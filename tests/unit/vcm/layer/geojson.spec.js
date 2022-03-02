@@ -1,36 +1,36 @@
+import nock from 'nock';
 import Feature from 'ol/Feature.js';
 import { ClassificationType } from '@vcmap/cesium';
 import GeoJSON, { featureFromOptions } from '../../../../src/vcs/vcm/layer/geojson.js';
-import testGeoJSON from './testGeoJSON.json';
 import resetFramework from '../../helpers/resetFramework.js';
 import { setOpenlayersMap } from '../../helpers/openlayers.js';
 import { getFramework } from '../../helpers/framework.js';
+import importJSON from '../../helpers/importJSON.js';
+
+const testGeoJSON = await importJSON('./tests/data/testGeoJSON.json');
 
 describe('vcs.vcm.layer.GeoJSON', () => {
-  let sandbox;
+  let scope;
 
   before(async () => {
     await setOpenlayersMap(getFramework());
-    sandbox = sinon.createSandbox();
   });
 
   after(() => {
     resetFramework();
+    nock.cleanAll();
   });
 
   describe('fetching data for a layer', () => {
     let geojsonLayer;
 
     before(async () => {
-      const server = sandbox.useFakeServer();
-      server.autoRespond = true;
-      server.respondImmediately = true;
-      server.respondWith(/test.json/, (res) => {
-        res.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(testGeoJSON.featureCollection));
-      });
+      scope = nock('http://myGeoJsonProvider')
+        .get('/test.json')
+        .reply(200, JSON.stringify(testGeoJSON.featureCollection));
 
       geojsonLayer = new GeoJSON({
-        url: 'http://localhost/test.json',
+        url: 'http://myGeoJsonProvider/test.json',
         features: [JSON.parse(JSON.stringify(testGeoJSON.featureWithStyle))],
       });
 
@@ -38,7 +38,7 @@ describe('vcs.vcm.layer.GeoJSON', () => {
     });
 
     after(() => {
-      sandbox.restore();
+      scope.done();
       geojsonLayer.destroy();
     });
 
@@ -65,11 +65,9 @@ describe('vcs.vcm.layer.GeoJSON', () => {
     let geojsonLayer;
 
     before(async () => {
-      const server = sandbox.useFakeServer();
-      server.autoRespond = true;
-      server.respondImmediately = true;
-      server.respondWith(/test.json/, (res) => {
-        res.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify({
+      scope = nock('http://myGeoJsonProvider')
+        .get('/test.json')
+        .reply(200, JSON.stringify({
           type: 'FeatureCollection',
           vcsMeta: {
             classificationType: 'terrain',
@@ -80,9 +78,9 @@ describe('vcs.vcm.layer.GeoJSON', () => {
           },
           features: [],
         }));
-      });
+
       geojsonLayer = new GeoJSON({
-        url: 'http://localhost/test.json',
+        url: 'http://myGeoJsonProvider/test.json',
         vectorProperties: {
           classificationType: 'both',
           storeysBelowGround: 2,
@@ -93,7 +91,7 @@ describe('vcs.vcm.layer.GeoJSON', () => {
     });
 
     after(() => {
-      sandbox.restore();
+      scope.done();
       geojsonLayer.destroy();
     });
 
@@ -115,15 +113,13 @@ describe('vcs.vcm.layer.GeoJSON', () => {
     let originalConfig;
 
     before(async () => {
-      const server = sandbox.useFakeServer();
-      server.autoRespond = true;
-      server.respondImmediately = true;
-      server.respondWith(/test.json/, (res) => {
-        res.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(testGeoJSON.featureCollection));
-      });
+      scope = nock('http://myGeoJsonProvider')
+        .get('/test.json')
+        .times(2)
+        .reply(200, JSON.stringify(testGeoJSON.featureCollection));
 
       geojsonLayer = new GeoJSON({
-        url: 'http://localhost/test.json',
+        url: 'http://myGeoJsonProvider/test.json',
         features: [JSON.parse(JSON.stringify(testGeoJSON.featureWithStyle))],
       });
 
@@ -134,7 +130,7 @@ describe('vcs.vcm.layer.GeoJSON', () => {
     });
 
     after(() => {
-      sandbox.restore();
+      scope.done();
       geojsonLayer.destroy();
     });
 
@@ -167,7 +163,7 @@ describe('vcs.vcm.layer.GeoJSON', () => {
 
       before(() => {
         inputConfig = {
-          url: 'http://localhost/test.json',
+          url: 'http://myGeoJsonProvider/test.json',
           features: [JSON.parse(JSON.stringify(testGeoJSON.featureWithStyle))],
         };
         configuredLayer = new GeoJSON(inputConfig);

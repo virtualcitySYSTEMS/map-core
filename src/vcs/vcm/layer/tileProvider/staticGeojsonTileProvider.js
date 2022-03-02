@@ -1,6 +1,6 @@
-import axios from 'axios';
 import { parseGeoJSON } from '../geojsonHelpers.js';
 import TileProvider from './tileProvider.js';
+import { requestJson } from '../../util/fetch.js';
 
 /**
  * @typedef {TileProviderOptions} StaticGeojsonTileProviderOptions
@@ -58,8 +58,8 @@ class StaticGeojsonTileProvider extends TileProvider {
    */
   // eslint-disable-next-line no-unused-vars
   async loader(x, y, z) {
-    const response = await axios.get(this.url);
-    const { features } = parseGeoJSON(response.data, { dynamicStyle: true });
+    const data = await requestJson(this.url);
+    const { features } = parseGeoJSON(data, { dynamicStyle: true });
     return features;
   }
 }

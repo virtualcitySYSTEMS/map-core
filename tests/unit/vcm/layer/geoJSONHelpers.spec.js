@@ -2,7 +2,6 @@ import Point from 'ol/geom/Point.js';
 import Circle from 'ol/geom/Circle.js';
 import Feature from 'ol/Feature.js';
 import Polygon from 'ol/geom/Polygon.js';
-import testGeoJSON from './testGeoJSON.json';
 import {
   getEPSGCodeFromGeojson,
   parseGeoJSON,
@@ -13,6 +12,9 @@ import {
 import Projection, { mercatorProjection, wgs84Projection } from '../../../../src/vcs/vcm/util/projection.js';
 import Vector from '../../../../src/vcs/vcm/layer/vector.js';
 import { featureStoreState, featureStoreStateSymbol } from '../../../../src/vcs/vcm/layer/featureStoreState.js';
+import importJSON from '../../helpers/importJSON.js';
+
+const testGeoJSON = await importJSON('./tests/data/testGeoJSON.json');
 
 describe('vcs.vcm.layer.GeoJSON', () => {
   let features;

@@ -4,13 +4,18 @@ import GeoJSON from 'ol/format/GeoJSON.js';
 import GML2 from 'ol/format/GML2.js';
 import GML3 from 'ol/format/GML3.js';
 import Point from 'ol/geom/Point.js';
+import nock from 'nock';
 import WMSFeatureProvider, { getFormat } from '../../../../../src/vcs/vcm/util/featureProvider/wmsFeatureProvider.js';
 import { mercatorProjection } from '../../../../../src/vcs/vcm/util/projection.js';
 import Extent from '../../../../../src/vcs/vcm/util/extent.js';
 
 describe('vcs.vcm.util.featureProvider.WMSFeatureProvider', () => {
+  after(() => {
+    nock.cleanAll();
+  });
+
   describe('getFeaturesByCoordinate', () => {
-    let sandbox;
+    let scope;
     let testGeojson;
     let provider;
     let features;
@@ -38,20 +43,16 @@ describe('vcs.vcm.util.featureProvider.WMSFeatureProvider', () => {
           },
         ],
       };
-      sandbox = sinon.createSandbox();
-      const server = sandbox.useFakeServer();
-      server.autoRespond = true;
-      server.respondImmediately = true;
-
-      server.respondWith(
-        /\/wms\?[^\s\S]*/,
-        [200, { 'Content-Type': 'application/json' }, JSON.stringify(testGeojson)],
-      );
+      scope = nock('http://myWmsFeatureProvider')
+        .get(/\/wms\?(\S)*/)
+        .reply(() => {
+          return [200, testGeojson, { 'Content-Type': 'application/json' }];
+        });
 
       provider = new WMSFeatureProvider(
         'test',
         {
-          url: '/wms',
+          url: 'http://myWmsFeatureProvider/wms',
           parameters: {
             LAYERS: 'one',
           },
@@ -79,7 +80,7 @@ describe('vcs.vcm.util.featureProvider.WMSFeatureProvider', () => {
     });
 
     after(() => {
-      sandbox.restore();
+      scope.done();
       provider.destroy();
     });
   });

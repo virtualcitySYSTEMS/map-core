@@ -1,8 +1,8 @@
-import axios from 'axios';
 import { Math as CesiumMath, Rectangle } from '@vcmap/cesium';
 import { parseGeoJSON } from '../geojsonHelpers.js';
 import TileProvider from './tileProvider.js';
 import { getCurrentLocale } from '../../util/locale.js';
+import { requestJson } from '../../util/fetch.js';
 
 /**
  * @typedef {TileProviderOptions} URLTemplateTileProviderOptions
@@ -97,8 +97,8 @@ class URLTemplateTileProvider extends TileProvider {
   async loader(x, y, z) {
     const rectangle = this.tilingScheme.tileXYToRectangle(x, y, z);
     const url = getURL(this.url, x, y, z, rectangle);
-    const response = await axios.get(url);
-    const { features } = parseGeoJSON(response.data, { dynamicStyle: true });
+    const data = await requestJson(url);
+    const { features } = parseGeoJSON(data, { dynamicStyle: true });
     return features;
   }
 }

@@ -1,36 +1,25 @@
-import axios from 'axios';
+import nock from 'nock';
 import Feature from 'ol/Feature.js';
 import StaticGeojsonTileProvider from '../../../../../src/vcs/vcm/layer/tileProvider/staticGeojsonTileProvider.js';
-import testGeoJSON from '../testGeoJSON.json';
+import importJSON from '../../../helpers/importJSON.js';
 
+const testGeoJSON = await importJSON('./tests/data/testGeoJSON.json');
 
 describe('vcs.vcm.layer.tileProvider.StaticGeojsonTileProvider', () => {
-  let sandbox;
-  let axiosStub;
   /** @type {import("@vcmap/core").StaticGeojsonTileProvider} */
   let tileProvider;
 
   before(() => {
-    sandbox = sinon.createSandbox();
     tileProvider = new StaticGeojsonTileProvider({
-      url: 'testURL',
+      url: 'http://myStaticGeojsonTileProvider/tile.json',
       tileCacheSize: 10,
       baseLevels: [10],
     });
   });
 
-  beforeEach(() => {
-    axiosStub = sandbox.stub(axios, 'get').resolves({
-      data: testGeoJSON.featureCollection,
-    });
-  });
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   after(() => {
     tileProvider.destroy();
+    nock.cleanAll();
   });
 
   describe('constructor', () => {
@@ -40,15 +29,23 @@ describe('vcs.vcm.layer.tileProvider.StaticGeojsonTileProvider', () => {
   });
 
   describe('loader', () => {
-    it('should request data with given url', async () => {
-      await tileProvider.loader(1, 2, 3);
-      expect(axiosStub).to.have.been.calledWith('testURL');
+    let scope;
+    let loaded;
+
+    before(() => {
+      scope = nock('http://myStaticGeojsonTileProvider')
+        .get('/tile.json')
+        .reply(200, testGeoJSON.featureCollection);
+    });
+
+    after(() => {
+      scope.done();
     });
 
     it('should return parsed features', async () => {
-      const features = await tileProvider.loader(1, 2, 3);
-      expect(features).to.have.lengthOf(2);
-      expect(features[0]).to.be.instanceOf(Feature);
+      loaded = await tileProvider.loader(1, 2, 3);
+      expect(loaded).to.have.lengthOf(2);
+      expect(loaded[0]).to.be.instanceOf(Feature);
     });
   });
 });
