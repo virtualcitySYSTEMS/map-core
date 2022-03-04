@@ -14,6 +14,7 @@ import {
   whiteColor,
 } from './styleHelpers.js';
 import { originalFeatureSymbol } from '../../layer/vectorSymbols.js';
+import { VcsClassRegistry } from '../../classRegistry.js';
 
 /**
  * @typedef {Object} DeclarativeStyleItemConditions
@@ -558,6 +559,7 @@ class DeclarativeStyleItem extends StyleItem {
 }
 
 export default DeclarativeStyleItem;
+VcsClassRegistry.registerClass(DeclarativeStyleItem.className, DeclarativeStyleItem);
 
 /**
  * @type {DeclarativeStyleItem}

@@ -4,6 +4,7 @@ import deepEqual from 'fast-deep-equal';
 import { parseEnumValue } from '@vcsuite/parsers';
 import VcsObject from '../../object.js';
 import VcsEvent from '../../event/vcsEvent.js';
+import { VcsClassRegistry } from '../../classRegistry.js';
 
 /**
  * @namespace style
@@ -241,3 +242,4 @@ class StyleItem extends VcsObject {
 }
 
 export default StyleItem;
+VcsClassRegistry.registerClass(StyleItem.className, StyleItem);

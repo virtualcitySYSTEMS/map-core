@@ -24,6 +24,7 @@ import {
   getDefaultVectorStyleItemOptions,
 } from './styleHelpers.js';
 import { getShapeFromOptions } from './shapesCategory.js';
+import { VcsClassRegistry } from '../../classRegistry.js';
 
 /**
  * @typedef {Object} VectorStyleItemPattern
@@ -907,6 +908,7 @@ export default VectorStyleItem;
  * @export
  */
 export const defaultVectorStyle = new VectorStyleItem(getDefaultVectorStyleItemOptions());
+VcsClassRegistry.registerClass(VectorStyleItem.className, VectorStyleItem);
 
 /**
  * @param {import("@vcmap/cesium").Color} cesiumColor
