@@ -192,6 +192,12 @@ exports.handlers = {
       .replace(/import\("ol"\)\.Feature/g, 'olFeature')
       .replace(/import\("ol\/Feature"\)\.default/g, 'olFeature');
 
+    const overrideCollectionContent = fs.readFileSync('./build/types/overrideCollection.d.ts');
+    const overrideCollectionTypes = overrideCollectionContent.toString()
+      .replace(/import.*;/, '')
+      .replace(/\b(Collection|VcsEvent|LayerCollection|Layer|MapCollection|VcsMap)\b/g, 'core.$1')
+      .replace(/export/g, '');
+
     fs.writeFileSync('./build/types/vcs.d.ts', `/**
  * This file is auto generated and to be used for typechecking only.
  * It allows for the use of global _typedefs_ from jsdocs.
@@ -204,7 +210,11 @@ import * as core from '@vcmap/core';
 import olFeature from 'ol/Feature';
 
 declare global {
+namespace vcs {
+  let apps: Map<string, core.VcsApp>;
+}
 ${joinedTypeDefs}
+${overrideCollectionTypes}
 }
 `);
   },

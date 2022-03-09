@@ -13,7 +13,7 @@ function getLogger() {
 
 /**
  * @param {(Reference|DeclarativeStyleItemOptions|VectorStyleItemOptions|StyleItem|string)=} styleOptions
- * @param {(VectorStyleItem|DeclarativeStyleItem)=} defaultStyle
+ * @param {StyleItem=} defaultStyle
  * @returns {StyleItem}
  */
 // eslint-disable-next-line import/prefer-default-export

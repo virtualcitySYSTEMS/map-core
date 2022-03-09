@@ -1,0 +1,37 @@
+import { Collection, VcsEvent, LayerCollection, Layer, MapCollection, VcsMap } from '@vcmap/core';
+
+export interface OverrideCollectionInterface<T extends any> {
+    replaced: VcsEvent<T>;
+    shadowMap: Map<string, object[]>;
+    override: (item: T) => T;
+    parseItems: (items: object[], contextId: string) => Promise<void>;
+    removeContext: (contextId: string) => Promise<void>;
+    serializeContext: (contextId: string) => object[];
+}
+
+export class OverrideCollection<T extends any> extends Collection<T> implements OverrideCollectionInterface<T> {
+    replaced: VcsEvent<T>;
+    shadowMap: Map<string, object[]>;
+    override: (item: T) => T;
+    parseItems: (items: object[], contextId: string) => Promise<void>;
+    removeContext: (contextId: string) => Promise<void>;
+    serializeContext: (contextId: string) => object[];
+}
+
+export class OverrideLayerCollection extends LayerCollection implements OverrideCollectionInterface<Layer> {
+    replaced: VcsEvent<Layer>;
+    shadowMap: Map<string, object[]>;
+    override: (item: Layer) => Layer;
+    parseItems: (items: object[], contextId: string) => Promise<void>;
+    removeContext: (contextId: string) => Promise<void>;
+    serializeContext: (contextId: string) => object[];
+}
+
+export class OverrideMapCollection extends MapCollection implements OverrideCollectionInterface<VcsMap> {
+    replaced: VcsEvent<VcsMap>;
+    shadowMap: Map<string, object[]>;
+    override: (item: VcsMap) => VcsMap;
+    parseItems: (items: object[], contextId: string) => Promise<void>;
+    removeContext: (contextId: string) => Promise<void>;
+    serializeContext: (contextId: string) => object[];
+}

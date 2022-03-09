@@ -11,6 +11,7 @@ console.log('building type definitions');
 await promiseExec('node node_modules/jsdoc/jsdoc.js -c build/tsd/conf.json');
 console.log('rephrasing...');
 const data = await fs.promises.readFile('./index.d.ts');
+const overrideCollectionData = await fs.promises.readFile('./build/types/overrideCollection.d.ts');
 
 // we need to replace certain _assumptions_ to make this readable by typescript
 const exportData = data.toString()
@@ -26,12 +27,16 @@ const exportData = data.toString()
   .replace(/LRUCache</g, 'import("ol/structs/LRUCache").default<')
   .replace(/extends import\("ol"\).Feature<import\("ol\/geom\/Geometry"\).default>/, 'extends olFeature<Geometry>');
 
+const overrideCollection = overrideCollectionData.toString()
+  .replace(/import.*;/, '');
+
 await fs.promises.writeFile(
   './index.d.ts',
   `import olFeature from 'ol/Feature';
 import Geometry from 'ol/geom/Geometry';
 
 ${exportData}
+${overrideCollection}
 `,
 );
 
