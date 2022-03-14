@@ -23,6 +23,7 @@ import StyleItem from './util/style/styleItem.js';
 import IndexedCollection from './util/indexedCollection.js';
 import VcsEvent from './event/vcsEvent.js';
 import { setDefaultProjectionOptions } from './util/projection.js';
+import Oblique from './maps/oblique.js';
 
 /**
  * @returns {import("@vcsuite/logger").Logger}
@@ -91,7 +92,7 @@ class VcsApp {
       new Collection(),
       getDynamicContextId,
       null,
-      getObjectFromOptions,
+      config => new ObliqueCollection(config),
       ObliqueCollection,
     ); // XXX there is a global for this collection in core.
     /**
@@ -258,6 +259,15 @@ class VcsApp {
         }
       });
 
+    const activeObliqueCollection = [...this._obliqueCollections]
+      .find(c => c[contextIdSymbol] === context.id && c.activeOnStartup);
+
+    if (activeObliqueCollection) {
+      [...this._maps]
+        .filter(m => m instanceof Oblique)
+        .forEach((m) => { /** @type {Oblique} */ (m).setCollection(activeObliqueCollection); });
+    }
+
     if (config.startingMapName) {
       await this._maps.setActiveMap(config.startingMapName);
     } else if (!this._maps.activeMap && this._maps.size > 0) {
@@ -327,6 +337,9 @@ class VcsApp {
     return this._contextMutationPromise;
   }
 
+  /**
+   * Destroys the app and all its collections, their content and ui managers.
+   */
   destroy() {
     Object.defineProperty(this, '_contextMutationPromise', {
       get() {

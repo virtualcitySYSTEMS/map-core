@@ -11,7 +11,7 @@ import { cartesian2DDistance } from '../util/math.js';
  * @property {Array<number>} tileResolution
  * @property {import("@vcmap/core").Projection} projection
  * @property {string} url
- * @property {import("@vcmap/cesium").CesiumTerrainProvider} terrainProvider
+ * @property {import("@vcmap/cesium").CesiumTerrainProvider} [terrainProvider]
  * @property {string} name
  * @property {string|undefined} [format='jpg']
  * @api
@@ -75,7 +75,7 @@ class ObliqueImageMeta {
     this.url = options.url;
     /**
      * An optional terrain provider
-     * @type {import("@vcmap/cesium").CesiumTerrainProvider}
+     * @type {import("@vcmap/cesium").CesiumTerrainProvider|undefined}
      * @api
      */
     this.terrainProvider = options.terrainProvider;

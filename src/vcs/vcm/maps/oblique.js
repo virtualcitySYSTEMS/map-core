@@ -9,12 +9,12 @@ import ViewPoint from '../util/viewpoint.js';
 import BaseOLMap from './baseOLMap.js';
 import VcsMap from './map.js';
 import VcsEvent from '../event/vcsEvent.js';
-import { obliqueCollectionCollection } from '../globalCollections.js';
 import { ObliqueViewDirection as ViewDirection } from '../oblique/ObliqueViewDirection.js';
 import ObliqueProvider from '../oblique/ObliqueProvider.js';
 import ObliqueCollection from '../oblique/ObliqueCollection.js';
 import { transformFromImage } from '../oblique/helpers.js';
 import { VcsClassRegistry } from '../classRegistry.js';
+import DefaultObliqueCollection from '../oblique/defaultObliqueCollection.js';
 
 /**
  * @typedef {Object} ObliqueClickParameters
@@ -28,7 +28,6 @@ import { VcsClassRegistry } from '../classRegistry.js';
  * @property {boolean} [changeOnMoveEnd=false]
  * @property {number} [switchThreshold=0]
  * @property {boolean} [switchOnEdge=true]
- * @property {string|undefined} defaultCollectionName
  * @api
  */
 
@@ -38,6 +37,8 @@ const defaultHeadings = {
   [ViewDirection.SOUTH]: 180,
   [ViewDirection.WEST]: 270,
 };
+
+const defaultCollection = new DefaultObliqueCollection();
 
 /**
  * returns the direction which matches the heading of the viewpoint
@@ -91,22 +92,12 @@ class Oblique extends BaseOLMap {
       changeOnMoveEnd: false,
       switchThreshold: 0,
       switchOnEdge: true,
-      defaultCollectionName: undefined,
     };
   }
 
-  /**
-   * @param {ObliqueOptions} options
-   */
   constructor(options) {
     super(options);
     const defaultOptions = Oblique.getDefaultOptions();
-    /**
-     * @type {string|undefined}
-     * @private
-     */
-    this._defaultCollectionName = options.defaultCollectionName || defaultOptions.defaultCollectionName;
-
     /**
      * @type  {ObliqueCollection|null}
      * @private
@@ -139,6 +130,11 @@ class Oblique extends BaseOLMap {
      * @api
      */
     this.collectionChanged = new VcsEvent();
+    /**
+     * @type {function():void}
+     * @private
+     */
+    this._activeCollectionDestroyedListener = () => {};
   }
 
   /**
@@ -209,9 +205,7 @@ class Oblique extends BaseOLMap {
           this.switchEnabled = this._switchEnabled;
           let collectionToLoad = this._loadingCollection;
           if (!collectionToLoad) {
-            collectionToLoad = this._defaultCollectionName ?
-              obliqueCollectionCollection.getByKey(this._defaultCollectionName) :
-              [...obliqueCollectionCollection][0];
+            collectionToLoad = defaultCollection;
           }
           if (collectionToLoad) {
             await this._setCollection(collectionToLoad);
@@ -333,11 +327,11 @@ class Oblique extends BaseOLMap {
       return;
     }
 
-    if (!this.initializedPromise) { // TODO add collection to obliqueCollections?
-      this._defaultCollectionName = obliqueCollection.name;
+    this._loadingCollection = obliqueCollection;
+    if (!this.initializedPromise) {
       return;
     }
-    this._loadingCollection = obliqueCollection;
+
     await this.initializedPromise;
     if (this._loadingCollection !== obliqueCollection) {
       return;
@@ -354,6 +348,10 @@ class Oblique extends BaseOLMap {
    */
   async _setCollection(obliqueCollection, viewpoint) {
     this._loadingCollection = obliqueCollection;
+    this._activeCollectionDestroyedListener();
+    this._activeCollectionDestroyedListener = obliqueCollection.destroyed.addEventListener(() => {
+      this._setCollection(defaultCollection);
+    });
     await obliqueCollection.load();
     const vp = viewpoint || await this.getViewPoint();
     if (this._loadingCollection !== obliqueCollection) {
@@ -513,10 +511,6 @@ class Oblique extends BaseOLMap {
       config.switchOnEdge = this.switchEnabled;
     }
 
-    if (this._defaultCollectionName !== defaultOptions.defaultCollectionName) {
-      config.defaultCollectionName = this._defaultCollectionName;
-    }
-
     return config;
   }
 
@@ -528,6 +522,7 @@ class Oblique extends BaseOLMap {
       this._obliqueProvider.destroy();
     }
     this.collectionChanged.destroy();
+    this._activeCollectionDestroyedListener();
     super.destroy();
   }
 }

@@ -1,7 +1,7 @@
 import { getLogger as getLoggerByName } from '@vcsuite/logger';
 import MapCollection from '../../../src/vcs/vcm/util/mapCollection.js';
 import GlobalHider from '../../../src/vcs/vcm/layer/globalHider.js';
-import { obliqueCollectionCollection, styleCollection } from '../../../src/vcs/vcm/globalCollections.js';
+import { styleCollection } from '../../../src/vcs/vcm/globalCollections.js';
 
 /**
  * @type {Framework}
@@ -180,6 +180,5 @@ export function destroy() {
   if (instance) {
     instance.destroy();
   }
-  obliqueCollectionCollection.destroy();
   styleCollection.destroy();
 }

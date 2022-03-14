@@ -6,6 +6,29 @@ import TileImage from 'ol/source/TileImage.js';
 import Tile from 'ol/layer/Tile.js';
 import { hasSameOrigin } from './helpers.js';
 
+/** @type {string} */
+let defaultImage = '';
+
+/**
+ * @returns {string}
+ */
+function getDefaultImage() {
+  if (!defaultImage) {
+    const canvas = document.createElement('canvas');
+    canvas.height = 512;
+    canvas.width = 512;
+    const context = canvas.getContext('2d');
+    context.fillStyle = '#409D76';
+    context.fillRect(0, 0, 512, 512);
+    context.font = 'bold 46px Monospace, Courier New';
+    context.fillStyle = '#424242';
+    context.textAlign = 'center';
+    context.fillText('No Image', 256, 256);
+    defaultImage = canvas.toDataURL('png');
+  }
+  return defaultImage;
+}
+
 /**
  * @typedef {Object} ObliqueViewOptions
  * @property {number} minZoom
@@ -108,9 +131,16 @@ class ObliqueView {
   /**
    * Sets the layers source to request data for this image
    * @param {string} name
+   * @param {boolean} [isDefaultImage=false]
    * @api
    */
-  setImageName(name) {
+  setImageName(name, isDefaultImage = false) {
+    if (isDefaultImage) {
+      this.tileImageSource.setTileLoadFunction(/** @param {import("ol").ImageTile} tile */ (tile) => {
+        /** @type {HTMLImageElement} */ (tile.getImage()).src = getDefaultImage();
+        tile.load();
+      });
+    }
     this.tileImageSource.setTileUrlFunction((coords) => {
       const [z, x, yInverted] = coords;
       const y = -yInverted - 1;

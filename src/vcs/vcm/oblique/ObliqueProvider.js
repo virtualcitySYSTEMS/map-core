@@ -7,6 +7,7 @@ import { transformFromImage } from './helpers.js';
 import { getHeightFromTerrainProvider } from '../layer/terrainHelpers.js';
 import { mercatorProjection } from '../util/projection.js';
 import VcsEvent from '../event/vcsEvent.js';
+import { isDefaultImageSymbol } from './defaultObliqueCollection.js';
 
 /**
  * @typedef {Object} ObliqueViewPoint
@@ -293,7 +294,7 @@ class ObliqueProvider {
     const previousView = this._currentView;
     this._currentView = olView;
     if (isNewImage) {
-      this._currentView.setImageName(this._currentImage.name);
+      this._currentView.setImageName(this._currentImage.name, this._currentImage[isDefaultImageSymbol]);
     }
 
     const [width, height] = this._currentImage.meta.size;

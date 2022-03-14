@@ -1,4 +1,4 @@
-import { parseInteger, parseNumber } from '@vcsuite/parsers';
+import { parseBoolean, parseInteger, parseNumber } from '@vcsuite/parsers';
 import RBush from 'rbush';
 import knn from 'rbush-knn';
 import { getTransform } from 'ol/proj.js';
@@ -67,6 +67,7 @@ import VcsObject from '../object.js';
  * @property {number|undefined} [minZoom]
  * @property {number|undefined} [scaleFactor=4]
  * @property {number|undefined} [hideLevels]
+ * @property {boolean|undefined} [activeOnStartup=false]
  * @api
  */
 
@@ -124,6 +125,7 @@ class ObliqueCollection extends VcsObject {
       scaleFactor: 4,
       dataSets: undefined,
       hideLevels: 0,
+      activeOnStartup: false,
     };
   }
 
@@ -185,6 +187,18 @@ class ObliqueCollection extends VcsObject {
         this._addDataSet(dataSet);
       });
     }
+
+    /**
+     * @type {VcsEvent<void>}
+     * @private
+     */
+    this._destroyed = new VcsEvent();
+
+    /**
+     * Whether to activate this collection after loading its defining context.
+     * @type {boolean}
+     */
+    this.activeOnStartup = parseBoolean(options.activeOnStartup, defaultOptions.activeOnStartup);
   }
 
   /**
@@ -203,6 +217,13 @@ class ObliqueCollection extends VcsObject {
    */
   get loaded() {
     return this._loaded;
+  }
+
+  /**
+   * @returns {VcsEvent<void>}
+   */
+  get destroyed() {
+    return this._destroyed;
   }
 
   /**
@@ -592,6 +613,9 @@ class ObliqueCollection extends VcsObject {
       this._imageFeatureSource = null;
     }
     this.imagesLoaded.destroy();
+    super.destroy();
+    this.destroyed.raiseEvent();
+    this._destroyed.destroy();
   }
 
   /**

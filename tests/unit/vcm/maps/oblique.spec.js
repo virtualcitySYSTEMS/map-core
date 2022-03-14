@@ -5,8 +5,8 @@ import ViewPoint from '../../../../src/vcs/vcm/util/viewpoint.js';
 import Projection from '../../../../src/vcs/vcm/util/projection.js';
 import { getCesiumEventSpy } from '../../helpers/cesiumHelpers.js';
 import resetFramework from '../../helpers/resetFramework.js';
-import { obliqueCollectionCollection } from '../../../../src/vcs/vcm/globalCollections.js';
 import ObliqueImage from '../../../../src/vcs/vcm/oblique/ObliqueImage.js';
+import { DefaultObliqueCollection } from '../../../../index.js';
 
 describe('vcs.vcm.maps.Oblique', () => {
   let sandbox;
@@ -18,8 +18,6 @@ describe('vcs.vcm.maps.Oblique', () => {
     obliqueCollection1 = getObliqueCollection();
     obliqueCollection2 = getObliqueCollection();
     obliqueCollection2.name = 'obliqueCollection2';
-    obliqueCollectionCollection.add(obliqueCollection1);
-    obliqueCollectionCollection.add(obliqueCollection2);
   });
 
   afterEach(() => {
@@ -43,15 +41,8 @@ describe('vcs.vcm.maps.Oblique', () => {
       map.destroy();
     });
 
-    it('should set the first collection, if there is no default collection name', () => {
-      expect(map.collection).to.equal(obliqueCollection1);
-    });
-
-    it('should set the named collection, if there is a default collection name', async () => {
-      const namedCollection = new Oblique({ defaultCollectionName: obliqueCollection2.name });
-      await namedCollection.initialize();
-      expect(namedCollection.collection).to.equal(obliqueCollection2);
-      namedCollection.destroy();
+    it('should set a default collection, if no collection was set prior to initialization', () => {
+      expect(map.collection).to.be.an.instanceOf(DefaultObliqueCollection);
     });
 
     it('should create an olMap', () => {
@@ -72,11 +63,12 @@ describe('vcs.vcm.maps.Oblique', () => {
     let map;
     let vp;
 
-    beforeEach(() => {
+    beforeEach(async () => {
       vp = new ViewPoint({
         groundPosition: Projection.mercatorToWgs84(mercatorCoordinates),
       });
       map = new Oblique({});
+      await map.setCollection(obliqueCollection1);
     });
 
     afterEach(() => {
@@ -128,6 +120,7 @@ describe('vcs.vcm.maps.Oblique', () => {
 
       before(async () => {
         map = new Oblique({});
+        await map.setCollection(obliqueCollection1);
         await map.activate();
         sandbox.stub(map.olMap.getViewport(), 'offsetHeight').get(() => 1000);
         sandbox.stub(map.olMap.getViewport(), 'offsetWidth').get(() => 1000);
@@ -182,6 +175,7 @@ describe('vcs.vcm.maps.Oblique', () => {
 
       before(async () => {
         map = new Oblique({});
+        await map.setCollection(obliqueCollection1);
         await map.initialize();
         await map.setImageByName('036_064_116005331');
         await map.activate();
@@ -202,6 +196,7 @@ describe('vcs.vcm.maps.Oblique', () => {
 
       before(async () => {
         map = new Oblique({});
+        await map.setCollection(obliqueCollection1);
         await map.activate();
         await map.gotoViewPoint(new ViewPoint({
           groundPosition: Projection.mercatorToWgs84(mercatorCoordinates),
@@ -228,6 +223,7 @@ describe('vcs.vcm.maps.Oblique', () => {
 
     before(async () => {
       map = new Oblique({});
+      await map.setCollection(obliqueCollection1);
       await map.activate();
       map.deactivate();
     });
@@ -316,12 +312,35 @@ describe('vcs.vcm.maps.Oblique', () => {
     });
   });
 
+  describe('destroying the current collection', () => {
+    /** @type {import("@vcmap/core").Oblique} */
+    let map;
+    let doomedCollection;
+
+    before(async () => {
+      map = new Oblique({});
+      doomedCollection = getObliqueCollection();
+      await map.setCollection(doomedCollection);
+      await map.activate();
+      doomedCollection.destroy();
+    });
+
+    after(() => {
+      map.destroy();
+    });
+
+    it('should set the default collection', () => {
+      expect(map.collection).to.be.an.instanceOf(DefaultObliqueCollection);
+    });
+  });
+
   describe('setting an image', () => {
     /** @type {import("@vcmap/core").Oblique} */
     let map;
 
     before(async () => {
       map = new Oblique({});
+      await map.setCollection(obliqueCollection1);
       await map.activate();
     });
 
@@ -380,6 +399,7 @@ describe('vcs.vcm.maps.Oblique', () => {
     describe('while initializing the map', () => {
       it('should wait on initialization and set them image', async () => {
         const newMap = new Oblique({});
+        newMap.setCollection(obliqueCollection1);
         newMap.initialize();
         await newMap.setImageByName('034_070_110005034');
         expect(newMap.initialized).to.be.true;
@@ -406,6 +426,7 @@ describe('vcs.vcm.maps.Oblique', () => {
       before(async () => {
         groundPosition = Projection.mercatorToWgs84(mercatorCoordinates);
         map = new Oblique({});
+        await map.setCollection(obliqueCollection1);
         await map.activate();
         await map.gotoViewPoint(new ViewPoint({
           heading: 94,
@@ -441,6 +462,7 @@ describe('vcs.vcm.maps.Oblique', () => {
 
       before(async () => {
         map = new Oblique({});
+        await map.setCollection(obliqueCollection1);
         await map.activate();
         await map.gotoViewPoint(new ViewPoint({
           heading: 94,
@@ -467,6 +489,7 @@ describe('vcs.vcm.maps.Oblique', () => {
 
       before(async () => {
         map = new Oblique({});
+        await map.setCollection(obliqueCollection1);
         const groundPosition = Projection.mercatorToWgs84(mercatorCoordinates);
         const cameraPosition = [groundPosition[0], groundPosition[1], 2];
         await map.activate();
@@ -501,6 +524,7 @@ describe('vcs.vcm.maps.Oblique', () => {
 
     before(async () => {
       map = new Oblique({});
+      await map.setCollection(obliqueCollection1);
       await map.activate();
       await map.gotoViewPoint(new ViewPoint({
         groundPosition: Projection.mercatorToWgs84(mercatorCoordinates),

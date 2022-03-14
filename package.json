@@ -36,7 +36,6 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^18.0.0",
     "@rollup/plugin-node-resolve": "^11.2.1",
-    "@vcmap/cesium": "^1.87.3",
     "@vcsuite/eslint-config": "^2.0.3",
     "@vcsuite/tsd-jsdoc": "^1.0.2",
     "@web/dev-server": "^0.1.11",
@@ -53,14 +52,13 @@
     "mocha-junit-reporter": "^2.0.2",
     "nock": "^13.2.4",
     "node-fetch": "^3.2.0",
-    "ol": "^6.9.0",
     "sinon": "^9.2.4",
     "sinon-chai": "^3.6.0",
     "typescript": "^4.4.4"
   },
   "peerDependencies": {
-    "@vcmap/cesium": "~1.87.2",
-    "ol": "^6.5.0"
+    "@vcmap/cesium": "~1.87.3",
+    "ol": "^6.9.0"
   },
   "eslintConfig": {
     "extends": [

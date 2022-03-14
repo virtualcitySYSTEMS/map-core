@@ -3,7 +3,6 @@ import Oblique from '../../../src/vcs/vcm/maps/oblique.js';
 import ViewPoint from '../../../src/vcs/vcm/util/viewpoint.js';
 
 import { getTerrainProvider } from './terrain/terrainData.js';
-import { obliqueCollectionCollection } from '../../../src/vcs/vcm/globalCollections.js';
 import ObliqueCollection from '../../../src/vcs/vcm/oblique/ObliqueCollection.js';
 import ObliqueDataSet from '../../../src/vcs/vcm/oblique/ObliqueDataSet.js';
 import importJSON from './importJSON.js';
@@ -105,7 +104,6 @@ export async function setObliqueMap(framework, scope, startingVP) {
     target: framework.mapcontainer,
   }, scope);
   framework.addMap(map);
-  obliqueCollectionCollection.add(map.collection);
   await framework.activateMap(map.name);
   await map.gotoViewPoint(startingVP || getStartingViewpoint());
   return map;
