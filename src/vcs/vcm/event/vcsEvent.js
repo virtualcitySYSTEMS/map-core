@@ -58,7 +58,7 @@ class VcsEvent {
    * @api
    */
   raiseEvent(event) {
-    this._listeners.forEach((cb) => {
+    [...this._listeners].forEach((cb) => {
       cb(event);
     });
   }
@@ -70,7 +70,7 @@ class VcsEvent {
   async awaitRaisedEvent(event) {
     const promises = new Array(this._listeners.size);
     let i = 0;
-    this._listeners.forEach((cb) => {
+    [...this._listeners].forEach((cb) => {
       promises[i] = cb(event);
       i += 1;
     });
