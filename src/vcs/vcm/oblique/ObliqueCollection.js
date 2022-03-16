@@ -112,6 +112,7 @@ function getTileFeatures(tiles) {
 /**
  * @class
  * @export
+ * @extends {VcsObject}
  */
 class ObliqueCollection extends VcsObject {
   static get className() { return 'oblique.ObliqueCollection'; }
