@@ -87,7 +87,8 @@ class Openlayers extends BaseOLMap {
     size.width = viewport.offsetWidth || 1;
     const aspectRatio = size.width / size.height;
     const fovy = Math.atan(Math.tan(fov * 0.5) / aspectRatio) * 2.0;
-    const latlon = toLatLon(coord.slice(0, 2));
+    // error in TransformFunction type definition, remove undefined after openlayer fixed the type
+    const latlon = toLatLon(coord.slice(0, 2), undefined, undefined);
     const metersPerUnit = view.getProjection().getMetersPerUnit();
 
     const resolution = view.getResolution();
@@ -129,7 +130,8 @@ class Openlayers extends BaseOLMap {
       coords = viewpoint.cameraPosition.slice(0, 2);
     }
     const { distance } = viewpoint;
-    const center = fromLatLon(coords);
+    // error in TransformFunction type definition, remove undefined after openlayer fixed the type
+    const center = fromLatLon(coords, undefined, undefined);
 
     const fov = Math.PI / 3.0;
     const viewport = this.olMap.getViewport();
@@ -180,7 +182,8 @@ class Openlayers extends BaseOLMap {
     const toLatLon = getTransform(view.getProjection(), 'EPSG:4326');
     const topLeft = [extent[0], extent[3]];
     const bottomRight = [extent[2], extent[1]];
-    const bbox = [toLatLon(topLeft), toLatLon(bottomRight)];
+    // error in TransformFunction type definition, remove undefined after openlayer fixed the type
+    const bbox = [toLatLon(topLeft, undefined, undefined), toLatLon(bottomRight, undefined, undefined)];
 
     return containsXY(boundingExtent(bbox), coords[0], coords[1]);
   }

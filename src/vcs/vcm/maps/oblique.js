@@ -420,7 +420,8 @@ class Oblique extends BaseOLMap {
     const gpInternalProjection = image.transformImage2RealWorld(gpImageCoordinates, image.averageHeight);
 
     const transfrom = getTransform(image.meta.projection.proj, wgs84Projection.proj);
-    const gpWGS84 = transfrom(gpInternalProjection.slice(0, 2));
+    // getText can return a rich Text Array<string> We do not support this at the moment.
+    const gpWGS84 = transfrom(gpInternalProjection.slice(0, 2), undefined, undefined);
     return this._computeViewpointInternal(gpWGS84);
   }
 

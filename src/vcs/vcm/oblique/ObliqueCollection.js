@@ -79,7 +79,8 @@ function getImageFeatures(images) {
   return images.map((image) => {
     const transform = getTransform(image.meta.projection.proj, mercatorProjection.proj);
     const feature = new Feature({
-      geometry: new Polygon([image.groundCoordinates.map(c => transform(c.slice(0, 2)))]),
+      // error in TransformFunction type definition, remove undefined after openlayer fixed the type
+      geometry: new Polygon([image.groundCoordinates.map(c => transform(c.slice(0, 2), undefined, undefined))]),
       viewDirection: image.viewDirection,
     });
     feature.setId(image.name);
@@ -370,7 +371,8 @@ class ObliqueCollection extends VcsObject {
 
       const transform = getTransform(image.meta.projection.proj, mercatorProjection.proj);
       const coord = image.centerPointOnGround.slice(0, 2);
-      transform(coord, coord);
+      // error in TransformFunction type definition, remove undefined after openlayer fixed the type
+      transform(coord, coord, undefined);
       directions.get(image.viewDirection).push({
         minX: coord[0],
         minY: coord[1],
@@ -539,7 +541,8 @@ class ObliqueCollection extends VcsObject {
     if (image) {
       const transform = getTransform(mercatorProjection.proj, image.meta.projection.proj);
       const internalCoordinates = mercatorCoordinate.slice(0, 2);
-      transform(internalCoordinates, internalCoordinates);
+      // error in TransformFunction type definition, remove undefined after openlayer fixed the type
+      transform(internalCoordinates, internalCoordinates, undefined);
       const extent = boundingExtent(image.groundCoordinates);
       return containsCoordinate(extent, internalCoordinates);
     }
@@ -560,7 +563,8 @@ class ObliqueCollection extends VcsObject {
     const tree = this._directionTrees.get(image.viewDirection);
     if (tree) {
       const transform = getTransform(image.meta.projection.proj, mercatorProjection.proj);
-      const coords = image.groundCoordinates.map(c => transform(c.slice(0, 2)));
+      // error in TransformFunction type definition, remove undefined after openlayer fixed the type
+      const coords = image.groundCoordinates.map(c => transform(c.slice(0, 2), undefined, undefined));
       const extent = boundingExtent(coords);
       await this.loadDataForExtent(buffer(extent, 200));
       const center = getCenter(extent);

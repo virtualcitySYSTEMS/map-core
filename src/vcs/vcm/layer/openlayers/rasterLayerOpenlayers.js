@@ -77,7 +77,7 @@ class RasterLayerOpenlayers extends LayerOpenlayers {
         this._splitDirectionRenderListeners
           .push(/** @type {import("ol/events").EventsKey} */
             (this.olLayer.on('postrender', (/** @type {import("ol/render/Event").default} */ event) => {
-              event.context.restore();
+              /** @type {CanvasRenderingContext2D} */ (event.context).restore();
             })),
           );
         this.olLayer.changed();
@@ -93,7 +93,8 @@ class RasterLayerOpenlayers extends LayerOpenlayers {
     if (!this.map.splitScreen) {
       return;
     }
-    const { context } = event;
+    // eslint-disable-next-line prefer-destructuring
+    const context = /** @type {CanvasRenderingContext2D} */ (event.context);
     const width = context.canvas.width * this.map.splitScreen.position;
     context.save();
     context.beginPath();

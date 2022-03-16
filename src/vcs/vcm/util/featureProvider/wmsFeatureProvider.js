@@ -198,7 +198,8 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
     let coords = coordinate;
     if (projection) {
       const transform = getTransform(mercatorProjection.proj, projection);
-      coords = transform(coordinate.slice());
+      // error in TransformFunction type definition, remove undefined after openlayer fixed the type
+      coords = transform(coordinate.slice(), undefined, undefined);
     }
 
     const metersPerUnit = 111194.87428468118;

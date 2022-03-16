@@ -14,9 +14,12 @@ import { VcsClassRegistry } from '../classRegistry.js';
  * @property {string|undefined} [prefix='EPSG:'] - an alternate prefix to use for custom projection
  * @api stable
  */
+/**
+ * @typedef {function(Array<number>, Array<number>=, number=): Array<number>} CorrectTransformFunction
+ */
 
-export const wgs84ToMercatorTransformer = getTransform('EPSG:4326', 'EPSG:3857');
-export const mercatorToWgs84Transformer = getTransform('EPSG:3857', 'EPSG:4326');
+export const wgs84ToMercatorTransformer = /** @type {CorrectTransformFunction} */ (getTransform('EPSG:4326', 'EPSG:3857'));
+export const mercatorToWgs84Transformer = /** @type {CorrectTransformFunction} */ (getTransform('EPSG:3857', 'EPSG:4326'));
 
 
 /**

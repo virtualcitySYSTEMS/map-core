@@ -234,7 +234,8 @@ class ObliqueProvider {
       const pulledCenter = this._pullCoordinateToImageCenter(imageCoordinates.slice());
       const worldCoords = this._currentImage.transformImage2RealWorld(pulledCenter).slice(0, 2);
       const transform = getTransform(this._currentImage.meta.projection.proj, mercatorProjection.proj);
-      const mercatorCoords = transform(worldCoords);
+      // error in TransformFunction type definition, remove undefined after openlayer fixed the type
+      const mercatorCoords = transform(worldCoords, undefined, undefined);
       const buffer = 200; // XXX make configurable?
       const extent = [
         mercatorCoords[0] - buffer, mercatorCoords[1] - buffer,
@@ -300,10 +301,11 @@ class ObliqueProvider {
     const [width, height] = this._currentImage.meta.size;
     let center = [width / 2, height / 2];
     if (optCenter) {
+      // error in TransformFunction type definition, remove undefined after openlayer fixed the type
       const worldCenter = getTransform(
         mercatorProjection.proj,
         this._currentImage.meta.projection.proj,
-      )(optCenter.slice(0, 2));
+      )(optCenter.slice(0, 2), undefined, undefined);
       const imageCenter = this._currentImage.transformRealWorld2Image(worldCenter, optCenter[2]);
       imageCenter[0] = withinBounds(imageCenter[0], width);
       imageCenter[1] = withinBounds(imageCenter[1], height);
