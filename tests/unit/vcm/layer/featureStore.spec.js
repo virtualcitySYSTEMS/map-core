@@ -551,7 +551,7 @@ describe('vcs.vcm.layer.FeatureStore', () => {
       });
 
       after(() => {
-        configuredLayer.dispose();
+        configuredLayer.destroy();
       });
 
       it('should configure vcsMeta', () => {

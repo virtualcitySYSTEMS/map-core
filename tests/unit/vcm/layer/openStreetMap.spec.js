@@ -81,7 +81,7 @@ describe('vcs.vcm.layer.OpenStreetMap', () => {
       });
 
       after(() => {
-        configuredLayer.dispose();
+        configuredLayer.destroy();
       });
 
       it('should configure maxLevel', () => {

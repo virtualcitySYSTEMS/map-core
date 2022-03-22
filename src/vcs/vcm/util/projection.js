@@ -1,7 +1,6 @@
 import { getTransform, get as getProjection, equivalent } from 'ol/proj.js';
 import { register } from 'ol/proj/proj4.js';
 import proj4 from 'proj4';
-import { getLogger as getLoggerByName } from '@vcsuite/logger';
 import { check } from '@vcsuite/check';
 import { VcsClassRegistry } from '../classRegistry.js';
 
@@ -20,14 +19,6 @@ import { VcsClassRegistry } from '../classRegistry.js';
 
 export const wgs84ToMercatorTransformer = /** @type {CorrectTransformFunction} */ (getTransform('EPSG:4326', 'EPSG:3857'));
 export const mercatorToWgs84Transformer = /** @type {CorrectTransformFunction} */ (getTransform('EPSG:3857', 'EPSG:4326'));
-
-
-/**
- * @returns {import("@vcsuite/logger").Logger}
- */
-function getLogger() {
-  return getLoggerByName('vcs.vcm.util.Projection');
-}
 
 /**
  * @type {ProjectionOptions}
@@ -200,16 +191,6 @@ class Projection {
    */
   get proj() {
     return getProjection(this.epsg);
-  }
-
-  /**
-   * @returns {import("ol/proj/Projection").default}
-   * @api
-   * @deprecated 3.7
-   */
-  getProjection() {
-    getLogger().deprecate('getProjection', 'Access the property proj directly');
-    return this.proj;
   }
 
   /**

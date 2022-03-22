@@ -81,7 +81,7 @@ describe('vcs.vcm.layer.WMS', () => {
       });
 
       after(() => {
-        configuredLayer.dispose();
+        configuredLayer.destroy();
       });
 
       it('should configure layers', () => {
@@ -133,7 +133,7 @@ describe('vcs.vcm.layer.WMS', () => {
       });
 
       after(() => {
-        configuredLayer.dispose();
+        configuredLayer.destroy();
       });
 
       it('should configure feature info', () => {

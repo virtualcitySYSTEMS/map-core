@@ -298,16 +298,6 @@ class Oblique extends BaseOLMap {
     });
   }
 
-  /**
-   * @returns {import("@vcmap/core").ObliqueImage}
-   * @api
-   * @deprecated 4.0
-   */
-  getCurrentImage() {
-    this.getLogger().deprecate('getCurrentImage', 'access the currentImage property');
-    return this._obliqueProvider ? this._obliqueProvider.currentImage : null;
-  }
-
   deactivate() {
     super.deactivate();
     this._obliqueProvider.deactivate();

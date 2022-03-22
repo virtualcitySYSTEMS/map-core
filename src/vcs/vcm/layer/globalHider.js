@@ -1,5 +1,4 @@
 import { check } from '@vcsuite/check';
-import { getLogger } from '@vcsuite/logger';
 import {
   globalHidden,
   hideFeature,
@@ -143,15 +142,6 @@ export function getGlobalHider() {
     instance = new GlobalHider();
   }
   return instance;
-}
-
-/**
- * @returns {GlobalHider}
- * @deprecated v4.1
- */
-export function getInstance() {
-  getLogger('vcs.vcm.layer.GlobalHider').deprecate('getInstance', 'use getGlobalHider instead');
-  return getGlobalHider();
 }
 
 export default GlobalHider;

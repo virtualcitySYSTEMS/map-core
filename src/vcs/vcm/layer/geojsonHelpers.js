@@ -13,7 +13,7 @@ import { parseColor } from '../util/style/styleHelpers.js';
 import Vector from './vector.js';
 import { featureStoreStateSymbol } from './featureStoreState.js';
 import { StyleType } from '../util/style/styleItem.js';
-import writeStyle, { embedIconsInStyle } from '../util/style/writeStyle.js';
+import { embedIconsInStyle } from '../util/style/writeStyle.js';
 import DeclarativeStyleItem from '../util/style/declarativeStyleItem.js';
 import { vcsMetaVersion } from './layer.js';
 import Extent3D from '../util/featureconverter/extent3D.js';
@@ -440,11 +440,6 @@ export function writeGeoJSON(data, options = {}) { // how to handel embedded ico
     features: featureObjs,
     vcsMeta,
   };
-
-  if (options.writeStyle && data.style) { // legacy fallback for plugin use
-    getLogger().deprecate('data.style', 'use layer.getVcsMeta and pass that in instead');
-    writeStyle(data.style, obj.vcsMeta);
-  }
 
   return options.asObject ? obj : JSON.stringify(obj, null, options.prettyPrint ? 2 : null);
 }

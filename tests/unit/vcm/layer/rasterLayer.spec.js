@@ -103,7 +103,7 @@ describe('vcs.vcm.layer.RasterLayer', () => {
       });
 
       after(() => {
-        configuredLayer.dispose();
+        configuredLayer.destroy();
       });
 
       it('should configure minLevel', () => {

@@ -376,7 +376,7 @@ describe('vcs.vcm.layer.Layer', () => {
       });
 
       after(() => {
-        configuredLayer.dispose();
+        configuredLayer.destroy();
       });
 
       it('should configure activeOnStartup', () => {

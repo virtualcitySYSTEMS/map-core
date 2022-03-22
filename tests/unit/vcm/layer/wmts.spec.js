@@ -33,7 +33,7 @@ describe('vcs.vcm.layer.WMTS', () => {
       });
 
       after(() => {
-        configuredLayer.dispose();
+        configuredLayer.destroy();
       });
 
       it('should configure tilingSchema', () => {

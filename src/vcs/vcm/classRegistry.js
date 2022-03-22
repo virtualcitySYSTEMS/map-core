@@ -78,23 +78,6 @@ class ClassRegistry {
     }
     return new Ctor(...args);
   }
-
-  /**
-   * @param {string} className
-   * @param {...*} args
-   * @returns {*}
-   * @deprecated 4.0
-   */
-  createSync(className, ...args) {
-    check(className, String);
-
-    const Ctor = /** @type {function(new: *, ...*)} */ (this.getClass(className));
-    if (!Ctor) {
-      this.logger.error(`could not find constructor ${className}`);
-      return undefined;
-    }
-    return new Ctor(...args);
-  }
 }
 
 export default ClassRegistry;

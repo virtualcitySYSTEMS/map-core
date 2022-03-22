@@ -96,7 +96,7 @@ describe('vcs.vcm.layer.FeatureLayer', () => {
       });
 
       after(() => {
-        configuredLayer.dispose();
+        configuredLayer.destroy();
       });
 
       it('should set the style options', () => {

@@ -79,14 +79,6 @@ class VcsObject {
     this.isDestroyed = true;
     this.properties = {};
   }
-
-  /**
-   * @deprecated v4.0
-   */
-  dispose() {
-    this.getLogger().deprecate('dispose', 'use destroy()');
-    this.destroy();
-  }
 }
 
 export default VcsObject;

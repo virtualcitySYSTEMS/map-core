@@ -1000,15 +1000,6 @@ class CesiumMap extends VcsMap {
   }
 
   /**
-   * @returns {import("@vcmap/cesium").CesiumWidget|*}
-   * @deprecated 3.7
-   */
-  getViewer() {
-    this.getLogger().deprecate('getViewer', 'use getCesiumWidget instead.');
-    return this._cesiumWidget;
-  }
-
-  /**
    * @param {import("ol/coordinate").Coordinate} coords in WGS84 degrees
    * @returns {boolean}
    * @api
@@ -1022,17 +1013,6 @@ class CesiumMap extends VcsMap {
       return true;
     }
     return false;
-  }
-
-  // TODO cesium map requestRender
-  /**
-   * sets the Cesium debug mode.
-   * @api stable
-   * @deprecated v4.1
-   */
-  setDebugMode() {
-    this.getLogger().deprecate('setDebugMode', 'set the debug property directly');
-    this.debug = true;
   }
 
   /**

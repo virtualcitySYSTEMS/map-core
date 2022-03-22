@@ -24,7 +24,7 @@ describe('vcs.vcm.layer.Terrain', () => {
       });
 
       after(() => {
-        configuredLayer.dispose();
+        configuredLayer.destroy();
       });
 
       it('should configure requestVertexNormals', () => {

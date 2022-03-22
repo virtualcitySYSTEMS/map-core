@@ -171,7 +171,7 @@ describe('vcs.vcm.layer.GeoJSON', () => {
       });
 
       after(() => {
-        configuredLayer.dispose();
+        configuredLayer.destroy();
       });
 
       it('should configure url', () => {

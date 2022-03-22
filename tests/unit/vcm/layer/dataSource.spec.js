@@ -136,7 +136,7 @@ describe('vcs.vcm.layer.DataSource', () => {
       });
 
       after(() => {
-        configuredLayer.dispose();
+        configuredLayer.destroy();
       });
 
       it('should configure genericFeatureProperties', () => {

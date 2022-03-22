@@ -65,7 +65,7 @@ describe('vcs.vcm.layer.SingleImage', () => {
       });
 
       after(() => {
-        configuredLayer.dispose();
+        configuredLayer.destroy();
       });
 
       it('should set credit', () => {
