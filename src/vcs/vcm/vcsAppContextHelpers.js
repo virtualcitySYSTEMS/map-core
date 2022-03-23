@@ -74,9 +74,9 @@ export async function deserializeViewPoint(viewPointObject) {
 /**
  * @param {import("@vcmap/core").VcsApp} vcsApp
  * @param {import("@vcmap/core").Layer} layer
- * @returns {Promise<LayerOptions|null>}
+ * @returns {LayerOptions}
  */
-export async function serializeLayer(vcsApp, layer) {
+export function serializeLayer(vcsApp, layer) {
   const serializedLayer = layer.toJSON();
   serializedLayer.zIndex = layer[vcsApp.layers.zIndexSymbol];
   return serializedLayer;
