@@ -1,4 +1,6 @@
-# vcMap Core
+# VC Map Core
+
+> Part of the [VC Map Project](https://github.com/virtualcitySYSTEMS/map-ui)
 
 ## Getting Started
 - clone Repo
