@@ -11,7 +11,7 @@ import {
 } from '../../../../src/vcs/vcm/layer/geojsonHelpers.js';
 import Projection, { mercatorProjection, wgs84Projection } from '../../../../src/vcs/vcm/util/projection.js';
 import Vector from '../../../../src/vcs/vcm/layer/vector.js';
-import { featureStoreState, featureStoreStateSymbol } from '../../../../src/vcs/vcm/layer/featureStoreState.js';
+import { FeatureStoreState, featureStoreStateSymbol } from '../../../../src/vcs/vcm/layer/featureStoreState.js';
 import importJSON from '../../helpers/importJSON.js';
 
 const testGeoJSON = await importJSON('./tests/data/testGeoJSON.json');
@@ -116,7 +116,7 @@ describe('vcs.vcm.layer.GeoJSON', () => {
       };
       const fArray = parseGeoJSON(featureObj).features;
       expect(fArray).to.have.length(1);
-      expect(fArray[0]).to.have.property(featureStoreStateSymbol, featureStoreState.DYNAMIC);
+      expect(fArray[0]).to.have.property(featureStoreStateSymbol, FeatureStoreState.DYNAMIC);
     });
 
     it('should exclude features without a geometry', () => {

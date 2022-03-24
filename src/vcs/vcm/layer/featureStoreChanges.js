@@ -1,7 +1,7 @@
 import { unByKey } from 'ol/Observable.js';
 import Feature from 'ol/Feature.js';
 import { check } from '@vcsuite/check';
-import { featureStoreState, featureStoreStateSymbol } from './featureStoreState.js';
+import { FeatureStoreState, featureStoreStateSymbol } from './featureStoreState.js';
 import { parseGeoJSON, writeGeoJSONFeature } from './geojsonHelpers.js';
 import VcsObject from '../object.js';
 import { requestJson } from '../util/fetch.js';
@@ -51,7 +51,7 @@ export function createCommitActions(added, edited, removed) {
       original: f,
       success(data) {
         f.setId(data);
-        f[featureStoreStateSymbol] = featureStoreState.DYNAMIC;
+        f[featureStoreStateSymbol] = FeatureStoreState.DYNAMIC;
       },
     });
   });
@@ -65,8 +65,8 @@ export function createCommitActions(added, edited, removed) {
       original: f,
       feature,
       success() {
-        if (f[featureStoreStateSymbol] === featureStoreState.STATIC) {
-          f[featureStoreStateSymbol] = featureStoreState.EDITED;
+        if (f[featureStoreStateSymbol] === FeatureStoreState.STATIC) {
+          f[featureStoreStateSymbol] = FeatureStoreState.EDITED;
         }
       },
     });
@@ -238,7 +238,7 @@ class FeatureStoreChanges extends VcsObject {
       return Promise.resolve();
     }
 
-    if (feature[featureStoreStateSymbol] === featureStoreState.STATIC) {
+    if (feature[featureStoreStateSymbol] === FeatureStoreState.STATIC) {
       this.layer.resetStaticFeature(featureId);
       return Promise.resolve();
     }
@@ -295,7 +295,7 @@ class FeatureStoreChanges extends VcsObject {
     if (!feature[featureStoreStateSymbol]) {
       this._addedFeatures.add(feature);
       this.values.changed = true;
-    } else if (feature[featureStoreStateSymbol] === featureStoreState.STATIC) {
+    } else if (feature[featureStoreStateSymbol] === FeatureStoreState.STATIC) {
       this._convertedFeatures.add(feature);
       this.values.changed = true;
     }

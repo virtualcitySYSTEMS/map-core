@@ -9,7 +9,7 @@ import FeatureStore, { isTiledFeature } from '../../../../src/vcs/vcm/layer/feat
 import { getFramework } from '../../helpers/framework.js';
 import Vector from '../../../../src/vcs/vcm/layer/vector.js';
 import VectorStyleItem, { vectorStyleSymbol, defaultVectorStyle } from '../../../../src/vcs/vcm/util/style/vectorStyleItem.js';
-import { featureStoreState, featureStoreStateSymbol } from '../../../../src/vcs/vcm/layer/featureStoreState.js';
+import { FeatureStoreState, featureStoreStateSymbol } from '../../../../src/vcs/vcm/layer/featureStoreState.js';
 import getJSONObjectFromObject from '../../../../src/vcs/vcm/layer/cesium/x3dmHelper.js';
 import DeclarativeStyleItem from '../../../../src/vcs/vcm/util/style/declarativeStyleItem.js';
 import '../../../../src/vcs/vcm/layer/cesium/cesiumTilesetCesium.js';
@@ -480,7 +480,7 @@ describe('vcs.vcm.layer.FeatureStore', () => {
       const feature = FS.changeTracker._removedFeatures.values().next().value;
       expect(feature).to.be.an.instanceOf(Feature);
       expect(feature.getId()).to.equal('test');
-      expect(feature).to.have.property(featureStoreStateSymbol, featureStoreState.STATIC);
+      expect(feature).to.have.property(featureStoreStateSymbol, FeatureStoreState.STATIC);
     });
   });
 

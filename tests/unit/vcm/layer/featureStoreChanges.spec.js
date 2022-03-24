@@ -3,7 +3,7 @@ import Feature from 'ol/Feature.js';
 import Point from 'ol/geom/Point.js';
 import FeatureStore from '../../../../src/vcs/vcm/layer/featureStore.js';
 import { createCommitActions } from '../../../../src/vcs/vcm/layer/featureStoreChanges.js';
-import { featureStoreState, featureStoreStateSymbol } from '../../../../src/vcs/vcm/layer/featureStoreState.js';
+import { FeatureStoreState, featureStoreStateSymbol } from '../../../../src/vcs/vcm/layer/featureStoreState.js';
 
 function createDummyOlFeature(index) {
   return [...new Array(index).keys()].map((k) => {
@@ -111,7 +111,7 @@ describe('vcs.vcm.layer.FeatureStore.FeatureStoreChanges', () => {
 
     it('should unbind the listener for the event', () => {
       const feature1 = new Feature();
-      feature1[featureStoreStateSymbol] = featureStoreState.DYNAMIC;
+      feature1[featureStoreStateSymbol] = FeatureStoreState.DYNAMIC;
       FSC.pauseTracking('addfeature');
       FSL.addFeatures([feature1]);
       feature1.changed();
@@ -302,7 +302,7 @@ describe('vcs.vcm.layer.FeatureStore.FeatureStoreChanges', () => {
 
       it('should set the features type to dynamic', () => {
         features.forEach((f) => {
-          expect(f).to.have.property(featureStoreStateSymbol, featureStoreState.DYNAMIC);
+          expect(f).to.have.property(featureStoreStateSymbol, FeatureStoreState.DYNAMIC);
         });
       });
     });
@@ -318,7 +318,7 @@ describe('vcs.vcm.layer.FeatureStore.FeatureStoreChanges', () => {
         features = createDummyOlFeature(2);
         FSC._editedFeatures.add(features[0]);
         FSC._editedFeatures.add(features[1]);
-        features[0][featureStoreStateSymbol] = featureStoreState.STATIC;
+        features[0][featureStoreStateSymbol] = FeatureStoreState.STATIC;
         actions = createCommitActions(FSC._addedFeatures, FSC._editedFeatures, FSC._removedFeatures);
         await FSC.commitChanges('http://myFeatureStore/commitChanges');
       });
@@ -326,7 +326,7 @@ describe('vcs.vcm.layer.FeatureStore.FeatureStoreChanges', () => {
       after(() => scope.done());
 
       it('should set the state symbol for static features to edited', () => {
-        expect(features[0]).to.have.property(featureStoreStateSymbol, featureStoreState.EDITED);
+        expect(features[0]).to.have.property(featureStoreStateSymbol, FeatureStoreState.EDITED);
       });
 
       it('should append the feature id as _id', () => {
@@ -376,8 +376,8 @@ describe('vcs.vcm.layer.FeatureStore.FeatureStoreChanges', () => {
             failedActions: [{ index: 0, error: 'error' }, { index: 2, error: 'error' }, { index: 4, error: 'error' }],
           });
         features = createDummyOlFeature(6);
-        features[2][featureStoreStateSymbol] = featureStoreState.STATIC;
-        features[3][featureStoreStateSymbol] = featureStoreState.STATIC;
+        features[2][featureStoreStateSymbol] = FeatureStoreState.STATIC;
+        features[3][featureStoreStateSymbol] = FeatureStoreState.STATIC;
         FSC._addedFeatures.add(features[0]);
         FSC._addedFeatures.add(features[1]);
         FSC._editedFeatures.add(features[2]);
@@ -390,8 +390,8 @@ describe('vcs.vcm.layer.FeatureStore.FeatureStoreChanges', () => {
       it('should only succeed non-failed features', () => {
         expect(features[0].getId()).to.equal('id0');
         expect(features[1].getId()).to.equal('test1');
-        expect(features[2]).to.have.property(featureStoreStateSymbol, featureStoreState.STATIC);
-        expect(features[3]).to.have.property(featureStoreStateSymbol, featureStoreState.EDITED);
+        expect(features[2]).to.have.property(featureStoreStateSymbol, FeatureStoreState.STATIC);
+        expect(features[3]).to.have.property(featureStoreStateSymbol, FeatureStoreState.EDITED);
       });
 
       it('should reset failed features', () => {
@@ -450,7 +450,7 @@ describe('vcs.vcm.layer.FeatureStore.FeatureStoreChanges', () => {
 
     describe('static features - aka freshly edited', () => {
       beforeEach(() => {
-        feature[featureStoreStateSymbol] = featureStoreState.STATIC;
+        feature[featureStoreStateSymbol] = FeatureStoreState.STATIC;
         FSC.layer.hiddenStaticFeatureIds.add(feature.getId());
       });
 
@@ -468,7 +468,7 @@ describe('vcs.vcm.layer.FeatureStore.FeatureStoreChanges', () => {
 
     describe('edited features', () => {
       beforeEach(() => {
-        feature[featureStoreStateSymbol] = featureStoreState.EDITED;
+        feature[featureStoreStateSymbol] = FeatureStoreState.EDITED;
       });
 
       it('should reset the feature on the layer', () => FSC._resetFeature(feature)

@@ -12,7 +12,7 @@ export const featureStoreStateSymbol = Symbol('vcsFeatureType');
  * @api
  * @export
  */
-export const featureStoreState = {
+export const FeatureStoreState = {
   DYNAMIC: 'dynamic',
   STATIC: 'static',
   EDITED: 'edited',

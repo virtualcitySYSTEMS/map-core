@@ -4,7 +4,7 @@ import VectorSource from 'ol/source/Vector.js';
 import { createEmpty, extend as extendExtent } from 'ol/extent.js';
 
 import Vector from './vector.js';
-import { featureStoreStateSymbol, featureStoreState } from './featureStoreState.js';
+import { featureStoreStateSymbol, FeatureStoreState } from './featureStoreState.js';
 import { parseGeoJSON } from './geojsonHelpers.js';
 import { mercatorProjection } from '../util/projection.js';
 import FeatureStoreChanges from './featureStoreChanges.js';
@@ -43,7 +43,7 @@ import { requestJson } from '../util/fetch.js';
  * @property {Object} properties - the properties bag
  * @property {Object} geometry
  * @property {Object|undefined} vcsMeta
- * @property {featureStoreState} state
+ * @property {FeatureStoreState} state
  * @property {string} type - the featureType
  * @todo write vcsMeta for features
  * @todo set type to be one of an enum
@@ -573,7 +573,7 @@ class FeatureStore extends Vector {
     this.hiddenStaticFeatureIds.add(featureId);
     const feature = new Feature();
     feature.setId(featureId);
-    feature[featureStoreStateSymbol] = featureStoreState.STATIC;
+    feature[featureStoreStateSymbol] = FeatureStoreState.STATIC;
     this.changeTracker.removeFeature(feature);
   }
 

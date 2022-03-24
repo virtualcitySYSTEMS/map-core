@@ -97,7 +97,7 @@ import { VcsClassRegistry } from '../../classRegistry.js';
  * @property {number} POLYLINE
  * @property {number} POINT
  */
-export const olcsGeometryType = {
+export const OlcsGeometryType = {
   POLYGON: 1,
   POLYLINE: 2,
   POINT: 3,
@@ -522,12 +522,12 @@ class VectorStyleItem extends StyleItem {
   updateCesiumStyleColor(silent) {
     const colorConditions = getDefaultCondition('olcs_color', true);
     if (this.stroke && this.stroke.getColor()) {
-      colorConditions.splice(1, 0, [`\${olcs_geometryType}===${olcsGeometryType.POLYLINE}`, getStringColor(this.stroke.getColor())]);
+      colorConditions.splice(1, 0, [`\${olcs_geometryType}===${OlcsGeometryType.POLYLINE}`, getStringColor(this.stroke.getColor())]);
     }
     if (this._image instanceof Circle && this._image.getFill()) {
       colorConditions.splice(
         1, 0,
-        [`\${olcs_geometryType}===${olcsGeometryType.POINT}`, getStringColor(this._image.getFill().getColor())],
+        [`\${olcs_geometryType}===${OlcsGeometryType.POINT}`, getStringColor(this._image.getFill().getColor())],
       );
     }
     if (this.fillColor) {
