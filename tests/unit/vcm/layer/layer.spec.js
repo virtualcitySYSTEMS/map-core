@@ -1,23 +1,23 @@
 import Layer from '../../../../src/vcs/vcm/layer/layer.js';
-import { getFramework } from '../../helpers/framework.js';
+import VcsApp from '../../../../src/vcs/vcm/vcsApp.js';
 import LayerState from '../../../../src/vcs/vcm/layer/layerState.js';
-import resetFramework from '../../helpers/resetFramework.js';
 import LayerImplementation from '../../../../src/vcs/vcm/layer/layerImplementation.js';
 import { getCesiumEventSpy } from '../../helpers/cesiumHelpers.js';
-import { getOpenlayersMap, setOpenlayersMap } from '../../helpers/openlayers.js';
+import { getOpenlayersMap, setOpenlayersMap } from '../../helpers/openlayersHelpers.js';
 import { setCurrentLocale } from '../../../../src/vcs/vcm/util/locale.js';
 import Extent from '../../../../src/vcs/vcm/util/extent.js';
 
 describe('vcs.vcm.layer.Layer', () => {
   let sandbox;
-
+  let app;
   /** @type {import("@vcmap/core").Layer} */
   let AL;
   let map;
 
   before(async () => {
     sandbox = sinon.createSandbox();
-    map = await setOpenlayersMap(getFramework());
+    app = new VcsApp();
+    map = await setOpenlayersMap(app);
   });
 
   beforeEach(() => {
@@ -33,7 +33,7 @@ describe('vcs.vcm.layer.Layer', () => {
   });
 
   after(() => {
-    resetFramework();
+    app.destroy();
   });
 
   describe('exclusiveGroups', () => {

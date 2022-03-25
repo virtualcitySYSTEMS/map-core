@@ -7,8 +7,7 @@ import { EventType, ModificationKeyType } from '../../../../src/vcs/vcm/interact
 import Projection from '../../../../src/vcs/vcm/util/projection.js';
 import Vector from '../../../../src/vcs/vcm/layer/vector.js';
 import { setCesiumMap, createDummyCesium3DTileFeature } from '../../helpers/cesiumHelpers.js';
-import { getFramework } from '../../helpers/framework.js';
-import resetFramework from '../../helpers/resetFramework.js';
+import VcsApp from '../../../../src/vcs/vcm/vcsApp.js';
 import { vcsLayerName } from '../../../../src/vcs/vcm/layer/layerSymbols.js';
 
 describe('vcs.vcm.interaction.FeatureAtPixelInteraction', () => {
@@ -18,6 +17,7 @@ describe('vcs.vcm.interaction.FeatureAtPixelInteraction', () => {
   let render;
   /** @type {import("@vcmap/core").FeatureAtPixelInteraction} */
   let fap;
+  let app;
   let mercatorPosition;
   let cartesianPosition;
   let positionSpy;
@@ -25,9 +25,10 @@ describe('vcs.vcm.interaction.FeatureAtPixelInteraction', () => {
 
   before(async () => {
     sandbox = sinon.createSandbox();
+    app = new VcsApp();
     mercatorPosition = [5845000, 1505147, 0];
     cartesianPosition = Cartesian3.fromDegrees(...Projection.mercatorToWgs84(mercatorPosition));
-    cesiumMap = await setCesiumMap(getFramework());
+    cesiumMap = await setCesiumMap(app);
   });
 
   beforeEach(() => {
@@ -46,7 +47,7 @@ describe('vcs.vcm.interaction.FeatureAtPixelInteraction', () => {
   });
 
   after(() => {
-    resetFramework();
+    app.destroy();
   });
 
   function setup3DTest(dummy) {

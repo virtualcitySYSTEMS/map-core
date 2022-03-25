@@ -93,18 +93,18 @@ export async function getObliqueMap(mapOptions = {}, scope) {
 }
 
 /**
- * @param {vcs.vcm.Framework} framework
+ * @param {VcsApp} app
  * @param {Scope=} scope optional server, if provided the map will be initialized with a terrainProvider
  * @param {ViewPoint=} startingVP
  * @returns {Promise<Oblique>}
  */
-export async function setObliqueMap(framework, scope, startingVP) {
-  const map = await getObliqueMap({
-    layerCollection: framework.layerCollection,
-    target: framework.mapcontainer,
-  }, scope);
-  framework.addMap(map);
-  await framework.activateMap(map.name);
+export async function setObliqueMap(app, scope, startingVP) {
+  const map = await getObliqueMap(
+    { layerCollection: app.layers, target: app.maps.target },
+    scope,
+  );
+  app.maps.add(map);
+  await app.maps.setActiveMap(map.name);
   await map.gotoViewPoint(startingVP || getStartingViewpoint());
   return map;
 }

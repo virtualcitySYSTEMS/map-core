@@ -6,13 +6,12 @@ import Vector from '../../../../src/vcs/vcm/layer/vector.js';
 import Projection, { wgs84Projection } from '../../../../src/vcs/vcm/util/projection.js';
 import DeclarativeStyleItem from '../../../../src/vcs/vcm/util/style/declarativeStyleItem.js';
 import { referenceableStyleSymbol, StyleType } from '../../../../src/vcs/vcm/util/style/styleItem.js';
-import { getFramework } from '../../helpers/framework.js';
+import VcsApp from '../../../../src/vcs/vcm/vcsApp.js';
 import VectorStyleItem, { vectorStyleSymbol } from '../../../../src/vcs/vcm/util/style/vectorStyleItem.js';
 import { vcsMetaVersion } from '../../../../src/vcs/vcm/layer/layer.js';
 import { originalStyle } from '../../../../src/vcs/vcm/layer/featureVisibility.js';
 import { AltitudeModeCesium, ClassificationTypeCesium } from '../../../../src/vcs/vcm/layer/vectorProperties.js';
-import resetFramework from '../../helpers/resetFramework.js';
-import { setOpenlayersMap } from '../../helpers/openlayers.js';
+import { setOpenlayersMap } from '../../helpers/openlayersHelpers.js';
 import Extent from '../../../../src/vcs/vcm/util/extent.js';
 import { styleCollection } from '../../../../src/vcs/vcm/globalCollections.js';
 
@@ -32,10 +31,6 @@ describe('vcs.vcm.layer.Vector', () => {
   afterEach(() => {
     VL.destroy();
     sandbox.restore();
-  });
-
-  after(() => {
-    resetFramework();
   });
 
   describe('getZoomToExtent', () => {
@@ -288,9 +283,15 @@ describe('vcs.vcm.layer.Vector', () => {
   });
 
   describe('layer visibility', () => {
+    let app;
     let map;
     before(async () => {
-      map = await setOpenlayersMap(getFramework());
+      app = new VcsApp();
+      map = await setOpenlayersMap(app);
+    });
+
+    after(() => {
+      app.destroy();
     });
 
     it('should force a redraw, if the visibility changes', () => {

@@ -2,14 +2,9 @@ import DeclarativeStyleItem from '../../../../../src/vcs/vcm/util/style/declarat
 import { StyleType } from '../../../../../src/vcs/vcm/util/style/styleItem.js';
 import VectorStyleItem, { defaultVectorStyle } from '../../../../../src/vcs/vcm/util/style/vectorStyleItem.js';
 import { getStyleOrDefaultStyle } from '../../../../../src/vcs/vcm/util/style/styleFactory.js';
-import resetFramework from '../../../helpers/resetFramework.js';
 import { styleCollection } from '../../../../../src/vcs/vcm/globalCollections.js';
 
 describe('getStyleOrDefaultStyle', () => {
-  after(() => {
-    resetFramework();
-  });
-
   describe('referenced styles', () => {
     let styleItem;
     before(() => {

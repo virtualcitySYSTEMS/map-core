@@ -1,20 +1,21 @@
 import { ImagerySplitDirection } from '@vcmap/cesium';
 
 import { getCesiumEventSpy } from '../../helpers/cesiumHelpers.js';
-import { setOpenlayersMap } from '../../helpers/openlayers.js';
+import { setOpenlayersMap } from '../../helpers/openlayersHelpers.js';
 import OpenStreetMap from '../../../../src/vcs/vcm/layer/openStreetMap.js';
-import { getFramework } from '../../helpers/framework.js';
-import resetFramework from '../../helpers/resetFramework.js';
+import VcsApp from '../../../../src/vcs/vcm/vcsApp.js';
 
 describe('vcs.vcm.layer.OpenStreetMap', () => {
   let sandbox;
+  let app;
   /** @type {import("@vcmap/core").OpenStreetMap} */
   let openStreetMapLayer;
   let map;
 
   before(async () => {
-    map = await setOpenlayersMap(getFramework());
     sandbox = sinon.createSandbox();
+    app = new VcsApp();
+    map = await setOpenlayersMap(app);
   });
 
   beforeEach(() => {
@@ -27,7 +28,7 @@ describe('vcs.vcm.layer.OpenStreetMap', () => {
   });
 
   after(() => {
-    resetFramework();
+    app.destroy();
   });
 
   describe('splitDirection', () => {

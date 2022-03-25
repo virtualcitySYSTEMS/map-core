@@ -1,8 +1,7 @@
 import { Cartesian3, ImagerySplitDirection } from '@vcmap/cesium';
-import { getFramework } from '../../helpers/framework.js';
+import VcsApp from '../../../../src/vcs/vcm/vcsApp.js';
 import { createInitializedTilesetLayer, getCesiumEventSpy, setCesiumMap } from '../../helpers/cesiumHelpers.js';
-import { setOpenlayersMap } from '../../helpers/openlayers.js';
-import resetFramework from '../../helpers/resetFramework.js';
+import { setOpenlayersMap } from '../../helpers/openlayersHelpers.js';
 
 /**
  * @param {vcs.vcm.event.VcsEvent} event
@@ -24,6 +23,7 @@ function waitForEvent(event, raise) {
 
 describe('vcs.vcm.util.SplitScreen', () => {
   let sandbox;
+  let app;
   /** @type {import("@vcmap/core").SplitScreen} */
   let splitScreen;
   let cesiumMap;
@@ -31,13 +31,14 @@ describe('vcs.vcm.util.SplitScreen', () => {
 
   beforeEach(async () => {
     sandbox = sinon.createSandbox();
-    openlayers = await setOpenlayersMap(getFramework());
-    cesiumMap = await setCesiumMap(getFramework());
-    ({ splitScreen } = getFramework().mapCollection);
+    app = new VcsApp();
+    openlayers = await setOpenlayersMap(app);
+    cesiumMap = await setCesiumMap(app);
+    ({ splitScreen } = app.maps);
   });
 
   afterEach(() => {
-    resetFramework();
+    app.destroy();
     sandbox.restore();
   });
 
@@ -83,7 +84,7 @@ describe('vcs.vcm.util.SplitScreen', () => {
 
   describe('constructor', () => {
     it('should add left and right clippingObjects to the default clippingObjects', () => {
-      const { clippingObjectManager } = getFramework().mapCollection;
+      const { clippingObjectManager } = app.maps;
       expect(clippingObjectManager.hasClippingObject(splitScreen.leftScreenClippingObject)).to.be.true;
       expect(clippingObjectManager.hasClippingObject(splitScreen.rightScreenClippingObject)).to.be.true;
     });
@@ -104,7 +105,7 @@ describe('vcs.vcm.util.SplitScreen', () => {
     beforeEach(async () => {
       layer = await createInitializedTilesetLayer(sandbox, cesiumMap);
       await layer.activate();
-      getFramework().addLayer(layer);
+      app.layers.add(layer);
     });
 
     describe('targets added', () => {
@@ -297,7 +298,7 @@ describe('vcs.vcm.util.SplitScreen', () => {
   describe('destroy', () => {
     it('should remove both clipping planes', () => {
       splitScreen.destroy();
-      const { clippingObjectManager } = getFramework().mapCollection;
+      const { clippingObjectManager } = app.maps;
       expect(clippingObjectManager.hasClippingObject(splitScreen.leftScreenClippingObject)).to.be.false;
       expect(clippingObjectManager.hasClippingObject(splitScreen.rightScreenClippingObject)).to.be.false;
     });

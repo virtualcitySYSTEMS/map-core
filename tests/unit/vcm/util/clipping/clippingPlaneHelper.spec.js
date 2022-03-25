@@ -26,9 +26,8 @@ import {
 } from '../../../../../src/vcs/vcm/util/clipping/clippingPlaneHelper.js';
 import Projection from '../../../../../src/vcs/vcm/util/projection.js';
 import getDummyCesium3DTileset from '../../layer/cesium/getDummyCesium3DTileset.js';
-import { getFramework } from '../../../helpers/framework.js';
+import VcsApp from '../../../../../src/vcs/vcm/vcsApp.js';
 import { setCesiumMap } from '../../../helpers/cesiumHelpers.js';
-import resetFramework from '../../../helpers/resetFramework.js';
 
 describe('vcs.vcm.util.clipping.ClippingPlaneHelpers', () => {
   function expectedPlane(plane, distance, x, y, z) {
@@ -46,10 +45,6 @@ describe('vcs.vcm.util.clipping.ClippingPlaneHelpers', () => {
 
   afterEach(() => {
     sandbox.restore();
-  });
-
-  after(() => {
-    resetFramework();
   });
 
   describe('createClippingPlaneCollection', () => {
@@ -433,9 +428,15 @@ describe('vcs.vcm.util.clipping.ClippingPlaneHelpers', () => {
   });
 
   describe('createClippingFeature', () => {
+    let app;
     let cesiumMap;
     before(async () => {
-      cesiumMap = await setCesiumMap(getFramework());
+      app = new VcsApp();
+      cesiumMap = await setCesiumMap(app);
+    });
+
+    after(() => {
+      app.destroy();
     });
 
     describe('polygon', () => {

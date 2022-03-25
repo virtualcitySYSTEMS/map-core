@@ -1,14 +1,14 @@
 import Layer from 'ol/layer/Layer.js';
 import { ImagerySplitDirection } from '@vcmap/cesium';
 import AbstractRasterLayerOL from '../../../../../src/vcs/vcm/layer/openlayers/rasterLayerOpenlayers.js';
-import { getFramework } from '../../../helpers/framework.js';
+import VcsApp from '../../../../../src/vcs/vcm/vcsApp.js';
 import RasterLayer from '../../../../../src/vcs/vcm/layer/rasterLayer.js';
-import { setOpenlayersMap } from '../../../helpers/openlayers.js';
-import resetFramework from '../../../helpers/resetFramework.js';
+import { setOpenlayersMap } from '../../../helpers/openlayersHelpers.js';
 
 
 describe('vcs.vcm.layer.openlayers.RasterLayerOpenlayers', () => {
   let sandbox;
+  let app;
   /** @type {import("@vcmap/core").RasterLayer} */
   let commonLayer;
   /** @type {import("@vcmap/core").RasterLayerOpenlayers} */
@@ -18,8 +18,9 @@ describe('vcs.vcm.layer.openlayers.RasterLayerOpenlayers', () => {
 
   before(async () => {
     sandbox = sinon.createSandbox();
+    app = new VcsApp();
     commonLayer = new RasterLayer({});
-    openlayers = await setOpenlayersMap(getFramework());
+    openlayers = await setOpenlayersMap(app);
   });
 
   beforeEach(() => {
@@ -35,7 +36,7 @@ describe('vcs.vcm.layer.openlayers.RasterLayerOpenlayers', () => {
   });
 
   after(() => {
-    resetFramework();
+    app.destroy();
   });
 
   describe('initialize', () => {

@@ -4,7 +4,6 @@ import LayerCollection from '../../../../src/vcs/vcm/util/layerCollection.js';
 import Layer from '../../../../src/vcs/vcm/layer/layer.js';
 import MapState from '../../../../src/vcs/vcm/maps/mapState.js';
 import { getCesiumEventSpy } from '../../helpers/cesiumHelpers.js';
-import { getFramework } from '../../helpers/framework.js';
 
 describe('vcs.vcm.maps.VcmMap', () => {
   let sandbox;
@@ -448,7 +447,7 @@ describe('vcs.vcm.maps.VcmMap', () => {
     it('should remove the map from its parent', () => {
       const { mapElement } = map;
       map.destroy();
-      expect(getFramework().mapcontainer.contains(mapElement)).to.be.false;
+      expect(document.getElementById('mapContainer').contains(mapElement)).to.be.false;
     });
 
     it('should no longer listen to events on the layer collection', () => {

@@ -6,14 +6,14 @@ import Fill from 'ol/style/Fill.js';
 import OLText from 'ol/style/Text.js';
 import Feature from 'ol/Feature.js';
 
-import { getFramework } from '../../../helpers/framework.js';
+import VcsApp from '../../../../../src/vcs/vcm/vcsApp.js';
 import Vector from '../../../../../src/vcs/vcm/layer/vector.js';
 import { setCesiumMap } from '../../../helpers/cesiumHelpers.js';
-import { setOpenlayersMap } from '../../../helpers/openlayers.js';
-import resetFramework from '../../../helpers/resetFramework.js';
+import { setOpenlayersMap } from '../../../helpers/openlayersHelpers.js';
 
 describe('vcs.vcm.layer.cesium.VectorCesium', () => {
   let sandbox;
+  let app;
   let cesiumMap;
   let openlayers;
   /** @type {import("@vcmap/core").Vector} */
@@ -43,16 +43,17 @@ describe('vcs.vcm.layer.cesium.VectorCesium', () => {
   });
 
   beforeEach(async () => {
-    const framework = getFramework();
-    openlayers = await setOpenlayersMap(framework);
-    cesiumMap = await setCesiumMap(framework);
+    app = new VcsApp();
+    openlayers = await setOpenlayersMap(app);
+    cesiumMap = await setCesiumMap(app);
+    cesiumMap.setTarget('mapContainer');
     commonLayer = new Vector({});
-    framework.addLayer(commonLayer);
+    app.layers.add(commonLayer);
     [vectorLayer] = commonLayer.getImplementationsForMap(cesiumMap);
   });
 
   afterEach(() => {
-    resetFramework();
+    app.destroy();
     sandbox.restore();
   });
 
@@ -159,12 +160,11 @@ describe('vcs.vcm.layer.cesium.VectorCesium', () => {
     });
 
     it('should, if current map is not a cesium map, cache a feature, until the map is a cesium map', async () => {
-      const framework = getFramework();
-      await framework.activateMap(openlayers.name);
+      await app.maps.setActiveMap(openlayers.name);
       await commonLayer.activate();
       vectorLayer._addFeature(feature);
       expect(vectorLayer._context.primitives.length).to.equal(0);
-      await framework.activateMap(cesiumMap.name);
+      await app.maps.setActiveMap(cesiumMap.name);
       expect(vectorLayer._context.primitives.length).to.equal(1);
     });
   });

@@ -1,10 +1,10 @@
-import { setOpenlayersMap } from '../../helpers/openlayers.js';
-import { getFramework } from '../../helpers/framework.js';
+import { setOpenlayersMap } from '../../helpers/openlayersHelpers.js';
+import VcsApp from '../../../../src/vcs/vcm/vcsApp.js';
 import Layer from '../../../../src/vcs/vcm/layer/layer.js';
-import resetFramework from '../../helpers/resetFramework.js';
 import LayerImplementation from '../../../../src/vcs/vcm/layer/layerImplementation.js';
 
 describe('vcs.vcm.layer.LayerImplementation', () => {
+  let app;
   let map;
   /** @type {import("@vcmap/core").Layer} */
   let layer;
@@ -12,7 +12,8 @@ describe('vcs.vcm.layer.LayerImplementation', () => {
   let implementation;
 
   before(async () => {
-    map = await setOpenlayersMap(getFramework());
+    app = new VcsApp();
+    map = await setOpenlayersMap(app);
     layer = new Layer({});
   });
 
@@ -26,7 +27,7 @@ describe('vcs.vcm.layer.LayerImplementation', () => {
 
   after(() => {
     layer.destroy();
-    resetFramework();
+    app.destroy();
   });
 
   describe('activating a layer implementation', () => {

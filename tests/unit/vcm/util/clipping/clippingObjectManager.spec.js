@@ -1,7 +1,7 @@
 import ClippingObject from '../../../../../src/vcs/vcm/util/clipping/clippingObject.js';
 import Vector from '../../../../../src/vcs/vcm/layer/vector.js';
 import { getCesiumMap } from '../../../helpers/cesiumHelpers.js';
-import { getOpenlayersMap } from '../../../helpers/openlayers.js';
+import { getOpenlayersMap } from '../../../helpers/openlayersHelpers.js';
 import MapCollection from '../../../../../src/vcs/vcm/util/mapCollection.js';
 
 describe('vcs.vcm.util.clipping.ClippingObjectManager', () => {

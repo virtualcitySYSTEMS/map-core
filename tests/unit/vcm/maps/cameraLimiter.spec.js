@@ -1,15 +1,15 @@
 import { Cartographic, Ellipsoid } from '@vcmap/cesium';
 import nock from 'nock';
 import { setCesiumMap } from '../../helpers/cesiumHelpers.js';
-import { getFramework } from '../../helpers/framework.js';
+import VcsApp from '../../../../src/vcs/vcm/vcsApp.js';
 import CameraLimiter, { CameraLimiterMode } from '../../../../src/vcs/vcm/maps/cameraLimiter.js';
-import resetFramework from '../../helpers/resetFramework.js';
 import { setTerrainServer } from '../../helpers/terrain/terrainData.js';
 import Projection from '../../../../src/vcs/vcm/util/projection.js';
 import { mercatorCoordinates } from '../../helpers/obliqueHelpers.js';
 
 describe('vcs.vcm.maps.CameraLimiter', () => {
   let sandbox;
+  let app;
   let scope;
   let sampleTerrain;
   let sampleTerrainMostDetailed;
@@ -17,7 +17,8 @@ describe('vcs.vcm.maps.CameraLimiter', () => {
 
   before(async () => {
     sandbox = sinon.createSandbox();
-    const map = await setCesiumMap(getFramework());
+    app = new VcsApp();
+    const map = await setCesiumMap(app);
     ({ camera } = map.getScene());
   });
 
@@ -26,7 +27,7 @@ describe('vcs.vcm.maps.CameraLimiter', () => {
   });
 
   after(() => {
-    resetFramework();
+    app.destroy();
     nock.cleanAll();
   });
 

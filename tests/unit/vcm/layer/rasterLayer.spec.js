@@ -3,7 +3,7 @@ import { ImagerySplitDirection, GeographicTilingScheme } from '@vcmap/cesium';
 import RasterLayer, { calculateMinLevel } from '../../../../src/vcs/vcm/layer/rasterLayer.js';
 import { getCesiumEventSpy } from '../../helpers/cesiumHelpers.js';
 import Extent from '../../../../src/vcs/vcm/util/extent.js';
-import { getOpenlayersMap } from '../../helpers/openlayers.js';
+import { getOpenlayersMap } from '../../helpers/openlayersHelpers.js';
 import AbstractRasterLayerOL from '../../../../src/vcs/vcm/layer/openlayers/rasterLayerOpenlayers.js';
 import { mercatorProjection, wgs84Projection } from '../../../../src/vcs/vcm/util/projection.js';
 

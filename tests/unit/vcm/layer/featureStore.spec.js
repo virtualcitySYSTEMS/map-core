@@ -6,7 +6,7 @@ import Style from 'ol/style/Style.js';
 
 import nock from 'nock';
 import FeatureStore, { isTiledFeature } from '../../../../src/vcs/vcm/layer/featureStore.js';
-import { getFramework } from '../../helpers/framework.js';
+import VcsApp from '../../../../src/vcs/vcm/vcsApp.js';
 import Vector from '../../../../src/vcs/vcm/layer/vector.js';
 import VectorStyleItem, { vectorStyleSymbol, defaultVectorStyle } from '../../../../src/vcs/vcm/util/style/vectorStyleItem.js';
 import { FeatureStoreState, featureStoreStateSymbol } from '../../../../src/vcs/vcm/layer/featureStoreState.js';
@@ -14,8 +14,7 @@ import getJSONObjectFromObject from '../../../../src/vcs/vcm/layer/cesium/x3dmHe
 import DeclarativeStyleItem from '../../../../src/vcs/vcm/util/style/declarativeStyleItem.js';
 import '../../../../src/vcs/vcm/layer/cesium/cesiumTilesetCesium.js';
 import { createTilesetServer, setCesiumMap, createDummyCesium3DTileFeature } from '../../helpers/cesiumHelpers.js';
-import { setOpenlayersMap } from '../../helpers/openlayers.js';
-import resetFramework from '../../helpers/resetFramework.js';
+import { setOpenlayersMap } from '../../helpers/openlayersHelpers.js';
 import CesiumTileset from '../../../../src/vcs/vcm/layer/cesiumTileset.js';
 import { vcsLayerName } from '../../../../src/vcs/vcm/layer/layerSymbols.js';
 import Extent from '../../../../src/vcs/vcm/util/extent.js';
@@ -27,6 +26,7 @@ const testGeoJSON = await importJSON('./tests/data/testGeoJSON.json');
 describe('vcs.vcm.layer.FeatureStore', () => {
   /** @type {import("@vcmap/core").FeatureStore} */
   let FS;
+  let app;
   let cesiumMap;
   let openlayer;
   let sandbox;
@@ -49,8 +49,10 @@ describe('vcs.vcm.layer.FeatureStore', () => {
 
   before(async () => {
     sandbox = sinon.createSandbox();
-    cesiumMap = await setCesiumMap(getFramework());
-    openlayer = await setOpenlayersMap(getFramework());
+    app = new VcsApp();
+    cesiumMap = await setCesiumMap(app);
+    cesiumMap.setTarget('mapContainer');
+    openlayer = await setOpenlayersMap(app);
     featureStyle = new VectorStyleItem({});
   });
 
@@ -65,7 +67,7 @@ describe('vcs.vcm.layer.FeatureStore', () => {
 
   after(() => {
     featureStyle.destroy();
-    resetFramework();
+    app.destroy();
   });
 
   describe('constructor', () => {
@@ -123,11 +125,11 @@ describe('vcs.vcm.layer.FeatureStore', () => {
 
   describe('activate', () => {
     before(async () => {
-      await getFramework().activateMap(cesiumMap.name);
+      await app.maps.setActiveMap(cesiumMap.name);
     });
 
     after(async () => {
-      await getFramework().activateMap(openlayer.name);
+      await app.maps.setActiveMap(openlayer.name);
     });
 
     it('should call setEditing, if an editing symbol has been cached for the cesium impl', () => {
@@ -244,7 +246,7 @@ describe('vcs.vcm.layer.FeatureStore', () => {
     });
 
     it('should handle a json object from cesiumTile feature', async () => {
-      await getFramework().activateMap(cesiumMap.name);
+      await app.maps.setActiveMap(cesiumMap.name);
       const feature = createDummyCesium3DTileFeature({ test: true });
       feature.clickedPosition = { longitude: 1, latitude: 1, height: 1 };
       const obj = getJSONObjectFromObject(feature);
@@ -252,7 +254,7 @@ describe('vcs.vcm.layer.FeatureStore', () => {
       expect(generic).to.have.property('layerName', FS.name);
       expect(generic).to.have.property('layerClass', FS.className);
       expect(generic).to.have.property('attributes').and.to.have.property('test', true);
-      await getFramework().activateMap(openlayer.name);
+      await app.maps.setActiveMap(openlayer.name);
     });
   });
 
@@ -384,13 +386,13 @@ describe('vcs.vcm.layer.FeatureStore', () => {
     });
 
     it('should call the staticFeatureLayers objectClickedHandler, if the feature is a tiledFeature 3DTilesetFeature', async () => {
-      await getFramework().activateMap(cesiumMap.name);
+      await app.maps.setActiveMap(cesiumMap.name);
       const feature = createDummyCesium3DTileFeature();
       feature[isTiledFeature] = true;
       const objectClickedHandler = sandbox.spy(CesiumTileset.prototype, 'objectClickedHandler');
       FS.objectClickedHandler(feature);
       expect(objectClickedHandler).to.have.been.calledWithExactly(feature);
-      await getFramework().activateMap(openlayer.name);
+      await app.maps.setActiveMap(openlayer.name);
     });
   });
 

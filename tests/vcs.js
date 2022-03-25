@@ -7,7 +7,6 @@ import '../src/cesium/cesium3DTileFeature.js';
 import '../src/cesium/cesiumVcsCameraPrimitive.js';
 
 import { setLogLevel } from '@vcsuite/logger';
-import { getFramework } from './unit/helpers/framework.js';
 import { mercatorProjection, setDefaultProjectionOptions } from '../src/vcs/vcm/util/projection.js';
 import { setupCesiumContextLimits } from './unit/helpers/cesiumHelpers.js';
 
@@ -24,12 +23,3 @@ body.appendChild(mapContainer);
 body.appendChild(overviewMapDiv);
 setDefaultProjectionOptions(mercatorProjection.toJSON());
 setupCesiumContextLimits();
-
-before(() => {
-  getFramework().mapcontainer = mapContainer;
-});
-
-// afterEach(function globalAfterEach() {
-//   console.log(getFramework().pubsub.getCount());
-// });
-

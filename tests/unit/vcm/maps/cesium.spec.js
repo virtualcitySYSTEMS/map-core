@@ -19,7 +19,6 @@ import ViewPoint from '../../../../src/vcs/vcm/util/viewpoint.js';
 import Projection from '../../../../src/vcs/vcm/util/projection.js';
 import CesiumMap, { synchronizeClock } from '../../../../src/vcs/vcm/maps/cesium.js';
 import { getCesiumMap } from '../../helpers/cesiumHelpers.js';
-import { getFramework } from '../../helpers/framework.js';
 import CameraLimiter from '../../../../src/vcs/vcm/maps/cameraLimiter.js';
 import getDummyCesium3DTileset from '../layer/cesium/getDummyCesium3DTileset.js';
 
@@ -442,7 +441,7 @@ describe('vcs.vcm.maps.Cesium', () => {
         pitch: -45,
       });
 
-      map = getCesiumMap({ target: getFramework().getMapContainer() });
+      map = getCesiumMap({ target: document.getElementById('mapContainer') });
       await map.gotoViewPoint(inputViewpoint);
       sandbox.stub(map.getScene().globe, 'pick').returns(Cartesian3.fromDegrees(0, 0, 10)); // there are not globe tiles rendered
       outputViewpoint = map.getViewPointSync();

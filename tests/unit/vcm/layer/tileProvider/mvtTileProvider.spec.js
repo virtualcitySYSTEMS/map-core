@@ -1,7 +1,6 @@
 import nock from 'nock';
 import fs from 'fs';
 import Feature from 'ol/Feature.js';
-import resetFramework from '../../../helpers/resetFramework.js';
 import MVTTileProvider from '../../../../../src/vcs/vcm/layer/tileProvider/mvtTileProvider.js';
 
 describe('vcs.vcm.layer.tileProvider.MVTTileProvider', () => {
@@ -19,7 +18,6 @@ describe('vcs.vcm.layer.tileProvider.MVTTileProvider', () => {
 
   after(() => {
     tileProvider.destroy();
-    resetFramework();
     nock.cleanAll();
   });
 

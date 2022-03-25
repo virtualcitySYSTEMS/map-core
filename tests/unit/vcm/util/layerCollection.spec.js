@@ -3,9 +3,8 @@ import Layer from '../../../../src/vcs/vcm/layer/layer.js';
 import LayerCollection from '../../../../src/vcs/vcm/util/layerCollection.js';
 import { getCesiumEventSpy } from '../../helpers/cesiumHelpers.js';
 import OpenStreetMap from '../../../../src/vcs/vcm/layer/openStreetMap.js';
-import { setOpenlayersMap } from '../../helpers/openlayers.js';
-import { getFramework } from '../../helpers/framework.js';
-import resetFramework from '../../helpers/resetFramework.js';
+import { setOpenlayersMap } from '../../helpers/openlayersHelpers.js';
+import VcsApp from '../../../../src/vcs/vcm/vcsApp.js';
 
 describe('vcs.vcm.util.LayerCollection', () => {
   let layer1;
@@ -40,7 +39,6 @@ describe('vcs.vcm.util.LayerCollection', () => {
     layer3.destroy();
     layer4.destroy();
     sandbox.restore();
-    resetFramework();
   });
 
   describe('creating from an existing array', () => {
@@ -180,12 +178,14 @@ describe('vcs.vcm.util.LayerCollection', () => {
   });
 
   describe('handling of exclusive layers', () => {
+    let app;
     let layerCollection;
     let layer5;
     let layer6;
 
     before(async () => {
-      await setOpenlayersMap(getFramework());
+      app = new VcsApp();
+      await setOpenlayersMap(app);
       layer5 = new OpenStreetMap({
         name: 'layer5',
         exclusiveGroups: ['test'],
@@ -209,6 +209,7 @@ describe('vcs.vcm.util.LayerCollection', () => {
     after(() => {
       layer5.destroy();
       layer6.destroy();
+      app.destroy();
     });
 
     it('should handle exclusivity', async () => {

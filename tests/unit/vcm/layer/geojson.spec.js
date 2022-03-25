@@ -2,22 +2,23 @@ import nock from 'nock';
 import Feature from 'ol/Feature.js';
 import { ClassificationType } from '@vcmap/cesium';
 import GeoJSON, { featureFromOptions } from '../../../../src/vcs/vcm/layer/geojson.js';
-import resetFramework from '../../helpers/resetFramework.js';
-import { setOpenlayersMap } from '../../helpers/openlayers.js';
-import { getFramework } from '../../helpers/framework.js';
+import { setOpenlayersMap } from '../../helpers/openlayersHelpers.js';
+import VcsApp from '../../../../src/vcs/vcm/vcsApp.js';
 import importJSON from '../../helpers/importJSON.js';
 
 const testGeoJSON = await importJSON('./tests/data/testGeoJSON.json');
 
 describe('vcs.vcm.layer.GeoJSON', () => {
   let scope;
+  let app;
 
   before(async () => {
-    await setOpenlayersMap(getFramework());
+    app = new VcsApp();
+    await setOpenlayersMap(app);
   });
 
   after(() => {
-    resetFramework();
+    app.destroy();
     nock.cleanAll();
   });
 

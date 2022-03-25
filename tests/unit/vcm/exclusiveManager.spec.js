@@ -2,7 +2,6 @@ import { ImagerySplitDirection } from '@vcmap/cesium';
 import ExclusiveManager from '../../../src/vcs/vcm/util/exclusiveManager.js';
 import OpenStreetMap from '../../../src/vcs/vcm/layer/openStreetMap.js';
 import LayerState from '../../../src/vcs/vcm/layer/layerState.js';
-import resetFramework from '../helpers/resetFramework.js';
 
 describe('vcs.vcm.ExclusiveManager', () => {
   let sandbox;
@@ -20,10 +19,6 @@ describe('vcs.vcm.ExclusiveManager', () => {
   afterEach(() => {
     sandbox.restore();
     EM.destroy();
-  });
-
-  after(() => {
-    resetFramework();
   });
 
   describe('registerLayer', () => {

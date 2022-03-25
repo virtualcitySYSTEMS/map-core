@@ -4,7 +4,6 @@ import Oblique from '../../../../src/vcs/vcm/maps/oblique.js';
 import ViewPoint from '../../../../src/vcs/vcm/util/viewpoint.js';
 import Projection from '../../../../src/vcs/vcm/util/projection.js';
 import { getCesiumEventSpy } from '../../helpers/cesiumHelpers.js';
-import resetFramework from '../../helpers/resetFramework.js';
 import ObliqueImage from '../../../../src/vcs/vcm/oblique/ObliqueImage.js';
 import { DefaultObliqueCollection } from '../../../../index.js';
 
@@ -22,10 +21,6 @@ describe('vcs.vcm.maps.Oblique', () => {
 
   afterEach(() => {
     sandbox.restore();
-  });
-
-  after(() => {
-    resetFramework();
   });
 
   describe('initializing an oblique map', () => {

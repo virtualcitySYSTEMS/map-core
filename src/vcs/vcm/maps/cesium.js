@@ -914,7 +914,7 @@ class CesiumMap extends VcsMap {
    */
   removePrimitiveCollection(primitiveCollection) { // XXX add destroy as boolean?
     this.removeVisualization(primitiveCollection);
-    this.getScene().primitives.remove(primitiveCollection);
+    this.getScene()?.primitives.remove(primitiveCollection);
   }
 
   /**
@@ -934,7 +934,7 @@ class CesiumMap extends VcsMap {
    */
   removeImageryLayer(imageryLayer) {
     this.removeVisualization(imageryLayer);
-    this.getScene().imageryLayers.remove(imageryLayer);
+    this.getScene()?.imageryLayers.remove(imageryLayer);
   }
 
   /**
@@ -955,7 +955,9 @@ class CesiumMap extends VcsMap {
    */
   removeDataSource(dataSource) {
     this.removeVisualization(dataSource);
-    this.dataSourceDisplay.dataSources.remove(dataSource);
+    if (!this.dataSourceDisplay.isDestroyed() && !this.dataSourceDisplay.dataSources.isDestroyed()) {
+      this.dataSourceDisplay.dataSources.remove(dataSource);
+    }
   }
 
   /**
@@ -991,12 +993,12 @@ class CesiumMap extends VcsMap {
   }
 
   /**
-   * returns the cesium Viewer Object
+   * returns the cesium Scene Object, returns null on non initialized or destroyed maps
    * @returns {import("@vcmap/cesium").Scene}
    * @api stable
    */
   getScene() {
-    return this._cesiumWidget.scene;
+    return this._cesiumWidget?.scene;
   }
 
   /**
@@ -1145,6 +1147,9 @@ class CesiumMap extends VcsMap {
     if (this._removeClusterClockTickListener) {
       this._removeClusterClockTickListener();
     }
+
+    [...this.layerCollection].forEach((l) => { l.removedFromMap(this); });
+
     if (this._clusterDataSourceDisplay) {
       this._clusterDataSourceDisplay.destroy();
     }

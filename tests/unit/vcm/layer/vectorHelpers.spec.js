@@ -2,9 +2,8 @@ import Feature from 'ol/Feature.js';
 import Point from 'ol/geom/Point.js';
 import Polygon from 'ol/geom/Polygon.js';
 import Vector from '../../../../src/vcs/vcm/layer/vector.js';
-import { setOpenlayersMap } from '../../helpers/openlayers.js';
-import { getFramework } from '../../helpers/framework.js';
-import resetFramework from '../../helpers/resetFramework.js';
+import { setOpenlayersMap } from '../../helpers/openlayersHelpers.js';
+import VcsApp from '../../../../src/vcs/vcm/vcsApp.js';
 import VectorStyleItem from '../../../../src/vcs/vcm/util/style/vectorStyleItem.js';
 import {
   updateGlobalHider,
@@ -42,14 +41,16 @@ function setupVectorLayer() {
 describe('vcs.vcm.layer.VectorHelpers', () => {
   let openlayers;
   let sandbox;
+  let app;
 
   before(async () => {
     sandbox = sinon.createSandbox();
-    openlayers = await setOpenlayersMap(getFramework());
+    app = new VcsApp();
+    openlayers = await setOpenlayersMap(app);
   });
 
   after(() => {
-    resetFramework();
+    app.destroy();
   });
 
   describe('updating feature visibility', () => {

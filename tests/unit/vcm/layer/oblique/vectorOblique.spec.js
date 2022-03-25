@@ -8,8 +8,7 @@ import Style from 'ol/style/Style.js';
 import { v4 as uuidv4 } from 'uuid';
 import { setObliqueMap } from '../../../helpers/obliqueHelpers.js';
 import Vector from '../../../../../src/vcs/vcm/layer/vector.js';
-import { getFramework } from '../../../helpers/framework.js';
-import resetFramework from '../../../helpers/resetFramework.js';
+import VcsApp from '../../../../../src/vcs/vcm/vcsApp.js';
 import {
   actuallyIsCircle,
   alreadyTransformedToImage,
@@ -19,6 +18,7 @@ import {
 
 describe('vcs.vcm.layer.oblique.VectorOblique', () => {
   let sandbox;
+  let app;
   /** @type {import("@vcmap/core").Vector} */
   let VL;
   /** @type {import("@vcmap/core").VectorOblique} */
@@ -29,15 +29,16 @@ describe('vcs.vcm.layer.oblique.VectorOblique', () => {
 
   before(async () => {
     sandbox = sinon.createSandbox();
-    map = await setObliqueMap(getFramework());
+    app = new VcsApp();
+    map = await setObliqueMap(app);
     VL = new Vector({});
-    getFramework().addLayer(VL);
+    app.layers.add(VL);
     [OVL] = /** @type {Array<vcs.vcm.layer.oblique.VectorOblique>} */ (VL.getImplementationsForMap(map));
     debounceTimeout = 200;
   });
 
   after(() => {
-    resetFramework();
+    app.destroy();
   });
 
   describe('activating the implementation', () => {

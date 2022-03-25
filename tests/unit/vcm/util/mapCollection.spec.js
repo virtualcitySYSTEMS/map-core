@@ -1,4 +1,4 @@
-import { getOpenlayersMap } from '../../helpers/openlayers.js';
+import { getOpenlayersMap } from '../../helpers/openlayersHelpers.js';
 import ViewPoint from '../../../../src/vcs/vcm/util/viewpoint.js';
 import MapCollection from '../../../../src/vcs/vcm/util/mapCollection.js';
 import Openlayers from '../../../../src/vcs/vcm/maps/openlayers.js';

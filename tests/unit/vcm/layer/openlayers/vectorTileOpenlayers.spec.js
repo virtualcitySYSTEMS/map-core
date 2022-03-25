@@ -1,12 +1,12 @@
-import { getFramework } from '../../../helpers/framework.js';
-import { setOpenlayersMap } from '../../../helpers/openlayers.js';
-import resetFramework from '../../../helpers/resetFramework.js';
+import VcsApp from '../../../../../src/vcs/vcm/vcsApp.js';
+import { setOpenlayersMap } from '../../../helpers/openlayersHelpers.js';
 import VectorTile from '../../../../../src/vcs/vcm/layer/vectorTile.js';
 import VectorTileOpenlayers from '../../../../../src/vcs/vcm/layer/openlayers/vectorTileOpenlayers.js';
 import { timeout } from '../../../helpers/helpers.js';
 
 describe('vcs.vcm.layer.openlayers.VectorTileOpenlayers', () => {
   let sandbox;
+  let app;
   let openlayers;
   let vectorTile;
   /** @type {import("@vcmap/core").VectorTileOpenlayers} */
@@ -17,7 +17,8 @@ describe('vcs.vcm.layer.openlayers.VectorTileOpenlayers', () => {
 
   before(async () => {
     sandbox = sinon.createSandbox();
-    openlayers = await setOpenlayersMap(getFramework());
+    app = new VcsApp();
+    openlayers = await setOpenlayersMap(app);
     vectorTile = new VectorTile({
       tileProvider: {
         type: 'vcs.vcm.layer.tileProvider.URLTemplateTileProvider',
@@ -41,7 +42,7 @@ describe('vcs.vcm.layer.openlayers.VectorTileOpenlayers', () => {
   });
 
   after(() => {
-    resetFramework();
+    app.destroy();
   });
 
   describe('updateTiles', () => {

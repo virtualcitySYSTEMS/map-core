@@ -11,11 +11,10 @@ import {
 } from '@vcmap/cesium';
 import CesiumTileset from '../../../../../src/vcs/vcm/layer/cesiumTileset.js';
 import DeclarativeStyleItem from '../../../../../src/vcs/vcm/util/style/declarativeStyleItem.js';
-import { getFramework } from '../../../helpers/framework.js';
+import VcsApp from '../../../../../src/vcs/vcm/vcsApp.js';
 import getDummyCesium3DTileset from './getDummyCesium3DTileset.js';
 import { createTilesetServer, setCesiumMap, createDummyCesium3DTileFeature } from '../../../helpers/cesiumHelpers.js';
 import VectorStyleItem from '../../../../../src/vcs/vcm/util/style/vectorStyleItem.js';
-import resetFramework from '../../../helpers/resetFramework.js';
 import { cesiumTilesetLastUpdated } from '../../../../../src/vcs/vcm/layer/cesium/cesiumTilesetCesium.js';
 import { vcsLayerName } from '../../../../../src/vcs/vcm/layer/layerSymbols.js';
 
@@ -28,10 +27,12 @@ describe('vcs.vcm.layer.cesium.CesiumTilesetCesium', () => {
   /** @type {import("@vcmap/core").CesiumTilesetCesium} */
   let cesiumTilesetCesium;
   let highlightStyle;
+  let app;
 
   before(async () => {
     sandbox = sinon.createSandbox();
-    cesiumMap = await setCesiumMap(getFramework());
+    app = new VcsApp();
+    cesiumMap = await setCesiumMap(app);
     highlightStyle = new VectorStyleItem({ fill: { color: [0, 255, 0, 1] } });
   });
 
@@ -47,7 +48,7 @@ describe('vcs.vcm.layer.cesium.CesiumTilesetCesium', () => {
   });
 
   after(() => {
-    resetFramework();
+    app.destroy();
   });
 
   describe('updating split direction', () => {

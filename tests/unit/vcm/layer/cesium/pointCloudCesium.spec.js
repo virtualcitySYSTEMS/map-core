@@ -1,21 +1,22 @@
 import { Cesium3DTileStyle } from '@vcmap/cesium';
 import PointCloud from '../../../../../src/vcs/vcm/layer/pointCloud.js';
 import { createTilesetServer, setCesiumMap } from '../../../helpers/cesiumHelpers.js';
-import { getFramework } from '../../../helpers/framework.js';
-import resetFramework from '../../../helpers/resetFramework.js';
+import VcsApp from '../../../../../src/vcs/vcm/vcsApp.js';
 
 describe('vcs.vcm.layer.cesium.PointCloudCesium', () => {
   let sandbox;
   /** @type {import("@vcmap/core").PointCloudCesium} */
   let PCL;
+  let app;
   let pointCloud;
   let map;
 
   before(async () => {
     sandbox = sinon.createSandbox();
-    map = await setCesiumMap(getFramework());
+    app = new VcsApp();
+    map = await setCesiumMap(app);
     pointCloud = new PointCloud({ url: 'http://test.com/tileset.json' });
-    getFramework().addLayer(pointCloud);
+    app.layers.add(pointCloud);
   });
 
   beforeEach(() => {
@@ -28,7 +29,7 @@ describe('vcs.vcm.layer.cesium.PointCloudCesium', () => {
   });
 
   after(() => {
-    resetFramework();
+    app.destroy();
   });
 
   describe('initialize', () => {

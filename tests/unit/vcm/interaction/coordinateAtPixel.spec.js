@@ -2,18 +2,23 @@ import nock from 'nock';
 import { EventType } from '../../../../src/vcs/vcm/interaction/interactionType.js';
 import CoordinateAtPixel from '../../../../src/vcs/vcm/interaction/coordinateAtPixel.js';
 import { getObliqueMap, setObliqueMap } from '../../helpers/obliqueHelpers.js';
-import { getFramework } from '../../helpers/framework.js';
-import resetFramework from '../../helpers/resetFramework.js';
+import VcsApp from '../../../../src/vcs/vcm/vcsApp.js';
 
 describe('vcs.vcm.interaction.CoordinateAtPixel', () => {
+  let app;
+
+  before(() => {
+    app = new VcsApp();
+  });
+
   after(() => {
-    resetFramework();
+    app.destroy();
     nock.cleanAll();
   });
 
   describe('~obliqueHandler', () => {
     it('should transform image coordinates to wgs84, and project to mercator', async () => {
-      const map = await setObliqueMap(getFramework());
+      const map = await setObliqueMap(app);
       const position = [1, 1, 1];
       const event = await CoordinateAtPixel.obliqueHandler({ map, position, type: EventType.CLICK });
       expect(event)
@@ -42,7 +47,7 @@ describe('vcs.vcm.interaction.CoordinateAtPixel', () => {
 
     before(async () => {
       scope = nock('http://localhost');
-      map = await setObliqueMap(getFramework(), scope);
+      map = await setObliqueMap(app, scope);
     });
 
     it('should use exact coordinate transformation on CLICK', async () => {

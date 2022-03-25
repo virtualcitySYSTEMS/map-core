@@ -1,18 +1,18 @@
 import { Entity, ClippingPlaneCollection } from '@vcmap/cesium';
 import ClippingObject from '../../../../../src/vcs/vcm/util/clipping/clippingObject.js';
-import { getFramework } from '../../../helpers/framework.js';
+import VcsApp from '../../../../../src/vcs/vcm/vcsApp.js';
 import Vector from '../../../../../src/vcs/vcm/layer/vector.js';
 import DataSource from '../../../../../src/vcs/vcm/layer/dataSource.js';
 import LayerState from '../../../../../src/vcs/vcm/layer/layerState.js';
 import { createEntities, createInitializedTilesetLayer, setCesiumMap } from '../../../helpers/cesiumHelpers.js';
-import resetFramework from '../../../helpers/resetFramework.js';
 import FeatureStore from '../../../../../src/vcs/vcm/layer/featureStore.js';
-import { setOpenlayersMap } from '../../../helpers/openlayers.js';
+import { setOpenlayersMap } from '../../../helpers/openlayersHelpers.js';
 
 describe('vcs.vcm.util.clipping.ClippingObject', () => {
   let sandbox;
   /** @type {import("@vcmap/core").ClippingObject} */
   let CO;
+  let app;
   let cesiumMap;
 
   before(() => {
@@ -20,14 +20,16 @@ describe('vcs.vcm.util.clipping.ClippingObject', () => {
   });
 
   beforeEach(async () => {
+    app = new VcsApp();
     CO = new ClippingObject();
-    cesiumMap = await setCesiumMap(getFramework());
+    cesiumMap = await setCesiumMap(app);
+    cesiumMap.setTarget('mapContainer');
     CO.handleMapChanged(cesiumMap);
     CO.setLayerCollection(cesiumMap.layerCollection);
   });
 
   afterEach(() => {
-    resetFramework();
+    app.destroy();
     sandbox.restore();
   });
 
@@ -120,7 +122,7 @@ describe('vcs.vcm.util.clipping.ClippingObject', () => {
         });
 
         it('should ignore tileset layer if map is not cesium', async () => {
-          const olMap = await setOpenlayersMap(getFramework());
+          const olMap = await setOpenlayersMap(app);
           CO.handleMapChanged(olMap);
           CO.handleLayerChanged(tilesetLayer);
           expect(CO.targets).to.be.empty;
@@ -178,7 +180,7 @@ describe('vcs.vcm.util.clipping.ClippingObject', () => {
       let tiledLayer;
 
       beforeEach(async () => {
-        const olMap = await setOpenlayersMap(getFramework());
+        const olMap = await setOpenlayersMap(app);
         CO.handleMapChanged(olMap);
         tiledLayer = new FeatureStore({
           name: 'test',
@@ -210,7 +212,7 @@ describe('vcs.vcm.util.clipping.ClippingObject', () => {
         [entity1, entity2] = entities.entities;
         CO.addEntity(entityLayer.name, entity1.id);
         CO.addEntity(entityLayer.name, entity2.id);
-        getFramework().addLayer(entityLayer);
+        app.layers.add(entityLayer);
       });
 
       describe('layer activated', () => {
@@ -322,7 +324,7 @@ describe('vcs.vcm.util.clipping.ClippingObject', () => {
     it('should add the layer to the targets, if the layer is active', async () => {
       const layer = await createInitializedTilesetLayer(sandbox, cesiumMap);
       await layer.activate();
-      getFramework().addLayer(layer);
+      app.layers.add(layer);
       CO.addLayer(layer.name);
       expect(CO.targets.size).to.equal(1);
       expect(CO.targets.get(layer.name)).to.equal(layer.getImplementations()[0].cesium3DTileset);
@@ -375,7 +377,7 @@ describe('vcs.vcm.util.clipping.ClippingObject', () => {
       });
       entityLayer.addEntity(entity);
       entityLayer._state = LayerState.ACTIVE;
-      getFramework().addLayer(entityLayer);
+      app.layers.add(entityLayer);
       CO.addEntity('test', entity.id);
       expect(CO.targets.size).to.equal(1);
       expect(CO.targets.get(`${entityLayer.name}-${entity.id}`)).to.equal(entity);

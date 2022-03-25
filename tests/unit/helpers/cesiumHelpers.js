@@ -196,13 +196,13 @@ export function getCesiumMap(mapOptions) {
 }
 
 /**
- * @param {vcs.vcm.Framework} framework
- * @returns {Promise<vcs.vcm.maps.CesiumMap>}
+ * @param {VcsApp} app
+ * @returns {Promise<CesiumMap>}
  */
-export async function setCesiumMap(framework) {
-  const map = getCesiumMap({ layerCollection: framework.layerCollection, target: framework.getMapContainer() });
-  framework.addMap(map);
-  await framework.activateMap(map.name);
+export async function setCesiumMap(app) {
+  const map = getCesiumMap({ layerCollection: app.layers, target: app.maps.target });
+  app.maps.add(map);
+  await app.maps.setActiveMap(map.name);
   return map;
 }
 

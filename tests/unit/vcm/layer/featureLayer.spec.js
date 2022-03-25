@@ -3,7 +3,6 @@ import Fill from 'ol/style/Fill.js';
 import DeclarativeStyleItem from '../../../../src/vcs/vcm/util/style/declarativeStyleItem.js';
 import VectorStyleItem from '../../../../src/vcs/vcm/util/style/vectorStyleItem.js';
 import FeatureLayer from '../../../../src/vcs/vcm/layer/featureLayer.js';
-import resetFramework from '../../helpers/resetFramework.js';
 import { getCesiumEventSpy } from '../../helpers/cesiumHelpers.js';
 import { styleCollection } from '../../../../src/vcs/vcm/globalCollections.js';
 
@@ -23,10 +22,6 @@ describe('vcs.vcm.layer.FeatureLayer', () => {
   afterEach(() => {
     sandbox.restore();
     featureLayer.destroy();
-  });
-
-  after(() => {
-    resetFramework();
   });
 
   describe('setStyle', () => {

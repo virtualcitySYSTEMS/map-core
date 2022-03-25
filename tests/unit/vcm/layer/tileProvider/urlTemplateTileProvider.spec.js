@@ -1,7 +1,6 @@
 import nock from 'nock';
 import Feature from 'ol/Feature.js';
 import URLTemplateTileProvider, { getURL } from '../../../../../src/vcs/vcm/layer/tileProvider/urlTemplateTileProvider.js';
-import resetFramework from '../../../helpers/resetFramework.js';
 import { setCurrentLocale } from '../../../../../src/vcs/vcm/util/locale.js';
 import Projection from '../../../../../src/vcs/vcm/util/projection.js';
 
@@ -40,7 +39,6 @@ describe('vcs.vcm.layer.tileProvider.URLTemplateTileProvider', () => {
 
   after(() => {
     tileProvider.destroy();
-    resetFramework();
     nock.cleanAll();
   });
 

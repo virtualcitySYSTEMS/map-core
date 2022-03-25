@@ -1,18 +1,19 @@
 import { Entity } from '@vcmap/cesium';
 import { setCesiumMap } from '../../../helpers/cesiumHelpers.js';
-import { getFramework } from '../../../helpers/framework.js';
-import resetFramework from '../../../helpers/resetFramework.js';
+import VcsApp from '../../../../../src/vcs/vcm/vcsApp.js';
 import DataSource from '../../../../../src/vcs/vcm/layer/dataSource.js';
 
 describe('vcs.vcm.layer.cesium.DataSourceCesium', () => {
+  let app;
   let map;
 
   before(async () => {
-    map = await setCesiumMap(getFramework());
+    app = new VcsApp();
+    map = await setCesiumMap(app);
   });
 
   after(() => {
-    resetFramework();
+    app.destroy();
   });
 
   describe('synchronizing of entity collections', () => {

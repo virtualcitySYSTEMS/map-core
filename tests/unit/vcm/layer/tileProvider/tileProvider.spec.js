@@ -5,7 +5,6 @@ import Feature from 'ol/Feature.js';
 import TileProvider, { mercatorResolutionsToLevel } from '../../../../../src/vcs/vcm/layer/tileProvider/tileProvider.js';
 import Extent from '../../../../../src/vcs/vcm/util/extent.js';
 import Projection, { wgs84Projection } from '../../../../../src/vcs/vcm/util/projection.js';
-import resetFramework from '../../../helpers/resetFramework.js';
 
 describe('vcs.vcm.layer.tileProvider.TileProvider', () => {
   let sandbox;
@@ -23,7 +22,6 @@ describe('vcs.vcm.layer.tileProvider.TileProvider', () => {
 
   after(() => {
     tileProvider.destroy();
-    resetFramework();
   });
 
   describe('tileProvider creation', () => {

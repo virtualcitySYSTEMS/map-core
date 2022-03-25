@@ -9,15 +9,15 @@ import {
 } from '@vcmap/cesium';
 import Circle from 'ol/geom/Circle.js';
 import CesiumTileset from '../../../../src/vcs/vcm/layer/cesiumTileset.js';
-import { getFramework } from '../../helpers/framework.js';
+import VcsApp from '../../../../src/vcs/vcm/vcsApp.js';
 import getDummyCesium3DTileset from './cesium/getDummyCesium3DTileset.js';
 import Projection, { wgs84Projection } from '../../../../src/vcs/vcm/util/projection.js';
 import Extent from '../../../../src/vcs/vcm/util/extent.js';
 import { createTilesetServer, getCesiumEventSpy, setCesiumMap, createDummyCesium3DTileFeature } from '../../helpers/cesiumHelpers.js';
-import resetFramework from '../../helpers/resetFramework.js';
 
 describe('vcs.vcm.layer.CesiumTileset', () => {
   let sandbox;
+  let app;
   /** @type {import("@vcmap/core").CesiumTileset} */
   let cesiumTileset;
   /** @type {import("@vcmap/core").CesiumMap} */
@@ -25,7 +25,8 @@ describe('vcs.vcm.layer.CesiumTileset', () => {
 
   before(async () => {
     sandbox = sinon.createSandbox();
-    cesiumMap = await setCesiumMap(getFramework());
+    app = new VcsApp();
+    cesiumMap = await setCesiumMap(app);
   });
 
   beforeEach(() => {
@@ -39,7 +40,7 @@ describe('vcs.vcm.layer.CesiumTileset', () => {
   });
 
   after(() => {
-    resetFramework();
+    app.destroy();
   });
 
   describe('constructor', () => {
