@@ -1,4 +1,4 @@
-import { checkMaybe } from '@vcsuite/check';
+import { check, checkMaybe } from '@vcsuite/check';
 import { getLogger } from '@vcsuite/logger';
 import VcsEvent from '../event/vcsEvent.js';
 import Collection from './collection.js';
@@ -94,9 +94,8 @@ class MapCollection extends Collection {
      * Collection of layers shared amongst the maps within this collection,
      * layers will be rendered if supported on the currently active map.
      * @type {LayerCollection}
-     * @api
      */
-    this.layerCollection = new LayerCollection();
+    this._layerCollection = new LayerCollection();
 
     /**
      * Called, if a map fails to initialize. The map causing the error will be removed from the collection.
@@ -125,12 +124,13 @@ class MapCollection extends Collection {
      * @type {ClippingObjectManager}
      * @api
      */
-    this.clippingObjectManager = new ClippingObjectManager(this.layerCollection);
+    this.clippingObjectManager = new ClippingObjectManager(this._layerCollection);
 
     /**
      * @type {SplitScreen}
+     * @private
      */
-    this.splitScreen = new SplitScreen(this.clippingObjectManager);
+    this._splitScreen = new SplitScreen(this.clippingObjectManager);
 
     /**
      * @type {Array<Function>}
@@ -158,6 +158,48 @@ class MapCollection extends Collection {
   }
 
   /**
+   * The current layer collection
+   * @type {LayerCollection}
+   */
+  get layerCollection() {
+    return this._layerCollection;
+  }
+
+  /**
+   * Set the layer collection for these maps.
+   * @param {LayerCollection} layerCollection
+   */
+  set layerCollection(layerCollection) {
+    check(layerCollection, LayerCollection);
+
+    this._layerCollection = layerCollection;
+    this._array.forEach((map) => {
+      map.layerCollection = this._layerCollection;
+    });
+  }
+
+  /**
+   * The current split screen
+   * @type {SplitScreen}
+   */
+  get splitScreen() {
+    return this._splitScreen;
+  }
+
+  /**
+   * Set split screen for these maps.
+   * @param {SplitScreen} splitScreen
+   */
+  set splitScreen(splitScreen) {
+    check(splitScreen, SplitScreen);
+
+    this._splitScreen = splitScreen;
+    this._array.forEach((map) => {
+      map.splitScreen = this._splitScreen;
+    });
+  }
+
+  /**
    * Adds a map to the collection. This will set the collections target, {@link SplitScreen}
    * and the collections {@link LayerCollection} on the map.
    * It will add map event listeners and pass them to the event handler of this collection.
@@ -169,15 +211,15 @@ class MapCollection extends Collection {
     if (added !== null) {
       this._mapPointerListeners
         .push(map.pointerInteractionEvent.addEventListener(this.eventHandler.handleMapEvent.bind(this.eventHandler)));
-      map.layerCollection = this.layerCollection;
-      map.splitScreen = this.splitScreen;
+      map.layerCollection = this._layerCollection;
+      map.splitScreen = this._splitScreen;
       map.setTarget(this._target);
     }
     return added;
   }
 
   /**
-   * Removes the map from the collection. Will also set splitScreen & target to null and an empty layerCollection on the map,
+   * Removes the map from the collection. Will also set _splitScreen & target to null and an empty _layerCollection on the map,
    * if the map is currently part of the collection.
    * @param {import("@vcmap/core").VcsMap} map
    */
@@ -322,7 +364,7 @@ class MapCollection extends Collection {
     }
 
     this.clippingObjectManager.mapActivated(map);
-    this.splitScreen.mapActivated(map);
+    this._splitScreen.mapActivated(map);
     this.mapActivated.raiseEvent(map);
     return Promise.resolve();
   }
@@ -342,14 +384,14 @@ class MapCollection extends Collection {
    */
   destroy() {
     super.destroy();
-    [...this.layerCollection].forEach((l) => { l.destroy(); });
-    this.layerCollection.destroy();
+    [...this._layerCollection].forEach((l) => { l.destroy(); });
+    this._layerCollection.destroy();
     this.eventHandler.destroy();
     this.mapActivated.destroy();
     this.clippingObjectManager.destroy();
     this.clippingObjectManager = null;
-    this.splitScreen.destroy();
-    this.splitScreen = null;
+    this._splitScreen.destroy();
+    this._splitScreen = null;
     this.fallbackMapActivated.destroy();
     this.initializeError.destroy();
 

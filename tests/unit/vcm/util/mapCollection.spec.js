@@ -4,6 +4,8 @@ import MapCollection from '../../../../src/vcs/vcm/util/mapCollection.js';
 import Openlayers from '../../../../src/vcs/vcm/maps/openlayers.js';
 import { getCesiumEventSpy, getCesiumMap } from '../../helpers/cesiumHelpers.js';
 import LayerCollection from '../../../../src/vcs/vcm/util/layerCollection.js';
+import Layer from '../../../../src/vcs/vcm/layer/layer.js';
+import { SplitScreen } from '../../../../index.js';
 
 describe('vcs.vcm.util.MapCollection', () => {
   let target;
@@ -147,6 +149,35 @@ describe('vcs.vcm.util.MapCollection', () => {
     });
   });
 
+  describe('setting a layerCollection', () => {
+    let mapCollection;
+    let map;
+    let layerCollection;
+
+    before(() => {
+      mapCollection = new MapCollection();
+      map = new Openlayers({});
+      mapCollection.add(map);
+      layerCollection = LayerCollection.from([new Layer({
+        name: 'layer1',
+      })]);
+      mapCollection.layerCollection = layerCollection;
+    });
+
+    after(() => {
+      map.destroy();
+      mapCollection.destroy();
+    });
+
+    it('should set the layerCollection', () => {
+      expect(mapCollection.layerCollection).to.equal(layerCollection);
+    });
+
+    it('should set the layerCollection on the map', () => {
+      expect(map.layerCollection).to.equal(layerCollection);
+    });
+  });
+
   describe('setting a target', () => {
     let mapCollection;
     let map;
@@ -169,6 +200,34 @@ describe('vcs.vcm.util.MapCollection', () => {
 
     it('should set the target on the map', () => {
       expect(map.target).to.equal(target);
+    });
+  });
+
+  describe('setting a splitScreen', () => {
+    let mapCollection;
+    let map;
+    let splitScreen;
+
+    before(() => {
+      mapCollection = new MapCollection();
+      map = new Openlayers({});
+      mapCollection.add(map);
+      splitScreen = new SplitScreen(mapCollection.clippingObjectManager);
+      splitScreen.position = 1;
+      mapCollection.splitScreen = splitScreen;
+    });
+
+    after(() => {
+      map.destroy();
+      mapCollection.destroy();
+    });
+
+    it('should set the splitScreen', () => {
+      expect(mapCollection.splitScreen).to.equal(splitScreen);
+    });
+
+    it('should set the splitScreen on the map', () => {
+      expect(map.splitScreen).to.equal(splitScreen);
     });
   });
 
