@@ -11,31 +11,13 @@ class InteractionChain extends AbstractInteraction {
    * @param {Array<AbstractInteraction>=} chain
    */
   constructor(chain) {
-    super();
+    super(EventType.ALL, ModificationKeyType.ALL, PointerKeyType.ALL);
     /**
      * The interactions to handle one after the other
      * @type {Array<AbstractInteraction>}
      * @api
      */
     this.chain = chain || [];
-    /**
-     * @inheritDoc
-     * @type {EventType}
-     * @protected
-     */
-    this._defaultActive = EventType.ALL;
-    /**
-     * @inheritDoc
-     * @type {ModificationKeyType}
-     * @protected
-     */
-    this._defaultModificationKey = ModificationKeyType.ALL;
-    /**
-     * @inheritDoc
-     * @type {PointerKeyType}
-     * @protected
-     */
-    this._defaultPointerKey = PointerKeyType.ALL;
     this.setActive();
   }
 
@@ -72,8 +54,8 @@ class InteractionChain extends AbstractInteraction {
    * @param {InteractionEvent} event
    * @returns {Promise<InteractionEvent>}
    */
-  pipe(event) {
-    let promise = Promise.resolve(event);
+  async pipe(event) {
+    let pipedEvent = event;
     const chainLength = this.chain.length;
     for (let i = 0; i < chainLength; i++) {
       const interaction = this.chain[i];
@@ -82,16 +64,14 @@ class InteractionChain extends AbstractInteraction {
         (interaction.modificationKey & event.key) &&
         (interaction.pointerKey & event.pointer)
       ) {
-        // eslint-disable-next-line
-        promise = promise.then(function (pipedEvent) {
-          if (pipedEvent.stopPropagation) {
-            return Promise.resolve(pipedEvent);
-          }
-          return this.pipe(pipedEvent);
-        }.bind(interaction));
+        // eslint-disable-next-line no-await-in-loop
+        pipedEvent = await interaction.pipe(pipedEvent);
+        if (pipedEvent.stopPropagation) {
+          break;
+        }
       }
     }
-    return promise;
+    return pipedEvent;
   }
 
   /**
@@ -99,7 +79,7 @@ class InteractionChain extends AbstractInteraction {
    * @override
    */
   setModification() {
-    this.modificationKey = this._defaultModificationKey;
+    super.setModification();
   }
 
   /**
@@ -107,7 +87,7 @@ class InteractionChain extends AbstractInteraction {
    * @override
    */
   setPointer() {
-    this.pointerKey = this._defaultPointerKey;
+    super.setPointer();
   }
 
   /**

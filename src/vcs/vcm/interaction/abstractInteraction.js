@@ -27,7 +27,16 @@ import { EventType, ModificationKeyType, PointerKeyType } from './interactionTyp
  * @api
  */
 class AbstractInteraction {
-  constructor() {
+  /**
+   * @param {number} [defaultActive=EventType.NONE] - A bitmask representing the default {@link EventType} to listen to
+   * @param {number} [defaultModificationKey=ModificationKeyType.NONE] - A bitmask representing the default {@link ModificationKeyType} keys to listen to
+   * @param {number} [defaultPointerKey=PointerKeyType.LEFT] - A bitmask representing the {@link PointerKeyType} pointer key to listen to
+   */
+  constructor(
+    defaultActive = EventType.NONE,
+    defaultModificationKey = ModificationKeyType.NONE,
+    defaultPointerKey = PointerKeyType.LEFT,
+  ) {
     /**
      * A unique identifier for this interaction
      * @type {string}
@@ -36,13 +45,10 @@ class AbstractInteraction {
     this.id = uuidv4();
 
     /**
-     * A bitmask representing the default events to listen to
-     * {@link EventType}, default is NONE
      * @type {number}
-     * @protected
-     * @api
+     * @private
      */
-    this._defaultActive = EventType.NONE;
+    this._defaultActive = defaultActive;
 
     /**
      * The current active bitmask for {@link EventType}
@@ -52,13 +58,10 @@ class AbstractInteraction {
     this.active = this._defaultActive;
 
     /**
-     * The default bitmask for modification keys to listen to,
-     * {@link ModificationKeyType} default is NONE
      * @type {number}
-     * @protected
-     * @api
+     * @private
      */
-    this._defaultModificationKey = ModificationKeyType.NONE;
+    this._defaultModificationKey = defaultModificationKey;
 
     /**
      * The current active {@link ModificationKeyType}
@@ -68,11 +71,10 @@ class AbstractInteraction {
     this.modificationKey = this._defaultModificationKey;
 
     /**
-     * default bitmask for pointer key {@link PointerKeyType}, starting value is LEFT
      * @type {number}
-     * @protected
+     * @private
      */
-    this._defaultPointerKey = PointerKeyType.LEFT;
+    this._defaultPointerKey = defaultPointerKey;
 
     /**
      * The currently active {@link PointerKeyType}
@@ -114,7 +116,7 @@ class AbstractInteraction {
   }
 
   /**
-   * Sets the modification key to listen to
+   * Sets the modification key to listen to or the default modification key if none is provided.
    * @param {number=} mod
    * @api
    */
@@ -127,8 +129,8 @@ class AbstractInteraction {
   }
 
   /**
-   * Sets the pointer key for this interaction$
-   * @param {number} pointer
+   * Sets the pointer key for this interaction or the default pointer if none is provided.
+   * @param {number=} pointer
    * @api
    */
   setPointer(pointer) {

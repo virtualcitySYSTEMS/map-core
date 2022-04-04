@@ -7,19 +7,8 @@ import { EventType, ModificationKeyType } from './interactionType.js';
  */
 class FeatureProviderInteraction extends AbstractInteraction {
   constructor() {
-    super();
-    /**
-     * @inheritDoc
-     * @type {ModificationKeyType|number}
-     * @protected
-     */
-    this._defaultModificationKey = ModificationKeyType.ALL;
-    /**
-     * @inheritDoc
-     * @type {ModificationKeyType|number}
-     * @protected
-     */
-    this._defaultActive = EventType.CLICK;
+    super(EventType.CLICK, ModificationKeyType.ALL);
+
     this.setActive();
   }
 

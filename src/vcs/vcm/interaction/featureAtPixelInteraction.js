@@ -12,7 +12,7 @@ import { originalFeatureSymbol } from '../layer/vectorSymbols.js';
  */
 class FeatureAtPixelInteraction extends AbstractInteraction {
   constructor() {
-    super();
+    super(EventType.ALL ^ EventType.MOVE, ModificationKeyType.ALL);
     /**
      * @type {EventType|number}
      * @private
@@ -46,19 +46,6 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
      * @api
      */
     this.hitTolerance = 10;
-
-    /**
-     * @inheritDoc
-     * @type {ModificationKeyType|number}
-     * @protected
-     */
-    this._defaultModificationKey = ModificationKeyType.ALL;
-    /**
-     * @inheritDoc
-     * @type {ModificationKeyType|number}
-     * @protected
-     */
-    this._defaultActive = EventType.ALL ^ EventType.MOVE;
 
     /**
      * @type {import("ol").Feature<import("ol/geom/Geometry").default>|Object|null}

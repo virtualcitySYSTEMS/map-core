@@ -10,7 +10,7 @@ import { transformFromImage } from '../oblique/helpers.js';
  */
 class CoordinateAtPixel extends AbstractInteraction {
   constructor() {
-    super();
+    super(EventType.ALL, ModificationKeyType.ALL);
     /**
      * @type {import("@vcmap/cesium").Cartographic}
      * @private
@@ -21,9 +21,6 @@ class CoordinateAtPixel extends AbstractInteraction {
      * @private
      */
     this._scratchCartesian = new Cartesian3();
-
-    this._defaultActive = EventType.ALL;
-    this._defaultModificationKey = ModificationKeyType.ALL;
 
     this.setActive();
   }
