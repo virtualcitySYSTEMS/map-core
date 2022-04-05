@@ -1,18 +1,18 @@
-import Openlayers from '../../../src/vcs/vcm/maps/openlayers.js';
+import OpenlayersMap from '../../../src/map/openlayersMap.js';
 
 /**
  * @param {OpenlayersOptions=} mapOptions
- * @returns {Promise<Openlayers>}
+ * @returns {Promise<OpenlayersMap>}
  */
 export async function getOpenlayersMap(mapOptions) {
-  const map = new Openlayers(mapOptions || {});
+  const map = new OpenlayersMap(mapOptions || {});
   await map.initialize();
   return map;
 }
 
 /**
  * @param {VcsApp} app
- * @returns {Promise<Openlayers>}
+ * @returns {Promise<OpenlayersMap>}
  */
 export async function setOpenlayersMap(app) {
   const map = await getOpenlayersMap({ layerCollection: app.layers, target: app.maps.target });

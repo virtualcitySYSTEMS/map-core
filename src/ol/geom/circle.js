@@ -1,6 +1,6 @@
 import Circle from 'ol/geom/Circle.js';
 import { check } from '@vcsuite/check';
-import { cartesian2DDistance, cartesian3DDistance } from '../../vcs/vcm/util/math.js';
+import { cartesian2DDistance, cartesian3DDistance } from '../../util/math.js';
 
 /**
  * @returns {Array<import("ol/coordinate").Coordinate>} returns an Array where the first coordinate is the center, and the second the center with an x offset of radius

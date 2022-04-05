@@ -27,18 +27,18 @@
   <button id="changeTarget">changeTarget</button>
 </div>
 <script type="module">
-  import MapCollection from './src/vcs/vcm/util/mapCollection.js';
-  import Openlayers from './src/vcs/vcm/maps/openlayers.js';
-  import OpenStreetMap from './src/vcs/vcm/layer/openStreetMap.js';
-  import ObliqueCollection from './src/vcs/vcm/oblique/ObliqueCollection.js';
-  import ObliqueDataSet from './src/vcs/vcm/oblique/ObliqueDataSet.js';
-  import Projection from './src/vcs/vcm/util/projection.js';
-  import { obliqueCollectionCollection } from './src/vcs/vcm/globalCollections.js';
+  import MapCollection from './src/util/mapCollection.js';
+  import OpenlayersMap from './src/map/openlayersMap.js';
+  import OpenStreetMapLayer from './src/layer/openStreetMapLayer.js';
+  import ObliqueCollection from './src/oblique/obliqueCollection.js';
+  import ObliqueDataSet from './src/oblique/obliqueDataSet.js';
+  import Projection from './src/util/projection.js';
+  import { obliqueCollectionCollection } from './src/globalCollections.js';
 
   window.CESIUM_BASE_URL = '/node_modules/@vcmap/cesium/Source/';
-  const ol = new Openlayers({});
+  const ol = new OpenlayersMap({});
   const mapCollection = new MapCollection();
-  const osm = new OpenStreetMap({});
+  const osm = new OpenStreetMapLayer({});
   mapCollection.add(ol);
   mapCollection.setTarget('mapContainer');
   mapCollection.layerCollection.add(osm);
@@ -53,7 +53,7 @@
 
   document.getElementById('changeMapCesium').addEventListener('click', async () => {
     if(!cesium) {
-      const CesiumMap = await import('./src/vcs/vcm/maps/cesium.js');
+      const CesiumMap = await import('./src/map/cesiumMap.js');
       cesium = new CesiumMap.default({});
       mapCollection.add(cesium);
     }
@@ -72,9 +72,9 @@
         ]
       })
       obliqueCollectionCollection.add(obliqueCollection);
-      const obliqueMap = await import('./src/vcs/vcm/maps/oblique.js');
+      const obliqueMap = await import('./src/map/obliqueMap.js');
 
-      oblique = new obliqueMap.default({});
+      oblique = new obliqueMap.ObliqueMap({});
       await oblique.setCollection(obliqueCollection);
       mapCollection.add(oblique);
     }

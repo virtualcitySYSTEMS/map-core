@@ -17,9 +17,9 @@ import {
 import TweenCollection from '@vcmap/cesium/Source/Scene/TweenCollection.js';
 import ContextLimits from '@vcmap/cesium/Source/Renderer/ContextLimits.js';
 
-import CesiumTilesetLayer from '../../../src/vcs/vcm/layer/cesiumTileset.js';
-import DataSource from '../../../src/vcs/vcm/layer/dataSource.js';
-import CesiumMap from '../../../src/vcs/vcm/maps/cesium.js';
+import CesiumTilesetLayer from '../../../src/layer/cesiumTilesetLayer.js';
+import DataSourceLayer from '../../../src/layer/dataSourceLayer.js';
+import CesiumMap from '../../../src/map/cesiumMap.js';
 import importJSON from './importJSON.js';
 
 const defaultTileset = await importJSON('./examples/data/buildings/tileset.json');
@@ -47,9 +47,9 @@ export function createTilesetServer(sandbox, url) {
 
 /**
  * @param {Sinon.SinonSandbox} sandbox
- * @param {vcs.vcm.maps.CesiumMap=} cesiumMap
+ * @param {CesiumMap=} cesiumMap
  * @param {string=} name
- * @returns {Promise<vcs.vcm.layer.CesiumTileset>}
+ * @returns {Promise<CesiumTileset>}
  */
 export async function createInitializedTilesetLayer(sandbox, cesiumMap, name) {
   createTilesetServer(sandbox);
@@ -76,7 +76,7 @@ export async function createInitializedTilesetLayer(sandbox, cesiumMap, name) {
 }
 
 export function createEntities(numberOfEntities = 1) {
-  const layer = new DataSource({});
+  const layer = new DataSourceLayer({});
 
   const entities = new Array(numberOfEntities);
   for (let i = 0; i < numberOfEntities; i++) {

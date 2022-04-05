@@ -16,7 +16,10 @@ const typedefs = {};
 
 function rewriteModule(property) {
   return property
-    .replace(/module:vcs\/([^~]*)~([\w\d]+)/g, (all, importee, name) => {
+    .replace(/module:([^~]*)~([\w\d]+)/g, (all, importee, name) => {
+      if (importee.startsWith('ol') || importee.startsWith('@')) { // XXX think of a better solution for this. maybe always use import... for this
+        return all;
+      }
       if (typedefs[name]) {
         return name;
       }

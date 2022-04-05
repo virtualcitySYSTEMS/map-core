@@ -1,10 +1,10 @@
-import Projection from '../../../src/vcs/vcm/util/projection.js';
-import Oblique from '../../../src/vcs/vcm/maps/oblique.js';
-import ViewPoint from '../../../src/vcs/vcm/util/viewpoint.js';
+import Projection from '../../../src/util/projection.js';
+import ObliqueMap from '../../../src/map/obliqueMap.js';
+import ViewPoint from '../../../src/util/viewpoint.js';
 
 import { getTerrainProvider } from './terrain/terrainData.js';
-import ObliqueCollection from '../../../src/vcs/vcm/oblique/ObliqueCollection.js';
-import ObliqueDataSet from '../../../src/vcs/vcm/oblique/ObliqueDataSet.js';
+import ObliqueCollection from '../../../src/oblique/obliqueCollection.js';
+import ObliqueDataSet from '../../../src/oblique/obliqueDataSet.js';
 import importJSON from './importJSON.js';
 
 const imageJson = await importJSON('./tests/data/oblique/imageData/imagev35.json');
@@ -81,12 +81,12 @@ export function getObliqueCollection(obliqueDataSets) {
 /**
  * @param {ObliqueOptions} mapOptions
  * @param {Scope=} scope optional server, if provided the map will be initialized with a terrainProvider
- * @returns {Promise<Oblique>}
+ * @returns {Promise<ObliqueMap>}
  */
 export async function getObliqueMap(mapOptions = {}, scope) {
   const obliqueDataSet = getObliqueDataSet(scope);
   const obliqueCollection = getObliqueCollection([obliqueDataSet]);
-  const map = new Oblique(mapOptions);
+  const map = new ObliqueMap(mapOptions);
   await map.initialize();
   await map.setCollection(obliqueCollection);
   return map;
@@ -96,7 +96,7 @@ export async function getObliqueMap(mapOptions = {}, scope) {
  * @param {VcsApp} app
  * @param {Scope=} scope optional server, if provided the map will be initialized with a terrainProvider
  * @param {ViewPoint=} startingVP
- * @returns {Promise<Oblique>}
+ * @returns {Promise<ObliqueMap>}
  */
 export async function setObliqueMap(app, scope, startingVP) {
   const map = await getObliqueMap(
