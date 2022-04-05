@@ -11,7 +11,7 @@ stages:
 
 .template: &job_definition
   only:
-    - /^(feature-.*|hotfix-.*|master|release-.*)$/
+    - /^(feature-.*|hotfix-.*|main|release-.*)$/
   tags:
     - linux-2.0
 
@@ -33,7 +33,7 @@ lint:
   <<: *after_build_definition
   stage: test
   only:
-    - /^(feature-.*|hotfix-.*|master|release-.*)$/
+    - /^(feature-.*|hotfix-.*|main|release-.*)$/
   script:
     - npm run lint
 
@@ -41,7 +41,7 @@ type-check:
   <<: *after_build_definition
   stage: test
   only:
-    - /^(feature-.*|hotfix-.*|master|release-.*)$/
+    - /^(feature-.*|hotfix-.*|main|release-.*)$/
   script:
     - npm run build-tsd
     - npm run type-check
@@ -50,7 +50,7 @@ audit:
   <<: *after_build_definition
   stage: test
   only:
-    - /^(feature-.*|hotfix-.*|master|release-.*)$/
+    - /^(feature-.*|hotfix-.*|main|release-.*)$/
   script:
     - npm audit --production --audit-level=low --registry 'http://npmregistry:4873'
 
@@ -58,7 +58,7 @@ tests:
   <<: *after_build_definition
   stage: test
   only:
-    - /^(feature-.*|hotfix-.*|master|release-.*)$/
+    - /^(feature-.*|hotfix-.*|main|release-.*)$/
   script:
     - npm run coverage:gitlab
   coverage: '/^Statements\s*:\s*([^%]+)/'
@@ -73,9 +73,9 @@ publish:
     variables:
       - $PUBLISH
     refs:
-      - /^(master|release-v.*)$/
+      - /^(main|release-v.*)$/
   script:
-    - LEVEL=$([ $CI_COMMIT_REF_NAME == "master" ] && echo "prerelease" || echo "patch")
+    - LEVEL=$([ $CI_COMMIT_REF_NAME == "main" ] && echo "prerelease" || echo "patch")
     - npm version $LEVEL -m "%s [skip-ci]"
     - TAG=`git describe --abbrev=0`
     - git push git@gitlab:vcsuite/npm/vcmap/core.git $TAG
