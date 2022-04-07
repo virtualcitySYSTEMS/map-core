@@ -139,6 +139,7 @@ describe('AbstractFeatureProvider', () => {
       before(() => {
         inputConfig = {
           style: {
+            type: VectorStyleItem.className,
             fill: { color: [255, 0, 255, 1] },
           },
           vectorProperties: {

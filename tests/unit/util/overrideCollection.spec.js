@@ -3,7 +3,8 @@ import Collection from '../../../src/util/collection.js';
 import IndexedCollection from '../../../src/util/indexedCollection.js';
 import VcsObject from '../../../src/vcsObject.js';
 import Layer from '../../../src/layer/layer.js';
-import { contextIdSymbol, destroyCollection, getObjectFromOptions } from '../../../src/vcsAppContextHelpers.js';
+import { contextIdSymbol, destroyCollection } from '../../../src/vcsAppContextHelpers.js';
+import { getObjectFromClassRegistry, layerClassRegistry } from '../../../index.js';
 
 
 describe('override collections', () => {
@@ -14,7 +15,7 @@ describe('override collections', () => {
   });
 
   describe('making an override collection', () => {
-    it('should make an override collecition out of a collection', () => {
+    it('should make an override collection out of a collection', () => {
       const collection = makeOverrideCollection(new Collection(), getContextId);
       expect(collection).to.have.property('override');
       expect(collection).to.have.property('replaced');
@@ -726,7 +727,13 @@ describe('override collections', () => {
       let items;
 
       before(async () => {
-        collection = makeOverrideCollection(new Collection(), getContextId, null, getObjectFromOptions, Layer);
+        collection = makeOverrideCollection(
+          new Collection(),
+          getContextId,
+          null,
+          getObjectFromClassRegistry.bind(null, layerClassRegistry),
+          Layer,
+        );
         const config = [
           {
             type: 'Layer',
@@ -765,7 +772,13 @@ describe('override collections', () => {
       let items;
 
       before(async () => {
-        collection = makeOverrideCollection(new Collection(), getContextId, null, getObjectFromOptions, Layer);
+        collection = makeOverrideCollection(
+          new Collection(),
+          getContextId,
+          null,
+          getObjectFromClassRegistry.bind(null, layerClassRegistry),
+          Layer,
+        );
         const config = [
           {
             type: 'Layer',
@@ -804,7 +817,13 @@ describe('override collections', () => {
       let items;
 
       before(async () => {
-        collection = makeOverrideCollection(new Collection(), getContextId, null, getObjectFromOptions, Layer);
+        collection = makeOverrideCollection(
+          new Collection(),
+          getContextId,
+          null,
+          getObjectFromClassRegistry.bind(null, layerClassRegistry),
+          Layer,
+        );
         const config = [
           {
             type: 'Layer',
@@ -851,7 +870,13 @@ describe('override collections', () => {
       let collection;
 
       before(async () => {
-        collection = makeOverrideCollection(new Collection(), getContextId, null, getObjectFromOptions, Layer);
+        collection = makeOverrideCollection(
+          new Collection(),
+          getContextId,
+          null,
+          getObjectFromClassRegistry.bind(null, layerClassRegistry),
+          Layer,
+        );
         const config = [
           {
             type: 'Layer',

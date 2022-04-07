@@ -5,7 +5,7 @@ import OpenlayersMap from '../map/openlayersMap.js';
 import CesiumMap from '../map/cesiumMap.js';
 import WmtsOpenlayersImpl from './openlayers/wmtsOpenlayersImpl.js';
 import WmtsCesiumImpl from './cesium/wmtsCesiumImpl.js';
-import { VcsClassRegistry } from '../classRegistry.js';
+import { layerClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {RasterLayerOptions} WMTSOptions
@@ -230,6 +230,6 @@ class WMTSLayer extends RasterLayer {
   }
 }
 
-VcsClassRegistry.registerClass(WMTSLayer.className, WMTSLayer);
+layerClassRegistry.registerClass(WMTSLayer.className, WMTSLayer);
 export default WMTSLayer;
 

@@ -338,14 +338,14 @@ describe('Category', () => {
         });
       });
 
-      describe('of a typed category with feature & key properties', () => {
+      describe('of a classRegistryName category with feature & key properties', () => {
         let category;
         let options;
 
         before(() => {
           options = {
             title: 'foo',
-            typed: true,
+            classRegistryName: 'styleClassRegistry',
             featureProperty: 'feature',
             keyProperty: 'key',
             layerOptions: {
@@ -358,7 +358,7 @@ describe('Category', () => {
             },
           };
           category = new Category({
-            typed: true,
+            classRegistryName: 'styleClassRegistry',
             featureProperty: 'feature',
             keyProperty: 'key',
           });
@@ -404,8 +404,8 @@ describe('Category', () => {
           category.destroy();
         });
 
-        it('should throw on resetting typed', () => {
-          expect(() => category.mergeOptions({ typed: true })).to.throw;
+        it('should throw on resetting classRegistryName', () => {
+          expect(() => category.mergeOptions({ classRegistryName: 'foo' })).to.throw;
         });
 
         it('should throw on resetting featureProperty', () => {
@@ -417,13 +417,13 @@ describe('Category', () => {
         });
       });
 
-      describe('of a typed category with feature & key properties', () => {
+      describe('of a classRegistryName category with feature & key properties', () => {
         let category;
         let options;
 
         before(() => {
           options = {
-            typed: true,
+            classRegistryName: 'styleClassRegistry',
             featureProperty: 'feature',
             keyProperty: 'key',
           };
@@ -434,8 +434,8 @@ describe('Category', () => {
           category.destroy();
         });
 
-        it('should throw on resetting typed', () => {
-          expect(() => category.mergeOptions({ ...options, typed: false })).to.throw;
+        it('should throw on resetting classRegistryName', () => {
+          expect(() => category.mergeOptions({ ...options, classRegistryName: 'layerClassRegistry' })).to.throw;
         });
 
         it('should throw on resetting featureProperty', () => {
@@ -446,9 +446,9 @@ describe('Category', () => {
           expect(() => category.mergeOptions({ ...options, keyProperty: 'foo' })).to.throw;
         });
 
-        it('should throw on omitting typed', () => {
+        it('should throw on omitting classRegistryName', () => {
           const missingOptions = { ...options };
-          delete missingOptions.typed;
+          delete missingOptions.classRegistryName;
           expect(() => category.mergeOptions(missingOptions)).to.throw;
         });
 

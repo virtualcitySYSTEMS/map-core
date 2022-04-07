@@ -7,7 +7,7 @@ import { vcsLayerName } from './layerSymbols.js';
 import LayerState from './layerState.js';
 import VcsEvent from '../vcsEvent.js';
 import { getCurrentLocale, getLocaleChangedEvent } from '../util/locale.js';
-import { VcsClassRegistry } from '../classRegistry.js';
+import { layerClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {Object} GenericFeature
@@ -38,7 +38,7 @@ import { VcsClassRegistry } from '../classRegistry.js';
 /**
  * @typedef {VectorPropertiesOptions} VcsMeta
  * @property {string|undefined} version - the version of the vcsMeta schema
- * @property {VectorStyleItemOptions|DeclarativeStyleItemOptions|Reference|undefined} style
+ * @property {VectorStyleItemOptions|DeclarativeStyleItemOptions|undefined} style
  * @property {Array<string>|undefined} embeddedIcons
  * @property {number|undefined} screenSpaceError
  * @property {*|undefined} flightOptions
@@ -748,5 +748,5 @@ class Layer extends VcsObject {
   }
 }
 
-VcsClassRegistry.registerClass(Layer.className, Layer);
+layerClassRegistry.registerClass(Layer.className, Layer);
 export default Layer;

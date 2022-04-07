@@ -5,7 +5,7 @@ import { defaults as defaultInteractions } from 'ol/interaction.js';
 import VcsMap from './vcsMap.js';
 import { vcsLayerName } from '../layer/layerSymbols.js';
 import { ModificationKeyType, PointerEventType, PointerKeyType } from '../interaction/interactionType.js';
-import { VcsClassRegistry } from '../classRegistry.js';
+import { mapClassRegistry } from '../classRegistry.js';
 
 /**
  * @param {import("ol/Collection").default<import("ol/layer/Layer").default>} layers
@@ -253,5 +253,5 @@ class BaseOLMap extends VcsMap {
   }
 }
 
-VcsClassRegistry.registerClass(BaseOLMap.className, BaseOLMap);
+mapClassRegistry.registerClass(BaseOLMap.className, BaseOLMap);
 export default BaseOLMap;

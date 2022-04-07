@@ -3,7 +3,7 @@ import Layer from './layer.js';
 import { getHeightFromTerrainProvider, getTerrainProviderForUrl } from './terrainHelpers.js';
 import CesiumMap from '../map/cesiumMap.js';
 import TerrainCesiumImpl from './cesium/terrainCesiumImpl.js';
-import { VcsClassRegistry } from '../classRegistry.js';
+import { layerClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {LayerOptions} TerrainOptions
@@ -118,5 +118,5 @@ class TerrainLayer extends Layer {
   }
 }
 
-VcsClassRegistry.registerClass(TerrainLayer.className, TerrainLayer);
+layerClassRegistry.registerClass(TerrainLayer.className, TerrainLayer);
 export default TerrainLayer;

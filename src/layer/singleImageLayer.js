@@ -5,7 +5,7 @@ import SingleImageOpenlayersImpl from './openlayers/singleImageOpenlayersImpl.js
 import CesiumMap from '../map/cesiumMap.js';
 import OpenlayersMap from '../map/openlayersMap.js';
 import Extent from '../util/extent.js';
-import { VcsClassRegistry } from '../classRegistry.js';
+import { layerClassRegistry } from '../classRegistry.js';
 import { wgs84Projection } from '../util/projection.js';
 
 /**
@@ -116,5 +116,5 @@ class SingleImageLayer extends RasterLayer {
   }
 }
 
-VcsClassRegistry.registerClass(SingleImageLayer.className, SingleImageLayer);
+layerClassRegistry.registerClass(SingleImageLayer.className, SingleImageLayer);
 export default SingleImageLayer;

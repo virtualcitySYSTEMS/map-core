@@ -403,4 +403,46 @@ describe('TileProvider', () => {
       });
     });
   });
+
+  describe('serialization', () => {
+    describe('of a default tile provider', () => {
+      it('should only return type and name', () => {
+        const outputConfig = new TileProvider({}).toJSON();
+        expect(outputConfig).to.have.all.keys(['type', 'name']);
+      });
+    });
+
+    describe('of a configured tile provider', () => {
+      let inputConfig;
+      let outputConfig;
+
+      before(() => {
+        inputConfig = {
+          tileCacheSize: 40,
+          baseLevels: [0, 4, 3],
+          trackFeaturesToTiles: false,
+          allowTileAggregation: false,
+        };
+        outputConfig = new TileProvider(inputConfig).toJSON();
+      });
+
+      it('should configure tileCacheSize', () => {
+        expect(outputConfig).to.have.property('tileCacheSize', inputConfig.tileCacheSize);
+      });
+
+      it('should configure trackFeaturesToTiles', () => {
+        expect(outputConfig).to.have.property('trackFeaturesToTiles', inputConfig.trackFeaturesToTiles);
+      });
+
+      it('should configure allowTileAggregation', () => {
+        expect(outputConfig).to.have.property('allowTileAggregation', inputConfig.allowTileAggregation);
+      });
+
+      it('should configure baseLevels', () => {
+        expect(outputConfig).to.have.property('baseLevels')
+          .and.to.have.members(inputConfig.baseLevels);
+        expect(outputConfig.baseLevels).to.not.equal(inputConfig.baseLevels);
+      });
+    });
+  });
 });

@@ -1,10 +1,11 @@
 import { parseGeoJSON } from '../geojsonHelpers.js';
 import TileProvider from './tileProvider.js';
 import { requestJson } from '../../util/fetch.js';
+import { tileProviderClassRegistry } from '../../classRegistry.js';
 
 /**
- * @typedef {TileProviderOptions} StaticGeojsonTileProviderOptions
- * @property {string} url geojson
+ * @typedef {TileProviderOptions} StaticGeoJSONTileProviderOptions
+ * @property {string} url - url to the geojson
  * @api
  */
 
@@ -24,7 +25,7 @@ class StaticGeoJSONTileProvider extends TileProvider {
   static get className() { return 'StaticGeoJSONTileProvider'; }
 
   /**
-   * @returns {StaticGeojsonTileProviderOptions}
+   * @returns {StaticGeoJSONTileProviderOptions}
    */
   static getDefaultOptions() {
     return {
@@ -35,7 +36,7 @@ class StaticGeoJSONTileProvider extends TileProvider {
   }
 
   /**
-   * @param {StaticGeojsonTileProviderOptions} options
+   * @param {StaticGeoJSONTileProviderOptions} options
    */
   constructor(options) {
     const defaultOptions = StaticGeoJSONTileProvider.getDefaultOptions();
@@ -62,6 +63,20 @@ class StaticGeoJSONTileProvider extends TileProvider {
     const { features } = parseGeoJSON(data, { dynamicStyle: true });
     return features;
   }
+
+  /**
+   * @returns {StaticGeoJSONTileProviderOptions}
+   */
+  toJSON() {
+    const config = /** @type {StaticGeoJSONTileProviderOptions} */ (super.toJSON());
+    delete config.baseLevels;
+
+    if (this.url) {
+      config.url = this.url;
+    }
+    return config;
+  }
 }
 
 export default StaticGeoJSONTileProvider;
+tileProviderClassRegistry.registerClass(StaticGeoJSONTileProvider.className, StaticGeoJSONTileProvider);

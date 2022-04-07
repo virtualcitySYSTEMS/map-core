@@ -11,8 +11,7 @@ import VcsEvent from '../vcsEvent.js';
 import Extent from '../util/extent.js';
 import { mercatorProjection } from '../util/projection.js';
 import { isMobile } from '../util/isMobile.js';
-import { referenceableStyleSymbol } from '../style/styleItem.js';
-import { VcsClassRegistry } from '../classRegistry.js';
+import { layerClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {LayerOptions} CesiumTilesetOptions
@@ -314,9 +313,7 @@ class CesiumTilesetLayer extends FeatureLayer {
     const config = super.toJSON();
     const defaultOptions = CesiumTilesetLayer.getDefaultOptions();
     if (this.highlightStyle) {
-      config.highlightStyle = this.highlightStyle[referenceableStyleSymbol] ?
-        this.highlightStyle.getReference() :
-        this.highlightStyle.getOptions();
+      config.highlightStyle = this.highlightStyle.toJSON();
     }
 
     if (this.screenSpaceError !== defaultOptions.screenSpaceError) {
@@ -372,5 +369,5 @@ class CesiumTilesetLayer extends FeatureLayer {
   }
 }
 
-VcsClassRegistry.registerClass(CesiumTilesetLayer.className, CesiumTilesetLayer);
+layerClassRegistry.registerClass(CesiumTilesetLayer.className, CesiumTilesetLayer);
 export default CesiumTilesetLayer;

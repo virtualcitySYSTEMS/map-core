@@ -1,5 +1,5 @@
 import Category from '../../../src/category/category.js';
-import ViewPoint from '../../../src/util/viewpoint.js';
+import VectorLayer from '../../../src/layer/vectorLayer.js';
 import VcsApp from '../../../src/vcsApp.js';
 import { contextIdSymbol } from '../../../src/vcsAppContextHelpers.js';
 
@@ -47,14 +47,14 @@ describe('CategoryCollection', () => {
         const items = [
           {
             name: 'foo',
-            type: ViewPoint.className,
+            type: VectorLayer.className,
           },
           {
             name: 'bar',
-            type: ViewPoint.className,
+            type: VectorLayer.className,
           },
         ];
-        await app.categories.requestCategory({ name: 'foo', type: Category.className, typed: true });
+        await app.categories.requestCategory({ name: 'foo', type: Category.className, classRegistryName: 'layerClassRegistry' });
         await app.categories.parseCategoryItems('foo', items, 'foo');
       });
 
@@ -77,8 +77,8 @@ describe('CategoryCollection', () => {
       it('should instantiate the items', () => {
         const category = app.categories.getByKey('foo');
         const items = [...category.collection];
-        expect(items[0]).to.be.an.instanceOf(ViewPoint);
-        expect(items[1]).to.be.an.instanceOf(ViewPoint);
+        expect(items[0]).to.be.an.instanceOf(VectorLayer);
+        expect(items[1]).to.be.an.instanceOf(VectorLayer);
       });
     });
 
@@ -90,15 +90,15 @@ describe('CategoryCollection', () => {
         const items = [
           {
             name: 'foo',
-            type: ViewPoint.className,
+            type: VectorLayer.className,
           },
           {
             name: 'bar',
-            type: ViewPoint.className,
+            type: VectorLayer.className,
           },
         ];
         await app.categories.parseCategoryItems('foo', items, 'foo');
-        await app.categories.requestCategory({ name: 'foo', type: Category.className, typed: true });
+        await app.categories.requestCategory({ name: 'foo', type: Category.className, classRegistryName: 'layerClassRegistry' });
       });
 
       after(() => {
@@ -116,8 +116,8 @@ describe('CategoryCollection', () => {
       it('should instantiate the items', () => {
         const category = app.categories.getByKey('foo');
         const items = [...category.collection];
-        expect(items[0]).to.be.an.instanceOf(ViewPoint);
-        expect(items[1]).to.be.an.instanceOf(ViewPoint);
+        expect(items[0]).to.be.an.instanceOf(VectorLayer);
+        expect(items[1]).to.be.an.instanceOf(VectorLayer);
       });
     });
 
@@ -129,16 +129,16 @@ describe('CategoryCollection', () => {
         const items = [
           {
             name: 'foo',
-            type: ViewPoint.className,
+            type: VectorLayer.className,
           },
           {
             name: 'bar',
-            type: ViewPoint.className,
+            type: VectorLayer.className,
           },
         ];
         await app.categories.parseCategoryItems('foo', items, 'foo');
         app.contextRemoved.raiseEvent({ id: 'foo' });
-        await app.categories.requestCategory({ name: 'foo', type: Category.className, typed: true });
+        await app.categories.requestCategory({ name: 'foo', type: Category.className, classRegistryName: 'layerClassRegistry' });
       });
 
       after(() => {

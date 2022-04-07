@@ -251,6 +251,7 @@ describe('VectorTileLayer', () => {
         tileProvider: {
           type: 'URLTemplateTileProvider',
           url: 'myURL',
+          name: 'myUrlTileProvider',
         },
       };
       vectorTile = new VectorTileLayer(options);
@@ -274,11 +275,6 @@ describe('VectorTileLayer', () => {
     });
 
     it('should export tileProvider Options', () => {
-      expect(configObject.tileProvider).to.be.deep.equal(options.tileProvider);
-    });
-
-    it('should export tileProvider Options after initialization', async () => {
-      await vectorTile.initialize();
       expect(configObject.tileProvider).to.be.deep.equal(options.tileProvider);
     });
 

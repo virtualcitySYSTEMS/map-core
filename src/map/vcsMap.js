@@ -5,7 +5,7 @@ import LayerCollection from '../util/layerCollection.js';
 import MapState from './mapState.js';
 import { vcsLayerName } from '../layer/layerSymbols.js';
 import VcsEvent from '../vcsEvent.js';
-import { VcsClassRegistry } from '../classRegistry.js';
+import { mapClassRegistry } from '../classRegistry.js';
 
 /**
  * @namespace maps
@@ -522,5 +522,5 @@ class VcsMap extends VcsObject {
   }
 }
 
-VcsClassRegistry.registerClass(VcsMap.className, VcsMap);
+mapClassRegistry.registerClass(VcsMap.className, VcsMap);
 export default VcsMap;

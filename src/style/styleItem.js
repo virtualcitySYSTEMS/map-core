@@ -4,13 +4,7 @@ import deepEqual from 'fast-deep-equal';
 import { parseEnumValue } from '@vcsuite/parsers';
 import VcsObject from '../vcsObject.js';
 import VcsEvent from '../vcsEvent.js';
-import { VcsClassRegistry } from '../classRegistry.js';
-
-/**
- * @namespace style
- * @export
- * @api
- */
+import { styleClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {Object} StyleItemLegendEntry
@@ -21,18 +15,7 @@ import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {VcsObjectOptions} StyleItemOptions
- * @property {string|undefined} [type] - used in configuration to differentiate vector from declarative styles
- * @property {string|Object<string, string>|undefined} title - name is used when none is specifies
- * @property {Array<StyleItemLegendEntry>|undefined} [legend]
  * @property {number} [colorBlendMode=import("@vcmap/cesium").Cesium3DTileColorBlendMode.HIGHLIGHT] - colorBlendMode for 3D Tiledataset @see https://cesiumjs.org/import("@vcmap/cesium").Build/Documentation/Cesium3DTileColorBlendMode.html
- * @api
- */
-
-/**
- * @typedef {Object} Reference
- * @property {string} [type=StyleType.REFERENCE]
- * @property {string} name
- * @property {string|undefined} [url] - vcs:undocumented this is not yet implemented
  * @api
  */
 
@@ -41,30 +24,6 @@ import { VcsClassRegistry } from '../classRegistry.js';
  * @property {boolean|undefined} [meta]
  * @api
  */
-
-/**
- * Enumeration of possible style types.
- * @enum {string}
- * @property {string} VECTOR
- * @property {string} DECLARATIVE
- * @property {string} REFERENCE
- * @export
- * @api
- */
-export const StyleType = {
-  VECTOR: 'vector',
-  DECLARATIVE: 'declarative',
-  REFERENCE: 'reference',
-  CLUSTER: 'cluster',
-};
-
-/**
- * indicates, that this style is part of the config and can be referenced by name
- * @type {symbol}
- * @export
- * @api
- */
-export const referenceableStyleSymbol = Symbol('referencableStyleSymbol');
 
 /**
  * An abstract style definition which can be applied to a layer
@@ -82,18 +41,6 @@ class StyleItem extends VcsObject {
    */
   constructor(options) {
     super(options);
-
-    /**
-     * @type {string|Object<string, string>}
-     */
-    this.title = options.title || this.name.toString();
-
-    /**
-     * Legend entries
-     * @type {Array<StyleItemLegendEntry>}
-     * @api
-     */
-    this.legend = options.legend || [];
 
     /** @type {Array<string>} */
     this.supportedLayers = [];
@@ -147,41 +94,20 @@ class StyleItem extends VcsObject {
   }
 
   /**
-   * Gets the options for this style item to be used in a config or vcsMeta
-   * @param {(VectorStyleItemSections|DeclarativeStyleItemSections)=} sections
-   * @returns {VectorStyleItemOptions|DeclarativeStyleItemOptions}
-   * @api
-   */
-  getOptions(sections) {
-    if (sections && sections.meta) {
-      return {
-        name: this.name.toString(),
-        title: this.title,
-        legend: this.legend.length ? this.legend : undefined,
-      };
-    }
-    return {};
-  }
-
-  /**
    * @inheritDoc
    * @returns {StyleItemOptions}
    */
   toJSON() {
-    const config = { ...super.toJSON(), ...this.getOptions() };
-    if (this.title) {
-      config.title = this.title;
-    }
-
-    if (this.legend.length > 0) {
-      config.legend = this.legend.slice();
+    const config = /** @type {StyleItemOptions} */ (super.toJSON());
+    if (this.colorBlendMode !== Cesium3DTileColorBlendMode.HIGHLIGHT) {
+      config.colorBlendMode = this.colorBlendMode;
     }
 
     return config;
   }
 
   /**
-   * Clones this style
+   * Clones this style. Does not pass the name property.
    * @param {StyleItem=} result
    * @returns {StyleItem}
    * @api
@@ -194,34 +120,27 @@ class StyleItem extends VcsObject {
    * @returns {StyleItem}
    * @api
    */
-  // eslint-disable-next-line class-methods-use-this
-  assign(styleItem) { return styleItem; }
+  assign(styleItem) {
+    this.properties = JSON.parse(JSON.stringify(styleItem.properties));
+    return this;
+  }
 
   /**
+   * Tests if two styleItems are equivalent. Does not match the name property (e.g. identifier)
    * @param {StyleItem} styleItem
    * @returns {boolean}
    * @api
    */
   equals(styleItem) {
     if (this !== styleItem) {
-      const options = this.getOptions();
-      const candidateOptions = styleItem.getOptions();
+      const options = this.toJSON();
+      delete options.name;
+      const candidateOptions = styleItem.toJSON();
+      delete candidateOptions.name;
       return deepEqual(options, candidateOptions);
     }
 
     return true;
-  }
-
-  /**
-   * gets a reference to this style by its name. should only be used for static styles, aka styles already part of the config
-   * @returns {Reference}
-   * @api
-   */
-  getReference() {
-    return {
-      type: StyleType.REFERENCE,
-      name: this.name.toString(),
-    };
   }
 
   /**
@@ -242,4 +161,4 @@ class StyleItem extends VcsObject {
 }
 
 export default StyleItem;
-VcsClassRegistry.registerClass(StyleItem.className, StyleItem);
+styleClassRegistry.registerClass(StyleItem.className, StyleItem);

@@ -1,6 +1,5 @@
 import VectorStyleItem from './vectorStyleItem.js';
 import DeclarativeStyleItem from './declarativeStyleItem.js';
-import { referenceableStyleSymbol } from './styleItem.js';
 
 /**
  * @param {VectorStyleItemOptions} obj
@@ -34,13 +33,11 @@ export function embedIconsInStyle(obj, embeddedIcons) {
  * @param {VcsMeta=} vcsMeta
  * @returns {VcsMeta}
  */
-function writeStyle(style, vcsMeta = {}) {
-  if (style[referenceableStyleSymbol]) { // XXX this should be configurable. In some cases, writting out the actual style would be desirable
-    vcsMeta.style = style.getReference();
-  } else if (style instanceof VectorStyleItem) {
-    vcsMeta.style = embedIconsInStyle(style.getOptions(), vcsMeta.embeddedIcons);
+function writeStyle(style, vcsMeta = {}) { // XXX this entire function is not what is to be expected. feature store expects styles as refs to be possible
+  if (style instanceof VectorStyleItem) {
+    vcsMeta.style = embedIconsInStyle(style.toJSON(), vcsMeta.embeddedIcons);
   } else if (style instanceof DeclarativeStyleItem) {
-    vcsMeta.style = style.getOptions();
+    vcsMeta.style = style.toJSON();
   }
   return vcsMeta;
 }

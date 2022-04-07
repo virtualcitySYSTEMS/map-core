@@ -11,10 +11,9 @@ import LineString from 'ol/geom/LineString.js';
 import MultiPolygon from 'ol/geom/MultiPolygon.js';
 import Polygon from 'ol/geom/Polygon.js';
 import DeclarativeStyleItem from '../../../src/style/declarativeStyleItem.js';
-import { StyleType } from '../../../src/style/styleItem.js';
 import { originalFeatureSymbol } from '../../../src/layer/vectorSymbols.js';
 
-describe('styleDeclarativeStyleItem', () => {
+describe('DeclarativeStyleItem', () => {
   /** @type {import("@vcmap/core").DeclarativeStyleItem} */
   let DSI;
 
@@ -335,32 +334,29 @@ describe('styleDeclarativeStyleItem', () => {
     });
   });
 
-  describe('getOptions', () => {
+  describe('toJSON', () => {
     beforeEach(() => {
       DSI = new DeclarativeStyleItem({});
     });
 
-    it('should add the correct styleType', () => {
-      const options = DSI.getOptions();
-      expect(options).to.have.property('type', StyleType.DECLARATIVE);
-    });
-
     it('should add the declarative style to the options', () => {
-      const options = DSI.getOptions();
-      expect(options).to.have.property('declarativeStyle').and.to.eq(DSI.cesiumStyle.style);
+      const options = DSI.toJSON();
+      expect(options).to.have.property('declarativeStyle').and.to.have.property('show', 'true');
     });
   });
 
   describe('clone', () => {
     it('should create a new style item identical to this one', () => {
       const newStyle = DSI.clone();
-      expect(newStyle.getOptions()).to.eql(DSI.getOptions());
+      newStyle.name = DSI.name;
+      expect(newStyle.toJSON()).to.eql(DSI.toJSON());
     });
 
     it('should accept a styleItem to clone on to', () => {
       const newStyle = new DeclarativeStyleItem({});
       DSI.clone(newStyle);
-      expect(newStyle.getOptions()).to.eql(DSI.getOptions());
+      newStyle.name = DSI.name;
+      expect(newStyle.toJSON()).to.eql(DSI.toJSON());
     });
   });
 
@@ -368,7 +364,8 @@ describe('styleDeclarativeStyleItem', () => {
     it('should assign the options of one to the other', () => {
       const newStyle = new DeclarativeStyleItem({});
       newStyle.assign(DSI);
-      expect(newStyle.getOptions()).to.eql(DSI.getOptions());
+      newStyle.name = DSI.name;
+      expect(newStyle.toJSON()).to.eql(DSI.toJSON());
     });
   });
 });

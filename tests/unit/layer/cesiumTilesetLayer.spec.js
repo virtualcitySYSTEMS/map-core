@@ -14,6 +14,7 @@ import getDummyCesium3DTileset from './cesium/getDummyCesium3DTileset.js';
 import Projection, { wgs84Projection } from '../../../src/util/projection.js';
 import Extent from '../../../src/util/extent.js';
 import { createTilesetServer, getCesiumEventSpy, setCesiumMap, createDummyCesium3DTileFeature } from '../helpers/cesiumHelpers.js';
+import { VectorStyleItem } from '../../../index.js';
 
 describe('CesiumTilesetLayer', () => {
   let sandbox;
@@ -253,7 +254,8 @@ describe('CesiumTilesetLayer', () => {
           screenSpaceErrorMobile: 8,
           screenSpaceError: 8,
           highlightStyle: {
-            type: 'vector',
+            type: VectorStyleItem.className,
+            name: 'highlightStyle',
             fill: {
               color: [255, 0, 0, 1],
             },

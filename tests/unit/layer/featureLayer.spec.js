@@ -4,7 +4,6 @@ import DeclarativeStyleItem from '../../../src/style/declarativeStyleItem.js';
 import VectorStyleItem from '../../../src/style/vectorStyleItem.js';
 import FeatureLayer from '../../../src/layer/featureLayer.js';
 import { getCesiumEventSpy } from '../helpers/cesiumHelpers.js';
-import { styleCollection } from '../../../src/globalCollections.js';
 
 describe('FeatureLayer', () => {
   let sandbox;
@@ -41,18 +40,6 @@ describe('FeatureLayer', () => {
       expect(featureLayer.style.fillColor).to.have.members([0, 0, 255, 1]);
     });
 
-    it('should set the style based on a framework style', () => {
-      const style = new VectorStyleItem({});
-      styleCollection.add(style);
-      featureLayer.setStyle(style.name);
-      expect(featureLayer).to.have.property('style', style);
-    });
-
-    it('should not change the style, if a style was not found with a given name', () => {
-      featureLayer.setStyle('test');
-      expect(featureLayer).to.have.property('style', featureLayer.defaultStyle);
-    });
-
     it('should raise the styleChanged with the new style', () => {
       const spy = getCesiumEventSpy(sandbox, featureLayer.styleChanged);
       const style = new VectorStyleItem({});
@@ -77,7 +64,8 @@ describe('FeatureLayer', () => {
       before(() => {
         inputConfig = {
           style: {
-            type: 'vector',
+            type: VectorStyleItem.className,
+            name: 'style',
             fill: {
               color: '#FF00FF',
             },
@@ -97,7 +85,8 @@ describe('FeatureLayer', () => {
       it('should set the style options', () => {
         expect(outputConfig).to.have.property('style')
           .and.to.eql({
-            type: 'vector',
+            type: VectorStyleItem.className,
+            name: 'style',
             fill: {
               color: [255, 0, 255, 1],
             },

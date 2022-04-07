@@ -27,7 +27,7 @@ import DeclarativeStyleItem from '../style/declarativeStyleItem.js';
 import VectorObliqueImpl from './oblique/vectorObliqueImpl.js';
 import Extent from '../util/extent.js';
 import { isMobile } from '../util/isMobile.js';
-import { VcsClassRegistry } from '../classRegistry.js';
+import { layerClassRegistry } from '../classRegistry.js';
 import { requestJson } from '../util/fetch.js';
 
 /**
@@ -371,7 +371,7 @@ class FeatureStoreLayer extends VectorLayer {
 
   /**
    * @inheritDoc
-   * @param {string|import("ol/style/Style").default|import("ol/style/Style").StyleFunction|import("@vcmap/core").StyleItem} style
+   * @param {import("ol/style/Style").default|import("ol/style/Style").StyleFunction|import("@vcmap/core").StyleItem} style
    * @param {boolean=} silent
    * @api
    */
@@ -643,5 +643,5 @@ class FeatureStoreLayer extends VectorLayer {
   }
 }
 
-VcsClassRegistry.registerClass(FeatureStoreLayer.className, FeatureStoreLayer);
+layerClassRegistry.registerClass(FeatureStoreLayer.className, FeatureStoreLayer);
 export default FeatureStoreLayer;

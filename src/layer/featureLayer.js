@@ -3,18 +3,16 @@ import Style from 'ol/style/Style.js';
 import { check } from '@vcsuite/check';
 import { parseInteger } from '@vcsuite/parsers';
 import Layer from './layer.js';
-import StyleItem, { referenceableStyleSymbol } from '../style/styleItem.js';
+import StyleItem from '../style/styleItem.js';
 import VectorStyleItem from '../style/vectorStyleItem.js';
 import FeatureVisibility from './featureVisibility.js';
 import { getStyleOrDefaultStyle } from '../style/styleFactory.js';
 import VcsEvent from '../vcsEvent.js';
-import { styleCollection } from '../globalCollections.js';
-import { VcsClassRegistry } from '../classRegistry.js';
+import { layerClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {LayerOptions} FeatureLayerOptions
- * @property {DeclarativeStyleItemOptions|VectorStyleItemOptions|import("@vcmap/core").StyleItem|string|undefined} style
- * @property {string|undefined} activeStyleName - vcs:undocumented
+ * @property {DeclarativeStyleItemOptions|VectorStyleItemOptions|import("@vcmap/core").StyleItem|undefined} style
  * @property {Object|undefined} genericFeatureProperties - properties to add to generic features, eg for display in the balloon
  * @property {number} [balloonHeightOffset=10]
  * @property {FeatureVisibility|undefined} featureVisibility - vcs:undocumented
@@ -76,7 +74,7 @@ class FeatureLayer extends Layer {
      * @type {import("@vcmap/core").StyleItem}
      * @private
      */
-    this._style = this.getStyleOrDefaultStyle(options.activeStyleName || options.style);
+    this._style = this.getStyleOrDefaultStyle(options.style);
     /**
      * @type {import("@vcmap/core").StyleItem}
      * @private
@@ -180,7 +178,7 @@ class FeatureLayer extends Layer {
   }
 
   /**
-   * @param {(Reference|DeclarativeStyleItemOptions|VectorStyleItemOptions|import("@vcmap/core").StyleItem|string)=} styleOptions
+   * @param {(DeclarativeStyleItemOptions|VectorStyleItemOptions|import("@vcmap/core").StyleItem)=} styleOptions
    * @param {(import("@vcmap/core").VectorStyleItem|import("@vcmap/core").DeclarativeStyleItem)=} defaultStyle
    * @returns {import("@vcmap/core").StyleItem}
    */
@@ -191,21 +189,14 @@ class FeatureLayer extends Layer {
 
   /**
    * Sets the style based on a styleName on a layer
-   * @param {string|import("ol/style/Style").default|import("ol/style/Style").StyleFunction|import("@vcmap/core").StyleItem} style
+   * @param {import("ol/style/Style").default|import("ol/style/Style").StyleFunction|import("@vcmap/core").StyleItem} style
    * @param {boolean=} silent
    * @api
    */
   setStyle(style, silent) {
-    check(style, [Style, StyleItem, Function, String]);
+    check(style, [Style, StyleItem, Function]);
 
-    if (typeof style === 'string') {
-      const styleItem = styleCollection.getByKey(style);
-      if (!styleItem) {
-        this.getLogger().warning(`could not find style with name ${style}`);
-        return;
-      }
-      this._style = styleItem;
-    } else if (style instanceof StyleItem) {
+    if (style instanceof StyleItem) {
       this._style = style;
     } else {
       this._style = new VectorStyleItem({});
@@ -232,11 +223,7 @@ class FeatureLayer extends Layer {
   toJSON() {
     const config = /** @type {FeatureLayerOptions} */ (super.toJSON());
     if (!this.getStyleOrDefaultStyle().equals(this._style)) {
-      if (this._style[referenceableStyleSymbol]) {
-        config.style = this.style.getReference();
-      } else {
-        config.style = this.style.getOptions();
-      }
+      config.style = this.style.toJSON();
     }
 
     if (Object.keys(this._genericFeatureProperties).length > 0) {
@@ -257,5 +244,5 @@ class FeatureLayer extends Layer {
   }
 }
 
-VcsClassRegistry.registerClass(FeatureLayer.className, FeatureLayer);
+layerClassRegistry.registerClass(FeatureLayer.className, FeatureLayer);
 export default FeatureLayer;

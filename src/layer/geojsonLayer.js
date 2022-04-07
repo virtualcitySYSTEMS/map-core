@@ -1,7 +1,7 @@
 import VectorLayer from './vectorLayer.js';
 import { parseGeoJSON, writeGeoJSONFeature } from './geojsonHelpers.js';
 import Projection, { wgs84Projection } from '../util/projection.js';
-import { VcsClassRegistry } from '../classRegistry.js';
+import { layerClassRegistry } from '../classRegistry.js';
 import { requestJson } from '../util/fetch.js';
 
 /**
@@ -179,5 +179,5 @@ class GeoJSONLayer extends VectorLayer {
   }
 }
 
-VcsClassRegistry.registerClass(GeoJSONLayer.className, GeoJSONLayer);
+layerClassRegistry.registerClass(GeoJSONLayer.className, GeoJSONLayer);
 export default GeoJSONLayer;

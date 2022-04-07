@@ -1,4 +1,5 @@
 import AbstractFeatureProvider from './abstractFeatureProvider.js';
+import { featureProviderClassRegistry } from '../classRegistry.js';
 
 
 /**
@@ -60,3 +61,4 @@ class TileProviderFeatureProvider extends AbstractFeatureProvider {
 }
 
 export default TileProviderFeatureProvider;
+featureProviderClassRegistry.registerClass(TileProviderFeatureProvider.className, TileProviderFeatureProvider);

@@ -2,7 +2,6 @@ import { getTransform, get as getProjection, equivalent } from 'ol/proj.js';
 import { register } from 'ol/proj/proj4.js';
 import proj4 from 'proj4';
 import { check } from '@vcsuite/check';
-import { VcsClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {Object} ProjectionOptions
@@ -362,5 +361,3 @@ export const wgs84Projection = new Projection({ epsg: 4326 });
  * @export
  */
 export const mercatorProjection = new Projection({ epsg: 3857 });
-
-VcsClassRegistry.registerClass(Projection.className, Projection);

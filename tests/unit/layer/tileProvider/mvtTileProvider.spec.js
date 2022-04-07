@@ -55,4 +55,34 @@ describe('MVTTileProvider', () => {
         .to.have.members([1488993.3109952325, 6894008.455096615]);
     });
   });
+
+  describe('serialization', () => {
+    describe('of a default tile provider', () => {
+      it('should only return type and name', () => {
+        const outputConfig = new MVTTileProvider({}).toJSON();
+        expect(outputConfig).to.have.all.keys(['type', 'name']);
+      });
+    });
+
+    describe('of a configured tile provider', () => {
+      let inputConfig;
+      let outputConfig;
+
+      before(() => {
+        inputConfig = {
+          url: 'myUrl',
+          idProperty: 'myId',
+        };
+        outputConfig = new MVTTileProvider(inputConfig).toJSON();
+      });
+
+      it('should configure url', () => {
+        expect(outputConfig).to.have.property('url', inputConfig.url);
+      });
+
+      it('should configure idProperty', () => {
+        expect(outputConfig).to.have.property('idProperty', inputConfig.idProperty);
+      });
+    });
+  });
 });

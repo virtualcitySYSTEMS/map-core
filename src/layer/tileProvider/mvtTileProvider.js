@@ -4,6 +4,7 @@ import { getCenter } from 'ol/extent.js';
 import TileProvider, { rectangleToExtent } from './tileProvider.js';
 import { getURL } from './urlTemplateTileProvider.js';
 import { requestArrayBuffer } from '../../util/fetch.js';
+import { tileProviderClassRegistry } from '../../classRegistry.js';
 
 /**
  * @typedef {TileProviderOptions} MVTTileProviderOptions
@@ -99,6 +100,23 @@ class MVTTileProvider extends TileProvider {
     });
     return features;
   }
+
+  /**
+   * @returns {MVTTileProviderOptions}
+   */
+  toJSON() {
+    const config = /** @type {MVTTileProviderOptions} */ (super.toJSON());
+
+    if (this.url) {
+      config.url = this.url;
+    }
+
+    if (this.idProperty) {
+      config.idProperty = this.idProperty;
+    }
+    return config;
+  }
 }
 
 export default MVTTileProvider;
+tileProviderClassRegistry.registerClass(MVTTileProvider.className, MVTTileProvider);

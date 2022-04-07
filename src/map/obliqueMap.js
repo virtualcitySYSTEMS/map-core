@@ -13,7 +13,7 @@ import { ObliqueViewDirection as ViewDirection } from '../oblique/obliqueViewDir
 import ObliqueProvider from '../oblique/obliqueProvider.js';
 import ObliqueCollection from '../oblique/obliqueCollection.js';
 import { transformFromImage } from '../oblique/helpers.js';
-import { VcsClassRegistry } from '../classRegistry.js';
+import { mapClassRegistry } from '../classRegistry.js';
 import DefaultObliqueCollection from '../oblique/defaultObliqueCollection.js';
 
 /**
@@ -518,5 +518,5 @@ class ObliqueMap extends BaseOLMap {
   }
 }
 
-VcsClassRegistry.registerClass(ObliqueMap.className, ObliqueMap);
+mapClassRegistry.registerClass(ObliqueMap.className, ObliqueMap);
 export default ObliqueMap;

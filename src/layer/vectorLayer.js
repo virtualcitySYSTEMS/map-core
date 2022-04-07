@@ -26,9 +26,9 @@ import VectorObliqueImpl from './oblique/vectorObliqueImpl.js';
 import ObliqueMap from '../map/obliqueMap.js';
 import CesiumMap from '../map/cesiumMap.js';
 import { originalStyle, updateOriginalStyle } from './featureVisibility.js';
-import StyleItem, { referenceableStyleSymbol, StyleType } from '../style/styleItem.js';
+import StyleItem from '../style/styleItem.js';
 import { getGenericFeatureFromClickedObject } from './vectorHelpers.js';
-import { VcsClassRegistry } from '../classRegistry.js';
+import { layerClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {FeatureLayerOptions} VectorOptions
@@ -213,17 +213,12 @@ class VectorLayer extends FeatureLayer {
     });
 
     let initialStyle = options.style;
-    if (options.activeStyleName) {
-      initialStyle = {
-        type: StyleType.REFERENCE,
-        name: options.activeStyleName,
-      };
-    } else if (options.style instanceof StyleItem) {
-      initialStyle = options.style.getOptions();
+    if (options.style instanceof StyleItem) {
+      initialStyle = options.style.toJSON();
     }
 
     /**
-     * @type {Reference|StyleItemOptions|string}
+     * @type {StyleItemOptions}
      * @private
      */
     this._initialStyle = initialStyle;
@@ -344,7 +339,7 @@ class VectorLayer extends FeatureLayer {
   }
 
   /**
-   * @param {(Reference|DeclarativeStyleItemOptions|VectorStyleItemOptions|import("@vcmap/core").StyleItem|string)=} styleOptions
+   * @param {(DeclarativeStyleItemOptions|VectorStyleItemOptions|import("@vcmap/core").StyleItem)=} styleOptions
    * @param {import("@vcmap/core").VectorStyleItem=} defaultStyle
    * @returns {import("@vcmap/core").StyleItem}
    */
@@ -354,7 +349,7 @@ class VectorLayer extends FeatureLayer {
 
   /**
    * sets the style of this layer
-   * @param {import("ol/style/Style").default|import("ol/style/Style").StyleFunction|import("@vcmap/core").StyleItem|string} style
+   * @param {import("ol/style/Style").default|import("ol/style/Style").StyleFunction|import("@vcmap/core").StyleItem} style
    * @param {boolean=} silent
    */
   setStyle(style, silent) {
@@ -594,9 +589,7 @@ class VectorLayer extends FeatureLayer {
     }
 
     if (this.highlightStyle) {
-      config.highlightStyle = this.highlightStyle[referenceableStyleSymbol] ?
-        this.highlightStyle.getReference() :
-        this.highlightStyle.getOptions();
+      config.highlightStyle = this.highlightStyle.toJSON();
     }
 
     if (this.isDynamic !== defaultOptions.isDynamic) {
@@ -607,8 +600,6 @@ class VectorLayer extends FeatureLayer {
     if (Object.keys(vectorPropertiesConfig).length > 0) {
       config.vectorProperties = vectorPropertiesConfig;
     }
-
-    // XXX missing style
 
     return config;
   }
@@ -628,5 +619,5 @@ class VectorLayer extends FeatureLayer {
   }
 }
 
-VcsClassRegistry.registerClass(VectorLayer.className, VectorLayer);
+layerClassRegistry.registerClass(VectorLayer.className, VectorLayer);
 export default VectorLayer;

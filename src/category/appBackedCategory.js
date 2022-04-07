@@ -1,10 +1,23 @@
 import Category from './category.js';
-import { VcsClassRegistry } from '../classRegistry.js';
+import { categoryClassRegistry } from '../classRegistry.js';
+import ViewPoint from '../util/viewpoint.js';
+import ObliqueCollection from '../oblique/obliqueCollection.js';
+import { deserializeLayer, deserializeMap } from '../vcsAppContextHelpers.js';
 
 /**
  * @typedef {CategoryOptions} AppBackedCategoryOptions
  * @property {string} collectionName
  */
+
+/**
+ * @type {Object<string, string>}
+ */
+const collectionNameMap = {
+  layers: 'layerClassRegistry',
+  styles: 'styleClassRegistry',
+  maps: 'mapClassRegistry',
+  categories: 'categoryClassRegistry',
+};
 
 /**
  * @class
@@ -17,9 +30,31 @@ class AppBackedCategory extends Category {
    * @param {AppBackedCategoryOptions} options
    */
   constructor(options) {
-    options.typed = true;
+    options.classRegistryName = collectionNameMap[options.collectionName];
     super(options);
     this._collectionName = options.collectionName;
+  }
+
+  /**
+   * @param {VcsObjectOptions} config
+   * @returns {Promise<import("@vcmap/core").VcsObject>}
+   * @protected
+   */
+  async _deserializeItem(config) {
+    if (!this._app) {
+      throw new Error('Cannot deserialize item before setting the vcApp');
+    }
+
+    if (this._collectionName === 'viewPoints') {
+      return new ViewPoint(config);
+    } else if (this._collectionName === 'obliqueCollections') {
+      return new ObliqueCollection(config);
+    } else if (this._collectionName === 'layers') {
+      return deserializeLayer(this._app, config);
+    } else if (this._collectionName === 'maps') {
+      return deserializeMap(this._app, config);
+    }
+    return super._deserializeItem(config);
   }
 
   setApp(app) {
@@ -38,4 +73,4 @@ class AppBackedCategory extends Category {
 }
 
 export default AppBackedCategory;
-VcsClassRegistry.registerClass(AppBackedCategory.className, AppBackedCategory);
+categoryClassRegistry.registerClass(AppBackedCategory.className, AppBackedCategory);

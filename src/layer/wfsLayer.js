@@ -1,7 +1,7 @@
 import WFSFormat from 'ol/format/WFS.js';
 import VectorLayer from './vectorLayer.js';
 import Projection from '../util/projection.js';
-import { VcsClassRegistry } from '../classRegistry.js';
+import { layerClassRegistry } from '../classRegistry.js';
 import { requestJson } from '../util/fetch.js';
 
 /**
@@ -161,5 +161,5 @@ class WFSLayer extends VectorLayer {
   }
 }
 
-VcsClassRegistry.registerClass(WFSLayer.className, WFSLayer);
+layerClassRegistry.registerClass(WFSLayer.className, WFSLayer);
 export default WFSLayer;

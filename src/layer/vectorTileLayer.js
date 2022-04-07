@@ -12,10 +12,10 @@ import { FeatureVisibilityAction, globalHidden, hidden, highlighted } from './fe
 import { getStylesArray } from '../util/featureconverter/convert.js';
 import { vcsLayerName } from './layerSymbols.js';
 import TileProviderFeatureProvider from '../featureProvider/tileProviderFeatureProvider.js';
-import tileProviderFactory from './tileProvider/tileProviderFactory.js';
 import { getGenericFeatureFromClickedObject } from './vectorHelpers.js';
 import { originalFeatureSymbol } from './vectorSymbols.js';
-import { VcsClassRegistry } from '../classRegistry.js';
+import { getObjectFromClassRegistry, layerClassRegistry, tileProviderClassRegistry } from '../classRegistry.js';
+import TileProvider from './tileProvider/tileProvider.js';
 
 /**
  * synchronizes featureVisibility Symbols on the feature;
@@ -44,7 +44,7 @@ function synchronizeFeatureVisibility(featureVisibility, globalHider, feature) {
 
 /**
  * @typedef {FeatureLayerOptions} VectorTileOptions
- * @property {TileProviderOptions} tileProvider
+ * @property {TileProviderOptions|import("@vcmap/core").TileProvider} tileProvider
  * @property {VectorStyleItemOptions|import("@vcmap/core").VectorStyleItem|undefined} highlightStyle
  * @property {VectorPropertiesOptions|undefined} vectorProperties
  * @property {number|undefined} minLevel used to restrict the zoom level visibility (minlevel does not allow rendering above tileProvider baseLevel)
@@ -133,16 +133,12 @@ class VectorTileLayer extends FeatureLayer {
     });
 
     /**
-     * @type {TileProviderOptions}
-     * @private
-     */
-    this._tileProviderOptions = options.tileProvider;
-
-    /**
      * @type {import("@vcmap/core").TileProvider}
      * @api
      */
-    this.tileProvider = undefined;
+    this.tileProvider = options.tileProvider instanceof TileProvider ? // XXX this now throws if not passing in a tileProvider.
+      options.tileProvider :
+      getObjectFromClassRegistry(tileProviderClassRegistry, options.tileProvider);
 
     /**
      * @type {number|undefined}
@@ -187,21 +183,19 @@ class VectorTileLayer extends FeatureLayer {
    * @returns {Promise<void>}
    */
   async initialize() {
-    await super.initialize();
-    if (!this.tileProvider) {
-      this.tileProvider = await tileProviderFactory(this._tileProviderOptions);
-      // this.tileProvider = await tileProviderFactory(this._tileProviderOptions);
+    if (!this.initialized) {
       this._tileLoadEventListener =
         this.tileProvider.tileLoadedEvent.addEventListener(event => this._handleTileLoaded(event));
       this._vectorPropertiesChangedListener =
         this.vectorProperties.propertyChanged.addEventListener(() => {
           this.reload();
         });
-      this.featureProvider = new TileProviderFeatureProvider(this.name, {
+      this.featureProvider = new TileProviderFeatureProvider(this.name, { // XXX this overwrites
         tileProvider: this.tileProvider,
         vectorProperties: this.vectorProperties,
       });
     }
+    await super.initialize();
   }
 
 
@@ -392,7 +386,7 @@ class VectorTileLayer extends FeatureLayer {
   }
 
   /**
-   * @param {(Reference|DeclarativeStyleItemOptions|VectorStyleItemOptions|import("@vcmap/core").StyleItem|string)=} styleOptions
+   * @param {(DeclarativeStyleItemOptions|VectorStyleItemOptions|import("@vcmap/core").StyleItem)=} styleOptions
    * @param {VectorStyleItem=} defaultStyle
    * @returns {import("@vcmap/core").StyleItem}
    */
@@ -466,15 +460,12 @@ class VectorTileLayer extends FeatureLayer {
     }
 
     if (this.tileProvider) {
-      const tileProviderConfig = this.tileProvider.toJSON();
-      config.tileProvider = tileProviderConfig;
-    } else if (this._tileProviderOptions) {
-      config.tileProvider = this._tileProviderOptions;
+      config.tileProvider = this.tileProvider.toJSON();
     }
 
     return config;
   }
 }
 
-VcsClassRegistry.registerClass(VectorTileLayer.className, VectorTileLayer);
+layerClassRegistry.registerClass(VectorTileLayer.className, VectorTileLayer);
 export default VectorTileLayer;

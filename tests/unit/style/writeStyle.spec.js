@@ -2,9 +2,8 @@
 import DeclarativeStyleItem from '../../../src/style/declarativeStyleItem.js';
 import writeStyle from '../../../src/style/writeStyle.js';
 import VectorStyleItem from '../../../src/style/vectorStyleItem.js';
-import { referenceableStyleSymbol, StyleType } from '../../../src/style/styleItem.js';
 
-describe('stylewriteStyle', () => {
+describe('writeStyle', () => {
   it('should write a declarative style', () => {
     const styleItem = new DeclarativeStyleItem({
       declarativeStyle: {
@@ -58,14 +57,5 @@ describe('stylewriteStyle', () => {
     writeStyle(styleItem, vcsMeta);
     const returnedStyle = new VectorStyleItem(vcsMeta.style);
     expect(returnedStyle.style).to.eql(styleItem.style);
-  });
-
-  it('should write a style reference, if the style is a config style', () => {
-    const styleItem = new VectorStyleItem({});
-    styleItem[referenceableStyleSymbol] = true;
-    const vcsMeta = {};
-    writeStyle(styleItem, vcsMeta);
-    expect(vcsMeta.style).to.have.property('type', StyleType.REFERENCE);
-    expect(vcsMeta.style).to.have.property('name', styleItem.name);
   });
 });

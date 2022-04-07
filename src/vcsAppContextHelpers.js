@@ -1,5 +1,6 @@
 import { getLogger as getLoggerByName } from '@vcsuite/logger';
-import { VcsClassRegistry } from './classRegistry.js';
+import ViewPoint from './util/viewpoint.js';
+import { getObjectFromClassRegistry } from './classRegistry.js';
 
 /**
  * @returns {import("@vcsuite/logger").Logger}
@@ -14,44 +15,19 @@ function getLogger() {
 export const contextIdSymbol = Symbol('contextId');
 
 /**
- * returns a constructor of a type.
- * @api stable
- * @export
- * @param {Object} options
- * @param {...*} args
- * @returns {Promise<Object|null>}
+ * @typedef {LayerOptions} ContextLayerOptions
+ * @property {string|StyleItemOptions} [style]
+ * @property {TileProviderOptions} [tileProvider]
+ * @property {AbstractFeatureProviderOptions} [featureProvider]
  */
-export async function getObjectFromOptions(options, ...args) {
-  if (!options.type) {
-    getLogger().warning(`ObjectCreation failed: could not find type in options ${options}`);
-    return null;
-  }
-  const ObjectConstructor = await VcsClassRegistry.getClass(options.type);
-  if (!ObjectConstructor) {
-    getLogger().warning(`ObjectCreation failed: could not find javascript class of type ${options.type}`);
-    return null;
-  }
-  let object;
-  try {
-    object = new ObjectConstructor(options, ...args);
-  } catch (ex) {
-    getLogger().warning(`Error: ${ex}`);
-  }
-
-  if (!object) {
-    getLogger().warning('ObjectCreation failed: could not create new Object');
-    return null;
-  }
-  return object;
-}
 
 /**
  * @param {import("@vcmap/core").VcsApp} vcsApp
  * @param {VcsMapOptions} mapConfig
- * @returns {Promise<import("@vcmap/core").VcsMap|null>}
+ * @returns {import("@vcmap/core").VcsMap|null}
  */
-export async function deserializeMap(vcsApp, mapConfig) {
-  const map = await getObjectFromOptions(mapConfig);
+export function deserializeMap(vcsApp, mapConfig) {
+  const map = getObjectFromClassRegistry(vcsApp.mapClassRegistry, mapConfig);
   if (map) {
     map.layerCollection = vcsApp.layers;
   }
@@ -60,10 +36,10 @@ export async function deserializeMap(vcsApp, mapConfig) {
 
 /**
  * @param {ViewPointOptions} viewPointObject
- * @returns {Promise<null|import("@vcmap/core").ViewPoint>}
+ * @returns {null|import("@vcmap/core").ViewPoint}
  */
-export async function deserializeViewPoint(viewPointObject) {
-  const viewpoint = /** @type {import("@vcmap/core").ViewPoint} */ (await getObjectFromOptions(viewPointObject));
+export function deserializeViewPoint(viewPointObject) {
+  const viewpoint = new ViewPoint(viewPointObject);
   if (viewpoint && viewpoint.isValid()) {
     return viewpoint;
   }
@@ -73,12 +49,49 @@ export async function deserializeViewPoint(viewPointObject) {
 
 /**
  * @param {import("@vcmap/core").VcsApp} vcsApp
+ * @param {ContextLayerOptions} layerConfig
+ * @returns {import("@vcmap/core").Layer|null}
+ */
+export function deserializeLayer(vcsApp, layerConfig) {
+  let style;
+  if (layerConfig.style) {
+    if (typeof layerConfig.style === 'string') {
+      style = vcsApp.styles.getByKey(layerConfig.style);
+    } else {
+      style = getObjectFromClassRegistry(vcsApp.styleClassRegistry, layerConfig.style);
+    }
+  } // TODO highlightStyle
+
+  let tileProvider;
+  if (layerConfig.tileProvider) {
+    tileProvider = getObjectFromClassRegistry(vcsApp.tileProviderClassRegistry, layerConfig.tileProvider);
+  }
+
+  let featureProvider;
+  if (layerConfig.featureProvider) {
+    featureProvider = getObjectFromClassRegistry(vcsApp.featureProviderClassRegistry, layerConfig.featureProvider);
+  }
+
+  return getObjectFromClassRegistry(
+    vcsApp.layerClassRegistry,
+    { ...layerConfig, style, tileProvider, featureProvider },
+  );
+}
+
+/**
+ * @param {import("@vcmap/core").VcsApp} vcsApp
  * @param {import("@vcmap/core").Layer} layer
- * @returns {LayerOptions}
+ * @returns {ContextLayerOptions}
  */
 export function serializeLayer(vcsApp, layer) {
-  const serializedLayer = layer.toJSON();
+  const serializedLayer = /** @type {ContextLayerOptions} */ (layer.toJSON());
   serializedLayer.zIndex = layer[vcsApp.layers.zIndexSymbol];
+  if (
+    /** @type {StyleItemOptions} */ (serializedLayer?.style)?.name &&
+    vcsApp.styles.hasKey(/** @type {StyleItemOptions} */ (serializedLayer.style).name)
+  ) {
+    serializedLayer.style = /** @type {StyleItemOptions} */ (serializedLayer.style).name;
+  } // TODO highlightStyle
   return serializedLayer;
 }
 

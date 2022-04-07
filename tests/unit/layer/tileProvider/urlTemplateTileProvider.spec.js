@@ -88,4 +88,29 @@ describe('URLTemplateTileProvider', () => {
       expect(url).to.contain('-135,40.979898069620134,-90,66.51326044311185');
     });
   });
+
+  describe('serialization', () => {
+    describe('of a default tile provider', () => {
+      it('should only return type and name', () => {
+        const outputConfig = new URLTemplateTileProvider({}).toJSON();
+        expect(outputConfig).to.have.all.keys(['type', 'name']);
+      });
+    });
+
+    describe('of a configured tile provider', () => {
+      let inputConfig;
+      let outputConfig;
+
+      before(() => {
+        inputConfig = {
+          url: 'myUrl',
+        };
+        outputConfig = new URLTemplateTileProvider(inputConfig).toJSON();
+      });
+
+      it('should configure url', () => {
+        expect(outputConfig).to.have.property('url', inputConfig.url);
+      });
+    });
+  });
 });

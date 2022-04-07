@@ -170,7 +170,7 @@ class AbstractFeatureProvider extends VcsObject {
     }
 
     if (this.style) {
-      config.style = this.style.getOptions();
+      config.style = this.style.toJSON();
     }
 
     const vectorPropertiesConfig = this.vectorProperties

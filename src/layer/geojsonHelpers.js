@@ -6,18 +6,15 @@ import Point from 'ol/geom/Point.js';
 import Circle from 'ol/geom/Circle.js';
 
 import { getDistance as haversineDistance } from 'ol/sphere.js';
-import { getLogger as getLoggerByName } from '@vcsuite/logger';
 import Projection, { mercatorProjection, wgs84Projection } from '../util/projection.js';
 import VectorStyleItem, { defaultVectorStyle, vectorStyleSymbol } from '../style/vectorStyleItem.js';
 import { parseColor } from '../style/styleHelpers.js';
 import VectorLayer from './vectorLayer.js';
 import { featureStoreStateSymbol } from './featureStoreLayerState.js';
-import { StyleType } from '../style/styleItem.js';
 import { embedIconsInStyle } from '../style/writeStyle.js';
 import DeclarativeStyleItem from '../style/declarativeStyleItem.js';
 import { vcsMetaVersion } from './layer.js';
 import Extent3D from '../util/featureconverter/extent3D.js';
-import { styleCollection } from '../globalCollections.js';
 import { circleFromCenterRadius, enforceEndingVertex, removeEndingVertexFromGeometry } from '../util/geometryHelpers.js';
 
 const featureProjection = 'EPSG:3857';
@@ -36,13 +33,6 @@ function getFormat() {
     format = new GeoJSON();
   }
   return format;
-}
-
-/**
- * @returns {import("@vcsuite/logger").Logger}
- */
-function getLogger() {
-  return getLoggerByName('GeoJSONHelper');
 }
 
 /**
@@ -331,14 +321,7 @@ export function parseGeoJSON(input, readOptions = {}) {
       options.embeddedIcons = geoJSON.vcsMeta.embeddedIcons;
     }
     if (geoJSON.vcsMeta.style && readOptions.dynamicStyle) {
-      if (geoJSON.vcsMeta.style.type === StyleType.REFERENCE) {
-        style = styleCollection.getByKey(geoJSON.vcsMeta.style.name);
-        if (!style) {
-          getLogger().warning(`could not load referenced style ${geoJSON.vcsMeta.style.name}`);
-        } else if (style instanceof VectorStyleItem) {
-          options.defaultStyle = style;
-        }
-      } else if (geoJSON.vcsMeta.style.type === StyleType.DECLARATIVE) {
+      if (geoJSON.vcsMeta.style.type === DeclarativeStyleItem.className) {
         style = new DeclarativeStyleItem(geoJSON.vcsMeta.style);
       } else {
         geoJSON.vcsMeta.style = setEmbeddedIcons(geoJSON.vcsMeta.style, options);

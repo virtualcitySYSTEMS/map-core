@@ -1,8 +1,8 @@
 import { getLogger as getLoggerByName } from '@vcsuite/logger';
 import Category from './category.js';
-import { getObjectFromOptions } from '../vcsAppContextHelpers.js';
 import './appBackedCategory.js';
 import IndexedCollection from '../util/indexedCollection.js';
+import { getObjectFromClassRegistry } from '../classRegistry.js';
 
 /**
  * @returns {import("@vcsuite/logger").Logger}
@@ -120,7 +120,7 @@ class CategoryCollection extends IndexedCollection {
       category = this.getByKey(options.name);
       category.mergeOptions(options);
     } else {
-      category = await getObjectFromOptions(options);
+      category = await getObjectFromClassRegistry(this._app.categoryClassRegistry, options);
       if (category) {
         if (this.add(category) == null) {
           return null;
@@ -129,7 +129,7 @@ class CategoryCollection extends IndexedCollection {
     }
 
     if (!category) {
-      throw new Error(`Category ${options.name} with type ${category.type} could not be created`);
+      throw new Error(`Category ${options.name} with type ${options.type} could not be created`);
     }
     return category;
   }

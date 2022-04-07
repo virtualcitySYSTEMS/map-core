@@ -3,6 +3,7 @@ import { parseGeoJSON } from '../geojsonHelpers.js';
 import TileProvider from './tileProvider.js';
 import { getCurrentLocale } from '../../util/locale.js';
 import { requestJson } from '../../util/fetch.js';
+import { tileProviderClassRegistry } from '../../classRegistry.js';
 
 /**
  * @typedef {TileProviderOptions} URLTemplateTileProviderOptions
@@ -101,6 +102,20 @@ class URLTemplateTileProvider extends TileProvider {
     const { features } = parseGeoJSON(data, { dynamicStyle: true });
     return features;
   }
+
+  /**
+   * @returns {URLTemplateTileProviderOptions}
+   */
+  toJSON() {
+    const config = /** @type {URLTemplateTileProviderOptions} */ (super.toJSON());
+
+    if (this.url) {
+      config.url = this.url;
+    }
+
+    return config;
+  }
 }
 
 export default URLTemplateTileProvider;
+tileProviderClassRegistry.registerClass(URLTemplateTileProvider.className, URLTemplateTileProvider);

@@ -10,7 +10,7 @@ import Circle from 'ol/style/Circle.js';
 import RegularShape from 'ol/style/RegularShape.js';
 
 import { check, checkMaybe } from '@vcsuite/check';
-import StyleItem, { StyleType } from './styleItem.js';
+import StyleItem from './styleItem.js';
 import {
   parseColor,
   PatternType,
@@ -24,7 +24,7 @@ import {
   getDefaultVectorStyleItemOptions,
 } from './styleHelpers.js';
 import { getShapeFromOptions } from './shapesCategory.js';
-import { VcsClassRegistry } from '../classRegistry.js';
+import { styleClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {Object} VectorStyleItemPattern
@@ -711,7 +711,9 @@ class VectorStyleItem extends StyleItem {
       });
       return result;
     }
-    return new VectorStyleItem(this.getOptions());
+    const config = this.toJSON();
+    delete config.name;
+    return new VectorStyleItem(config);
   }
 
   /**
@@ -720,6 +722,7 @@ class VectorStyleItem extends StyleItem {
    * @api
    */
   assign(result) {
+    super.assign(result);
     if (result.fillColor) {
       this.fillColor = result.fillColor.slice();
     }
@@ -756,79 +759,61 @@ class VectorStyleItem extends StyleItem {
   }
 
   /**
-   * @param {VectorStyleItemSections=} sections
    * @returns {VectorStyleItemOptions}
    * @api
    */
-  getOptions(sections) {
+  toJSON() {
     // TODO clean default, only copy relevant keys
-    const options = /** @type {VectorStyleItemOptions} */ (super.getOptions(sections));
-    options.type = StyleType.VECTOR;
-    /** @type {VectorStyleItemSections} */
-    const usedSections = sections || {
-      fill: true,
-      stroke: true,
-      text: true,
-      image: true,
-    };
-
-    if (usedSections.fill) {
-      if (this._fillOptions) {
-        options.fill = {
-          color: /** @type {import("ol/color").Color} */ (parseColor(this._fillOptions.color).slice()),
-        };
-        if (this._fillOptions.pattern) {
-          options.fill.pattern = { ...this._fillOptions.pattern };
-        }
-      } else if (this.exclude.fill) {
-        options.fill = false;
+    const options = /** @type {VectorStyleItemOptions} */ (super.toJSON());
+    if (this._fillOptions) {
+      options.fill = {
+        color: /** @type {import("ol/color").Color} */ (parseColor(this._fillOptions.color).slice()),
+      };
+      if (this._fillOptions.pattern) {
+        options.fill.pattern = { ...this._fillOptions.pattern };
       }
+    } else if (this.exclude.fill) {
+      options.fill = false;
     }
 
-    if (usedSections.stroke) {
-      if (this._stroke) {
-        options.stroke = getStrokeOptions(this._stroke);
-      } else if (this.exclude.stroke) {
-        options.stroke = false;
-      }
+    if (this._stroke) {
+      options.stroke = getStrokeOptions(this._stroke);
+    } else if (this.exclude.stroke) {
+      options.stroke = false;
     }
 
-    if (usedSections.text) {
-      if (this._text) {
-        options.text = getTextOptions(this._text);
-      }
+    if (this._text) {
+      options.text = getTextOptions(this._text);
     }
 
-    if (usedSections.label) {
+    if (this._label) {
       options.label = this._label;
     }
 
-    if (usedSections.image) { // TODO this should be nicer...
-      if (this._image instanceof Icon) {
-        options.image = {
-          src: this._image.getSrc(), // XXX this is an issue... we dont want a data URI in the geoJSON
-          scale: this._image.getScale(),
-          opacity: this._image.getOpacity(),
-        };
-      } else if (this._image instanceof Circle) {
-        options.image = {
-          scale: this._image.getScale(),
-          fill: getFillOptions(this._image),
-          radius: this._image.getRadius(),
-          stroke: this._image.getStroke() ? getStrokeOptions(this._image.getStroke()) : undefined,
-        };
-      } else if (this._image instanceof RegularShape) {
-        options.image = {
-          scale: this._image.getScale(),
-          fill: getFillOptions(this._image),
-          points: this._image.getPoints(),
-          angle: this._image.getAngle(),
-          radius: this._image.getRadius(),
-          stroke: this._image.getStroke() ? getStrokeOptions(this._image.getStroke()) : undefined,
-        };
-      } else if (this.exclude.image) {
-        options.image = false;
-      }
+    if (this._image instanceof Icon) {
+      options.image = {
+        src: this._image.getSrc(), // XXX this is an issue... we dont want a data URI in the geoJSON
+        scale: this._image.getScale(),
+        opacity: this._image.getOpacity(),
+      };
+    } else if (this._image instanceof Circle) {
+      options.image = {
+        scale: this._image.getScale(),
+        fill: getFillOptions(this._image),
+        radius: this._image.getRadius(),
+        stroke: this._image.getStroke() ? getStrokeOptions(this._image.getStroke()) : undefined,
+      };
+    } else if (this._image instanceof RegularShape) {
+      options.image = {
+        scale: this._image.getScale(),
+        fill: getFillOptions(this._image),
+        points: this._image.getPoints(),
+        angle: this._image.getAngle(),
+        radius: this._image.getRadius(),
+        stroke: this._image.getStroke() ? getStrokeOptions(this._image.getStroke()) : undefined,
+      };
+    } else if (this.exclude.image) {
+      options.image = false;
     }
 
     return options;
@@ -842,33 +827,38 @@ class VectorStyleItem extends StyleItem {
     const type = feature.getGeometry().getType();
     const extrusion = feature.get('olcs_extrudedHeight') ||
       (feature.get('olcs_storeyHeight') && feature.get('olcs_storeyNumber'));
-    const sections = {};
+    const sections = new Set();
 
     if (type === 'Point' || type === 'MultiPoint') {
       if (feature[vectorStyleSymbol].label != null) {
-        sections.text = true;
-        sections.label = true;
+        sections.add('text');
+        sections.add('label');
       }
-      sections.image = true;
+      sections.add('image');
 
       if (extrusion) {
-        sections.stroke = true;
+        sections.add('stroke');
       }
     } else if (type === 'LineString' || type === 'MultiLineString') {
-      sections.stroke = true;
+      sections.add('stroke');
       if (extrusion) {
-        sections.fill = true;
+        sections.add('fill');
       }
     } else if (type === 'Polygon' || type === 'MultiPolygon' || type === 'Circle') {
-      sections.stroke = true;
-      sections.fill = true;
+      sections.add('stroke');
+      sections.add('fill');
     } else if (type === 'GeometryCollection') {
-      sections.stroke = true;
-      sections.fill = true;
-      sections.image = true;
-      sections.text = true;
+      sections.add('stroke');
+      sections.add('fill');
+      sections.add('image');
+      sections.add('text');
     }
-    return this.getOptions(sections);
+    const config = this.toJSON();
+    const options = {};
+    sections.forEach((key) => {
+      options[key] = config[key];
+    });
+    return options;
   }
 
   /**
@@ -908,7 +898,7 @@ export default VectorStyleItem;
  * @export
  */
 export const defaultVectorStyle = new VectorStyleItem(getDefaultVectorStyleItemOptions());
-VcsClassRegistry.registerClass(VectorStyleItem.className, VectorStyleItem);
+styleClassRegistry.registerClass(VectorStyleItem.className, VectorStyleItem);
 
 /**
  * @param {import("@vcmap/cesium").Color} cesiumColor

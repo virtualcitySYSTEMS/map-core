@@ -12,6 +12,7 @@ import {
 } from '../../util/projection.js';
 import VcsObject from '../../vcsObject.js';
 import VcsEvent from '../../vcsEvent.js';
+import { tileProviderClassRegistry } from '../../classRegistry.js';
 
 /**
  * @typedef {Object} tileProviderRTreeEntry
@@ -538,12 +539,19 @@ class TileProvider extends VcsObject {
       config.tileCacheSize = this.tileCacheSize;
     }
 
-    if (defaultOptions.baseLevels !== this.baseLevels) {
+    if (!(
+      this.baseLevels.length === defaultOptions.baseLevels.length &&
+      this.baseLevels.every(level => defaultOptions.baseLevels.includes(level))
+    )) {
       config.baseLevels = this.baseLevels.slice();
     }
 
     if (defaultOptions.trackFeaturesToTiles !== this.trackFeaturesToTiles) {
       config.trackFeaturesToTiles = this.trackFeaturesToTiles;
+    }
+
+    if (defaultOptions.allowTileAggregation !== this.allowTileAggregation) {
+      config.allowTileAggregation = this.allowTileAggregation;
     }
     return config;
   }
@@ -582,3 +590,4 @@ class TileProvider extends VcsObject {
 }
 
 export default TileProvider;
+tileProviderClassRegistry.registerClass(TileProvider.className, TileProvider);

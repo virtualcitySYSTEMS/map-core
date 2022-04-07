@@ -1,27 +1,39 @@
-import { check } from '@vcsuite/check';
+import { is, check } from '@vcsuite/check';
 import { getLogger } from '@vcsuite/logger';
+import OverrideClassRegistry from './overrideClassRegistry.js';
+
+/**
+ * @returns {import("@vcsuite/logger").Logger}
+ */
+function logger() {
+  return getLogger('ClassRegistry');
+}
 
 /**
  * @class
  * @api
+ * @template {Object|import("@vcmap/core").VcsObject} T
  */
 class ClassRegistry {
   constructor() {
     /**
-     * @type {Map<string, function():(function(new: *, ...*)|Promise<function(new: *, ...*)>)>}
+     * @type {Map<string, function(new: T, ...*)>}
      * @private
      */
     this._classMap = new Map();
-    /**
-     * @type {import("@vcsuite/logger").Logger}
-     */
-    this.logger = getLogger('ClassRegistry');
+  }
+
+  /**
+   * @returns {Array<string>}
+   */
+  getClassNames() {
+    return [...this._classMap.keys()];
   }
 
   /**
    * Register a class by its class name.
    * @param {string} className
-   * @param {function(new: *, ...*)} ctor
+   * @param {function(new: T, ...*)} ctor
    * @api
    */
   registerClass(className, ctor) {
@@ -32,51 +44,60 @@ class ClassRegistry {
       throw new Error('a constructor with this className has already been registered');
     }
 
-    this._classMap.set(className, () => ctor);
-  }
-
-  /**
-   * @param {string} className
-   * @param {function():Promise<function(new: *, ...*)>} cb - a callback providing a promise which returns the constructor on resolve.
-   * used for lazy loading modules, e.g
-   * <code>ClassRegistry.registerDeferredClass(() => import('my-module').then(({ default: MyCtor }) => MyCtor));</code>
-   * @api
-   */
-  registerDeferredClass(className, cb) {
-    check(className, String);
-    check(cb, Function);
-
-    this._classMap.set(className, cb);
+    this._classMap.set(className, ctor);
   }
 
   /**
    * Gets the constructor for a registered class or undefined, if no such class was registerd
    * @param {string} className
-   * @returns {function(new: *, ...*)|Promise<*>|undefined}
+   * @returns {function(new: T, ...*)|undefined}
    * @api
    */
   getClass(className) {
+    check(className, String);
+
     if (this._classMap.has(className)) {
-      return this._classMap.get(className)();
+      return this._classMap.get(className);
     }
     return undefined;
   }
 
   /**
    * @param {string} className
-   * @param {...*} args
-   * @returns {Promise<*>}
-   * @api
+   * @returns {boolean}
    */
-  async create(className, ...args) {
+  hasClass(className) {
     check(className, String);
 
-    const Ctor = await this.getClass(className);
+    return this._classMap.has(className);
+  }
+
+  /**
+   * @param {string} className
+   * @param {...*} args
+   * @returns {T}
+   * @api
+   */
+  create(className, ...args) {
+    check(className, String);
+
+    const Ctor = this.getClass(className);
     if (!Ctor) {
-      this.logger.error(`could not find constructor ${className}`);
+      logger().error(`could not find constructor ${className}`);
       return undefined;
     }
     return new Ctor(...args);
+  }
+
+  /**
+   * @param {Object} options
+   * @param {...*} args
+   * @returns {T}
+   */
+  createFromTypeOptions(options, ...args) {
+    check(options, { type: String });
+
+    return this.create(options.type, options, ...args);
   }
 }
 
@@ -84,6 +105,64 @@ export default ClassRegistry;
 
 /**
  * @export
- * @type {ClassRegistry}
+ * @type {ClassRegistry<import("@vcmap/core").Layer>}
  */
-export const VcsClassRegistry = new ClassRegistry();
+export const layerClassRegistry = new ClassRegistry();
+/**
+ * @export
+ * @type {ClassRegistry<import("@vcmap/core").TileProvider>}
+ */
+export const tileProviderClassRegistry = new ClassRegistry();
+/**
+ * @export
+ * @type {ClassRegistry<import("@vcmap/core").AbstractFeatureProvider>}
+ */
+export const featureProviderClassRegistry = new ClassRegistry();
+/**
+ * @export
+ * @type {ClassRegistry<import("@vcmap/core").VcsMap>}
+ */
+export const mapClassRegistry = new ClassRegistry();
+/**
+ * @export
+ * @type {ClassRegistry<import("@vcmap/core").StyleItem>}
+ */
+export const styleClassRegistry = new ClassRegistry();
+/**
+ * @export
+ * @type {ClassRegistry<import("@vcmap/core").Category<*>>}
+ */
+export const categoryClassRegistry = new ClassRegistry();
+
+/**
+ * Returns an object based on a class registry or override class registry and a typed options object. as opposed to ClassRegistry.createFromTypedOptions, this function never throws.
+ * @api stable
+ * @template {Object|import("@vcmap/core").VcsObject} T
+ * @param {OverrideClassRegistry<T>|ClassRegistry<T>} classRegistry
+ * @param {Object} options
+ * @param {...*} args
+ * @returns {T|null}
+ */
+export function getObjectFromClassRegistry(classRegistry, options, ...args) { // move to classReg
+  if (!is(classRegistry, [ClassRegistry, OverrideClassRegistry])) {
+    logger().error(`ObjectCreation failed: no class registry provided for ${options}`);
+    return null;
+  }
+
+  if (!options?.type) {
+    logger().warning(`ObjectCreation failed: could not find type in options ${options}`);
+    return null;
+  }
+  let object;
+  try {
+    object = classRegistry.createFromTypeOptions(options, ...args);
+  } catch (ex) {
+    logger().warning(`Error: ${ex}`);
+  }
+
+  if (!object) {
+    logger().warning('ObjectCreation failed: could not create new Object');
+    return null;
+  }
+  return object;
+}

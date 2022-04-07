@@ -5,7 +5,6 @@ import Point from 'ol/geom/Point.js';
 import VectorLayer from '../../../src/layer/vectorLayer.js';
 import Projection, { wgs84Projection } from '../../../src/util/projection.js';
 import DeclarativeStyleItem from '../../../src/style/declarativeStyleItem.js';
-import { referenceableStyleSymbol, StyleType } from '../../../src/style/styleItem.js';
 import VcsApp from '../../../src/vcsApp.js';
 import VectorStyleItem, { vectorStyleSymbol } from '../../../src/style/vectorStyleItem.js';
 import { vcsMetaVersion } from '../../../src/layer/layer.js';
@@ -13,7 +12,6 @@ import { originalStyle } from '../../../src/layer/featureVisibility.js';
 import { AltitudeModeCesium, ClassificationTypeCesium } from '../../../src/layer/vectorProperties.js';
 import { setOpenlayersMap } from '../helpers/openlayersHelpers.js';
 import Extent from '../../../src/util/extent.js';
-import { styleCollection } from '../../../src/globalCollections.js';
 
 describe('VectorLayer', () => {
   /** @type {import("@vcmap/core").VectorLayer} */
@@ -196,21 +194,6 @@ describe('VectorLayer', () => {
       expect(meta).to.have.property('storeyHeightsAboveGround').and.to.have.members([3]);
       expect(meta).to.have.property('classificationType', 'both');
       expect(meta).to.have.property('altitudeMode', 'absolute');
-    });
-
-    it('should return a referenced style', () => {
-      const styleItem = new DeclarativeStyleItem({
-        name: 'test',
-        type: StyleType.DECLARATIVE,
-        declarativeStyle: { show: true },
-      });
-      styleItem[referenceableStyleSymbol] = true;
-      styleCollection.add(styleItem);
-      VL.setStyle('test');
-      const meta = VL.getVcsMeta({ writeStyle: true });
-      expect(meta).to.have.property('style');
-      expect(meta.style).to.have.property('type', StyleType.REFERENCE);
-      expect(meta.style).to.have.property('name', 'test');
     });
 
     it('should not write the default style', () => {

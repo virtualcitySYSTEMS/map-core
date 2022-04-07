@@ -48,4 +48,34 @@ describe('StaticGeoJSONTileProvider', () => {
       expect(loaded[0]).to.be.instanceOf(Feature);
     });
   });
+
+  describe('serialization', () => {
+    describe('of a default tile provider', () => {
+      it('should only return type and name', () => {
+        const outputConfig = new StaticGeoJSONTileProvider({}).toJSON();
+        expect(outputConfig).to.have.all.keys(['type', 'name']);
+      });
+    });
+
+    describe('of a configured tile provider', () => {
+      let inputConfig;
+      let outputConfig;
+
+      before(() => {
+        inputConfig = {
+          url: 'myUrl',
+          baseLevels: [15],
+        };
+        outputConfig = new StaticGeoJSONTileProvider(inputConfig).toJSON();
+      });
+
+      it('should configure url', () => {
+        expect(outputConfig).to.have.property('url', inputConfig.url);
+      });
+
+      it('should never configure baseLevels', () => {
+        expect(outputConfig).to.not.have.property('baseLevels');
+      });
+    });
+  });
 });

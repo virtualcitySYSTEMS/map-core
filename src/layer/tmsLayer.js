@@ -3,7 +3,7 @@ import OpenlayersMap from '../map/openlayersMap.js';
 import CesiumMap from '../map/cesiumMap.js';
 import TmsOpenlayersImpl from './openlayers/tmsOpenlayersImpl.js';
 import TmsCesiumImpl from './cesium/tmsCesiumImpl.js';
-import { VcsClassRegistry } from '../classRegistry.js';
+import { layerClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {RasterLayerOptions} TMSOptions
@@ -117,5 +117,5 @@ class TMSLayer extends RasterLayer {
   }
 }
 
-VcsClassRegistry.registerClass(TMSLayer.className, TMSLayer);
+layerClassRegistry.registerClass(TMSLayer.className, TMSLayer);
 export default TMSLayer;

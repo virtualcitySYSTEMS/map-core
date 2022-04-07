@@ -4,7 +4,7 @@ import DeclarativeStyleItem from '../style/declarativeStyleItem.js';
 import VectorStyleItem from '../style/vectorStyleItem.js';
 import CesiumMap from '../map/cesiumMap.js';
 import PointCloudCesiumImpl from './cesium/pointCloudCesiumImpl.js';
-import { VcsClassRegistry } from '../classRegistry.js';
+import { layerClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {CesiumTilesetOptions} PointCloudOptions
@@ -72,7 +72,7 @@ class PointCloudLayer extends CesiumTilesetLayer {
 
   /**
    * @inheritDoc
-   * @param {(Reference|DeclarativeStyleItemOptions|VectorStyleItemOptions|import("@vcmap/core").StyleItem|string)=} styleOptions
+   * @param {(DeclarativeStyleItemOptions|VectorStyleItemOptions|import("@vcmap/core").StyleItem)=} styleOptions
    * @param {(VectorStyleItem|DeclarativeStyleItem)=} defaultStyle
    * @returns {import("@vcmap/core").StyleItem}
    */
@@ -130,7 +130,7 @@ class PointCloudLayer extends CesiumTilesetLayer {
 
   /**
    * Sets a new declarative style. Cannot set a VectorLayer style on PointCloudLayer layers.
-   * @param {string|import("ol/style/Style").default|import("ol/style/Style").StyleFunction|import("@vcmap/core").StyleItem} style
+   * @param {import("ol/style/Style").default|import("ol/style/Style").StyleFunction|import("@vcmap/core").StyleItem} style
    * @param {boolean=} silent
    * @api
    */
@@ -158,5 +158,5 @@ class PointCloudLayer extends CesiumTilesetLayer {
   }
 }
 
-VcsClassRegistry.registerClass(PointCloudLayer.className, PointCloudLayer);
+layerClassRegistry.registerClass(PointCloudLayer.className, PointCloudLayer);
 export default PointCloudLayer;

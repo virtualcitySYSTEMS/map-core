@@ -5,11 +5,11 @@ import Context from './context.js';
 import {
   contextIdSymbol,
   destroyCollection,
-  getObjectFromOptions,
   deserializeViewPoint,
   deserializeMap,
   getLayerIndex,
   serializeLayer,
+  deserializeLayer,
 } from './vcsAppContextHelpers.js';
 import makeOverrideCollection from './util/overrideCollection.js';
 import CategoryCollection from './category/categoryCollection.js';
@@ -24,6 +24,15 @@ import IndexedCollection from './util/indexedCollection.js';
 import VcsEvent from './vcsEvent.js';
 import { setDefaultProjectionOptions } from './util/projection.js';
 import ObliqueMap from './map/obliqueMap.js';
+import OverrideClassRegistry from './overrideClassRegistry.js';
+import ClassRegistry, {
+  categoryClassRegistry,
+  featureProviderClassRegistry, getObjectFromClassRegistry,
+  layerClassRegistry,
+  mapClassRegistry,
+  styleClassRegistry,
+  tileProviderClassRegistry,
+} from './classRegistry.js';
 
 /**
  * @returns {import("@vcsuite/logger").Logger}
@@ -59,6 +68,12 @@ class VcsApp {
     this._dynamicContext = this._defaultDynamicContext;
 
     const getDynamicContextId = () => this._dynamicContext.id;
+
+    /**
+     * @type {OverrideClassRegistry<VcsMap>}
+     * @private
+     */
+    this._mapClassRegistry = new OverrideClassRegistry(mapClassRegistry);
     /**
      * @type {OverrideMapCollection}
      * @private
@@ -72,6 +87,11 @@ class VcsApp {
       VcsMap,
     );
     /**
+     * @type {OverrideClassRegistry<Layer>}
+     * @private
+     */
+    this._layerClassRegistry = new OverrideClassRegistry(layerClassRegistry);
+    /**
      * @type {OverrideLayerCollection}
      * @private
      */
@@ -80,7 +100,7 @@ class VcsApp {
       this._maps.layerCollection,
       getDynamicContextId,
       serializeLayer.bind(null, this),
-      getObjectFromOptions,
+      deserializeLayer.bind(null, this),
       Layer,
       getLayerIndex,
     );
@@ -94,7 +114,7 @@ class VcsApp {
       null,
       config => new ObliqueCollection(config),
       ObliqueCollection,
-    ); // XXX there is a global for this collection in core.
+    );
     /**
      * @type {OverrideCollection<import("@vcmap/core").ViewPoint>}
      * @private
@@ -107,6 +127,11 @@ class VcsApp {
       ViewPoint,
     );
     /**
+     * @type {OverrideClassRegistry<StyleItem>}
+     * @private
+     */
+    this._styleClassRegistry = new OverrideClassRegistry(styleClassRegistry);
+    /**
      * @type {OverrideCollection<import("@vcmap/core").StyleItem>}
      * @private
      */
@@ -114,9 +139,9 @@ class VcsApp {
       new Collection(),
       getDynamicContextId,
       null,
-      getObjectFromOptions,
+      getObjectFromClassRegistry.bind(null, this._styleClassRegistry),
       StyleItem,
-    ); // XXX there is a global for this collection in core.
+    );
 
     /**
      * @type {IndexedCollection<Context>}
@@ -124,6 +149,11 @@ class VcsApp {
      */
     this._contexts = new IndexedCollection('id');
     this._contexts.add(this._dynamicContext);
+    /**
+     * @type {OverrideClassRegistry<import("@vcmap/core").Category<Object|import("@vcmap/core").VcsObject>>}
+     * @private
+     */
+    this._categoryClassRegisty = new OverrideClassRegistry(categoryClassRegistry);
     /**
      * @type {CategoryCollection}
      * @private
@@ -139,6 +169,21 @@ class VcsApp {
      * @private
      */
     this._contextMutationPromise = Promise.resolve();
+    /**
+     * @type {OverrideClassRegistry<*>}
+     * @private
+     */
+    this._categoryItemClassRegistry = new OverrideClassRegistry(new ClassRegistry());
+    /**
+     * @type {OverrideClassRegistry<import("@vcmap/core").TileProvider>}
+     * @private
+     */
+    this._tileProviderClassRegsitry = new OverrideClassRegistry(tileProviderClassRegistry);
+    /**
+     * @type {OverrideClassRegistry<import("@vcmap/core").AbstractFeatureProvider>}
+     * @private
+     */
+    this._featureProviderClassRegsitry = new OverrideClassRegistry(featureProviderClassRegistry);
     vcsApps.set(this._id, this);
   }
 
@@ -202,7 +247,53 @@ class VcsApp {
    */
   get contextRemoved() { return this._contexts.removed; }
 
+  /**
+   * @type {string}
+   * @readonly
+   */
   get dynamicContextId() { return this._dynamicContext.id; }
+
+  /**
+   * @type {OverrideClassRegistry<VcsMap>}
+   * @readonly
+   */
+  get mapClassRegistry() { return this._mapClassRegistry; }
+
+  /**
+   * @type {OverrideClassRegistry<Layer>}
+   * @readonly
+   */
+  get layerClassRegistry() { return this._layerClassRegistry; }
+
+  /**
+   * @type {OverrideClassRegistry<StyleItem>}
+   * @readonly
+   */
+  get styleClassRegistry() { return this._styleClassRegistry; }
+
+  /**
+   * @type {OverrideClassRegistry<import("@vcmap/core").Category<Object|import("@vcmap/core").VcsObject>>}
+   * @readonly
+   */
+  get categoryClassRegistry() { return this._categoryClassRegisty; }
+
+  /**
+   * @type {OverrideClassRegistry<*>}
+   * @readonly
+   */
+  get categoryItemClassRegistry() { return this._categoryItemClassRegistry; }
+
+  /**
+   * @type {OverrideClassRegistry<import("@vcmap/core").TileProvider>}
+   * @readonly
+   */
+  get tileProviderClassRegistry() { return this._tileProviderClassRegsitry; }
+
+  /**
+   * @type {OverrideClassRegistry<import("@vcmap/core").AbstractFeatureProvider>}
+   * @readonly
+   */
+  get featureProviderClassRegistry() { return this._featureProviderClassRegsitry; }
 
   /**
    * @param {string} id
@@ -354,6 +445,13 @@ class VcsApp {
     destroyCollection(this._styles);
     destroyCollection(this._contexts);
     destroyCollection(this._categories);
+    this._mapClassRegistry.destroy();
+    this._layerClassRegistry.destroy();
+    this._styleClassRegistry.destroy();
+    this._categoryClassRegisty.destroy();
+    this._categoryItemClassRegistry.destroy();
+    this._tileProviderClassRegsitry.destroy();
+    this._featureProviderClassRegsitry.destroy();
     this.destroyed.raiseEvent();
     this.destroyed.destroy();
   }

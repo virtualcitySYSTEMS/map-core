@@ -1,21 +1,21 @@
 import { check } from '@vcsuite/check';
 import { v4 as uuidv4 } from 'uuid';
-import { parseBoolean } from '@vcsuite/parsers';
 import { Feature } from 'ol';
-import { contextIdSymbol, destroyCollection, getObjectFromOptions } from '../vcsAppContextHelpers.js';
+import { contextIdSymbol, destroyCollection } from '../vcsAppContextHelpers.js';
 import makeOverrideCollection, { isOverrideCollection } from '../util/overrideCollection.js';
 import VcsObject from '../vcsObject.js';
 import VectorLayer from '../layer/vectorLayer.js';
 import IndexedCollection from '../util/indexedCollection.js';
 import { parseGeoJSON, writeGeoJSONFeature } from '../layer/geojsonHelpers.js';
 import Collection from '../util/collection.js';
-import { VcsClassRegistry } from '../classRegistry.js';
 import { getStyleOrDefaultStyle } from '../style/styleFactory.js';
+import { categoryClassRegistry, getObjectFromClassRegistry } from '../classRegistry.js';
+import OverrideClassRegistry from '../overrideClassRegistry.js';
 
 /**
  * @typedef {VcsObjectOptions} CategoryOptions
  * @property {string|Object<string, string>} [title]
- * @property {boolean} [typed=false]
+ * @property {string} [classRegistryName=''] - the class registry name on the current app to provide classes for this category. if provided, parseItems will deserialize using this class registry. See: {@link getObjectFromClassRegistry}.
  * @property {string|undefined} [featureProperty]
  * @property {VectorOptions} [layerOptions={}]
  * @property {Array<Object>} [items] - items are not evaluated by the constructor but passed to parseItem during deserialization.
@@ -85,7 +85,7 @@ class Category extends VcsObject {
     return {
       title: '',
       featureProperty: undefined,
-      typed: false,
+      classRegistryName: undefined,
       layerOptions: {},
       keyProperty: 'name',
       items: [],
@@ -113,10 +113,10 @@ class Category extends VcsObject {
      */
     this._featureProperty = options.featureProperty || defaultOptions.featureProperty;
     /**
-     * @type {boolean}
+     * @type {string}
      * @private
      */
-    this._typed = parseBoolean(options.typed, defaultOptions.typed);
+    this._classRegistryName = options.classRegistryName;
     /**
      * @type {VectorOptions}
      * @private
@@ -153,6 +153,12 @@ class Category extends VcsObject {
      */
     this._contextRemovedListener = () => {};
   }
+
+  /**
+   * @type {string}
+   * @readonly
+   */
+  get classRegistryName() { return this._classRegistryName; }
 
   /**
    * The collection of this category.
@@ -242,7 +248,12 @@ class Category extends VcsObject {
    */
   mergeOptions(options) {
     const defaultOptions = Category.getDefaultConfig();
-    checkMergeOptionOverride('typed', this._typed, defaultOptions.typed, options.typed);
+    checkMergeOptionOverride(
+      'classRegistryName',
+      this._classRegistryName,
+      defaultOptions.classRegistryName,
+      options.classRegistryName,
+    );
     checkMergeOptionOverride(
       'featureProperty',
       this._featureProperty,
@@ -284,7 +295,7 @@ class Category extends VcsObject {
         collection,
         this._getDynamicContextId.bind(this),
         this._serializeItem.bind(this),
-        this._typed ? getObjectFromOptions : null,
+        this._deserializeItem.bind(this),
       );
 
     [...this.collection].forEach((item) => { this._itemAdded(item); });
@@ -319,6 +330,22 @@ class Category extends VcsObject {
     if (this._layer) {
       this._app.layers.add(this._layer);
     }
+  }
+
+  /**
+   * @protected
+   * @param {*} config
+   * @returns {Promise<T>} // XXX should this still be async?
+   */
+  async _deserializeItem(config) {
+    if (!this._app) {
+      throw new Error('Cannot deserialize item before setting the vcApp');
+    }
+    const classRegistry = this._classRegistryName ? this._app[this._classRegistryName] : null;
+    if (classRegistry && classRegistry instanceof OverrideClassRegistry) {
+      return getObjectFromClassRegistry(classRegistry, config);
+    }
+    return config;
   }
 
   /**
@@ -371,4 +398,4 @@ class Category extends VcsObject {
 }
 
 export default Category;
-VcsClassRegistry.registerClass(Category.className, Category);
+categoryClassRegistry.registerClass(Category.className, Category);

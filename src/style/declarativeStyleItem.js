@@ -6,7 +6,7 @@ import Circle from 'ol/style/Circle.js';
 import OLText from 'ol/style/Text.js';
 import Fill from 'ol/style/Fill.js';
 
-import StyleItem, { StyleType } from './styleItem.js';
+import StyleItem from './styleItem.js';
 import {
   cesiumColorToColor,
   emptyStyle,
@@ -14,7 +14,7 @@ import {
   whiteColor,
 } from './styleHelpers.js';
 import { originalFeatureSymbol } from '../layer/vectorSymbols.js';
-import { VcsClassRegistry } from '../classRegistry.js';
+import { styleClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {Object} DeclarativeStyleItemConditions
@@ -119,7 +119,7 @@ class DeclarativeStyleItem extends StyleItem {
     if (declarativeStyle.strokeWidth) {
       addCustomProperty(this.cesiumStyle, 'strokeWidth', declarativeStyle);
     }
-    /** @type {DeclarativeStyleOptions} */
+    /** @type {DeclarativeStyleOptions} */ // XXX is this even still needed?
     this._styleOptions = declarativeStyle;
 
     /** @type {Map<string,import("ol/style/Circle").default>} */
@@ -127,22 +127,18 @@ class DeclarativeStyleItem extends StyleItem {
   }
 
   /**
-   * @param {DeclarativeStyleItemSections=} sections
    * @returns {DeclarativeStyleItemOptions}
    * @api
    */
-  getOptions(sections) {
-    const options = /** @type {DeclarativeStyleItemOptions} */ (super.getOptions(sections));
-    options.type = StyleType.DECLARATIVE;
-    const usedSections = sections || {
-      declarativeStyle: true,
-      defaults: true,
-    };
-    if (usedSections.declarativeStyle) {
-      options.declarativeStyle = this.cesiumStyle.style;
-    }
+  toJSON() {
+    const config = /** @type {DeclarativeStyleItemOptions} */ (super.toJSON());
 
-    return options;
+    config.declarativeStyle = Object.fromEntries(
+      Object.entries(this.cesiumStyle.style)
+        .filter(([, value]) => value != null),
+    );
+
+    return config;
   }
 
   /**
@@ -154,7 +150,9 @@ class DeclarativeStyleItem extends StyleItem {
     if (result) {
       return result.assign(this);
     }
-    return new DeclarativeStyleItem(this.getOptions());
+    const config = this.toJSON();
+    delete config.name;
+    return new DeclarativeStyleItem(config);
   }
 
   /**
@@ -163,8 +161,9 @@ class DeclarativeStyleItem extends StyleItem {
    * @api
    */
   assign(styleItem) {
-    this.cesiumStyle = styleItem.cesiumStyle;
+    super.assign(styleItem);
     this._styleOptions = this.cesiumStyle.style;
+    this.cesiumStyle = new Cesium3DTileStyle(this._styleOptions);
     return this;
   }
 
@@ -559,7 +558,7 @@ class DeclarativeStyleItem extends StyleItem {
 }
 
 export default DeclarativeStyleItem;
-VcsClassRegistry.registerClass(DeclarativeStyleItem.className, DeclarativeStyleItem);
+styleClassRegistry.registerClass(DeclarativeStyleItem.className, DeclarativeStyleItem);
 
 /**
  * @type {DeclarativeStyleItem}

@@ -10,6 +10,7 @@ import Projection, { mercatorProjection } from '../util/projection.js';
 import { getWMSSource } from '../layer/wmsHelpers.js';
 import Extent from '../util/extent.js';
 import { requestJson } from '../util/fetch.js';
+import { featureProviderClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {AbstractFeatureProviderOptions} WMSFeatureProviderOptions
@@ -284,3 +285,4 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
 }
 
 export default WMSFeatureProvider;
+featureProviderClassRegistry.registerClass(WMSFeatureProvider.className, WMSFeatureProvider);
