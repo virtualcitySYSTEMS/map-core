@@ -1,4 +1,4 @@
-import { Cartesian3, ImagerySplitDirection } from '@vcmap/cesium';
+import { Cartesian3, SplitDirection } from '@vcmap/cesium';
 import VcsApp from '../../../src/vcsApp.js';
 import { createInitializedTilesetLayer, getCesiumEventSpy, setCesiumMap } from '../helpers/cesiumHelpers.js';
 import { setOpenlayersMap } from '../helpers/openlayersHelpers.js';
@@ -280,17 +280,17 @@ describe('SplitScreen', () => {
 
   describe('getClippingObjectForDirection', () => {
     it('should return the leftClippingPlaneCollection', () => {
-      const left = splitScreen.getClippingObjectForDirection(ImagerySplitDirection.LEFT);
+      const left = splitScreen.getClippingObjectForDirection(SplitDirection.LEFT);
       expect(left).to.equal(splitScreen.leftScreenClippingObject);
     });
 
     it('should return the rightScreenClippingObject', () => {
-      const right = splitScreen.getClippingObjectForDirection(ImagerySplitDirection.RIGHT);
+      const right = splitScreen.getClippingObjectForDirection(SplitDirection.RIGHT);
       expect(right).to.equal(splitScreen.rightScreenClippingObject);
     });
 
     it('should return null for NONE', () => {
-      const none = splitScreen.getClippingObjectForDirection(ImagerySplitDirection.NONE);
+      const none = splitScreen.getClippingObjectForDirection(SplitDirection.NONE);
       expect(none).to.be.null;
     });
   });

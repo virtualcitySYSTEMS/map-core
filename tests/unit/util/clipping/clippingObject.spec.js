@@ -108,32 +108,48 @@ describe('util.clipping.ClippingObject', () => {
           await tilesetLayer.activate();
         });
 
-        it('should add the layers cesium3DTileset to the targets', () => {
+        it('should add the layers cesium3DTileset to the targets', (done) => {
           CO.handleLayerChanged(tilesetLayer);
-          expect(CO.targets.has(tilesetLayer.name)).to.be.true;
-          expect(CO.targets.get(tilesetLayer.name)).to.equal(tilesetLayer.getImplementations()[0].cesium3DTileset);
+          setTimeout(() => {
+            expect(CO.targets.has(tilesetLayer.name)).to.be.true;
+            expect(CO.targets.get(tilesetLayer.name)).to.equal(tilesetLayer.getImplementations()[0].cesium3DTileset);
+            done();
+          }, 0);
         });
 
-        it('should call the targetsUpdated event', () => {
+        it('should call the targetsUpdated event', (done) => {
           const spy = sandbox.spy();
           CO.targetsUpdated.addEventListener(spy);
           CO.handleLayerChanged(tilesetLayer);
-          expect(spy).to.have.been.called;
+          setTimeout(() => {
+            expect(spy).to.have.been.called;
+            done();
+          }, 0);
         });
 
-        it('should ignore tileset layer if map is not cesium', async () => {
-          const olMap = await setOpenlayersMap(app);
-          CO.handleMapChanged(olMap);
-          CO.handleLayerChanged(tilesetLayer);
-          expect(CO.targets).to.be.empty;
+        it('should ignore tileset layer if map is not cesium', (done) => {
+          (async () => {
+            const olMap = await setOpenlayersMap(app);
+            CO.handleMapChanged(olMap);
+            CO.handleLayerChanged(tilesetLayer);
+            setTimeout(() => {
+              expect(CO.targets).to.be.empty;
+              done();
+            }, 0);
+          })();
         });
 
-        it('should remove false layers', async () => {
-          const vectorLayer = new VectorLayer({});
-          CO.addLayer(vectorLayer.name);
-          await vectorLayer.activate();
-          CO.handleLayerChanged(vectorLayer);
-          expect(CO.layerNames).to.not.include(vectorLayer.name);
+        it('should remove false layers', (done) => {
+          (async () => {
+            const vectorLayer = new VectorLayer({});
+            CO.addLayer(vectorLayer.name);
+            await vectorLayer.activate();
+            CO.handleLayerChanged(vectorLayer);
+            setTimeout(() => {
+              expect(CO.layerNames).to.not.include(vectorLayer.name);
+              done();
+            }, 0);
+          })();
         });
 
         it('should not add the layer to the targets, if the layer has been removed from the object before readyPromise', () => {
@@ -321,13 +337,18 @@ describe('util.clipping.ClippingObject', () => {
       expect(CO.layerNames).to.include('test');
     });
 
-    it('should add the layer to the targets, if the layer is active', async () => {
-      const layer = await createInitializedTilesetLayer(sandbox, cesiumMap);
-      await layer.activate();
-      app.layers.add(layer);
-      CO.addLayer(layer.name);
-      expect(CO.targets.size).to.equal(1);
-      expect(CO.targets.get(layer.name)).to.equal(layer.getImplementations()[0].cesium3DTileset);
+    it('should add the layer to the targets, if the layer is active', (done) => {
+      (async () => {
+        const layer = await createInitializedTilesetLayer(sandbox, cesiumMap);
+        await layer.activate();
+        app.layers.add(layer);
+        CO.addLayer(layer.name);
+        setTimeout(() => {
+          expect(CO.targets.size).to.equal(1);
+          expect(CO.targets.get(layer.name)).to.equal(layer.getImplementations()[0].cesium3DTileset);
+          done();
+        }, 0);
+      })();
     });
 
     it('should ignore already added layers', () => {

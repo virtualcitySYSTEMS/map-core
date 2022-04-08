@@ -4,7 +4,7 @@ import writeStyle from '../../../src/style/writeStyle.js';
 import VectorStyleItem from '../../../src/style/vectorStyleItem.js';
 
 describe('writeStyle', () => {
-  it('should write a declarative style', () => {
+  it('should write a declarative style', async () => {
     const styleItem = new DeclarativeStyleItem({
       declarativeStyle: {
         defines: {
@@ -44,10 +44,11 @@ describe('writeStyle', () => {
         strokeWidth: '2',
       },
     });
-
+    await styleItem.cesiumStyle.readyPromise;
     const vcsMeta = {};
     writeStyle(styleItem, vcsMeta);
     const returnedStyle = new DeclarativeStyleItem(vcsMeta.style);
+    await returnedStyle.cesiumStyle.readyPromise;
     expect(returnedStyle.cesiumStyle.style).to.eql(styleItem.cesiumStyle.style);
   });
 

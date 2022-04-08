@@ -49,7 +49,7 @@ export function createTilesetServer(sandbox, url) {
  * @param {Sinon.SinonSandbox} sandbox
  * @param {CesiumMap=} cesiumMap
  * @param {string=} name
- * @returns {Promise<CesiumTileset>}
+ * @returns {Promise<CesiumTilesetLayer>}
  */
 export async function createInitializedTilesetLayer(sandbox, cesiumMap, name) {
   createTilesetServer(sandbox);

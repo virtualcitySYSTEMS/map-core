@@ -1,5 +1,5 @@
 import Feature from 'ol/Feature.js';
-import { Cesium3DTileFeature, Cesium3DTilePointFeature, ImagerySplitDirection } from '@vcmap/cesium';
+import { Cesium3DTileFeature, Cesium3DTilePointFeature, SplitDirection } from '@vcmap/cesium';
 import VectorSource from 'ol/source/Vector.js';
 import { createEmpty, extend as extendExtent } from 'ol/extent.js';
 
@@ -310,7 +310,7 @@ class FeatureStoreLayer extends VectorLayer {
         name: this.name,
         style: this.style,
         featureVisibility: this._staticFeatureVisibility,
-        splitDirection: ImagerySplitDirection.NONE,
+        splitDirection: SplitDirection.NONE,
         jumpToLocation: false,
       })));
     } else if (this.staticRepresentation && this.staticRepresentation.twoDim) {

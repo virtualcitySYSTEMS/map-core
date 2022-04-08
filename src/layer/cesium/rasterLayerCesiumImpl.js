@@ -19,7 +19,7 @@ class RasterLayerCesiumImpl extends LayerImplementation {
     super(map, options);
     /** @type {import("@vcmap/cesium").ImageryLayer|null} */
     this.cesiumLayer = null;
-    /** @type {import("@vcmap/cesium").ImagerySplitDirection} */
+    /** @type {import("@vcmap/cesium").SplitDirection} */
     this.splitDirection = options.splitDirection;
     /** @type {number} */
     this.minLevel = options.minLevel;
@@ -48,7 +48,7 @@ class RasterLayerCesiumImpl extends LayerImplementation {
   }
 
   /**
-   * @param {import("@vcmap/cesium").ImagerySplitDirection} splitDirection
+   * @param {import("@vcmap/cesium").SplitDirection} splitDirection
    */
   updateSplitDirection(splitDirection) {
     this.splitDirection = splitDirection;

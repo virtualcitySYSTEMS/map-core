@@ -22,8 +22,8 @@ import { layerClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {import("@vcmap/core").Layer} SplitLayer
- * @property {import("@vcmap/cesium").ImagerySplitDirection} splitDirection
- * @property {VcsEvent<import("@vcmap/cesium").ImagerySplitDirection>} splitDirectionChanged
+ * @property {import("@vcmap/cesium").SplitDirection} splitDirection
+ * @property {VcsEvent<import("@vcmap/cesium").SplitDirection>} splitDirectionChanged
  */
 
 /**

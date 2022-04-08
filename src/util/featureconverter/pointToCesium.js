@@ -12,6 +12,7 @@ import {
   ModelAnimationLoop,
   Cartographic,
   HorizontalOrigin,
+  sampleTerrainMostDetailed,
 } from '@vcmap/cesium';
 import Icon from 'ol/style/Icon.js';
 import GeometryType from 'ol/geom/GeometryType.js';
@@ -24,7 +25,6 @@ import {
 import Projection from '../projection.js';
 import { createLineGeometries } from './lineStringToCesium.js';
 import { getCesiumColor } from '../../style/styleHelpers.js';
-import { sampleCesiumTerrainMostDetailed } from '../../layer/terrainHelpers.js';
 
 /**
  * @param {Array<import("ol/geom/Point").default>} geometries
@@ -205,7 +205,7 @@ export function getModelOptions(feature, wgs84Positions, positions, vectorProper
       });
 
       if (!wgs84Positions[index][2]) {
-        sampleCesiumTerrainMostDetailed(
+        sampleTerrainMostDetailed(
           /** @type {import("@vcmap/cesium").CesiumTerrainProvider} */ (scene.globe.terrainProvider),
           [Cartographic.fromCartesian(position)],
         )

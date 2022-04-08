@@ -1,4 +1,4 @@
-import { ImagerySplitDirection } from '@vcmap/cesium';
+import { SplitDirection } from '@vcmap/cesium';
 
 import { getCesiumEventSpy } from '../helpers/cesiumHelpers.js';
 import { setOpenlayersMap } from '../helpers/openlayersHelpers.js';
@@ -33,28 +33,28 @@ describe('OpenStreetMapLayer', () => {
 
   describe('splitDirection', () => {
     it('should return the split direction', () => {
-      openStreetMapLayer.splitDirection = ImagerySplitDirection.LEFT;
-      expect(openStreetMapLayer.splitDirection).to.equal(ImagerySplitDirection.LEFT);
+      openStreetMapLayer.splitDirection = SplitDirection.LEFT;
+      expect(openStreetMapLayer.splitDirection).to.equal(SplitDirection.LEFT);
     });
 
     it('should call the SPLIT_DIRECTION_CHANGED events', () => {
       const spy = getCesiumEventSpy(sandbox, openStreetMapLayer.splitDirectionChanged);
-      openStreetMapLayer.splitDirection = ImagerySplitDirection.LEFT;
-      expect(spy).to.have.been.calledWith(ImagerySplitDirection.LEFT);
+      openStreetMapLayer.splitDirection = SplitDirection.LEFT;
+      expect(spy).to.have.been.calledWith(SplitDirection.LEFT);
     });
 
     it('should not publish the SPLIT_DIRECTION_CHANGED event, if it does not changed', () => {
-      openStreetMapLayer.splitDirection = ImagerySplitDirection.LEFT;
+      openStreetMapLayer.splitDirection = SplitDirection.LEFT;
       const spy = getCesiumEventSpy(sandbox, openStreetMapLayer.splitDirectionChanged);
-      openStreetMapLayer.splitDirection = ImagerySplitDirection.LEFT;
+      openStreetMapLayer.splitDirection = SplitDirection.LEFT;
       expect(spy).to.not.have.been.called;
     });
 
     it('should call updateSplitDirection on all implementations', () => {
       const [impl] = openStreetMapLayer.getImplementationsForMap(map);
       const updateSplitDirection = sandbox.spy(impl, 'updateSplitDirection');
-      openStreetMapLayer.splitDirection = ImagerySplitDirection.LEFT;
-      expect(updateSplitDirection).to.have.been.calledWithExactly(ImagerySplitDirection.LEFT);
+      openStreetMapLayer.splitDirection = SplitDirection.LEFT;
+      expect(updateSplitDirection).to.have.been.calledWithExactly(SplitDirection.LEFT);
     });
   });
 

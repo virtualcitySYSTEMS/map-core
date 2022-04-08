@@ -1,5 +1,5 @@
 import {
-  ImagerySplitDirection,
+  SplitDirection,
   Matrix4,
   BoundingSphere,
   Cartesian3,
@@ -60,27 +60,27 @@ describe('CesiumTilesetLayer', () => {
 
   describe('splitDirection', () => {
     it('should return the split direction', () => {
-      cesiumTileset.splitDirection = ImagerySplitDirection.LEFT;
-      expect(cesiumTileset.splitDirection).to.equal(ImagerySplitDirection.LEFT);
+      cesiumTileset.splitDirection = SplitDirection.LEFT;
+      expect(cesiumTileset.splitDirection).to.equal(SplitDirection.LEFT);
     });
 
     it('should raise the splitDirectionChanged event', () => {
       const spy = getCesiumEventSpy(sandbox, cesiumTileset.splitDirectionChanged);
-      cesiumTileset.splitDirection = ImagerySplitDirection.LEFT;
-      expect(spy).to.have.been.calledWith(ImagerySplitDirection.LEFT);
+      cesiumTileset.splitDirection = SplitDirection.LEFT;
+      expect(spy).to.have.been.calledWith(SplitDirection.LEFT);
     });
 
     it('should not raise the splitDirectionChanged event, if it does not changed', () => {
-      cesiumTileset.splitDirection = ImagerySplitDirection.LEFT;
+      cesiumTileset.splitDirection = SplitDirection.LEFT;
       const spy = getCesiumEventSpy(sandbox, cesiumTileset.splitDirectionChanged);
-      cesiumTileset.splitDirection = ImagerySplitDirection.LEFT;
+      cesiumTileset.splitDirection = SplitDirection.LEFT;
       expect(spy).to.not.have.been.called;
     });
 
     it('should update the splitDirection of its implementations', () => {
       const [impl] = cesiumTileset.getImplementationsForMap(cesiumMap);
-      cesiumTileset.splitDirection = ImagerySplitDirection.LEFT;
-      expect(impl.splitDirection).to.equal(ImagerySplitDirection.LEFT);
+      cesiumTileset.splitDirection = SplitDirection.LEFT;
+      expect(impl.splitDirection).to.equal(SplitDirection.LEFT);
     });
   });
 

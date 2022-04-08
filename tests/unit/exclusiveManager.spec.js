@@ -1,4 +1,4 @@
-import { ImagerySplitDirection } from '@vcmap/cesium';
+import { SplitDirection } from '@vcmap/cesium';
 import ExclusiveManager from '../../src/util/exclusiveManager.js';
 import OpenStreetMapLayer from '../../src/layer/openStreetMapLayer.js';
 import LayerState from '../../src/layer/layerState.js';
@@ -125,8 +125,8 @@ describe('ExclusiveManager', () => {
     });
 
     it('should not deactivate an already active layer in the group, if they have differing split directions', () => {
-      registeredLayer1._splitDirection = ImagerySplitDirection.LEFT;
-      registeredLayer2._splitDirection = ImagerySplitDirection.RIGHT;
+      registeredLayer1._splitDirection = SplitDirection.LEFT;
+      registeredLayer2._splitDirection = SplitDirection.RIGHT;
       EM.handleLayerActivated(registeredLayer2);
       expect(deactivate).to.not.have.been.called;
     });
@@ -158,8 +158,8 @@ describe('ExclusiveManager', () => {
     });
 
     it('should return 2 active layers, if they are split and active', () => {
-      registeredLayer1._splitDirection = ImagerySplitDirection.LEFT;
-      registeredLayer2._splitDirection = ImagerySplitDirection.RIGHT;
+      registeredLayer1._splitDirection = SplitDirection.LEFT;
+      registeredLayer2._splitDirection = SplitDirection.RIGHT;
       registeredLayer2._state = LayerState.ACTIVE;
 
       const activeLayers = EM.getActiveLayersForGroup('test');

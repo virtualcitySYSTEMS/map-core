@@ -77,11 +77,9 @@ class CzmlLayer extends DataSourceLayer {
    * @private
    */
   async _loadData() {
-    const loaded = /** @type {import("@vcmap/cesium").CzmlDataSource} */ (this.dataSource)
+    await /** @type {import("@vcmap/cesium").CzmlDataSource} */ (this.dataSource)
       .load(this.url, this.sourceUri ? { sourceUri: this.sourceUri } : undefined);
-    await new Promise((resolve, reject) => {
-      loaded.then(resolve, reject);
-    });
+
     this.entities.values.forEach((entity) => {
       entity[vcsLayerName] = this.name;
     });

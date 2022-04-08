@@ -27,6 +27,7 @@ import {
   KeyboardEventModifier,
   ScreenSpaceEventType,
   Cesium3DTileset,
+  ExperimentalFeatures,
 } from '@vcmap/cesium';
 
 import { check, checkMaybe } from '@vcsuite/check';
@@ -195,6 +196,8 @@ function setDebugOnVisualizations(visualizations, debug) {
       setDebugOnCesium3DTileset(tileset, debug);
     });
 }
+
+ExperimentalFeatures.enableModelExperimental = false; // TODO check on release
 
 /**
  * Cesium Globe Map Class (3D map)

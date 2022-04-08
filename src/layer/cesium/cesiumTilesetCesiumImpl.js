@@ -79,7 +79,7 @@ class CesiumTilesetCesiumImpl extends LayerImplementation {
     this.cesium3DTileset = null;
     /** @type {Object} */
     this.tilesetOptions = options.tilesetOptions;
-    /** @type {import("@vcmap/cesium").ImagerySplitDirection} */
+    /** @type {import("@vcmap/cesium").SplitDirection} */
     this.splitDirection = options.splitDirection;
     /** @type {import("@vcmap/core").StyleItem} */
     this.style = options.style;
@@ -92,7 +92,7 @@ class CesiumTilesetCesiumImpl extends LayerImplementation {
     /** @type {import("ol/coordinate").Coordinate} */
     this.offset = options.offset;
     /**
-     * @type {Promise<void>}
+     * @type {Promise<import("@vcmap/cesium").Cesium3DTileset>}
      * @private
      */
     this._initializedPromise = null;
@@ -128,9 +128,7 @@ class CesiumTilesetCesiumImpl extends LayerImplementation {
         delete tile[cesiumTilesetLastUpdated];
       });
 
-      this._initializedPromise = new Promise((resolve, reject) => {
-        this.cesium3DTileset.readyPromise.then(() => { resolve(); }, reject);
-      });
+      this._initializedPromise = this.cesium3DTileset.readyPromise;
 
       await this._initializedPromise;
       this._originalOrigin = Cartesian3.clone(this.cesium3DTileset.boundingSphere.center);
@@ -147,7 +145,7 @@ class CesiumTilesetCesiumImpl extends LayerImplementation {
       }
       this.updateStyle(this.style);
     }
-    return this._initializedPromise;
+    await this._initializedPromise;
   }
 
   /**
@@ -250,7 +248,7 @@ class CesiumTilesetCesiumImpl extends LayerImplementation {
   }
 
   /**
-   * @param {import("@vcmap/cesium").ImagerySplitDirection} splitDirection
+   * @param {import("@vcmap/cesium").SplitDirection} splitDirection
    */
   updateSplitDirection(splitDirection) {
     const { splitScreen } = this.map;

@@ -1,4 +1,4 @@
-import { ImagerySplitDirection, WebMercatorTilingScheme, GeographicTilingScheme, Cartographic } from '@vcmap/cesium';
+import { SplitDirection, WebMercatorTilingScheme, GeographicTilingScheme, Cartographic } from '@vcmap/cesium';
 import { getBottomLeft, getBottomRight, getTopLeft, getTopRight } from 'ol/extent.js';
 
 import { parseInteger, parseNumberRange, parseEnumValue } from '@vcsuite/parsers';
@@ -24,14 +24,14 @@ import { layerClassRegistry } from '../classRegistry.js';
  * @property {number} maxLevel
  * @property {string} tilingSchema
  * @property {number} opacity
- * @property {import("@vcmap/cesium").ImagerySplitDirection} splitDirection
+ * @property {import("@vcmap/cesium").SplitDirection} splitDirection
  * @property {Extent|undefined} extent
  */
 
 /**
  * @typedef {import("@vcmap/core").LayerImplementation<import("@vcmap/core").VcsMap>} RasterLayerImplementation
  * @property {function(number):void} updateOpacity
- * @property {function(import("@vcmap/cesium").ImagerySplitDirection):void} updateSplitDirection
+ * @property {function(import("@vcmap/cesium").SplitDirection):void} updateSplitDirection
  * @api
  */
 
@@ -166,18 +166,18 @@ class RasterLayer extends Layer {
      */
     this._opacity = parseNumberRange(options.opacity, defaultOptions.opacity, 0.0, 1.0);
 
-    /** @type {import("@vcmap/cesium").ImagerySplitDirection} */
-    this._splitDirection = ImagerySplitDirection.NONE;
+    /** @type {import("@vcmap/cesium").SplitDirection} */
+    this._splitDirection = SplitDirection.NONE;
 
     if (options.splitDirection) {
       this._splitDirection = options.splitDirection === 'left' ?
-        ImagerySplitDirection.LEFT :
-        ImagerySplitDirection.RIGHT;
+        SplitDirection.LEFT :
+        SplitDirection.RIGHT;
     }
 
     /**
      * raised if the split direction changes, is passed the split direction as its only argument
-     * @type {VcsEvent<import("@vcmap/cesium").ImagerySplitDirection>}
+     * @type {VcsEvent<import("@vcmap/cesium").SplitDirection>}
      * @api
      */
     this.splitDirectionChanged = new VcsEvent();
@@ -186,12 +186,12 @@ class RasterLayer extends Layer {
   /**
    * The split directions of this layer
    * @api
-   * @type {import("@vcmap/cesium").ImagerySplitDirection}
+   * @type {import("@vcmap/cesium").SplitDirection}
    */
   get splitDirection() { return this._splitDirection; }
 
   /**
-   * @param {import("@vcmap/cesium").ImagerySplitDirection} direction
+   * @param {import("@vcmap/cesium").SplitDirection} direction
    */
   set splitDirection(direction) {
     if (direction !== this._splitDirection) {
@@ -272,8 +272,8 @@ class RasterLayer extends Layer {
       config.opacity = this.opacity;
     }
 
-    if (this._splitDirection !== ImagerySplitDirection.NONE) {
-      config.splitDirection = this._splitDirection === ImagerySplitDirection.RIGHT ?
+    if (this._splitDirection !== SplitDirection.NONE) {
+      config.splitDirection = this._splitDirection === SplitDirection.RIGHT ?
         'right' :
         'left';
     }

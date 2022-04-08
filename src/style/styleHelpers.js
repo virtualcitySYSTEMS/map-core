@@ -521,12 +521,12 @@ const default3DTileStyleValues = {
   olcs_outlineWidth: '0.0',
   olcs_outlineColor: getStringColor(blackColor),
   olcs_pointSize: '8.0',
-  olcs_image: undefined,
+  olcs_image: null,
   olcs_font: `'${getDefaultVectorStyleItemOptions().text.font}'`,
   olcs_fontColor: getStringColor(blackColor),
   olcs_fontOutlineWidth: '1.0',
   olcs_fontOutlineColor: getStringColor(whiteColor),
-  olcs_labelText: undefined,
+  olcs_labelText: null,
   olcs_anchorLineColor: getStringColor(whiteColor),
 };
 

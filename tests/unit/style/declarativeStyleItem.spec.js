@@ -18,17 +18,19 @@ describe('DeclarativeStyleItem', () => {
   let DSI;
 
   describe('constructor', () => {
-    it('should always add a show property to the cesiumStyle', () => {
+    it('should always add a show property to the cesiumStyle', async () => {
       DSI = new DeclarativeStyleItem({});
+      await DSI.cesiumStyle.readyPromise;
       expect(DSI).to.have.property('cesiumStyle')
         .and.to.have.property('show');
 
       expect(DSI.cesiumStyle.show.evaluate(new Feature())).to.be.true;
+      DSI.destroy();
     });
   });
 
   describe('.style', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       DSI = new DeclarativeStyleItem({
         declarativeStyle: {
           defines: {
@@ -86,6 +88,11 @@ describe('DeclarativeStyleItem', () => {
           },
         },
       });
+      await DSI.cesiumStyle.readyPromise;
+    });
+
+    afterEach(() => {
+      DSI.destroy();
     });
 
     function polygonTests(description, getFeature) {
@@ -268,7 +275,7 @@ describe('DeclarativeStyleItem', () => {
     function pointTestImage(description, getFeature) {
       describe(description, () => {
         let feature;
-        beforeEach(() => {
+        beforeEach(async () => {
           feature = getFeature();
           DSI = new DeclarativeStyleItem({
             declarativeStyle: {
@@ -282,6 +289,7 @@ describe('DeclarativeStyleItem', () => {
               },
             },
           });
+          await DSI.cesiumStyle.readyPromise;
         });
 
         it('should set an image based on a url', () => {

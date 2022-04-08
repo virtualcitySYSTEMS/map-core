@@ -1,5 +1,5 @@
 import Layer from 'ol/layer/Layer.js';
-import { ImagerySplitDirection } from '@vcmap/cesium';
+import { SplitDirection } from '@vcmap/cesium';
 import AbstractRasterLayerOL from '../../../../src/layer/openlayers/rasterLayerOpenlayersImpl.js';
 import VcsApp from '../../../../src/vcsApp.js';
 import RasterLayer from '../../../../src/layer/rasterLayer.js';
@@ -53,21 +53,21 @@ describe('RasterLayerOpenlayersImpl', () => {
     });
 
     it('should clear the splitDirection listeners, if the splitDirection is none', () => {
-      ARL.updateSplitDirection(ImagerySplitDirection.LEFT);
-      ARL.updateSplitDirection(ImagerySplitDirection.NONE);
+      ARL.updateSplitDirection(SplitDirection.LEFT);
+      ARL.updateSplitDirection(SplitDirection.NONE);
       expect(olLayer.hasListener('prerender')).to.be.false;
       expect(olLayer.hasListener('postrender')).to.be.false;
     });
 
     it('should add a pre and postrender listener', () => {
-      ARL.updateSplitDirection(ImagerySplitDirection.LEFT);
+      ARL.updateSplitDirection(SplitDirection.LEFT);
       expect(olLayer.hasListener('prerender')).to.be.true;
       expect(olLayer.hasListener('postrender')).to.be.true;
     });
 
     it('should add a context restoring postrender event handler', () => {
       const on = sandbox.spy(olLayer, 'on');
-      ARL.updateSplitDirection(ImagerySplitDirection.LEFT);
+      ARL.updateSplitDirection(SplitDirection.LEFT);
       const handler = on.getCall(1).args[1];
       const restore = sandbox.spy();
       handler({ context: { restore } });
@@ -94,14 +94,14 @@ describe('RasterLayerOpenlayersImpl', () => {
     });
 
     it('should draw a rectangle on the left screen, if splitDirection is LEFT', () => {
-      ARL.splitDirection = ImagerySplitDirection.LEFT;
+      ARL.splitDirection = SplitDirection.LEFT;
       const rect = sandbox.spy(context, 'rect');
       ARL._splitPreCompose({ context });
       expect(rect).to.have.been.calledWith(0, 0, 100, 200);
     });
 
     it('should draw a rectangle on the right screen, if splitDirection is RIGHT', () => {
-      ARL.splitDirection = ImagerySplitDirection.RIGHT;
+      ARL.splitDirection = SplitDirection.RIGHT;
       const rect = sandbox.spy(context, 'rect');
       ARL._splitPreCompose({ context });
       expect(rect).to.have.been.calledWith(100, 0, 100, 200);

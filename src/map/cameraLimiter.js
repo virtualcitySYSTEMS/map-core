@@ -1,12 +1,7 @@
-import { Cartographic, Ellipsoid, Math as CesiumMath } from '@vcmap/cesium';
+import { Cartographic, Ellipsoid, Math as CesiumMath, sampleTerrain, sampleTerrainMostDetailed } from '@vcmap/cesium';
 import { checkMaybe } from '@vcsuite/check';
 import { parseInteger, parseNumber, parseEnumValue } from '@vcsuite/parsers';
-import {
-  sampleCesiumTerrain,
-  sampleCesiumTerrainMostDetailed,
-  getTerrainProviderForUrl,
-  isTerrainTileAvailable,
-} from '../layer/terrainHelpers.js';
+import { getTerrainProviderForUrl, isTerrainTileAvailable } from '../layer/terrainHelpers.js';
 
 /**
  * @typedef {Object} CameraLimiterOptions
@@ -128,7 +123,7 @@ class CameraLimiter {
    */
   _limitWithLevel(cameraCartographic) {
     if (isTerrainTileAvailable(this._terrainProvider, this.level, cameraCartographic)) {
-      return sampleCesiumTerrain(this._terrainProvider, this.level, [cameraCartographic]);
+      return sampleTerrain(this._terrainProvider, this.level, [cameraCartographic]);
     }
     return this._limitMostDetailed(cameraCartographic);
   }
@@ -139,7 +134,7 @@ class CameraLimiter {
    * @private
    */
   _limitMostDetailed(cameraCartographic) {
-    return sampleCesiumTerrainMostDetailed(this._terrainProvider, [cameraCartographic]);
+    return sampleTerrainMostDetailed(this._terrainProvider, [cameraCartographic]);
   }
 
   /**

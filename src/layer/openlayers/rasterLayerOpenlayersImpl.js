@@ -1,4 +1,4 @@
-import { ImagerySplitDirection } from '@vcmap/cesium';
+import { SplitDirection } from '@vcmap/cesium';
 import { unByKey } from 'ol/Observable.js';
 import LayerOpenlayersImpl from './layerOpenlayersImpl.js';
 
@@ -18,7 +18,7 @@ class RasterLayerOpenlayersImpl extends LayerOpenlayersImpl {
    */
   constructor(map, options) {
     super(map, options);
-    /** @type {import("@vcmap/cesium").ImagerySplitDirection} */
+    /** @type {import("@vcmap/cesium").SplitDirection} */
     this.splitDirection = options.splitDirection;
     /** @type {number} */
     this.minLevel = options.minLevel;
@@ -59,16 +59,16 @@ class RasterLayerOpenlayersImpl extends LayerOpenlayersImpl {
   }
 
   /**
-   * @param {import("@vcmap/cesium").ImagerySplitDirection} splitDirection
+   * @param {import("@vcmap/cesium").SplitDirection} splitDirection
    */
   updateSplitDirection(splitDirection) {
     this.splitDirection = splitDirection;
     if (this.initialized) {
-      if (this.splitDirection === ImagerySplitDirection.NONE && this._splitDirectionRenderListeners) {
+      if (this.splitDirection === SplitDirection.NONE && this._splitDirectionRenderListeners) {
         unByKey(this._splitDirectionRenderListeners);
         this._splitDirectionRenderListeners = null;
         this.olLayer.changed();
-      } else if (splitDirection !== ImagerySplitDirection.NONE && !this._splitDirectionRenderListeners) {
+      } else if (splitDirection !== SplitDirection.NONE && !this._splitDirectionRenderListeners) {
         this._splitDirectionRenderListeners = [];
         this._splitDirectionRenderListeners
           .push(/** @type {import("ol/events").EventsKey} */
@@ -99,7 +99,7 @@ class RasterLayerOpenlayersImpl extends LayerOpenlayersImpl {
     context.save();
     context.beginPath();
 
-    if (this.splitDirection === ImagerySplitDirection.LEFT) {
+    if (this.splitDirection === SplitDirection.LEFT) {
       context.rect(0, 0, width, context.canvas.height);
     } else {
       context.rect(width, 0, context.canvas.width - width, context.canvas.height);

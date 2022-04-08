@@ -4,7 +4,7 @@ import {
   Plane,
   ClippingPlane,
   ClippingPlaneCollection,
-  ImagerySplitDirection,
+  SplitDirection,
 } from '@vcmap/cesium';
 
 import { check } from '@vcsuite/check';
@@ -194,21 +194,21 @@ class SplitScreen {
 
   /**
    * Gets the clipping object for a split direction
-   * @param {import("@vcmap/cesium").ImagerySplitDirection} splitDirection
+   * @param {import("@vcmap/cesium").SplitDirection} splitDirection
    * @returns {ClippingObject|null}
    * @api
    */
   getClippingObjectForDirection(splitDirection) {
     check(splitDirection, [
-      ImagerySplitDirection.LEFT,
-      ImagerySplitDirection.RIGHT,
-      ImagerySplitDirection.NONE,
+      SplitDirection.LEFT,
+      SplitDirection.RIGHT,
+      SplitDirection.NONE,
     ]);
 
-    if (splitDirection === ImagerySplitDirection.LEFT) {
+    if (splitDirection === SplitDirection.LEFT) {
       return this.leftScreenClippingObject;
     }
-    if (splitDirection === ImagerySplitDirection.RIGHT) {
+    if (splitDirection === SplitDirection.RIGHT) {
       return this.rightScreenClippingObject;
     }
 

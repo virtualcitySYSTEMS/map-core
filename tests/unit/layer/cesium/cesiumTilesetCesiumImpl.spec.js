@@ -1,7 +1,7 @@
 import {
   Cesium3DTileset,
   Cesium3DTileColorBlendMode,
-  ImagerySplitDirection,
+  SplitDirection,
   Composite3DTileContent,
   Cesium3DTile,
   BoundingSphere,
@@ -54,17 +54,17 @@ describe('CesiumTilesetCesiumImpl', () => {
   describe('updating split direction', () => {
     it('should add this layer to the current split direction clippingObject', async () => {
       await cesiumTilesetCesium.activate();
-      cesiumTilesetCesium.updateSplitDirection(ImagerySplitDirection.LEFT);
+      cesiumTilesetCesium.updateSplitDirection(SplitDirection.LEFT);
       const clippingObject = cesiumMap.splitScreen.getClippingObjectForDirection(cesiumTilesetCesium.splitDirection);
       expect(clippingObject.layerNames).to.include(cesiumTilesetCesium.name);
     });
 
     it('should remove itself from the previous split directions clippingObject', async () => {
       await cesiumTilesetCesium.activate();
-      cesiumTilesetCesium.updateSplitDirection(ImagerySplitDirection.LEFT);
+      cesiumTilesetCesium.updateSplitDirection(SplitDirection.LEFT);
       const clippingObject = cesiumMap.splitScreen.getClippingObjectForDirection(cesiumTilesetCesium.splitDirection);
       clippingObject.addLayer(cesiumTilesetCesium.name);
-      cesiumTilesetCesium.updateSplitDirection(ImagerySplitDirection.NONE);
+      cesiumTilesetCesium.updateSplitDirection(SplitDirection.NONE);
       expect(clippingObject.layerNames).to.be.empty;
     });
   });
@@ -101,7 +101,7 @@ describe('CesiumTilesetCesiumImpl', () => {
     });
 
     it('should update the split direction on initialize', async () => {
-      cesiumTilesetCesium.splitDirection = ImagerySplitDirection.LEFT;
+      cesiumTilesetCesium.splitDirection = SplitDirection.LEFT;
       await cesiumTilesetCesium.initialize();
       const clippingObject = cesiumMap.splitScreen.getClippingObjectForDirection(cesiumTilesetCesium.splitDirection);
       expect(clippingObject.layerNames).to.include(cesiumTilesetCesium.name);

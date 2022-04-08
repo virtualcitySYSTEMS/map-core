@@ -1,4 +1,4 @@
-import { ImagerySplitDirection } from '@vcmap/cesium';
+import { SplitDirection } from '@vcmap/cesium';
 import Layer from '../../../src/layer/layer.js';
 import LayerCollection from '../../../src/util/layerCollection.js';
 import { getCesiumEventSpy } from '../helpers/cesiumHelpers.js';
@@ -232,13 +232,13 @@ describe('LayerCollection', () => {
     });
 
     it('should handle changes to split direction', async () => {
-      layer5.splitDirection = ImagerySplitDirection.LEFT;
-      layer6.splitDirection = ImagerySplitDirection.RIGHT;
+      layer5.splitDirection = SplitDirection.LEFT;
+      layer6.splitDirection = SplitDirection.RIGHT;
       await layer5.activate();
       await layer6.activate();
       expect(layer5.active).to.be.true;
       expect(layer6.active).to.be.true;
-      layer6.splitDirection = ImagerySplitDirection.NONE;
+      layer6.splitDirection = SplitDirection.NONE;
       expect(layer5.active).to.be.false;
     });
 

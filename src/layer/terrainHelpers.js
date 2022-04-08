@@ -1,4 +1,4 @@
-import { CesiumTerrainProvider, Cartographic, Cartesian2, sampleTerrainMostDetailed, sampleTerrain } from '@vcmap/cesium';
+import { CesiumTerrainProvider, Cartographic, Cartesian2, sampleTerrainMostDetailed } from '@vcmap/cesium';
 import { getTransform } from 'ol/proj.js';
 import { wgs84Projection } from '../util/projection.js';
 
@@ -26,43 +26,13 @@ export function getTerrainProviderForUrl(options) {
   }
   let terrainProvider = terrainProviders[options.url];
   if ((options.requestVertexNormals !== undefined &&
-    terrainProvider.requestVertexNormals !== options.requestVertexNormals) ||
+      terrainProvider.requestVertexNormals !== options.requestVertexNormals) ||
     (options.requestWaterMask !== undefined &&
       terrainProvider.requestWaterMask !== options.requestWaterMask)) {
     terrainProviders[options.url] = new CesiumTerrainProvider(options);
     terrainProvider = terrainProviders[options.url];
   }
   return terrainProvider;
-}
-
-/**
- * @param {import("@vcmap/cesium").CesiumTerrainProvider} terrainProvider
- * @param {Array<import("@vcmap/cesium").Cartographic>} positions
- * @returns {Promise<Array<import("@vcmap/cesium").Cartographic>>}
- */
-export function sampleCesiumTerrainMostDetailed(terrainProvider, positions) {
-  return new Promise((resolve, reject) => {
-    sampleTerrainMostDetailed(terrainProvider, positions)
-      .then((updatedPositions) => {
-        resolve(updatedPositions);
-      }, reject);
-  });
-}
-
-/**
- * updates the height of the positions in place.
- * @param {import("@vcmap/cesium").CesiumTerrainProvider} terrainProvider
- * @param {number} level
- * @param {Array<import("@vcmap/cesium").Cartographic>} positions
- * @returns {Promise<Array<import("@vcmap/cesium").Cartographic>>}
- */
-export function sampleCesiumTerrain(terrainProvider, level, positions) {
-  return new Promise((resolve, reject) => {
-    sampleTerrain(terrainProvider, level, positions)
-      .then((updatedPositions) => {
-        resolve(updatedPositions);
-      }, reject);
-  });
 }
 
 /**
@@ -89,15 +59,13 @@ export function getHeightFromTerrainProvider(terrainProvider, coordinates, optSo
   });
 
   const outArray = result || coordinates.map(c => c.slice());
-  return new Promise((resolve, reject) => {
-    sampleTerrainMostDetailed(terrainProvider, positions)
-      .then((updatedPositions) => {
-        updatedPositions.forEach((position, index) => {
-          outArray[index][2] = position.height || 0;
-        });
-        resolve(outArray);
-      }, reject);
-  });
+  return sampleTerrainMostDetailed(terrainProvider, positions)
+    .then((updatedPositions) => {
+      updatedPositions.forEach((position, index) => {
+        outArray[index][2] = position.height || 0;
+      });
+      return outArray;
+    });
 }
 
 /**

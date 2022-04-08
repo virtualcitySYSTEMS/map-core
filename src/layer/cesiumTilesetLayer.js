@@ -1,4 +1,4 @@
-import { ImagerySplitDirection, Matrix4 } from '@vcmap/cesium';
+import { SplitDirection, Matrix4 } from '@vcmap/cesium';
 
 import { checkMaybe } from '@vcsuite/check';
 import { parseInteger } from '@vcsuite/parsers';
@@ -36,7 +36,7 @@ import { layerClassRegistry } from '../classRegistry.js';
 /**
  * @typedef {FeatureLayerImplementationOptions} CesiumTilesetImplementationOptions
  * @property {Object|undefined} tilesetOptions
- * @property {import("@vcmap/cesium").ImagerySplitDirection} splitDirection
+ * @property {import("@vcmap/cesium").SplitDirection} splitDirection
  * @property {Array<CesiumTilesetTilesetProperties>|undefined} tilesetProperties
  * @property {import("@vcmap/cesium").Matrix4|undefined} modelMatrix
  * @property {import("ol/coordinate").Coordinate|undefined} offset
@@ -110,18 +110,18 @@ class CesiumTilesetLayer extends FeatureLayer {
       ...tilesetOptions,
     };
 
-    /** @type {import("@vcmap/cesium").ImagerySplitDirection} */
-    this._splitDirection = ImagerySplitDirection.NONE;
+    /** @type {import("@vcmap/cesium").SplitDirection} */
+    this._splitDirection = SplitDirection.NONE;
 
     if (options.splitDirection) {
       this._splitDirection = options.splitDirection === 'left' ?
-        ImagerySplitDirection.LEFT :
-        ImagerySplitDirection.RIGHT;
+        SplitDirection.LEFT :
+        SplitDirection.RIGHT;
     }
 
     /**
      * raised if the split direction changes, is passed the split direction as its only argument
-     * @type {VcsEvent<import("@vcmap/cesium").ImagerySplitDirection>}
+     * @type {VcsEvent<import("@vcmap/cesium").SplitDirection>}
      * @api
      */
     this.splitDirectionChanged = new VcsEvent();
@@ -188,12 +188,12 @@ class CesiumTilesetLayer extends FeatureLayer {
 
   /**
    * @api
-   * @type {import("@vcmap/cesium").ImagerySplitDirection}
+   * @type {import("@vcmap/cesium").SplitDirection}
    */
   get splitDirection() { return this._splitDirection; }
 
   /**
-   * @param {import("@vcmap/cesium").ImagerySplitDirection} direction
+   * @param {import("@vcmap/cesium").SplitDirection} direction
    */
   set splitDirection(direction) {
     if (direction !== this._splitDirection) {
@@ -203,6 +203,11 @@ class CesiumTilesetLayer extends FeatureLayer {
       this._splitDirection = direction;
       this.splitDirectionChanged.raiseEvent(this._splitDirection);
     }
+  }
+
+  async initialize() {
+    await this.style.cesiumStyle.readyPromise;
+    return super.initialize();
   }
 
   /**
@@ -346,8 +351,8 @@ class CesiumTilesetLayer extends FeatureLayer {
       config.tilesetOptions = tilesetOptions;
     }
 
-    if (this._splitDirection !== ImagerySplitDirection.NONE) {
-      config.splitDirection = this._splitDirection === ImagerySplitDirection.RIGHT ?
+    if (this._splitDirection !== SplitDirection.NONE) {
+      config.splitDirection = this._splitDirection === SplitDirection.RIGHT ?
         'right' :
         'left';
     }

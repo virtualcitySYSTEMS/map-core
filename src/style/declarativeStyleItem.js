@@ -1,4 +1,6 @@
 import { Color, ConditionsExpression, Expression, Cesium3DTileStyle } from '@vcmap/cesium';
+import { is } from '@vcsuite/check';
+
 import Style from 'ol/style/Style.js';
 import Stroke from 'ol/style/Stroke.js';
 import Icon from 'ol/style/Icon.js';
@@ -127,15 +129,33 @@ class DeclarativeStyleItem extends StyleItem {
   }
 
   /**
+   * @type {DeclarativeStyleOptions}
+   * @readonly
+   */
+  get styleOptions() {
+    return JSON.parse(JSON.stringify(this._styleOptions));
+  }
+
+  /**
    * @returns {DeclarativeStyleItemOptions}
    * @api
    */
   toJSON() {
     const config = /** @type {DeclarativeStyleItemOptions} */ (super.toJSON());
 
+    const styleOptions = this.cesiumStyle.ready ?
+      this.cesiumStyle.style :
+      this.styleOptions;
+
     config.declarativeStyle = Object.fromEntries(
-      Object.entries(this.cesiumStyle.style)
-        .filter(([, value]) => value != null),
+      Object.entries(styleOptions)
+        .filter(([, value]) => value != null)
+        .map(([key, value]) => {
+          if (is(value, Boolean)) {
+            return [key, value.toString()];
+          }
+          return [key, value];
+        }),
     );
 
     return config;
@@ -162,7 +182,10 @@ class DeclarativeStyleItem extends StyleItem {
    */
   assign(styleItem) {
     super.assign(styleItem);
-    this._styleOptions = this.cesiumStyle.style;
+    this._styleOptions = styleItem.cesiumStyle.ready ?
+      styleItem.cesiumStyle.style :
+      styleItem.styleOptions;
+
     this.cesiumStyle = new Cesium3DTileStyle(this._styleOptions);
     return this;
   }

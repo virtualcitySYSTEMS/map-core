@@ -1,4 +1,4 @@
-import { ImagerySplitDirection, GeographicTilingScheme } from '@vcmap/cesium';
+import { SplitDirection, GeographicTilingScheme } from '@vcmap/cesium';
 
 import RasterLayer, { calculateMinLevel } from '../../../src/layer/rasterLayer.js';
 import { getCesiumEventSpy } from '../helpers/cesiumHelpers.js';
@@ -51,27 +51,27 @@ describe('RasterLayer', () => {
 
   describe('splitDirection', () => {
     it('should return the split direction', () => {
-      ARL.splitDirection = ImagerySplitDirection.LEFT;
-      expect(ARL.splitDirection).to.equal(ImagerySplitDirection.LEFT);
+      ARL.splitDirection = SplitDirection.LEFT;
+      expect(ARL.splitDirection).to.equal(SplitDirection.LEFT);
     });
 
     it('should call the SPLIT_DIRECTION_CHANGED events', () => {
       const spy = getCesiumEventSpy(sandbox, ARL.splitDirectionChanged);
-      ARL.splitDirection = ImagerySplitDirection.LEFT;
-      expect(spy).to.have.been.calledWith(ImagerySplitDirection.LEFT);
+      ARL.splitDirection = SplitDirection.LEFT;
+      expect(spy).to.have.been.calledWith(SplitDirection.LEFT);
     });
 
     it('should not publish the SPLIT_DIRECTION_CHANGED event, if it does not changed', () => {
-      ARL.splitDirection = ImagerySplitDirection.LEFT;
+      ARL.splitDirection = SplitDirection.LEFT;
       const spy = getCesiumEventSpy(sandbox, ARL.splitDirectionChanged);
-      ARL.splitDirection = ImagerySplitDirection.LEFT;
+      ARL.splitDirection = SplitDirection.LEFT;
       expect(spy).to.not.have.been.called;
     });
 
     it('should call updateSplitDirection on all implementations', () => {
       const updateSplitDirection = sandbox.spy();
       sandbox.stub(ARL, 'getImplementations').returns([{ updateSplitDirection, destroy() {} }]);
-      ARL.splitDirection = ImagerySplitDirection.LEFT;
+      ARL.splitDirection = SplitDirection.LEFT;
       expect(updateSplitDirection).to.have.been.called;
     });
   });

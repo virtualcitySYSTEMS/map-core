@@ -1,4 +1,4 @@
-import { ImagerySplitDirection } from '@vcmap/cesium';
+import { SplitDirection } from '@vcmap/cesium';
 
 import { parseNumberRange, parseInteger } from '@vcsuite/parsers';
 import Layer from './layer.js';
@@ -47,15 +47,15 @@ class OpenStreetMapLayer extends Layer {
     super(options);
     const defaultOptions = OpenStreetMapLayer.getDefaultOptions();
     /**
-     * @type {import("@vcmap/cesium").ImagerySplitDirection}
+     * @type {import("@vcmap/cesium").SplitDirection}
      * @private
      */
-    this._splitDirection = ImagerySplitDirection.NONE;
+    this._splitDirection = SplitDirection.NONE;
 
     if (options.splitDirection) {
       this._splitDirection = options.splitDirection === 'left' ?
-        ImagerySplitDirection.LEFT :
-        ImagerySplitDirection.RIGHT;
+        SplitDirection.LEFT :
+        SplitDirection.RIGHT;
     }
 
     this._supportedMaps = [
@@ -71,7 +71,7 @@ class OpenStreetMapLayer extends Layer {
 
     /**
      * raised if the split direction changes, is passed the split direction as its only argument
-     * @type {VcsEvent<import("@vcmap/cesium").ImagerySplitDirection>}
+     * @type {VcsEvent<import("@vcmap/cesium").SplitDirection>}
      * @api
      */
     this.splitDirectionChanged = new VcsEvent();
@@ -86,12 +86,12 @@ class OpenStreetMapLayer extends Layer {
 
   /**
    * @api
-   * @type {import("@vcmap/cesium").ImagerySplitDirection}
+   * @type {import("@vcmap/cesium").SplitDirection}
    */
   get splitDirection() { return this._splitDirection; }
 
   /**
-   * @param {import("@vcmap/cesium").ImagerySplitDirection} direction
+   * @param {import("@vcmap/cesium").SplitDirection} direction
    */
   set splitDirection(direction) {
     if (direction !== this._splitDirection) {
@@ -164,8 +164,8 @@ class OpenStreetMapLayer extends Layer {
     const config = /** @type {OpenStreetMapOptions} */ (super.toJSON());
     const defaultOptions = OpenStreetMapLayer.getDefaultOptions();
 
-    if (this._splitDirection !== ImagerySplitDirection.NONE) {
-      config.splitDirection = this._splitDirection === ImagerySplitDirection.RIGHT ?
+    if (this._splitDirection !== SplitDirection.NONE) {
+      config.splitDirection = this._splitDirection === SplitDirection.RIGHT ?
         'right' :
         'left';
     }

@@ -3,7 +3,7 @@ import CesiumTilesetLayer from './cesiumTilesetLayer.js';
 import DeclarativeStyleItem from '../style/declarativeStyleItem.js';
 import VectorStyleItem from '../style/vectorStyleItem.js';
 import CesiumMap from '../map/cesiumMap.js';
-import PointCloudCesiumImpl from './cesium/pointCloudCesiumImpl.js';
+import CesiumTilesetCesiumImpl from './cesium/cesiumTilesetCesiumImpl.js';
 import { layerClassRegistry } from '../classRegistry.js';
 
 /**
@@ -92,28 +92,21 @@ class PointCloudLayer extends CesiumTilesetLayer {
   set pointSize(size) {
     checkMaybe(size, [Number, String]);
     this._pointSize = size;
-    this.getImplementations().forEach((impl) => {
-      /** @type {PointCloudCesiumImpl} */ (impl).updatePointSize(size);
-    });
+    /** @type {DeclarativeStyleItem} */ (this.style).pointSize = size?.toString();
   }
 
-  /**
-   * @returns {PointCloudImplementationOptions}
-   */
-  getImplementationOptions() {
-    return {
-      ...super.getImplementationOptions(),
-      pointSize: this.pointSize,
-    };
+  async initialize() {
+    await super.initialize();
+    this.pointSize = this._pointSize;
   }
 
   /**
    * @param {import("@vcmap/core").VcsMap} map
-   * @returns {Array<PointCloudCesiumImpl>}
+   * @returns {Array<CesiumTilesetCesiumImpl>}
    */
   createImplementationsForMap(map) {
     if (map instanceof CesiumMap) {
-      return [new PointCloudCesiumImpl(map, this.getImplementationOptions())];
+      return [new CesiumTilesetCesiumImpl(map, this.getImplementationOptions())];
     }
 
     return [];
