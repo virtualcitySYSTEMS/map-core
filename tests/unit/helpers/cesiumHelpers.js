@@ -22,7 +22,7 @@ import DataSourceLayer from '../../../src/layer/dataSourceLayer.js';
 import CesiumMap from '../../../src/map/cesiumMap.js';
 import importJSON from './importJSON.js';
 
-const defaultTileset = await importJSON('./examples/data/buildings/tileset.json');
+const defaultTileset = await importJSON('./tests/data/buildings/tileset.json');
 defaultTileset.root.children = [];
 defaultTileset.properties = {};
 

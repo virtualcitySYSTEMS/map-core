@@ -5,7 +5,6 @@
 ## Getting Started
 - clone Repo
 - npm install
-- npm run serve
 
 # Coding Conventions
 ### Exporting from a module
