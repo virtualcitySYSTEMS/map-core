@@ -18,7 +18,6 @@ import { requestJson } from '../util/fetch.js';
  * @property {number} PENDING
  * @property {number} LOADING
  * @property {number} READY
- * @export
  * @api
  */
 export const DataState = {
@@ -45,7 +44,6 @@ export function getStateFromStatesArray(states) {
 
 /**
  * @class
- * @export
  */
 class ObliqueDataSet {
   /**

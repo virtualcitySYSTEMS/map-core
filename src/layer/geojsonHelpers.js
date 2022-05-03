@@ -74,7 +74,6 @@ function getFormat() {
 /**
  * @param {Object} geojson
  * @returns {string|null}
- * @export
  */
 export function getEPSGCodeFromGeojson(geojson) {
   const { crs } = geojson;
@@ -95,7 +94,6 @@ export function getEPSGCodeFromGeojson(geojson) {
 /**
  * updates legacy features to the new olcesium namespaceing olcs_
  * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
- * @export
  */
 export function updateLegacyFeature(feature) {
   // these changes can be done silently, because the features haven't been added to any layer
@@ -283,7 +281,6 @@ function readFeature(featureObj, options) {
  * @param {GeoJSONreadOptions=} readOptions
  * @returns {GeoJSONData}
  * @throws SyntaxError
- * @export
  * @api
  */
 export function parseGeoJSON(input, readOptions = {}) {
@@ -412,7 +409,6 @@ export function writeGeoJSONFeature(feature, options = {}, embeddedIcons) {
  * @param {GeoJSONData} data
  * @param {GeoJSONwriteOptions=} options
  * @returns {string|Object}
- * @export
  */
 export function writeGeoJSON(data, options = {}) { // how to handel embedded icons when they are not set on the vcsMeta but options is true?
   const vcsMeta = data.vcsMeta || {};

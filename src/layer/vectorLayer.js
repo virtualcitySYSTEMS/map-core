@@ -84,7 +84,6 @@ import { layerClassRegistry } from '../classRegistry.js';
 /**
  * VectorLayer Layer for OpenlayersMap, Cesium and ObliqueMap
  * @class
- * @export
  * @extends {FeatureLayer}
  * @api stable
  */

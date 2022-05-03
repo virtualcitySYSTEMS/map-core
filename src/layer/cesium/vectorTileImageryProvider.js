@@ -64,7 +64,6 @@ export function getCanvasFromFeatures(features, extent, center, tileSize) {
 /**
  * implementation of Cesium ImageryProvider Interface
  * @class
- * @export
  */
 class VectorTileImageryProvider {
   /**

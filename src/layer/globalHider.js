@@ -134,7 +134,6 @@ class GlobalHider {
 
 /**
  * @returns {GlobalHider}
- * @export
  * @api
  */
 export function getGlobalHider() {

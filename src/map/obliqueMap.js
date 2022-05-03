@@ -76,7 +76,6 @@ export function getMercatorViewpointCenter(viewpoint) {
  * ObliqueMap Map Class (2D map with oblique imagery)
  *
  * @class
- * @export
  * @extends {BaseOLMap}
  * @api stable
  */

@@ -139,7 +139,6 @@ function createEndingPlanes(coords) {
  * @param {import("@vcmap/cesium").Matrix4=} transformMatrix - 4x4 matrix specifying the transform of clipping planes from Earth's fixed frame to another one
  * @returns {import("@vcmap/cesium").ClippingPlaneCollection|null}
  * @api stable
- * @export
  */
 export function createClippingPlaneCollection(feature, options = {}, transformMatrix) {
   check(feature, Feature);
@@ -203,7 +202,6 @@ export function createClippingPlaneCollection(feature, options = {}, transformMa
  * @param {import("@vcmap/cesium").Cartesian3=} originPoint - the origin point of the transformation target, so the plane distance can be set correctly
  * @returns {import("@vcmap/cesium").ClippingPlaneCollection}
  * @api stable
- * @export
  */
 export function copyClippingPlanesToCollection(source, result, transformMatrix, originPoint) {
   check(source, ClippingPlaneCollection);
@@ -346,7 +344,6 @@ export function setClippingPlanes(target, clippingPlaneCollection, local) {
  * @param {number} [offsetDistance=25] - the offset from the coordinate to use for the size of the geometry
  * @returns {import("ol").Feature<import("ol/geom/Geometry").default>} - the features geometry is in web mercator
  * @api
- * @export
  */
 export function createClippingFeature(coordinate, camera, vertical = false, offsetDistance = 25) {
   check(coordinate, [Number]);
@@ -389,7 +386,6 @@ export function createClippingFeature(coordinate, camera, vertical = false, offs
  * @param {boolean=} [infinite=false]
  * @returns {CreationOptions}
  * @api
- * @export
  */
 export function getClippingOptions(feature, infinite = false) {
   checkMaybe(feature, Feature);

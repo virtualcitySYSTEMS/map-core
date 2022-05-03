@@ -59,7 +59,6 @@ export function getExtentFromTileset(cesium3DTileset) {
 /**
  * represents the cesium implementation for a {@link CesiumTileset} layer.
  * @class
- * @export
  * @extends {LayerImplementation<import("@vcmap/core").CesiumMap>}}
  * @implements {FeatureLayerImplementation}
  * @api stable

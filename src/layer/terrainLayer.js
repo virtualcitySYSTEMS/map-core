@@ -21,7 +21,6 @@ import { layerClassRegistry } from '../classRegistry.js';
 /**
  * represents a terrain layer.
  * @class
- * @export
  * @extends {Layer}
  * @api stable
  */

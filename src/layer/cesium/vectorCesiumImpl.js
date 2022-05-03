@@ -11,7 +11,6 @@ import { synchronizeFeatureVisibilityWithSource } from '../vectorHelpers.js';
 /**
  * represents a specific vector layer for cesium.
  * @class
- * @export
  * @extends {LayerImplementation<import("@vcmap/core").CesiumMap>}}
  * @implements {FeatureLayerImplementation}
  */

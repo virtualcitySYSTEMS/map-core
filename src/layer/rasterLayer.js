@@ -41,7 +41,6 @@ import { layerClassRegistry } from '../classRegistry.js';
  * @api
  * @property {string} GEOGRAPHIC
  * @property {string} MERCATOR
- * @export
  */
 export const TilingScheme = {
   GEOGRAPHIC: 'geographic',
@@ -112,7 +111,6 @@ export function calculateMinLevel(extent, tilingScheme, maxLevel, minLevel = 0) 
  * This abstract class allows for automatic loading scheme determination
  * for raster layers
  * @class
- * @export
  * @extends {Layer}
  * @implements {SplitLayer}
  * @abstract

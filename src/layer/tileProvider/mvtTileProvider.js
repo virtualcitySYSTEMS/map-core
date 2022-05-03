@@ -18,7 +18,6 @@ import { tileProviderClassRegistry } from '../../classRegistry.js';
  *
  * @class
  * @extends {TileProvider}
- * @export
  * @api
  */
 class MVTTileProvider extends TileProvider {

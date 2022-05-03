@@ -32,7 +32,6 @@ import { layerClassRegistry } from '../classRegistry.js';
 /**
  * WmsLayer layer for Cesium and OpenlayersMap
  * @class
- * @export
  * @extends {RasterLayer}
  * @api stable
  */

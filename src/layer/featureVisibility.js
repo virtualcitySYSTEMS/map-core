@@ -181,7 +181,6 @@ export function showFeature(feature, symbol) {
 /**
  * Enumeration of feature visibility actions.
  * @enum {number}
- * @export
  * @api
  * @property {number} HIGHLIGHT
  * @property {number} UNHIGHLIGHT

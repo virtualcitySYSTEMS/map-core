@@ -30,7 +30,6 @@ import { layerClassRegistry } from '../classRegistry.js';
 /**
  * Represents a layer of Cesium.Entity
  * @class
- * @export
  * @extends {Layer}
  * @api stable
  */

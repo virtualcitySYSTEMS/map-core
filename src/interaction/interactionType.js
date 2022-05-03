@@ -1,9 +1,8 @@
 let nextBit = 1;
 
 /**
- * Provides inforamtion to other interaction plugins for creating bitmasks
+ * Provides information to other interaction plugins for creating bitmasks
  * @class
- * @export
  */
 export class BitCounter {
   /**
@@ -19,7 +18,6 @@ export class BitCounter {
 /**
  * Enumeration of modification key types
  * @enum {number}
- * @export
  * @property {number} NONE
  * @property {number} ALT
  * @property {number} CTRL
@@ -53,7 +51,6 @@ ModificationKeyType.ALL = ModificationKeyType.NONE |
  * @property {number} DRAGEVENTS
  * @property {number} CLICKMOVE
  * @property {number} ALL
- * @export
  * @api
  */
 export const EventType = {
@@ -85,7 +82,6 @@ EventType.ALL = Object.values(EventType)
  * @property {number} RIGHT
  * @property {number} MIDDLE
  * @property {number} ALL
- * @export
  * @api
  */
 export const PointerKeyType = {

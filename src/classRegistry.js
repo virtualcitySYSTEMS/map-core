@@ -104,32 +104,26 @@ class ClassRegistry {
 export default ClassRegistry;
 
 /**
- * @export
  * @type {ClassRegistry<import("@vcmap/core").Layer>}
  */
 export const layerClassRegistry = new ClassRegistry();
 /**
- * @export
  * @type {ClassRegistry<import("@vcmap/core").TileProvider>}
  */
 export const tileProviderClassRegistry = new ClassRegistry();
 /**
- * @export
  * @type {ClassRegistry<import("@vcmap/core").AbstractFeatureProvider>}
  */
 export const featureProviderClassRegistry = new ClassRegistry();
 /**
- * @export
  * @type {ClassRegistry<import("@vcmap/core").VcsMap>}
  */
 export const mapClassRegistry = new ClassRegistry();
 /**
- * @export
  * @type {ClassRegistry<import("@vcmap/core").StyleItem>}
  */
 export const styleClassRegistry = new ClassRegistry();
 /**
- * @export
  * @type {ClassRegistry<import("@vcmap/core").Category<*>>}
  */
 export const categoryClassRegistry = new ClassRegistry();

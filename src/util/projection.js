@@ -98,7 +98,6 @@ function registerProjection(options) {
  * projection created prior to this functions call.
  * @param {ProjectionOptions} options
  * @api
- * @export
  */
 export function setDefaultProjectionOptions(options) {
   check(options, { epsg: [String, Number], proj4: [String, undefined, null] });
@@ -111,7 +110,6 @@ export function setDefaultProjectionOptions(options) {
 /**
  * Projection Class, if no valid options are given, the Projection will initialize with the Framework default Projection
  * @class
- * @export
  * For example:
  *     <pre><code>
  *         {
@@ -341,7 +339,6 @@ export default Projection;
  * Returns the default Projection.
  * @api stable
  * @returns {Projection}
- * @export
  */
 export function getDefaultProjection() {
   return new Projection(defaultProjectionOption);
@@ -351,13 +348,11 @@ export function getDefaultProjection() {
  * wgs84 Projection EPSG Code: 4326
  * @api stable
  * @type {Projection}
- * @export
  */
 export const wgs84Projection = new Projection({ epsg: 4326 });
 /**
  * mercator Projection EPSG Code: 3857
  * @api stable
  * @type {Projection}
- * @export
  */
 export const mercatorProjection = new Projection({ epsg: 3857 });

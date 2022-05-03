@@ -25,7 +25,6 @@ function synchronizeEntityCollections(source, destination) {
 
 /**
  * @class
- * @export
  * @extends {LayerImplementation<import("@vcmap/core").CesiumMap>}}
  */
 class DataSourceCesiumImpl extends LayerImplementation {

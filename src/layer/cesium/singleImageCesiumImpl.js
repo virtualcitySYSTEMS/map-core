@@ -5,7 +5,6 @@ import { wgs84Projection } from '../../util/projection.js';
 /**
  * represents a specific Cesium SingleTileImagery Layer class.
  * @class
- * @export
  * @extends {RasterLayerCesiumImpl}
  */
 class SingleImageCesiumImpl extends RasterLayerCesiumImpl {

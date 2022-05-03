@@ -80,7 +80,6 @@ function angleBetweenTwo2DVectors(v1, v2) {
  * @param {Array<import("ol/coordinate").Coordinate>} segment1
  * @param {Array<import("ol/coordinate").Coordinate>} segment2
  * @returns {{x: (number|null), y:(number|null), onLine1: boolean, onLine2: boolean}}
- * @export
  */
 export function checkLineIntersection(segment1, segment2) {
   // if the lines intersect, the result contains the x and y of the intersection (treating the lines as infinite) and booleans for whether line segment 1 or line segment 2 contain the point
@@ -306,7 +305,6 @@ export function transformCWIFC(inputOrigin, inputTarget, originIsImage, coordina
  * @param {import("ol/coordinate").Coordinate} worldCoordinate if not in web mercatpr, specify data-projection in options
  * @param {ImageTransformationOptions=} options
  * @returns {Promise<{coords: import("ol/coordinate").Coordinate, height: number, estimate: (boolean|undefined)}>}
- * @export
  */
 export function transformToImage(image, worldCoordinate, options = {}) {
   let gpInternalCoordinates;
@@ -404,7 +402,6 @@ function pickTerrain(pickTerrainOptions) {
  * @param {import("ol/coordinate").Coordinate} imageCoordinate
  * @param {ImageTransformationOptions=} options
  * @returns {Promise<PickTerrainReturn>} return coordinates are in mercator if not specified in options
- * @export
  */
 export async function transformFromImage(image, imageCoordinate, options = {}) {
   const initialWorldCoords = transform(

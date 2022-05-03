@@ -6,7 +6,6 @@ import Circle from 'ol/style/Circle.js';
 /**
  * @param {VectorStyleItemImage} options
  * @returns {import("ol/style/RegularShape").default|import("ol/style/Circle").default}
- * @export
  */
 
 export function getShapeFromOptions(options) {
@@ -43,7 +42,6 @@ class ShapeCategory {
 }
 
 /**
- * @export
  * TODO refactor to getdefaultShapeCategory...
  */
 export const shapeCategory = new ShapeCategory();

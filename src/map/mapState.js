@@ -2,7 +2,6 @@
  * The state of a map.
  * State machine: inactive <-> loading -> active -> inactive
  * @enum {number}
- * @export
  * @api
  * @property {number} INACTIVE
  * @property {number} ACTIVE

@@ -94,7 +94,6 @@ function addCustomProperty(style, key, options) {
 /**
  * Style Object {@see https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/Styling}
  * @class
- * @export
  * @extends {StyleItem}
  * @api stable
  */

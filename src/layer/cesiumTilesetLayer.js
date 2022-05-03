@@ -49,7 +49,6 @@ import { layerClassRegistry } from '../classRegistry.js';
  * @extends {FeatureLayer}
  * @implements {SplitLayer}
  * @api stable
- * @export
  */
 class CesiumTilesetLayer extends FeatureLayer {
   /** @type {string} */

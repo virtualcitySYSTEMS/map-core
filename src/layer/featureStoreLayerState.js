@@ -10,7 +10,6 @@ export const featureStoreStateSymbol = Symbol('vcsFeatureType');
  * @property {string} STATIC
  * @property {string} EDITED
  * @api
- * @export
  */
 export const FeatureStoreLayerState = {
   DYNAMIC: 'dynamic',

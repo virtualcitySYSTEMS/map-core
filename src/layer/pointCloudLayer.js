@@ -32,7 +32,6 @@ export const defaultPointCloudStyle = new DeclarativeStyleItem({});
  * </ul>
  *
  * @class
- * @export
  * @extends {CesiumTilesetLayer}
  * @api stable
  */

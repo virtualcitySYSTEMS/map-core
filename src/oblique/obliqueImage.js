@@ -20,7 +20,6 @@ import { getHeightFromTerrainProvider } from '../layer/terrainHelpers.js';
 
 /**
  * @class
- * @export
  */
 class ObliqueImage {
   /**

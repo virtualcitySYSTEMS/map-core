@@ -6,7 +6,6 @@ import { TilingScheme } from '../rasterLayer.js';
 /**
  * TmsLayer implementation for {@link CesiumMap}.
  * @class
- * @export
  * @extends {RasterLayerCesiumImpl}
  */
 class TmsCesiumImpl extends RasterLayerCesiumImpl {

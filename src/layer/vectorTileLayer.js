@@ -69,7 +69,6 @@ function synchronizeFeatureVisibility(featureVisibility, globalHider, feature) {
 /**
  * VectorTileLayer Layer for tiled vector Data. Can be connected to data with a TileProvider
  * @class
- * @export
  * @extends {FeatureLayer}
  * @api stable
  */

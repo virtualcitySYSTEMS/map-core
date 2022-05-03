@@ -22,7 +22,6 @@ import { wgs84Projection } from '../util/projection.js';
 /**
  * Image layer for Cesium and OpenlayersMap
  * @class
- * @export
  * @extends {RasterLayer}
  * @api stable
  */

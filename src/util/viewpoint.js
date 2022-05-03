@@ -10,7 +10,6 @@ import Extent from './extent.js';
  * @param {number} right
  * @param {number} epsilon
  * @returns {boolean}
- * @export
  */
 export function propertyEqualsEpsilon(left, right, epsilon) {
   return Math.abs(left - right) <= epsilon;
@@ -22,7 +21,6 @@ export function propertyEqualsEpsilon(left, right, epsilon) {
  * @param {number} right angle in degree
  * @param {number} epsilon in degree
  * @returns {boolean}
- * @export
  */
 export function angleEqualsEpsilon(left, right, epsilon) {
   const diff = (left - right) - Math.trunc((left - right) / 360) * 360;
@@ -36,7 +34,6 @@ export function angleEqualsEpsilon(left, right, epsilon) {
  * @param {import("ol/coordinate").Coordinate} right
  * @param {number} epsilon
  * @returns {boolean}
- * @export
  */
 export function coordinateEqualsEpsilon(left, right, epsilon) {
   return left !== null && right !== null &&
@@ -60,7 +57,6 @@ export function coordinateEqualsEpsilon(left, right, epsilon) {
 /**
  * A Viewpoint Object
  * @class
- * @export
  * @extends {VcsObject}
  * @api stable
  */

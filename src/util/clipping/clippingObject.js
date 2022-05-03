@@ -10,7 +10,6 @@ import LayerCollection from '../layerCollection.js';
 
 /**
  * @namespace clipping
- * @export
  * @api
  */
 
@@ -50,7 +49,6 @@ const globeSymbol = Symbol('ClippingObjectGlobe');
  * To update the Cesium.ClippingPlaneCollection or its definitions, you must trigger an update by setting the clippingPlaneCollection
  * property to the new definition.
  * @class
- * @export
  * @api stable
  */
 class ClippingObject {

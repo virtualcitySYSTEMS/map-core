@@ -20,7 +20,6 @@ import { cartesian2DDistance } from '../util/math.js';
 
 /**
  * @class
- * @export
  */
 class ObliqueImageMeta {
   /**

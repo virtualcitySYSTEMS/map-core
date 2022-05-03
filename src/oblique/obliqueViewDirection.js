@@ -6,7 +6,6 @@
  * @property {number} SOUTH
  * @property {number} WEST
  * @property {number} NADIR
- * @export
  * @api
  */
 export const ObliqueViewDirection = {
@@ -19,7 +18,6 @@ export const ObliqueViewDirection = {
 
 /**
  * @type {Object<string, ObliqueViewDirection>}
- * @export
  */
 export const obliqueViewDirectionNames = {
   north: ObliqueViewDirection.NORTH,
@@ -32,7 +30,6 @@ export const obliqueViewDirectionNames = {
 /**
  * @param {number} direction
  * @returns {string|undefined}
- * @export
  */
 export function getDirectionName(direction) {
   return Object.keys(obliqueViewDirectionNames)

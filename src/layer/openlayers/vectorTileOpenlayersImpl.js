@@ -7,7 +7,6 @@ import { mercatorProjection } from '../../util/projection.js';
 /**
  * represents a specific vectorTileLayer for openlayers.
  * @class
- * @export
  * @implements {VectorTileImplementation}
  * @extends {LayerOpenlayersImpl}
  */

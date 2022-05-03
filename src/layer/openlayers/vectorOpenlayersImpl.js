@@ -6,7 +6,6 @@ import { getGlobalHider } from '../globalHider.js';
 /**
  * represents a specific vectorlayer for openlayers.
  * @class
- * @export
  * @implements {FeatureLayerImplementation}
  * @extends {LayerOpenlayersImpl}
  */

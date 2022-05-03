@@ -4,7 +4,6 @@ import { EventType, ModificationKeyType, PointerKeyType } from './interactionTyp
 /**
  * @class
  * @extends {AbstractInteraction}
- * @export
  */
 class InteractionChain extends AbstractInteraction {
   /**

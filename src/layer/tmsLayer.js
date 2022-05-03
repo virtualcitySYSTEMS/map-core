@@ -21,7 +21,6 @@ import { layerClassRegistry } from '../classRegistry.js';
 /**
  * TmsLayer Layer
  * @class
- * @export
  * @extends {RasterLayer}
  * @api stable
  */

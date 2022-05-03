@@ -8,7 +8,6 @@ import { isSameOrigin } from '../../util/urlHelpers.js';
 /**
  * TmsLayer implementation for {@link Openlayers}.
  * @class
- * @export
  * @extends {RasterLayerOpenlayersImpl}
  */
 class TmsOpenlayersImpl extends RasterLayerOpenlayersImpl {

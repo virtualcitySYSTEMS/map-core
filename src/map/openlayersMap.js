@@ -18,7 +18,6 @@ import { mapClassRegistry } from '../classRegistry.js';
 /**
  * OpenlayersMap Map Class (2D map)
  * @class
- * @export
  * @extends {BaseOLMap}
  * @api stable
  */

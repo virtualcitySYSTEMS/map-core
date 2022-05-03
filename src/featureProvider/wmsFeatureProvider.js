@@ -68,7 +68,6 @@ export function getFormat(responseType, options = {}) {
 
 /**
  * @class
- * @export
  * @extends {AbstractFeatureProvider}
  */
 class WMSFeatureProvider extends AbstractFeatureProvider {

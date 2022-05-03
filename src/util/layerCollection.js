@@ -7,7 +7,6 @@ import VcsEvent from '../vcsEvent.js';
  * A collection of layers. Manages rendering order and layer exclusivity. Emits state changes for convenience. Passed to
  * {@link Map} for layers available to said map. Layers must have unique names.
  * @class
- * @export
  * @api
  * @extends {IndexedCollection<import("@vcmap/core").Layer>}}
  */

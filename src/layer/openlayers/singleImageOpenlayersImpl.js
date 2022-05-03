@@ -7,7 +7,6 @@ import { isSameOrigin } from '../../util/urlHelpers.js';
 /**
  * represents a specific OpenLayers SingleImageLayer Layer class.
  * @class
- * @export
  * @extends {RasterLayerOpenlayersImpl}
  */
 class SingleImageOpenlayersImpl extends RasterLayerOpenlayersImpl {

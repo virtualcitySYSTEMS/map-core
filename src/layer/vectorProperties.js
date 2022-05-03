@@ -164,7 +164,6 @@ export function getCartesian3Options(cartesian3) {
 /**
  * Properties Collection for VectorLayer Features
  * @class
- * @export
  * @api stable
  */
 class VectorProperties {

@@ -2,7 +2,6 @@
  * Enumeration of possible layer states.
  * State machine: inactive <-> loading -> active -> inactive
  * @enum {number}
- * @export
  * @api
  * @property {number} INACTIVE
  * @property {number} ACTIVE

@@ -111,7 +111,6 @@ function getTileFeatures(tiles) {
 
 /**
  * @class
- * @export
  * @extends {VcsObject}
  */
 class ObliqueCollection extends VcsObject {

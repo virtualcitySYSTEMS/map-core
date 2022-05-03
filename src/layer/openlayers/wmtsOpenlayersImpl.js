@@ -10,7 +10,6 @@ import { isSameOrigin } from '../../util/urlHelpers.js';
 /**
  * WmtsLayer implementation for {@link Openlayers}.
  * @class
- * @export
  * @extends {RasterLayerOpenlayersImpl}
  */
 class WmtsOpenlayersImpl extends RasterLayerOpenlayersImpl {

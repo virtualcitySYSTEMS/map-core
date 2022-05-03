@@ -18,8 +18,7 @@
     ]
   },
   "plugins": [
-    "jsdoc-plugin-typescript",
-    "build/index/export-plugin"
+    "jsdoc-plugin-typescript"
   ],
   "typescript": {
     "moduleRoot": "src"

@@ -20,7 +20,6 @@ import { layerClassRegistry } from '../classRegistry.js';
 /**
  * OpenStreetMapLayer Layer
  * @class
- * @export
  * @extends {Layer}
  * @api stable
  * @implements {SplitLayer}

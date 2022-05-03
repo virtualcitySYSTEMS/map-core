@@ -44,7 +44,6 @@ import { layerClassRegistry } from '../classRegistry.js';
  * @class
  * @abstract
  * @extends {Layer}
- * @export
  * @api
  */
 class FeatureLayer extends Layer {

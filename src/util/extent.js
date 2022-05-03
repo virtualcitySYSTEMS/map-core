@@ -33,7 +33,6 @@ function checkExtentValidity(extent) {
 /**
  * Extent Class
  * @class
- * @export
  * @api
  */
 class Extent {

@@ -202,7 +202,6 @@ ExperimentalFeatures.enableModelExperimental = false; // TODO check on release
 /**
  * Cesium Globe Map Class (3D map)
  * @class
- * @export
  * @extends {VcsMap}
  * @api stable
  */

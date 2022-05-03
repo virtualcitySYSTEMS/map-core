@@ -27,7 +27,6 @@ function getLogger() {
 /**
  * @enum {number}
  * @const
- * @export
  * @property {number} NWSE
  * @property {number} SWNE
  * @property {number} DIAGONALCROSS
@@ -50,7 +49,6 @@ export const PatternType = {
  * @param {string} h
  * @param {number=} opacity
  * @returns {import("ol/color").Color}
- * @export
  */
 export function hexToOlColor(h, opacity) {
   let hex = h.substring(1);
@@ -81,7 +79,6 @@ export function cesiumColorToColor(cesiumColor) {
  * @param {import("ol/color").Color} olColor
  * @returns {import("@vcmap/cesium").Color}
  * @api
- * @export
  */
 export function olColorToCesiumColor(olColor) {
   return Color.fromBytes(olColor[0], olColor[1], olColor[2], olColor[3] * 255);
@@ -93,7 +90,6 @@ export function olColorToCesiumColor(olColor) {
  * @param {import("ol/color").Color=} defaultColor
  * @returns {import("ol/color").Color}
  * @api
- * @export
  */
 export function parseColor(color, defaultColor) {
   if (Array.isArray(color)) {
@@ -135,7 +131,6 @@ export function parseColor(color, defaultColor) {
  * @param {import("ol/color").Color|import("ol/colorlike").ColorLike} color
  * @param {import("ol/color").Color} defaultColor
  * @returns {import("@vcmap/cesium").Color}
- * @export
  */
 export function getCesiumColor(color, defaultColor) {
   const olColor = parseColor(color, defaultColor);
@@ -145,7 +140,6 @@ export function getCesiumColor(color, defaultColor) {
 /**
  * @param {import("ol/color").Color|Array<number>|import("ol/colorlike").ColorLike} color
  * @returns {string}
- * @export
  */
 export function getStringColor(color) {
   return `rgba(${parseColor(color).join(',')})`;
@@ -155,7 +149,6 @@ export function getStringColor(color) {
  * @param {VectorStyleItemFill} options
  * @param {HTMLCanvasElement=} optCanvas
  * @returns {CanvasPattern}
- * @export
  */
 export function createPattern(options, optCanvas) {
   const pixelRatio = DEVICE_PIXEL_RATIO;
@@ -215,7 +208,6 @@ export function createPattern(options, optCanvas) {
 /**
  * @param {import("ol/color").Color} color
  * @returns {string}
- * @export
  */
 export function olColorToHex(color) {
   function componentHex(c) {
@@ -230,7 +222,6 @@ export function olColorToHex(color) {
 /**
  * @param {string} colorValue
  * @returns {boolean}
- * @export
  */
 export function validateHexColor(colorValue) {
   return /^#[0-9a-f]{6}$/.test(colorValue);
@@ -239,7 +230,6 @@ export function validateHexColor(colorValue) {
 /**
  * @param {string|FontObject} font
  * @returns {FontObject}
- * @export
  */
 export function parseFont(font) {
   if (typeof font !== 'string') {
@@ -310,7 +300,6 @@ export function parseFont(font) {
 /**
  * @param {FontObject} fontObject
  * @returns {string}
- * @export
  */
 export function combineFont(fontObject) {
   const order = [

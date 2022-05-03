@@ -5,7 +5,6 @@ import RasterLayerOpenlayersImpl from './rasterLayerOpenlayersImpl.js';
 /**
  * represents a specific OpenStreetMapLayer layer for openlayers.
  * @class
- * @export
  * @extends {RasterLayerOpenlayersImpl}
  */
 class OpenStreetMapOpenlayersImpl extends RasterLayerOpenlayersImpl {

@@ -60,7 +60,6 @@ function getMatrixIds(matrixIds, maxLevel, prefix) {
 /**
  * WmtsLayer layer
  * @class
- * @export
  * @extends {RasterLayer}
  * @api stable
  */

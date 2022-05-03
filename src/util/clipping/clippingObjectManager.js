@@ -12,7 +12,6 @@ import CesiumMap from '../../map/cesiumMap.js';
  * overwritten in the order they where added to the manager. Exclusive [ClippingObjects]{@link ClippingObject} are always applied last, even
  * if a default [ClippingObject]{@link ClippingObject} is added after.
  * @class
- * @export
  * @api stable
  */
 class ClippingObjectManager {

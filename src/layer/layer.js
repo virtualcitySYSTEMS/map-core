@@ -100,7 +100,6 @@ export const vcsMetaVersion = '2.0';
  * To receive implementation options, implement `geImplementationOptions`
  * @abstract
  * @class
- * @export
  * @extends {VcsObject}
  * @api stable
  */

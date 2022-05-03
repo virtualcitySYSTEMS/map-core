@@ -76,7 +76,6 @@ export const isTiledFeature = Symbol('isTiledFeature');
 /**
  * FeatureStoreLayer Layer
  * @class
- * @export
  * @extends {VectorLayer}
  * @api
  */

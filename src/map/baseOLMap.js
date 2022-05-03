@@ -36,7 +36,6 @@ export function ensureLayerInCollection(layers, layer, layerCollection) {
  * @class
  * @abstract
  * @api
- * @export
  * @extends {VcsMap}
  */
 class BaseOLMap extends VcsMap {

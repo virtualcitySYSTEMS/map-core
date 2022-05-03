@@ -5,7 +5,6 @@ import { getWMSSource } from '../wmsHelpers.js';
 /**
  * represents a specific Cesium WmsOpenlayersImpl Layer class.
  * @class
- * @export
  * @extends {RasterLayerOpenlayersImpl}
  */
 class WmsOpenlayersImpl extends RasterLayerOpenlayersImpl {

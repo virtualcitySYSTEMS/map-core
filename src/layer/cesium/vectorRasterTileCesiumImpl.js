@@ -6,7 +6,6 @@ import { wgs84Projection } from '../../util/projection.js';
 /**
  * represents a rasterized tiled vector layer implementation for cesium.
  * @class
- * @export
  * @extends {RasterLayerCesiumImpl}
  * @implements {VectorTileImplementation}
  */

@@ -24,7 +24,6 @@ import { isProvidedFeature, showProvidedFeature } from './featureProviderSymbols
  * An abstract class providing features for {@link Layer}s which cannot provide features directly, but can provide features for
  * a given location, e.g. WmsLayer with a getFeatureInfo configuration. In this case, a feature provider can be created for this layer.
  * @class
- * @export
  * @abstract
  * @api
  */

@@ -26,7 +26,6 @@ export const CameraLimiterMode = {
 /**
  * Can limit a Cesium.Cameras position based on absolute height or distance to a given terrain
  * @class
- * @export
  * @api
  */
 class CameraLimiter {

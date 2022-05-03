@@ -4,7 +4,6 @@ import RasterLayerCesiumImpl from './rasterLayerCesiumImpl.js';
 /**
  * represents a specific OpenStreetMapLayer layer for cesium.
  * @class
- * @export
  * @extends {RasterLayerCesiumImpl}
  */
 class OpenStreetMapCesiumImpl extends RasterLayerCesiumImpl {

@@ -8,7 +8,6 @@ import { transform2D } from 'ol/geom/flat/transform.js';
  * @class
  * @extends {CanvasImmediateRenderer}
  * @memberOf ol
- * @exports
  * Tile Renderer Implementation of openlayers CanvasImmediateRenderer
  * can be used to allow for a correction Factor to take into account Mercator Tile distortion
  */

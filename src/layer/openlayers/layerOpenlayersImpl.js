@@ -4,7 +4,6 @@ import LayerImplementation from '../layerImplementation.js';
 /**
  * Layer implementation for {@link CesiumMap}.
  * @class
- * @export
  * @extends {LayerImplementation<import("@vcmap/core").OpenlayersMap>}}
  */
 class LayerOpenlayersImpl extends LayerImplementation {

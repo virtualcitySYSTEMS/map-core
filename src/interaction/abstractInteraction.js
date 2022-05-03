@@ -22,7 +22,6 @@ import { EventType, ModificationKeyType, PointerKeyType } from './interactionTyp
 /**
  * An abstract interface for all interactions
  * @class
- * @export
  * @abstract
  * @api
  */

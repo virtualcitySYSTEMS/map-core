@@ -40,7 +40,6 @@ function getDefaultImage() {
 
 /**
  * @class
- * @export
  */
 class ObliqueView {
   /**

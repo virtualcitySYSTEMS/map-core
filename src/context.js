@@ -21,7 +21,6 @@ const uuidNamespace = uuidv4();
 
 /**
  * @class
- * @export
  */
 class Context {
   /**

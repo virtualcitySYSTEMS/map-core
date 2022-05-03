@@ -55,7 +55,6 @@ export function getURL(url, x, y, z, tilingExtent) {
  *
  * @class
  * @extends {TileProvider}
- * @export
  * @api
  */
 class URLTemplateTileProvider extends TileProvider {

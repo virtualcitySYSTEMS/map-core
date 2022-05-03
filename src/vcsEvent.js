@@ -1,7 +1,6 @@
 /**
  * @class
  * @template {*} T
- * @export
  * @api
  */
 class VcsEvent {

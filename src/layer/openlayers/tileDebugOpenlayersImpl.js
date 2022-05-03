@@ -5,7 +5,6 @@ import LayerOpenlayersImpl from './layerOpenlayersImpl.js';
 /**
  * layer Implementation to render tile boundaries.
  * @class
- * @export
  * @extends {LayerOpenlayersImpl}
  * @implements {VectorTileImplementation}
  */

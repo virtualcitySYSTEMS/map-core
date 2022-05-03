@@ -12,7 +12,6 @@ import { layerClassRegistry } from '../classRegistry.js';
 
 /**
  * @class
- * @export
  * @extends {DataSourceLayer}
  */
 class CzmlLayer extends DataSourceLayer {

@@ -35,7 +35,6 @@ function withinBounds(number, max) {
 
 /**
  * @class
- * @export
  */
 class ObliqueProvider {
   /**

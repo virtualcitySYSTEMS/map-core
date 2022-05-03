@@ -16,7 +16,6 @@ import { requestJson } from '../util/fetch.js';
 /**
  * WfsLayer VectorLayer Layer
  * @class
- * @export
  * @extends {VectorLayer}
  * @api
  */

@@ -42,7 +42,6 @@ async function setCesiumToOLViewpoint(cesiumMap, olMap) {
 
 /**
  * @class
- * @export
  * @extends {Collection<import("@vcmap/core").VcsMap>}}
  */
 // ignored do to static issues, see https://github.com/microsoft/TypeScript/issues/4628

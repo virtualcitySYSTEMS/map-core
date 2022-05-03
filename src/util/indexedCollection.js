@@ -4,7 +4,6 @@ import Collection from './collection.js';
 /**
  * A generic array based collection. Implements the Symbol.iterator (e.g. [...collection])
  * @class
- * @export
  * @template {*} T
  * @extends {Collection<T>}
  * @api

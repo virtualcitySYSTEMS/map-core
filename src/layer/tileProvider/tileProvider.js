@@ -75,7 +75,6 @@ export function rectangleToExtent(rectangle) {
  *
  * @class
  * @extends {VcsObject}
- * @export
  * @api
  */
 class TileProvider extends VcsObject {

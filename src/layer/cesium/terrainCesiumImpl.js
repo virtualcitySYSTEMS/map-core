@@ -6,7 +6,6 @@ import { getTerrainProviderForUrl } from '../terrainHelpers.js';
 /**
  * TerrainLayer implementation for {@link CesiumMap}
  * @class
- * @export
  * @extends {LayerImplementation<import("@vcmap/core").CesiumMap>}}
  */
 class TerrainCesiumImpl extends LayerImplementation {

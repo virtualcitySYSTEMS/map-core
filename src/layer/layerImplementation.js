@@ -4,7 +4,6 @@ import LayerState from './layerState.js';
 /**
  * represents an implementation for a Layer for a specific Map
  * @class
- * @export
  * @extends {VcsObject}
  * @abstract
  * @api

@@ -6,7 +6,6 @@ import { getTilingScheme } from '../rasterLayer.js';
 /**
  * represents a specific WmtsLayer Implementation for {@link CesiumMap}.
  * @class
- * @export
  * @extends {RasterLayerCesiumImpl}
  */
 class WmtsCesiumImpl extends RasterLayerCesiumImpl {

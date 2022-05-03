@@ -118,14 +118,12 @@ export const OlcsGeometryType = {
  * Is set by the Editor if the layerStyle is overwritten. The VectorLayer layer assures this style is set, if
  * the style on the layer is not a DeclarativeStyle
  * @type {symbol}
- * @export
  */
 export const vectorStyleSymbol = Symbol('VcsVectorStyleItem');
 
 /**
  * @class
  * @extends {StyleItem}
- * @export
  * @api
  */
 class VectorStyleItem extends StyleItem {
@@ -895,7 +893,6 @@ export default VectorStyleItem;
 
 /**
  * @type {VectorStyleItem}
- * @export
  */
 export const defaultVectorStyle = new VectorStyleItem(getDefaultVectorStyleItemOptions());
 styleClassRegistry.registerClass(VectorStyleItem.className, VectorStyleItem);
@@ -903,7 +900,6 @@ styleClassRegistry.registerClass(VectorStyleItem.className, VectorStyleItem);
 /**
  * @param {import("@vcmap/cesium").Color} cesiumColor
  * @returns {VectorStyleItem}
- * @export
  */
 export function fromCesiumColor(cesiumColor) {
   const color = /** @type {import("ol/color").Color} */ (cesiumColor.toBytes());

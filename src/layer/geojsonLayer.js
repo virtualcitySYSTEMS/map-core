@@ -20,7 +20,6 @@ export const featureFromOptions = Symbol('featureFromOptions');
 /**
  * GeojsonLayer layer for Cesium, OpenlayersMap and ObliqueMap
  * @class
- * @export
  * @extends {VectorLayer}
  * @api stable
  */

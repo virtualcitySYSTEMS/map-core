@@ -28,7 +28,6 @@ import { styleClassRegistry } from '../classRegistry.js';
 /**
  * An abstract style definition which can be applied to a layer
  * @class
- * @export
  * @api
  * @abstract
  * @extends {VcsObject}

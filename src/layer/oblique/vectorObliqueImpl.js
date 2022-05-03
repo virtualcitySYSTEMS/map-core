@@ -19,7 +19,6 @@ import { synchronizeFeatureVisibilityWithSource } from '../vectorHelpers.js';
 /**
  * represents a specific vector layer for oblique.
  * @class
- * @export
  * @extends {LayerObliqueImpl}
  * @implements {FeatureLayerImplementation}
  */

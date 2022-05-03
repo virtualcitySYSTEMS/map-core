@@ -4,7 +4,6 @@ import LayerImplementation from '../layerImplementation.js';
 /**
  * RasterLayer implementation for {@link Openlayers}
  * @class
- * @export
  * @extends {LayerImplementation<import("@vcmap/core").CesiumMap>}}
  * @implements {RasterLayerImplementation}
  */
