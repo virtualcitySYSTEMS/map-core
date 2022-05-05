@@ -1,8 +1,10 @@
 import fs from 'fs';
 import { CesiumTerrainProvider } from '@vcmap/cesium';
 import importJSON from '../importJSON.js';
+import getFileNameFromUrl from '../getFileNameFromUrl.js';
 
-const layerJson = await importJSON('./tests/data/terrain/layer.json');
+const fileName = getFileNameFromUrl(import.meta.url, '../../../../data/terrain/layer.json');
+const layerJson = await importJSON(fileName);
 const terrainFiles = {
   1388006485: './tests/data/terrain/13/8800/6485.terrain',
   1388006486: './tests/data/terrain/13/8800/6486.terrain',

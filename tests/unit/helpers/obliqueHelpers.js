@@ -6,8 +6,10 @@ import { getTerrainProvider } from './terrain/terrainData.js';
 import ObliqueCollection from '../../../src/oblique/obliqueCollection.js';
 import ObliqueDataSet from '../../../src/oblique/obliqueDataSet.js';
 import importJSON from './importJSON.js';
+import getFileNameFromUrl from './getFileNameFromUrl.js';
 
-const imageJson = await importJSON('./tests/data/oblique/imageData/imagev35.json');
+const fileName = getFileNameFromUrl(import.meta.url, '../../../data/oblique/imageData/imagev35.json');
+const imageJson = await importJSON(fileName);
 
 /**
  * Center point of first image

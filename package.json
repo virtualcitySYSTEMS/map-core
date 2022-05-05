@@ -25,6 +25,8 @@
   "files": [
     "build/postinstall.js",
     "src/",
+    "tests/data/",
+    "tests/unit/helpers/",
     "LICENSE.md",
     "README.md",
     "index.js",
