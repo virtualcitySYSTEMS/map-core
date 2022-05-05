@@ -83,6 +83,13 @@ class MapCollection extends Collection {
     this._target = null;
 
     /**
+     * if the active map is removed the last viewpoint is cached for the next mapActivation.
+     * @type {import("@vcmap/core").ViewPoint}
+     * @private
+     */
+    this._cachedViewpoint = null;
+
+    /**
      * The map pointer event handler. The EventHandler is shared amongst all maps within the collection.
      * @type {EventHandler}
      * @api
@@ -218,20 +225,25 @@ class MapCollection extends Collection {
   }
 
   /**
-   * Removes the map from the collection. Will also set _splitScreen & target to null and an empty _layerCollection on the map,
-   * if the map is currently part of the collection.
    * @param {import("@vcmap/core").VcsMap} map
+   * @returns {number}
+   * @protected
    */
-  remove(map) {
+  _remove(map) {
+    if (this._activeMap === map) {
+      this._cachedViewpoint = map.getViewPointSync();
+      if (this._target) {
+        const mapClassName = this._activeMap.className.split('.').pop();
+        this._target.classList.remove(mapClassName);
+      }
+      this._activeMap = null;
+    }
     if (this.has(map)) {
       map.setTarget(null);
       map.splitScreen = null;
       map.layerCollection = new LayerCollection();
     }
-    super.remove(map);
-    if (this._activeMap === map) {
-      this._activeMap = null;
-    }
+    return super._remove(map);
   }
 
   /**
@@ -333,12 +345,13 @@ class MapCollection extends Collection {
     }
 
     let viewpoint;
-    if (this._activeMap) {
+    if (this._activeMap || this._cachedViewpoint) {
       if (this._activeMap === map) {
         return map.activate();
       }
 
-      viewpoint = await this._activeMap.getViewPoint();
+      viewpoint = this._activeMap ? await this._activeMap.getViewPoint() : this._cachedViewpoint;
+
       const canShow = await map.canShowViewpoint(viewpoint);
       if (!canShow) {
         const fallbackMap = this._getFallbackMap(map);
@@ -347,10 +360,13 @@ class MapCollection extends Collection {
           return this.setActiveMap(fallbackMap.name);
         }
       }
-      this._activeMap.deactivate();
-      if (this._target) {
-        const mapClassName = this._activeMap.className.split('.').pop();
-        this._target.classList.remove(mapClassName);
+      this._cachedViewpoint = null;
+      if (this._activeMap) {
+        this._activeMap.deactivate();
+        if (this._target) {
+          const mapClassName = this._activeMap.className.split('.').pop();
+          this._target.classList.remove(mapClassName);
+        }
       }
     }
 

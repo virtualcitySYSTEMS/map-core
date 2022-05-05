@@ -504,13 +504,17 @@ class VcsMap extends VcsObject {
     this._collectionListeners.forEach((cb) => { cb(); });
     this._collectionListeners = [];
 
-    [...this.layerCollection].forEach((l) => { l.removedFromMap(this); });
+    if (this.layerCollection) {
+      [...this.layerCollection].forEach((l) => {
+        l.removedFromMap(this);
+      });
+    }
     if (this.stateChanged) {
       this.stateChanged.destroy();
       this.stateChanged = null;
     }
 
-    if (this.destroyLayerCollection) {
+    if (this.destroyLayerCollection && this.layerCollection) {
       this.layerCollection.destroy();
     }
 

@@ -5,7 +5,9 @@ import OpenlayersMap from '../../../src/map/openlayersMap.js';
 import { getCesiumEventSpy, getCesiumMap } from '../helpers/cesiumHelpers.js';
 import LayerCollection from '../../../src/util/layerCollection.js';
 import Layer from '../../../src/layer/layer.js';
+import VcsMap from '../../../src/map/vcsMap.js';
 import SplitScreen from '../../../src/util/splitScreen.js';
+import { makeOverrideCollection } from '../../../index.js';
 
 describe('MapCollection', () => {
   let target;
@@ -358,6 +360,84 @@ describe('MapCollection', () => {
           await mapCollection.setActiveMap(openlayers.name);
           expect(mapCollection.has(openlayers)).to.be.false;
         });
+      });
+    });
+
+    describe('previous active map was removed', () => {
+      let vp;
+
+      beforeEach(async () => {
+        await mapCollection.setActiveMap(cesiumMap.name);
+        vp = new ViewPoint({
+          groundPosition: [0, 0, 0],
+          cameraPosition: [0, 0, 200],
+          distance: 200,
+          pitch: -45,
+        });
+        await cesiumMap.gotoViewPoint(vp);
+        mapCollection.remove(cesiumMap);
+      });
+
+      it('should use a cachedViewpoint from the last activeMap', async () => {
+        await mapCollection.setActiveMap(openlayers.name);
+        const newVp = await openlayers.getViewPoint();
+        newVp.pitch = -45;
+        expect(newVp.groundPosition).to.have.members([0, 0]);
+        expect(newVp.distance).to.equal(200);
+      });
+    });
+  });
+
+  describe('overrideMapCollection', () => {
+    /** @type {OverrideMapCollection} */
+    let mapCollection;
+
+    beforeEach(() => {
+      mapCollection = new MapCollection();
+      makeOverrideCollection(mapCollection, () => { return 'uuid'; }, null, null, VcsMap);
+    });
+
+    afterEach(() => {
+      mapCollection.destroy();
+    });
+
+    describe('on override', () => {
+      it('the originalMap should not be activeMap after override', async () => {
+        /** @type {VcsMap} */
+        const originalMap = new VcsMap({
+          name: 'map',
+          exclusiveGroups: ['test'],
+        });
+        /** @type {VcsMap} */
+        const overrideMap = new VcsMap({
+          name: 'map',
+          exclusiveGroups: ['test'],
+        });
+        mapCollection.add(originalMap);
+        await mapCollection.setActiveMap('map');
+        mapCollection.override(overrideMap);
+        expect(mapCollection.activeMap).to.not.be.equal(originalMap);
+        originalMap.destroy();
+        overrideMap.destroy();
+      });
+
+      it('should synchronize the viewpoint on overriding and setting again an activeMap', async () => {
+        const olMap = await getOpenlayersMap({ name: 'map' });
+        const olMap2 = await getOpenlayersMap({ name: 'map' });
+        mapCollection.add(olMap);
+        await mapCollection.setActiveMap('map');
+        const vp = new ViewPoint({
+          groundPosition: [0, 0, 0],
+          cameraPosition: [0, 0, 200],
+          distance: 200,
+          pitch: -45,
+        });
+        await olMap.gotoViewPoint(vp);
+        mapCollection.override(olMap2);
+        await mapCollection.setActiveMap('map');
+        const newVp = await olMap2.getViewPoint();
+        expect(newVp.groundPosition).to.have.members([0, 0]);
+        expect(newVp.distance).to.equal(200);
       });
     });
   });

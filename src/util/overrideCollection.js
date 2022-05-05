@@ -38,7 +38,7 @@ export const isOverrideCollection = Symbol('OverrideCollection');
  * @param {Collection<T>} collection
  * @param {function():string} getDynamicContextId - function to get the current dynamic context id
  * @param {(function(T):Object)=} serializeItem - optional function to serialize an item, defaults to returning item.toJSON or item: i => (i.toJSON || i)
- * @param {(function(Object):(T|Promise<T>))=} deserializeItem - optional desirialization function. defaults to returning the passed object: i => i
+ * @param {(function(Object):(T|Promise<T>))=} deserializeItem - optional deserialization function. defaults to returning the passed object: i => i
  * @param {*=} ctor - optional constructor to validate deserialized items against. if passed, deserializeItem must be an instance of ctor.
  * @param {(function(T, (T|null|undefined), (number|undefined)):number|null)=} determineShadowIndex - return the index where a shadow should be inserted. only has relevance, if the collection is indexed. previous and current index may be null.
  * @template {*} T
@@ -81,12 +81,11 @@ function makeOverrideCollection(
 
     if (overrideCollection.hasKey(itemId)) {
       shadow = overrideCollection.getByKey(itemId);
+
       // @ts-ignore
-      index = overrideCollection._array.indexOf(shadow); // faking remove to not call removed
-      if (index > -1) {
-        // @ts-ignore
-        overrideCollection._array.splice(index, 1);
-      }
+      // eslint-disable-next-line no-underscore-dangle
+      index = overrideCollection._remove(shadow);
+
       if (!overrideCollection.shadowMap.has(itemId)) {
         overrideCollection.shadowMap.set(itemId, []);
       }
@@ -102,11 +101,11 @@ function makeOverrideCollection(
     }
 
     const usedIndex = shadow ? getShadowIndex(shadow, item, index) : null;
+    if (shadow) {
+      overrideCollection.replaced.raiseEvent(item);
+    }
     // @ts-ignore
     if (overrideCollection.add(item, usedIndex) >= 0) {
-      if (shadow) {
-        overrideCollection.replaced.raiseEvent(item);
-      }
       return item;
     }
     return null;

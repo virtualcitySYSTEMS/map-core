@@ -133,7 +133,7 @@ class LayerCollection extends IndexedCollection {
   }
 
   /**
-   * Ensures the local z index is consisten with the neighbours of a given layer.
+   * Ensures the local z index is consistent with the neighbours of a given layer.
    * e.g. the layer on elower must have a lower or equal zIndex
    * and the one higher a higher or equal zIndex.
    * @param {import("@vcmap/core").Layer} layer
@@ -179,18 +179,18 @@ class LayerCollection extends IndexedCollection {
   }
 
   /**
-   * Removes a layer from the collection.
    * @param {import("@vcmap/core").Layer} layer
-   * @api
+   * @returns {number}
+   * @protected
    */
-  remove(layer) {
+  _remove(layer) {
     if (this._layerEventListeners[layer.name]) {
       this._layerEventListeners[layer.name].forEach((cb) => { cb(); });
       delete this._layerEventListeners[layer.name];
     }
     delete layer[this._zIndexSymbol];
     this.exclusiveManager.unregisterLayer(layer);
-    super.remove(layer);
+    return super._remove(layer);
   }
 
   clear() {

@@ -135,14 +135,27 @@ class Collection {
   }
 
   /**
+   * internal remove function, to remove an item from the collection, does not raise an event.
+   * @param {T} item
+   * @returns {number} returns the index of the removed item or -1 if the item has not been found.
+   * @protected
+   */
+  _remove(item) {
+    const index = this._array.indexOf(item);
+    if (index > -1) {
+      this._array.splice(index, 1);
+    }
+    return index;
+  }
+
+  /**
    * Removes an item from the collection
    * @param {T} item
    * @api
    */
   remove(item) {
-    const index = this._array.indexOf(item);
+    const index = this._remove(item);
     if (index > -1) {
-      this._array.splice(index, 1);
       this.removed.raiseEvent(item);
     }
   }

@@ -5,6 +5,7 @@ import { getCesiumEventSpy } from '../helpers/cesiumHelpers.js';
 import OpenStreetMapLayer from '../../../src/layer/openStreetMapLayer.js';
 import { setOpenlayersMap } from '../helpers/openlayersHelpers.js';
 import VcsApp from '../../../src/vcsApp.js';
+import { getLayerIndex, makeOverrideCollection } from '../../../index.js';
 
 describe('LayerCollection', () => {
   let layer1;
@@ -309,6 +310,45 @@ describe('LayerCollection', () => {
       expect(layerCollection.indexOf(layer3)).to.equal(indexOfLayer3);
       layer3.zIndex = 1;
       expect(layerCollection.indexOf(layer3)).to.equal(indexOfLayer3);
+    });
+  });
+
+  describe('overrideLayerCollection', () => {
+    /** @type {OverrideLayerCollection} */
+    let layerCollection;
+    /** @type {Layer} */
+    let originalLayer;
+    /** @type {Layer} */
+    let overrideLayer;
+
+    beforeEach(() => {
+      originalLayer = new Layer({
+        name: 'layer',
+        exclusiveGroups: ['test'],
+      });
+
+      overrideLayer = new Layer({
+        name: 'layer',
+        exclusiveGroups: ['test'],
+      });
+
+      layerCollection = LayerCollection.from([
+        originalLayer,
+      ]);
+      makeOverrideCollection(layerCollection, () => { return 'uuid'; }, null, null, Layer, getLayerIndex);
+    });
+
+    afterEach(() => {
+      layerCollection.destroy();
+      originalLayer.destroy();
+      overrideLayer.destroy();
+    });
+
+    describe('on override', () => {
+      it('should remove originalLayer from the ExclusiveManager', () => {
+        layerCollection.override(overrideLayer);
+        expect(layerCollection.exclusiveManager.layers.get('test').has(originalLayer)).to.be.false;
+      });
     });
   });
 });
