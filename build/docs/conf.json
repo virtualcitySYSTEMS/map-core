@@ -1,0 +1,42 @@
+{
+  "opts": {
+    "recurse": true,
+    "template": "node_modules/tui-jsdoc-template",
+    "destination": "./docs"
+  },
+  "tags": {
+    "allowUnknownTags": true
+  },
+  "source": {
+    "includePattern": "\\.js$",
+    "include":[
+      "src"
+    ],
+    "exclude": [
+      "index.js",
+      "src/ol",
+      "src/cesium"
+    ]
+  },
+  "plugins": [
+    "jsdoc-plugin-typescript",
+    "build/docs/exported-plugin.js"
+  ],
+  "typescript": {
+    "moduleRoot": "src"
+  },
+  "templates": {
+    "default": {
+      "staticFiles": {
+        "include": ["build/docs/static"]
+      }
+    },
+    "css": ["custom.css"],
+    "logo": {
+      "url": "logo.svg",
+      "link": "https://github.com/virtualcitysystems/map-core"
+    },
+    "name": "@vcmap/core",
+    "footerText": "Developed by virtualcitySYSTEMS in Berlin"
+  }
+}

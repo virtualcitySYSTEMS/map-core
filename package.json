@@ -13,6 +13,7 @@
     "postinstall": "node build/postinstall.js",
     "coverage": "c8 --reporter text-summary npm run test",
     "coverage:gitlab": "c8 --reporter text-summary npm run test -- --reporter mocha-junit-reporter",
+    "build-docs": "jsdoc -c build/docs/conf.json",
     "build-index": "jsdoc -c build/index/conf.json",
     "build-typedefs": "jsdoc -c build/info/conf.json",
     "build-tsd": "node build/buildDTs.js",
@@ -51,6 +52,7 @@
     "node-fetch": "^3.2.0",
     "sinon": "^9.2.4",
     "sinon-chai": "^3.6.0",
+    "tui-jsdoc-template": "^1.2.2",
     "typescript": "^4.6.2"
   },
   "peerDependencies": {

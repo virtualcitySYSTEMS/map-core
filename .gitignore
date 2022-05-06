@@ -5,3 +5,4 @@ index.d.ts
 build/types/vcs.d.ts
 build/types/Cesium_module.d.ts
 test-results.xml
+docs/
