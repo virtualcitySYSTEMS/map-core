@@ -309,6 +309,7 @@ class FeatureStoreLayer extends VectorLayer {
         name: this.name,
         style: this.style,
         featureVisibility: this._staticFeatureVisibility,
+        globalHider: this.globalHider,
         splitDirection: SplitDirection.NONE,
         jumpToLocation: false,
       })));

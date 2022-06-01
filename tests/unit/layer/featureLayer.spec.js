@@ -4,6 +4,7 @@ import DeclarativeStyleItem from '../../../src/style/declarativeStyleItem.js';
 import VectorStyleItem from '../../../src/style/vectorStyleItem.js';
 import FeatureLayer from '../../../src/layer/featureLayer.js';
 import { getCesiumEventSpy } from '../helpers/cesiumHelpers.js';
+import GlobalHider from '../../../src/layer/globalHider.js';
 
 describe('FeatureLayer', () => {
   let sandbox;
@@ -21,6 +22,14 @@ describe('FeatureLayer', () => {
   afterEach(() => {
     sandbox.restore();
     featureLayer.destroy();
+  });
+
+  describe('setting globalHider', () => {
+    it('should reload layer to update featureVisibility listeners on impl', () => {
+      const reloadSpy = sandbox.spy(featureLayer, 'reload');
+      featureLayer.setGlobalHider(new GlobalHider());
+      expect(reloadSpy).to.have.been.called;
+    });
   });
 
   describe('setStyle', () => {

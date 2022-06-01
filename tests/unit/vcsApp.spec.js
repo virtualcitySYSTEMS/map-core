@@ -293,7 +293,7 @@ describe('vcsApp', () => {
         expect(removed).to.have.been.called;
       });
 
-      it('should add the contexts resources', () => {
+      it('should remove the contexts resources', () => {
         expect([...app.layers]).to.be.empty;
         expect([...app.maps]).to.be.empty;
         expect([...app.viewPoints]).to.be.empty;
@@ -344,7 +344,7 @@ describe('vcsApp', () => {
         expect(removed).to.have.been.calledOnce;
       });
 
-      it('should add the contexts resources', () => {
+      it('should remove the contexts resources', () => {
         expect([...app.layers]).to.be.empty;
         expect([...app.maps]).to.be.empty;
         expect([...app.viewPoints]).to.be.empty;

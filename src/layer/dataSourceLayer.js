@@ -4,7 +4,6 @@ import CesiumMap from '../map/cesiumMap.js';
 import DataSourceCesiumImpl from './cesium/dataSourceCesiumImpl.js';
 import { vcsLayerName } from './layerSymbols.js';
 import FeatureVisibility, { FeatureVisibilityAction } from './featureVisibility.js';
-import { getGlobalHider } from './globalHider.js';
 import { layerClassRegistry } from '../classRegistry.js';
 
 /**
@@ -86,11 +85,20 @@ class DataSourceLayer extends Layer {
   }
 
   /**
+   * @param {import("@vcmap/core").GlobalHider} globalHider
+   */
+  setGlobalHider(globalHider) {
+    super.setGlobalHider(globalHider);
+    this._setUpFeatureVisibility();
+  }
+
+  /**
    * Sets up listeners for featureVisibility and global hider
    * @private
    */
   _setUpFeatureVisibility() {
-    const globalHider = getGlobalHider();
+    this._featureVisibilityListeners.forEach((cb) => { cb(); });
+
     this._featureVisibilityListeners = [
       this.featureVisibility.changed.addEventListener(({ action, ids }) => {
         if (action === FeatureVisibilityAction.HIDE) {
@@ -102,28 +110,30 @@ class DataSourceLayer extends Layer {
           });
         } // highlight is _possible_ but very tricky with all the possible entity values with potential materials
       }),
-      globalHider.changed.addEventListener(({ action, ids }) => {
-        if (action === FeatureVisibilityAction.HIDE) {
-          ids.forEach((id) => {
-            const entity = this.entities.getById(id);
-            if (entity) {
-              globalHider.addFeature(id, entity);
-            }
-          });
-        }
-      }),
       this.entities.collectionChanged.addEventListener((c, added) => {
         added.forEach((entity) => {
           if (this.featureVisibility.hiddenObjects[entity.id]) {
             this.featureVisibility.addHiddenFeature(entity.id, entity);
           }
-
-          if (globalHider.hiddenObjects[entity.id]) {
-            globalHider.addFeature(entity.id, entity);
+          if (this.globalHider && this.globalHider.hiddenObjects[entity.id]) {
+            this.globalHider.addFeature(entity.id, entity);
           }
         });
       }),
     ];
+
+    if (this.globalHider) {
+      this._featureVisibilityListeners.push(this.globalHider.changed.addEventListener(({ action, ids }) => {
+        if (action === FeatureVisibilityAction.HIDE) {
+          ids.forEach((id) => {
+            const entity = this.entities.getById(id);
+            if (entity) {
+              this.globalHider.addFeature(id, entity);
+            }
+          });
+        }
+      }));
+    }
   }
 
   /**

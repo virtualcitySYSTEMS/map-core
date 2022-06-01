@@ -2,6 +2,7 @@ import { Entity } from '@vcmap/cesium';
 import { setCesiumMap } from '../../helpers/cesiumHelpers.js';
 import VcsApp from '../../../../src/vcsApp.js';
 import DataSourceLayer from '../../../../src/layer/dataSourceLayer.js';
+import GlobalHider from '../../../../src/layer/globalHider.js';
 
 describe('DataSourceCesiumImpl', () => {
   let app;
@@ -27,6 +28,7 @@ describe('DataSourceCesiumImpl', () => {
       layer = new DataSourceLayer({});
       initialEntity = new Entity();
       layer.addEntity(initialEntity);
+      layer.setGlobalHider(new GlobalHider());
       await layer.initialize();
       [impl] = layer.getImplementationsForMap(map);
       await impl.initialize();

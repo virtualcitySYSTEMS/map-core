@@ -13,9 +13,11 @@ import {
   globalHiderLastUpdated,
   getGenericFeatureFromClickedObject,
 } from '../../../src/layer/vectorHelpers.js';
+import GlobalHider from '../../../src/layer/globalHider.js';
 
 function setupVectorLayer() {
   const vectorLayer = new VectorLayer({});
+  vectorLayer.setGlobalHider(new GlobalHider());
   const ids = vectorLayer.addFeatures([
     new Feature(),
     new Feature(),

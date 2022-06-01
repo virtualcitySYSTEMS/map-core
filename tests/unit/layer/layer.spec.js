@@ -6,6 +6,7 @@ import { getCesiumEventSpy } from '../helpers/cesiumHelpers.js';
 import { getOpenlayersMap, setOpenlayersMap } from '../helpers/openlayersHelpers.js';
 import { setCurrentLocale } from '../../../src/util/locale.js';
 import Extent from '../../../src/util/extent.js';
+import GlobalHider from '../../../src/layer/globalHider.js';
 
 describe('Layer', () => {
   let sandbox;
@@ -22,6 +23,7 @@ describe('Layer', () => {
 
   beforeEach(() => {
     AL = new Layer({});
+    AL.setGlobalHider(new GlobalHider());
     AL._supportedMaps = [map.className];
     sandbox.stub(AL, 'createImplementationsForMap')
       .callsFake(() => [new LayerImplementation(map, AL.getImplementationOptions())]);

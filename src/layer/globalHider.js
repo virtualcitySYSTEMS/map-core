@@ -9,11 +9,16 @@ import {
 import VcsEvent from '../vcsEvent.js';
 
 /**
- * @type {GlobalHider}
+ * @typedef {Object} HiddenObject
+ * @property {string} id
  */
-let instance;
 
 /**
+ * GlobalHider globally hides features existing within a layer of a {@link LayerCollection}.
+ * Features can be defined as hidden by {@link VcsAppConfig} or {@link LayerOptions}.
+ * Hiding will be performed, when a {@link Context} is loaded, a {@link Layer} is activated or GlobalHider API is called.
+ * A feature can be hidden multiple times by different actors, e.g. contexts, layers, which is handled by this class.
+ * A feature will be shown again, when a {@link Context} is removed, a {@link Layer} is deactivated or GlobalHider API is called.
  * @class
  */
 class GlobalHider {
@@ -123,24 +128,6 @@ class GlobalHider {
     this._hiddenObjectFeatures = {};
     this.changed.destroy();
   }
-
-  static destroy() {
-    if (instance) {
-      instance.destroy();
-    }
-    instance = undefined;
-  }
-}
-
-/**
- * @returns {GlobalHider}
- * @api
- */
-export function getGlobalHider() {
-  if (!instance) {
-    instance = new GlobalHider();
-  }
-  return instance;
 }
 
 export default GlobalHider;

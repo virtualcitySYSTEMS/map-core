@@ -155,7 +155,7 @@ class VectorTileLayer extends FeatureLayer {
      * @type {Array<Function>}
      * @private
      */
-    this._featureVisibilityListener = [];
+    this._featureVisibilityListeners = [];
 
     /**
      * @type {Function}
@@ -254,15 +254,24 @@ class VectorTileLayer extends FeatureLayer {
   }
 
   /**
-   *
-   * @returns {Array<Function>}
+   * @param {import("@vcmap/core").GlobalHider} globalHider
+   */
+  setGlobalHider(globalHider) {
+    super.setGlobalHider(globalHider);
+    this._setupFeatureVisibilityHandlers();
+  }
+
+  /**
+   * Sets up listeners for featureVisibility and global hider
    * @private
    */
   _setupFeatureVisibilityHandlers() {
     if (!this.tileProvider.trackFeaturesToTiles) {
-      return [];
+      return;
     }
-    return [
+    this._featureVisibilityListeners.forEach((cb) => { cb(); });
+
+    this._featureVisibilityListeners = [
       this.featureVisibility.changed.addEventListener(({ action, ids }) => {
         const tileIdsChanged = new Set();
         ids.forEach((id) => {
@@ -289,8 +298,10 @@ class VectorTileLayer extends FeatureLayer {
         });
         this.updateTiles([...tileIdsChanged]);
       }),
+    ];
 
-      this.globalHider.changed.addEventListener(({ action, ids }) => {
+    if (this.globalHider) {
+      this._featureVisibilityListeners.push(this.globalHider.changed.addEventListener(({ action, ids }) => {
         const tileIdsChanged = new Set();
         ids.forEach((id) => {
           const tileIds = this.tileProvider.featureIdToTileIds.get(id);
@@ -311,8 +322,8 @@ class VectorTileLayer extends FeatureLayer {
           }
         });
         this.updateTiles([...tileIdsChanged]);
-      }),
-    ];
+      }));
+    }
   }
 
   /**
@@ -400,8 +411,8 @@ class VectorTileLayer extends FeatureLayer {
    */
   async activate() {
     await super.activate();
-    this._featureVisibilityListener = this._setupFeatureVisibilityHandlers();
-    if (this.tileProvider.trackFeaturesToTiles) {
+    this._setupFeatureVisibilityHandlers();
+    if (this.tileProvider.trackFeaturesToTiles && this.globalHider) {
       this.tileProvider.forEachFeature((feature) => {
         synchronizeFeatureVisibility(this.featureVisibility, this.globalHider, feature);
       });
@@ -414,7 +425,7 @@ class VectorTileLayer extends FeatureLayer {
    */
   deactivate() {
     super.deactivate();
-    this._featureVisibilityListener.forEach((cb) => { cb(); });
+    this._featureVisibilityListeners.forEach((cb) => { cb(); });
   }
 
   /**
@@ -422,7 +433,7 @@ class VectorTileLayer extends FeatureLayer {
    * @api
    */
   destroy() {
-    this._featureVisibilityListener.forEach((cb) => { cb(); });
+    this._featureVisibilityListeners.forEach((cb) => { cb(); });
     super.destroy();
     this._tileLoadEventListener();
     if (this.featureProvider) {

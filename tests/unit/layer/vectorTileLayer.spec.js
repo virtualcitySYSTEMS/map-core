@@ -5,6 +5,7 @@ import VectorTileLayer from '../../../src/layer/vectorTileLayer.js';
 import URLTemplateTileProvider from '../../../src/layer/tileProvider/urlTemplateTileProvider.js';
 import TileProviderFeatureProvider from '../../../src/featureProvider/tileProviderFeatureProvider.js';
 import { vcsLayerName } from '../../../src/layer/layerSymbols.js';
+import GlobalHider from '../../../src/layer/globalHider.js';
 
 describe('VectorTileLayer', () => {
   describe('initialization', () => {
@@ -18,6 +19,7 @@ describe('VectorTileLayer', () => {
           baseLevels: [0],
         },
       });
+      vectorTile.setGlobalHider(new GlobalHider());
       await vectorTile.initialize();
     });
 
@@ -80,6 +82,7 @@ describe('VectorTileLayer', () => {
             baseLevels: [0],
           },
         });
+        vectorTile.setGlobalHider(new GlobalHider());
         await vectorTile.initialize();
         vectorTile.featureVisibility.hideObjects(['hiddenFeature']);
         vectorTile.featureVisibility.highlight({ highlightedFeature: new Style({}) });
@@ -138,6 +141,7 @@ describe('VectorTileLayer', () => {
             baseLevels: [0],
           },
         });
+        vectorTile.setGlobalHider(new GlobalHider());
         await vectorTile.initialize();
         await vectorTile.activate();
         sandbox.stub(vectorTile.tileProvider, 'loader').resolves([
@@ -216,6 +220,7 @@ describe('VectorTileLayer', () => {
             baseLevels: [0],
           },
         });
+        vectorTile.setGlobalHider(new GlobalHider());
         await vectorTile.initialize();
         await vectorTile.activate();
         sandbox.stub(vectorTile.tileProvider, 'loader').resolves([
@@ -233,6 +238,36 @@ describe('VectorTileLayer', () => {
         const styles = hiddenFeature.getStyleFunction()(hiddenFeature, 0);
         expect(styles).to.not.be.empty;
       });
+    });
+  });
+
+  describe('setting globalHider', () => {
+    let sandbox;
+    /** @type {import("@vcmap/core").VectorTileLayer} */
+    let vectorTile;
+
+    before(() => {
+      sandbox = sinon.createSandbox();
+      vectorTile = new VectorTileLayer({
+        tileProvider: {
+          type: 'URLTemplateTileProvider',
+          url: 'myURL',
+          baseLevels: [0],
+        },
+      });
+    });
+
+    after(() => {
+      sandbox.restore();
+      vectorTile.globalHider.showObjects(['globallyHiddenFeature']);
+      vectorTile.destroy();
+    });
+
+    it('should update featureVisibility listeners', () => {
+      const updateTilesSpy = sandbox.spy(vectorTile, 'updateTiles');
+      vectorTile.setGlobalHider(new GlobalHider());
+      vectorTile.globalHider.hideObjects(['globallyHiddenFeature']);
+      expect(updateTilesSpy).to.have.been.called;
     });
   });
 

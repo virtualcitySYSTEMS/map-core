@@ -1,7 +1,6 @@
 import OLVectorLayer from 'ol/layer/Vector.js';
 import LayerOpenlayersImpl from './layerOpenlayersImpl.js';
 import { synchronizeFeatureVisibilityWithSource } from '../vectorHelpers.js';
-import { getGlobalHider } from '../globalHider.js';
 
 /**
  * represents a specific vectorlayer for openlayers.
@@ -35,7 +34,8 @@ class VectorOpenlayersImpl extends LayerOpenlayersImpl {
     this._featureVisibilityListeners = [];
     /** @type {import("ol/layer/Vector").default<import("ol/source").Vector<import("ol/geom/Geometry").default>>|null} */
     this.olLayer = null;
-    this.globalHider = getGlobalHider();
+    /** @type {import("@vcmap/core").GlobalHider} */
+    this.globalHider = options.globalHider;
   }
 
   /**

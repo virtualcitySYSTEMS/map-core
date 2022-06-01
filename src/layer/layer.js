@@ -1,13 +1,13 @@
-import { check } from '@vcsuite/check';
+import { check, checkMaybe } from '@vcsuite/check';
 import { parseBoolean, parseInteger } from '@vcsuite/parsers';
 import VcsObject from '../vcsObject.js';
 import Extent from '../util/extent.js';
-import { getGlobalHider } from './globalHider.js';
 import { vcsLayerName } from './layerSymbols.js';
 import LayerState from './layerState.js';
 import VcsEvent from '../vcsEvent.js';
 import { getCurrentLocale, getLocaleChangedEvent } from '../util/locale.js';
 import { layerClassRegistry } from '../classRegistry.js';
+import GlobalHider from './globalHider.js';
 
 /**
  * @typedef {Object} GenericFeature
@@ -213,11 +213,18 @@ class Layer extends VcsObject {
     /**
      * array of object Ids which should be hidden within the context of the layers layerCollection, if this layer is active
      * @type {Array.<string>}
+     * @private
      * @api
      */
-    this.hiddenObjectIds = Array.isArray(options.hiddenObjectIds) ?
+    this._hiddenObjectIds = Array.isArray(options.hiddenObjectIds) ?
       options.hiddenObjectIds :
       defaultOptions.hiddenObjectIds;
+
+    /**
+     * @type {import("@vcmap/core").GlobalHider|null}
+     * @private
+     */
+    this._globalHider = null;
 
     /**
      * @type {Array<string|symbol>}
@@ -233,9 +240,6 @@ class Layer extends VcsObject {
      * @api
      */
     this.exclusiveGroupsChanged = new VcsEvent();
-
-    /** @type {import("@vcmap/core").GlobalHider} */
-    this.globalHider = getGlobalHider();
 
     /**
      * @type {CopyrightOptions|undefined}
@@ -350,6 +354,42 @@ class Layer extends VcsObject {
       this._url = url;
       this.reload();
     }
+  }
+
+  /**
+   * @type {Array<string>}
+   */
+  get hiddenObjectIds() { return this._hiddenObjectIds; }
+
+  /**
+   * @param {Array<string>} hiddenObjectIds
+   */
+  set hiddenObjectIds(hiddenObjectIds) {
+    check(hiddenObjectIds, [String]);
+
+    if (this._globalHider && this.active) {
+      this._globalHider.hideObjects(hiddenObjectIds);
+    }
+    this._hiddenObjectIds = hiddenObjectIds;
+  }
+
+
+  /**
+   * @type {import("@vcmap/core").GlobalHider|null}
+   * @readonly
+   */
+  get globalHider() { return this._globalHider; }
+
+  /**
+   * @param {import("@vcmap/core").GlobalHider} globalHider
+   */
+  setGlobalHider(globalHider) {
+    checkMaybe(globalHider, GlobalHider);
+
+    if (globalHider && this.active) {
+      globalHider.hideObjects(this.hiddenObjectIds);
+    }
+    this._globalHider = globalHider;
   }
 
   /**
@@ -616,7 +656,9 @@ class Layer extends VcsObject {
     if (this._state !== LayerState.LOADING) {
       return;
     }
-    this.globalHider.hideObjects(this.hiddenObjectIds);
+    if (this._globalHider) {
+      this._globalHider.hideObjects(this.hiddenObjectIds);
+    }
     this._state = LayerState.ACTIVE;
     try {
       this.stateChanged.raiseEvent(LayerState.ACTIVE);
@@ -666,7 +708,9 @@ class Layer extends VcsObject {
           impl.deactivate();
         }
       });
-      this.globalHider.showObjects(this.hiddenObjectIds);
+      if (this._globalHider) {
+        this._globalHider.showObjects(this.hiddenObjectIds);
+      }
       this._state = LayerState.INACTIVE;
       try {
         this.stateChanged.raiseEvent(LayerState.INACTIVE);

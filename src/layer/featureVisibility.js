@@ -231,6 +231,9 @@ export function synchronizeFeatureVisibility(source, destination) {
 }
 
 /**
+ * FeatureVisibility handles the visibility and highlighting of features of a specific {@link FeatureLayer} or {@link DataSourceLayer}
+ * and its {@link FeatureLayerImplementation} resp. {@link DataSourceCesiumImpl}.
+ * The visibility is being synchronized with the {@link GlobalHider}.
  * @class
  */
 class FeatureVisibility {

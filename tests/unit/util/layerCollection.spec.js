@@ -1,4 +1,4 @@
-import { SplitDirection } from '@vcmap/cesium';
+import { Entity, SplitDirection } from '@vcmap/cesium';
 import Layer from '../../../src/layer/layer.js';
 import LayerCollection from '../../../src/util/layerCollection.js';
 import { getCesiumEventSpy } from '../helpers/cesiumHelpers.js';
@@ -6,6 +6,7 @@ import OpenStreetMapLayer from '../../../src/layer/openStreetMapLayer.js';
 import { setOpenlayersMap } from '../helpers/openlayersHelpers.js';
 import VcsApp from '../../../src/vcsApp.js';
 import { getLayerIndex, makeOverrideCollection } from '../../../index.js';
+import GlobalHider from '../../../src/layer/globalHider.js';
 
 describe('LayerCollection', () => {
   let layer1;
@@ -48,6 +49,17 @@ describe('LayerCollection', () => {
       const asArray = [...layerCollection];
       expect(asArray).to.have.ordered.members([layer1, layer4, layer3, layer2]);
       layerCollection.destroy();
+    });
+  });
+
+  describe('setting globalHider', () => {
+    it('should update the globalHider on all layers of the collection', () => {
+      const layerCollection = LayerCollection.from([layer1]);
+      const newGlobalHider = new GlobalHider();
+      const entity = new Entity();
+      newGlobalHider.addFeature('test', entity);
+      layerCollection.globalHider = newGlobalHider;
+      expect(layer1.globalHider.hasFeature('test', entity)).to.be.true;
     });
   });
 
@@ -142,6 +154,11 @@ describe('LayerCollection', () => {
       layer5.zIndex = 1;
       expect(layerCollection.indexOf(layer5)).to.equal(3); // if layer6 did have zIndex of 5, zIndex 1 would have index 1 and not 3
     });
+
+    it('should set globalHider on added layer', () => {
+      layerCollection.add(layer1);
+      expect(layer1.globalHider).to.be.equal(layerCollection.globalHider);
+    });
   });
 
   describe('removing layers', () => {
@@ -175,6 +192,10 @@ describe('LayerCollection', () => {
       layerCollection.remove(layer2);
       layerCollection.add(layer2);
       expect(layerCollection.indexOf(layer2)).to.equal(2);
+    });
+
+    it('should unset globalHider on removed layer', () => {
+      expect(layer1.globalHider).to.be.null;
     });
   });
 

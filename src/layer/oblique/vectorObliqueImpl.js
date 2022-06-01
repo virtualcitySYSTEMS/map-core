@@ -5,7 +5,6 @@ import Feature from 'ol/Feature.js';
 
 import { mercatorProjection } from '../../util/projection.js';
 import { mercatorGeometryToImageGeometry, imageGeometryToMercatorGeometry, getPolygonizedGeometry, setNewGeometry } from './obliqueHelpers.js';
-import { getGlobalHider } from '../globalHider.js';
 import {
   actuallyIsCircle,
   alreadyTransformedToImage,
@@ -74,7 +73,7 @@ class VectorObliqueImpl extends LayerObliqueImpl {
     /**
      * @type {import("@vcmap/core").GlobalHider}
      */
-    this.globalHider = getGlobalHider();
+    this.globalHider = options.globalHider;
     /**
      * @type {import("ol/source").Vector<import("ol/geom/Geometry").default>}
      */

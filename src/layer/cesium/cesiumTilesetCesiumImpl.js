@@ -11,7 +11,6 @@ import {
 import { createEmpty } from 'ol/extent.js';
 import LayerImplementation from '../layerImplementation.js';
 import { vcsLayerName } from '../layerSymbols.js';
-import { getGlobalHider } from '../globalHider.js';
 import { originalStyle, updateOriginalStyle } from '../featureVisibility.js';
 import Projection from '../../util/projection.js';
 import { circleFromCenterRadius } from '../../util/geometryHelpers.js';
@@ -84,6 +83,8 @@ class CesiumTilesetCesiumImpl extends LayerImplementation {
     this.style = options.style;
     /** @type {import("@vcmap/core").FeatureVisibility} */
     this.featureVisibility = options.featureVisibility;
+    /** @type {import("@vcmap/core").GlobalHider} */
+    this.globalHider = options.globalHider;
     /** @type {Array<CesiumTilesetTilesetProperties>} */
     this.tilesetProperties = options.tilesetProperties;
     /** @type {import("@vcmap/cesium").Matrix4} */
@@ -105,7 +106,6 @@ class CesiumTilesetCesiumImpl extends LayerImplementation {
      * @private
      */
     this._styleLastUpdated = Date.now();
-    this.globalHider = getGlobalHider();
   }
 
   /**

@@ -21,6 +21,7 @@ import { layerClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {LayerImplementationOptions} FeatureLayerImplementationOptions
+ * @property {GlobalHider} globalHider
  * @property {FeatureVisibility} featureVisibility
  * @property {import("@vcmap/core").StyleItem} style
  * @api
@@ -140,9 +141,18 @@ class FeatureLayer extends Layer {
   getImplementationOptions() {
     return {
       ...super.getImplementationOptions(),
+      globalHider: this.globalHider,
       featureVisibility: this.featureVisibility,
       style: this.style,
     };
+  }
+
+  /**
+   * @param {import("@vcmap/core").GlobalHider} globalHider
+   */
+  setGlobalHider(globalHider) {
+    super.setGlobalHider(globalHider);
+    this.reload();
   }
 
   /**

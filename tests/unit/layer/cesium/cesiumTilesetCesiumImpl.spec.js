@@ -17,6 +17,7 @@ import { createTilesetServer, setCesiumMap, createDummyCesium3DTileFeature } fro
 import VectorStyleItem from '../../../../src/style/vectorStyleItem.js';
 import { cesiumTilesetLastUpdated } from '../../../../src/layer/cesium/cesiumTilesetCesiumImpl.js';
 import { vcsLayerName } from '../../../../src/layer/layerSymbols.js';
+import GlobalHider from '../../../../src/layer/globalHider.js';
 
 describe('CesiumTilesetCesiumImpl', () => {
   let sandbox;
@@ -39,6 +40,7 @@ describe('CesiumTilesetCesiumImpl', () => {
   beforeEach(() => {
     createTilesetServer(sandbox);
     cesiumTileset = new CesiumTilesetLayer({ url: 'http://test.com/tileset.json' });
+    cesiumTileset.setGlobalHider(new GlobalHider());
     [cesiumTilesetCesium] = cesiumTileset.getImplementationsForMap(cesiumMap);
   });
 

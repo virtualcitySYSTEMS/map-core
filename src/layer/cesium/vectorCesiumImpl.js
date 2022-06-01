@@ -5,7 +5,6 @@ import convert from '../../util/featureconverter/convert.js';
 import VectorContext from './vectorContext.js';
 import { vcsLayerName } from '../layerSymbols.js';
 import LayerImplementation from '../layerImplementation.js';
-import { getGlobalHider } from '../globalHider.js';
 import { synchronizeFeatureVisibilityWithSource } from '../vectorHelpers.js';
 
 /**
@@ -71,7 +70,8 @@ class VectorCesiumImpl extends LayerImplementation {
      * @private
      */
     this._scene = null;
-    this.globalHider = getGlobalHider();
+    /** @type {import("@vcmap/core").GlobalHider} */
+    this.globalHider = options.globalHider;
   }
 
   /**

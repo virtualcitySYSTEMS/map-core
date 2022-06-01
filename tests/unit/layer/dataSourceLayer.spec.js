@@ -1,21 +1,42 @@
 import { Entity as CesiumEntity } from '@vcmap/cesium';
-import { getGlobalHider } from '../../../src/layer/globalHider.js';
 import DataSourceLayer from '../../../src/layer/dataSourceLayer.js';
 import { vcsLayerName } from '../../../src/layer/layerSymbols.js';
+import GlobalHider from '../../../src/layer/globalHider.js';
 
 describe('DataSourceLayer', () => {
+  describe('setting globalHider', () => {
+    /** @type {import("@vcmap/core").DataSourceLayer} */
+    let dataSourceLayer;
+
+    before(() => {
+      dataSourceLayer = new DataSourceLayer({});
+    });
+
+    after(() => {
+      dataSourceLayer.destroy();
+    });
+
+    it('should update featureVisibility listeners', () => {
+      dataSourceLayer.setGlobalHider(new GlobalHider());
+      const entity = new CesiumEntity({});
+      const id = dataSourceLayer.addEntity(entity);
+      dataSourceLayer.globalHider.hideObjects([id]);
+      expect(dataSourceLayer.globalHider.hasFeature(id, entity)).to.be.true;
+    });
+  });
+
   describe('handling of feature visibility', () => {
     /** @type {import("@vcmap/core").DataSourceLayer} */
     let layer;
 
     before(async () => {
       layer = new DataSourceLayer({});
+      layer.setGlobalHider(new GlobalHider());
       await layer.initialize();
     });
 
     after(() => {
       layer.destroy();
-      getGlobalHider().destroy();
     });
 
     it('should add entities to the feature visibility', () => {
@@ -38,18 +59,18 @@ describe('DataSourceLayer', () => {
     it('should hide globally hidden entities', () => {
       const entity = new CesiumEntity({});
       const id = layer.addEntity(entity);
-      getGlobalHider().hideObjects([id]);
-      expect(getGlobalHider().hasFeature(id, entity)).to.be.true;
+      layer.globalHider.hideObjects([id]);
+      expect(layer.globalHider.hasFeature(id, entity)).to.be.true;
     });
 
     it('should hide globally hidden entities on adding them', () => {
       const id = 'globalTest';
-      getGlobalHider().hideObjects([id]);
+      layer.globalHider.hideObjects([id]);
       const entity = new CesiumEntity({
         id,
       });
       layer.addEntity(entity);
-      expect(getGlobalHider().hasFeature(id, entity)).to.be.true;
+      expect(layer.globalHider.hasFeature(id, entity)).to.be.true;
     });
   });
 
@@ -59,6 +80,7 @@ describe('DataSourceLayer', () => {
 
     before(async () => {
       layer = new DataSourceLayer({});
+      layer.setGlobalHider(new GlobalHider());
       await layer.initialize();
     });
 

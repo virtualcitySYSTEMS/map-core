@@ -1,7 +1,9 @@
+import { check } from '@vcsuite/check';
 import IndexedCollection from './indexedCollection.js';
 import ExclusiveManager from './exclusiveManager.js';
 import LayerState from '../layer/layerState.js';
 import VcsEvent from '../vcsEvent.js';
+import GlobalHider from '../layer/globalHider.js';
 
 /**
  * A collection of layers. Manages rendering order and layer exclusivity. Emits state changes for convenience. Passed to
@@ -61,6 +63,13 @@ class LayerCollection extends IndexedCollection {
      * @api
      */
     this.exclusiveManager = new ExclusiveManager();
+
+    /**
+     * The global hider for this collection.
+     * @type {GlobalHider}
+     * @private
+     */
+    this._globalHider = new GlobalHider();
   }
 
   /**
@@ -71,6 +80,27 @@ class LayerCollection extends IndexedCollection {
    * @readonly
    */
   get zIndexSymbol() { return this._zIndexSymbol; }
+
+  /**
+   * The current global hider
+   * @type {GlobalHider}
+   */
+  get globalHider() {
+    return this._globalHider;
+  }
+
+  /**
+   * Set global hider for these maps.
+   * @param {GlobalHider} globalHider
+   */
+  set globalHider(globalHider) {
+    check(globalHider, GlobalHider);
+
+    this._globalHider = globalHider;
+    this._array.forEach((layer) => {
+      layer.setGlobalHider(this._globalHider);
+    });
+  }
 
   /**
    * @param {import("@vcmap/core").Layer} layer
@@ -171,6 +201,7 @@ class LayerCollection extends IndexedCollection {
     const insertedAt = super.add(layer, usedIndex);
     if (insertedAt != null) {
       layer[this._zIndexSymbol] = layer.zIndex;
+      layer.setGlobalHider(this._globalHider);
       this._ensureLocalZIndex(layer);
       this._listenToLayerEvents(layer);
       this.exclusiveManager.registerLayer(layer);
@@ -189,6 +220,7 @@ class LayerCollection extends IndexedCollection {
       delete this._layerEventListeners[layer.name];
     }
     delete layer[this._zIndexSymbol];
+    layer.setGlobalHider(null);
     this.exclusiveManager.unregisterLayer(layer);
     return super._remove(layer);
   }
@@ -213,6 +245,7 @@ class LayerCollection extends IndexedCollection {
 
     this._layerEventListeners = {};
     this.exclusiveManager.destroy();
+    this._globalHider.destroy();
     super.destroy();
   }
 }
