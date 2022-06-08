@@ -11,11 +11,12 @@ import Collection from '../util/collection.js';
 import { getStyleOrDefaultStyle } from '../style/styleFactory.js';
 import { categoryClassRegistry, getObjectFromClassRegistry } from '../classRegistry.js';
 import OverrideClassRegistry from '../overrideClassRegistry.js';
+import VcsEvent from '../vcsEvent.js';
 
 /**
  * @typedef {VcsObjectOptions} CategoryOptions
  * @property {string|Object<string, string>} [title]
- * @property {string} [classRegistryName=''] - the class registry name on the current app to provide classes for this category. if provided, parseItems will deserialize using this class registry. See: {@link getObjectFromClassRegistry}.
+ * @property {string|symbol} [classRegistryName] - the class registry name on the current app to provide classes for this category. if provided, parseItems will deserialize using this class registry. See: {@link getObjectFromClassRegistry}.
  * @property {string|undefined} [featureProperty]
  * @property {VectorOptions} [layerOptions={}]
  * @property {Array<Object>} [items] - items are not evaluated by the constructor but passed to parseItem during deserialization.
@@ -56,7 +57,7 @@ function assignLayerOptions(layer, options) {
  * @param {T} value
  * @param {T} defaultOption
  * @param {T=} option
- * @template {number|boolean|string} T
+ * @template {number|boolean|string|symbol} T
  * @returns {void}
  */
 function checkMergeOptionOverride(key, value, defaultOption, option) {
@@ -113,7 +114,7 @@ class Category extends VcsObject {
      */
     this._featureProperty = options.featureProperty || defaultOptions.featureProperty;
     /**
-     * @type {string}
+     * @type {string|symbol}
      * @private
      */
     this._classRegistryName = options.classRegistryName;
@@ -137,6 +138,12 @@ class Category extends VcsObject {
      */
     this._keyProperty = options.keyProperty || defaultOptions.keyProperty;
     /**
+     * Event raised if the collection is reset
+     * @type {VcsEvent<void>}
+     * @private
+     */
+    this._collectionChanged = new VcsEvent();
+    /**
      * @type {Array<function():void>}
      * @private
      */
@@ -155,7 +162,7 @@ class Category extends VcsObject {
   }
 
   /**
-   * @type {string}
+   * @type {string|symbol}
    * @readonly
    */
   get classRegistryName() { return this._classRegistryName; }
@@ -168,6 +175,13 @@ class Category extends VcsObject {
   get collection() {
     return this._collection;
   }
+
+  /**
+   * Event raised if the collection is reset
+   * @type {VcsEvent<void>}
+   * @readonly
+   */
+  get collectionChanged() { return this._collectionChanged; }
 
   /**
    * Returns the layer of this collection. Caution, do not use the layer API to add or remove items.
@@ -268,7 +282,7 @@ class Category extends VcsObject {
   }
 
   /**
-   * When setting the category, it MUST use the same unqiueKey as the previous collection (default is "name").
+   * When setting the category, it MUST use the same uniqueKey as the previous collection (default is "name").
    * All items in the current collection _will be destroyed_ and the current collection will be destroyed. The category will take
    * complete ownership of the collection and destroy it once the category is destroyed. The collection will
    * be turned into an {@see OverrideCollection}.
@@ -314,6 +328,7 @@ class Category extends VcsObject {
       // @ts-ignore
       this._collectionListeners.push(this._collection.moved.addEventListener(this._itemMoved.bind(this)));
     }
+    this.collectionChanged.raiseEvent();
   }
 
   /**
@@ -393,6 +408,7 @@ class Category extends VcsObject {
     this._contextRemovedListener();
     this._contextRemovedListener = () => {};
     destroyCollection(this._collection);
+    this._collectionChanged.destroy();
     this._app = null;
   }
 }

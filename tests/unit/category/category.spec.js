@@ -119,6 +119,16 @@ describe('Category', () => {
     it('should fail, if the keyProperty of the collection does not match the categories key property', () => {
       const category = new Category({ keyProperty: 'foo' });
       expect(() => { category.setCollection(new IndexedCollection()); }).to.throw;
+      category.destroy();
+    });
+
+    it('should raise the category changed event', () => {
+      const spy = sinon.spy();
+      const category = new Category({});
+      category.collectionChanged.addEventListener(spy);
+      category.setCollection(new IndexedCollection());
+      expect(spy).to.have.been.called;
+      category.destroy();
     });
   });
 
