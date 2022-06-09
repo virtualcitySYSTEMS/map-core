@@ -115,9 +115,9 @@ class VectorCesiumImpl extends LayerImplementation {
   async initialize() {
     if (!this.initialized) {
       this._scene = this.map.getScene();
-      await this._setupContext(this.map);
       this._addListeners();
       this._addFeatures(this.source.getFeatures());
+      await this._setupContext(this.map);
     }
     await super.initialize();
   }

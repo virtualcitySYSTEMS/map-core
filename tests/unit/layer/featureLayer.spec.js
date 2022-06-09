@@ -26,7 +26,7 @@ describe('FeatureLayer', () => {
 
   describe('setting globalHider', () => {
     it('should reload layer to update featureVisibility listeners on impl', () => {
-      const reloadSpy = sandbox.spy(featureLayer, 'reload');
+      const reloadSpy = sandbox.spy(featureLayer, 'forceRedraw');
       featureLayer.setGlobalHider(new GlobalHider());
       expect(reloadSpy).to.have.been.called;
     });

@@ -152,7 +152,7 @@ class FeatureLayer extends Layer {
    */
   setGlobalHider(globalHider) {
     super.setGlobalHider(globalHider);
-    this.reload();
+    this.forceRedraw();
   }
 
   /**
