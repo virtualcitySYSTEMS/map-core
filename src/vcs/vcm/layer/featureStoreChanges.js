@@ -106,10 +106,11 @@ class FeatureStoreChanges extends VcsObject {
   /**
    * commits the changes to the provided url. url should contain accessTokens and point to a featureStore layers bulk operation endpoint
    * @param {string} url
+   * @param {Object<string, string>=} headers
    * @returns {Promise}
    * @api
    */
-  commitChanges(url) {
+  commitChanges(url, headers = null) {
     const actions = [];
     this._addedFeatures.forEach((f) => {
       const feature = writeGeoJSONFeature(f, { writeStyle: true });
@@ -152,7 +153,11 @@ class FeatureStoreChanges extends VcsObject {
     /** @type {Promise} */
     let promise = Promise.resolve();
     if (actions.length) {
-      promise = axios.post(url.toString(), actions.map(a => ({ action: a.action, feature: a.feature })))
+      promise = axios.post(
+        url.toString(),
+        actions.map(a => ({ action: a.action, feature: a.feature })),
+        { headers },
+      )
         .then(({ data }) => {
           const failures = data.failedActions.map(({ index, error }) => {
             const action = actions[index];
