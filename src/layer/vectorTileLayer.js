@@ -138,6 +138,9 @@ class VectorTileLayer extends FeatureLayer {
     this.tileProvider = options.tileProvider instanceof TileProvider ? // XXX this now throws if not passing in a tileProvider.
       options.tileProvider :
       getObjectFromClassRegistry(tileProviderClassRegistry, options.tileProvider);
+    if (this.tileProvider) {
+      this.tileProvider.locale = this.locale;
+    }
 
     /**
      * @type {number|undefined}
@@ -175,6 +178,25 @@ class VectorTileLayer extends FeatureLayer {
      * @private
      */
     this._styleZIndex = 0;
+  }
+
+  /**
+   * returns the currently set locale. Can be used to provide locale specific URLs.
+   * @type {string}
+   */
+  get locale() {
+    return super.locale;
+  }
+
+  /**
+   * sets the locale and reloads the layer the if the URL is a locale aware Object.
+   * @param {string} value
+   */
+  set locale(value) {
+    if (this.tileProvider) {
+      this.tileProvider.locale = super.locale;
+    }
+    super.locale = value;
   }
 
   /**

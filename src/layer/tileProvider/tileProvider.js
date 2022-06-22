@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import RBush from 'rbush';
+import { check } from '@vcsuite/check';
 import { Rectangle, Math as CesiumMath, WebMercatorTilingScheme, Cartographic } from '@vcmap/cesium';
 import LRUCache from 'ol/structs/LRUCache.js';
 import { buffer, createOrUpdateFromCoordinate } from 'ol/extent.js';
@@ -176,6 +177,12 @@ class TileProvider extends VcsObject {
      * @api
      */
     this.tileLoadedEvent = new VcsEvent();
+
+    /**
+     * @type {string}
+     * @private
+     */
+    this._locale = 'en';
   }
 
   /**
@@ -187,6 +194,26 @@ class TileProvider extends VcsObject {
   get tileCacheSize() {
     return this._tileCacheSize;
   }
+
+
+  /**
+   * @type {string}
+   */
+  get locale() {
+    return this._locale;
+  }
+
+  /**
+   * sets the locale and reloads the layer the if the URL is a locale aware Object.
+   * @param {string} value
+   */
+  set locale(value) {
+    check(value, String);
+    if (this._locale !== value) {
+      this._locale = value;
+    }
+  }
+
 
   /**
    * @param {number} value

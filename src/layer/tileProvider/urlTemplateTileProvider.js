@@ -1,7 +1,6 @@
 import { Math as CesiumMath, Rectangle } from '@vcmap/cesium';
 import { parseGeoJSON } from '../geojsonHelpers.js';
 import TileProvider from './tileProvider.js';
-import { getCurrentLocale } from '../../util/locale.js';
 import { requestJson } from '../../util/fetch.js';
 import { tileProviderClassRegistry } from '../../classRegistry.js';
 
@@ -14,16 +13,17 @@ import { tileProviderClassRegistry } from '../../classRegistry.js';
 /**
  * replaces {x}, {y}, {z} with the x, y, z tiling coordinates
  * replaces {minx}, {miny}, {maxx}, {maxy} with extent of the tile if tilingExtent is provided
- * replaces {locale} with the current locale
+ * replaces {locale} with the given locale
  *
  * @param {string} url
  * @param {number} x
  * @param {number} y
  * @param {number} z
  * @param {import("@vcmap/cesium").Rectangle=} tilingExtent
+ * @param {string=} locale
  * @returns {string}
  */
-export function getURL(url, x, y, z, tilingExtent) {
+export function getURL(url, x, y, z, tilingExtent, locale = 'en') {
   let replacedURL = url;
   if (tilingExtent) {
     const southwest = Rectangle.southwest(tilingExtent);
@@ -43,7 +43,7 @@ export function getURL(url, x, y, z, tilingExtent) {
     .replace(/\{x\}/, String(x))
     .replace(/\{y\}/, String(y))
     .replace(/\{z\}/, String(z))
-    .replace(/\{locale\}/, getCurrentLocale());
+    .replace(/\{locale\}/, locale);
   return replacedURL;
 }
 
@@ -87,6 +87,27 @@ class URLTemplateTileProvider extends TileProvider {
     this.url = options.url || defaultOptions.url;
   }
 
+
+  /**
+   * @type {string}
+   */
+  get locale() {
+    return super.locale;
+  }
+
+  /**
+   * sets the locale and clears the Cache if the URL is a locale aware Object.
+   * @param {string} value
+   */
+  set locale(value) {
+    if (this.locale !== value) {
+      super.locale = value;
+      if (this.url.includes('{locale}')) {
+        this.clearCache();
+      }
+    }
+  }
+
   /**
    * @inheritDoc
    * @param {number} x
@@ -96,7 +117,7 @@ class URLTemplateTileProvider extends TileProvider {
    */
   async loader(x, y, z) {
     const rectangle = this.tilingScheme.tileXYToRectangle(x, y, z);
-    const url = getURL(this.url, x, y, z, rectangle);
+    const url = getURL(this.url, x, y, z, rectangle, this.locale);
     const data = await requestJson(url);
     const { features } = parseGeoJSON(data, { dynamicStyle: true });
     return features;

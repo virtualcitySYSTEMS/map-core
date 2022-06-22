@@ -33,6 +33,7 @@ import ClassRegistry, {
   styleClassRegistry,
   tileProviderClassRegistry,
 } from './classRegistry.js';
+import { detectBrowserLocale } from './util/locale.js';
 
 /**
  * @returns {import("@vcsuite/logger").Logger}
@@ -70,6 +71,20 @@ class VcsApp {
     const getDynamicContextId = () => this._dynamicContext.id;
 
     /**
+     * represents the current Locale.
+     * @type {string}
+     * @private
+     */
+    this._locale = detectBrowserLocale();
+
+    /**
+     * fires if the current Locale changes.
+     * @type {VcsEvent<string>}
+     * @private
+     */
+    this._localeChanged = new VcsEvent();
+
+    /**
      * @type {OverrideClassRegistry<VcsMap>}
      * @private
      */
@@ -104,6 +119,8 @@ class VcsApp {
       Layer,
       getLayerIndex,
     );
+    this._layers.locale = this.locale;
+
     /**
      * @type {OverrideCollection<import("@vcmap/core").ObliqueCollection>}
      * @private
@@ -184,6 +201,7 @@ class VcsApp {
      * @private
      */
     this._featureProviderClassRegsitry = new OverrideClassRegistry(featureProviderClassRegistry);
+
     vcsApps.set(this._id, this);
   }
 
@@ -192,6 +210,40 @@ class VcsApp {
    * @readonly
    */
   get id() { return this._id; }
+
+  /**
+   * @returns {string}
+   */
+  get locale() {
+    return this._locale;
+  }
+
+  /**
+   * sets the locale of the vcsApp and the linked layerCollection.
+   * This will trigger the localeChanged Event.
+   * @param {string} value new locale with 2 letters
+   */
+  set locale(value) {
+    check(value, String);
+
+    if (value.length !== 2) {
+      getLogger().warning('Provide a valid locale, for example "en", "de" with max. 2 letters');
+      return;
+    }
+    if (this._locale !== value) {
+      this._locale = value;
+      this.layers.locale = value;
+      this._localeChanged.raiseEvent(value);
+    }
+  }
+
+  /**
+   * @type {VcsEvent<string>}
+   * @readonly
+   */
+  get localeChanged() {
+    return this._localeChanged;
+  }
 
   /**
    * @type {OverrideMapCollection}
@@ -454,6 +506,7 @@ class VcsApp {
     this._featureProviderClassRegsitry.destroy();
     this.destroyed.raiseEvent();
     this.destroyed.destroy();
+    this.localeChanged.destroy();
   }
 }
 

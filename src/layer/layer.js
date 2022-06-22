@@ -5,7 +5,6 @@ import Extent from '../util/extent.js';
 import { vcsLayerName } from './layerSymbols.js';
 import LayerState from './layerState.js';
 import VcsEvent from '../vcsEvent.js';
-import { getCurrentLocale, getLocaleChangedEvent } from '../util/locale.js';
 import { layerClassRegistry } from '../classRegistry.js';
 import GlobalHider from './globalHider.js';
 
@@ -187,15 +186,9 @@ class Layer extends VcsObject {
 
     /**
      * @type {string|Object}
-     * @private
+     * @protected
      */
     this._url = options.url;
-
-    /**
-     * @type {Function}
-     * @private
-     */
-    this._localeChangedListener = null;
 
     /**
      * @type {number}
@@ -271,6 +264,12 @@ class Layer extends VcsObject {
      * @api
      */
     this.featureProvider = undefined;
+
+    /**
+     * @type {string}
+     * @private
+     */
+    this._locale = 'en';
   }
 
   /**
@@ -335,9 +334,8 @@ class Layer extends VcsObject {
       if (typeof this._url === 'string') {
         return this._url;
       }
-      const locale = getCurrentLocale();
-      if (this._url[locale]) {
-        return this._url[locale];
+      if (this._url[this._locale]) {
+        return this._url[this._locale];
       }
       return Object.values(this._url)[0];
     }
@@ -446,6 +444,29 @@ class Layer extends VcsObject {
   }
 
   /**
+   * returns the currently set locale. Can be used to provide locale specific URLs.
+   * @type {string}
+   */
+  get locale() {
+    return this._locale;
+  }
+
+  /**
+   * sets the locale and reloads the layer the if the URL is a locale aware Object.
+   * @param {string} value
+   */
+  set locale(value) {
+    check(value, String);
+
+    if (this._locale !== value) {
+      this._locale = value;
+      if (this._url && typeof this._url === 'object' && this._url[this._locale]) {
+        this.reload();
+      }
+    }
+  }
+
+  /**
    * creates an array of layer implementations for the given map.
    * @param {import("@vcmap/core").VcsMap} map Map
    * @returns {Array<import("@vcmap/core").LayerImplementation<import("@vcmap/core").VcsMap>>} return the specific implementation
@@ -541,24 +562,10 @@ class Layer extends VcsObject {
   }
 
   /**
-   * recreates the implementations on locale change, if the url of this layer is an Object
-   * @param {string} locale
-   * @private
-   */
-  _handleLocaleChange(locale) {
-    if (this._url && typeof this._url === 'object' && this._url[locale]) {
-      this.reload();
-    }
-  }
-
-  /**
    * initializes the layer, can be used to defer loading
    * @returns {Promise<void>}
    */
   initialize() {
-    if (!this.initialized) {
-      this._localeChangedListener = getLocaleChangedEvent().addEventListener(this._handleLocaleChange.bind(this));
-    }
     this._initialized = true;
     return Promise.resolve();
   }
@@ -779,10 +786,6 @@ class Layer extends VcsObject {
         impl.destroy();
       });
 
-    if (this._localeChangedListener) {
-      this._localeChangedListener();
-      this._localeChangedListener = null;
-    }
     this._initialized = false;
     this._implementations.clear();
     this.stateChanged.destroy();

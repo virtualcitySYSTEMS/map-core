@@ -4,7 +4,6 @@ import LayerState from '../../../src/layer/layerState.js';
 import LayerImplementation from '../../../src/layer/layerImplementation.js';
 import { getCesiumEventSpy } from '../helpers/cesiumHelpers.js';
 import { getOpenlayersMap, setOpenlayersMap } from '../helpers/openlayersHelpers.js';
-import { setCurrentLocale } from '../../../src/util/locale.js';
 import Extent from '../../../src/util/extent.js';
 import GlobalHider from '../../../src/layer/globalHider.js';
 
@@ -303,7 +302,7 @@ describe('Layer', () => {
 
     it('should translate an Object', () => {
       AL.url = { en: 'Test' };
-      setCurrentLocale('en');
+      AL.locale = 'en';
       expect(AL.url).to.equal('Test');
     });
 
@@ -422,14 +421,14 @@ describe('Layer', () => {
 
   describe('reacting to localeChanged', () => {
     beforeEach(() => {
-      setCurrentLocale('de');
+      AL.locale = 'de';
       AL.url = { de: 'tst', en: 'test' };
     });
 
     describe('without any implementations', () => {
       it('should do nothing, if there are no implementations', async () => {
         await AL.initialize();
-        setCurrentLocale('en');
+        AL.locale = 'en';
         expect(AL.getImplementations()).to.be.empty;
       });
     });
@@ -441,14 +440,9 @@ describe('Layer', () => {
         [impl] = AL.getImplementationsForMap(map);
       });
 
-      it('should do nothing, if not initialized', () => {
-        setCurrentLocale('en');
-        expect(AL.getImplementations()).to.have.members([impl]);
-      });
-
       it('should do nothing, if the language is not part of URL', async () => {
         await AL.initialize();
-        setCurrentLocale('cz');
+        AL.locale = 'cz';
         expect(AL.getImplementations()).to.have.members([impl]);
       });
 
@@ -456,14 +450,14 @@ describe('Layer', () => {
         AL.url = 'test';
         [impl] = AL.getImplementationsForMap(map);
         await AL.activate();
-        setCurrentLocale('en');
+        AL.locale = 'en';
         expect(AL.getImplementations()).to.have.members([impl]);
       });
 
       it('should force a redraw if initialized', async () => {
         const spy = sandbox.spy(AL, 'forceRedraw');
         await AL.initialize();
-        setCurrentLocale('en');
+        AL.locale = 'en';
         expect(spy).to.have.been.called;
       });
     });

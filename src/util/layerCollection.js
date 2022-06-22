@@ -70,6 +70,15 @@ class LayerCollection extends IndexedCollection {
      * @private
      */
     this._globalHider = new GlobalHider();
+
+    /**
+     * Locale for this layerCollection, will be synchronized by the vcsApp, if part of an vcsApp.
+     * This Locale will be set on all Member Layers. On setting the Locale this will trigger a reload of all locale
+     * aware layers.
+     * @type {string}
+     * @private
+     */
+    this._locale = 'en';
   }
 
   /**
@@ -100,6 +109,27 @@ class LayerCollection extends IndexedCollection {
     this._array.forEach((layer) => {
       layer.setGlobalHider(this._globalHider);
     });
+  }
+
+  /**
+   * @type {string}
+   */
+  get locale() {
+    return this._locale;
+  }
+
+  /**
+   * @param {string} value
+   */
+  set locale(value) {
+    check(value, String);
+
+    if (this._locale !== value) {
+      this._locale = value;
+      [...this].forEach((layer) => {
+        layer.locale = this._locale;
+      });
+    }
   }
 
   /**
@@ -188,6 +218,8 @@ class LayerCollection extends IndexedCollection {
 
   /**
    * Adds a layer to the collection. Can optionally be passed an index at which to insert the layer.
+   * The layer locale will be set to the same locale of the layerCollection. This will trigger a forceRedraw
+   * of the layer if the layer locale is different and the layer is locale aware.
    * @param {import("@vcmap/core").Layer} layer
    * @param {number=} index
    * @returns {number|null} returns the layer index or null, if the layers name is not unique
@@ -202,6 +234,7 @@ class LayerCollection extends IndexedCollection {
     if (insertedAt != null) {
       layer[this._zIndexSymbol] = layer.zIndex;
       layer.setGlobalHider(this._globalHider);
+      layer.locale = this.locale;
       this._ensureLocalZIndex(layer);
       this._listenToLayerEvents(layer);
       this.exclusiveManager.registerLayer(layer);

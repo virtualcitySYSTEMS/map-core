@@ -351,4 +351,31 @@ describe('vcsApp', () => {
       });
     });
   });
+
+  describe('locale', () => {
+    /** @type {VcsApp} */
+    let app;
+
+    before(() => {
+      app = new VcsApp();
+    });
+
+    after(() => {
+      app.destroy();
+    });
+
+    it('should synchronize the app.locale with the layerCollection locale', () => {
+      expect(app.locale).to.be.equal(app.layers.locale);
+    });
+
+    it('should synchronize changes to the app.locale with the layerCollection', () => {
+      app.locale = 'fr';
+      expect(app.layers.locale).to.be.equal('fr');
+    });
+
+    it('should not change the locale if the locale is not valid', () => {
+      app.locale = 'test';
+      expect(app.locale).to.not.be.equal('test');
+    });
+  });
 });

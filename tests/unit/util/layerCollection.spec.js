@@ -372,4 +372,28 @@ describe('LayerCollection', () => {
       });
     });
   });
+
+  describe('locale handling', () => {
+    let layerCollection;
+
+    beforeEach(() => {
+      layerCollection = new LayerCollection();
+      layerCollection.locale = 'fr';
+    });
+    afterEach(() => {
+      layerCollection.destroy();
+    });
+
+    it('should set the collection locale to the layer on add', () => {
+      layerCollection.add(layer1);
+      expect(layer1.locale).to.be.equal('fr');
+    });
+
+    it('should synchronize the layerCollection locale on the layers', () => {
+      layerCollection.add(layer1);
+      expect(layer1.locale).to.be.equal('fr');
+      layerCollection.locale = 'de';
+      expect(layer1.locale).to.be.equal('de');
+    });
+  });
 });

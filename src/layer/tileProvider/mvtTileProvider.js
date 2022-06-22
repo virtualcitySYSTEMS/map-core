@@ -63,6 +63,26 @@ class MVTTileProvider extends TileProvider {
   }
 
   /**
+   * @type {string}
+   */
+  get locale() {
+    return super.locale;
+  }
+
+  /**
+   * sets the locale and clears the Cache if the URL is a locale aware Object.
+   * @param {string} value
+   */
+  set locale(value) {
+    if (this.locale !== value) {
+      super.locale = value;
+      if (this.url.includes('{locale}')) {
+        this.clearCache();
+      }
+    }
+  }
+
+  /**
    * @inheritDoc
    * @param {number} x
    * @param {number} y
@@ -71,7 +91,7 @@ class MVTTileProvider extends TileProvider {
    */
   async loader(x, y, z) {
     const rectangle = this.tilingScheme.tileXYToRectangle(x, y, z);
-    const url = getURL(this.url, x, y, z, rectangle);
+    const url = getURL(this.url, x, y, z, rectangle, this.locale);
     const extent = rectangleToExtent(rectangle);
     const center = getCenter(extent);
     const data = await requestArrayBuffer(url);

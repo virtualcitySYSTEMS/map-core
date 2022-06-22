@@ -1,7 +1,6 @@
 import nock from 'nock';
 import Feature from 'ol/Feature.js';
 import URLTemplateTileProvider, { getURL } from '../../../../src/layer/tileProvider/urlTemplateTileProvider.js';
-import { setCurrentLocale } from '../../../../src/util/locale.js';
 import Projection from '../../../../src/util/projection.js';
 
 describe('URLTemplateTileProvider', () => {
@@ -78,8 +77,7 @@ describe('URLTemplateTileProvider', () => {
     });
 
     it('should replace locale placeholder in requested url', async () => {
-      setCurrentLocale('nl');
-      url = getURL('{locale}', ...xyz, tileProvider.tilingScheme.tileXYToRectangle(...xyz));
+      url = getURL('{locale}', ...xyz, tileProvider.tilingScheme.tileXYToRectangle(...xyz), 'nl');
       expect(url).to.contain('nl');
     });
 
