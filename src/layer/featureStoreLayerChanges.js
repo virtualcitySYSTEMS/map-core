@@ -163,15 +163,17 @@ class FeatureStoreLayerChanges extends VcsObject {
   /**
    * commits the changes to the provided url. url should contain accessTokens and point to a featureStore layers bulk operation endpoint
    * @param {string} url
+   * @param {Object<string, string>=} headers
    * @returns {Promise<void>}
    * @api
    */
-  async commitChanges(url) {
+  async commitChanges(url, headers = {}) {
     const actions = createCommitActions(this._addedFeatures, this._editedFeatures, this._removedFeatures);
     if (actions.length > 0) {
       const data = await requestJson(url.toString(), {
         method: 'POST',
         headers: {
+          ...headers,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(actions.map(a => ({ action: a.action, feature: a.feature }))),
