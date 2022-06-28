@@ -95,17 +95,18 @@ describe('override collections', () => {
 
     describe('if an object with said name exists', () => {
       let item;
+      let existingItem;
       let collection;
-      let replacedItemName = null;
+      let replacementEvent = null;
       let returnedItem;
 
       before(() => {
         collection = makeOverrideCollection(new Collection(), getContextId, null, option => new VcsObject(option));
-        collection.replaced.addEventListener((i) => {
-          replacedItemName = i.name;
+        collection.replaced.addEventListener((event) => {
+          replacementEvent = event;
         });
 
-        const existingItem = new VcsObject({ name: 'foo' });
+        existingItem = new VcsObject({ name: 'foo' });
         existingItem[contextIdSymbol] = 'foo';
         collection.add(existingItem);
 
@@ -135,8 +136,9 @@ describe('override collections', () => {
         expect(fooShadowMap[0]).to.have.property(contextIdSymbol, 'foo');
       });
 
-      it('should call the replaced event with the replacement object', () => {
-        expect(replacedItemName).to.equal('foo');
+      it('should call the replaced event with the new and old object', () => {
+        expect(replacementEvent.new).to.equal(item);
+        expect(replacementEvent.old).to.equal(existingItem);
       });
     });
 
@@ -183,7 +185,8 @@ describe('override collections', () => {
     describe('if the collection is an indexed collection', () => {
       let item;
       let collection;
-      let replacedItemName = null;
+      let existingItem;
+      let replacedEvent = null;
       let returnedItem;
       let currentIndex;
 
@@ -194,15 +197,15 @@ describe('override collections', () => {
           null,
           option => new VcsObject(option),
         );
-        collection.replaced.addEventListener((i) => {
-          replacedItemName = i.name;
+        collection.replaced.addEventListener((event) => {
+          replacedEvent = event;
         });
 
         const placeHolderBefore = new VcsObject({ name: 'placeHolderBefore' });
         placeHolderBefore[contextIdSymbol] = 'foo';
         collection.add(placeHolderBefore);
 
-        const existingItem = new VcsObject({ name: 'foo' });
+        existingItem = new VcsObject({ name: 'foo' });
         existingItem[contextIdSymbol] = 'foo';
         collection.add(existingItem);
 
@@ -243,7 +246,8 @@ describe('override collections', () => {
       });
 
       it('should call the replaced event with the replacement object', () => {
-        expect(replacedItemName).to.equal('foo');
+        expect(replacedEvent.new).to.equal(item);
+        expect(replacedEvent.old).to.equal(existingItem);
       });
     });
 

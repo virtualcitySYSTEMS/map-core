@@ -71,6 +71,12 @@ class VcsApp {
     const getDynamicContextId = () => this._dynamicContext.id;
 
     /**
+     * @type {VcsEvent<string>}
+     * @private
+     */
+    this._dynamicContextIdChanged = new VcsEvent();
+
+    /**
      * represents the current Locale.
      * @type {string}
      * @private
@@ -288,6 +294,14 @@ class VcsApp {
   get destroyed() { return this._destroyed; }
 
   /**
+   * @type {Array<Context>}
+   * @readonly
+   */
+  get contexts() {
+    return [...this._contexts];
+  }
+
+  /**
    * @returns {VcsEvent<Context>}
    * @readonly
    */
@@ -304,6 +318,12 @@ class VcsApp {
    * @readonly
    */
   get dynamicContextId() { return this._dynamicContext.id; }
+
+  /**
+   * @type {VcsEvent<string>}
+   * @readonly
+   */
+  get dynamicContextIdChanged() { return this._dynamicContextIdChanged; }
 
   /**
    * @type {OverrideClassRegistry<VcsMap>}
@@ -447,6 +467,27 @@ class VcsApp {
   }
 
   /**
+   * sets the given context as the dynamic
+   * @param {Context} context
+   */
+  setDynamicContext(context) {
+    if (!this._contexts.has(context)) {
+      throw new Error('Context is not managed by this app, call add(context) before');
+    }
+    if (this._dynamicContext !== context) {
+      this._dynamicContext = context;
+      this.dynamicContextIdChanged.raiseEvent(this.dynamicContextId);
+    }
+  }
+
+  /**
+   * resets the dynamic Context to the "defaultDynamicContext"
+   */
+  resetDynamicContext() {
+    this.setDynamicContext(this._defaultDynamicContext);
+  }
+
+  /**
    * @param {string} contextId
    * @returns {Promise<void>}
    * @protected
@@ -507,6 +548,7 @@ class VcsApp {
     this.destroyed.raiseEvent();
     this.destroyed.destroy();
     this.localeChanged.destroy();
+    this.dynamicContextIdChanged.destroy();
   }
 }
 

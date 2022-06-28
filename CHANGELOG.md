@@ -1,4 +1,7 @@
 ###   5.0.0-rc.next
+- changed OverrideCollection `replaced` event to { new:T, old:T }
+- added an API to vcsApp to control the dynamic Context `setDynamicContext`, `resetDynamicContext` and `dynamicContextIdChanged`
+- added an API to vcsApp to access the added context `app.contexts`
 - removed DateTime Helpers
 - added vcsApp.locale 
 - added vcsApp.localeChanged

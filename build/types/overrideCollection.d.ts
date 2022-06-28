@@ -1,7 +1,12 @@
 import { Collection, VcsEvent, LayerCollection, Layer, MapCollection, VcsMap } from '@vcmap/core';
 
+export interface ReplacedEvent<T extends any> {
+    new: T,
+    old: T,
+}
+
 export interface OverrideCollectionInterface<T extends any> {
-    replaced: VcsEvent<T>;
+    replaced: VcsEvent<ReplacedEvent<T>>;
     shadowMap: Map<string, object[]>;
     override: (item: T) => T;
     parseItems: (items: object[], contextId: string) => Promise<void>;
@@ -10,7 +15,7 @@ export interface OverrideCollectionInterface<T extends any> {
 }
 
 export class OverrideCollection<T extends any> extends Collection<T> implements OverrideCollectionInterface<T> {
-    replaced: VcsEvent<T>;
+    replaced: VcsEvent<ReplacedEvent<T>>;
     shadowMap: Map<string, object[]>;
     override: (item: T) => T;
     parseItems: (items: object[], contextId: string) => Promise<void>;
@@ -19,7 +24,7 @@ export class OverrideCollection<T extends any> extends Collection<T> implements 
 }
 
 export class OverrideLayerCollection extends LayerCollection implements OverrideCollectionInterface<Layer> {
-    replaced: VcsEvent<Layer>;
+    replaced: VcsEvent<ReplacedEvent<Layer>>;
     shadowMap: Map<string, object[]>;
     override: (item: Layer) => Layer;
     parseItems: (items: object[], contextId: string) => Promise<void>;
@@ -28,7 +33,7 @@ export class OverrideLayerCollection extends LayerCollection implements Override
 }
 
 export class OverrideMapCollection extends MapCollection implements OverrideCollectionInterface<VcsMap> {
-    replaced: VcsEvent<VcsMap>;
+    replaced: VcsEvent<ReplacedEvent<VcsMap>>;
     shadowMap: Map<string, object[]>;
     override: (item: VcsMap) => VcsMap;
     parseItems: (items: object[], contextId: string) => Promise<void>;

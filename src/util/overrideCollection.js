@@ -91,18 +91,18 @@ function makeOverrideCollection(
       }
       const shadowsArray = overrideCollection.shadowMap.get(itemId);
       const serializedShadow = serialize(shadow);
-      // @ts-ignore
-      if (shadow.destroy) {
-        // @ts-ignore
-        shadow.destroy();
-      }
       serializedShadow[contextIdSymbol] = shadow[contextIdSymbol];
       shadowsArray.push(serializedShadow);
     }
 
     const usedIndex = shadow ? getShadowIndex(shadow, item, index) : null;
     if (shadow) {
-      overrideCollection.replaced.raiseEvent(item);
+      overrideCollection.replaced.raiseEvent({ old: shadow, new: item });
+      // @ts-ignore
+      if (shadow.destroy) {
+        // @ts-ignore
+        shadow.destroy();
+      }
     }
     // @ts-ignore
     if (overrideCollection.add(item, usedIndex) >= 0) {
@@ -186,7 +186,7 @@ function makeOverrideCollection(
   };
 
   /**
-   * @type {VcsEvent<T>}
+   * @type {VcsEvent<ReplacedEvent<T>>}
    */
   overrideCollection.replaced = new VcsEvent();
 
