@@ -41,6 +41,7 @@ const geojsonFormats = [
   'application/geojson',
   'application/json',
   'application/vnd.geo+json',
+  'application/geo+json',
 ];
 
 /**
