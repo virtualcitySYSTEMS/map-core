@@ -1,7 +1,7 @@
 import { Cartographic, Cartesian3, Math as CesiumMath } from '@vcmap/cesium';
 import AbstractInteraction from './abstractInteraction.js';
 import Projection, { mercatorProjection } from '../util/projection.js';
-import { EventType, ModificationKeyType } from './interactionType.js';
+import { EventType, ModificationKeyType, PointerKeyType } from './interactionType.js';
 import { transformFromImage } from '../oblique/helpers.js';
 
 /**
@@ -10,7 +10,7 @@ import { transformFromImage } from '../oblique/helpers.js';
  */
 class CoordinateAtPixel extends AbstractInteraction {
   constructor() {
-    super(EventType.ALL, ModificationKeyType.ALL);
+    super(EventType.ALL, ModificationKeyType.ALL, PointerKeyType.ALL);
     /**
      * @type {import("@vcmap/cesium").Cartographic}
      * @private

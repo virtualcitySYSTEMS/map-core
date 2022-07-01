@@ -7,3 +7,4 @@
 - added vcsApp.localeChanged
 - removed Global Module scoped locale/localeChanged Event
 - refactored layer/layerCollection/tileprovider to passThrough the locale
+- all persistent interactions have `PointerKeyType.ALL` as their default pointer key type.

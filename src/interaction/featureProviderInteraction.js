@@ -1,5 +1,5 @@
 import AbstractInteraction from './abstractInteraction.js';
-import { EventType, ModificationKeyType } from './interactionType.js';
+import { EventType, ModificationKeyType, PointerKeyType } from './interactionType.js';
 
 /**
  * @class
@@ -7,7 +7,7 @@ import { EventType, ModificationKeyType } from './interactionType.js';
  */
 class FeatureProviderInteraction extends AbstractInteraction {
   constructor() {
-    super(EventType.CLICK, ModificationKeyType.ALL);
+    super(EventType.CLICK, ModificationKeyType.ALL, PointerKeyType.ALL);
 
     this.setActive();
   }

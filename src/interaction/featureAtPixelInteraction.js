@@ -2,7 +2,7 @@ import { Cartographic, Cartesian3, Math as CesiumMath, Cesium3DTileFeature, Cesi
 
 import AbstractInteraction from './abstractInteraction.js';
 import Projection from '../util/projection.js';
-import { EventType, ModificationKeyType } from './interactionType.js';
+import { EventType, ModificationKeyType, PointerKeyType } from './interactionType.js';
 import { vcsLayerName } from '../layer/layerSymbols.js';
 import { originalFeatureSymbol } from '../layer/vectorSymbols.js';
 
@@ -12,7 +12,7 @@ import { originalFeatureSymbol } from '../layer/vectorSymbols.js';
  */
 class FeatureAtPixelInteraction extends AbstractInteraction {
   constructor() {
-    super(EventType.ALL ^ EventType.MOVE, ModificationKeyType.ALL);
+    super(EventType.ALL ^ EventType.MOVE, ModificationKeyType.ALL, PointerKeyType.ALL);
     /**
      * @type {EventType|number}
      * @private
