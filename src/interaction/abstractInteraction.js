@@ -11,7 +11,7 @@ import { EventType, ModificationKeyType, PointerKeyType } from './interactionTyp
 /**
  * @typedef {MapEvent} InteractionEvent
  * @property {EventType} type
- * @property {undefined|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature} feature - a potential feature at said location
+ * @property {undefined|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature|import("@vcmap/cesium").Entity} feature - a potential feature at said location
  * @property {boolean|undefined} stopPropagation - if set to true, the event chain is interrupted
  * @property {undefined|ObliqueParameters} obliqueParameters - additional parameters from oblique if obliquemode is active
  * @property {import("@vcmap/cesium").Ray|undefined} ray - potential ray

@@ -1,4 +1,11 @@
-import { Cartographic, Cartesian3, Math as CesiumMath, Cesium3DTileFeature, Cesium3DTilePointFeature } from '@vcmap/cesium';
+import {
+  Cartographic,
+  Cartesian3,
+  Math as CesiumMath,
+  Cesium3DTileFeature,
+  Cesium3DTilePointFeature,
+  Entity,
+} from '@vcmap/cesium';
 
 import AbstractInteraction from './abstractInteraction.js';
 import Projection from '../util/projection.js';
@@ -241,11 +248,8 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
         }
       } else if (object.id && object.id.olFeature) { // cluster size === 1
         event.feature = object.id.olFeature;
-      } else if (object.id && object.id[vcsLayerName]) { // entity
-        event.feature = object;
-        event.feature[vcsLayerName] = object.id[vcsLayerName];
-      } else {
-        event.feature = object;
+      } else if (object.id && object.id[vcsLayerName] && object.id instanceof Entity) { // entity
+        event.feature = object.id;
       }
 
       if (!(event.type & this.pickPosition)) {

@@ -8,3 +8,4 @@
 - removed Global Module scoped locale/localeChanged Event
 - refactored layer/layerCollection/tileprovider to passThrough the locale
 - all persistent interactions have `PointerKeyType.ALL` as their default pointer key type.
+- feature at pixel interaction no longer defaults to attaching unknown objects from cesium datasources as features.

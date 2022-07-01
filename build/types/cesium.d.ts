@@ -20,6 +20,9 @@ declare module "@vcmap/cesium" {
     interface Entity {
         allowPicking?: boolean;
         attributes?: Object;
+        olFeature?: import("ol").Feature<import("ol/geom").Geometry>;
+        getId():number|string;
+        getProperty(string): any;
     }
 
     interface Primitive {
@@ -47,10 +50,6 @@ declare module "@vcmap/cesium" {
     }
 
     interface Billboard {
-        olFeature?: import("ol").Feature<import("ol/geom").Geometry>;
-    }
-
-    interface Entity {
         olFeature?: import("ol").Feature<import("ol/geom").Geometry>;
     }
 

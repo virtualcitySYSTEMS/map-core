@@ -44,6 +44,7 @@ function createIndex(fileNames) {
     'import \'./src/cesium/cesium3DTilePointFeature.js\';',
     'import \'./src/cesium/cesium3DTileFeature.js\';',
     'import \'./src/cesium/cesiumVcsCameraPrimitive.js\';',
+    'import \'./src/cesium/entity.js\';',
   );
   imports.push('');
   exports.push('');
