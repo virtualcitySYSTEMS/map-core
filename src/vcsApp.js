@@ -48,6 +48,11 @@ function getLogger() {
 const vcsApps = new Map();
 
 /**
+ * @type {string}
+ */
+export const defaultDynamicContextId = '_defaultDynamicContext';
+
+/**
  * @class
  */
 class VcsApp {
@@ -61,7 +66,7 @@ class VcsApp {
      * @type {Context}
      * @private
      */
-    this._defaultDynamicContext = new Context({ id: '_defaultDynamicContext' });
+    this._defaultDynamicContext = new Context({ id: defaultDynamicContextId });
     /**
      * @type {Context}
      * @private
