@@ -20,13 +20,31 @@ import ContextLimits from '@vcmap/cesium/Source/Renderer/ContextLimits.js';
 import CesiumTilesetLayer from '../../../src/layer/cesiumTilesetLayer.js';
 import DataSourceLayer from '../../../src/layer/dataSourceLayer.js';
 import CesiumMap from '../../../src/map/cesiumMap.js';
-import importJSON from './importJSON.js';
 
-const defaultTileset = await importJSON('./tests/data/buildings/tileset.json');
-defaultTileset.root.children = [];
-defaultTileset.properties = {};
-
-export const tilesetJSON = defaultTileset;
+export const tilesetJSON = {
+  asset: {
+    version: '0.0',
+    tilesetVersion: '54443336650',
+  },
+  geometricError: 48.828125,
+  root: {
+    boundingVolume: {
+      region: [
+        0.233260953,
+        0.916361773,
+        0.233644448,
+        0.91655352,
+        0.0,
+        140.3,
+      ],
+    },
+    geometricError: 24.4140625,
+    refine: 'ADD',
+    children: [],
+  },
+  properties: {},
+  extras: { _3DTILESDIFFUSE: true },
+};
 
 /**
  * @param {Sinon.SinonSandbox} sandbox
