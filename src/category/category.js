@@ -15,11 +15,10 @@ import VcsEvent from '../vcsEvent.js';
 
 /**
  * @typedef {VcsObjectOptions} CategoryOptions
- * @property {string|Object<string, string>} [title]
+ * @property {string} [title]
  * @property {string|symbol} [classRegistryName] - the class registry name on the current app to provide classes for this category. if provided, parseItems will deserialize using this class registry. See: {@link getObjectFromClassRegistry}.
  * @property {string|undefined} [featureProperty]
  * @property {VectorOptions} [layerOptions={}]
- * @property {Array<Object>} [items] - items are not evaluated by the constructor but passed to parseItem during deserialization.
  * @property {string} [keyProperty=name]
  */
 
@@ -89,7 +88,6 @@ class Category extends VcsObject {
       classRegistryName: undefined,
       layerOptions: {},
       keyProperty: 'name',
-      items: [],
     };
   }
 
@@ -100,7 +98,7 @@ class Category extends VcsObject {
     super(options);
     const defaultOptions = Category.getDefaultConfig();
     /**
-     * @type {string|Object<string, string>}
+     * @type {string}
      */
     this.title = options.title || this.name;
     /**
@@ -381,7 +379,7 @@ class Category extends VcsObject {
 
   /**
    * @param {string} contextId
-   * @returns {CategoryOptions|null}
+   * @returns {{ name: string, items: Array<Object>}|null}
    */
   serializeForContext(contextId) {
     if (this._collection.size === 0) {
@@ -394,6 +392,34 @@ class Category extends VcsObject {
     };
   }
 
+  /**
+   * @returns {CategoryOptions}
+   */
+  toJSON() {
+    const config = /** @type {CategoryOptions} */ (super.toJSON());
+
+    const defaultOptions = Category.getDefaultConfig();
+    if (this.title !== this.name) {
+      config.title = this.title;
+    }
+    if (this._featureProperty !== defaultOptions.featureProperty) {
+      config.featureProperty = this._featureProperty;
+    }
+    if (this._classRegistryName !== defaultOptions.classRegistryName) {
+      config.classRegistryName = this._classRegistryName;
+    }
+    if (Object.keys(this._layerOptions).length > 0) {
+      config.layerOptions = { ...this._layerOptions };
+    }
+    if (this._keyProperty !== defaultOptions.keyProperty) {
+      config.keyProperty = this._keyProperty;
+    }
+    return config;
+  }
+
+  /**
+   * @inheritDoc
+   */
   destroy() {
     super.destroy();
     if (this._app && this._layer) {
@@ -415,3 +441,4 @@ class Category extends VcsObject {
 
 export default Category;
 categoryClassRegistry.registerClass(Category.className, Category);
+

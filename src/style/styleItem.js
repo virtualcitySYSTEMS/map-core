@@ -7,13 +7,6 @@ import VcsEvent from '../vcsEvent.js';
 import { styleClassRegistry } from '../classRegistry.js';
 
 /**
- * @typedef {Object} StyleItemLegendEntry
- * @property {string} color - the color to display
- * @property {string|Object<string, string>} name - the name to display for the given color
- * @api
- */
-
-/**
  * @typedef {VcsObjectOptions} StyleItemOptions
  * @property {number} [colorBlendMode=import("@vcmap/cesium").Cesium3DTileColorBlendMode.HIGHLIGHT] - colorBlendMode for 3D Tiledataset @see https://cesiumjs.org/import("@vcmap/cesium").Build/Documentation/Cesium3DTileColorBlendMode.html
  * @api

@@ -57,6 +57,9 @@ class AppBackedCategory extends Category {
     return super._deserializeItem(config);
   }
 
+  /**
+   * @param {import("@vcmap/core").VcsApp} app
+   */
   setApp(app) {
     super.setApp(app);
     this.setCollection(this._app[this._collectionName]);
@@ -69,6 +72,16 @@ class AppBackedCategory extends Category {
   // eslint-disable-next-line class-methods-use-this,no-unused-vars
   serializeForContext(contextId) {
     return null;
+  }
+
+  /**
+   * @returns {AppBackedCategoryOptions}
+   */
+  toJSON() {
+    const config = /** @type {AppBackedCategoryOptions} */ (super.toJSON());
+    delete config.classRegistryName;
+    config.collectionName = this._collectionName;
+    return config;
   }
 }
 

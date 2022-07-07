@@ -68,7 +68,8 @@
     "node_modules",
     "coverage",
     "index.js",
-    "*.d.ts"
+    "*.d.ts",
+    "docs"
   ],
   "dependencies": {
     "@types/rbush": "^3.0.0",

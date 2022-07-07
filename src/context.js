@@ -1,4 +1,4 @@
-import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
+import { v5 as uuidv5 } from 'uuid';
 
 /**
  * @typedef {Object} VcsAppConfig
@@ -17,7 +17,7 @@ import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
 /**
  * @type {string}
  */
-const uuidNamespace = uuidv4();
+const uniqueNamespace = '9c27cc2d-552f-4637-9194-09329ed4c1dc';
 
 /**
  * @class
@@ -36,7 +36,7 @@ class Context {
      * @type {string}
      * @private
      */
-    this._checkSum = uuidv5(JSON.stringify(config), uuidNamespace);
+    this._checkSum = uuidv5(JSON.stringify(config), uniqueNamespace);
     /**
      * @type {string}
      * @private

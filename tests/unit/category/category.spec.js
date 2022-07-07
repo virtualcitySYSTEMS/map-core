@@ -476,4 +476,57 @@ describe('Category', () => {
       });
     });
   });
+
+  describe('serializing a category', () => {
+    describe('of a default object', () => {
+      it('should return an object with type and name for default layers', () => {
+        const config = new Category({}).toJSON();
+        expect(config).to.have.all.keys('name', 'type');
+      });
+    });
+
+    describe('of a configured layer', () => {
+      let inputConfig;
+      let outputConfig;
+      let configureCategory;
+
+      before(() => {
+        inputConfig = {
+          title: 'foo',
+          featureProperty: 'feature',
+          classRegistryName: 'layers',
+          layerOptions: {
+            name: 'foo',
+          },
+          keyProperty: 'bar',
+        };
+        configureCategory = new Category(inputConfig);
+        outputConfig = configureCategory.toJSON();
+      });
+
+      after(() => {
+        configureCategory.destroy();
+      });
+
+      it('should configure title', () => {
+        expect(outputConfig).to.have.property('title', inputConfig.title);
+      });
+
+      it('should configure featureProperty', () => {
+        expect(outputConfig).to.have.property('featureProperty', inputConfig.featureProperty);
+      });
+
+      it('should configure classRegistryName', () => {
+        expect(outputConfig).to.have.property('classRegistryName', inputConfig.classRegistryName);
+      });
+
+      it('should configure keyProperty', () => {
+        expect(outputConfig).to.have.property('keyProperty', inputConfig.keyProperty);
+      });
+
+      it('should configure layerOptions', () => {
+        expect(outputConfig).to.have.property('layerOptions').and.to.eql(inputConfig.layerOptions);
+      });
+    });
+  });
 });
