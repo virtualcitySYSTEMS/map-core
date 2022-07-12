@@ -107,9 +107,13 @@ export function getLabelOptions(feature, style, heightReference, vectorPropertie
 
     options.heightReference = heightReference;
 
-    const offsetX = textStyle.getOffsetX() || 0;
-    const offsetY = textStyle.getOffsetY() || 0;
+    const offsetX = textStyle.getOffsetX() ?? 0;
+    const offsetY = textStyle.getOffsetY() ?? 0;
     options.pixelOffset = new Cartesian2(offsetX, offsetY);
+    const scale = textStyle.getScale();
+    if (scale) {
+      options.scale = Array.isArray(scale) ? scale[0] : scale;
+    }
 
     const font = textStyle.getFont();
     if (font) {
@@ -171,7 +175,6 @@ export function getLabelOptions(feature, style, heightReference, vectorPropertie
     options.verticalOrigin = verticalOrigin;
     options.eyeOffset = vectorProperties.getEyeOffset(feature);
     options.scaleByDistance = vectorProperties.getScaleByDistance(feature);
-
     return options;
   }
   return null;

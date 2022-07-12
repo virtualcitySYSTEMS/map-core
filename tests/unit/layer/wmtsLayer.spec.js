@@ -21,7 +21,7 @@ describe('WMTSLayer', () => {
           numberOfLevelZeroTilesX: 2,
           format: 'png',
           layer: 'layer',
-          style: 'style',
+          wmtsStyle: 'style',
           tileMatrixPrefix: 'tileMatrixPrefix',
           tileMatrixSetID: 'tileMatrixSetID',
           openlayersOptions: { test: 'test' },
@@ -66,8 +66,8 @@ describe('WMTSLayer', () => {
         expect(outputConfig).to.have.property('layer', inputConfig.layer);
       });
 
-      it('should configure style', () => {
-        expect(outputConfig).to.have.property('style', inputConfig.style);
+      it('should configure wmtsStyle', () => {
+        expect(outputConfig).to.have.property('wmtsStyle', inputConfig.wmtsStyle);
       });
 
       it('should configure tileMatrixPrefix', () => {

@@ -9,3 +9,5 @@
 - refactored layer/layerCollection/tileprovider to passThrough the locale
 - all persistent interactions have `PointerKeyType.ALL` as their default pointer key type.
 - feature at pixel interaction no longer defaults to attaching unknown objects from cesium datasources as features.
+- `WMTWSLayer` `style` configuration was renamed to `wmtsStyle` to no get confused with `FeatureLayer.style`.
+- labels converter by the feature converter respect text `scale`.

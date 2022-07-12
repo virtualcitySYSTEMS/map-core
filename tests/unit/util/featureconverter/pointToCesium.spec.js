@@ -271,6 +271,29 @@ describe('util.featureConverter.pointToCesium', () => {
       expect(labelOptions.verticalOrigin).to.be.equal(VerticalOrigin.TOP);
     });
 
+    it('should set scale', () => {
+      labelOptions = getLabelOptions(feature, new Style({
+        text: new TextStyle({
+          textBaseline: 'top',
+          text: 'test',
+          scale: 2,
+        }),
+      }), heightReference, vectorProperties);
+      expect(labelOptions.scale).to.be.equal(2);
+    });
+
+    it('should set scale to x scale when scale is an array', () => {
+      labelOptions = getLabelOptions(feature, new Style({
+        text: new TextStyle({
+          textBaseline: 'top',
+          text: 'test',
+          scale: [2, 3],
+        }),
+      }), heightReference, vectorProperties);
+      expect(labelOptions.scale).to.be.equal(2);
+    });
+
+
     describe('fill and stroke settings', () => {
       let fillStyle;
       let strokeStyle;

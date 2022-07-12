@@ -10,7 +10,7 @@ import { layerClassRegistry } from '../classRegistry.js';
 /**
  * @typedef {RasterLayerOptions} WMTSOptions
  * @property {string} layer
- * @property {string|undefined} style
+ * @property {string|undefined} [wmtsStyle]
  * @property {string|undefined} format
  * @property {string|undefined} tileMatrixSetID
  * @property {string|undefined} tileMatrixPrefix
@@ -76,7 +76,7 @@ class WMTSLayer extends RasterLayer {
       numberOfLevelZeroTilesX: 1,
       numberOfLevelZeroTilesY: 1,
       layer: '',
-      style: '',
+      wmtsStyle: '',
       format: '',
       tileMatrixPrefix: '',
       tileMatrixSetID: '',
@@ -115,7 +115,7 @@ class WMTSLayer extends RasterLayer {
     this.layer = options.layer || defaultOptions.layer;
 
     /** @type {string} */
-    this.style = options.style || defaultOptions.style;
+    this.wmtsStyle = options.wmtsStyle || defaultOptions.wmtsStyle;
 
     /** @type {string} */
     this.format = options.format || defaultOptions.format;
@@ -144,7 +144,7 @@ class WMTSLayer extends RasterLayer {
     return {
       ...super.getImplementationOptions(),
       layer: this.layer,
-      style: this.style,
+      style: this.wmtsStyle,
       format: this.format,
       tileMatrixSetID: this.tileMatrixSetID,
       tileSize: this.tileSize,
@@ -197,8 +197,8 @@ class WMTSLayer extends RasterLayer {
       config.layer = this.layer;
     }
 
-    if (this.style !== defaultOptions.style) {
-      config.style = this.style;
+    if (this.wmtsStyle !== defaultOptions.wmtsStyle) {
+      config.wmtsStyle = this.wmtsStyle;
     }
 
     if (this.format !== defaultOptions.format) {
