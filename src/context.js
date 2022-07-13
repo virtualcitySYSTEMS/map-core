@@ -21,9 +21,10 @@ import { contextIdSymbol } from './vcsAppContextHelpers.js';
 const uniqueNamespace = '9c27cc2d-552f-4637-9194-09329ed4c1dc';
 
 /**
+ * The id of the volatile context. Objects with this id shall never be serialized.
  * @type {string}
  */
-const volatileContextId = uuidv4();
+export const volatileContextId = uuidv4();
 
 /**
  * This marks an object as "volatile". This ensures, that an object added to the {@see VcsApp}
