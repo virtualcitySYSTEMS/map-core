@@ -11,3 +11,5 @@
 - feature at pixel interaction no longer defaults to attaching unknown objects from cesium datasources as features.
 - `WMTWSLayer` `style` configuration was renamed to `wmtsStyle` to no get confused with `FeatureLayer.style`.
 - labels converter by the feature converter respect text `scale`.
+- adds a `markVolatile` function to ensure objects are never serialized into a context.
+- exports a `maxZIndex` constant to use for always rendering layers on top.

@@ -1,4 +1,5 @@
-import { v5 as uuidv5 } from 'uuid';
+import { v5 as uuidv5, v4 as uuidv4 } from 'uuid';
+import { contextIdSymbol } from './vcsAppContextHelpers.js';
 
 /**
  * @typedef {Object} VcsAppConfig
@@ -18,6 +19,21 @@ import { v5 as uuidv5 } from 'uuid';
  * @type {string}
  */
 const uniqueNamespace = '9c27cc2d-552f-4637-9194-09329ed4c1dc';
+
+/**
+ * @type {string}
+ */
+const volatileContextId = uuidv4();
+
+/**
+ * This marks an object as "volatile". This ensures, that an object added to the {@see VcsApp}
+ * will never be serialized into a context, regardless of the current dynamic context. Typical use case is a scratch layer
+ * which represents temporary features.
+ * @param {import("@vcmap/core").VcsObject|Object} object - the object to mark as volatile
+ */
+export function markVolatile(object) {
+  object[contextIdSymbol] = volatileContextId;
+}
 
 /**
  * @class

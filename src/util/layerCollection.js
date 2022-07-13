@@ -6,6 +6,13 @@ import VcsEvent from '../vcsEvent.js';
 import GlobalHider from '../layer/globalHider.js';
 
 /**
+ * The largest integer zindex which can be safely assigned to a layer (equal to Number.MAX_SAFE_INTEGER)
+ * You should use this to ensure layers are always rendered on top.
+ * @type {number}
+ */
+export const maxZIndex = Number.MAX_SAFE_INTEGER;
+
+/**
  * A collection of layers. Manages rendering order and layer exclusivity. Emits state changes for convenience. Passed to
  * {@link Map} for layers available to said map. Layers must have unique names.
  * @class
