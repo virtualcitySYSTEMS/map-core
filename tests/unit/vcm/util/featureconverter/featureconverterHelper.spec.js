@@ -463,7 +463,6 @@ describe('vcs.vcm.util.featureconverter.vectorLayerHelper', () => {
       expect(heightInfo.perPositionHeight).to.equal(false);
     });
 
-
     it('legacy case storeyNumber + storeyHeight', () => {
       vectorProperties = new VectorProperties({});
       const feature = new Feature({
@@ -583,6 +582,26 @@ describe('vcs.vcm.util.featureconverter.vectorLayerHelper', () => {
       const feature = new Feature({
         olcs_storeysAboveGround: 10,
         olcs_storeyHeightsAboveGround: 10,
+      });
+
+      const heightInfo = getHeightInfo(feature, vectorProperties, [[1, 2, 3]]);
+      expect(heightInfo.perPositionHeight).to.equal(false);
+    });
+
+    it('should set per PositionHeight to false, if ground level is given, even if a z coordinate is given', () => {
+      vectorProperties = new VectorProperties({});
+      const feature = new Feature({
+        olcs_groundLevel: 12,
+      });
+      const heightInfo = getHeightInfo(feature, vectorProperties, [[1, 2, 3]]);
+      expect(heightInfo.perPositionHeight).to.equal(false);
+    });
+
+    it('should set per PositionHeight to false, if ground level is given, even if a z coordinate is given and more than 1 storeys', () => {
+      vectorProperties = new VectorProperties({});
+      const feature = new Feature({
+        olcs_storeysAboveGround: 1,
+        olcs_groundLevel: 12,
       });
 
       const heightInfo = getHeightInfo(feature, vectorProperties, [[1, 2, 3]]);

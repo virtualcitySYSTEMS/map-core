@@ -410,10 +410,12 @@ export function getHeightInfo(feature, vectorProperties, coordinates) {
   const hasZCoordinate = !!coordinates.find(value => value[2]);
 
   const extruded = !!(storeyHeightsAboveGround.length || storeyHeightsBelowGround.length || skirt);
-  const perPositionHeight = hasZCoordinate && (
-    !extruded ||
-    (extruded && ((storeyHeightsAboveGround.length + storeyHeightsBelowGround.length) === 1))
-  );
+  const perPositionHeight = hasZCoordinate &&
+    olcsGroundLevel == null &&
+    (
+      !extruded ||
+      (extruded && ((storeyHeightsAboveGround.length + storeyHeightsBelowGround.length) === 1))
+    );
 
   return {
     extruded,
