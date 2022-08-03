@@ -55,9 +55,10 @@ class InteractionChain extends AbstractInteraction {
    */
   async pipe(event) {
     let pipedEvent = event;
-    const chainLength = this.chain.length;
+    const chain = this.chain.slice();
+    const chainLength = chain.length;
     for (let i = 0; i < chainLength; i++) {
-      const interaction = this.chain[i];
+      const interaction = chain[i];
       if (
         (interaction.active & event.type) &&
         (interaction.modificationKey & event.key) &&

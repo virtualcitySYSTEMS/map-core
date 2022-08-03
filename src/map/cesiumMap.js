@@ -350,6 +350,11 @@ class CesiumMap extends VcsMap {
      * @private
      */
     this._debug = false;
+    /**
+     * @type {null|number}
+     * @private
+     */
+    this._lastEventFrameNumber = null;
   }
 
   /**
@@ -465,9 +470,18 @@ class CesiumMap extends VcsMap {
 
     this._screenSpaceListeners = types.map(({ pointerEvent, pointer, type }) => {
       return mods.map(({ csModifier, vcsModifier }) => {
-        this.screenSpaceEventHandler.setInputAction((csEvent) => {
-          this._raisePointerInteraction(vcsModifier, pointer, pointerEvent, csEvent);
-        }, type, csModifier);
+        const handler = type === ScreenSpaceEventType.MOUSE_MOVE ?
+          (csEvent) => {
+            if (this._cesiumWidget.scene.frameState.frameNumber !== this._lastEventFrameNumber) {
+              this._lastEventFrameNumber = this._cesiumWidget.scene.frameState.frameNumber;
+              this._raisePointerInteraction(vcsModifier, pointer, pointerEvent, csEvent);
+            }
+          } :
+          (csEvent) => {
+            this._raisePointerInteraction(vcsModifier, pointer, pointerEvent, csEvent);
+          };
+
+        this.screenSpaceEventHandler.setInputAction(handler, type, csModifier);
         return () => { this.screenSpaceEventHandler.removeInputAction(type, csModifier); };
       });
     }).flat();

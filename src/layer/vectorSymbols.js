@@ -38,3 +38,11 @@ export const originalFeatureSymbol = Symbol('OriginalFeature');
  * @type {symbol}
  */
 export const actuallyIsCircle = Symbol('ActuallyIsCircle');
+
+/**
+ * Can be attached to features to have the primitives be created sync instead of async. Use this
+ * for faster response times to changes. Do not use this on bulk insertion etc. since sync creation blocks
+ * the rendering thread
+ * @type {symbol}
+ */
+export const createSync = Symbol('createSync');

@@ -19,6 +19,7 @@ import {
 } from '@vcmap/cesium';
 import { parseInteger, parseNumber } from '@vcsuite/parsers';
 import { getCesiumColor } from '../../style/styleHelpers.js';
+import { createSync } from '../../layer/vectorSymbols.js';
 
 /**
  * @param {import("@vcmap/cesium").Scene} scene
@@ -111,6 +112,7 @@ export function createPrimitive(scene, vectorProperties, allowPicking, feature, 
   const options = {
     shadows: ShadowMode.ENABLED,
     allowPicking,
+    asynchronous: !feature[createSync],
   };
   let primitive;
   if (classificationType !== undefined && !groundPrimitive) {
@@ -172,6 +174,7 @@ export function createOutlinePrimitive(scene, vectorProperties, allowPicking, fe
     appearance,
     shadows: ShadowMode.ENABLED,
     allowPicking,
+    asynchronous: !feature[createSync],
   };
   const primitive = new Primitive(options);
   return primitive;
@@ -225,6 +228,7 @@ export function createLinePrimitive(
     appearance,
     shadows: ShadowMode.ENABLED,
     allowPicking,
+    asynchronous: !feature[createSync],
   };
   let primitive;
   if (groundPrimitive) {

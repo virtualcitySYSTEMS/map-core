@@ -12,6 +12,7 @@ await promiseExec('node node_modules/jsdoc/jsdoc.js -c build/tsd/conf.json');
 console.log('rephrasing...');
 const data = await fs.promises.readFile('./index.d.ts');
 const overrideCollectionData = await fs.promises.readFile('./build/types/overrideCollection.d.ts');
+const editorData = await fs.promises.readFile('./build/types/editor.d.ts');
 
 // we need to replace certain _assumptions_ to make this readable by typescript
 const exportData = data.toString()
@@ -30,6 +31,9 @@ const exportData = data.toString()
 const overrideCollection = overrideCollectionData.toString()
   .replace(/import.*;/, '');
 
+const editor = editorData.toString()
+  .replace(/import.*;/, '');
+
 await fs.promises.writeFile(
   './index.d.ts',
   `import olFeature from 'ol/Feature';
@@ -37,6 +41,7 @@ import Geometry from 'ol/geom/Geometry';
 
 ${exportData}
 ${overrideCollection}
+${editor}
 `,
 );
 

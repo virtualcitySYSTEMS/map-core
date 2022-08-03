@@ -133,6 +133,7 @@ declare module "@vcmap/cesium" {
     class FrameState {
         context: Context;
         creditDisplay: import("@vcmap/cesium").CreditDisplay;
+        frameNumber: number;
     }
 
     export namespace PolygonPipeline {

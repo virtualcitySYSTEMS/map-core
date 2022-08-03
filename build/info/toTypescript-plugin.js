@@ -201,6 +201,12 @@ exports.handlers = {
       .replace(/\b(Collection|VcsEvent|LayerCollection|Layer|MapCollection|VcsMap)\b/g, 'core.$1')
       .replace(/export/g, '');
 
+    const editorContent = fs.readFileSync('./build/types/editor.d.ts');
+    const editorTypes = editorContent.toString()
+      .replace(/import.*;/, '')
+      .replace(/\b(Collection|VcsEvent|LayerCollection|Layer|MapCollection|VcsMap)\b/g, 'core.$1')
+      .replace(/export/g, '');
+
     fs.writeFileSync('./build/types/vcs.d.ts', `/**
  * This file is auto generated and to be used for typechecking only.
  * It allows for the use of global _typedefs_ from jsdocs.
@@ -218,6 +224,7 @@ namespace vcs {
 }
 ${joinedTypeDefs}
 ${overrideCollectionTypes}
+${editorTypes}
 }
 `);
   },

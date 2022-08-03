@@ -416,12 +416,7 @@ describe('VectorObliqueImpl', () => {
     });
 
     beforeEach(async () => {
-      const geometry = new Point([
-        100,
-        100,
-        0,
-      ]);
-      geometry[alreadyTransformedToImage] = true; // makes testing easier
+      const geometry = new Point([1489084, 6892790, 0]);
       originalFeature = new Feature({
         geometry,
       });
@@ -441,7 +436,8 @@ describe('VectorObliqueImpl', () => {
       originalFeature.getGeometry().translate(1, 1);
       OVL.updateObliqueGeometry(originalFeature, obliqueFeature);
       clock.tick(debounceTimeout);
-      expect(obliqueFeature.getGeometry().getCoordinates()).to.have.members([101, 101, 0]);
+      expect(obliqueFeature.getGeometry().getCoordinates())
+        .to.have.members([2676.7210834316597, 6483.7722926452625, 0]);
     });
 
     it('should clear a previously updating geometry call, resetting the debounce timer, if called again', () => {
@@ -453,7 +449,7 @@ describe('VectorObliqueImpl', () => {
       originalFeature.getGeometry().translate(1, 1);
       OVL.updateObliqueGeometry(originalFeature, obliqueFeature);
       clock.tick(debounceTimeout);
-      expect(obliqueFeature.getGeometry().getCoordinates()).to.have.members([102, 102, 0]);
+      expect(obliqueFeature.getGeometry().getCoordinates()).to.have.members([2682.558409466228, 6487.261329634799, 0]);
       expect(spy).to.have.been.calledOnce;
     });
 
@@ -465,6 +461,13 @@ describe('VectorObliqueImpl', () => {
       OVL.updateObliqueGeometry(originalFeature, obliqueFeature);
       clock.tick(debounceTimeout);
       expect(spy).to.not.have.been.called;
+    });
+
+    it('should update instantly, if the geometry is already transformed to image', () => {
+      originalFeature.getGeometry()[alreadyTransformedToImage] = true;
+      originalFeature.getGeometry().setCoordinates([1, 1, 0]);
+      OVL.updateObliqueGeometry(originalFeature, obliqueFeature);
+      expect(obliqueFeature.getGeometry().getCoordinates()).to.have.members([1, 1, 0]);
     });
   });
 

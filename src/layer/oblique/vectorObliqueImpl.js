@@ -311,9 +311,13 @@ class VectorObliqueImpl extends LayerObliqueImpl {
     if (this._updatingOblique[id] != null) {
       clearTimeout(/** @type {number} */ (this._updatingOblique[id]));
     }
-    this._updatingOblique[id] = setTimeout(() => {
+    if (originalFeature.getGeometry()[alreadyTransformedToImage]) {
       this._convertToOblique(originalFeature, obliqueFeature);
-    }, 200);
+    } else {
+      this._updatingOblique[id] = setTimeout(() => {
+        this._convertToOblique(originalFeature, obliqueFeature);
+      }, 200);
+    }
   }
 
   /**
@@ -361,7 +365,11 @@ class VectorObliqueImpl extends LayerObliqueImpl {
       const original = f[originalFeatureSymbol];
       if (original) {
         delete original[obliqueGeometry];
-        delete original.getGeometry()[alreadyTransformedToImage];
+        const originalGeometry = original.getGeometry();
+        if (originalGeometry[alreadyTransformedToImage]) {
+          this.updateMercatorGeometry(original, f);
+        }
+        delete originalGeometry[alreadyTransformedToImage];
       }
     });
     this.obliqueSource.clear(true);
