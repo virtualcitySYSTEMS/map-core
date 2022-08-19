@@ -180,4 +180,20 @@ describe('InteractionChain', () => {
           });
       });
   });
+
+  it('should call modifier cahnged on active interactions', () => {
+    const interactionOne = new AbstractInteraction(EventType.CLICK);
+    const interactionTwo = new AbstractInteraction(EventType.CLICK);
+    const interactionChain = new InteractionChain([
+      interactionOne,
+      interactionTwo,
+    ]);
+    interactionOne.setActive(true);
+    interactionTwo.setActive(false);
+    const spyOne = sinon.spy(interactionOne, 'modifierChanged');
+    const spyTwo = sinon.spy(interactionTwo, 'modifierChanged');
+    interactionChain.modifierChanged(ModificationKeyType.NONE);
+    expect(spyOne).to.have.been.called;
+    expect(spyTwo).to.not.have.been.called;
+  });
 });

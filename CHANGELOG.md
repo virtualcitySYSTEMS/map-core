@@ -13,3 +13,5 @@
 - labels converter by the feature converter respect text `scale`.
 - adds a `markVolatile` function to ensure objects are never serialized into a context.
 - exports a `maxZIndex` constant to use for always rendering layers on top.
+- `AbstractInteraction` interface is extended by a `modifierChanged` which will be called,
+if the keyboard modifiers are changed.

@@ -7,7 +7,7 @@ import AbstractInteraction from './abstractInteraction.js';
 import InteractionChain from './interactionChain.js';
 import CoordinateAtPixel from './coordinateAtPixel.js';
 import FeatureAtPixelInteraction from './featureAtPixelInteraction.js';
-import { EventType, PointerEventType } from './interactionType.js';
+import { EventType, ModificationKeyType, PointerEventType } from './interactionType.js';
 import FeatureProviderInteraction from './featureProviderInteraction.js';
 import VcsEvent from '../vcsEvent.js';
 
@@ -106,6 +106,20 @@ class EventHandler {
     };
 
     /**
+     * @type {Map<ModificationKeyType, boolean>}
+     * @private
+     */
+    this._lastKeyEventModifiers = new Map();
+    this._lastKeyEventModifiers.set(ModificationKeyType.SHIFT, false);
+    this._lastKeyEventModifiers.set(ModificationKeyType.ALT, false);
+    this._lastKeyEventModifiers.set(ModificationKeyType.CTRL, false);
+    /**
+     * @type {ModificationKeyType}
+     * @private
+     */
+    this._lastDispatchedModifier = ModificationKeyType.NONE;
+
+    /**
      * @type {null|MapEvent}
      * @private
      */
@@ -146,6 +160,13 @@ class EventHandler {
      * @api
      */
     this.exclusiveAdded = new VcsEvent();
+    /**
+     * @type {function(KeyboardEvent):void}
+     * @private
+     */
+    this._boundKeyListener = this._keyListener.bind(this);
+    window.addEventListener('keydown', this._boundKeyListener);
+    window.addEventListener('keyup', this._boundKeyListener);
   }
 
   /**
@@ -373,6 +394,34 @@ class EventHandler {
   }
 
   /**
+   * @param {KeyboardEvent} event
+   * @private
+   */
+  _keyListener(event) {
+    if (event.key === 'Shift' || event.key === 'Alt') {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    if (
+      this._lastKeyEventModifiers.get(ModificationKeyType.SHIFT) !== event.shiftKey ||
+      this._lastKeyEventModifiers.get(ModificationKeyType.ALT) !== event.altKey ||
+      this._lastKeyEventModifiers.get(ModificationKeyType.CTRL) !== event.ctrlKey
+    ) {
+      this._lastKeyEventModifiers.set(ModificationKeyType.SHIFT, event.shiftKey);
+      this._lastKeyEventModifiers.set(ModificationKeyType.ALT, event.altKey);
+      this._lastKeyEventModifiers.set(ModificationKeyType.CTRL, event.ctrlKey);
+      const modifier = [...this._lastKeyEventModifiers.keys()]
+        .find(k => this._lastKeyEventModifiers.get(k)) || ModificationKeyType.NONE;
+
+      if (modifier !== this._lastDispatchedModifier) {
+        this._interactionChain.modifierChanged(modifier);
+        this._lastDispatchedModifier = modifier;
+      }
+    }
+  }
+
+  /**
    * @param {InteractionEvent} event
    * @param {boolean=} discardOnRunning if true the event will discarded if an eventHandler is already Running
    * @private
@@ -419,6 +468,8 @@ class EventHandler {
     this._featureInteraction.destroy();
     this._featureInteraction = null;
     this._eventQueue = [];
+    window.removeEventListener('keydown', this._boundKeyListener);
+    window.removeEventListener('keyup', this._boundKeyListener);
   }
 }
 

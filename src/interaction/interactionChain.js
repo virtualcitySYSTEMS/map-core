@@ -75,6 +75,15 @@ class InteractionChain extends AbstractInteraction {
   }
 
   /**
+   * @inheritDoc
+   * @param {ModificationKeyType} modifier
+   */
+  modifierChanged(modifier) {
+    this.chain.filter(i => i.active !== EventType.NONE)
+      .forEach((i) => { i.modifierChanged(modifier); });
+  }
+
+  /**
    * You cannot set the modification of an interaction chain, only of its containing interactions
    * @override
    */

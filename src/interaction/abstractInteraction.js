@@ -94,6 +94,13 @@ class AbstractInteraction {
   }
 
   /**
+   * Called when the modifier keys have changed.
+   * @param {ModificationKeyType} modifier
+   */
+  // eslint-disable-next-line class-methods-use-this,no-unused-vars
+  modifierChanged(modifier) {}
+
+  /**
    * Sets the interaction active.
    * Use boolean (true|false) to toggle default behavior.
    * Pass it a bitmask of {@link EventType}

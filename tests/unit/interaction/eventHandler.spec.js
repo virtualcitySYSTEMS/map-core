@@ -3,6 +3,7 @@ import EventHandler from '../../../src/interaction/eventHandler.js';
 import AbstractInteraction from '../../../src/interaction/abstractInteraction.js';
 import InteractionChain from '../../../src/interaction/interactionChain.js';
 import { EventType } from '../../../src/interaction/interactionType.js';
+import { ModificationKeyType } from '../../../index.js';
 
 describe('EventHandler', () => {
   let sinonBox;
@@ -367,6 +368,111 @@ describe('EventHandler', () => {
           done();
         }, 1);
       }, 1);
+    });
+  });
+
+  describe('key event handling', () => {
+    let modifierChangedSpy;
+
+    beforeEach(() => {
+      const interaction = new AbstractInteraction(EventType.CLICK);
+      interaction.setActive();
+      modifierChangedSpy = sinonBox.spy(interaction, 'modifierChanged');
+      EH.addExclusiveInteraction(interaction, () => {});
+    });
+
+    it('should call modifierChanged with the new SHIFT modification', async () => {
+      window.dispatchEvent(new KeyboardEvent('keydown', {
+        key: 'Shift',
+        shiftKey: true,
+      }));
+      expect(modifierChangedSpy).to.have.been.calledWith(ModificationKeyType.SHIFT);
+      modifierChangedSpy.resetHistory();
+      window.dispatchEvent(new KeyboardEvent('keyup', {
+        key: 'Shift',
+        shiftKey: false,
+      }));
+      expect(modifierChangedSpy).to.have.been.calledWith(ModificationKeyType.NONE);
+    });
+
+    it('should call modifierChanged with the new ALT modification', async () => {
+      window.dispatchEvent(new KeyboardEvent('keydown', {
+        key: 'Alt',
+        altKey: true,
+      }));
+      expect(modifierChangedSpy).to.have.been.calledWith(ModificationKeyType.ALT);
+      modifierChangedSpy.resetHistory();
+      window.dispatchEvent(new KeyboardEvent('keyup', {
+        key: 'Alt',
+        altKey: false,
+      }));
+      expect(modifierChangedSpy).to.have.been.calledWith(ModificationKeyType.NONE);
+    });
+
+    it('should call modifierChanged with the new CTRL modification', async () => {
+      window.dispatchEvent(new KeyboardEvent('keydown', {
+        key: 'Ctrl',
+        ctrlKey: true,
+      }));
+      expect(modifierChangedSpy).to.have.been.calledWith(ModificationKeyType.CTRL);
+      modifierChangedSpy.resetHistory();
+      window.dispatchEvent(new KeyboardEvent('keyup', {
+        key: 'Ctrl',
+        ctrlKey: false,
+      }));
+      expect(modifierChangedSpy).to.have.been.calledWith(ModificationKeyType.NONE);
+    });
+
+    it('should call modifierChanged only once', async () => {
+      window.dispatchEvent(new KeyboardEvent('keydown', {
+        key: 'Ctrl',
+        ctrlKey: true,
+      }));
+      window.dispatchEvent(new KeyboardEvent('keydown', {
+        key: 'A',
+        ctrlKey: true,
+      }));
+      expect(modifierChangedSpy).to.have.been.calledOnce;
+      expect(modifierChangedSpy).to.have.been.calledWith(ModificationKeyType.CTRL);
+      modifierChangedSpy.resetHistory();
+      window.dispatchEvent(new KeyboardEvent('keyup', {
+        key: 'A',
+        ctrlKey: true,
+      }));
+      window.dispatchEvent(new KeyboardEvent('keyup', {
+        key: 'Ctrl',
+        ctrlKey: false,
+      }));
+      expect(modifierChangedSpy).to.have.been.calledOnce;
+      expect(modifierChangedSpy).to.have.been.calledWith(ModificationKeyType.NONE);
+    });
+
+    it('should raise the event with the correct modifier, if more then one modifier is pressed', () => {
+      window.dispatchEvent(new KeyboardEvent('keydown', {
+        key: 'Shift',
+        shiftKey: true,
+      }));
+      window.dispatchEvent(new KeyboardEvent('keydown', {
+        key: 'Alt',
+        shiftKey: true,
+        altKey: true,
+      }));
+      expect(modifierChangedSpy).to.have.been.calledOnce;
+      expect(modifierChangedSpy).to.have.been.calledWith(ModificationKeyType.SHIFT);
+      modifierChangedSpy.resetHistory();
+      window.dispatchEvent(new KeyboardEvent('keyup', {
+        key: 'Shift',
+        shiftKey: false,
+        altKey: true,
+      }));
+      expect(modifierChangedSpy).to.have.been.calledOnce;
+      expect(modifierChangedSpy).to.have.been.calledWith(ModificationKeyType.ALT);
+      modifierChangedSpy.resetHistory();
+      window.dispatchEvent(new KeyboardEvent('keyup', {
+        key: 'Alt',
+        altKey: false,
+      }));
+      expect(modifierChangedSpy).to.have.been.calledWith(ModificationKeyType.NONE);
     });
   });
 });
