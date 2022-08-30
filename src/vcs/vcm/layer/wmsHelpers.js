@@ -60,6 +60,8 @@ export function getWMSSource(options) {
     } else {
       sourceOptions.projection = 'EPSG:4326';
     }
+  } else {
+    sourceOptions.projection = 'EPSG:3857';
   }
   return new TileWMS(sourceOptions);
 }

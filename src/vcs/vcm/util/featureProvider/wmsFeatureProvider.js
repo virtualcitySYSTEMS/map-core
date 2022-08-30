@@ -60,7 +60,7 @@ export function getFormat(responseType, options = {}) {
   if (responseType === 'application/vnd.ogc.gml') {
     return new GML2(options);
   }
-  if (responseType === 'application/vnd.ogc.gml/3.1.1') {
+  if (responseType === 'application/vnd.ogc.gml/3.1.1' || responseType === 'text/xml; subtype=gml/3.1.1') {
     return new GML3(options);
   }
   return null;
