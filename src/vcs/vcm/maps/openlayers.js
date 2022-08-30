@@ -117,8 +117,9 @@ class Openlayers extends BaseOLMap {
     if (this.movementDisabled || !viewpoint.isValid()) {
       return Promise.resolve();
     }
+    let { heading } = viewpoint;
     if (this.fixedNorthOrientation) {
-      viewpoint.heading = 0;
+      heading = 0;
     }
     const view = this.olMap.getView();
     const fromLatLon = getTransform('EPSG:4326', view.getProjection());
@@ -147,8 +148,8 @@ class Openlayers extends BaseOLMap {
 
     if (viewpoint.animate) {
       let rotation = 0;
-      if (!this.fixedNorthOrientation && viewpoint.heading != null) {
-        rotation = -CesiumMath.toRadians(viewpoint.heading);
+      if (!this.fixedNorthOrientation && heading != null) {
+        rotation = -CesiumMath.toRadians(heading);
       }
       return new Promise((resolve) => {
         view.animate({
@@ -162,8 +163,8 @@ class Openlayers extends BaseOLMap {
     } else {
       view.setCenter(center);
       view.setResolution(resolution);
-      if (!this.fixedNorthOrientation && viewpoint.heading != null) {
-        view.setRotation(-CesiumMath.toRadians(viewpoint.heading));
+      if (!this.fixedNorthOrientation && heading != null) {
+        view.setRotation(-CesiumMath.toRadians(heading));
       }
     }
     return Promise.resolve();
