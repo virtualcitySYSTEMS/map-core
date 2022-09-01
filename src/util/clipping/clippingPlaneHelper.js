@@ -14,9 +14,7 @@ import {
 import Feature from 'ol/Feature.js';
 import LineString from 'ol/geom/LineString.js';
 import { offset } from 'ol/sphere.js';
-import GeometryLayout from 'ol/geom/GeometryLayout.js';
 import Polygon from 'ol/geom/Polygon.js';
-
 import { check, checkMaybe } from '@vcsuite/check';
 import Projection, { mercatorProjection, wgs84Projection } from '../projection.js';
 import Extent3D from '../featureconverter/extent3D.js';
@@ -358,9 +356,9 @@ export function createClippingFeature(coordinate, camera, vertical = false, offs
       [p1[0], p1[1], coordinate[2]],
       [p2[0], p2[1], coordinate[2]],
       // @ts-ignore
-    ], GeometryLayout.XYZ);
+    ], 'XYZ');
   } else {
-    geometry = new Polygon([[]], GeometryLayout.XYZ);
+    geometry = new Polygon([[]], 'XYZ');
     let bearing = (2 * Math.PI) - (Math.PI / 4); // Bearing NW
     const coordinates = [...new Array(4)].map(() => {
       const newPoint = offset(coordinate, offsetDistance, bearing);

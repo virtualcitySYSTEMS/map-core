@@ -95,7 +95,7 @@ class VectorTileOpenlayersImpl extends LayerOpenlayersImpl {
       visible: false,
       source: this.source,
       renderBuffer: 200,
-      renderMode: 'image',
+      renderMode: 'hybrid',
       declutter: true,
       extent,
       minZoom,

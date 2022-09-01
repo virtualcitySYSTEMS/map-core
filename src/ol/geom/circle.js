@@ -12,7 +12,7 @@ Circle.prototype.getCoordinates = function getCoordinates() {
 
 /**
  * @param {Array<import("ol/coordinate").Coordinate>} coordinates - array of length two. The first coordinate is treated as the center, the second as the center with an x offset of radius
- * @param {import("ol/geom/GeometryLayout").default=} optLayout
+ * @param {import("ol/geom/Geometry").GeometryLayout=} optLayout
  */
 Circle.prototype.setCoordinates = function setCoordinates(coordinates, optLayout) {
   check(coordinates, [[Number]]);

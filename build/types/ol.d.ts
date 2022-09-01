@@ -13,13 +13,13 @@ declare module "ol/geom" {
         getCoordinates(): any;
         setCoordinates(coordinates: any, layout?: any): void;
         getFlatCoordinates(): number[];
-        getLayout(): import("ol/geom/GeometryLayout").default;
+        getLayout(): import("ol/geom/Geometry").GeometryLayout;
     }
 
     interface GeometryCollection {
         getCoordinates(): Array<import("ol/coordinate").Coordinate | Array<import("ol/coordinate").Coordinate> | Array<Array<import("ol/coordinate").Coordinate>> | Array<Array<Array<import("ol/coordinate").Coordinate>>>>;
         setCoordinates(coordinates: Array<import("ol/coordinate").Coordinate | Array<import("ol/coordinate").Coordinate> | Array<Array<import("ol/coordinate").Coordinate>> | Array<Array<Array<import("ol/coordinate").Coordinate>>>>): void;
-        getLayout(): import("ol/geom/GeometryLayout").default;
+        getLayout(): import("ol/geom/Geometry").GeometryLayout;
     }
 
     interface Circle {

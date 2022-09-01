@@ -110,6 +110,7 @@ class WmtsOpenlayersImpl extends RasterLayerOpenlayersImpl {
     }
     const tileGrid = new WMTSTileGrid(tileGridOptions);
 
+    /** @type {import("ol/source/WMTS").RequestEncoding} */
     const requestEncoding = this.url.indexOf('{') >= 0 ? 'REST' : 'KVP';
     const wmtsOptions = {
       tileGrid,

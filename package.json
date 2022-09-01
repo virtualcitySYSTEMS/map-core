@@ -57,7 +57,7 @@
   },
   "peerDependencies": {
     "@vcmap/cesium": "~1.93.1",
-    "ol": "~6.13.0"
+    "ol": "~7.1.0"
   },
   "eslintConfig": {
     "extends": [

@@ -1,4 +1,3 @@
-import GeometryType from 'ol/geom/GeometryType.js';
 import { check } from '@vcsuite/check';
 
 
@@ -72,10 +71,10 @@ class Extent3D {
    * @param {import("ol/geom").Geometry} geometry
    */
   extendWithGeometry(geometry) {
-    if (geometry.getType() === GeometryType.GEOMETRY_COLLECTION) {
+    if (geometry.getType() === 'GeometryCollection') {
       /** @type {import("ol/geom/GeometryCollection").default} */ (geometry)
         .getGeometriesArray().forEach((geom) => { this.extendWithGeometry(geom); });
-    } else if (geometry.getType() === GeometryType.CIRCLE) {
+    } else if (geometry.getType() === 'Circle') {
       const flatCoordinates = /** @type {import("ol/geom/Circle").default} */ (geometry).getFlatCoordinates();
       const stride = /** @type {import("ol/geom/Circle").default} */ (geometry).getStride();
       const radius = flatCoordinates[stride] - flatCoordinates[0];

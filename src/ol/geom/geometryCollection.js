@@ -1,5 +1,4 @@
 import GeometryCollection from 'ol/geom/GeometryCollection.js';
-import GeometryLayout from 'ol/geom/GeometryLayout.js';
 import { check } from '@vcsuite/check';
 
 /**
@@ -11,7 +10,7 @@ GeometryCollection.prototype.getCoordinates = function getCoordinates() {
 
 /**
  * @param {Array<import("ol/coordinate").Coordinate|Array<import("ol/coordinate").Coordinate>|Array<Array<import("ol/coordinate").Coordinate>>|Array<Array<Array<import("ol/coordinate").Coordinate>>>>} coordinates
- * @param {import("ol/geom/GeometryLayout").default=} optLayout
+ * @param {import("ol/geom/Geometry").GeometryLayout=} optLayout
  */
 GeometryCollection.prototype.setCoordinates = function setCoordinates(coordinates, optLayout) {
   check(coordinates, Array);
@@ -22,12 +21,12 @@ GeometryCollection.prototype.setCoordinates = function setCoordinates(coordinate
 };
 
 /**
- * @returns {import("ol/geom/GeometryLayout").default}
+ * @returns {import("ol/geom/Geometry").GeometryLayout}
  */
 GeometryCollection.prototype.getLayout = function getLayout() {
   const firstGeom = this.getGeometries()[0];
   if (firstGeom) {
     return firstGeom.getLayout();
   }
-  return /** @type {undefined} */ (GeometryLayout.XYZ);
+  return 'XYZ';
 };

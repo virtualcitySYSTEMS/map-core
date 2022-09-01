@@ -1,4 +1,7 @@
 ###   5.0.0-rc.next
+- Updated Openlayers to version 7.0.0
+
+###   5.0.0-rc.20
 - changed OverrideCollection `replaced` event to { new:T, old:T }
 - added an API to vcsApp to control the dynamic Context `setDynamicContext`, `resetDynamicContext` and `dynamicContextIdChanged`
 - added an API to vcsApp to access the added context `app.contexts`

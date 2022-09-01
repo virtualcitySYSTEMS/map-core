@@ -15,7 +15,6 @@ import {
   sampleTerrainMostDetailed,
 } from '@vcmap/cesium';
 import Icon from 'ol/style/Icon.js';
-import GeometryType from 'ol/geom/GeometryType.js';
 import ImageState from 'ol/ImageState.js';
 import { parseNumber } from '@vcsuite/parsers';
 import {
@@ -241,7 +240,7 @@ export function getModelOptions(feature, wgs84Positions, positions, vectorProper
  * @returns {boolean}
  */
 export function validatePoint(point) {
-  if (point.getType() !== GeometryType.POINT) {
+  if (point.getType() !== 'Point') {
     return false;
   }
   const flatCoordinates = point.getFlatCoordinates();

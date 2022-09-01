@@ -1,5 +1,4 @@
 import LineString from 'ol/geom/LineString.js';
-import GeometryLayout from 'ol/geom/GeometryLayout.js';
 import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import { EventType } from '../../../interaction/interactionType.js';
 import VcsEvent from '../../../vcsEvent.js';
@@ -64,7 +63,7 @@ class CreateLineStringInteraction extends AbstractInteraction {
 
     if (event.type & EventType.CLICK) {
       if (!this._geometry) {
-        this._geometry = new LineString([event.positionOrPixel], GeometryLayout.XYZ);
+        this._geometry = new LineString([event.positionOrPixel], 'XYZ');
         this._geometry[alreadyTransformedToImage] = event.map instanceof ObliqueMap;
         this.created.raiseEvent(this._geometry);
         this._coordinates = [event.positionOrPixel.slice()];

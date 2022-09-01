@@ -1,6 +1,5 @@
 import { unByKey } from 'ol/Observable.js';
 import Feature from 'ol/Feature.js';
-import GeometryType from 'ol/geom/GeometryType.js';
 import { HeightReference } from '@vcmap/cesium';
 import { FeatureVisibilityAction } from './featureVisibility.js';
 import Projection from '../util/projection.js';
@@ -178,7 +177,7 @@ export function getGenericFeatureFromClickedObject(object, layer) {
     // In this case the heightAboveGroundAdjustment is also just an Offset.
     if (
       !heightInfo.extruded &&
-      (geometry.getType() === GeometryType.POINT || geometry.getType() === GeometryType.MULTI_POINT) &&
+      (geometry.getType() === 'Point' || geometry.getType() === 'MultiPoint') &&
       (
         heightInfo.heightReference === HeightReference.RELATIVE_TO_GROUND ||
         heightInfo.heightReference === HeightReference.CLAMP_TO_GROUND)

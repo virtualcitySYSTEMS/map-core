@@ -1,5 +1,4 @@
 import Circle from 'ol/geom/Circle.js';
-import GeometryLayout from 'ol/geom/GeometryLayout.js';
 import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import { EventType } from '../../../interaction/interactionType.js';
 import VcsEvent from '../../../vcsEvent.js';
@@ -70,7 +69,7 @@ class CreateCircleInteraction extends AbstractInteraction {
       if (this._geometry) {
         this.finish();
       } else {
-        this._geometry = new Circle(event.positionOrPixel, 20, GeometryLayout.XYZ);
+        this._geometry = new Circle(event.positionOrPixel, 20, 'XYZ');
         this._geometry[actuallyIsCircle] = event.map instanceof ObliqueMap;
         this._geometry[alreadyTransformedToImage] = event.map instanceof ObliqueMap;
         this.created.raiseEvent(this._geometry);

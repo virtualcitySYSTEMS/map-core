@@ -66,9 +66,9 @@ describe('VectorTileOpenlayersImpl', () => {
     });
 
     it('should invalidate tiles on the source tileCache', async () => {
-      const tile1 = {};
-      const tile2 = {};
-      const tile3 = {};
+      const tile1 = { release() { } };
+      const tile2 = { release() { } };
+      const tile3 = { release() { } };
       vectorTileOpenlayers.source.tileCache.set('1', tile1);
       vectorTileOpenlayers.source.tileCache.set('2', tile2);
       vectorTileOpenlayers.source.tileCache.set('3', tile3);

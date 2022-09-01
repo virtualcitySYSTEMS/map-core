@@ -1,5 +1,4 @@
 import { circular } from 'ol/geom/Polygon.js';
-import GeometryType from 'ol/geom/GeometryType.js';
 import {
   Cartesian3,
   CircleGeometry,
@@ -182,7 +181,7 @@ function getGeometryFactory() {
  * @returns {boolean}
  */
 export function validateCircle(circle) {
-  if (circle.getType() !== GeometryType.CIRCLE) {
+  if (circle.getType() !== 'Circle') {
     return false;
   }
   const flatCoordinates = circle.getFlatCoordinates();

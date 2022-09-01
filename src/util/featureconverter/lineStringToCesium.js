@@ -1,5 +1,4 @@
 import { Cartesian3, WallGeometry, WallOutlineGeometry, GroundPolylineGeometry, PolylineGeometry } from '@vcmap/cesium';
-import GeometryType from 'ol/geom/GeometryType.js';
 import { parseNumber } from '@vcsuite/parsers';
 import Projection from '../projection.js';
 import { addPrimitivesToContext } from './featureconverterHelper.js';
@@ -141,7 +140,7 @@ function getGeometryFactory() {
  * @returns {boolean}
  */
 export function validateLineString(lineString) {
-  if (lineString.getType() !== GeometryType.LINE_STRING) {
+  if (lineString.getType() !== 'LineString') {
     return false;
   }
   const flatCoordinates = lineString.getFlatCoordinates();

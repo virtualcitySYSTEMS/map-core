@@ -7,7 +7,6 @@ import {
   PolygonHierarchy,
   PolylineGeometry,
 } from '@vcmap/cesium';
-import GeometryType from 'ol/geom/GeometryType.js';
 import { parseNumber } from '@vcsuite/parsers';
 import { addPrimitivesToContext } from './featureconverterHelper.js';
 import Projection from '../projection.js';
@@ -186,7 +185,7 @@ function getGeometryFactory() {
  * @returns {boolean}
  */
 export function validatePolygon(polygon) {
-  if (polygon.getType() !== GeometryType.POLYGON) {
+  if (polygon.getType() !== 'Polygon') {
     return false;
   }
   const flatCoordinates = polygon.getFlatCoordinates();

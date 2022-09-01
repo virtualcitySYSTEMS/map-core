@@ -1,6 +1,5 @@
 import GeometryCollection from 'ol/geom/GeometryCollection.js';
 import Point from 'ol/geom/Point.js';
-import GeometryLayout from 'ol/geom/GeometryLayout.js';
 import LineString from 'ol/geom/LineString.js';
 import Polygon from 'ol/geom/Polygon.js';
 import Circle from 'ol/geom/Circle.js';
@@ -13,13 +12,13 @@ describe('ol.geom.GeometryCollection', () => {
   let geometryCollection;
 
   beforeEach(() => {
-    point = new Point([0, 0, 0], GeometryLayout.XYZ);
-    lineString = new LineString([[1, 1, 1], [2, 2, 2]], GeometryLayout.XYZ);
+    point = new Point([0, 0, 0], 'XYZ');
+    lineString = new LineString([[1, 1, 1], [2, 2, 2]], 'XYZ');
     polygon = new Polygon([
       [[0, 0, 0], [10, 0, 0], [10, 10, 0], [0, 10, 0]],
       [[2, 2, 0], [2, 8, 0], [8, 8, 0], [8, 2, 0]],
-    ], GeometryLayout.XYZ);
-    circle = new Circle([0, 0, 0], 20, GeometryLayout.XYZ);
+    ], 'XYZ');
+    circle = new Circle([0, 0, 0], 20, 'XYZ');
     geometryCollection = new GeometryCollection([point, lineString, polygon, circle]);
   });
 

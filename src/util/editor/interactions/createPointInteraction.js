@@ -1,6 +1,4 @@
 import Point from 'ol/geom/Point.js';
-import GeometryLayout from 'ol/geom/GeometryLayout.js';
-
 import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import VcsEvent from '../../../vcsEvent.js';
 import { EventType } from '../../../interaction/interactionType.js';
@@ -38,7 +36,7 @@ class CreatePointInteraction extends AbstractInteraction {
    * @inheritDoc
    */
   async pipe(event) {
-    this._geometry = new Point(event.positionOrPixel, GeometryLayout.XYZ);
+    this._geometry = new Point(event.positionOrPixel, 'XYZ');
     this._geometry[alreadyTransformedToImage] = event.map instanceof ObliqueMap;
     this.created.raiseEvent(this._geometry);
     this.finish();
