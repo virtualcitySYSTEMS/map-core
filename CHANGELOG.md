@@ -18,3 +18,6 @@
 - exports a `maxZIndex` constant to use for always rendering layers on top.
 - `AbstractInteraction` interface is extended by a `modifierChanged` which will be called,
 if the keyboard modifiers are changed.
+- Adds `Editor` capabilities.
+  - Adds a `CreateFeatureSession` editor session to create new features.
+  - Adds a `EditoGeometrySession` to edit simple geometries.

@@ -69,3 +69,12 @@ export function cartesian3DDistance(p1, p2) {
   return Cartesian3.distance(point0, point1);
 }
 
+/**
+ * Avoid JS negative number modulo bug.
+ * @param {number} n
+ * @param {number} m
+ * @returns {number}
+ */
+export function modulo(n, m) {
+  return ((n % m) + m) % m;
+}

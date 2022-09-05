@@ -80,7 +80,7 @@ export function setupInteractionChain(eventHandler) {
 
   return {
     interactionChain,
-    destroy: () => {
+    destroy() {
       listener();
       removed.destroy();
       interactionChain.destroy();
@@ -97,7 +97,6 @@ export function setupInteractionChain(eventHandler) {
  * @property {string} LineString
  * @property {string} Polygon
  * @property {string} BBox
- * @property {string} Rectangle
  */
 export const GeometryType = {
   Point: 'Point',

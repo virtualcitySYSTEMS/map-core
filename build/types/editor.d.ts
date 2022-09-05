@@ -16,3 +16,5 @@ export interface CreateInteraction<T extends import("ol/geom").Geometry> {
     created: VcsEvent<T>;
     destroy():void;
 }
+
+export type Vertex = import("ol").Feature<import("ol/geom").Point>;

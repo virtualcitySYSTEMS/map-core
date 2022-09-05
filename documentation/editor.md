@@ -6,7 +6,7 @@ The editor is a set of functionality to allow users to:
 
 ## Missing Features
 - Altitude mode handling
-- snapping
+- Snapping
 
 ## Usage
 The editor defines a session concept, named `EditorSession`. An editor session
@@ -21,7 +21,7 @@ If you wish to start a `CreateFeatureSession`, you must call the `startCreateFea
 helper, to create it. Once created you can listen to the sessions events to handle creation
 & stopping. The following outlines some example usage:
 
-```js
+```javascript
 import { 
   VcsApp, 
   VectorLayer, 
@@ -85,6 +85,83 @@ function waitForOne() {
         session.stop();
       }
     });
+  });
+}
+```
+
+### Editing Feature Geometries
+To edit the feature geometries in a layer, you must start the `EditGeometrySession` using
+the `startEditGeometrySession` helper.
+This session provides a feature selection, to select a single feature & the required
+interactions to edit the currently selected feature.
+
+The following outlines some example use cases:
+```javascript
+import { 
+  VcsApp, 
+  VectorLayer,
+  createEditGeometrySession, 
+  GeometryType,
+} from '@vcmap/core';
+
+// The app on which all things happen
+const app = new VcsApp();
+// The layer we wish to edit
+const layer = new VectorLayer();
+app.layers.add(layer);
+await layer.activate();
+
+/**
+ * This will edit the layer indefinitly
+ */
+function editLayerGeometries() {
+  createEditGeometrySession(app, layer);
+}
+
+/**
+ * You can sync information from the session with another structure.
+ * @param {{ currentFeature: import("ol").Feature|null|null}}
+ */
+function snycInfo(info) {
+  const session = createEditGeometrySession(app, layer);
+  session.featureSelection.featureChanged.addEventListener((feature) => {
+    info.currentFeature = feature;
+  });
+}
+
+/**
+ * If you know the feature you wish to edit beforehand, you can do the following
+ * @param {string} featureId
+ */
+async function setTheCurrentFeature(featureId) {
+  const session = createEditGeometrySession(app, layer);
+  const feature = layer.getFeatureById(featureId);
+  await session.featureSelection.selectFeature(feature); 
+}
+
+/**
+ * If you wish to only edit one feature and then stop the session
+ * @param {string} featureId
+ */
+async function stopAfter(featureId) {
+  const session = createEditGeometrySession(app, layer);
+  const feature = layer.getFeatureById(featureId);
+  await session.featureSelection.selectFeature(feature);
+  session.featureSelection.featureChanged.addEventListener(() => {
+    session.stop();
+  });
+}
+
+/**
+ * You can finish editing a feature, if you clear the selection. 
+ * @param {VcsEvent<void>} finishEvent
+ */
+function finishEvent(finishEvent) {
+  const session = createEditGeometrySession(app, layer);
+  finishEvent.addEventListener(() => {
+    if (session.featureSelection.selectedFeature) {
+      session.featureSelection.clear();
+    }
   });
 }
 ```
