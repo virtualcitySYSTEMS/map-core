@@ -197,7 +197,7 @@ describe('SplitScreen', () => {
     describe('Cesium', () => {
       it('should set the scenes imagerySplitPosition', () => {
         splitScreen._updatePosition(0.1);
-        expect(cesiumMap.getScene()).to.have.property('imagerySplitPosition', 0.1);
+        expect(cesiumMap.getScene()).to.have.property('splitPosition', 0.1);
       });
 
       it('should call _updateClippingPlanes', () => {

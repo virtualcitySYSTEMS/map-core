@@ -27,7 +27,6 @@ import {
   KeyboardEventModifier,
   ScreenSpaceEventType,
   Cesium3DTileset,
-  ExperimentalFeatures,
 } from '@vcmap/cesium';
 
 import { check, checkMaybe } from '@vcsuite/check';
@@ -196,8 +195,6 @@ function setDebugOnVisualizations(visualizations, debug) {
       setDebugOnCesium3DTileset(tileset, debug);
     });
 }
-
-ExperimentalFeatures.enableModelExperimental = false; // TODO check on release
 
 /**
  * Cesium Globe Map Class (3D map)
@@ -531,7 +528,7 @@ class CesiumMap extends VcsMap {
       this._cesiumWidget.scene.globe.depthTestAgainstTerrain = true;
       this._cesiumWidget.scene.highDynamicRange = false;
       // this._cesiumWidget.scene.logarithmicDepthBuffer = false; // TODO observe this
-      this._cesiumWidget.scene.imagerySplitPosition = 0.5;
+      this._cesiumWidget.scene.splitPosition = 0.5;
 
       this._cesiumWidget.scene.globe.enableLighting = this.enableLightning;
 

@@ -8,6 +8,7 @@ import {
   Matrix4,
   Cartesian3,
   Math as CesiumMath,
+  Resource,
 } from '@vcmap/cesium';
 import CesiumTilesetLayer from '../../../../src/layer/cesiumTilesetLayer.js';
 import DeclarativeStyleItem from '../../../../src/style/declarativeStyleItem.js';
@@ -346,7 +347,9 @@ describe('CesiumTilesetCesiumImpl', () => {
       const view = new DataView(arrayBuffer);
       view.setUint32(Uint32Array.BYTES_PER_ELEMENT, 1, true);
 
-      const content = new Composite3DTileContent(cesiumTilesetCesium.cesium3DTileset, null, null, arrayBuffer);
+      const content = new Composite3DTileContent(
+        cesiumTilesetCesium.cesium3DTileset, null, new Resource('http://localhost/test'), arrayBuffer,
+      );
       const innerContent = [{}, {}];
       content._contents = innerContent;
       cesiumTilesetCesium.applyStyle({ content });

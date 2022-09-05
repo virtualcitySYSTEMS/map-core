@@ -204,11 +204,6 @@ class CesiumTilesetLayer extends FeatureLayer {
     }
   }
 
-  async initialize() {
-    await this.style.cesiumStyle.readyPromise;
-    return super.initialize();
-  }
-
   /**
    * @inheritDoc
    * @returns {CesiumTilesetImplementationOptions}

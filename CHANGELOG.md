@@ -1,4 +1,8 @@
 ###   5.0.0-rc.next
+- Updated Cesium to version 1.97
+- Editor: Adds a `EditoGeometrySession` to edit simple geometries.
+
+###   5.0.0-rc.21
 - Updated Openlayers to version 7.0.0
 
 ###   5.0.0-rc.20
@@ -20,4 +24,3 @@
 if the keyboard modifiers are changed.
 - Adds `Editor` capabilities.
   - Adds a `CreateFeatureSession` editor session to create new features.
-  - Adds a `EditoGeometrySession` to edit simple geometries.

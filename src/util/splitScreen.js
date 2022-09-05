@@ -121,7 +121,7 @@ class SplitScreen {
   _updatePosition(position) {
     this._position = position;
     if (this.scene) {
-      this.scene.imagerySplitPosition = position;
+      this.scene.splitPosition = position;
       this._updateClippingPlanes();
     } else if (this.olMap) {
       this.olMap.render();

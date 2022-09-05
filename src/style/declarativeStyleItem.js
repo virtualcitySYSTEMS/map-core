@@ -142,12 +142,8 @@ class DeclarativeStyleItem extends StyleItem {
   toJSON() {
     const config = /** @type {DeclarativeStyleItemOptions} */ (super.toJSON());
 
-    const styleOptions = this.cesiumStyle.ready ?
-      this.cesiumStyle.style :
-      this.styleOptions;
-
     config.declarativeStyle = Object.fromEntries(
-      Object.entries(styleOptions)
+      Object.entries(this.cesiumStyle.style)
         .filter(([, value]) => value != null)
         .map(([key, value]) => {
           if (is(value, Boolean)) {
@@ -181,9 +177,7 @@ class DeclarativeStyleItem extends StyleItem {
    */
   assign(styleItem) {
     super.assign(styleItem);
-    this._styleOptions = styleItem.cesiumStyle.ready ?
-      styleItem.cesiumStyle.style :
-      styleItem.styleOptions;
+    this._styleOptions = styleItem.cesiumStyle.style;
 
     this.cesiumStyle = new Cesium3DTileStyle(this._styleOptions);
     return this;

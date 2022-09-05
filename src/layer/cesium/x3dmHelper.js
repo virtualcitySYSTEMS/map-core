@@ -3,7 +3,7 @@
  * @returns {Object}
  */
 export default function getJSONObjectFromObject(feature) {
-  const properties = feature.getPropertyNames();
+  const properties = feature.getPropertyIds();
   const JSONObject = {};
   for (let i = 0; i < properties.length; i++) {
     JSONObject[properties[i]] = feature.getProperty(properties[i]);
