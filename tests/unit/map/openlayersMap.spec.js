@@ -99,6 +99,22 @@ describe('OpenlayersMap', () => {
         });
       });
 
+      describe('with a regular viewpoint', () => {
+        it('should not manipulate the provided viewpoint', async () => {
+          const viewpoint = new Viewpoint({
+            groundPosition: [0, 0, 0],
+            cameraPosition: [0, 0, 100],
+            distance: 100,
+            animate: false,
+            heading: 45,
+          });
+          const viewpointStringBefore = JSON.stringify(viewpoint.toJSON());
+          await map.gotoViewpoint(viewpoint);
+          const viewpointStringAfter = JSON.stringify(viewpoint.toJSON());
+          expect(viewpointStringBefore).to.be.equal(viewpointStringAfter);
+        });
+      });
+
       describe('without a groundPosition', () => {
         it('should set the cameraPosition as the views center', async () => {
           await map.gotoViewpoint(new Viewpoint({
