@@ -1,5 +1,5 @@
 import VectorLayer from '../../src/layer/vectorLayer.js';
-import ViewPoint from '../../src/util/viewpoint.js';
+import Viewpoint from '../../src/util/viewpoint.js';
 import Context from '../../src/context.js';
 import OpenlayersMap from '../../src/map/openlayersMap.js';
 import VcsApp from '../../src/vcsApp.js';
@@ -10,25 +10,25 @@ describe('vcsApp', () => {
       let context;
       /** @type {VcsApp} */
       let app;
-      /** @type {ViewPoint} */
+      /** @type {Viewpoint} */
       let startingVp;
       let added;
 
       before(async () => {
-        startingVp = new ViewPoint({ name: 'foo', groundPosition: [13, 52], distance: 200 });
+        startingVp = new Viewpoint({ name: 'foo', groundPosition: [13, 52], distance: 200 });
         context = new Context({
           layers: [
             new VectorLayer({ name: 'foo' }).toJSON(),
             new VectorLayer({ name: 'bar', activeOnStartup: true }).toJSON(),
           ],
           viewpoints: [
-            new ViewPoint({}).toJSON(),
+            new Viewpoint({}).toJSON(),
             startingVp.toJSON(),
           ],
           maps: [
             new OpenlayersMap({ name: 'foo' }).toJSON(),
           ],
-          startingViewPointName: 'foo',
+          startingViewpointName: 'foo',
           startingMapName: 'foo',
         });
         app = new VcsApp();
@@ -53,7 +53,7 @@ describe('vcsApp', () => {
         expect(app.layers.hasKey('foo')).to.be.true;
         expect(app.layers.hasKey('bar')).to.be.true;
         expect(app.maps.hasKey('foo')).to.be.true;
-        expect(app.viewPoints.hasKey('foo')).to.be.true;
+        expect(app.viewpoints.hasKey('foo')).to.be.true;
       });
 
       it('should load layers which are active on startup', () => {
@@ -67,7 +67,7 @@ describe('vcsApp', () => {
       });
 
       it('should activate the starting view point', () => {
-        const vp = app.maps.activeMap.getViewPointSync();
+        const vp = app.maps.activeMap.getViewpointSync();
         expect(vp.equals(startingVp, 10e-8)).to.be.true;
       });
     });
@@ -76,25 +76,25 @@ describe('vcsApp', () => {
       let context;
       /** @type {VcsApp} */
       let app;
-      /** @type {ViewPoint} */
+      /** @type {Viewpoint} */
       let startingVp;
       let added;
 
       before(async () => {
-        startingVp = new ViewPoint({ name: 'foo', groundPosition: [13, 52], distance: 200 });
+        startingVp = new Viewpoint({ name: 'foo', groundPosition: [13, 52], distance: 200 });
         const initialContext = new Context({
           layers: [
             new VectorLayer({ name: 'foo' }).toJSON(),
             new VectorLayer({ name: 'bar', activeOnStartup: true }).toJSON(),
           ],
           viewpoints: [
-            new ViewPoint({}).toJSON(),
+            new Viewpoint({}).toJSON(),
             startingVp.toJSON(),
           ],
           maps: [
             new OpenlayersMap({ name: 'foo' }).toJSON(),
           ],
-          startingViewPointName: 'foo',
+          startingViewpointName: 'foo',
           startingMapName: 'foo',
         });
         context = new Context({
@@ -146,25 +146,25 @@ describe('vcsApp', () => {
       let context;
       /** @type {VcsApp} */
       let app;
-      /** @type {ViewPoint} */
+      /** @type {Viewpoint} */
       let startingVp;
 
       before(async () => {
-        startingVp = new ViewPoint({ name: 'foo', groundPosition: [13, 52], distance: 200 });
+        startingVp = new Viewpoint({ name: 'foo', groundPosition: [13, 52], distance: 200 });
         context = new Context({
           layers: [
             new VectorLayer({ name: 'foo' }).toJSON(),
             new VectorLayer({ name: 'bar', activeOnStartup: true }).toJSON(),
           ],
           viewpoints: [
-            new ViewPoint({}).toJSON(),
+            new Viewpoint({}).toJSON(),
             startingVp.toJSON(),
           ],
           maps: [
             new OpenlayersMap({ name: 'foo' }).toJSON(),
             new OpenlayersMap({ name: 'bar' }).toJSON(),
           ],
-          startingViewPointName: 'foo',
+          startingViewpointName: 'foo',
           startingMapName: 'foo',
         });
         app = new VcsApp();
@@ -184,25 +184,25 @@ describe('vcsApp', () => {
       let context;
       /** @type {VcsApp} */
       let app;
-      /** @type {ViewPoint} */
+      /** @type {Viewpoint} */
       let startingVp;
       let added;
 
       before(async () => {
-        startingVp = new ViewPoint({ name: 'foo', groundPosition: [13, 52], distance: 200 });
+        startingVp = new Viewpoint({ name: 'foo', groundPosition: [13, 52], distance: 200 });
         context = new Context({
           layers: [
             new VectorLayer({ name: 'foo' }).toJSON(),
             new VectorLayer({ name: 'bar', activeOnStartup: true }).toJSON(),
           ],
           viewpoints: [
-            new ViewPoint({}).toJSON(),
+            new Viewpoint({}).toJSON(),
             startingVp.toJSON(),
           ],
           maps: [
             new OpenlayersMap({ name: 'foo' }).toJSON(),
           ],
-          startingViewPointName: 'foo',
+          startingViewpointName: 'foo',
           startingMapName: 'foo',
         });
         app = new VcsApp();
@@ -228,7 +228,7 @@ describe('vcsApp', () => {
         expect(app.layers.hasKey('foo')).to.be.true;
         expect(app.layers.hasKey('bar')).to.be.true;
         expect(app.maps.hasKey('foo')).to.be.true;
-        expect(app.viewPoints.hasKey('foo')).to.be.true;
+        expect(app.viewpoints.hasKey('foo')).to.be.true;
       });
 
       it('should load layers which are active on startup', () => {
@@ -242,7 +242,7 @@ describe('vcsApp', () => {
       });
 
       it('should activate the starting view point', () => {
-        const vp = app.maps.activeMap.getViewPointSync();
+        const vp = app.maps.activeMap.getViewpointSync();
         expect(vp.equals(startingVp, 10e-8)).to.be.true;
       });
     });
@@ -253,25 +253,25 @@ describe('vcsApp', () => {
       let context;
       /** @type {VcsApp} */
       let app;
-      /** @type {ViewPoint} */
+      /** @type {Viewpoint} */
       let startingVp;
       let removed;
 
       before(async () => {
-        startingVp = new ViewPoint({ name: 'foo', groundPosition: [13, 52], distance: 200 });
+        startingVp = new Viewpoint({ name: 'foo', groundPosition: [13, 52], distance: 200 });
         context = new Context({
           layers: [
             new VectorLayer({ name: 'foo' }).toJSON(),
             new VectorLayer({ name: 'bar', activeOnStartup: true }).toJSON(),
           ],
           viewpoints: [
-            new ViewPoint({}).toJSON(),
+            new Viewpoint({}).toJSON(),
             startingVp.toJSON(),
           ],
           maps: [
             new OpenlayersMap({ name: 'foo' }).toJSON(),
           ],
-          startingViewPointName: 'foo',
+          startingViewpointName: 'foo',
           startingMapName: 'foo',
         });
         app = new VcsApp();
@@ -296,7 +296,7 @@ describe('vcsApp', () => {
       it('should remove the contexts resources', () => {
         expect([...app.layers]).to.be.empty;
         expect([...app.maps]).to.be.empty;
-        expect([...app.viewPoints]).to.be.empty;
+        expect([...app.viewpoints]).to.be.empty;
       });
     });
 
@@ -304,25 +304,25 @@ describe('vcsApp', () => {
       let context;
       /** @type {VcsApp} */
       let app;
-      /** @type {ViewPoint} */
+      /** @type {Viewpoint} */
       let startingVp;
       let removed;
 
       before(async () => {
-        startingVp = new ViewPoint({ name: 'foo', groundPosition: [13, 52], distance: 200 });
+        startingVp = new Viewpoint({ name: 'foo', groundPosition: [13, 52], distance: 200 });
         context = new Context({
           layers: [
             new VectorLayer({ name: 'foo' }).toJSON(),
             new VectorLayer({ name: 'bar', activeOnStartup: true }).toJSON(),
           ],
           viewpoints: [
-            new ViewPoint({}).toJSON(),
+            new Viewpoint({}).toJSON(),
             startingVp.toJSON(),
           ],
           maps: [
             new OpenlayersMap({ name: 'foo' }).toJSON(),
           ],
-          startingViewPointName: 'foo',
+          startingViewpointName: 'foo',
           startingMapName: 'foo',
         });
         app = new VcsApp();
@@ -347,7 +347,7 @@ describe('vcsApp', () => {
       it('should remove the contexts resources', () => {
         expect([...app.layers]).to.be.empty;
         expect([...app.maps]).to.be.empty;
-        expect([...app.viewPoints]).to.be.empty;
+        expect([...app.viewpoints]).to.be.empty;
       });
     });
   });

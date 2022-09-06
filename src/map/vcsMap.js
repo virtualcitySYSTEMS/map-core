@@ -240,7 +240,7 @@ class VcsMap extends VcsObject {
 
   /**
    * Determines whether this map can show this viewpoint. Returns true in any other map then {@link Oblique}
-   * @param {import("@vcmap/core").ViewPoint} viewpoint
+   * @param {import("@vcmap/core").Viewpoint} viewpoint
    * @returns {Promise<boolean>}
    * @api
    */
@@ -407,7 +407,7 @@ class VcsMap extends VcsObject {
   }
 
   /**
-   * prevent all movement, including navigation controls, gotoViewPoint & setting of oblique images
+   * prevent all movement, including navigation controls, gotoViewpoint & setting of oblique images
    * @param {boolean} prevent
    * @api
    */
@@ -417,14 +417,14 @@ class VcsMap extends VcsObject {
 
   /**
    * sets the view to the given viewpoint
-   * @param {import("@vcmap/core").ViewPoint} viewpoint
+   * @param {import("@vcmap/core").Viewpoint} viewpoint
    * @param {number=} optMaximumHeight during animation (can be used to get rid of the bunny hop)
-   * gotoViewPoint
+   * gotoViewpoint
    * @returns {Promise<void>}
    * @api stable
    */
   // eslint-disable-next-line no-unused-vars,class-methods-use-this
-  gotoViewPoint(viewpoint, optMaximumHeight) {
+  gotoViewpoint(viewpoint, optMaximumHeight) {
     return Promise.resolve();
   }
 
@@ -432,20 +432,20 @@ class VcsMap extends VcsObject {
   /**
    * Returns the most precise viewpoint possible in ObliqueMap.
    * @api
-   * @returns {Promise<import("@vcmap/core").ViewPoint|null>}
+   * @returns {Promise<import("@vcmap/core").Viewpoint|null>}
    */
   // eslint-disable-next-line class-methods-use-this
-  async getViewPoint() {
+  async getViewpoint() {
     return null;
   }
 
   /**
    * Returns an approximate viewpoint in ObliqueMap, not requesting terrain.
    * @api
-   * @returns {import("@vcmap/core").ViewPoint|null}
+   * @returns {import("@vcmap/core").Viewpoint|null}
    */
   // eslint-disable-next-line class-methods-use-this
-  getViewPointSync() {
+  getViewpointSync() {
     return null;
   }
 

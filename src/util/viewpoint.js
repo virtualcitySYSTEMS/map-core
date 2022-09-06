@@ -41,7 +41,7 @@ export function coordinateEqualsEpsilon(left, right, epsilon) {
 }
 
 /**
- * @typedef {VcsObjectOptions} ViewPointOptions
+ * @typedef {VcsObjectOptions} ViewpointOptions
  * @property {import("ol/coordinate").Coordinate|undefined} cameraPosition - ol3 coordinate array with xyz coordinates (z value is mandatory)
  * @property {import("ol/coordinate").Coordinate|undefined} groundPosition - ol3 coordinate array with xyz coordinates (z value is optional)
  * @property {number|undefined} distance - distance between the camera position and the target
@@ -60,11 +60,11 @@ export function coordinateEqualsEpsilon(left, right, epsilon) {
  * @extends {VcsObject}
  * @api stable
  */
-class ViewPoint extends VcsObject {
-  static get className() { return 'ViewPoint'; }
+class Viewpoint extends VcsObject {
+  static get className() { return 'Viewpoint'; }
 
   /**
-   * @param {ViewPointOptions} options
+   * @param {ViewpointOptions} options
    */
   constructor(options) {
     super(options);
@@ -151,7 +151,7 @@ class ViewPoint extends VcsObject {
   }
 
   /**
-   * @returns {ViewPointOptions} returns a options object. This object can be used to reconstruct a new viewpoint
+   * @returns {ViewpointOptions} returns a options object. This object can be used to reconstruct a new viewpoint
    * @api stable
    */
   toJSON() {
@@ -171,11 +171,11 @@ class ViewPoint extends VcsObject {
 
   /**
    * clones the viewpoint
-   * @returns {ViewPoint} viewpoint
+   * @returns {Viewpoint} viewpoint
    * @api stable
    */
   clone() {
-    return new ViewPoint(this.toJSON());
+    return new Viewpoint(this.toJSON());
   }
 
   /**
@@ -184,7 +184,7 @@ class ViewPoint extends VcsObject {
    * @api stable
    */
   toString() {
-    const stringRep = `ViewPoint: [Ground:${String(this.groundPosition ? this.groundPosition : null)}]` +
+    const stringRep = `Viewpoint: [Ground:${String(this.groundPosition ? this.groundPosition : null)}]` +
       `[Camera:${String(this.cameraPosition ? this.cameraPosition : null)}]` +
       `[Distance:${this.distance}]` +
       `[heading:${this.distance}]` +
@@ -196,10 +196,10 @@ class ViewPoint extends VcsObject {
   /**
    * Creates a viewpoint based on an extent
    * @param {import("ol/extent").Extent|Extent} extent
-   * @returns {?ViewPoint}
+   * @returns {?Viewpoint}
    * @api
    */
-  static createViewPointFromExtent(extent) {
+  static createViewpointFromExtent(extent) {
     const extentCoordinates = extent instanceof Extent ?
       extent.getCoordinatesInProjection(wgs84Projection) :
       extent;
@@ -219,7 +219,7 @@ class ViewPoint extends VcsObject {
         distance = (delta) * 300000;
       }
 
-      return new ViewPoint({
+      return new Viewpoint({
         name: 'viewpointFromExtend',
         distance,
         groundPosition: center,
@@ -233,9 +233,9 @@ class ViewPoint extends VcsObject {
   }
 
   /**
-   * creates a new ViewPoint Object from url Paramter
+   * creates a new Viewpoint Object from url Paramter
    * @param {Object} urlParameter
-   * @returns {ViewPoint}
+   * @returns {Viewpoint}
    */
   static parseURLparameter(urlParameter) {
     let { cameraPosition, groundPosition } = urlParameter;
@@ -268,7 +268,7 @@ class ViewPoint extends VcsObject {
       roll: Number(urlParameter.roll),
     };
 
-    return new ViewPoint(options);
+    return new Viewpoint(options);
   }
 
   /**
@@ -307,7 +307,7 @@ class ViewPoint extends VcsObject {
 
   /**
    * compares the provided Viewpoint with this viewpoint componentwise
-   * @param {ViewPoint} other
+   * @param {Viewpoint} other
    * @param {number} [epsilon=0]
    * @returns {boolean}
    */
@@ -326,4 +326,4 @@ class ViewPoint extends VcsObject {
   }
 }
 
-export default ViewPoint;
+export default Viewpoint;

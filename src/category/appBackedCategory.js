@@ -1,6 +1,6 @@
 import Category from './category.js';
 import { categoryClassRegistry } from '../classRegistry.js';
-import ViewPoint from '../util/viewpoint.js';
+import Viewpoint from '../util/viewpoint.js';
 import ObliqueCollection from '../oblique/obliqueCollection.js';
 import { deserializeLayer, deserializeMap } from '../vcsAppContextHelpers.js';
 
@@ -45,8 +45,8 @@ class AppBackedCategory extends Category {
       throw new Error('Cannot deserialize item before setting the vcApp');
     }
 
-    if (this._collectionName === 'viewPoints') {
-      return new ViewPoint(config);
+    if (this._collectionName === 'viewpoints') {
+      return new Viewpoint(config);
     } else if (this._collectionName === 'obliqueCollections') {
       return new ObliqueCollection(config);
     } else if (this._collectionName === 'layers') {

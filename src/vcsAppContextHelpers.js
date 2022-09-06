@@ -1,5 +1,5 @@
 import { getLogger as getLoggerByName } from '@vcsuite/logger';
-import ViewPoint from './util/viewpoint.js';
+import Viewpoint from './util/viewpoint.js';
 import { getObjectFromClassRegistry } from './classRegistry.js';
 
 /**
@@ -35,15 +35,15 @@ export function deserializeMap(vcsApp, mapConfig) {
 }
 
 /**
- * @param {ViewPointOptions} viewPointObject
- * @returns {null|import("@vcmap/core").ViewPoint}
+ * @param {ViewpointOptions} viewpointObject
+ * @returns {null|import("@vcmap/core").Viewpoint}
  */
-export function deserializeViewPoint(viewPointObject) {
-  const viewpoint = new ViewPoint(viewPointObject);
+export function deserializeViewpoint(viewpointObject) {
+  const viewpoint = new Viewpoint(viewpointObject);
   if (viewpoint && viewpoint.isValid()) {
     return viewpoint;
   }
-  getLogger().warning(`Viewpoint ${viewPointObject.name} is not valid`);
+  getLogger().warning(`Viewpoint ${viewpointObject.name} is not valid`);
   return null;
 }
 

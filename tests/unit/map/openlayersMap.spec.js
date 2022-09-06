@@ -1,4 +1,4 @@
-import ViewPoint from '../../../src/util/viewpoint.js';
+import Viewpoint from '../../../src/util/viewpoint.js';
 import OpenlayersMap from '../../../src/map/openlayersMap.js';
 import Projection from '../../../src/util/projection.js';
 
@@ -19,7 +19,7 @@ describe('OpenlayersMap', () => {
     let map;
 
     before(async () => {
-      inputViewpoint = new ViewPoint({
+      inputViewpoint = new Viewpoint({
         groundPosition: [0, 0, 0],
         cameraPosition: [0, 0, 100],
         distance: 100,
@@ -32,8 +32,8 @@ describe('OpenlayersMap', () => {
       const viewport = map.olMap.getViewport();
       sandbox.stub(viewport, 'offsetHeight').get(() => 100);
       sandbox.stub(viewport, 'offsetWidth').get(() => 100);
-      await map.gotoViewPoint(inputViewpoint);
-      outputViewpoint = map.getViewPointSync();
+      await map.gotoViewpoint(inputViewpoint);
+      outputViewpoint = map.getViewpointSync();
     });
 
     after(() => {
@@ -74,7 +74,7 @@ describe('OpenlayersMap', () => {
 
       describe('with a regular viewpoint', () => {
         before(async () => {
-          await map.gotoViewPoint(new ViewPoint({
+          await map.gotoViewpoint(new Viewpoint({
             groundPosition: [0, 0, 0],
             cameraPosition: [0, 0, 100],
             distance: 100,
@@ -101,7 +101,7 @@ describe('OpenlayersMap', () => {
 
       describe('without a groundPosition', () => {
         it('should set the cameraPosition as the views center', async () => {
-          await map.gotoViewPoint(new ViewPoint({
+          await map.gotoViewpoint(new Viewpoint({
             cameraPosition: [1, 1, 100],
             distance: 100,
             animate: false,
@@ -116,7 +116,7 @@ describe('OpenlayersMap', () => {
 
       describe('which is animated', () => {
         it('should animate for the given duration before setting the vp', async () => {
-          const promise = map.gotoViewPoint(new ViewPoint({
+          const promise = map.gotoViewpoint(new Viewpoint({
             groundPosition: [0, 0, 0],
             cameraPosition: [1, 1, 100],
             distance: 100,
@@ -139,7 +139,7 @@ describe('OpenlayersMap', () => {
       it('should rotate the map counter clockwise, based on the heading', async () => {
         const map = new OpenlayersMap({ fixedNorthOrientation: false });
         await map.initialize();
-        await map.gotoViewPoint(new ViewPoint({
+        await map.gotoViewpoint(new Viewpoint({
           groundPosition: [0, 0, 0],
           cameraPosition: [0, 0, 100],
           distance: 100,
@@ -159,7 +159,7 @@ describe('OpenlayersMap', () => {
       map = new OpenlayersMap({ fixedNorthOrientation: false });
       await map.initialize();
       map.olMap.setSize([100, 100]);
-      await map.gotoViewPoint(new ViewPoint({
+      await map.gotoViewpoint(new Viewpoint({
         groundPosition: [0, 0, 0],
         cameraPosition: [0, 0, 100],
         distance: 100,

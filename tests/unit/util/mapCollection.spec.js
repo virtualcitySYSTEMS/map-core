@@ -1,5 +1,5 @@
 import { getOpenlayersMap } from '../helpers/openlayersHelpers.js';
-import ViewPoint from '../../../src/util/viewpoint.js';
+import Viewpoint from '../../../src/util/viewpoint.js';
 import MapCollection from '../../../src/util/mapCollection.js';
 import OpenlayersMap from '../../../src/map/openlayersMap.js';
 import { getCesiumEventSpy, getCesiumMap } from '../helpers/cesiumHelpers.js';
@@ -273,13 +273,13 @@ describe('MapCollection', () => {
 
       beforeEach(async () => {
         await mapCollection.setActiveMap(cesiumMap.name);
-        vp = new ViewPoint({
+        vp = new Viewpoint({
           groundPosition: [0, 0, 0],
           cameraPosition: [0, 0, 200],
           distance: 200,
           pitch: -45,
         });
-        await cesiumMap.gotoViewPoint(vp);
+        await cesiumMap.gotoViewpoint(vp);
       });
 
       it('should check, if the current viewpoint can be shown', async () => {
@@ -295,7 +295,7 @@ describe('MapCollection', () => {
 
       it('should set the previous maps viewpoint on the new map', async () => {
         await mapCollection.setActiveMap(openlayers.name);
-        const newVp = await openlayers.getViewPoint();
+        const newVp = await openlayers.getViewpoint();
         newVp.pitch = -45;
         expect(newVp.groundPosition).to.have.members([0, 0]);
         expect(newVp.distance).to.equal(200);
@@ -368,19 +368,19 @@ describe('MapCollection', () => {
 
       beforeEach(async () => {
         await mapCollection.setActiveMap(cesiumMap.name);
-        vp = new ViewPoint({
+        vp = new Viewpoint({
           groundPosition: [0, 0, 0],
           cameraPosition: [0, 0, 200],
           distance: 200,
           pitch: -45,
         });
-        await cesiumMap.gotoViewPoint(vp);
+        await cesiumMap.gotoViewpoint(vp);
         mapCollection.remove(cesiumMap);
       });
 
       it('should use a cachedViewpoint from the last activeMap', async () => {
         await mapCollection.setActiveMap(openlayers.name);
-        const newVp = await openlayers.getViewPoint();
+        const newVp = await openlayers.getViewpoint();
         newVp.pitch = -45;
         expect(newVp.groundPosition).to.have.members([0, 0]);
         expect(newVp.distance).to.equal(200);
@@ -426,16 +426,16 @@ describe('MapCollection', () => {
         const olMap2 = await getOpenlayersMap({ name: 'map' });
         mapCollection.add(olMap);
         await mapCollection.setActiveMap('map');
-        const vp = new ViewPoint({
+        const vp = new Viewpoint({
           groundPosition: [0, 0, 0],
           cameraPosition: [0, 0, 200],
           distance: 200,
           pitch: -45,
         });
-        await olMap.gotoViewPoint(vp);
+        await olMap.gotoViewpoint(vp);
         mapCollection.override(olMap2);
         await mapCollection.setActiveMap('map');
-        const newVp = await olMap2.getViewPoint();
+        const newVp = await olMap2.getViewpoint();
         expect(newVp.groundPosition).to.have.members([0, 0]);
         expect(newVp.distance).to.equal(200);
       });

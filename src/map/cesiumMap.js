@@ -32,7 +32,7 @@ import {
 import { check, checkMaybe } from '@vcsuite/check';
 import { parseBoolean, parseInteger } from '@vcsuite/parsers';
 import VcsMap from './vcsMap.js';
-import ViewPoint from '../util/viewpoint.js';
+import Viewpoint from '../util/viewpoint.js';
 import Projection, { mercatorProjection } from '../util/projection.js';
 import { getHeightFromTerrainProvider } from '../layer/terrainHelpers.js';
 import { vcsLayerName } from '../layer/layerSymbols.js';
@@ -609,17 +609,17 @@ class CesiumMap extends VcsMap {
 
   /**
    * @inheritDoc
-   * @returns {Promise<null|ViewPoint>}
+   * @returns {Promise<null|Viewpoint>}
    */
-  async getViewPoint() {
-    return this.getViewPointSync();
+  async getViewpoint() {
+    return this.getViewpointSync();
   }
 
   /**
    * @inheritDoc
-   * @returns {ViewPoint|null}
+   * @returns {Viewpoint|null}
    */
-  getViewPointSync() {
+  getViewpointSync() {
     if (!this._cesiumWidget || !this._cesiumWidget.scene || !this.target) {
       return null;
     }
@@ -645,7 +645,7 @@ class CesiumMap extends VcsMap {
       CesiumMath.toDegrees(cameraPositionCartographic.latitude),
       cameraPositionCartographic.height,
     ];
-    return new ViewPoint({
+    return new Viewpoint({
       groundPosition,
       cameraPosition,
       distance,
@@ -656,12 +656,12 @@ class CesiumMap extends VcsMap {
   }
 
   /**
-   * @param {ViewPoint} viewpoint
+   * @param {Viewpoint} viewpoint
    * @param {number=} optMaximumHeight
    * @returns {Promise<void>}
    * @inheritDoc
    */
-  async gotoViewPoint(viewpoint, optMaximumHeight) {
+  async gotoViewpoint(viewpoint, optMaximumHeight) {
     if (this.movementDisabled || !viewpoint.isValid()) {
       return;
     }

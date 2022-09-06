@@ -4,7 +4,7 @@ import { getTransform } from 'ol/proj.js';
 import { inAndOut } from 'ol/easing.js';
 import { boundingExtent, containsXY } from 'ol/extent.js';
 import { parseBoolean } from '@vcsuite/parsers';
-import ViewPoint from '../util/viewpoint.js';
+import Viewpoint from '../util/viewpoint.js';
 import BaseOLMap from './baseOLMap.js';
 import VcsMap from './vcsMap.js';
 import { mapClassRegistry } from '../classRegistry.js';
@@ -65,17 +65,17 @@ class OpenlayersMap extends BaseOLMap {
 
   /**
    * @inheritDoc
-   * @returns {Promise<ViewPoint>}
+   * @returns {Promise<Viewpoint>}
    */
-  async getViewPoint() {
-    return this.getViewPointSync();
+  async getViewpoint() {
+    return this.getViewpointSync();
   }
 
   /**
    * @inheritDoc
-   * @returns {ViewPoint}
+   * @returns {Viewpoint}
    */
-  getViewPointSync() {
+  getViewpointSync() {
     const view = this.olMap.getView();
     const coord = view.getCenter();
     const toLatLon = getTransform(view.getProjection(), 'EPSG:4326');
@@ -100,7 +100,7 @@ class OpenlayersMap extends BaseOLMap {
     // don't add 0;
     const groundPosition = latlon; // .concat([0]);
     const pitch = -90;
-    return new ViewPoint({
+    return new Viewpoint({
       groundPosition,
       pitch,
       heading,
@@ -109,11 +109,11 @@ class OpenlayersMap extends BaseOLMap {
   }
 
   /**
-   * @param {ViewPoint} viewpoint
+   * @param {Viewpoint} viewpoint
    * @returns {Promise<void>}
    * @inheritDoc
    */
-  gotoViewPoint(viewpoint) {
+  gotoViewpoint(viewpoint) {
     if (this.movementDisabled || !viewpoint.isValid()) {
       return Promise.resolve();
     }

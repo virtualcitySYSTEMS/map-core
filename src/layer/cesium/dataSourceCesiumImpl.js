@@ -111,7 +111,7 @@ class DataSourceCesiumImpl extends LayerImplementation {
 
       const bSphere = new BoundingSphere();
 
-      const viewpoint = this.map.getViewPointSync();
+      const viewpoint = this.map.getViewpointSync();
       const { heading, pitch } = viewpoint;
       const offset = new HeadingPitchRange(
         CesiumMath.toRadians(heading),

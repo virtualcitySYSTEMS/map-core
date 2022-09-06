@@ -1,9 +1,9 @@
-import ViewPoint from '../../../src/util/viewpoint.js';
+import Viewpoint from '../../../src/util/viewpoint.js';
 
-describe('ViewPoint', () => {
+describe('Viewpoint', () => {
   describe('isValid', () => {
     it('should be invalid if missing camera or ground position', () => {
-      const vp = new ViewPoint({
+      const vp = new Viewpoint({
         name: 'hauptbhnhf',
         distance: 2480.9491308407964,
         groundPosition: [
@@ -18,7 +18,7 @@ describe('ViewPoint', () => {
     });
 
     it('should be invalid on non-numeric axis parameters', () => {
-      const vp = new ViewPoint({
+      const vp = new Viewpoint({
         name: 'hauptbhnhf',
         distance: 2480.9491308407964,
         cameraPosition: [
@@ -42,7 +42,7 @@ describe('ViewPoint', () => {
     });
 
     it('should be valid if no distance is given when only setting ground position', () => {
-      const vp = new ViewPoint({
+      const vp = new Viewpoint({
         name: 'hauptbhnhf',
         distance: NaN,
         groundPosition: [
@@ -65,7 +65,7 @@ describe('ViewPoint', () => {
     let vp2;
 
     beforeEach(() => {
-      vp1 = new ViewPoint({
+      vp1 = new Viewpoint({
         name: 'hauptbhnhf',
         distance: 2480.9491308407964,
         cameraPosition: [
@@ -84,7 +84,7 @@ describe('ViewPoint', () => {
         animate: false,
       });
 
-      vp2 = new ViewPoint({
+      vp2 = new Viewpoint({
         name: 'hauptbhnhf',
         distance: 2480.9491308407964,
         cameraPosition: [

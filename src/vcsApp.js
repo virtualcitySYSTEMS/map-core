@@ -5,7 +5,7 @@ import Context from './context.js';
 import {
   contextIdSymbol,
   destroyCollection,
-  deserializeViewPoint,
+  deserializeViewpoint,
   deserializeMap,
   getLayerIndex,
   serializeLayer,
@@ -18,7 +18,7 @@ import VcsMap from './map/vcsMap.js';
 import Layer from './layer/layer.js';
 import Collection from './util/collection.js';
 import ObliqueCollection from './oblique/obliqueCollection.js';
-import ViewPoint from './util/viewpoint.js';
+import Viewpoint from './util/viewpoint.js';
 import StyleItem from './style/styleItem.js';
 import IndexedCollection from './util/indexedCollection.js';
 import VcsEvent from './vcsEvent.js';
@@ -144,15 +144,15 @@ class VcsApp {
       ObliqueCollection,
     );
     /**
-     * @type {OverrideCollection<import("@vcmap/core").ViewPoint>}
+     * @type {OverrideCollection<import("@vcmap/core").Viewpoint>}
      * @private
      */
-    this._viewPoints = makeOverrideCollection(
+    this._viewpoints = makeOverrideCollection(
       new Collection(),
       getDynamicContextId,
       null,
-      deserializeViewPoint,
-      ViewPoint,
+      deserializeViewpoint,
+      Viewpoint,
     );
     /**
      * @type {OverrideClassRegistry<StyleItem>}
@@ -275,10 +275,10 @@ class VcsApp {
   get obliqueCollections() { return this._obliqueCollections; }
 
   /**
-   * @type {OverrideCollection<import("@vcmap/core").ViewPoint>}
+   * @type {OverrideCollection<import("@vcmap/core").Viewpoint>}
    * @readonly
    */
-  get viewPoints() { return this._viewPoints; }
+  get viewpoints() { return this._viewpoints; }
 
   /**
    * @type {OverrideCollection<import("@vcmap/core").StyleItem>}
@@ -396,7 +396,7 @@ class VcsApp {
     // TODO add flights & ade here
 
     await this._obliqueCollections.parseItems(config.obliqueCollections, context.id);
-    await this._viewPoints.parseItems(config.viewpoints, context.id);
+    await this._viewpoints.parseItems(config.viewpoints, context.id);
     await this._maps.parseItems(config.maps, context.id);
 
     if (Array.isArray(config.categories)) {
@@ -442,10 +442,10 @@ class VcsApp {
       await this._maps.setActiveMap([...this._maps][0].name);
     }
 
-    if (config.startingViewPointName && this._maps.activeMap) {
-      const startViewPoint = this._viewPoints.getByKey(config.startingViewPointName);
-      if (startViewPoint) {
-        await this._maps.activeMap.gotoViewPoint(startViewPoint);
+    if (config.startingViewpointName && this._maps.activeMap) {
+      const startViewpoint = this._viewpoints.getByKey(config.startingViewpointName);
+      if (startViewpoint) {
+        await this._maps.activeMap.gotoViewpoint(startViewpoint);
       }
     }
   }
@@ -501,7 +501,7 @@ class VcsApp {
     await Promise.all([
       this._maps.removeContext(contextId),
       this._layers.removeContext(contextId),
-      this._viewPoints.removeContext(contextId),
+      this._viewpoints.removeContext(contextId),
       this._styles.removeContext(contextId),
       this._obliqueCollections.removeContext(contextId),
     ]);
@@ -539,7 +539,7 @@ class VcsApp {
     destroyCollection(this._maps);
     destroyCollection(this._layers);
     destroyCollection(this._obliqueCollections);
-    destroyCollection(this._viewPoints);
+    destroyCollection(this._viewpoints);
     destroyCollection(this._styles);
     destroyCollection(this._contexts);
     destroyCollection(this._categories);

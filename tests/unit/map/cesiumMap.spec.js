@@ -15,7 +15,7 @@ import Layer from '../../../src/layer/layer.js';
 import { vcsLayerName } from '../../../src/layer/layerSymbols.js';
 import LayerCollection from '../../../src/util/layerCollection.js';
 import { blackPixelURI } from '../helpers/imageHelpers.js';
-import ViewPoint from '../../../src/util/viewpoint.js';
+import Viewpoint from '../../../src/util/viewpoint.js';
 import Projection from '../../../src/util/projection.js';
 import CesiumMap, { synchronizeClock } from '../../../src/map/cesiumMap.js';
 import { getCesiumMap } from '../helpers/cesiumHelpers.js';
@@ -432,7 +432,7 @@ describe('CesiumMap', () => {
     let map;
 
     before(async () => {
-      inputViewpoint = new ViewPoint({
+      inputViewpoint = new Viewpoint({
         groundPosition: [0, 0, 10],
         cameraPosition: [1, 1, 100],
         distance: 100,
@@ -442,9 +442,9 @@ describe('CesiumMap', () => {
       });
 
       map = getCesiumMap({ target: document.getElementById('mapContainer') });
-      await map.gotoViewPoint(inputViewpoint);
+      await map.gotoViewpoint(inputViewpoint);
       sandbox.stub(map.getScene().globe, 'pick').returns(Cartesian3.fromDegrees(0, 0, 10)); // there are not globe tiles rendered
-      outputViewpoint = map.getViewPointSync();
+      outputViewpoint = map.getViewpointSync();
     });
 
     after(() => {
@@ -488,7 +488,7 @@ describe('CesiumMap', () => {
 
     describe('with a regular viewpoint', () => {
       before(async () => {
-        await map.gotoViewPoint(new ViewPoint({
+        await map.gotoViewpoint(new Viewpoint({
           groundPosition: [0, 0, 10],
           cameraPosition: [1, 1, 100],
           distance: 100,
@@ -516,7 +516,7 @@ describe('CesiumMap', () => {
 
     describe('without a camera position', () => {
       it('should determine the camera position based on the ground coordinate and the distance', async () => {
-        await map.gotoViewPoint(new ViewPoint({
+        await map.gotoViewpoint(new Viewpoint({
           groundPosition: [0, 0, 10],
           distance: 100,
           animate: false,
@@ -531,7 +531,7 @@ describe('CesiumMap', () => {
 
     describe('which is animated', () => {
       it('should create a flight path if animated', async () => {
-        await map.gotoViewPoint(new ViewPoint({
+        await map.gotoViewpoint(new Viewpoint({
           groundPosition: [0, 0, 0],
           cameraPosition: [1, 1, 100],
           distance: 100,
@@ -546,7 +546,7 @@ describe('CesiumMap', () => {
       });
 
       it('should cancel a running animated viewpoint on the next function call', async () => {
-        map.gotoViewPoint(new ViewPoint({
+        map.gotoViewpoint(new Viewpoint({
           groundPosition: [0, 0, 0],
           cameraPosition: [1, 1, 100],
           distance: 100,
@@ -554,7 +554,7 @@ describe('CesiumMap', () => {
           duration: 0.01,
           heading: 45,
         }));
-        await map.gotoViewPoint(new ViewPoint({
+        await map.gotoViewpoint(new Viewpoint({
           groundPosition: [0, 0, 0],
           cameraPosition: [2, 2, 100],
           distance: 100,
@@ -573,7 +573,7 @@ describe('CesiumMap', () => {
   describe('getting current resolution', () => {
     it('should return the resolution (snapshot test)', async () => {
       const map = getCesiumMap();
-      await map.gotoViewPoint(new ViewPoint({
+      await map.gotoViewpoint(new Viewpoint({
         groundPosition: [0, 0, 0],
         cameraPosition: [0, 0, 100],
         distance: 100,
@@ -595,7 +595,7 @@ describe('CesiumMap', () => {
 
     before(async () => {
       map = getCesiumMap();
-      await map.gotoViewPoint(new ViewPoint({
+      await map.gotoViewpoint(new Viewpoint({
         groundPosition: [0, 0, 0],
         cameraPosition: [0, 0, 100],
         distance: 100,

@@ -19,24 +19,24 @@ import SplitScreen from './splitScreen.js';
  * @returns {Promise<void>}
  */
 async function setCesiumToOLViewpoint(cesiumMap, olMap) {
-  const viewPoint = cesiumMap.getViewPointSync();
-  const northDownVp = viewPoint.clone();
+  const viewpoint = cesiumMap.getViewpointSync();
+  const northDownVp = viewpoint.clone();
   northDownVp.heading = 0;
   northDownVp.pitch = -90;
-  if (viewPoint && !viewPoint.equals(northDownVp)) {
+  if (viewpoint && !viewpoint.equals(northDownVp)) {
     if (olMap.fixedNorthOrientation) {
-      viewPoint.heading = 0;
+      viewpoint.heading = 0;
     }
 
-    viewPoint.pitch = -90;
-    viewPoint.animate = true;
-    viewPoint.duration = 1;
+    viewpoint.pitch = -90;
+    viewpoint.animate = true;
+    viewpoint.duration = 1;
 
-    if (viewPoint.groundPosition) {
-      viewPoint.cameraPosition = null;
+    if (viewpoint.groundPosition) {
+      viewpoint.cameraPosition = null;
     }
 
-    await cesiumMap.gotoViewPoint(viewPoint);
+    await cesiumMap.gotoViewpoint(viewpoint);
   }
 }
 
@@ -84,7 +84,7 @@ class MapCollection extends Collection {
 
     /**
      * if the active map is removed the last viewpoint is cached for the next mapActivation.
-     * @type {import("@vcmap/core").ViewPoint}
+     * @type {import("@vcmap/core").Viewpoint}
      * @private
      */
     this._cachedViewpoint = null;
@@ -231,7 +231,7 @@ class MapCollection extends Collection {
    */
   _remove(map) {
     if (this._activeMap === map) {
-      this._cachedViewpoint = map.getViewPointSync();
+      this._cachedViewpoint = map.getViewpointSync();
       if (this._target) {
         const mapClassName = this._activeMap.className.split('.').pop();
         this._target.classList.remove(mapClassName);
@@ -350,7 +350,7 @@ class MapCollection extends Collection {
         return map.activate();
       }
 
-      viewpoint = this._activeMap ? await this._activeMap.getViewPoint() : this._cachedViewpoint;
+      viewpoint = this._activeMap ? await this._activeMap.getViewpoint() : this._cachedViewpoint;
 
       const canShow = await map.canShowViewpoint(viewpoint);
       if (!canShow) {
@@ -375,7 +375,7 @@ class MapCollection extends Collection {
     this._setActiveMapCSSClass();
 
     if (viewpoint) {
-      await this._activeMap.gotoViewPoint(viewpoint);
+      await this._activeMap.gotoViewpoint(viewpoint);
     }
 
     this.clippingObjectManager.mapActivated(map);

@@ -1,6 +1,7 @@
 ###   5.0.0-rc.next
 - Updated Cesium to version 1.97
 - Editor: Adds a `EditoGeometrySession` to edit simple geometries.
+- Renamed ViewPoint to Viewpoint
 
 ###   5.0.0-rc.21
 - Updated Openlayers to version 7.0.0

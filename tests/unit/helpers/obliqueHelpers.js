@@ -1,6 +1,6 @@
 import Projection from '../../../src/util/projection.js';
 import ObliqueMap from '../../../src/map/obliqueMap.js';
-import ViewPoint from '../../../src/util/viewpoint.js';
+import Viewpoint from '../../../src/util/viewpoint.js';
 
 import { getTerrainProvider } from './terrain/terrainData.js';
 import ObliqueCollection from '../../../src/oblique/obliqueCollection.js';
@@ -24,10 +24,10 @@ export const mercatorCoordinates = [1488644.796500772, 6892246.018669462, 0];
 let obliqueProjection = null;
 
 /**
- * @returns {ViewPoint}
+ * @returns {Viewpoint}
  */
 function getStartingViewpoint() {
-  return new ViewPoint({
+  return new Viewpoint({
     name: '5b609a0d-28a1-4f4e-ba6c-29f2592fa889',
     distance: 264.6285087486175,
     cameraPosition: null,
@@ -97,7 +97,7 @@ export async function getObliqueMap(mapOptions = {}, scope) {
 /**
  * @param {VcsApp} app
  * @param {Scope=} scope optional server, if provided the map will be initialized with a terrainProvider
- * @param {ViewPoint=} startingVP
+ * @param {Viewpoint=} startingVP
  * @returns {Promise<ObliqueMap>}
  */
 export async function setObliqueMap(app, scope, startingVP) {
@@ -107,6 +107,6 @@ export async function setObliqueMap(app, scope, startingVP) {
   );
   app.maps.add(map);
   await app.maps.setActiveMap(map.name);
-  await map.gotoViewPoint(startingVP || getStartingViewpoint());
+  await map.gotoViewpoint(startingVP || getStartingViewpoint());
   return map;
 }

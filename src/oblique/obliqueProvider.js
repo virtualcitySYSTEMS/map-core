@@ -10,7 +10,7 @@ import VcsEvent from '../vcsEvent.js';
 import { isDefaultImageSymbol } from './defaultObliqueCollection.js';
 
 /**
- * @typedef {Object} ObliqueViewPoint
+ * @typedef {Object} ObliqueViewpoint
  * @property {import("ol/coordinate").Coordinate} center - in mercator
  * @property {number} zoom
  * @property {import("@vcmap/core").ObliqueViewDirection} direction
@@ -399,7 +399,7 @@ class ObliqueProvider {
 
   /**
    * Returns a viewpoint for the currently set view.
-   * @returns {Promise<ObliqueViewPoint>}
+   * @returns {Promise<ObliqueViewpoint>}
    * @api
    */
   async getView() {

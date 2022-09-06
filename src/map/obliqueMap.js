@@ -5,7 +5,7 @@ import { parseBoolean, parseNumber } from '@vcsuite/parsers';
 import Extent from '../util/extent.js';
 import { mercatorProjection, wgs84Projection } from '../util/projection.js';
 import { getResolutionOptions, getZoom } from '../layer/oblique/obliqueHelpers.js';
-import ViewPoint from '../util/viewpoint.js';
+import Viewpoint from '../util/viewpoint.js';
 import BaseOLMap from './baseOLMap.js';
 import VcsMap from './vcsMap.js';
 import VcsEvent from '../vcsEvent.js';
@@ -42,10 +42,10 @@ const defaultCollection = new DefaultObliqueCollection();
 
 /**
  * returns the direction which matches the heading of the viewpoint
- * @param {ViewPoint} viewpoint
+ * @param {Viewpoint} viewpoint
  * @returns {import("@vcmap/core").ObliqueViewDirection}
  */
-export function getViewDirectionFromViewPoint(viewpoint) {
+export function getViewDirectionFromViewpoint(viewpoint) {
   const { heading } = viewpoint;
   let direction = ViewDirection.NORTH;
   if (heading >= 45 && heading < 135) {
@@ -59,7 +59,7 @@ export function getViewDirectionFromViewPoint(viewpoint) {
 }
 
 /**
- * @param {ViewPoint} viewpoint
+ * @param {Viewpoint} viewpoint
  * @returns {import("ol/coordinate").Coordinate}
  * @private
  */
@@ -254,14 +254,14 @@ class ObliqueMap extends BaseOLMap {
   }
 
   /**
-   * @param {ViewPoint} viewpoint
+   * @param {Viewpoint} viewpoint
    * @returns {Promise<boolean>}
    * @api
    */
   async canShowViewpoint(viewpoint) {
     await this.initialize();
     if (this.collection) {
-      const viewDirection = getViewDirectionFromViewPoint(viewpoint);
+      const viewDirection = getViewDirectionFromViewpoint(viewpoint);
       const mercatorCoordinates = getMercatorViewpointCenter(viewpoint);
       return this.collection.hasImageAtCoordinate(mercatorCoordinates, viewDirection);
     }
@@ -305,7 +305,7 @@ class ObliqueMap extends BaseOLMap {
   /**
    * Sets a new oblique collection
    * @param {ObliqueCollection} obliqueCollection
-   * @param {ViewPoint=} viewpoint
+   * @param {Viewpoint=} viewpoint
    * @returns {Promise<void>}
    * @api
    */
@@ -331,7 +331,7 @@ class ObliqueMap extends BaseOLMap {
   /**
    * Sets a new oblique collection
    * @param {ObliqueCollection} obliqueCollection
-   * @param {ViewPoint=} viewpoint
+   * @param {Viewpoint=} viewpoint
    * @returns {Promise<void>}
    * @private
    */
@@ -342,14 +342,14 @@ class ObliqueMap extends BaseOLMap {
       this._setCollection(defaultCollection);
     });
     await obliqueCollection.load();
-    const vp = viewpoint || await this.getViewPoint();
+    const vp = viewpoint || await this.getViewpoint();
     if (this._loadingCollection !== obliqueCollection) {
       return;
     }
     this._obliqueProvider.setCollection(obliqueCollection);
     this.collectionChanged.raiseEvent(obliqueCollection);
     if (vp) {
-      await this.gotoViewPoint(vp);
+      await this.gotoViewpoint(vp);
     }
   }
 
@@ -372,10 +372,10 @@ class ObliqueMap extends BaseOLMap {
   }
 
   /**
-   * @returns {Promise<ViewPoint|null>}
+   * @returns {Promise<Viewpoint|null>}
    * @inheritDoc
    */
-  async getViewPoint() {
+  async getViewpoint() {
     const image = this.currentImage;
     if (!image) {
       return null;
@@ -393,9 +393,9 @@ class ObliqueMap extends BaseOLMap {
 
   /**
    * @inheritDoc
-   * @returns {ViewPoint|null}
+   * @returns {Viewpoint|null}
    */
-  getViewPointSync() {
+  getViewpointSync() {
     const image = this.currentImage;
     if (!image) {
       return null;
@@ -416,7 +416,7 @@ class ObliqueMap extends BaseOLMap {
 
   /**
    * @param {import("ol/coordinate").Coordinate} groundPosition
-   * @returns {ViewPoint}
+   * @returns {Viewpoint}
    * @private
    */
   _computeViewpointInternal(groundPosition) {
@@ -432,7 +432,7 @@ class ObliqueMap extends BaseOLMap {
     const avgHeight = groundPosition[2] || image.averageHeight;
     const cameraHeight = height + avgHeight;
 
-    return new ViewPoint({
+    return new Viewpoint({
       cameraPosition: [groundPosition[0], groundPosition[1], cameraHeight],
       groundPosition,
       heading: defaultHeadings[image.viewDirection],
@@ -443,16 +443,16 @@ class ObliqueMap extends BaseOLMap {
   }
 
   /**
-   * @param {ViewPoint} viewpoint
+   * @param {Viewpoint} viewpoint
    * @returns {Promise<void>}
    * @inheritDoc
    */
-  async gotoViewPoint(viewpoint) {
+  async gotoViewpoint(viewpoint) {
     if (this.movementDisabled || !this._obliqueProvider || !viewpoint.isValid()) {
       return;
     }
 
-    const viewDirection = getViewDirectionFromViewPoint(viewpoint);
+    const viewDirection = getViewDirectionFromViewpoint(viewpoint);
     const mercatorCoordinates = getMercatorViewpointCenter(viewpoint);
     const { distance } = viewpoint;
     await this._obliqueProvider.setView(mercatorCoordinates, viewDirection);

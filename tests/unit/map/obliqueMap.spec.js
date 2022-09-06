@@ -1,7 +1,7 @@
 import OLMap from 'ol/Map.js';
 import { getObliqueCollection, mercatorCoordinates } from '../helpers/obliqueHelpers.js';
 import ObliqueMap from '../../../src/map/obliqueMap.js';
-import ViewPoint from '../../../src/util/viewpoint.js';
+import Viewpoint from '../../../src/util/viewpoint.js';
 import Projection from '../../../src/util/projection.js';
 import { getCesiumEventSpy } from '../helpers/cesiumHelpers.js';
 import ObliqueImage from '../../../src/oblique/obliqueImage.js';
@@ -59,7 +59,7 @@ describe('ObliqueMap', () => {
     let vp;
 
     beforeEach(async () => {
-      vp = new ViewPoint({
+      vp = new Viewpoint({
         groundPosition: Projection.mercatorToWgs84(mercatorCoordinates),
       });
       map = new ObliqueMap({});
@@ -119,7 +119,7 @@ describe('ObliqueMap', () => {
         await map.activate();
         sandbox.stub(map.olMap.getViewport(), 'offsetHeight').get(() => 1000);
         sandbox.stub(map.olMap.getViewport(), 'offsetWidth').get(() => 1000);
-        await map.gotoViewPoint(new ViewPoint({
+        await map.gotoViewpoint(new Viewpoint({
           groundPosition: visiblePoint,
           distance: 200,
         }));
@@ -193,7 +193,7 @@ describe('ObliqueMap', () => {
         map = new ObliqueMap({});
         await map.setCollection(obliqueCollection1);
         await map.activate();
-        await map.gotoViewPoint(new ViewPoint({
+        await map.gotoViewpoint(new Viewpoint({
           groundPosition: Projection.mercatorToWgs84(mercatorCoordinates),
         }));
       });
@@ -243,7 +243,7 @@ describe('ObliqueMap', () => {
     before(async () => {
       map = new ObliqueMap({});
       await map.activate();
-      await map.gotoViewPoint(new ViewPoint({
+      await map.gotoViewpoint(new Viewpoint({
         groundPosition: Projection.mercatorToWgs84(mercatorCoordinates),
       }));
     });
@@ -372,7 +372,7 @@ describe('ObliqueMap', () => {
       it('should set the viewpoint to be the center of the image', async () => {
         await map.setImageByName('036_064_116005331');
         const groundPosition = Projection.mercatorToWgs84(mercatorCoordinates);
-        const vp = await map.getViewPoint();
+        const vp = await map.getViewpoint();
         const [x, y] = vp.groundPosition;
         expect(x).to.be.closeTo(groundPosition[0], 0.001);
         expect(y).to.be.closeTo(groundPosition[1], 0.001);
@@ -384,7 +384,7 @@ describe('ObliqueMap', () => {
         const coordinate = [mercatorCoordinates[0] + 50, mercatorCoordinates[1] + 50];
         const groundPosition = Projection.mercatorToWgs84(coordinate);
         await map.setImageByName('036_064_116005331', coordinate);
-        const vp = await map.getViewPoint();
+        const vp = await map.getViewpoint();
         const [x, y] = vp.groundPosition;
         expect(x).to.be.closeTo(groundPosition[0], 0.00001);
         expect(y).to.be.closeTo(groundPosition[1], 0.00001);
@@ -408,7 +408,7 @@ describe('ObliqueMap', () => {
     describe('without a current image', () => {
       it('should return null', () => {
         const map = new ObliqueMap({});
-        expect(map.getViewPointSync()).to.be.null;
+        expect(map.getViewpointSync()).to.be.null;
         map.destroy();
       });
     });
@@ -423,12 +423,12 @@ describe('ObliqueMap', () => {
         map = new ObliqueMap({});
         await map.setCollection(obliqueCollection1);
         await map.activate();
-        await map.gotoViewPoint(new ViewPoint({
+        await map.gotoViewpoint(new Viewpoint({
           heading: 94,
           groundPosition,
           distance: 0.308,
         }));
-        vp = map.getViewPointSync();
+        vp = map.getViewpointSync();
       });
 
       after(() => {
@@ -459,7 +459,7 @@ describe('ObliqueMap', () => {
         map = new ObliqueMap({});
         await map.setCollection(obliqueCollection1);
         await map.activate();
-        await map.gotoViewPoint(new ViewPoint({
+        await map.gotoViewpoint(new Viewpoint({
           heading: 94,
           groundPosition: Projection.mercatorToWgs84(mercatorCoordinates),
           distance: 0.308,
@@ -488,11 +488,11 @@ describe('ObliqueMap', () => {
         const groundPosition = Projection.mercatorToWgs84(mercatorCoordinates);
         const cameraPosition = [groundPosition[0], groundPosition[1], 2];
         await map.activate();
-        await map.gotoViewPoint(new ViewPoint({
+        await map.gotoViewpoint(new Viewpoint({
           heading: 0,
           groundPosition,
         }));
-        await map.gotoViewPoint(new ViewPoint({
+        await map.gotoViewpoint(new Viewpoint({
           heading: 94,
           groundPosition,
           cameraPosition,
@@ -521,7 +521,7 @@ describe('ObliqueMap', () => {
       map = new ObliqueMap({});
       await map.setCollection(obliqueCollection1);
       await map.activate();
-      await map.gotoViewPoint(new ViewPoint({
+      await map.gotoViewpoint(new Viewpoint({
         groundPosition: Projection.mercatorToWgs84(mercatorCoordinates),
       }));
       map.disableMovement(true);
@@ -533,7 +533,7 @@ describe('ObliqueMap', () => {
     });
 
     it('should not set a new viewpoint', async () => {
-      await map.gotoViewPoint(new ViewPoint({
+      await map.gotoViewpoint(new Viewpoint({
         heading: 90,
         groundPosition: Projection.mercatorToWgs84(mercatorCoordinates),
       }));
