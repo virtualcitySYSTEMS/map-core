@@ -35,7 +35,8 @@ class FeatureProviderInteraction extends AbstractInteraction {
       const layersWithProvider = [...event.map.layerCollection]
         .filter((l) => {
           return l.featureProvider && l.active && l.isSupported(event.map) && l.featureProvider.isSupported(event.map);
-        });
+        })
+        .reverse();
 
       if (layersWithProvider.length > 0) {
         const resolution = event.map.getCurrentResolution(event.position);
