@@ -128,7 +128,6 @@ class BaseOLMap extends VcsMap {
         }),
         target: this.mapElement,
       });
-
       // @ts-ignore
       const pointerDownListener = /** @type {import("ol/events").EventsKey} */ (this.olMap.on('pointerdown', (event) => {
         this._raisePointerInteraction(
@@ -143,11 +142,18 @@ class BaseOLMap extends VcsMap {
           PointerEventType.UP,
         );
       }));
-      // @ts-ignore
-      const pointerMoveListener = /** @type {import("ol/events").EventsKey} */ (this.olMap.on('pointermove', (event) => {
-        this._raisePointerInteraction(event, PointerEventType.MOVE);
-      }));
-      this._olListeners.push(pointerDownListener, pointerUpListener, pointerMoveListener);
+
+      const pointerMoveListener = /** @type {import("ol/events").EventsKey} */ (this.olMap
+        .on('pointermove', (event) => {
+          this._raisePointerInteraction(event, PointerEventType.MOVE);
+        }));
+
+      const postRenderListener = /** @type {import("ol/events").EventsKey} */ (this.olMap
+        .on('postrender', (originalEvent) => {
+          this.postRender.raiseEvent({ map: this, originalEvent });
+        }));
+
+      this._olListeners.push(pointerDownListener, pointerUpListener, pointerMoveListener, postRenderListener);
     }
   }
 

@@ -157,7 +157,9 @@ export function getMockScene() {
       depthTexture: true,
       stencilBuffer: true,
     },
-    render() {},
+    render(time) {
+      this.postRender.raiseEvent(this, time);
+    },
     pick() {},
     pickPosition() {},
     destroy() {

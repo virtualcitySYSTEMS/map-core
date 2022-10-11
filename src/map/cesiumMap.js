@@ -51,6 +51,12 @@ import { mapClassRegistry } from '../classRegistry.js';
  */
 
 /**
+ * @typedef {Object} CesiumMapEvent
+ * @property {import("@vcmap/cesium").Scene} scene
+ * @property {import("@vcmap/cesium").JulianDate} time
+ */
+
+/**
  * Ensures, a primitive/imageryLayer/entity is part of a collection and placed at the correct location
  * @param {import("@vcmap/cesium").PrimitiveCollection|import("@vcmap/cesium").ImageryLayerCollection} cesiumCollection
  * @param {import("@vcmap/cesium").PrimitiveCollection|import("@vcmap/cesium").ImageryLayer|import("@vcmap/cesium").Cesium3DTileset} item
@@ -319,17 +325,7 @@ class CesiumMap extends VcsMap {
      * @type {Function}
      * @private
      */
-    this._terrainProviderChangedListener = null;
-    /**
-     * @type {Function}
-     * @private
-     */
     this._preUpdateListener = null;
-    /**
-     * @type {Function}
-     * @private
-     */
-    this._clockTickListener = null;
     /**
      * @type {Function}
      * @private
@@ -337,10 +333,10 @@ class CesiumMap extends VcsMap {
     this._clockSyncListener = null;
 
     /**
-     * @type {Function}
+     * @type {Array<function():void>}
      * @private
      */
-    this._removeClusterClockTickListener = null;
+    this._listeners = [];
 
     /**
      * @type {boolean}
@@ -513,11 +509,11 @@ class CesiumMap extends VcsMap {
 
       const { clock } = this._cesiumWidget;
       clock.shouldAnimate = true;
-      this._clockTickListener = clock.onTick.addEventListener(() => {
+      this._listeners.push(clock.onTick.addEventListener(() => {
         this.dataSourceDisplayClock.tick();
         const time = this.dataSourceDisplayClock.currentTime;
         this.dataSourceDisplay.update(time);
-      });
+      }));
 
       // deactivate cesium Requestthrottling let the browser manage that
       // RequestScheduler.throttleRequests = false;
@@ -556,8 +552,12 @@ class CesiumMap extends VcsMap {
 
       this.defaultTerrainProvider = this._cesiumWidget.scene.terrainProvider;
       this._terrainProvider = this.defaultTerrainProvider;
-      this._terrainProviderChangedListener =
-        this._cesiumWidget.scene.terrainProviderChanged.addEventListener(this._terrainProviderChanged.bind(this));
+      this._listeners.push(this._cesiumWidget.scene.terrainProviderChanged
+        .addEventListener(this._terrainProviderChanged.bind(this)));
+
+      this._listeners.push(this._cesiumWidget.scene.postRender.addEventListener((eventScene, time) => {
+        this.postRender.raiseEvent({ map: this, originalEvent: { scene: eventScene, time } });
+      }));
       if (this._debug) {
         this._setDebug();
       }
@@ -880,10 +880,9 @@ class CesiumMap extends VcsMap {
       visualizersCallback,
     });
 
-    this._removeClusterClockTickListener =
-      this._cesiumWidget.clock.onTick.addEventListener((clock) => {
-        this._clusterDataSourceDisplay.update(clock.currentTime);
-      });
+    this._listeners.push(this._cesiumWidget.clock.onTick.addEventListener((clock) => {
+      this._clusterDataSourceDisplay.update(clock.currentTime);
+    }));
 
     return dataSourceCollection;
   }
@@ -1132,17 +1131,12 @@ class CesiumMap extends VcsMap {
       this.screenSpaceEventHandler.destroy();
       this.screenSpaceEventHandler = null;
     }
-    if (this._terrainProviderChangedListener) {
-      this._terrainProviderChangedListener();
-      this._terrainProviderChangedListener = null;
-    }
+    this._listeners.forEach((cb) => { cb(); });
+    this._listeners = [];
+
     this._terrainProvider = null;
     this.defaultTerrainProvider = null;
 
-    if (this._clockTickListener) {
-      this._clockTickListener();
-      this._clockTickListener = null;
-    }
 
     if (this._clockSyncListener) {
       this._clockSyncListener();
@@ -1156,9 +1150,6 @@ class CesiumMap extends VcsMap {
 
     if (this._cameraLimiter) {
       this._cameraLimiter = null;
-    }
-    if (this._removeClusterClockTickListener) {
-      this._removeClusterClockTickListener();
     }
 
     [...this.layerCollection].forEach((l) => { l.removedFromMap(this); });

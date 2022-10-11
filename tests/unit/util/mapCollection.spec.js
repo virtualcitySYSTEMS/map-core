@@ -1,3 +1,4 @@
+import { JulianDate } from '@vcmap/cesium';
 import { getOpenlayersMap } from '../helpers/openlayersHelpers.js';
 import Viewpoint from '../../../src/util/viewpoint.js';
 import MapCollection from '../../../src/util/mapCollection.js';
@@ -137,6 +138,7 @@ describe('MapCollection', () => {
         mapCollection.add(map);
         mapCollection.setTarget(target);
         await mapCollection.setActiveMap(map.name);
+        mapCollection.remove(map);
       });
 
       after(() => {
@@ -145,8 +147,13 @@ describe('MapCollection', () => {
       });
 
       it('should set the activeMap to null', () => {
-        mapCollection.remove(map);
         expect(mapCollection.activeMap).to.be.null;
+      });
+
+      it('should no longer listen to the postRender event on said map', () => {
+        const spy = getCesiumEventSpy(sandbox, mapCollection.postRender);
+        map.postRender.raiseEvent({ map });
+        expect(spy).to.not.have.been.called;
       });
     });
   });
@@ -268,6 +275,18 @@ describe('MapCollection', () => {
       expect(spy).to.have.been.calledWithExactly(openlayers);
     });
 
+    it('should raise the post render event from said map', async () => {
+      await mapCollection.setActiveMap(openlayers.name);
+      let event = null;
+      mapCollection.postRender.addEventListener((e) => {
+        event = e;
+      });
+      openlayers.requestRender();
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(event).to.not.be.null;
+      expect(event).to.have.property('map', openlayers);
+    });
+
     describe('previous map is another map', () => {
       let vp;
 
@@ -299,6 +318,16 @@ describe('MapCollection', () => {
         newVp.pitch = -45;
         expect(newVp.groundPosition).to.have.members([0, 0]);
         expect(newVp.distance).to.equal(200);
+      });
+
+      it('should no longer listen to post render events from the previous map', async () => {
+        await mapCollection.setActiveMap(openlayers.name);
+        const spy = getCesiumEventSpy(sandbox, mapCollection.postRender);
+        cesiumMap.postRender.raiseEvent({
+          map: cesiumMap,
+          originalEven: { scene: cesiumMap.getScene(), time: JulianDate.now() },
+        });
+        expect(spy).to.not.have.been.called;
       });
 
       describe('cant show viewpoint', () => {

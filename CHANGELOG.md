@@ -1,4 +1,7 @@
 ###   5.0.0-rc.next
+- Adds a `postRender` event on `VcsMap` and `MapCollection` for convenience.
+
+###   5.0.0-rc.22
 - Updated Cesium to version 1.97
 - Editor: Adds a `EditoGeometrySession` to edit simple geometries.
 - Renamed ViewPoint to Viewpoint

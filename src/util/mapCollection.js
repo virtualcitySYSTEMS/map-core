@@ -143,6 +143,16 @@ class MapCollection extends Collection {
      * @private
      */
     this._mapPointerListeners = [];
+    /**
+     * @type {VcsEvent<VcsMapRenderEvent>}
+     * @private
+     */
+    this._postRender = new VcsEvent();
+    /**
+     * @type {function():void}
+     * @private
+     */
+    this._postRenderListener = () => {};
   }
 
   /**
@@ -206,6 +216,15 @@ class MapCollection extends Collection {
   }
 
   /**
+   * Raised on the active maps post render event
+   * @type {VcsEvent<VcsMapRenderEvent>}
+   * @readonly
+   */
+  get postRender() {
+    return this._postRender;
+  }
+
+  /**
    * Adds a map to the collection. This will set the collections target, {@link SplitScreen}
    * and the collections {@link LayerCollection} on the map.
    * It will add map event listeners and pass them to the event handler of this collection.
@@ -231,6 +250,8 @@ class MapCollection extends Collection {
    */
   _remove(map) {
     if (this._activeMap === map) {
+      this._postRenderListener();
+      this._postRenderListener = () => {};
       this._cachedViewpoint = map.getViewpointSync();
       if (this._target) {
         const mapClassName = this._activeMap.className.split('.').pop();
@@ -380,6 +401,10 @@ class MapCollection extends Collection {
 
     this.clippingObjectManager.mapActivated(map);
     this._splitScreen.mapActivated(map);
+    this._postRenderListener();
+    this._postRenderListener = this._activeMap.postRender.addEventListener((event) => {
+      this.postRender.raiseEvent(event);
+    });
     this.mapActivated.raiseEvent(map);
     return Promise.resolve();
   }

@@ -149,4 +149,20 @@ describe('BaseOLMap', () => {
       expect(map.getCurrentResolution()).to.equal(3);
     });
   });
+
+  describe('post render event', () => {
+    it('should raise the post render event', async () => {
+      const map = new BaseOLMap({});
+      await map.initialize();
+      let event = null;
+      map.postRender.addEventListener((e) => {
+        event = e;
+      });
+      map.requestRender();
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(event).to.not.be.null;
+      expect(event).to.have.property('map', map);
+      map.destroy();
+    });
+  });
 });

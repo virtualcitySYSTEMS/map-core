@@ -32,6 +32,12 @@ import { mapClassRegistry } from '../classRegistry.js';
  */
 
 /**
+ * @typedef {Object} VcsMapRenderEvent
+ * @property {VcsMap} map
+ * @property {import("ol").MapEvent|CesiumMapEvent} originalEvent
+ */
+
+/**
  * @type {Object}
  */
 const specificLayerImpl = {};
@@ -152,6 +158,12 @@ class VcsMap extends VcsObject {
      * @api
      */
     this.splitScreen = null;
+
+    /**
+     * @type {VcsEvent<VcsMapRenderEvent>}
+     * @private
+     */
+    this._postRender = new VcsEvent();
   }
 
   /**
@@ -215,6 +227,15 @@ class VcsMap extends VcsObject {
     }
 
     this._setLayerCollectionListeners();
+  }
+
+  /**
+   * An event raised on the maps post render
+   * @type {VcsEvent<VcsMapRenderEvent>}
+   * @readonly
+   */
+  get postRender() {
+    return this._postRender;
   }
 
   /**
@@ -523,6 +544,7 @@ class VcsMap extends VcsObject {
       this.pointerInteractionEvent = null;
     }
     this._layerCollection = null;
+    this._postRender.destroy();
   }
 }
 
