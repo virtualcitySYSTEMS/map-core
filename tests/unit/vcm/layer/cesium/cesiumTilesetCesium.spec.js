@@ -104,6 +104,11 @@ describe('vcs.vcm.layer.cesium.CesiumTilesetCesium', () => {
       expect(clippingObject.layerNames).to.include(cesiumTilesetCesium.name);
     });
 
+    it('should not show the cesium3DTiles', async () => {
+      await cesiumTilesetCesium.initialize();
+      expect(cesiumTilesetCesium.cesium3DTileset.show).to.be.false;
+    });
+
     describe('setting of model matrix', () => {
       let matrix;
 

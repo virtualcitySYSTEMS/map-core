@@ -115,7 +115,10 @@ class CesiumTilesetCesium extends LayerImplementation {
   async initialize() {
     if (!this._initializedPromise) {
       /** @type {Cesium/Cesium3DTileset} */
-      this.cesium3DTileset = new Cesium3DTileset(this.tilesetOptions);
+      this.cesium3DTileset = new Cesium3DTileset({
+        ...this.tilesetOptions,
+        show: false, // show is handled by activate
+      });
       if (this.tilesetProperties) {
         this.tilesetProperties.forEach(({ key, value }) => {
           this.cesium3DTileset[key] = value;
