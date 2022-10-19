@@ -8,7 +8,7 @@ import ObliqueProvider from '../../../src/oblique/obliqueProvider.js';
 import setTiledObliqueImageServer, { tiledMercatorCoordinate, tiledMercatorCoordinate2, imagev35MercatorCoordinate } from '../helpers/obliqueData.js';
 import { ObliqueViewDirection } from '../../../src/oblique/obliqueViewDirection.js';
 import { setTerrainServer } from '../helpers/terrain/terrainData.js';
-import { getCesiumEventSpy } from '../helpers/cesiumHelpers.js';
+import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
 import Projection from '../../../src/util/projection.js';
 import { getTerrainProviderForUrl } from '../../../src/layer/terrainHelpers.js';
 import { transformFromImage } from '../../../src/oblique/helpers.js';
@@ -273,7 +273,7 @@ describe('ObliqueProvider', () => {
     });
 
     it('should raise the image changed event', async () => {
-      const spy = getCesiumEventSpy(sandbox, obliqueProvider.imageChanged);
+      const spy = getVcsEventSpy(obliqueProvider.imageChanged, sandbox);
       await obliqueProvider.setImage(image);
       expect(spy).to.have.been.called;
       expect(spy).to.have.been.calledWith(image);
@@ -356,7 +356,7 @@ describe('ObliqueProvider', () => {
       });
 
       it('should not raise the image changed event, if the image is the same', async () => {
-        const spy = getCesiumEventSpy(sandbox, obliqueProvider.imageChanged);
+        const spy = getVcsEventSpy(obliqueProvider.imageChanged, sandbox);
         await obliqueProvider.setImage(image);
         expect(spy).to.not.have.been.called;
       });

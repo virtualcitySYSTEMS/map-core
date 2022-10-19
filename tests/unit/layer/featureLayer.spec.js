@@ -3,7 +3,7 @@ import Fill from 'ol/style/Fill.js';
 import DeclarativeStyleItem from '../../../src/style/declarativeStyleItem.js';
 import VectorStyleItem from '../../../src/style/vectorStyleItem.js';
 import FeatureLayer from '../../../src/layer/featureLayer.js';
-import { getCesiumEventSpy } from '../helpers/cesiumHelpers.js';
+import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
 import GlobalHider from '../../../src/layer/globalHider.js';
 
 describe('FeatureLayer', () => {
@@ -50,7 +50,7 @@ describe('FeatureLayer', () => {
     });
 
     it('should raise the styleChanged with the new style', () => {
-      const spy = getCesiumEventSpy(sandbox, featureLayer.styleChanged);
+      const spy = getVcsEventSpy(featureLayer.styleChanged, sandbox);
       const style = new VectorStyleItem({});
       featureLayer.setStyle(style);
       expect(spy).to.have.been.calledWithExactly(style);

@@ -13,7 +13,7 @@ import VcsApp from '../../../src/vcsApp.js';
 import getDummyCesium3DTileset from './cesium/getDummyCesium3DTileset.js';
 import Projection, { wgs84Projection } from '../../../src/util/projection.js';
 import Extent from '../../../src/util/extent.js';
-import { createTilesetServer, getCesiumEventSpy, setCesiumMap, createDummyCesium3DTileFeature } from '../helpers/cesiumHelpers.js';
+import { createTilesetServer, getVcsEventSpy, setCesiumMap, createDummyCesium3DTileFeature } from '../helpers/cesiumHelpers.js';
 import { VectorStyleItem } from '../../../index.js';
 
 describe('CesiumTilesetLayer', () => {
@@ -65,14 +65,14 @@ describe('CesiumTilesetLayer', () => {
     });
 
     it('should raise the splitDirectionChanged event', () => {
-      const spy = getCesiumEventSpy(sandbox, cesiumTileset.splitDirectionChanged);
+      const spy = getVcsEventSpy(cesiumTileset.splitDirectionChanged, sandbox);
       cesiumTileset.splitDirection = SplitDirection.LEFT;
       expect(spy).to.have.been.calledWith(SplitDirection.LEFT);
     });
 
     it('should not raise the splitDirectionChanged event, if it does not changed', () => {
       cesiumTileset.splitDirection = SplitDirection.LEFT;
-      const spy = getCesiumEventSpy(sandbox, cesiumTileset.splitDirectionChanged);
+      const spy = getVcsEventSpy(cesiumTileset.splitDirectionChanged, sandbox);
       cesiumTileset.splitDirection = SplitDirection.LEFT;
       expect(spy).to.not.have.been.called;
     });

@@ -1,7 +1,7 @@
 import { SplitDirection, GeographicTilingScheme } from '@vcmap/cesium';
 
 import RasterLayer, { calculateMinLevel } from '../../../src/layer/rasterLayer.js';
-import { getCesiumEventSpy } from '../helpers/cesiumHelpers.js';
+import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
 import Extent from '../../../src/util/extent.js';
 import { getOpenlayersMap } from '../helpers/openlayersHelpers.js';
 import AbstractRasterLayerOL from '../../../src/layer/openlayers/rasterLayerOpenlayersImpl.js';
@@ -56,14 +56,14 @@ describe('RasterLayer', () => {
     });
 
     it('should call the SPLIT_DIRECTION_CHANGED events', () => {
-      const spy = getCesiumEventSpy(sandbox, ARL.splitDirectionChanged);
+      const spy = getVcsEventSpy(ARL.splitDirectionChanged, sandbox);
       ARL.splitDirection = SplitDirection.LEFT;
       expect(spy).to.have.been.calledWith(SplitDirection.LEFT);
     });
 
     it('should not publish the SPLIT_DIRECTION_CHANGED event, if it does not changed', () => {
       ARL.splitDirection = SplitDirection.LEFT;
-      const spy = getCesiumEventSpy(sandbox, ARL.splitDirectionChanged);
+      const spy = getVcsEventSpy(ARL.splitDirectionChanged, sandbox);
       ARL.splitDirection = SplitDirection.LEFT;
       expect(spy).to.not.have.been.called;
     });

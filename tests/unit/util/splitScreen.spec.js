@@ -1,6 +1,6 @@
 import { Cartesian3, SplitDirection } from '@vcmap/cesium';
 import VcsApp from '../../../src/vcsApp.js';
-import { createInitializedTilesetLayer, getCesiumEventSpy, setCesiumMap } from '../helpers/cesiumHelpers.js';
+import { createInitializedTilesetLayer, getVcsEventSpy, setCesiumMap } from '../helpers/cesiumHelpers.js';
 import { setOpenlayersMap } from '../helpers/openlayersHelpers.js';
 
 /**
@@ -91,7 +91,7 @@ describe('SplitScreen', () => {
 
     it('should add targets changed listeners to left and right clippingObjects', () => {
       const targetsChanged = sandbox.spy(splitScreen, '_targetsChanged');
-      const spy = getCesiumEventSpy(sandbox, splitScreen.leftScreenClippingObject.targetsUpdated);
+      const spy = getVcsEventSpy(splitScreen.leftScreenClippingObject.targetsUpdated, sandbox);
       splitScreen.leftScreenClippingObject.terrain = true;
       splitScreen.rightScreenClippingObject.terrain = true;
       expect(spy).to.have.been.called;

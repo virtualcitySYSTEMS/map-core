@@ -37,8 +37,8 @@ describe('EditGeometryMouseOverInteraction', () => {
     expect(cursorStyle.cursor).to.equal(cursorMap.select);
   });
 
-  it('should change the cursor style, to select, if hovering over a vertex with alt', async () => {
-    await interaction.pipe({ feature: vertex, key: ModificationKeyType.ALT });
+  it('should change the cursor style, to translate, if hovering over a vertex', async () => {
+    await interaction.pipe({ feature: vertex });
     expect(cursorStyle.cursor).to.equal(cursorMap.translateVertex);
   });
 
@@ -47,29 +47,14 @@ describe('EditGeometryMouseOverInteraction', () => {
     expect(cursorStyle.cursor).to.equal(cursorMap.removeVertex);
   });
 
-  it('should change the cursor style, to auto, if hovering over a vertex', async () => {
-    await interaction.pipe({ feature: vertex });
-    expect(cursorStyle.cursor).to.equal(cursorMap.auto);
-  });
-
   it('should change the cursor style, to auto, without a feature', async () => {
     await interaction.pipe({ feature: null });
     expect(cursorStyle.cursor).to.equal(cursorMap.auto);
   });
 
-  describe('changing the modification key, while a vertex is hovered', () => {
-    beforeEach(async () => {
-      await interaction.pipe({ feature: vertex });
-    });
-
-    it('should change the cursor style, if modification key changes to alt', () => {
-      interaction.modifierChanged(ModificationKeyType.ALT);
-      expect(cursorStyle.cursor).to.equal(cursorMap.translateVertex);
-    });
-
-    it('should change the cursor style, if modification key changes to shift', () => {
-      interaction.modifierChanged(ModificationKeyType.SHIFT);
-      expect(cursorStyle.cursor).to.equal(cursorMap.removeVertex);
-    });
+  it('should change the cursor style, if modification key changes to shift while hovering over a vertex', async () => {
+    await interaction.pipe({ feature: vertex });
+    interaction.modifierChanged(ModificationKeyType.SHIFT);
+    expect(cursorStyle.cursor).to.equal(cursorMap.removeVertex);
   });
 });

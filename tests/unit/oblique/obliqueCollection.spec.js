@@ -5,7 +5,7 @@ import ObliqueCollection from '../../../src/oblique/obliqueCollection.js';
 import ObliqueDataSet, { DataState } from '../../../src/oblique/obliqueDataSet.js';
 import getTiledObliqueImageServer, { tiledMercatorCoordinate, tiledMercatorCoordinate2 } from '../helpers/obliqueData.js';
 import { ObliqueViewDirection } from '../../../src/oblique/obliqueViewDirection.js';
-import { getCesiumEventSpy } from '../helpers/cesiumHelpers.js';
+import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
 import Projection from '../../../src/util/projection.js';
 import importJSON from '../helpers/importJSON.js';
 
@@ -82,7 +82,7 @@ describe('ObliqueCollection', () => {
         obliqueCollection = new ObliqueCollection({
           dataSets: [dataSet],
         });
-        const spy = getCesiumEventSpy(sandbox, obliqueCollection.imagesLoaded);
+        const spy = getVcsEventSpy(obliqueCollection.imagesLoaded, sandbox);
         dataSet.initialize(imageJson);
         expect(spy).to.have.been.calledOnce;
         expect(spy).to.have.been.calledWith(obliqueCollection.images);
@@ -117,7 +117,7 @@ describe('ObliqueCollection', () => {
 
       it('should emit imagesLoaded Event', async () => {
         await obliqueCollection.addDataSet(dataSet);
-        const spy = getCesiumEventSpy(sandbox, obliqueCollection.imagesLoaded);
+        const spy = getVcsEventSpy(obliqueCollection.imagesLoaded, sandbox);
         dataSet.initialize(imageJson);
         expect(spy).to.have.been.calledOnce;
         expect(spy).to.have.been.calledWith(obliqueCollection.images);

@@ -1,6 +1,6 @@
 import { SplitDirection } from '@vcmap/cesium';
 
-import { getCesiumEventSpy } from '../helpers/cesiumHelpers.js';
+import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
 import { setOpenlayersMap } from '../helpers/openlayersHelpers.js';
 import OpenStreetMapLayer from '../../../src/layer/openStreetMapLayer.js';
 import VcsApp from '../../../src/vcsApp.js';
@@ -38,14 +38,14 @@ describe('OpenStreetMapLayer', () => {
     });
 
     it('should call the SPLIT_DIRECTION_CHANGED events', () => {
-      const spy = getCesiumEventSpy(sandbox, openStreetMapLayer.splitDirectionChanged);
+      const spy = getVcsEventSpy(openStreetMapLayer.splitDirectionChanged, sandbox);
       openStreetMapLayer.splitDirection = SplitDirection.LEFT;
       expect(spy).to.have.been.calledWith(SplitDirection.LEFT);
     });
 
     it('should not publish the SPLIT_DIRECTION_CHANGED event, if it does not changed', () => {
       openStreetMapLayer.splitDirection = SplitDirection.LEFT;
-      const spy = getCesiumEventSpy(sandbox, openStreetMapLayer.splitDirectionChanged);
+      const spy = getVcsEventSpy(openStreetMapLayer.splitDirectionChanged, sandbox);
       openStreetMapLayer.splitDirection = SplitDirection.LEFT;
       expect(spy).to.not.have.been.called;
     });

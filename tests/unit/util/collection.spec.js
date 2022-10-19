@@ -1,5 +1,5 @@
 import Collection from '../../../src/util/collection.js';
-import { getCesiumEventSpy } from '../helpers/cesiumHelpers.js';
+import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
 
 describe('Collection', () => {
   let sandbox;
@@ -139,7 +139,7 @@ describe('Collection', () => {
       });
 
       it('should raise the added event with the item', () => {
-        const spy = getCesiumEventSpy(sandbox, collection.added);
+        const spy = getVcsEventSpy(collection.added, sandbox);
         collection.add(item1);
         expect(spy).to.have.been.calledOnceWithExactly(item1);
       });
@@ -159,7 +159,7 @@ describe('Collection', () => {
       });
 
       it('should not raise the added event, if the item was not added', () => {
-        const spy = getCesiumEventSpy(sandbox, collection.added);
+        const spy = getVcsEventSpy(collection.added, sandbox);
         collection.add({ noName: 1 });
         expect(spy).to.not.have.been.called;
       });
@@ -181,7 +181,7 @@ describe('Collection', () => {
       });
 
       it('should raise the added event with the item', () => {
-        const spy = getCesiumEventSpy(sandbox, collection.added);
+        const spy = getVcsEventSpy(collection.added, sandbox);
         collection.add(item1);
         expect(spy).to.have.been.calledOnceWithExactly(item1);
       });
@@ -225,13 +225,13 @@ describe('Collection', () => {
     });
 
     it('should raise the removed event with the removed item', () => {
-      const spy = getCesiumEventSpy(sandbox, collection.removed);
+      const spy = getVcsEventSpy(collection.removed, sandbox);
       collection.remove(array[0]);
       expect(spy).to.have.been.calledOnceWithExactly(array[0]);
     });
 
     it('should not raise the removed event, if nothing was removed', () => {
-      const spy = getCesiumEventSpy(sandbox, collection.removed);
+      const spy = getVcsEventSpy(collection.removed, sandbox);
       collection.remove({ name: 1 });
       expect(spy).to.not.have.been.called;
     });

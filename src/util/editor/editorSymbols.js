@@ -8,3 +8,9 @@ export const vertexSymbol = Symbol('Vertex');
  * @type {symbol}
  */
 export const vertexIndex = Symbol('VertexIndex');
+/**
+ * Symbol added to primitives and features to denote that these are handlers. It is expected, that the value of the symobl is
+ * equal to an {@see AXIS_AND_PLANES}
+ * @type {symbol}
+ */
+export const handlerSymbol = Symbol('Handler');

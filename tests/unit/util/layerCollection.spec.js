@@ -1,7 +1,7 @@
 import { Entity, SplitDirection } from '@vcmap/cesium';
 import Layer from '../../../src/layer/layer.js';
 import LayerCollection from '../../../src/util/layerCollection.js';
-import { getCesiumEventSpy } from '../helpers/cesiumHelpers.js';
+import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
 import OpenStreetMapLayer from '../../../src/layer/openStreetMapLayer.js';
 import { setOpenlayersMap } from '../helpers/openlayersHelpers.js';
 import VcsApp from '../../../src/vcsApp.js';
@@ -137,7 +137,7 @@ describe('LayerCollection', () => {
       layerCollection.add(layer3);
       layerCollection.add(layer4);
       layerCollection.add(layer5);
-      const spy = getCesiumEventSpy(sandbox, layerCollection.moved);
+      const spy = getVcsEventSpy(layerCollection.moved, sandbox);
       layer5.zIndex = 5;
       expect(spy).to.have.been.calledOnceWithExactly(layer5);
       expect(layerCollection.indexOf(layer5)).to.equal(4);

@@ -3,7 +3,7 @@ import { getOpenlayersMap } from '../helpers/openlayersHelpers.js';
 import Viewpoint from '../../../src/util/viewpoint.js';
 import MapCollection from '../../../src/util/mapCollection.js';
 import OpenlayersMap from '../../../src/map/openlayersMap.js';
-import { getCesiumEventSpy, getCesiumMap } from '../helpers/cesiumHelpers.js';
+import { getVcsEventSpy, getCesiumMap } from '../helpers/cesiumHelpers.js';
 import LayerCollection from '../../../src/util/layerCollection.js';
 import Layer from '../../../src/layer/layer.js';
 import VcsMap from '../../../src/map/vcsMap.js';
@@ -151,7 +151,7 @@ describe('MapCollection', () => {
       });
 
       it('should no longer listen to the postRender event on said map', () => {
-        const spy = getCesiumEventSpy(sandbox, mapCollection.postRender);
+        const spy = getVcsEventSpy(mapCollection.postRender, sandbox);
         map.postRender.raiseEvent({ map });
         expect(spy).to.not.have.been.called;
       });
@@ -270,7 +270,7 @@ describe('MapCollection', () => {
     });
 
     it('should publish the map activated event', async () => {
-      const spy = getCesiumEventSpy(sandbox, mapCollection.mapActivated);
+      const spy = getVcsEventSpy(mapCollection.mapActivated, sandbox);
       await mapCollection.setActiveMap(openlayers.name);
       expect(spy).to.have.been.calledWithExactly(openlayers);
     });
@@ -322,7 +322,7 @@ describe('MapCollection', () => {
 
       it('should no longer listen to post render events from the previous map', async () => {
         await mapCollection.setActiveMap(openlayers.name);
-        const spy = getCesiumEventSpy(sandbox, mapCollection.postRender);
+        const spy = getVcsEventSpy(mapCollection.postRender, sandbox);
         cesiumMap.postRender.raiseEvent({
           map: cesiumMap,
           originalEven: { scene: cesiumMap.getScene(), time: JulianDate.now() },
@@ -341,7 +341,7 @@ describe('MapCollection', () => {
         });
 
         it('should publish the MAP_FALLBACK_ACTIVATED event', async () => {
-          const spy = getCesiumEventSpy(sandbox, mapCollection.fallbackMapActivated);
+          const spy = getVcsEventSpy(mapCollection.fallbackMapActivated, sandbox);
           await mapCollection.setActiveMap(openlayers.name);
           expect(spy).to.have.been.called;
         });
@@ -369,13 +369,13 @@ describe('MapCollection', () => {
         });
 
         it('should raise the initialize error event', async () => {
-          const spy = getCesiumEventSpy(sandbox, mapCollection.initializeError);
+          const spy = getVcsEventSpy(mapCollection.initializeError, sandbox);
           await mapCollection.setActiveMap(openlayers.name);
           expect(spy).to.have.been.called;
         });
 
         it('should raise the fallback map activated event', async () => {
-          const spy = getCesiumEventSpy(sandbox, mapCollection.fallbackMapActivated);
+          const spy = getVcsEventSpy(mapCollection.fallbackMapActivated, sandbox);
           await mapCollection.setActiveMap(openlayers.name);
           expect(spy).to.have.been.called;
         });

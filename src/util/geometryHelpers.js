@@ -1,4 +1,4 @@
-import { offset } from 'ol/sphere.js';
+import { offset as offsetSphere } from 'ol/sphere.js';
 import Circle from 'ol/geom/Circle.js';
 import Point from 'ol/geom/Point.js';
 import LineString from 'ol/geom/LineString.js';
@@ -7,6 +7,7 @@ import MultiPoint from 'ol/geom/MultiPoint.js';
 import MultiLineString from 'ol/geom/MultiLineString.js';
 import MultiPolygon from 'ol/geom/MultiPolygon.js';
 import GeometryCollection from 'ol/geom/GeometryCollection.js';
+import { SimpleGeometry } from 'ol/geom.js';
 import Projection from './projection.js';
 
 /**
@@ -16,16 +17,15 @@ import Projection from './projection.js';
 export function getFlatCoordinatesFromSimpleGeometry(geometry) {
   const stride = geometry.getStride();
   const flatCoordinates = geometry.getFlatCoordinates();
-  if (flatCoordinates.length) {
+  if (flatCoordinates.length > 0) {
     const numberOfCoordinates = Math.floor(flatCoordinates.length / stride);
     const coordinates = new Array(numberOfCoordinates);
     for (let i = 0; i < numberOfCoordinates; i++) {
       const flatIndex = i * stride;
-      const coord = new Array(stride);
+      coordinates[i] = new Array(stride);
       for (let j = 0; j < stride; j++) {
-        coord[j] = flatCoordinates[flatIndex + j];
+        coordinates[i][j] = flatCoordinates[flatIndex + j];
       }
-      coordinates[i] = coord;
     }
     return coordinates;
   }
@@ -38,7 +38,10 @@ export function getFlatCoordinatesFromSimpleGeometry(geometry) {
  * @returns {Array.<import("ol/coordinate").Coordinate>}
  */
 export function getFlatCoordinatesFromGeometry(geometry, inputCoordinates) {
-  const coordinates = inputCoordinates || geometry.getCoordinates();
+  if (!inputCoordinates && geometry instanceof SimpleGeometry) {
+    return getFlatCoordinatesFromSimpleGeometry(geometry);
+  }
+  const coordinates = inputCoordinates;
   let flattenCoordinates = null;
   if (geometry instanceof Point) {
     flattenCoordinates = [coordinates];
@@ -58,7 +61,7 @@ export function getFlatCoordinatesFromGeometry(geometry, inputCoordinates) {
     flattenCoordinates = coordinates;
   } else if (geometry instanceof GeometryCollection) {
     flattenCoordinates = geometry.getGeometries()
-      .map((g, i) => getFlatCoordinatesFromGeometry(g, coordinates[i]))
+      .map((g, i) => getFlatCoordinatesFromGeometry(g, coordinates?.[i]))
       .reduce((current, next) => current.concat(next));
   }
   return flattenCoordinates;
@@ -70,7 +73,7 @@ export function getFlatCoordinatesFromGeometry(geometry, inputCoordinates) {
  * @returns {import("ol/geom/Circle").default}
  */
 export function circleFromCenterRadius(center, radius) {
-  const offsetWGS84 = offset(Projection.mercatorToWgs84(center), radius, Math.PI / 2);
+  const offsetWGS84 = offsetSphere(Projection.mercatorToWgs84(center), radius, Math.PI / 2);
   const of = Projection.wgs84ToMercator(offsetWGS84);
   const dx = center[0] - of[0];
   const dy = center[1] - of[1];

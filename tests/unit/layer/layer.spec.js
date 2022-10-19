@@ -2,7 +2,7 @@ import Layer from '../../../src/layer/layer.js';
 import VcsApp from '../../../src/vcsApp.js';
 import LayerState from '../../../src/layer/layerState.js';
 import LayerImplementation from '../../../src/layer/layerImplementation.js';
-import { getCesiumEventSpy } from '../helpers/cesiumHelpers.js';
+import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
 import { getOpenlayersMap, setOpenlayersMap } from '../helpers/openlayersHelpers.js';
 import Extent from '../../../src/util/extent.js';
 import GlobalHider from '../../../src/layer/globalHider.js';
@@ -56,7 +56,7 @@ describe('Layer', () => {
     });
 
     it('should raise the exclusiveGroupsChanged event', () => {
-      const spy = getCesiumEventSpy(sandbox, AL.exclusiveGroupsChanged);
+      const spy = getVcsEventSpy(AL.exclusiveGroupsChanged, sandbox);
       const groups = ['test'];
       AL.exclusiveGroups = groups;
       expect(spy).to.have.been.calledWith(groups);
@@ -65,7 +65,7 @@ describe('Layer', () => {
     it('should not raise the exclusiveGroupsChanged event, if the groups are the same', () => {
       const groups = ['test'];
       AL.exclusiveGroups = groups;
-      const spy = getCesiumEventSpy(sandbox, AL.exclusiveGroupsChanged);
+      const spy = getVcsEventSpy(AL.exclusiveGroupsChanged, sandbox);
       AL.exclusiveGroups = groups;
       expect(spy).to.not.have.been.called;
     });
@@ -143,7 +143,7 @@ describe('Layer', () => {
 
   describe('deactivate', () => {
     it('should not raise state changed on an inactive layer', () => {
-      const spy = getCesiumEventSpy(sandbox, AL.stateChanged);
+      const spy = getVcsEventSpy(AL.stateChanged, sandbox);
       AL.deactivate();
       expect(spy).to.not.have.been.called;
     });
@@ -166,7 +166,7 @@ describe('Layer', () => {
       });
 
       it('should raise stateChanged with INACTIVE', () => {
-        const spy = getCesiumEventSpy(sandbox, AL.stateChanged);
+        const spy = getVcsEventSpy(AL.stateChanged, sandbox);
         AL.deactivate();
         expect(spy).to.have.been.calledWith(LayerState.INACTIVE);
       });

@@ -1,6 +1,6 @@
 import DragPan from 'ol/interaction/DragPan.js';
 import { EventType, ModificationKeyType } from '../../../interaction/interactionType.js';
-import { vertexSymbol } from '../editorSymbols.js';
+import { handlerSymbol, vertexSymbol } from '../editorSymbols.js';
 import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 
 /**
@@ -75,7 +75,10 @@ class MapInteractionController extends AbstractInteraction {
    */
   async pipe(event) {
     this.reset();
-    if (event.feature && event.feature[vertexSymbol]) {
+    if (
+      event.feature &&
+      (event.feature[vertexSymbol] || event.feature[handlerSymbol])
+    ) {
       if (event.map.className === 'CesiumMap') {
         this._clear = suspendCesiumMap(/** @type {import("@vcmap/core").CesiumMap} */ (event.map));
       } else {

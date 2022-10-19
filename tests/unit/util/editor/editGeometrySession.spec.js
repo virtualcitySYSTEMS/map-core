@@ -67,7 +67,7 @@ describe('EditGeometrySession', () => {
         const vertex = vertices[0];
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAGSTART,
           feature: vertex,
@@ -75,7 +75,7 @@ describe('EditGeometrySession', () => {
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAG,
           feature: vertex,
@@ -83,7 +83,7 @@ describe('EditGeometrySession', () => {
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAGEND,
           feature: vertex,
@@ -138,7 +138,7 @@ describe('EditGeometrySession', () => {
         const vertex = vertices[0];
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAGSTART,
           feature: vertex,
@@ -146,7 +146,7 @@ describe('EditGeometrySession', () => {
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAG,
           feature: vertex,
@@ -154,7 +154,7 @@ describe('EditGeometrySession', () => {
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAGEND,
           feature: vertex,
@@ -210,7 +210,7 @@ describe('EditGeometrySession', () => {
         const vertex = vertices[0];
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAGSTART,
           feature: vertex,
@@ -218,7 +218,7 @@ describe('EditGeometrySession', () => {
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAG,
           feature: vertex,
@@ -226,7 +226,7 @@ describe('EditGeometrySession', () => {
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAGEND,
           feature: vertex,
@@ -255,7 +255,7 @@ describe('EditGeometrySession', () => {
         const vertex = vertices[0];
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAGSTART,
           feature: vertex,
@@ -263,7 +263,7 @@ describe('EditGeometrySession', () => {
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAG,
           feature: vertex,
@@ -271,7 +271,7 @@ describe('EditGeometrySession', () => {
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAGEND,
           feature: vertex,
@@ -285,7 +285,7 @@ describe('EditGeometrySession', () => {
         const vertex = vertices[1];
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAGSTART,
           feature: vertex,
@@ -293,7 +293,7 @@ describe('EditGeometrySession', () => {
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAG,
           feature: vertex,
@@ -301,7 +301,7 @@ describe('EditGeometrySession', () => {
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAGEND,
           feature: vertex,
@@ -333,7 +333,7 @@ describe('EditGeometrySession', () => {
         const vertex = vertices[0];
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAGSTART,
           feature: vertex,
@@ -341,7 +341,7 @@ describe('EditGeometrySession', () => {
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAG,
           feature: vertex,
@@ -349,7 +349,7 @@ describe('EditGeometrySession', () => {
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAGEND,
           feature: vertex,
@@ -363,7 +363,7 @@ describe('EditGeometrySession', () => {
         const vertex = vertices[1];
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAGSTART,
           feature: vertex,
@@ -371,7 +371,7 @@ describe('EditGeometrySession', () => {
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAG,
           feature: vertex,
@@ -379,7 +379,7 @@ describe('EditGeometrySession', () => {
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAGEND,
           feature: vertex,
@@ -393,7 +393,7 @@ describe('EditGeometrySession', () => {
         const vertex = vertices[2];
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAGSTART,
           feature: vertex,
@@ -401,7 +401,7 @@ describe('EditGeometrySession', () => {
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAG,
           feature: vertex,
@@ -409,7 +409,7 @@ describe('EditGeometrySession', () => {
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAGEND,
           feature: vertex,
@@ -423,7 +423,7 @@ describe('EditGeometrySession', () => {
         const vertex = vertices[3];
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAGSTART,
           feature: vertex,
@@ -431,7 +431,7 @@ describe('EditGeometrySession', () => {
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAG,
           feature: vertex,
@@ -439,7 +439,7 @@ describe('EditGeometrySession', () => {
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAGEND,
           feature: vertex,
@@ -453,7 +453,7 @@ describe('EditGeometrySession', () => {
         const vertex = vertices[0];
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAGSTART,
           feature: vertex,
@@ -461,7 +461,7 @@ describe('EditGeometrySession', () => {
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAG,
           feature: vertex,
@@ -469,7 +469,7 @@ describe('EditGeometrySession', () => {
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
-          key: ModificationKeyType.ALT,
+          key: ModificationKeyType.NONE,
           map: defaultMap,
           type: EventType.DRAGEND,
           feature: vertex,
@@ -639,9 +639,9 @@ describe('EditGeometrySession', () => {
       session = startEditGeometrySession(app, layer);
     });
 
-    afterEach(() => {
+    afterEach(async () => {
       session.stop();
-      app.maps.setActiveMap(defaultMap.name);
+      await app.maps.setActiveMap(defaultMap.name);
       app.maps.remove(otherMap);
       otherMap.destroy();
     });
@@ -661,9 +661,9 @@ describe('EditGeometrySession', () => {
       session = startEditGeometrySession(app, layer);
     });
 
-    afterEach(() => {
+    afterEach(async () => {
       session.stop();
-      app.maps.setActiveMap(defaultMap.name);
+      await app.maps.setActiveMap(defaultMap.name);
     });
 
     it('should clear the current selection', async () => {

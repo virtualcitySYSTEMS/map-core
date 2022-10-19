@@ -2,7 +2,7 @@ import Feature from 'ol/Feature.js';
 import Style from 'ol/style/Style.js';
 import GlobalHider from '../../../src/layer/globalHider.js';
 import VectorStyleItem, { vectorStyleSymbol } from '../../../src/style/vectorStyleItem.js';
-import { getCesiumEventSpy, createDummyCesium3DTileFeature } from '../helpers/cesiumHelpers.js';
+import { getVcsEventSpy, createDummyCesium3DTileFeature } from '../helpers/cesiumHelpers.js';
 import {
   FeatureVisibilityAction,
   globalHidden,
@@ -51,7 +51,7 @@ describe('GlobalHider', () => {
     });
 
     it('should raise changed event', () => {
-      const spy = getCesiumEventSpy(sandbox, GH.changed);
+      const spy = getVcsEventSpy(GH.changed, sandbox);
       GH.hideObjects(['test', 'test1']);
       expect(spy).to.have.been.calledWith({ action: FeatureVisibilityAction.HIDE, ids: ['test', 'test1'] });
     });
@@ -63,7 +63,7 @@ describe('GlobalHider', () => {
     });
 
     it('should not raise changed event, if the array is empty', () => {
-      const spy = getCesiumEventSpy(sandbox, GH.changed);
+      const spy = getVcsEventSpy(GH.changed, sandbox);
       GH.hideObjects([]);
       expect(spy).to.not.have.been.called;
     });
@@ -78,14 +78,14 @@ describe('GlobalHider', () => {
 
     it('should not raise changed event, if the no new feature where added', () => {
       GH.hideObjects(['test']);
-      const spy = getCesiumEventSpy(sandbox, GH.changed);
+      const spy = getVcsEventSpy(GH.changed, sandbox);
       GH.hideObjects(['test']);
       expect(spy).to.not.have.been.called;
     });
 
     it('should only raise the changed event for newly hidden ids', () => {
       GH.hideObjects(['test']);
-      const spy = getCesiumEventSpy(sandbox, GH.changed);
+      const spy = getVcsEventSpy(GH.changed, sandbox);
       GH.hideObjects(['test', 'test1']);
       expect(spy).to.have.been.calledWith({ action: FeatureVisibilityAction.HIDE, ids: ['test1'] });
     });
@@ -163,27 +163,27 @@ describe('GlobalHider', () => {
     });
 
     it('should raise changed event', () => {
-      const spy = getCesiumEventSpy(sandbox, GH.changed);
+      const spy = getVcsEventSpy(GH.changed, sandbox);
       GH.showObjects(['test', 'test1']);
       expect(spy).to.have.been.calledWith({ action: FeatureVisibilityAction.SHOW, ids: ['test', 'test1'] });
     });
 
     it('should not raise changed event, if the array is empty', () => {
-      const spy = getCesiumEventSpy(sandbox, GH.changed);
+      const spy = getVcsEventSpy(GH.changed, sandbox);
       GH.showObjects([]);
       expect(spy).to.not.have.been.called;
     });
 
     it('should not raise changed event, if the no new feature where added', () => {
       GH.showObjects(['test']);
-      const spy = getCesiumEventSpy(sandbox, GH.changed);
+      const spy = getVcsEventSpy(GH.changed, sandbox);
       GH.showObjects(['test']);
       expect(spy).to.not.have.been.called;
     });
 
     it('should only raise the changed event for newly shown ids', () => {
       GH.hideObjects(['test']);
-      const spy = getCesiumEventSpy(sandbox, GH.changed);
+      const spy = getVcsEventSpy(GH.changed, sandbox);
       GH.showObjects(['test', 'test1']);
       expect(spy).to.have.been.calledWith({ action: FeatureVisibilityAction.SHOW, ids: ['test1'] });
     });

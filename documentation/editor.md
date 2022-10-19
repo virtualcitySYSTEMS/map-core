@@ -100,7 +100,7 @@ The following outlines some example use cases:
 import { 
   VcsApp, 
   VectorLayer,
-  createEditGeometrySession, 
+  startEditGeometrySession, 
   GeometryType,
 } from '@vcmap/core';
 
@@ -115,7 +115,7 @@ await layer.activate();
  * This will edit the layer indefinitly
  */
 function editLayerGeometries() {
-  createEditGeometrySession(app, layer);
+  startEditGeometrySession(app, layer);
 }
 
 /**
@@ -123,7 +123,7 @@ function editLayerGeometries() {
  * @param {{ currentFeature: import("ol").Feature|null|null}}
  */
 function snycInfo(info) {
-  const session = createEditGeometrySession(app, layer);
+  const session = startEditGeometrySession(app, layer);
   session.featureSelection.featureChanged.addEventListener((feature) => {
     info.currentFeature = feature;
   });
@@ -134,7 +134,7 @@ function snycInfo(info) {
  * @param {string} featureId
  */
 async function setTheCurrentFeature(featureId) {
-  const session = createEditGeometrySession(app, layer);
+  const session = startEditGeometrySession(app, layer);
   const feature = layer.getFeatureById(featureId);
   await session.featureSelection.selectFeature(feature); 
 }
@@ -144,7 +144,7 @@ async function setTheCurrentFeature(featureId) {
  * @param {string} featureId
  */
 async function stopAfter(featureId) {
-  const session = createEditGeometrySession(app, layer);
+  const session = startEditGeometrySession(app, layer);
   const feature = layer.getFeatureById(featureId);
   await session.featureSelection.selectFeature(feature);
   session.featureSelection.featureChanged.addEventListener(() => {
@@ -157,11 +157,106 @@ async function stopAfter(featureId) {
  * @param {VcsEvent<void>} finishEvent
  */
 function finishEvent(finishEvent) {
-  const session = createEditGeometrySession(app, layer);
+  const session = startEditGeometrySession(app, layer);
   finishEvent.addEventListener(() => {
     if (session.featureSelection.selectedFeature) {
       session.featureSelection.clear();
     }
   });
+}
+```
+
+### Transforming Features
+There are four ways to transform features. This includes in all viewers 1) translate, 2) 
+scale and 3) rotate. In 3D, you can also extrude features. Transformations can be applied
+to a selection set, as opposed to editing of geometries, which only works on single features.
+
+Once you have started a session, the session will take care of handling map changes &
+oblique images changes and trys to maintain the users selection set (of course this cannot
+be done in oblique). You can also change the _mode_ of the current session
+without clearing the selectiong set.
+
+```javascript
+import { 
+  VcsApp, 
+  VectorLayer,
+  startEditFeaturesSession, 
+  GeometryType,
+  TransformationMode,
+} from '@vcmap/core';
+
+// The app on which all things happen
+const app = new VcsApp();
+// The layer we wish to edit
+const layer = new VectorLayer();
+app.layers.add(layer);
+await layer.activate();
+
+/**
+ * This will edit the layer indefinitly
+ */
+function editLayerGeometries() {
+  startEditFeaturesSession(app, layer);
+}
+
+/**
+ * You can sync information from the session with another structure.
+ * @param {{ currentFeature: import("ol").Feature|null|null}}
+ */
+function snycInfo(info) {
+  const session = startEditFeaturesSession(app, layer);
+  session.featureSelection.featuresChanged.addEventListener((features) => {
+    info.currentFeature = features[0];
+  });
+}
+
+/**
+ * If you know the feature you wish to edit beforehand, you can do the following
+ * @param {string} featureId
+ */
+async function setTheCurrentFeatures(featureId) {
+  const session = startEditFeaturesSession(app, layer);
+  const feature = layer.getFeatureById(featureId);
+  await session.featureSelection.setSelectionSet([feature]); 
+}
+
+/**
+ * If you wish to only edit one feature and then stop the session
+ * @param {string} featureId
+ */
+async function stopAfter(featureId) {
+  const session = startEditFeaturesSession(app, layer);
+  const feature = layer.getFeatureById(featureId);
+  await session.featureSelection.setSelectionSet([feature]);
+  session.featureSelection.featureChanged.addEventListener(() => {
+    session.stop();
+  });
+}
+
+/**
+ * You can change the initial mode
+ */
+function startWithRotate() {
+  startEditFeaturesSession(app, layer, TransformationMode.ROTATE);
+}
+
+/**
+ * You can set a different highlight style
+ * @param {import("@vcmap/core").VectorStyleItem} style
+ */
+function customHighlightStyle(style) {
+  startEditFeaturesSession(app, layer, TransformationMode.TRANSLATE, style);
+}
+
+/**
+ * You can listen to mode changes and change the mode
+ */
+function listenToModeChanged() {
+  const session = startEditFeaturesSession(app, layer);
+  session.modeChanged.addEventListener((mode) => {
+    console.log(`current mode is: ${mode}`);
+  });
+  session.setMode(TransformationMode.ROTATE);
+  session.setMode(TransformationMode.SCALE);
 }
 ```

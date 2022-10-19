@@ -1,4 +1,5 @@
 import { Math as CesiumMath, Cartesian3 } from '@vcmap/cesium';
+import Projection from './projection.js';
 
 /**
  * returns a new coordinate ([lon, lat] in degrees) from a distance, bearing and starting coordinate
@@ -77,4 +78,26 @@ export function cartesian3DDistance(p1, p2) {
  */
 export function modulo(n, m) {
   return ((n % m) + m) % m;
+}
+
+/**
+ * @param {import("@vcmap/cesium").Cartographic} cartographic
+ * @returns {number[]}
+ */
+export function cartographicToWgs84(cartographic) {
+  return [
+    CesiumMath.toDegrees(cartographic.longitude),
+    CesiumMath.toDegrees(cartographic.latitude),
+    cartographic.height,
+  ];
+}
+
+/**
+ * @param {import("ol/coordinate").Coordinate} mercatorCoordinates
+ * @param {import("@vcmap/cesium").Cartesian3=} result
+ * @returns {import("@vcmap/cesium").Cartesian3}
+ */
+export function mercatorToCartesian(mercatorCoordinates, result) {
+  const wgs84Coords = Projection.mercatorToWgs84(mercatorCoordinates);
+  return Cartesian3.fromDegrees(wgs84Coords[0], wgs84Coords[1], wgs84Coords[2], null, result ?? new Cartesian3());
 }

@@ -1,4 +1,7 @@
 ###   5.0.0-rc.next
+- Editor: Adds a `EditFeaturesSession` to transform features.
+
+###   5.0.0-rc.23
 - Adds a `postRender` event on `VcsMap` and `MapCollection` for convenience.
 
 ###   5.0.0-rc.22

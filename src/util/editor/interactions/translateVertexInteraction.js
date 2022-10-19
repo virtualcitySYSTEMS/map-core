@@ -1,5 +1,5 @@
 import AbstractInteraction from '../../../interaction/abstractInteraction.js';
-import { EventType, ModificationKeyType } from '../../../interaction/interactionType.js';
+import { EventType } from '../../../interaction/interactionType.js';
 import { vertexSymbol } from '../editorSymbols.js';
 import { emptyStyle } from '../../../style/styleHelpers.js';
 import VcsEvent from '../../../vcsEvent.js';
@@ -12,7 +12,7 @@ import VcsEvent from '../../../vcsEvent.js';
  */
 class TranslateVertexInteraction extends AbstractInteraction {
   constructor() {
-    super(EventType.DRAGEVENTS, ModificationKeyType.ALT);
+    super(EventType.DRAGEVENTS);
     /**
      * @type {import("@vcmap/core").VcsEvent<Vertex>}
      */

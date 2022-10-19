@@ -3,7 +3,7 @@ import VcsMap from '../../../src/map/vcsMap.js';
 import LayerCollection from '../../../src/util/layerCollection.js';
 import Layer from '../../../src/layer/layer.js';
 import MapState from '../../../src/map/mapState.js';
-import { getCesiumEventSpy } from '../helpers/cesiumHelpers.js';
+import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
 
 describe('maps.VcmMap', () => {
   let sandbox;
@@ -291,7 +291,7 @@ describe('maps.VcmMap', () => {
 
     it('should not activate the map, if the map is deactivated in the mean time', async () => {
       const promise = map.activate();
-      const spy = getCesiumEventSpy(sandbox, map.stateChanged);
+      const spy = getVcsEventSpy(map.stateChanged, sandbox);
       map.deactivate();
       await promise;
       expect(spy).to.not.have.been.calledWith(MapState.ACTIVE);
@@ -331,7 +331,7 @@ describe('maps.VcmMap', () => {
 
       it('should call mapActivated on its layers before calling stateChanged', async () => {
         const promise = map.activate();
-        const spy = getCesiumEventSpy(sandbox, map.stateChanged);
+        const spy = getVcsEventSpy(map.stateChanged, sandbox);
         await promise;
         expect(spy).to.have.been.calledOnce;
         expect(mapActivated).to.have.been.calledBefore(spy);
@@ -377,7 +377,7 @@ describe('maps.VcmMap', () => {
     });
 
     it('should raise the state changed event', () => {
-      const spy = getCesiumEventSpy(sandbox, map.stateChanged);
+      const spy = getVcsEventSpy(map.stateChanged, sandbox);
       map.deactivate();
       expect(spy).to.have.been.calledOnceWith(MapState.INACTIVE);
     });
@@ -414,7 +414,7 @@ describe('maps.VcmMap', () => {
       });
 
       it('should call mapDeactivated before raising the stateChanged event', () => {
-        const spy = getCesiumEventSpy(sandbox, map.stateChanged);
+        const spy = getVcsEventSpy(map.stateChanged, sandbox);
         map.deactivate();
         expect(spy).to.have.been.calledOnce;
         expect(mapDeactivated).to.have.been.calledBefore(spy);

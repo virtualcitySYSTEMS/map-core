@@ -6,7 +6,7 @@ import setTiledObliqueImageServer, {
   imagev35MercatorCoordinate,
   tiledMercatorCoordinate2,
 } from '../helpers/obliqueData.js';
-import { getCesiumEventSpy } from '../helpers/cesiumHelpers.js';
+import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
 import Projection from '../../../src/util/projection.js';
 import importJSON from '../helpers/importJSON.js';
 
@@ -39,7 +39,7 @@ describe('ObliqueDataSet', () => {
 
     it('should emit images loaded', () => {
       const obliqueDataSet = new ObliqueDataSet(url, projection);
-      const spy = getCesiumEventSpy(sandbox, obliqueDataSet.imagesLoaded);
+      const spy = getVcsEventSpy(obliqueDataSet.imagesLoaded, sandbox);
       obliqueDataSet.initialize(legacyImageJson);
       expect(spy).to.have.been.calledOnce;
       expect(spy).to.have.been.calledWith({ images: obliqueDataSet.images });
@@ -56,7 +56,7 @@ describe('ObliqueDataSet', () => {
 
     it('should emit images loaded', () => {
       const obliqueDataSet = new ObliqueDataSet(url, projection);
-      const spy = getCesiumEventSpy(sandbox, obliqueDataSet.imagesLoaded);
+      const spy = getVcsEventSpy(obliqueDataSet.imagesLoaded, sandbox);
       obliqueDataSet.initialize(imageJson);
       expect(spy).to.have.been.calledOnce;
       expect(spy).to.have.been.calledWith({ images: obliqueDataSet.images });
@@ -274,7 +274,7 @@ describe('ObliqueDataSet', () => {
       });
 
       it('should emit imagesLoaded for the loaded tile', async () => {
-        const spy = getCesiumEventSpy(sandbox, obliqueDataSet.imagesLoaded);
+        const spy = getVcsEventSpy(obliqueDataSet.imagesLoaded, sandbox);
         await obliqueDataSet.loadDataForCoordinate(tiledMercatorCoordinate);
         expect(spy).to.have.been.calledOnce;
         expect(spy).to.have.been.calledWith({ images: obliqueDataSet.images, tileCoordinate: '12/2200/1343' });

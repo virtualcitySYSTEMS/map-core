@@ -167,6 +167,12 @@ class EventHandler {
     this._boundKeyListener = this._keyListener.bind(this);
     window.addEventListener('keydown', this._boundKeyListener);
     window.addEventListener('keyup', this._boundKeyListener);
+
+    /**
+     * @type {VcsEvent<ModificationKeyType>}
+     * @private
+     */
+    this._modifierChanged = new VcsEvent();
   }
 
   /**
@@ -197,6 +203,13 @@ class EventHandler {
    * @api
    */
   get interactions() { return this._interactionChain.chain.slice(); }
+
+  /**
+   * An event called, when the modifier changes. Order of precedence, if more then one key is pressed: SHIFT, ALT, CTRL
+   * @type {VcsEvent<ModificationKeyType>}
+   * @readonly
+   */
+  get modifierChanged() { return this._modifierChanged; }
 
   /**
    * Add a dynamic interaction to the interaction chain. This is the default methodology for
@@ -417,6 +430,7 @@ class EventHandler {
       if (modifier !== this._lastDispatchedModifier) {
         this._interactionChain.modifierChanged(modifier);
         this._lastDispatchedModifier = modifier;
+        this._modifierChanged.raiseEvent(modifier);
       }
     }
   }

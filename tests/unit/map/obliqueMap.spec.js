@@ -3,7 +3,7 @@ import { getObliqueCollection, mercatorCoordinates } from '../helpers/obliqueHel
 import ObliqueMap from '../../../src/map/obliqueMap.js';
 import Viewpoint from '../../../src/util/viewpoint.js';
 import Projection from '../../../src/util/projection.js';
-import { getCesiumEventSpy } from '../helpers/cesiumHelpers.js';
+import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
 import ObliqueImage from '../../../src/oblique/obliqueImage.js';
 import DefaultObliqueCollection from '../../../src/oblique/defaultObliqueCollection.js';
 
@@ -265,7 +265,7 @@ describe('ObliqueMap', () => {
     });
 
     it('should raise the collectionChanged event', async () => {
-      const spy = getCesiumEventSpy(sandbox, map.collectionChanged);
+      const spy = getVcsEventSpy(map.collectionChanged, sandbox);
       await map.setCollection(obliqueCollection1);
       expect(spy).to.have.been.calledOnceWith(obliqueCollection1);
     });
@@ -344,7 +344,7 @@ describe('ObliqueMap', () => {
     });
 
     it('should raise the imageChanged event', async () => {
-      const spy = getCesiumEventSpy(sandbox, map.imageChanged);
+      const spy = getVcsEventSpy(map.imageChanged, sandbox);
       await map.setImageByName('034_070_110005034');
       expect(spy).to.have.been.called;
     });
@@ -356,7 +356,7 @@ describe('ObliqueMap', () => {
 
     describe('with an invalid image name', () => {
       it('should not raise the imageChanged event', async () => {
-        const spy = getCesiumEventSpy(sandbox, map.imageChanged);
+        const spy = getVcsEventSpy(map.imageChanged, sandbox);
         await map.setImageByName('doesNotExist');
         expect(spy).to.not.have.been.called;
       });

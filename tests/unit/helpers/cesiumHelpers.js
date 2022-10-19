@@ -19,6 +19,7 @@ import {
 import CesiumTilesetLayer from '../../../src/layer/cesiumTilesetLayer.js';
 import DataSourceLayer from '../../../src/layer/dataSourceLayer.js';
 import CesiumMap from '../../../src/map/cesiumMap.js';
+import { Viewpoint } from '../../../index.js';
 
 export const tilesetJSON = {
   asset: {
@@ -110,12 +111,12 @@ export function createEntities(numberOfEntities = 1) {
 }
 
 /**
- * @param {sinon.sandbox} sandbox
- * @param {Cesium/Event} event
+ * @param {import("@vcmap/core").VcsEvent} event
+ * @param {sinon.sandbox} [sandbox]
  * @returns {sinon.spy}
  */
-export function getCesiumEventSpy(sandbox, event) {
-  const spy = sandbox.spy();
+export function getVcsEventSpy(event, sandbox) {
+  const spy = (sandbox ?? sinon).spy();
   const listener = event.addEventListener(function callback() {
     listener();
     // eslint-disable-next-line prefer-rest-params
@@ -162,6 +163,7 @@ export function getMockScene() {
     },
     pick() {},
     pickPosition() {},
+    drillPick() { return []; },
     destroy() {
       this.primitives.destroy();
       this.groundPrimitives.destroy();
@@ -210,6 +212,14 @@ export function getCesiumMap(mapOptions) {
     },
   };
   map.initialized = true;
+  const originalGetViewpointSync = map.getViewpointSync.bind(map);
+  map.getViewpointSync = function patchedGetVPSync() {
+    const vp = originalGetViewpointSync();
+    if (vp) {
+      return vp;
+    }
+    return new Viewpoint({});
+  };
 
   return map;
 }

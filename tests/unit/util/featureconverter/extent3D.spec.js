@@ -6,11 +6,16 @@ import MultiPolygon from 'ol/geom/MultiPolygon.js';
 import GeometryCollection from 'ol/geom/GeometryCollection.js';
 import Extent3D from '../../../../src/util/featureconverter/extent3D.js';
 
-describe('util.featureconverter.extent3d', () => {
+describe('Extent3D', () => {
   describe('createEmpty', () => {
     it('should create an empty extent', () => {
       const extent = new Extent3D();
       expect(extent.toArray()).to.have.members([Infinity, Infinity, Infinity, -Infinity, -Infinity, -Infinity]);
+    });
+
+    it('should be an empty extent', () => {
+      const extent = new Extent3D();
+      expect(extent.isEmpty()).to.be.true;
     });
   });
 
@@ -146,6 +151,30 @@ describe('util.featureconverter.extent3d', () => {
       const extent = Extent3D.fromArray([1, 2, 3, 4, 5, 6]);
       extent.extendWithHeightInfo(heightInfo);
       expect(extent.toArray()).to.have.members([1, 2, 0, 4, 5, 20]);
+    });
+  });
+
+  describe('getting the size of an extent', () => {
+    it('should return the size of a normal extent', () => {
+      const extent = Extent3D.fromArray([0, 0, 0, 2, 1, 2]);
+      expect(extent.getSize()).to.have.ordered.members([2, 1, 2]);
+    });
+
+    it('should return the size of an empty extent', () => {
+      const extent = new Extent3D();
+      expect(extent.getSize()).to.have.ordered.members([0, 0, 0]);
+    });
+  });
+
+  describe('getting the center of an extent', () => {
+    it('should return the size of a normal extent', () => {
+      const extent = Extent3D.fromArray([0, 0, 0, 2, 1, 2]);
+      expect(extent.getCenter()).to.have.ordered.members([1, 0.5, 1]);
+    });
+
+    it('should return the size of an empty extent', () => {
+      const extent = new Extent3D();
+      expect(extent.getCenter()).to.have.ordered.members([0, 0, 0]);
     });
   });
 });

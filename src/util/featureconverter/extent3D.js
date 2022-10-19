@@ -1,6 +1,8 @@
 import { check } from '@vcsuite/check';
 
-
+/**
+ * @class
+ */
 class Extent3D {
   /**
    * @param {Array<number>} array
@@ -174,6 +176,53 @@ class Extent3D {
    */
   toArray() {
     return [this.minX, this.minY, this.minZ, this.maxX, this.maxY, this.maxZ];
+  }
+
+  /**
+   * @returns {boolean}
+   */
+  isEmpty() {
+    return this.minX === Infinity &&
+      this.minY === Infinity &&
+      this.minZ === Infinity &&
+      this.maxX === -Infinity &&
+      this.maxY === -Infinity &&
+      this.maxZ === -Infinity;
+  }
+
+  /**
+   * @returns {import("ol/coordinate").Coordinate}
+   */
+  getCenter() {
+    if (this.isEmpty()) {
+      return [0, 0, 0];
+    }
+    return [
+      this.minX + ((this.maxX - this.minX) / 2),
+      this.minY + ((this.maxY - this.minY) / 2),
+      this.minZ + ((this.maxZ - this.minZ) / 2),
+    ];
+  }
+
+  /**
+   * @returns {Array<number>}
+   */
+  getSize() {
+    if (this.isEmpty()) {
+      return [0, 0, 0];
+    }
+    return [
+      this.maxX - this.minX,
+      this.maxY - this.minY,
+      this.maxZ - this.minZ,
+    ];
+  }
+
+  /**
+   * @returns {Extent3D}
+   */
+  clone() {
+    return new Extent3D(this.minX, this.minY, this.minZ, this.maxX, this.maxY, this.maxZ);
   }
 }
 

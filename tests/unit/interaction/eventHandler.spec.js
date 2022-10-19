@@ -4,6 +4,7 @@ import AbstractInteraction from '../../../src/interaction/abstractInteraction.js
 import InteractionChain from '../../../src/interaction/interactionChain.js';
 import { EventType } from '../../../src/interaction/interactionType.js';
 import { ModificationKeyType } from '../../../index.js';
+import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
 
 describe('EventHandler', () => {
   let sinonBox;
@@ -473,6 +474,16 @@ describe('EventHandler', () => {
         altKey: false,
       }));
       expect(modifierChangedSpy).to.have.been.calledWith(ModificationKeyType.NONE);
+    });
+
+    it('should raise the modifierChanged event on the handler', async () => {
+      const modifierChangedEventSpy = getVcsEventSpy(EH.modifierChanged, sinonBox);
+      window.dispatchEvent(new KeyboardEvent('keydown', {
+        key: 'Shift',
+        shiftKey: true,
+      }));
+      expect(modifierChangedEventSpy).to.have.been.calledOnce;
+      expect(modifierChangedEventSpy).to.have.been.calledWith(ModificationKeyType.SHIFT);
     });
   });
 });
