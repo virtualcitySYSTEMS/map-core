@@ -315,8 +315,8 @@ describe('VectorCesiumImpl', () => {
       expect(rootCollection.isDestroyed()).to.be.true;
     });
 
-    it('should clear all the context', () => {
-      const clear = sandbox.spy(vectorLayer._context, 'clear');
+    it('should destroy the context', () => {
+      const clear = sandbox.spy(vectorLayer._context, 'destroy');
       vectorLayer.destroy();
 
       expect(clear).to.have.been.called;

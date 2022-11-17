@@ -27,7 +27,7 @@ import polygonToCesium, {
 import Projection from '../../../../src/util/projection.js';
 import VectorProperties from '../../../../src/layer/vectorProperties.js';
 import VectorContext from '../../../../src/layer/cesium/vectorContext.js';
-import { getMockScene } from '../../helpers/cesiumHelpers.js';
+import { getCesiumMap } from '../../helpers/cesiumHelpers.js';
 
 describe('util.featureConverter.polygonToCesium', () => {
   let options;
@@ -287,6 +287,7 @@ describe('util.featureConverter.polygonToCesium', () => {
     let style;
     let geometries;
     let vectorProperties;
+    let map;
     let scene;
     let context;
     let primitiveCollection;
@@ -310,9 +311,10 @@ describe('util.featureConverter.polygonToCesium', () => {
         altitudeMode: 'absolute',
         eyeOffset: [1, 1, 1],
       });
-      scene = getMockScene();
+      map = getCesiumMap();
+      scene = map.getScene();
       primitiveCollection = new PrimitiveCollection();
-      context = new VectorContext(scene, primitiveCollection);
+      context = new VectorContext(map, primitiveCollection);
     });
 
     afterEach(() => {
@@ -320,8 +322,10 @@ describe('util.featureConverter.polygonToCesium', () => {
     });
 
     after(() => {
+      context.destroy();
       primitiveCollection.destroy();
       vectorProperties.destroy();
+      map.destroy();
     });
 
     it('should return without a fill or stroke style', () => {

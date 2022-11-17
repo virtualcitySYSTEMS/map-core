@@ -27,7 +27,7 @@ import Projection from '../../../../src/util/projection.js';
 import VectorProperties from '../../../../src/layer/vectorProperties.js';
 import { emptyStyle } from '../../../../src/style/styleHelpers.js';
 import VectorContext from '../../../../src/layer/cesium/vectorContext.js';
-import { getMockScene } from '../../helpers/cesiumHelpers.js';
+import { getCesiumMap } from '../../helpers/cesiumHelpers.js';
 
 describe('util.featureConverter.lineStringToCesium', () => {
   let options = null;
@@ -224,6 +224,7 @@ describe('util.featureConverter.lineStringToCesium', () => {
     let style;
     let geometries;
     let vectorProperties;
+    let map;
     let scene;
     let primitiveCollection;
     let context;
@@ -243,9 +244,10 @@ describe('util.featureConverter.lineStringToCesium', () => {
         altitudeMode: 'absolute',
         eyeOffset: [1, 1, 1],
       });
-      scene = getMockScene();
+      map = getCesiumMap();
+      scene = map.getScene();
       primitiveCollection = new PrimitiveCollection();
-      context = new VectorContext(scene, primitiveCollection);
+      context = new VectorContext(map, primitiveCollection);
     });
 
     afterEach(() => {
@@ -253,8 +255,10 @@ describe('util.featureConverter.lineStringToCesium', () => {
     });
 
     after(() => {
+      context.destroy();
       primitiveCollection.destroy();
       vectorProperties.destroy();
+      map.destroy();
     });
 
     it('should not create Primitives without a fill or stroke style', () => {

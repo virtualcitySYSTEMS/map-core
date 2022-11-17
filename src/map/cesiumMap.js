@@ -27,6 +27,7 @@ import {
   KeyboardEventModifier,
   ScreenSpaceEventType,
   Cesium3DTileset,
+  Cartographic,
 } from '@vcmap/cesium';
 
 import { check, checkMaybe } from '@vcsuite/check';
@@ -739,15 +740,14 @@ class CesiumMap extends VcsMap {
   }
 
   /**
-   * @inheritDoc
-   * @param {import("ol/coordinate").Coordinate} coordinate - in mercator
+   * @param {import("@vcmap/cesium").Cartesian3} cartesian
+   * @param {number} latitude - in radians
    * @returns {number}
+   * @private
    */
-  getCurrentResolution(coordinate) {
+  _getCurrentResolutionFromCartesianLatitude(cartesian, latitude) {
     const cam = this._cesiumWidget.scene.camera;
-    const wgs84Coordinate = Projection.mercatorToWgs84(coordinate);
-    const distance = Cartesian3
-      .distance(Cartesian3.fromDegrees(wgs84Coordinate[0], wgs84Coordinate[1], wgs84Coordinate[2]), cam.position);
+    const distance = Cartesian3.distance(cartesian, cam.position);
 
     const fov = Math.PI / 3.0;
     const width = this.mapElement.offsetWidth;
@@ -755,10 +755,29 @@ class CesiumMap extends VcsMap {
     const aspectRatio = width / height;
     const fovy = Math.atan(Math.tan(fov * 0.5) / aspectRatio) * 2.0;
     const visibleMeters = 2 * distance * Math.tan(fovy / 2);
-    const relativeCircumference = Math.cos(Math.abs(CesiumMath.toRadians(wgs84Coordinate[1])));
+    const relativeCircumference = Math.cos(Math.abs(latitude));
     const visibleMapUnits = visibleMeters / relativeCircumference;
 
     return visibleMapUnits / height;
+  }
+
+  /**
+   * @inheritDoc
+   * @param {import("ol/coordinate").Coordinate} coordinate - in mercator
+   * @returns {number}
+   */
+  getCurrentResolution(coordinate) {
+    const wgs84Coordinate = Projection.mercatorToWgs84(coordinate);
+    const cartesian = Cartesian3.fromDegrees(wgs84Coordinate[0], wgs84Coordinate[1], wgs84Coordinate[2]);
+    return this._getCurrentResolutionFromCartesianLatitude(cartesian, CesiumMath.toRadians(wgs84Coordinate[1]));
+  }
+
+  /**
+   * @param {import("@vcmap/cesium").Cartesian3} cartesian
+   * @returns {number}
+   */
+  getCurrentResolutionFromCartesian(cartesian) {
+    return this._getCurrentResolutionFromCartesianLatitude(cartesian, Cartographic.fromCartesian(cartesian).latitude);
   }
 
   /**

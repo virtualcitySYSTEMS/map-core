@@ -1,4 +1,4 @@
-import { Math as CesiumMath, Cartesian3 } from '@vcmap/cesium';
+import { Math as CesiumMath, Cartesian3, Cartographic } from '@vcmap/cesium';
 import Projection from './projection.js';
 
 /**
@@ -100,4 +100,14 @@ export function cartographicToWgs84(cartographic) {
 export function mercatorToCartesian(mercatorCoordinates, result) {
   const wgs84Coords = Projection.mercatorToWgs84(mercatorCoordinates);
   return Cartesian3.fromDegrees(wgs84Coords[0], wgs84Coords[1], wgs84Coords[2], null, result ?? new Cartesian3());
+}
+
+/**
+ * @param {import("@vcmap/cesium").Cartesian3} cartesian
+ * @returns {import("ol/coordinate").Coordinate}
+ */
+export function cartesianToMercator(cartesian) {
+  const cartographic = Cartographic.fromCartesian(cartesian);
+  const wgs84 = cartographicToWgs84(cartographic);
+  return Projection.wgs84ToMercator(wgs84);
 }

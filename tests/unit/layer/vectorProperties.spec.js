@@ -6,7 +6,7 @@ import VectorProperties, {
   parseNearFarScalar,
   parseStoreyHeights,
 } from '../../../src/layer/vectorProperties.js';
-
+import { PrimitiveOptionsType } from '../../../index.js';
 
 describe('VectorProperties', () => {
   describe('parseNearFarScalar', () => {
@@ -153,7 +153,12 @@ describe('VectorProperties', () => {
         modelScaleY: 2,
         modelScaleZ: 2,
         modelOptions: {},
+        modelAutoScale: true,
         baseUrl: 'http://other',
+        primitiveOptions: {
+          type: PrimitiveOptionsType.SPHERE,
+          geometryOptions: {},
+        },
       });
       eventListener = sandbox.spy();
       vectorProperties.propertyChanged.addEventListener(eventListener);
@@ -740,6 +745,24 @@ describe('VectorProperties', () => {
       });
     });
 
+    describe('modelAutoScale', () => {
+      it('should parse value modelAutoScale', () => {
+        expect(vectorProperties.modelAutoScale).to.be.true;
+      });
+
+      it('should not set modelAutoScale and not raiseEvent, if value does not change', () => {
+        vectorProperties.modelAutoScale = vectorProperties.modelAutoScale;
+        expect(eventListener).to.have.not.been.called;
+      });
+
+      it('should set modelScaleZ and raiseEvent, if value changed', () => {
+        vectorProperties.modelAutoScale = false;
+        expect(vectorProperties.modelAutoScale).to.be.false;
+        expect(eventListener).to.have.been.calledOnce;
+        expect(eventListener).to.have.been.calledWith(['modelAutoScale']);
+      });
+    });
+
     describe('baseUrl', () => {
       it('should parse value baseUrl', () => {
         expect(vectorProperties.baseUrl).to.be.equal('http://other');
@@ -755,6 +778,27 @@ describe('VectorProperties', () => {
         expect(vectorProperties.baseUrl).to.be.equal('http://other2');
         expect(eventListener).to.have.been.calledOnce;
         expect(eventListener).to.have.been.calledWith(['baseUrl']);
+      });
+    });
+
+    describe('primitiveOptions', () => {
+      it('should parse value modelAutoScale', () => {
+        expect(vectorProperties.primitiveOptions).to.eql({
+          type: PrimitiveOptionsType.SPHERE,
+          geometryOptions: {},
+        });
+      });
+
+      it('should not set primitiveOptions and not raiseEvent, if value does not change', () => {
+        vectorProperties.primitiveOptions = vectorProperties.primitiveOptions;
+        expect(eventListener).to.have.not.been.called;
+      });
+
+      it('should set primitiveOptions and raiseEvent, if value changed', () => {
+        vectorProperties.primitiveOptions = undefined;
+        expect(vectorProperties.primitiveOptions).to.be.undefined;
+        expect(eventListener).to.have.been.calledOnce;
+        expect(eventListener).to.have.been.calledWith(['primitiveOptions']);
       });
     });
 
@@ -810,6 +854,40 @@ describe('VectorProperties', () => {
         vectorProperties.modelOptions = undefined;
         const modelOptions = vectorProperties.getModelOptions(feature);
         expect(modelOptions).to.be.an('object').and.to.be.empty;
+      });
+    });
+
+    describe('getting a primitive', () => {
+      let feature;
+
+      beforeEach(() => {
+        feature = new Feature({});
+      });
+
+      it('should return the model base options for a feature', () => {
+        const primitiveOptions = vectorProperties.getPrimitive(feature);
+        expect(primitiveOptions).to.be.an('object');
+      });
+
+      it('should not return the model base options, if the feature unsets', () => {
+        feature.set('olcs_primitiveOptions', null);
+        const primitiveOptions = vectorProperties.getPrimitive(feature);
+        expect(primitiveOptions).to.be.null;
+      });
+
+      it('should create a scale array', () => {
+        vectorProperties.modelScaleY = 4;
+        vectorProperties.modelScaleZ = 8;
+        const primitiveOptions = vectorProperties.getPrimitive(feature);
+        expect(primitiveOptions).to.be.an('object')
+          .and.to.have.property('scale')
+          .and.to.have.ordered.members([2, 4, 8]);
+      });
+
+      it('should not return a primitive if geometryOptions is missing', () => {
+        vectorProperties.primitiveOptions = { type: PrimitiveOptionsType.SPHERE };
+        const primitiveOptions = vectorProperties.getPrimitive(feature);
+        expect(primitiveOptions).to.be.null;
       });
     });
   });

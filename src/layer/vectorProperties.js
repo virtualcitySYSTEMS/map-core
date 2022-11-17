@@ -1,7 +1,7 @@
 import deepEqual from 'fast-deep-equal';
-import { HeightReference, ClassificationType, NearFarScalar, Cartesian3 } from '@vcmap/cesium';
+import { Cartesian3, ClassificationType, HeightReference, NearFarScalar } from '@vcmap/cesium';
 import { check, checkMaybe } from '@vcsuite/check';
-import { parseBoolean, parseEnumKey, parseNumber, parseInteger } from '@vcsuite/parsers';
+import { parseBoolean, parseEnumKey, parseInteger, parseNumber } from '@vcsuite/parsers';
 import { getLogger as getLoggerByName } from '@vcsuite/logger';
 import VcsEvent from '../vcsEvent.js';
 
@@ -35,20 +35,52 @@ function getLogger() {
  * @property {number} [modelHeading=0] - in degrees
  * @property {number} [modelPitch=0] - in degrees
  * @property {number} [modelRoll=0] - in degrees
+ * @property {boolean} [modelAutoScale]
  * @property {Object|undefined} modelOptions - Model options are merged with the model definition from model url, scale and orientation and accepts any option passed to a Cesium.Model.
+ * @property {VectorPropertiesPrimitiveOptions} [primitiveOptions] - primitive options to render in 3D instead of a billboard
  * @property {string|undefined} baseUrl - a base URL to resolve relative model URLs against.
  * @api
  */
 
 /**
- * @typedef {Object} VectorPropertiesModelOptions
- * @property {string} url
+ * @typedef {Object} VectorPropertiesBaseOptions
  * @property {Array<number>} scale
  * @property {number} heading
  * @property {number} pitch
  * @property {number} roll
+ * @property {boolean} autoScale
+ */
+
+/**
+ * @typedef {VectorPropertiesBaseOptions} VectorPropertiesModelOptions
+ * @property {string} url
  * @api
  */
+
+/**
+ * @typedef {Object} VectorPropertiesPrimitiveOptions
+ * @property {PrimitiveOptionsType} type
+ * @property {*} geometryOptions - the options for the specified geometry
+ * @property {import("ol/color").Color} [depthFailColor]
+ * @property {import("ol/coordinate").Coordinate} [offset] an offset to apply to the geometry
+ * @property {Object} [additionalOptions] - additional options passed to the Primitive constructor
+ */
+
+/**
+ * @typedef {VectorPropertiesBaseOptions} VectorPropertiesPrimitive
+ * @property {VectorPropertiesPrimitiveOptions} primitiveOptions
+ */
+
+/**
+ * @enum {string}
+ */
+export const PrimitiveOptionsType = {
+  CYLINDER: 'cylinder',
+  SPHERE: 'sphere',
+  ELLIPSE: 'ellipse',
+  ELLIPSOID: 'ellipsoid',
+  BOX: 'box',
+};
 
 /**
  * @enum {import("@vcmap/cesium").HeightReference}
@@ -197,7 +229,9 @@ class VectorProperties {
       modelPitch: 0,
       modelRoll: 0,
       modelOptions: undefined,
+      modelAutoScale: false,
       baseUrl: undefined,
+      primitiveOptions: undefined,
     };
   }
 
@@ -345,6 +379,16 @@ class VectorProperties {
      * @private
      */
     this._modelOptions = options.modelOptions || defaultValues.modelOptions;
+    /**
+     * @type {boolean}
+     * @private
+     */
+    this._modelAutoScale = parseBoolean(options.modelAutoScale, defaultValues.modelAutoScale);
+    /**
+     * @type {VectorPropertiesPrimitiveOptions}
+     * @private
+     */
+    this._primitiveOptions = options.primitiveOptions || defaultValues.primitiveOptions;
 
     /**
      * Event raised when properties change. is passed an array of keys for the changed properties.
@@ -1011,6 +1055,35 @@ class VectorProperties {
   }
 
   /**
+   * @type {boolean}
+   */
+  get modelAutoScale() {
+    return this._modelAutoScale;
+  }
+
+  /**
+   * @param {boolean} value
+   */
+  set modelAutoScale(value) {
+    checkMaybe(value, Boolean);
+
+    const booleanValue = !!value;
+    if (this._modelAutoScale !== booleanValue) {
+      this._modelAutoScale = booleanValue;
+      this.propertyChanged.raiseEvent(['modelAutoScale']);
+    }
+  }
+
+  /**
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+   * @returns {*|boolean}
+   */
+  getModelAutoScale(feature) {
+    const featureValue = feature.get('olcs_modelAutoScale');
+    return featureValue !== undefined ? featureValue : this.modelAutoScale;
+  }
+
+  /**
    * @api
    * @type {string}
    */
@@ -1041,6 +1114,67 @@ class VectorProperties {
   }
 
   /**
+   * @type {VectorPropertiesPrimitiveOptions}
+   */
+  get primitiveOptions() {
+    return this._primitiveOptions;
+  }
+
+  /**
+   * @param {VectorPropertiesPrimitiveOptions|undefined} value
+   */
+  set primitiveOptions(value) {
+    checkMaybe(value, Object);
+
+    if (this._primitiveOptions !== value) {
+      this._primitiveOptions = value;
+      this.propertyChanged.raiseEvent(['primitiveOptions']);
+    }
+  }
+
+  /**
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+   * @returns {VectorPropertiesPrimitiveOptions|null}
+   * @api
+   */
+  getPrimitiveOptions(feature) {
+    const featureValue = feature.get('olcs_primitiveOptions');
+    return featureValue !== undefined ? featureValue : this.primitiveOptions;
+  }
+
+  /**
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+   * @returns {VectorPropertiesBaseOptions}
+   * @private
+   */
+  _getBaseOptions(feature) {
+    return {
+      scale: [this.getModelScaleX(feature), this.getModelScaleY(feature), this.getModelScaleZ(feature)],
+      heading: this.getModelHeading(feature),
+      pitch: this.getModelPitch(feature),
+      roll: this.getModelRoll(feature),
+      autoScale: this.getModelAutoScale(feature),
+    };
+  }
+
+  /**
+   * Returns the primive definition of this feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+   * @returns {VectorPropertiesPrimitive|null}
+   */
+  getPrimitive(feature) {
+    const primitiveOptions = this.getPrimitiveOptions(feature);
+    if (!primitiveOptions?.geometryOptions) {
+      return null;
+    }
+
+    return {
+      ...this._getBaseOptions(feature),
+      primitiveOptions,
+    };
+  }
+
+  /**
    * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @returns {VectorPropertiesModelOptions|null}
    * @api
@@ -1057,11 +1191,8 @@ class VectorProperties {
     }
 
     return {
+      ...this._getBaseOptions(feature),
       url,
-      scale: [this.getModelScaleX(feature), this.getModelScaleY(feature), this.getModelScaleZ(feature)],
-      heading: this.getModelHeading(feature),
-      pitch: this.getModelPitch(feature),
-      roll: this.getModelRoll(feature),
     };
   }
 

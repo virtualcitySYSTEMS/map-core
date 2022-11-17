@@ -25,6 +25,14 @@ class ClusterContext {
   addPrimitives(primitives, feature, allowPicking) {}
 
   /**
+   * @param {Array<import("@vcmap/cesium").Primitive|import("@vcmap/cesium").GroundPrimitive|import("@vcmap/cesium").GroundPolylinePrimitive|import("@vcmap/cesium").ClassificationPrimitive|import("@vcmap/cesium").Model>} primitives
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
+   * @param {boolean=} allowPicking
+   */
+  // eslint-disable-next-line class-methods-use-this,no-unused-vars
+  addScaledPrimitives(primitives, feature, allowPicking) {}
+
+  /**
    * @param {Array<Object>} billboardOptions
    * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @param {boolean=} allowPicking
@@ -89,6 +97,10 @@ class ClusterContext {
     this.entities.removeAll();
     this.featureToBillboardMap.clear();
     this.featureToLabelMap.clear();
+  }
+
+  destroy() {
+    this.clear();
   }
 }
 

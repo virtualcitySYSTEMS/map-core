@@ -104,7 +104,7 @@ class VectorCesiumImpl extends LayerImplementation {
    */
   async _setupContext(cesiumMap) {
     const rootCollection = /** @type {import("@vcmap/cesium").PrimitiveCollection} */ (this._rootCollection);
-    this._context = new VectorContext(this._scene, rootCollection);
+    this._context = new VectorContext(cesiumMap, rootCollection);
     cesiumMap.addPrimitiveCollection(rootCollection);
   }
 
@@ -230,7 +230,7 @@ class VectorCesiumImpl extends LayerImplementation {
    */
   destroy() {
     if (this.initialized) {
-      this._context.clear();
+      this._context.destroy();
       this._destroyCollection();
     }
     this._context = null;

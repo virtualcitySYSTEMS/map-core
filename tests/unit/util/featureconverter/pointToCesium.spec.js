@@ -23,20 +23,27 @@ import {
   Label,
   Primitive,
   Math as CesiumMath,
+  SphereGeometry,
+  SphereOutlineGeometry,
 } from '@vcmap/cesium';
 import Fill from 'ol/style/Fill.js';
 import Stroke from 'ol/style/Stroke.js';
-import VectorProperties from '../../../../src/layer/vectorProperties.js';
+import VectorProperties, { PrimitiveOptionsType } from '../../../../src/layer/vectorProperties.js';
 import pointToCesium, {
   getCoordinates,
   validatePoint,
-  getBillboardOptions, getLabelOptions, getCartesian3AndWGS84FromCoordinates, getLineGeometries, getModelOptions,
+  getBillboardOptions,
+  getLabelOptions,
+  getCartesian3AndWGS84FromCoordinates,
+  getLineGeometries,
+  getModelOptions,
+  getPrimitiveOptions,
 } from '../../../../src/util/featureconverter/pointToCesium.js';
 import { blackPixelURI } from '../../helpers/imageHelpers.js';
 import { getCesiumColor } from '../../../../src/style/styleHelpers.js';
 import Projection from '../../../../src/util/projection.js';
 import VectorContext from '../../../../src/layer/cesium/vectorContext.js';
-import { getMockScene } from '../../helpers/cesiumHelpers.js';
+import { getCesiumMap, getMockScene } from '../../helpers/cesiumHelpers.js';
 import { getTerrainProvider } from '../../helpers/terrain/terrainData.js';
 
 describe('util.featureConverter.pointToCesium', () => {
@@ -99,6 +106,10 @@ describe('util.featureConverter.pointToCesium', () => {
         eyeOffset: [1, 1, 1],
         scaleByDistance: [0, 2, 0, 1],
       });
+    });
+
+    after(() => {
+      vectorProperties.destroy();
     });
 
     it('should not create billboardOptions if the style is not an ImageStyle', () => {
@@ -190,6 +201,10 @@ describe('util.featureConverter.pointToCesium', () => {
         eyeOffset: [1, 1, 1],
         scaleByDistance: [0, 2, 0, 1],
       });
+    });
+
+    after(() => {
+      vectorProperties.destroy();
     });
 
     it('should not create labelOptions if the style has no Text Style', () => {
@@ -392,21 +407,27 @@ describe('util.featureConverter.pointToCesium', () => {
     before(() => {
       feature = new Feature({
         olcs_modelUrl: 'http://localhost/test.glb',
+        olcs_allowPicking: false,
       });
       const coordinates = [[1, 1, 2]];
       scene = getMockScene();
       positions = coordinates.map(pos => Cartesian3.fromDegrees(...pos));
       vectorProperties = new VectorProperties({ modelScaleX: 2, modelScaleY: 4, modelScaleZ: 8 });
-      [model] = getModelOptions(feature, coordinates, positions, vectorProperties, scene);
+      [model] = getModelOptions(feature, coordinates, positions, vectorProperties, scene).primitives;
     });
 
     after(() => {
       scene.destroy();
       nock.cleanAll();
+      vectorProperties.destroy();
     });
 
     it('should create a model with the feature modelUrl', () => {
       expect(model).to.be.an.instanceOf(Model);
+    });
+
+    it('should apply allow picking', () => {
+      expect(model.allowPicking).to.be.false;
     });
 
     it('should apply the scale to the models matrix', () => {
@@ -427,19 +448,779 @@ describe('util.featureConverter.pointToCesium', () => {
         twoD.map(pos => Cartesian3.fromDegrees(...pos)),
         vectorProperties,
         scene2,
-      );
+      ).primitives;
       const { modelMatrix } = twoDModel;
       const cartographicBefore = Cartographic
         .fromCartesian(Matrix4.getTranslation(modelMatrix, new Cartesian3()));
       expect(cartographicBefore.height).to.equal(0);
       setTimeout(() => {
-        expect(twoDModel.modelMatrix).to.not.equal(modelMatrix);
         const cartographicAfter = Cartographic
           .fromCartesian(Matrix4.getTranslation(twoDModel.modelMatrix, new Cartesian3()));
 
         expect(cartographicAfter.height).to.not.equal(0);
         done();
-      }, 500);
+      }, 200);
+    });
+
+    describe('of a scaled autoScale model', () => {
+      let autoscaleVectorProperties;
+      let autoscaleModel;
+
+      before(() => {
+        const coordinates = [[1, 1, 2]];
+        positions = coordinates.map(pos => Cartesian3.fromDegrees(...pos));
+        autoscaleVectorProperties = new VectorProperties({
+          modelScaleX: 2,
+          modelScaleY: 4,
+          modelScaleZ: 8,
+          modelAutoScale: true,
+        });
+
+        [autoscaleModel] = getModelOptions(
+          feature,
+          coordinates,
+          positions,
+          autoscaleVectorProperties,
+          scene,
+        ).primitives;
+      });
+
+      after(() => {
+        autoscaleVectorProperties.destroy();
+      });
+
+      it('should create a model', () => {
+        expect(autoscaleModel).to.be.an.instanceOf(Model);
+      });
+
+      it('should apply the scale to the models model matrix', () => {
+        const scale = Matrix4.getScale(autoscaleModel.modelMatrix, new Cartesian3());
+        expect(scale.x).to.closeTo(2, CesiumMath.EPSILON8);
+        expect(scale.y).to.closeTo(4, CesiumMath.EPSILON8);
+        expect(scale.z).to.closeTo(8, CesiumMath.EPSILON8);
+      });
+
+      it('should reset the scale, if setting a new modelMatrix', () => {
+        const modelMatrix = autoscaleModel.modelMatrix.clone();
+        autoscaleModel.modelMatrix = Matrix4.setScale(modelMatrix, new Cartesian3(2, 2, 2), new Matrix4());
+        const scale = Matrix4.getScale(autoscaleModel.modelMatrix, new Cartesian3());
+        expect(scale.x).to.closeTo(4, CesiumMath.EPSILON8);
+        expect(scale.y).to.closeTo(8, CesiumMath.EPSILON8);
+        expect(scale.z).to.closeTo(16, CesiumMath.EPSILON8);
+        autoscaleModel.modelMatrix = Matrix4.setScale(modelMatrix, Cartesian3.ONE, new Matrix4());
+        Matrix4.getScale(autoscaleModel.modelMatrix, scale);
+        expect(scale.x).to.closeTo(2, CesiumMath.EPSILON8);
+        expect(scale.y).to.closeTo(4, CesiumMath.EPSILON8);
+        expect(scale.z).to.closeTo(8, CesiumMath.EPSILON8);
+      });
+    });
+  });
+
+  describe('getPrimitiveOptions', () => {
+    describe('of a normal primitive', () => {
+      let feature;
+      let positions;
+      let vectorProperties;
+      let primitive;
+      let scene;
+
+      before(() => {
+        feature = new Feature({
+          olcs_primitiveOptions: {
+            type: PrimitiveOptionsType.SPHERE,
+            geometryOptions: {},
+          },
+          olcs_allowPicking: false,
+        });
+        const coordinates = [[1, 1, 2]];
+        scene = getMockScene();
+        positions = coordinates.map(pos => Cartesian3.fromDegrees(...pos));
+        vectorProperties = new VectorProperties({ modelScaleX: 2, modelScaleY: 4, modelScaleZ: 8 });
+        const style = new Style({
+          image: new RegularShape({
+            fill: new Fill({ color: '#FF00FF' }),
+          }),
+        });
+        [primitive] = getPrimitiveOptions(
+          feature,
+          style,
+          coordinates,
+          positions,
+          vectorProperties,
+          scene,
+        ).primitives;
+      });
+
+      after(() => {
+        scene.destroy();
+        nock.cleanAll();
+        vectorProperties.destroy();
+      });
+
+      it('should create a primitive', () => {
+        expect(primitive).to.be.an.instanceOf(Primitive);
+        expect(primitive.geometryInstances[0].geometry).to.be.an.instanceOf(SphereGeometry);
+      });
+
+      it('should apply allow picking', () => {
+        expect(primitive.allowPicking).to.be.false;
+      });
+
+      it('should apply the scale to the primitives matrix', () => {
+        const scale = Matrix4.getScale(primitive.modelMatrix, new Cartesian3());
+        expect(scale.x).to.closeTo(2, CesiumMath.EPSILON8);
+        expect(scale.y).to.closeTo(4, CesiumMath.EPSILON8);
+        expect(scale.z).to.closeTo(8, CesiumMath.EPSILON8);
+      });
+    });
+
+    describe('of an elevation less primitive', () => {
+      it('should set a 2D point onto the terrain', (done) => {
+        const vectorProperties = new VectorProperties({ modelScaleX: 2, modelScaleY: 4, modelScaleZ: 8 });
+        const style = new Style({
+          image: new RegularShape({
+            fill: new Fill({ color: '#FF00FF' }),
+          }),
+        });
+        const scene2 = getMockScene();
+        const scope = nock('http://localhost');
+        scene2.globe.terrainProvider = getTerrainProvider(scope);
+        const twoD = [[13.374517914005413, 52.501750770534045, 0]];
+        const feature = new Feature({
+          olcs_primitiveOptions: {
+            type: PrimitiveOptionsType.SPHERE,
+            geometryOptions: {},
+          },
+          olcs_allowPicking: false,
+        });
+        const [primitive] = getPrimitiveOptions(
+          feature,
+          style,
+          twoD,
+          twoD.map(pos => Cartesian3.fromDegrees(...pos)),
+          vectorProperties,
+          scene2,
+        ).primitives;
+        vectorProperties.destroy();
+        const { modelMatrix } = primitive;
+        const cartographicBefore = Cartographic
+          .fromCartesian(Matrix4.getTranslation(modelMatrix, new Cartesian3()));
+        expect(cartographicBefore.height).to.equal(0);
+        setTimeout(() => {
+          const cartographicAfter = Cartographic
+            .fromCartesian(Matrix4.getTranslation(primitive.modelMatrix, new Cartesian3()));
+
+          expect(cartographicAfter.height).to.not.equal(0);
+          done();
+        }, 200);
+      });
+    });
+
+    describe('of an outlined primitive', () => {
+      let feature;
+      let positions;
+      let vectorProperties;
+      let primitive;
+      let outline;
+      let scene;
+
+      before(() => {
+        feature = new Feature({
+          olcs_primitiveOptions: {
+            type: PrimitiveOptionsType.SPHERE,
+            geometryOptions: {},
+          },
+          olcs_allowPicking: false,
+        });
+        const coordinates = [[1, 1, 2]];
+        scene = getMockScene();
+        positions = coordinates.map(pos => Cartesian3.fromDegrees(...pos));
+        vectorProperties = new VectorProperties({ modelScaleX: 2, modelScaleY: 4, modelScaleZ: 8 });
+        const style = new Style({
+          image: new RegularShape({
+            fill: new Fill({ color: '#FF00FF' }),
+            stroke: new Stroke({ color: '#FF00FF', width: 1 }),
+          }),
+        });
+        [primitive, outline] = getPrimitiveOptions(
+          feature,
+          style,
+          coordinates,
+          positions,
+          vectorProperties,
+          scene,
+        ).primitives;
+      });
+
+      after(() => {
+        scene.destroy();
+        nock.cleanAll();
+        vectorProperties.destroy();
+      });
+
+      it('should create a primitive', () => {
+        expect(primitive).to.be.an.instanceOf(Primitive);
+        expect(primitive.geometryInstances[0].geometry).to.be.an.instanceOf(SphereGeometry);
+      });
+
+      it('should create an outline primitive', () => {
+        expect(outline).to.be.an.instanceOf(Primitive);
+        expect(outline.geometryInstances[0].geometry).to.be.an.instanceOf(SphereOutlineGeometry);
+      });
+
+      it('should apply allow picking', () => {
+        expect(primitive.allowPicking).to.be.false;
+      });
+
+      it('should apply allow picking on the outline', () => {
+        expect(outline.allowPicking).to.be.false;
+      });
+
+      it('should apply the scale to the primitive matrix', () => {
+        const scale = Matrix4.getScale(primitive.modelMatrix, new Cartesian3());
+        expect(scale.x).to.closeTo(2, CesiumMath.EPSILON8);
+        expect(scale.y).to.closeTo(4, CesiumMath.EPSILON8);
+        expect(scale.z).to.closeTo(8, CesiumMath.EPSILON8);
+      });
+
+      it('should apply the scale to the outline matrix', () => {
+        const scale = Matrix4.getScale(outline.modelMatrix, new Cartesian3());
+        expect(scale.x).to.closeTo(2, CesiumMath.EPSILON8);
+        expect(scale.y).to.closeTo(4, CesiumMath.EPSILON8);
+        expect(scale.z).to.closeTo(8, CesiumMath.EPSILON8);
+      });
+    });
+
+    describe('of an only outlined primitive', () => {
+      let feature;
+      let positions;
+      let vectorProperties;
+      let outline;
+      let scene;
+
+      before(() => {
+        feature = new Feature({
+          olcs_primitiveOptions: {
+            type: PrimitiveOptionsType.SPHERE,
+            geometryOptions: {},
+          },
+          olcs_allowPicking: false,
+        });
+        const coordinates = [[1, 1, 2]];
+        scene = getMockScene();
+        positions = coordinates.map(pos => Cartesian3.fromDegrees(...pos));
+        vectorProperties = new VectorProperties({ modelScaleX: 2, modelScaleY: 4, modelScaleZ: 8 });
+        const style = new Style({
+          image: new RegularShape({
+            stroke: new Stroke({ color: '#FF00FF', width: 1 }),
+          }),
+        });
+        [outline] = getPrimitiveOptions(
+          feature,
+          style,
+          coordinates,
+          positions,
+          vectorProperties,
+          scene,
+        ).primitives;
+      });
+
+      after(() => {
+        scene.destroy();
+        nock.cleanAll();
+        vectorProperties.destroy();
+      });
+
+      it('should create an outline primitive', () => {
+        expect(outline).to.be.an.instanceOf(Primitive);
+        expect(outline.geometryInstances[0].geometry).to.be.an.instanceOf(SphereOutlineGeometry);
+      });
+
+      it('should apply allow picking', () => {
+        expect(outline.allowPicking).to.be.false;
+      });
+
+      it('should apply the scale to the outline matrix', () => {
+        const scale = Matrix4.getScale(outline.modelMatrix, new Cartesian3());
+        expect(scale.x).to.closeTo(2, CesiumMath.EPSILON8);
+        expect(scale.y).to.closeTo(4, CesiumMath.EPSILON8);
+        expect(scale.z).to.closeTo(8, CesiumMath.EPSILON8);
+      });
+    });
+
+    describe('of an only outlined primitive with a depthFailColor', () => {
+      let feature;
+      let positions;
+      let vectorProperties;
+      let outline;
+      let primitive;
+      let scene;
+
+      before(() => {
+        feature = new Feature({
+          olcs_primitiveOptions: {
+            type: PrimitiveOptionsType.SPHERE,
+            geometryOptions: {},
+            depthFailColor: '#FF00FF',
+          },
+          olcs_allowPicking: false,
+        });
+        const coordinates = [[1, 1, 2]];
+        scene = getMockScene();
+        positions = coordinates.map(pos => Cartesian3.fromDegrees(...pos));
+        vectorProperties = new VectorProperties({ modelScaleX: 2, modelScaleY: 4, modelScaleZ: 8 });
+        const style = new Style({
+          image: new RegularShape({
+            stroke: new Stroke({ color: '#FF00FF', width: 1 }),
+          }),
+        });
+        [primitive, outline] = getPrimitiveOptions(
+          feature,
+          style,
+          coordinates,
+          positions,
+          vectorProperties,
+          scene,
+        ).primitives;
+      });
+
+      after(() => {
+        scene.destroy();
+        nock.cleanAll();
+        vectorProperties.destroy();
+      });
+
+      it('should create a primitive', () => {
+        expect(primitive).to.be.an.instanceOf(Primitive);
+        expect(primitive.geometryInstances[0].geometry).to.be.an.instanceOf(SphereGeometry);
+      });
+
+      it('should create an outline primitive', () => {
+        expect(outline).to.be.an.instanceOf(Primitive);
+        expect(outline.geometryInstances[0].geometry).to.be.an.instanceOf(SphereOutlineGeometry);
+      });
+
+      it('should apply allow picking', () => {
+        expect(primitive.allowPicking).to.be.false;
+      });
+
+      it('should apply allow picking on the outline', () => {
+        expect(outline.allowPicking).to.be.false;
+      });
+
+      it('should apply the scale to the primitive matrix', () => {
+        const scale = Matrix4.getScale(primitive.modelMatrix, new Cartesian3());
+        expect(scale.x).to.closeTo(2, CesiumMath.EPSILON8);
+        expect(scale.y).to.closeTo(4, CesiumMath.EPSILON8);
+        expect(scale.z).to.closeTo(8, CesiumMath.EPSILON8);
+      });
+
+      it('should apply the scale to the outline matrix', () => {
+        const scale = Matrix4.getScale(outline.modelMatrix, new Cartesian3());
+        expect(scale.x).to.closeTo(2, CesiumMath.EPSILON8);
+        expect(scale.y).to.closeTo(4, CesiumMath.EPSILON8);
+        expect(scale.z).to.closeTo(8, CesiumMath.EPSILON8);
+      });
+    });
+
+    describe('of an icon primitive', () => {
+      let feature;
+      let positions;
+      let vectorProperties;
+      let primitive;
+      let scene;
+
+      before(() => {
+        feature = new Feature({
+          olcs_primitiveOptions: {
+            type: PrimitiveOptionsType.SPHERE,
+            geometryOptions: {},
+          },
+          olcs_allowPicking: false,
+        });
+        const coordinates = [[1, 1, 2]];
+        scene = getMockScene();
+        positions = coordinates.map(pos => Cartesian3.fromDegrees(...pos));
+        vectorProperties = new VectorProperties({ modelScaleX: 2, modelScaleY: 4, modelScaleZ: 8 });
+        const style = new Style({
+          fill: new Fill({ color: '#FF00FF' }),
+          image: new Icon({
+            src: '/icon.png',
+          }),
+        });
+        [primitive] = getPrimitiveOptions(
+          feature,
+          style,
+          coordinates,
+          positions,
+          vectorProperties,
+          scene,
+        ).primitives;
+      });
+
+      after(() => {
+        scene.destroy();
+        nock.cleanAll();
+        vectorProperties.destroy();
+      });
+
+      it('should create a primitive', () => {
+        expect(primitive).to.be.an.instanceOf(Primitive);
+        expect(primitive.geometryInstances[0].geometry).to.be.an.instanceOf(SphereGeometry);
+      });
+
+      it('should apply allow picking', () => {
+        expect(primitive.allowPicking).to.be.false;
+      });
+
+      it('should apply the scale to the primitives matrix', () => {
+        const scale = Matrix4.getScale(primitive.modelMatrix, new Cartesian3());
+        expect(scale.x).to.closeTo(2, CesiumMath.EPSILON8);
+        expect(scale.y).to.closeTo(4, CesiumMath.EPSILON8);
+        expect(scale.z).to.closeTo(8, CesiumMath.EPSILON8);
+      });
+    });
+
+    describe('of an offset primitive', () => {
+      let feature;
+      let positions;
+      let vectorProperties;
+      let primitive;
+      let scene;
+
+      before(() => {
+        feature = new Feature({
+          olcs_primitiveOptions: {
+            type: PrimitiveOptionsType.SPHERE,
+            geometryOptions: {},
+            offset: [0, 0, 1],
+          },
+          olcs_allowPicking: false,
+        });
+        const coordinates = [[1, 1, 2]];
+        scene = getMockScene();
+        positions = coordinates.map(pos => Cartesian3.fromDegrees(...pos));
+        vectorProperties = new VectorProperties({ modelScaleX: 2, modelScaleY: 4, modelScaleZ: 8 });
+        const style = new Style({
+          image: new RegularShape({
+            fill: new Fill({ color: '#FF00FF' }),
+          }),
+        });
+        [primitive] = getPrimitiveOptions(
+          feature,
+          style,
+          coordinates,
+          positions,
+          vectorProperties,
+          scene,
+        ).primitives;
+      });
+
+      after(() => {
+        scene.destroy();
+        nock.cleanAll();
+        vectorProperties.destroy();
+      });
+
+      it('should create a primitive', () => {
+        expect(primitive).to.be.an.instanceOf(Primitive);
+        expect(primitive.geometryInstances[0].geometry).to.be.an.instanceOf(SphereGeometry);
+      });
+
+      it('should apply allow picking', () => {
+        expect(primitive.allowPicking).to.be.false;
+      });
+
+      it('should apply the scale to the primitives matrix', () => {
+        const scale = Matrix4.getScale(primitive.modelMatrix, new Cartesian3());
+        expect(scale.x).to.closeTo(2, CesiumMath.EPSILON8);
+        expect(scale.y).to.closeTo(4, CesiumMath.EPSILON8);
+        expect(scale.z).to.closeTo(8, CesiumMath.EPSILON8);
+      });
+
+      it('should apply the offset, scaled', () => {
+        const translation = Matrix4.getTranslation(primitive.modelMatrix, new Cartesian3());
+        const carto = Cartographic.fromCartesian(translation);
+        expect(carto.height).to.closeTo(10, CesiumMath.EPSILON5);
+      });
+    });
+
+    describe('of an offset auto scale primitive', () => {
+      let feature;
+      let positions;
+      let vectorProperties;
+      let primitive;
+      let scene;
+
+      before(() => {
+        feature = new Feature({
+          olcs_primitiveOptions: {
+            type: PrimitiveOptionsType.SPHERE,
+            geometryOptions: {},
+            offset: [0, 0, 1],
+          },
+          olcs_modelAutoScale: true,
+          olcs_allowPicking: false,
+        });
+        const coordinates = [[1, 1, 2]];
+        scene = getMockScene();
+        positions = coordinates.map(pos => Cartesian3.fromDegrees(...pos));
+        vectorProperties = new VectorProperties({});
+        const style = new Style({
+          image: new RegularShape({
+            fill: new Fill({ color: '#FF00FF' }),
+          }),
+        });
+        [primitive] = getPrimitiveOptions(
+          feature,
+          style,
+          coordinates,
+          positions,
+          vectorProperties,
+          scene,
+        ).primitives;
+      });
+
+      after(() => {
+        scene.destroy();
+        nock.cleanAll();
+        vectorProperties.destroy();
+      });
+
+      it('should create a primitive', () => {
+        expect(primitive).to.be.an.instanceOf(Primitive);
+        expect(primitive.geometryInstances[0].geometry).to.be.an.instanceOf(SphereGeometry);
+      });
+
+      it('should apply allow picking', () => {
+        expect(primitive.allowPicking).to.be.false;
+      });
+
+      it('should apply the offset, scaled', () => {
+        const translation = Matrix4.getTranslation(primitive.modelMatrix, new Cartesian3());
+        const carto = Cartographic.fromCartesian(translation);
+        expect(carto.height).to.closeTo(3, CesiumMath.EPSILON5);
+      });
+
+      it('should reset the offset, if setting a new modelMatrix', () => {
+        const modelMatrix = primitive.modelMatrix.clone();
+        primitive.modelMatrix = Matrix4.setScale(modelMatrix, new Cartesian3(2, 2, 2), new Matrix4());
+        const translation = Matrix4.getTranslation(primitive.modelMatrix, new Cartesian3());
+        expect(Cartographic.fromCartesian(translation).height).to.closeTo(4, CesiumMath.EPSILON5);
+        primitive.modelMatrix = modelMatrix;
+        Matrix4.getTranslation(primitive.modelMatrix, translation);
+        expect(Cartographic.fromCartesian(translation).height).to.closeTo(3, CesiumMath.EPSILON5);
+      });
+    });
+
+    describe('of a scaled auto scale primitive', () => {
+      let feature;
+      let positions;
+      let vectorProperties;
+      let primitive;
+      let scene;
+
+      before(() => {
+        feature = new Feature({
+          olcs_primitiveOptions: {
+            type: PrimitiveOptionsType.SPHERE,
+            geometryOptions: {},
+          },
+          olcs_modelAutoScale: true,
+          olcs_allowPicking: false,
+        });
+        const coordinates = [[1, 1, 2]];
+        scene = getMockScene();
+        positions = coordinates.map(pos => Cartesian3.fromDegrees(...pos));
+        vectorProperties = new VectorProperties({ modelScaleX: 2, modelScaleY: 4, modelScaleZ: 8 });
+        const style = new Style({
+          image: new RegularShape({
+            fill: new Fill({ color: '#FF00FF' }),
+          }),
+        });
+        [primitive] = getPrimitiveOptions(
+          feature,
+          style,
+          coordinates,
+          positions,
+          vectorProperties,
+          scene,
+        ).primitives;
+      });
+
+      after(() => {
+        scene.destroy();
+        nock.cleanAll();
+        vectorProperties.destroy();
+      });
+
+      it('should create a primitive', () => {
+        expect(primitive).to.be.an.instanceOf(Primitive);
+        expect(primitive.geometryInstances[0].geometry).to.be.an.instanceOf(SphereGeometry);
+      });
+
+      it('should apply allow picking', () => {
+        expect(primitive.allowPicking).to.be.false;
+      });
+
+      it('should apply the scale to the primitives matrix', () => {
+        const scale = Matrix4.getScale(primitive.modelMatrix, new Cartesian3());
+        expect(scale.x).to.closeTo(2, CesiumMath.EPSILON8);
+        expect(scale.y).to.closeTo(4, CesiumMath.EPSILON8);
+        expect(scale.z).to.closeTo(8, CesiumMath.EPSILON8);
+      });
+
+      it('should reset the scale, if setting a new modelMatrix', () => {
+        const modelMatrix = primitive.modelMatrix.clone();
+        primitive.modelMatrix = Matrix4.setScale(modelMatrix, new Cartesian3(2, 2, 2), new Matrix4());
+        const scale = Matrix4.getScale(primitive.modelMatrix, new Cartesian3());
+        expect(scale.x).to.closeTo(4, CesiumMath.EPSILON8);
+        expect(scale.y).to.closeTo(8, CesiumMath.EPSILON8);
+        expect(scale.z).to.closeTo(16, CesiumMath.EPSILON8);
+        primitive.modelMatrix = Matrix4.setScale(modelMatrix, Cartesian3.ONE, new Matrix4());
+        Matrix4.getScale(primitive.modelMatrix, scale);
+        expect(scale.x).to.closeTo(2, CesiumMath.EPSILON8);
+        expect(scale.y).to.closeTo(4, CesiumMath.EPSILON8);
+        expect(scale.z).to.closeTo(8, CesiumMath.EPSILON8);
+      });
+    });
+
+    describe('of an offset & scaled auto scale primitive', () => {
+      let feature;
+      let positions;
+      let vectorProperties;
+      let primitive;
+      let scene;
+
+      before(() => {
+        feature = new Feature({
+          olcs_primitiveOptions: {
+            type: PrimitiveOptionsType.SPHERE,
+            geometryOptions: {},
+            offset: [0, 0, 1],
+          },
+          olcs_modelAutoScale: true,
+          olcs_allowPicking: false,
+        });
+        const coordinates = [[1, 1, 2]];
+        scene = getMockScene();
+        positions = coordinates.map(pos => Cartesian3.fromDegrees(...pos));
+        vectorProperties = new VectorProperties({ modelScaleX: 2, modelScaleY: 4, modelScaleZ: 8 });
+        const style = new Style({
+          image: new RegularShape({
+            fill: new Fill({ color: '#FF00FF' }),
+          }),
+        });
+        [primitive] = getPrimitiveOptions(
+          feature,
+          style,
+          coordinates,
+          positions,
+          vectorProperties,
+          scene,
+        ).primitives;
+      });
+
+      after(() => {
+        scene.destroy();
+        nock.cleanAll();
+        vectorProperties.destroy();
+      });
+
+      it('should create a primitive', () => {
+        expect(primitive).to.be.an.instanceOf(Primitive);
+        expect(primitive.geometryInstances[0].geometry).to.be.an.instanceOf(SphereGeometry);
+      });
+
+      it('should apply allow picking', () => {
+        expect(primitive.allowPicking).to.be.false;
+      });
+
+      it('should apply the scale to the primitives matrix', () => {
+        const scale = Matrix4.getScale(primitive.modelMatrix, new Cartesian3());
+        expect(scale.x).to.closeTo(2, CesiumMath.EPSILON8);
+        expect(scale.y).to.closeTo(4, CesiumMath.EPSILON8);
+        expect(scale.z).to.closeTo(8, CesiumMath.EPSILON8);
+      });
+
+      it('should reset the scale, if setting a new modelMatrix', () => {
+        const modelMatrix = primitive.modelMatrix.clone();
+        primitive.modelMatrix = Matrix4.setScale(modelMatrix, new Cartesian3(2, 2, 2), new Matrix4());
+        const scale = Matrix4.getScale(primitive.modelMatrix, new Cartesian3());
+        expect(scale.x).to.closeTo(4, CesiumMath.EPSILON8);
+        expect(scale.y).to.closeTo(8, CesiumMath.EPSILON8);
+        expect(scale.z).to.closeTo(16, CesiumMath.EPSILON8);
+        primitive.modelMatrix = Matrix4.setScale(modelMatrix, Cartesian3.ONE, new Matrix4());
+        Matrix4.getScale(primitive.modelMatrix, scale);
+        expect(scale.x).to.closeTo(2, CesiumMath.EPSILON8);
+        expect(scale.y).to.closeTo(4, CesiumMath.EPSILON8);
+        expect(scale.z).to.closeTo(8, CesiumMath.EPSILON8);
+      });
+
+      it('should reset the offset, if setting a new modelMatrix', () => {
+        const modelMatrix = primitive.modelMatrix.clone();
+        primitive.modelMatrix = Matrix4.setScale(modelMatrix, new Cartesian3(2, 2, 2), new Matrix4());
+        const translation = Matrix4.getTranslation(primitive.modelMatrix, new Cartesian3());
+        expect(Cartographic.fromCartesian(translation).height).to.closeTo(18, CesiumMath.EPSILON5);
+        primitive.modelMatrix = Matrix4.setScale(modelMatrix, Cartesian3.ONE, new Matrix4());
+        Matrix4.getTranslation(primitive.modelMatrix, translation);
+        expect(Cartographic.fromCartesian(translation).height).to.closeTo(10, CesiumMath.EPSILON5);
+      });
+    });
+
+    describe('returning null', () => {
+      it('should return null, if no primitive can be created', () => {
+        const feature = new Feature({
+          olcs_allowPicking: false,
+        });
+        const coordinates = [[1, 1, 2]];
+        const scene = getMockScene();
+        const positions = coordinates.map(pos => Cartesian3.fromDegrees(...pos));
+        const vectorProperties = new VectorProperties({ modelScaleX: 2, modelScaleY: 4, modelScaleZ: 8 });
+        const style = new Style({
+          fill: new Fill({ color: '#FF00FF' }),
+          image: new Icon({
+            src: '/icon.png',
+          }),
+        });
+        const primitive = getPrimitiveOptions(
+          feature,
+          style,
+          coordinates,
+          positions,
+          vectorProperties,
+          scene,
+        );
+        vectorProperties.destroy();
+        expect(primitive).to.be.null;
+      });
+
+      it('should return null, if there is no image style', () => {
+        const feature = new Feature({
+          olcs_primitiveOptions: {
+            type: PrimitiveOptionsType.SPHERE,
+            geometryOptions: {},
+          },
+          olcs_allowPicking: false,
+        });
+        const coordinates = [[1, 1, 2]];
+        const scene = getMockScene();
+        const positions = coordinates.map(pos => Cartesian3.fromDegrees(...pos));
+        const vectorProperties = new VectorProperties({ modelScaleX: 2, modelScaleY: 4, modelScaleZ: 8 });
+        const style = new Style({
+          fill: new Fill({ color: '#FF00FF' }),
+        });
+        const primitive = getPrimitiveOptions(
+          feature,
+          style,
+          coordinates,
+          positions,
+          vectorProperties,
+          scene,
+        );
+        vectorProperties.destroy();
+        expect(primitive).to.be.null;
+      });
     });
   });
 
@@ -579,6 +1360,7 @@ describe('util.featureConverter.pointToCesium', () => {
     let emptyStyle;
     let geometries;
     let vectorProperties;
+    let map;
     let scene;
     let primitiveCollection;
     let context;
@@ -599,9 +1381,10 @@ describe('util.featureConverter.pointToCesium', () => {
         altitudeMode: 'absolute',
         eyeOffset: [1, 1, 1],
       });
-      scene = getMockScene();
+      map = getCesiumMap();
+      scene = map.getScene();
       primitiveCollection = new PrimitiveCollection();
-      context = new VectorContext(scene, primitiveCollection);
+      context = new VectorContext(map, primitiveCollection);
     });
 
     afterEach(() => {
@@ -609,8 +1392,10 @@ describe('util.featureConverter.pointToCesium', () => {
     });
 
     after(() => {
+      context.destroy();
       primitiveCollection.destroy();
       vectorProperties.destroy();
+      map.destroy();
     });
 
     it('should return if no image, or text style is given ', () => {
@@ -652,6 +1437,7 @@ describe('util.featureConverter.pointToCesium', () => {
       expect(context.featureToPrimitiveMap.size).to.be.equal(1);
       expect(context.primitives.length).to.be.equal(1);
       expect(context.primitives.get(0)).to.be.instanceOf(Primitive);
+      vectorPropertiesWithExtrusion.destroy();
     });
 
     it('should not create a linePrimitive if an extrusion and no stroke style exists', () => {
@@ -666,41 +1452,436 @@ describe('util.featureConverter.pointToCesium', () => {
       expect(context.featureToBillboardMap.size).to.be.equal(1);
       expect(context.billboards.get(0)).to.be.instanceOf(Billboard);
       expect(context.featureToPrimitiveMap.size).to.be.equal(0);
+      vectorPropertiesWithExtrusion.destroy();
     });
 
     describe('creating of models', () => {
-      let modelVectorProperties;
+      describe('of a normal model', () => {
+        let modelVectorProperties;
 
-      before(() => {
-        modelVectorProperties = new VectorProperties({ modelUrl: 'http://localhost/test.glb' });
+        before(() => {
+          modelVectorProperties = new VectorProperties({ modelUrl: 'http://localhost/test.glb' });
+        });
+
+        after(() => {
+          modelVectorProperties.destroy();
+        });
+
+        it('should create a model, if a model is parameterized', () => {
+          pointToCesium(
+            feature, new Style({ image: regularShapeStyle }), geometries, modelVectorProperties, scene, context,
+          );
+          expect(context.featureToPrimitiveMap.size).to.be.equal(1);
+          expect(context.primitives.get(0)).to.be.an.instanceOf(Model);
+        });
+
+        it('should not create a billboard, if creating a model', () => {
+          pointToCesium(
+            feature, new Style({ image: regularShapeStyle }), geometries, modelVectorProperties, scene, context,
+          );
+          expect(context.billboards.length).to.equal(0);
+          expect(context.featureToBillboardMap.size).to.be.equal(0);
+        });
+
+        it('should not create a label, if creating a model', () => {
+          pointToCesium(
+            feature, new Style({ text: new TextStyle({ text: 'test' }) }), geometries, modelVectorProperties, scene, context,
+          );
+          expect(context.featureToLabelMap.size).to.be.equal(0);
+          expect(context.labels.length).to.equal(0);
+        });
       });
 
-      after(() => {
-        modelVectorProperties.destroy();
+      describe('of an extruded model', () => {
+        let modelVectorProperties;
+        let style;
+
+        before(() => {
+          modelVectorProperties = new VectorProperties({ modelUrl: 'http://localhost/test.glb', extrudedHeight: 10 });
+          style = new Style({ image: regularShapeStyle, stroke: new Stroke({ width: 1, color: [1, 1, 1] }) });
+        });
+
+        after(() => {
+          modelVectorProperties.destroy();
+        });
+
+        it('should create two primitives', () => {
+          pointToCesium(
+            feature, style, geometries, modelVectorProperties, scene, context,
+          );
+          expect(context.primitives.length).to.be.equal(2);
+        });
+
+        it('should create a model', () => {
+          pointToCesium(
+            feature, style, geometries, modelVectorProperties, scene, context,
+          );
+          expect(context.featureToPrimitiveMap.size).to.be.equal(1);
+          expect(context.primitives.get(1)).to.be.an.instanceOf(Model);
+        });
+
+        it('should create a linePrimitive', () => {
+          pointToCesium(
+            feature, style, geometries, modelVectorProperties, scene, context,
+          );
+          expect(context.featureToPrimitiveMap.size).to.be.equal(1);
+          expect(context.primitives.get(0)).to.be.instanceOf(Primitive);
+        });
+
+        it('should not create a billboard, if creating a model', () => {
+          pointToCesium(
+            feature, new Style({ image: regularShapeStyle }), geometries, modelVectorProperties, scene, context,
+          );
+          expect(context.billboards.length).to.equal(0);
+          expect(context.featureToBillboardMap.size).to.be.equal(0);
+        });
+
+        it('should not create a label, if creating a model', () => {
+          pointToCesium(
+            feature, new Style({ text: new TextStyle({ text: 'test' }) }), geometries, modelVectorProperties, scene, context,
+          );
+          expect(context.featureToLabelMap.size).to.be.equal(0);
+          expect(context.labels.length).to.equal(0);
+        });
       });
 
-      it('should create a model, if a model is parameterized', () => {
+      describe('of an auto scaled model', () => {
+        let modelVectorProperties;
+
+        before(() => {
+          modelVectorProperties = new VectorProperties({ modelUrl: 'http://localhost/test.glb', modelAutoScale: true });
+        });
+
+        after(() => {
+          modelVectorProperties.destroy();
+        });
+
+        it('should create a scaled model', () => {
+          pointToCesium(
+            feature, new Style({ image: regularShapeStyle }), geometries, modelVectorProperties, scene, context,
+          );
+          expect(context.featureToScaledPrimitiveMap.size).to.be.equal(1);
+          expect(context.scaledPrimitives.get(0)).to.be.an.instanceOf(Model);
+        });
+
+        it('should not create a billboard, if creating a model', () => {
+          pointToCesium(
+            feature, new Style({ image: regularShapeStyle }), geometries, modelVectorProperties, scene, context,
+          );
+          expect(context.billboards.length).to.equal(0);
+          expect(context.featureToBillboardMap.size).to.be.equal(0);
+        });
+
+        it('should not create a label, if creating a model', () => {
+          pointToCesium(
+            feature, new Style({ text: new TextStyle({ text: 'test' }) }), geometries, modelVectorProperties, scene, context,
+          );
+          expect(context.featureToLabelMap.size).to.be.equal(0);
+          expect(context.labels.length).to.equal(0);
+        });
+      });
+
+      describe('of an auto scaled extruded model', () => {
+        let modelVectorProperties;
+        let style;
+
+        before(() => {
+          modelVectorProperties = new VectorProperties({
+            modelUrl: 'http://localhost/test.glb',
+            modelAutoScale: true,
+            extrudedHeight: 10,
+          });
+          style = new Style({ image: regularShapeStyle, stroke: new Stroke({ width: 1, color: [1, 1, 1] }) });
+        });
+
+        after(() => {
+          modelVectorProperties.destroy();
+        });
+
+        it('should create a scaled model', () => {
+          pointToCesium(
+            feature, style, geometries, modelVectorProperties, scene, context,
+          );
+          expect(context.featureToScaledPrimitiveMap.size).to.be.equal(1);
+          expect(context.scaledPrimitives.get(0)).to.be.an.instanceOf(Model);
+        });
+
+        it('should create a linePrimitive', () => {
+          pointToCesium(
+            feature, style, geometries, modelVectorProperties, scene, context,
+          );
+          expect(context.featureToPrimitiveMap.size).to.be.equal(1);
+          expect(context.primitives.get(0)).to.be.instanceOf(Primitive);
+        });
+
+        it('should not create a billboard, if creating a model', () => {
+          pointToCesium(
+            feature, style, geometries, modelVectorProperties, scene, context,
+          );
+          expect(context.billboards.length).to.equal(0);
+          expect(context.featureToBillboardMap.size).to.be.equal(0);
+        });
+
+        it('should not create a label, if creating a model', () => {
+          pointToCesium(
+            feature, new Style({ text: new TextStyle({ text: 'test' }) }), geometries, modelVectorProperties, scene, context,
+          );
+          expect(context.featureToLabelMap.size).to.be.equal(0);
+          expect(context.labels.length).to.equal(0);
+        });
+      });
+    });
+
+    describe('creating of primitives', () => {
+      describe('of a normal primitive', () => {
+        let primitiveVectorProperties;
+
+        before(() => {
+          primitiveVectorProperties = new VectorProperties({
+            primitiveOptions: { type: PrimitiveOptionsType.SPHERE, geometryOptions: {} },
+          });
+        });
+
+        after(() => {
+          primitiveVectorProperties.destroy();
+        });
+
+        it('should create a primitive, if a primitive is parameterized', () => {
+          pointToCesium(
+            feature, new Style({ image: regularShapeStyle }), geometries, primitiveVectorProperties, scene, context,
+          );
+          expect(context.featureToPrimitiveMap.size).to.be.equal(1);
+          expect(context.primitives.get(0)).to.be.an.instanceOf(Primitive);
+        });
+
+        it('should not create a billboard, if creating a primitive', () => {
+          pointToCesium(
+            feature, new Style({ image: regularShapeStyle }), geometries, primitiveVectorProperties, scene, context,
+          );
+          expect(context.billboards.length).to.equal(0);
+          expect(context.featureToBillboardMap.size).to.be.equal(0);
+        });
+
+        it('should not create a label, if creating a primitive', () => {
+          pointToCesium(
+            feature, new Style({ image: regularShapeStyle, text: new TextStyle({ text: 'test' }) }), geometries, primitiveVectorProperties, scene, context,
+          );
+          expect(context.featureToLabelMap.size).to.be.equal(0);
+          expect(context.labels.length).to.equal(0);
+        });
+      });
+
+      describe('of an extruded primitive', () => {
+        let primitiveVectorProperties;
+        let style;
+
+        before(() => {
+          primitiveVectorProperties = new VectorProperties({
+            primitiveOptions: { type: PrimitiveOptionsType.SPHERE, geometryOptions: {} },
+            extrudedHeight: 10,
+          });
+          style = new Style({
+            image: regularShapeStyle,
+            stroke: new Stroke({ width: 1, color: [1, 1, 1] }),
+          });
+        });
+
+        after(() => {
+          primitiveVectorProperties.destroy();
+        });
+
+        it('should create two primitives', () => {
+          pointToCesium(
+            feature, style, geometries, primitiveVectorProperties, scene, context,
+          );
+          expect(context.primitives.length).to.be.equal(2);
+        });
+
+        it('should create the primitive', () => {
+          pointToCesium(
+            feature, style, geometries, primitiveVectorProperties, scene, context,
+          );
+          expect(context.featureToPrimitiveMap.size).to.be.equal(1);
+          expect(context.primitives.get(1)).to.be.an.instanceOf(Primitive);
+          expect(context.primitives.get(1).geometryInstances[0].geometry).to.be.an.instanceOf(SphereGeometry);
+        });
+
+        it('should create a linePrimitive', () => {
+          pointToCesium(
+            feature, style, geometries, primitiveVectorProperties, scene, context,
+          );
+          expect(context.featureToPrimitiveMap.size).to.be.equal(1);
+          expect(context.primitives.get(0)).to.be.instanceOf(Primitive);
+        });
+
+        it('should not create a billboard, if creating a primitive', () => {
+          pointToCesium(
+            feature, new Style({ image: regularShapeStyle }), geometries, primitiveVectorProperties, scene, context,
+          );
+          expect(context.billboards.length).to.equal(0);
+          expect(context.featureToBillboardMap.size).to.be.equal(0);
+        });
+
+        it('should not create a label, if creating a primitive', () => {
+          pointToCesium(
+            feature,
+            new Style({ image: regularShapeStyle, text: new TextStyle({ text: 'test' }) }),
+            geometries,
+            primitiveVectorProperties,
+            scene,
+            context,
+          );
+          expect(context.featureToLabelMap.size).to.be.equal(0);
+          expect(context.labels.length).to.equal(0);
+        });
+      });
+
+      describe('of an auto scaled primitive', () => {
+        let primitiveVectorProperties;
+
+        before(() => {
+          primitiveVectorProperties = new VectorProperties({
+            primitiveOptions: { type: PrimitiveOptionsType.SPHERE, geometryOptions: {} },
+            modelAutoScale: true,
+          });
+        });
+
+        after(() => {
+          primitiveVectorProperties.destroy();
+        });
+
+        it('should create a scaled primitive', () => {
+          pointToCesium(
+            feature, new Style({ image: regularShapeStyle }), geometries, primitiveVectorProperties, scene, context,
+          );
+          expect(context.featureToScaledPrimitiveMap.size).to.be.equal(1);
+          expect(context.scaledPrimitives.get(0)).to.be.an.instanceOf(Primitive);
+        });
+
+        it('should not create a billboard, if creating a primitive', () => {
+          pointToCesium(
+            feature, new Style({ image: regularShapeStyle }), geometries, primitiveVectorProperties, scene, context,
+          );
+          expect(context.billboards.length).to.equal(0);
+          expect(context.featureToBillboardMap.size).to.be.equal(0);
+        });
+
+        it('should not create a label, if creating a primitive', () => {
+          pointToCesium(
+            feature,
+            new Style({ image: regularShapeStyle, text: new TextStyle({ text: 'test' }) }),
+            geometries,
+            primitiveVectorProperties,
+            scene,
+            context,
+          );
+          expect(context.featureToLabelMap.size).to.be.equal(0);
+          expect(context.labels.length).to.equal(0);
+        });
+      });
+
+      describe('of an auto scaled extruded primitive', () => {
+        let primitiveVectorProperties;
+        let style;
+
+        before(() => {
+          primitiveVectorProperties = new VectorProperties({
+            primitiveOptions: { type: PrimitiveOptionsType.SPHERE, geometryOptions: {} },
+            modelAutoScale: true,
+            extrudedHeight: 10,
+          });
+          style = new Style({ image: regularShapeStyle, stroke: new Stroke({ width: 1, color: [1, 1, 1] }) });
+        });
+
+        after(() => {
+          primitiveVectorProperties.destroy();
+        });
+
+        it('should create a scaled primitive', () => {
+          pointToCesium(
+            feature, style, geometries, primitiveVectorProperties, scene, context,
+          );
+          expect(context.featureToScaledPrimitiveMap.size).to.be.equal(1);
+          expect(context.scaledPrimitives.get(0)).to.be.an.instanceOf(Primitive);
+        });
+
+        it('should create a linePrimitive', () => {
+          pointToCesium(
+            feature, style, geometries, primitiveVectorProperties, scene, context,
+          );
+          expect(context.featureToPrimitiveMap.size).to.be.equal(1);
+          expect(context.primitives.get(0)).to.be.instanceOf(Primitive);
+        });
+
+        it('should not create a billboard, if creating a primitive', () => {
+          pointToCesium(
+            feature, style, geometries, primitiveVectorProperties, scene, context,
+          );
+          expect(context.billboards.length).to.equal(0);
+          expect(context.featureToBillboardMap.size).to.be.equal(0);
+        });
+
+        it('should not create a label, if creating a primitive', () => {
+          pointToCesium(
+            feature,
+            new Style({ image: regularShapeStyle, text: new TextStyle({ text: 'test' }) }),
+            geometries,
+            primitiveVectorProperties,
+            scene,
+            context,
+          );
+          expect(context.featureToLabelMap.size).to.be.equal(0);
+          expect(context.labels.length).to.equal(0);
+        });
+      });
+    });
+
+    describe('priority of model vs. primitive', () => {
+      it('should create a model, if the model is defined on the feature, even if a primitive is defined on the vector properties', () => {
+        const modelFeature = new Feature({ id: 'foo', olcs_modelUrl: 'http://localhost/test.glb' });
+        const primitiveVectorProperties = new VectorProperties({
+          primitiveOptions: { type: PrimitiveOptionsType.SPHERE, geometryOptions: {} },
+        });
         pointToCesium(
-          feature, new Style({ image: regularShapeStyle }), geometries, modelVectorProperties, scene, context,
+          modelFeature, new Style({ image: regularShapeStyle }), geometries, primitiveVectorProperties, scene, context,
         );
+        primitiveVectorProperties.destroy();
         expect(context.featureToPrimitiveMap.size).to.be.equal(1);
         expect(context.primitives.get(0)).to.be.an.instanceOf(Model);
       });
 
-      it('should not create a billboard, if creating a model', () => {
+      it('should create a primitive, if the primitive is defined on the feature, even if a model is defined on the vector properties', () => {
+        const primitiveFeature = new Feature({
+          id: 'foo',
+          olcs_primitiveOptions: { type: PrimitiveOptionsType.SPHERE, geometryOptions: {} },
+        });
+        const modelVectorProperties = new VectorProperties({
+          modelUrl: 'http://localhost/test.glb',
+        });
         pointToCesium(
-          feature, new Style({ image: regularShapeStyle }), geometries, modelVectorProperties, scene, context,
+          primitiveFeature, new Style({ image: regularShapeStyle }), geometries, modelVectorProperties, scene, context,
         );
-        expect(context.billboards.length).to.equal(0);
-        expect(context.featureToBillboardMap.size).to.be.equal(0);
+        modelVectorProperties.destroy();
+        expect(context.featureToPrimitiveMap.size).to.be.equal(1);
+        expect(context.primitives.get(0)).to.be.an.instanceOf(Primitive);
       });
 
-      it('should not create a label, if creating a model', () => {
+      it('should create a model, if both model and primitive are defined on the vector properties', () => {
+        const primitiveAndModelVectorProperties = new VectorProperties({
+          modelUrl: 'http://localhost/test.glb',
+          primitiveOptions: { type: PrimitiveOptionsType.SPHERE, geometryOptions: {} },
+        });
         pointToCesium(
-          feature, new Style({ text: new TextStyle({ text: 'test' }) }), geometries, modelVectorProperties, scene, context,
+          feature,
+          new Style({ image: regularShapeStyle }),
+          geometries,
+          primitiveAndModelVectorProperties,
+          scene,
+          context,
         );
-        expect(context.featureToLabelMap.size).to.be.equal(0);
-        expect(context.labels.length).to.equal(0);
+        primitiveAndModelVectorProperties.destroy();
+        expect(context.featureToPrimitiveMap.size).to.be.equal(1);
+        expect(context.primitives.get(0)).to.be.an.instanceOf(Model);
       });
     });
   });
