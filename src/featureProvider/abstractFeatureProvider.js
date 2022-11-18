@@ -14,7 +14,6 @@ import { isProvidedFeature, showProvidedFeature } from './featureProviderSymbols
 /**
  * @typedef {VcsObjectOptions} AbstractFeatureProviderOptions
  * @property {import("@vcmap/core").StyleItemOptions|import("@vcmap/core").StyleItem|undefined} style - the style to apply to features created by this feature provider
- * @property {Object|undefined} genericFeatureProperties - generic properties to add to features created by this feature provider
  * @property {import("@vcmap/core").VectorProperties|import("@vcmap/core").VectorPropertiesOptions|undefined} vectorProperties - the vector properties of the features. Allow picking is false by default.
  * @property {boolean} [showGeometry=false] - show the resulting geometry in the map
  * @property {Array<string>} [mapTypes=[]] - can be used to constrict the featureProvider to specific mapTypes empty array means no restriction
@@ -38,7 +37,6 @@ class AbstractFeatureProvider extends VcsObject {
       vectorProperties: {
         allowPicking: false,
       },
-      genericFeatureProperties: undefined,
       showGeometry: false,
       mapTypes: [],
     };
@@ -80,13 +78,6 @@ class AbstractFeatureProvider extends VcsObject {
       options.vectorProperties :
       new VectorProperties({ ...defaultOptions.vectorProperties, ...options.vectorProperties });
     /**
-     * An object of potential generic feature properties to add to all feature created by this provider
-     * @type {Object<string, *>|undefined}
-     * @api
-     */
-    this.genericFeatureProperties = options.genericFeatureProperties || defaultOptions.genericFeatureProperties;
-
-    /**
      * Map ClassNames Can be used to only apply this featureProvider to the specified maps
      * @type {Array<string>}
      * @api
@@ -106,7 +97,7 @@ class AbstractFeatureProvider extends VcsObject {
   }
 
   /**
-   * Ensures the feature has an ID, applies all vectorProperties and adds the generic properties, style and the vcsLayerName
+   * Ensures the feature has an ID, applies all vectorProperties and adds style and the vcsLayerName
    * and isProvidedFeature symbols to the feature
    * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @returns {import("ol").Feature<import("ol/geom/Geometry").default>}
@@ -118,9 +109,6 @@ class AbstractFeatureProvider extends VcsObject {
     }
     if (this.style) {
       feature.setStyle(this.style.style);
-    }
-    if (this.genericFeatureProperties) {
-      feature.setProperties(this.genericFeatureProperties);
     }
     feature[vcsLayerName] = this.layerName;
     feature[isProvidedFeature] = true;
@@ -164,10 +152,6 @@ class AbstractFeatureProvider extends VcsObject {
       config.showGeometry = this.showGeometry;
     }
 
-    if (this.genericFeatureProperties) {
-      config.genericFeatureProperties = { ...this.genericFeatureProperties };
-    }
-
     if (this.style) {
       config.style = this.style.toJSON();
     }
@@ -187,7 +171,6 @@ class AbstractFeatureProvider extends VcsObject {
   destroy() {
     this.style = null;
     this.vectorProperties.destroy();
-    this.genericFeatureProperties = undefined;
     super.destroy();
   }
 }

@@ -141,30 +141,5 @@ describe('DataSourceLayer', () => {
         expect(config).to.have.all.keys('name', 'type');
       });
     });
-
-    describe('of a configured layer', () => {
-      let inputConfig;
-      let outputConfig;
-      let configuredLayer;
-
-      before(() => {
-        inputConfig = {
-          genericFeatureProperties: {
-            test: true,
-          },
-        };
-        configuredLayer = new DataSourceLayer(inputConfig);
-        outputConfig = configuredLayer.toJSON();
-      });
-
-      after(() => {
-        configuredLayer.destroy();
-      });
-
-      it('should configure genericFeatureProperties', () => {
-        expect(outputConfig).to.have.property('genericFeatureProperties')
-          .and.to.eql(inputConfig.genericFeatureProperties);
-      });
-    });
   });
 });

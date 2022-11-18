@@ -1,9 +1,9 @@
 import { ClassificationType, HeightReference } from '@vcmap/cesium';
 import Feature from 'ol/Feature.js';
-import Polygon, { fromExtent } from 'ol/geom/Polygon.js';
+import { fromExtent } from 'ol/geom/Polygon.js';
 import Point from 'ol/geom/Point.js';
 import VectorLayer from '../../../src/layer/vectorLayer.js';
-import Projection, { wgs84Projection } from '../../../src/util/projection.js';
+import { wgs84Projection } from '../../../src/util/projection.js';
 import DeclarativeStyleItem from '../../../src/style/declarativeStyleItem.js';
 import VcsApp from '../../../src/vcsApp.js';
 import VectorStyleItem, { vectorStyleSymbol } from '../../../src/style/vectorStyleItem.js';
@@ -134,41 +134,6 @@ describe('VectorLayer', () => {
         VL.setStyle(new VectorStyleItem({}));
         expect(dedicatedFeature[originalStyle]).to.equal(dedicatedFeature[vectorStyleSymbol].style);
       });
-    });
-  });
-
-  describe('getGenericFeatureFromClickedObject', () => {
-    let wgs84Center;
-    let feature;
-
-    before(() => {
-      wgs84Center = Projection.mercatorToWgs84([0.5, 0.5]);
-    });
-
-    beforeEach(() => {
-      feature = new Feature({
-        geometry: new Polygon([[[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]]]),
-      });
-      feature.clickedPosition = {
-        longitude: wgs84Center[0] + 1,
-        latitude: wgs84Center[1] + 1,
-        height: 5,
-        exactPosition: true,
-      };
-    });
-
-    it('should return the properties of a feature, without the geometry', () => {
-      feature.setProperties({ test: true });
-      const generic = VL.getGenericFeatureFromClickedObject(feature);
-      expect(generic).to.have.property('attributes').and.to.have.property('test', true);
-    });
-
-    it('should add the genericFeatureProperties to the attributes', () => {
-      feature.setProperties({ test: true });
-      VL.assignGenericFeatureProperties({ otherTest: false });
-      const generic = VL.getGenericFeatureFromClickedObject(feature);
-      expect(generic).to.have.property('attributes').and.to.have.property('test', true);
-      expect(generic).to.have.property('attributes').and.to.have.property('otherTest', false);
     });
   });
 

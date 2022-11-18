@@ -24,6 +24,13 @@ import { Color } from '@vcmap/cesium';
 
 /**
  * @enum {string}
+ * @property {string} X
+ * @property {string} Y
+ * @property {string} Z
+ * @property {string} XY
+ * @property {string} XZ
+ * @property {string} YZ
+ * @property {string} NONE
  */
 export const AXIS_AND_PLANES = {
   X: 'X',
@@ -37,6 +44,10 @@ export const AXIS_AND_PLANES = {
 
 /**
  * @enum {string}
+ * @property {string} TRANSLATE
+ * @property {string} ROTATE
+ * @property {string} SCALE
+ * @property {string} EXTRUDE
  */
 export const TransformationMode = {
   TRANSLATE: 'translate',

@@ -12,7 +12,6 @@ import { FeatureVisibilityAction, globalHidden, hidden, highlighted } from './fe
 import { getStylesArray } from '../util/featureconverter/convert.js';
 import { vcsLayerName } from './layerSymbols.js';
 import TileProviderFeatureProvider from '../featureProvider/tileProviderFeatureProvider.js';
-import { getGenericFeatureFromClickedObject } from './vectorHelpers.js';
 import { originalFeatureSymbol } from './vectorSymbols.js';
 import { getObjectFromClassRegistry, layerClassRegistry, tileProviderClassRegistry } from '../classRegistry.js';
 import TileProvider from './tileProvider/tileProvider.js';
@@ -236,14 +235,6 @@ class VectorTileLayer extends FeatureLayer {
       };
     }
     return null;
-  }
-
-  /**
-   * @param {VectorClickedObject} object
-   * @returns {?GenericFeature}
-   */
-  getGenericFeatureFromClickedObject(object) {
-    return getGenericFeatureFromClickedObject(object, this);
   }
 
   /**

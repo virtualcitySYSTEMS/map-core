@@ -73,6 +73,12 @@ function getLogger() {
 
 /**
  * @enum {string}
+ * @property {string} CYLINDER
+ * @property {string} SPHERE
+ * @property {string} ELLIPSE
+ * @property {string} ELLIPSOID
+ * @property {string} BOC
+ * @const
  */
 export const PrimitiveOptionsType = {
   CYLINDER: 'cylinder',
@@ -84,6 +90,9 @@ export const PrimitiveOptionsType = {
 
 /**
  * @enum {import("@vcmap/cesium").HeightReference}
+ * @property {import("@vcmap/cesium").HeightReference} clampToGround
+ * @property {import("@vcmap/cesium").HeightReference} absolute
+ * @property {import("@vcmap/cesium").HeightReference} relativeToGround
  * @const
  */
 export const AltitudeModeCesium = {
@@ -94,6 +103,9 @@ export const AltitudeModeCesium = {
 
 /**
  * @enum {import("@vcmap/cesium").ClassificationType}
+ * @property {import("@vcmap/cesium").ClassificationType} both
+ * @property {import("@vcmap/cesium").ClassificationType} cesium3DTile
+ * @property {import("@vcmap/cesium").ClassificationType} terrain
  * @const
  */
 export const ClassificationTypeCesium = {

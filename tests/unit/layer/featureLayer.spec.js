@@ -79,9 +79,6 @@ describe('FeatureLayer', () => {
               color: '#FF00FF',
             },
           },
-          genericFeatureProperties: {
-            test: true,
-          },
         };
         configuredLayer = new FeatureLayer(inputConfig);
         outputConfig = configuredLayer.toJSON();
@@ -100,11 +97,6 @@ describe('FeatureLayer', () => {
               color: [255, 0, 255, 1],
             },
           });
-      });
-
-      it('should set genericFeatureProperties', () => {
-        expect(outputConfig).to.have.property('genericFeatureProperties')
-          .and.to.have.property('test', true);
       });
     });
   });

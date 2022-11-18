@@ -59,19 +59,8 @@ describe('AbstractFeatureProvider', () => {
       });
     });
 
-    describe('with configured generic feature properties', () => {
-      it('should add the generic feature properties', () => {
-        const provider = new AbstractFeatureProvider(layerName, {
-          genericFeatureProperties: { foo: 'bar' },
-        });
-        const providerFeature = provider.getProviderFeature(new Feature());
-        expect(providerFeature.get('foo')).to.equal('bar');
-        provider.destroy();
-      });
-    });
-
     describe('with a configured style', () => {
-      it('should add the generic feature properties', () => {
+      it('should add the style', () => {
         const style = new VectorStyleItem({});
         const provider = new AbstractFeatureProvider(layerName, {
           style,
@@ -146,9 +135,6 @@ describe('AbstractFeatureProvider', () => {
             extrudedHeight: 20,
           },
           showGeometry: true,
-          genericFeatureProperties: {
-            foo: 'bar',
-          },
         };
         const provider = new AbstractFeatureProvider(layerName, inputConfig);
         outputConfig = provider.toJSON();
@@ -168,11 +154,6 @@ describe('AbstractFeatureProvider', () => {
       it('should configure the vectorProperties', () => {
         expect(outputConfig).to.have.property('vectorProperties')
           .and.to.eql(inputConfig.vectorProperties);
-      });
-
-      it('should configure the genericFeatureProperties', () => {
-        expect(outputConfig).to.have.property('genericFeatureProperties')
-          .and.to.eql(inputConfig.genericFeatureProperties);
       });
     });
   });

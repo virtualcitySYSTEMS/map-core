@@ -19,6 +19,9 @@ import { markVolatile } from '../../context.js';
 
 /**
  * @enum {string}
+ * @property {string} CREATE
+ * @property {string} EDIT_GEOMETRY
+ * @property {string} EDIT_FEATURES
  */
 export const SessionType = {
   CREATE: 'create',

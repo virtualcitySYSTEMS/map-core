@@ -1,7 +1,6 @@
 import { ClassificationType, HeightReference } from '@vcmap/cesium';
 import Feature from 'ol/Feature.js';
 import { fromExtent } from 'ol/geom/Polygon.js';
-import Point from 'ol/geom/Point.js';
 import Style from 'ol/style/Style.js';
 
 import nock from 'nock';
@@ -10,7 +9,6 @@ import VcsApp from '../../../src/vcsApp.js';
 import VectorLayer from '../../../src/layer/vectorLayer.js';
 import VectorStyleItem, { vectorStyleSymbol, defaultVectorStyle } from '../../../src/style/vectorStyleItem.js';
 import { FeatureStoreLayerState, featureStoreStateSymbol } from '../../../src/layer/featureStoreLayerState.js';
-import getJSONObjectFromObject from '../../../src/layer/cesium/x3dmHelper.js';
 import DeclarativeStyleItem from '../../../src/style/declarativeStyleItem.js';
 import '../../../src/layer/cesium/cesiumTilesetCesiumImpl.js';
 import { createTilesetServer, setCesiumMap, createDummyCesium3DTileFeature } from '../helpers/cesiumHelpers.js';
@@ -232,29 +230,6 @@ describe('FeatureStoreLayer', () => {
       });
       const vcsExtent = FS.getZoomToExtent();
       expect(vcsExtent.extent).to.have.ordered.members([2, 2, 5, 5]);
-    });
-  });
-
-  describe('getGenericFeatureFromClickedObject', () => {
-    it('should handle a generic ol.Feature', () => {
-      const feature = new Feature({ geometry: new Point([1, 1, 1]), test: true });
-      feature.clickedPosition = { longitude: 1, latitude: 1, height: 1 };
-      const generic = FS.getGenericFeatureFromClickedObject(feature);
-      expect(generic).to.have.property('layerName', FS.name);
-      expect(generic).to.have.property('layerClass', FS.className);
-      expect(generic).to.have.property('attributes').and.to.have.property('test', true);
-    });
-
-    it('should handle a json object from cesiumTile feature', async () => {
-      await app.maps.setActiveMap(cesiumMap.name);
-      const feature = createDummyCesium3DTileFeature({ test: true });
-      feature.clickedPosition = { longitude: 1, latitude: 1, height: 1 };
-      const obj = getJSONObjectFromObject(feature);
-      const generic = FS.getGenericFeatureFromClickedObject(obj);
-      expect(generic).to.have.property('layerName', FS.name);
-      expect(generic).to.have.property('layerClass', FS.className);
-      expect(generic).to.have.property('attributes').and.to.have.property('test', true);
-      await app.maps.setActiveMap(openlayer.name);
     });
   });
 

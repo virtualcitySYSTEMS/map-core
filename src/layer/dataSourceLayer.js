@@ -7,12 +7,6 @@ import FeatureVisibility, { FeatureVisibilityAction } from './featureVisibility.
 import { layerClassRegistry } from '../classRegistry.js';
 
 /**
- * @typedef {LayerOptions} DataSourceOptions
- * @property {Object|undefined} genericFeatureProperties
- * @api
- */
-
-/**
  * @typedef {Object} DataSourcePickedObject
  * @property {import("@vcmap/cesium").Entity} id
  * @property {ClickPosition} clickedPosition
@@ -36,21 +30,10 @@ class DataSourceLayer extends Layer {
   static get className() { return 'DataSourceLayer'; }
 
   /**
-   * @returns {DataSourceOptions}
-   */
-  static getDefaultOptions() {
-    return {
-      ...Layer.getDefaultOptions(),
-      genericFeatureProperties: {},
-    };
-  }
-
-  /**
-   * @param {DataSourceOptions} options
+   * @param {LayerOptions} options
    */
   constructor(options) {
     super(options);
-    const defaultOptions = DataSourceLayer.getDefaultOptions();
     /**
      * The entities of this layer. Use the `addEntity` API to add Enitities to ensure interoperability with vcm interfaces
      * @type {import("@vcmap/cesium").EntityCollection}
@@ -61,12 +44,6 @@ class DataSourceLayer extends Layer {
      * @type {import("@vcmap/cesium").DataSourceClock|undefined}
      */
     this.clock = undefined;
-    /**
-     * @type {Object}
-     * @private
-     */
-    this._genericFeatureProperties = options.genericFeatureProperties || defaultOptions.genericFeatureProperties;
-
     /**
      * The feature visibility of this layer. NOTE: Entities cannot be highlighted at this moment.
      * @type {FeatureVisibility}
@@ -221,35 +198,6 @@ class DataSourceLayer extends Layer {
       };
     }
     return null;
-  }
-
-  /**
-   * @param {DataSourcePickedObject} object
-   * @returns {GenericFeature}
-   */
-  getGenericFeatureFromClickedObject(object) {
-    const attributes = { ...this._genericFeatureProperties, ...object.attributes || {} };
-    return {
-      layerName: this.name,
-      layerClass: this.className,
-      attributes,
-      longitude: object.clickedPosition.longitude,
-      latitude: object.clickedPosition.latitude,
-      height: object.clickedPosition.height,
-      relativeToGround: false,
-    };
-  }
-
-  /**
-   * @inheritDoc
-   * @returns {DataSourceOptions}
-   */
-  toJSON() {
-    const config = /** @type {DataSourceOptions} */ (super.toJSON());
-    if (Object.keys(this._genericFeatureProperties).length > 0) {
-      config.genericFeatureProperties = { ...this._genericFeatureProperties };
-    }
-    return config;
   }
 
   /**

@@ -27,7 +27,6 @@ import ObliqueMap from '../map/obliqueMap.js';
 import CesiumMap from '../map/cesiumMap.js';
 import { originalStyle, updateOriginalStyle } from './featureVisibility.js';
 import StyleItem from '../style/styleItem.js';
-import { getGenericFeatureFromClickedObject } from './vectorHelpers.js';
 import { layerClassRegistry } from '../classRegistry.js';
 
 /**
@@ -554,14 +553,6 @@ class VectorLayer extends FeatureLayer {
       };
     }
     return null;
-  }
-
-  /**
-   * @param {VectorClickedObject} object
-   * @returns {?GenericFeature}
-   */
-  getGenericFeatureFromClickedObject(object) {
-    return getGenericFeatureFromClickedObject(object, this);
   }
 
   /**

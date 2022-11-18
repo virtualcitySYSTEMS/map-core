@@ -9,17 +9,6 @@ import { layerClassRegistry } from '../classRegistry.js';
 import GlobalHider from './globalHider.js';
 
 /**
- * @typedef {Object} GenericFeature
- * @property {number} longitude
- * @property {number} latitude
- * @property {number} height
- * @property {string} layerName
- * @property {string} layerClass
- * @property {any} attributes
- * @property {boolean} relativeToGround
- */
-
-/**
  * @typedef {import("@vcmap/core").Layer} SplitLayer
  * @property {import("@vcmap/cesium").SplitDirection} splitDirection
  * @property {VcsEvent<import("@vcmap/cesium").SplitDirection>} splitDirectionChanged

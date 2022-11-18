@@ -455,21 +455,6 @@ class FeatureStoreLayer extends VectorLayer {
   }
 
   /**
-   * @param {Object|VectorClickedObject} object
-   * @returns {GenericFeature}
-   */
-  getGenericFeatureFromClickedObject(object) {
-    if (object instanceof Feature) {
-      // @ts-ignore
-      return super.getGenericFeatureFromClickedObject(/** @type {VectorClickedObject} */ (object));
-    }
-    const generic = CesiumTilesetLayer.prototype.getGenericFeatureFromClickedObject.call(this, object);
-    generic.layerName = this.name;
-    generic.layerClass = this.className;
-    return generic;
-  }
-
-  /**
    * @inheritDoc
    * @returns {Extent|null}
    * @api

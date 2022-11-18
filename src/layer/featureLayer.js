@@ -13,7 +13,6 @@ import { layerClassRegistry } from '../classRegistry.js';
 /**
  * @typedef {LayerOptions} FeatureLayerOptions
  * @property {DeclarativeStyleItemOptions|VectorStyleItemOptions|import("@vcmap/core").StyleItem|undefined} style
- * @property {Object|undefined} genericFeatureProperties - properties to add to generic features, eg for display in the balloon
  * @property {number} [balloonHeightOffset=10]
  * @property {FeatureVisibility|undefined} featureVisibility - vcs:undocumented
  * @api
@@ -59,7 +58,6 @@ class FeatureLayer extends Layer {
       ...Layer.getDefaultOptions(),
       style: undefined,
       balloonHeightOffset: 10,
-      genericFeatureProperties: {},
     };
   }
 
@@ -87,18 +85,11 @@ class FeatureLayer extends Layer {
      */
     this.styleChanged = new VcsEvent();
     /**
-     * @type {Object}
-     * @private
-     */
-    this._genericFeatureProperties = options.genericFeatureProperties || defaultOptions.genericFeatureProperties;
-
-    /**
      * a height offset for rendering of a balloon for a feature of this layer.
      * @type {number}
      * @api
      */
     this.balloonHeightOffset = parseInteger(options.balloonHeightOffset, defaultOptions.balloonHeightOffset);
-
     /**
      * FeatureVisibility tracks the highlighting and hiding of features on this layer
      * @type {FeatureVisibility}
@@ -124,15 +115,6 @@ class FeatureLayer extends Layer {
    */
   get style() {
     return this._style;
-  }
-
-  /**
-   * Generic properties to be added to each feature. Use assignGenericFeatureProperties to change them.
-   * @type {Object}
-   * @readonly
-   */
-  get genericFeatureProperties() {
-    return this._genericFeatureProperties;
   }
 
   /**
@@ -162,28 +144,6 @@ class FeatureLayer extends Layer {
   // eslint-disable-next-line no-unused-vars,class-methods-use-this
   objectClickedHandler(object) { // XXX remove after event implementation
     return null;
-  }
-
-  /**
-   * This is called by the selectBehavior to create generic features from clicked objects
-   * needs to be implemented by each layer which has clickable objects
-   * @param {Object|VectorClickedObject|import("ol").Feature<import("ol/geom/Geometry").default>} object
-   * @returns {GenericFeature}
-   */
-  // eslint-disable-next-line no-unused-vars
-  getGenericFeatureFromClickedObject(object) { // XXX remove after event implementation
-    this.getLogger().warning('This method should be implemented by any specific layers');
-    return null;
-  }
-
-  /**
-   * Set properties, which are always added to the generic object, eg. for use in balloons
-   * @param {Object} properties
-   * @api
-   */
-  assignGenericFeatureProperties(properties) {
-    check(properties, Object);
-    Object.assign(this._genericFeatureProperties, properties);
   }
 
   /**
@@ -233,10 +193,6 @@ class FeatureLayer extends Layer {
     const config = /** @type {FeatureLayerOptions} */ (super.toJSON());
     if (!this.getStyleOrDefaultStyle().equals(this._style)) {
       config.style = this.style.toJSON();
-    }
-
-    if (Object.keys(this._genericFeatureProperties).length > 0) {
-      config.genericFeatureProperties = { ...this._genericFeatureProperties };
     }
     return config;
   }

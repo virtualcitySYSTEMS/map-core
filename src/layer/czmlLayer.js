@@ -5,7 +5,7 @@ import { vcsLayerName } from './layerSymbols.js';
 import { layerClassRegistry } from '../classRegistry.js';
 
 /**
- * @typedef {DataSourceOptions} CzmlOptions
+ * @typedef {LayerOptions} CzmlOptions
  * @property {string|undefined} sourceUri
  * @api
  */

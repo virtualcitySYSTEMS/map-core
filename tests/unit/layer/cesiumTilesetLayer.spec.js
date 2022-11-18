@@ -195,44 +195,6 @@ describe('CesiumTilesetLayer', () => {
     });
   });
 
-  describe('getGenericFeatureFromClickedObject', () => {
-    let clickedPosition;
-
-    before(() => {
-      clickedPosition = {
-        longitude: 1,
-        latitude: 1,
-        height: 1,
-      };
-    });
-
-    it('adds the layerName and class to the return value', () => {
-      const generic = cesiumTileset.getGenericFeatureFromClickedObject({ attributes: {}, clickedPosition });
-      expect(generic).to.have.property('layerName', cesiumTileset.name);
-      expect(generic).to.have.property('layerClass', cesiumTileset.className);
-    });
-
-    it('should flatten the clicked position', () => {
-      const generic = cesiumTileset.getGenericFeatureFromClickedObject({ attributes: {}, clickedPosition });
-      expect(generic).to.have.property('longitude', 1);
-      expect(generic).to.have.property('latitude', 1);
-      expect(generic).to.have.property('height', 1 + cesiumTileset.balloonHeightOffset);
-    });
-
-    it('should add the attributes', () => {
-      const attributes = { test: true };
-      const generic = cesiumTileset.getGenericFeatureFromClickedObject({ attributes, clickedPosition });
-      expect(generic).to.have.property('attributes').and.to.have.property('test', true);
-    });
-
-    it('should add the genericFeature attributes', () => {
-      const attributes = { test: true };
-      cesiumTileset.assignGenericFeatureProperties({ otherTest: false });
-      const generic = cesiumTileset.getGenericFeatureFromClickedObject({ attributes, clickedPosition });
-      expect(generic).to.have.property('attributes').and.to.have.property('otherTest', false);
-    });
-  });
-
   describe('getting config objects', () => {
     describe('of a default object', () => {
       it('should return an object with type and name for default layers', () => {

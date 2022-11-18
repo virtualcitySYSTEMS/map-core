@@ -276,20 +276,6 @@ class CesiumTilesetLayer extends FeatureLayer {
     return null;
   }
 
-  // TODO type params
-  getGenericFeatureFromClickedObject(object) {
-    const attributes = { ...this.genericFeatureProperties, ...object.attributes || object };
-    return {
-      layerName: this.name,
-      layerClass: this.className,
-      attributes,
-      longitude: object.clickedPosition.longitude,
-      latitude: object.clickedPosition.latitude,
-      height: object.clickedPosition.height + this.balloonHeightOffset,
-      relativeToGround: false,
-    };
-  }
-
   /**
    * set the maximum screenspace error of this layer
    * @param {number} value
