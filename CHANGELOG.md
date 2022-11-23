@@ -1,6 +1,7 @@
 ###   5.0.0-rc.next
 - Editor: Adds a `EditFeaturesSession` to transform features.
 - Feature converter can now draw primitives at point locations using `olcs_primitiveOptions`.
+- Adds `ArrowStyle` & `ArcStyle`. Special OL Styles to style LineStrings with.
 
 ###   5.0.0-rc.23
 - Adds a `postRender` event on `VcsMap` and `MapCollection` for convenience.

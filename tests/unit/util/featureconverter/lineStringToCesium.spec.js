@@ -11,6 +11,8 @@ import {
   PrimitiveCollection,
   Primitive,
   GroundPolylinePrimitive,
+  Matrix4,
+  Transforms,
 } from '@vcmap/cesium';
 import Style from 'ol/style/Style.js';
 import Stroke from 'ol/style/Stroke.js';
@@ -28,6 +30,7 @@ import VectorProperties from '../../../../src/layer/vectorProperties.js';
 import { emptyStyle } from '../../../../src/style/styleHelpers.js';
 import VectorContext from '../../../../src/layer/cesium/vectorContext.js';
 import { getCesiumMap } from '../../helpers/cesiumHelpers.js';
+import { ArrowEnd, ArrowStyle, mercatorToCartesian, PrimitiveOptionsType } from '../../../../index.js';
 
 describe('util.featureConverter.lineStringToCesium', () => {
   let options = null;
@@ -239,7 +242,7 @@ describe('util.featureConverter.lineStringToCesium', () => {
           color: [1, 1, 1],
         }),
       });
-      geometries = [new LineString([[1, 1, 0], [1, 2, 0]])];
+      geometries = [new LineString([[1, 1, 0], [1, 2, 1]])];
       vectorProperties = new VectorProperties({
         altitudeMode: 'absolute',
         eyeOffset: [1, 1, 1],
@@ -322,6 +325,56 @@ describe('util.featureConverter.lineStringToCesium', () => {
       expect(context.primitives.length).to.be.equal(1);
       expect(context.primitives.get(0)).to.be.instanceOf(Primitive);
       altitudeModeVectorProperties.destroy();
+    });
+
+    describe('arrow style', () => {
+      let arrowStyle;
+
+      beforeEach(() => {
+        arrowStyle = new ArrowStyle({
+          primitiveOptions: {
+            type: PrimitiveOptionsType.SPHERE,
+            geometryOptions: {
+              radius: 1,
+            },
+          },
+        });
+      });
+
+      it('should add an arrow primitive to the last coordinate', () => {
+        lineStringToCesium(feature, arrowStyle, geometries, vectorProperties, scene, context);
+        expect(context.scaledPrimitives.length).to.equal(1);
+        const translation = Matrix4.getTranslation(context.scaledPrimitives.get(0).modelMatrix, new Cartesian3());
+        expect(Cartesian3.equals(mercatorToCartesian(geometries[0].getLastCoordinate()), translation)).to.be.true;
+      });
+
+      it('should add an arrow primitive to the first coordinate', () => {
+        arrowStyle.end = ArrowEnd.START;
+        lineStringToCesium(feature, arrowStyle, geometries, vectorProperties, scene, context);
+        expect(context.scaledPrimitives.length).to.equal(1);
+        const translation = Matrix4.getTranslation(context.scaledPrimitives.get(0).modelMatrix, new Cartesian3());
+        expect(Cartesian3.equals(mercatorToCartesian(geometries[0].getFirstCoordinate()), translation)).to.be.true;
+      });
+
+      it('should add an arrow primitive to the first & last coordinate', () => {
+        arrowStyle.end = ArrowEnd.BOTH;
+        lineStringToCesium(feature, arrowStyle, geometries, vectorProperties, scene, context);
+        expect(context.scaledPrimitives.length).to.equal(2);
+      });
+
+      it('should not add arrow primitives, if end is NONE', () => {
+        arrowStyle.end = ArrowEnd.NONE;
+        lineStringToCesium(feature, arrowStyle, geometries, vectorProperties, scene, context);
+        expect(context.scaledPrimitives.length).to.equal(0);
+      });
+
+      it('should set pitch & heading on the primitive', () => {
+        lineStringToCesium(feature, arrowStyle, geometries, vectorProperties, scene, context);
+        expect(context.scaledPrimitives.length).to.equal(1);
+        const headingPitchRoll = Transforms.fixedFrameToHeadingPitchRoll(context.scaledPrimitives.get(0).modelMatrix);
+        expect(headingPitchRoll.heading).to.be.closeTo(CesiumMath.PI_OVER_TWO, CesiumMath.EPSILON5);
+        expect(headingPitchRoll.pitch).to.be.closeTo(CesiumMath.PI_OVER_FOUR, CesiumMath.EPSILON2);
+      });
     });
   });
 });

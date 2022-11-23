@@ -83,7 +83,6 @@ function getLogger() {
 export const PrimitiveOptionsType = {
   CYLINDER: 'cylinder',
   SPHERE: 'sphere',
-  ELLIPSE: 'ellipse',
   ELLIPSOID: 'ellipsoid',
   BOX: 'box',
 };

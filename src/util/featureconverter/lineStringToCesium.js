@@ -1,8 +1,106 @@
-import { Cartesian3, WallGeometry, WallOutlineGeometry, GroundPolylineGeometry, PolylineGeometry } from '@vcmap/cesium';
+import {
+  Cartesian3,
+  WallGeometry,
+  WallOutlineGeometry,
+  GroundPolylineGeometry,
+  PolylineGeometry,
+  Math as CesiumMath, HeightReference,
+} from '@vcmap/cesium';
+import { Feature } from 'ol';
+import { Point } from 'ol/geom.js';
 import { parseNumber } from '@vcsuite/parsers';
 import Projection from '../projection.js';
 import { addPrimitivesToContext } from './featureconverterHelper.js';
 import { getFlatCoordinatesFromSimpleGeometry } from '../geometryHelpers.js';
+import ArrowStyle, { ArrowEnd } from '../../style/arrowStyle.js';
+import { getCartesianBearing, getCartesianPitch } from '../math.js';
+import { getPrimitiveOptions } from './pointHelpers.js';
+
+/**
+ * @typedef {Object} ArrowOptions
+ * @property {import("ol/coordinate").Coordinate} location
+ * @property {number} heading
+ * @property {number} pitch
+ * @private
+ */
+
+/**
+ * @param {import("ol/coordinate").Coordinate} from
+ * @param {import("ol/coordinate").Coordinate} to
+ * @param {import("@vcmap/cesium").HeightReference} heightReference
+ * @returns {ArrowOptions}
+ */
+function getArrowOptions(from, to, heightReference) {
+  let pitch = heightReference === HeightReference.NONE ? getCartesianPitch(to, from) : 0;
+  pitch += 90;
+  return {
+    location: to,
+    pitch,
+    heading: CesiumMath.toDegrees(getCartesianBearing(from, to) + CesiumMath.PI_OVER_TWO),
+  };
+}
+
+/**
+ * @param {import("ol").Feature} feature
+ * @param {import("@vcmap/core").ArrowStyle} style
+ * @param {Array<import("ol/geom").LineString>} validGeometries
+ * @param {import("@vcmap/core").VectorProperties} vectorProperties
+ * @param {import("@vcmap/cesium").Scene} scene
+ * @param {VectorGeometryFactoryType} lineGeometryFactory
+ * @param {import("@vcmap/core").VectorContext|import("@vcmap/core").ClusterContext} context
+ */
+export function addArrowsToContext(
+  feature, style, validGeometries, vectorProperties, scene, lineGeometryFactory, context,
+) {
+  if (style.end === ArrowEnd.NONE || !style.primitiveOptions?.geometryOptions) {
+    return;
+  }
+  const arrowOptions = [];
+  const heightReference = vectorProperties.getAltitudeMode(feature);
+  validGeometries.forEach((geom) => {
+    const coordinates = lineGeometryFactory.getCoordinates([geom]);
+    if (style.end === ArrowEnd.START || style.end === ArrowEnd.BOTH) {
+      arrowOptions.push(getArrowOptions(coordinates[1], coordinates[0], heightReference));
+    }
+
+    if (style.end === ArrowEnd.END || style.end === ArrowEnd.BOTH) {
+      arrowOptions.push(getArrowOptions(coordinates.at(-2), coordinates.at(-1), heightReference));
+    }
+  });
+
+  if (arrowOptions.length === 0) {
+    return;
+  }
+
+  const usedStyle = style.getOlcsStyle();
+  const allowPicking = vectorProperties.getAllowPicking(feature);
+
+  arrowOptions.forEach((arrowOption) => {
+    const arrowFeature = new Feature({
+      ...feature.getProperties(),
+      olcs_primitiveOptions: style.primitiveOptions,
+      olcs_modelHeading: arrowOption.heading,
+      olcs_modelPitch: arrowOption.pitch,
+      geometry: new Point(arrowOption.location),
+      olcs_modelAutoScale: true,
+    });
+
+    const wgs84Position = Projection.mercatorToWgs84(arrowOption.location);
+    const cartesianLocation = Cartesian3.fromDegrees(wgs84Position[0], wgs84Position[1], wgs84Position[2]);
+    const primitiveOptions = getPrimitiveOptions(
+      arrowFeature,
+      usedStyle,
+      [wgs84Position],
+      [cartesianLocation],
+      vectorProperties,
+      scene,
+    );
+
+    if (primitiveOptions.primitives) {
+      context.addScaledPrimitives(primitiveOptions.primitives, feature, allowPicking);
+    }
+  });
+}
 
 /**
  * @param {Object} options
@@ -80,7 +178,7 @@ export function createLineGeometries(options, style) {
 }
 
 /**
- * extracts the center and radius from the CircleGeometry and converts it to Cartesian3/radius in m
+ * Creates the positions array for PolylineGeometry
  * @param {import("ol/geom/LineString").default} geometry
  * @param {number} positionHeightAdjustment
  * @returns {Object}
@@ -167,4 +265,7 @@ export default function lineStringToCesium(feature, style, geometries, vectorPro
   const lineGeometryFactory = getGeometryFactory();
   const validGeometries = geometries.filter(lineString => validateLineString(lineString));
   addPrimitivesToContext(feature, style, validGeometries, vectorProperties, scene, lineGeometryFactory, context);
+  if (style instanceof ArrowStyle) {
+    addArrowsToContext(feature, style, validGeometries, vectorProperties, scene, lineGeometryFactory, context);
+  }
 }

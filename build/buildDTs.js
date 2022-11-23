@@ -38,6 +38,7 @@ await fs.promises.writeFile(
   './index.d.ts',
   `import olFeature from 'ol/Feature';
 import Geometry from 'ol/geom/Geometry';
+import Style from 'ol/style/Style';
 
 ${exportData}
 ${overrideCollection}

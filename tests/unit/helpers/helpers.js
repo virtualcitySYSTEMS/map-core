@@ -1,3 +1,5 @@
+import { Math as CesiumMath } from '@vcmap/cesium';
+
 /**
  * helper function to wait for a timeout use: await timeout(1);
  * @param {number} ms
@@ -7,5 +9,16 @@
 export function timeout(ms) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
+  });
+}
+
+/**
+ * @param {Array<number>} numbers
+ * @param {Array<number>} expectedNumbers
+ * @param {number} [epsilon=CesiumMath.EPSILON8]
+ */
+export function arrayCloseTo(numbers, expectedNumbers, epsilon = CesiumMath.EPSILON8) {
+  numbers.forEach((c, index) => {
+    expect(c).to.be.closeTo(expectedNumbers[index], epsilon, `Array at index ${index}`);
   });
 }

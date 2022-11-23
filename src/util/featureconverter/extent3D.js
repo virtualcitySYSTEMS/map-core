@@ -35,6 +35,20 @@ class Extent3D {
   }
 
   /**
+   * @param {Array<import("ol/coordinate").Coordinate>} coordinates
+   * @returns {Extent3D}
+   */
+  static fromCoordinates(coordinates) {
+    check(coordinates, [[Number]]);
+
+    const extent = new Extent3D();
+    coordinates.forEach((c) => {
+      extent.extendXYZ(c[0], c[1], c[2] ?? 0);
+    });
+    return extent;
+  }
+
+  /**
    * @param {number} minX
    * @param {number} minY
    * @param {number} minZ

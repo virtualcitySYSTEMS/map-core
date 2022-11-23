@@ -56,4 +56,3 @@ declare module "ol/style" {
         fallBackColor: import("ol/colorlike").ColorLike | import("ol/color").Color;
     }
 }
-

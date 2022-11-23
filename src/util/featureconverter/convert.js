@@ -11,6 +11,8 @@ import polygonToCesium from './polygonToCesium.js';
 import circleToCesium from './circleToCesium.js';
 import lineStringToCesium from './lineStringToCesium.js';
 import pointToCesium from './pointToCesium.js';
+import arcToCesium from './arcToCesium.js';
+import ArcStyle, { featureArcStruct } from '../../style/arcStyle.js';
 
 /**
  * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
@@ -26,7 +28,11 @@ function convertGeometry(feature, geometry, style, vectorProperties, scene, cont
   } else if (geometry instanceof Polygon) {
     polygonToCesium(feature, style, [geometry], vectorProperties, scene, context);
   } else if (geometry instanceof LineString) {
-    lineStringToCesium(feature, style, [geometry], vectorProperties, scene, context);
+    if (style instanceof ArcStyle && feature[featureArcStruct].coordinates) {
+      arcToCesium(feature, style, [geometry], vectorProperties, scene, context);
+    } else {
+      lineStringToCesium(feature, style, [geometry], vectorProperties, scene, context);
+    }
   } else if (geometry instanceof Circle) {
     circleToCesium(feature, style, [geometry], vectorProperties, scene, context);
   } else if (geometry instanceof MultiPoint) {

@@ -22,7 +22,6 @@ export function coordinateAtDistance(coord, d, brng) {
   return [parseFloat(CesiumMath.toDegrees(lon2).toFixed(5)), parseFloat(CesiumMath.toDegrees(lat2).toFixed(5))];
 }
 
-
 /**
  * returns the initial bearing in degrees (0-360) between two coordinates
  * @param {Array.<number>} coords1 [lon, lat] in degrees
@@ -46,6 +45,16 @@ export function initialBearingBetweenCoords(coords1, coords2) {
   return brng;
 }
 
+/**
+ * @param {import("ol/coordinate").Coordinate} p1 - mercator
+ * @param {import("ol/coordinate").Coordinate} p2 - mercator
+ * @returns {number} in radians
+ */
+export function getCartesianBearing(p1, p2) {
+  let theta = Math.atan2(p2[0] - p1[0], p2[1] - p1[1]);
+  theta = theta < 0 ? theta + CesiumMath.TWO_PI : theta;
+  return theta;
+}
 
 /**
  * returns distance between two coordinates
@@ -110,4 +119,59 @@ export function cartesianToMercator(cartesian) {
   const cartographic = Cartographic.fromCartesian(cartesian);
   const wgs84 = cartographicToWgs84(cartographic);
   return Projection.wgs84ToMercator(wgs84);
+}
+
+/**
+ * @param {import("ol/coordinate").Coordinate} p1
+ * @param {import("ol/coordinate").Coordinate} p2
+ * @returns {import("ol/coordinate").Coordinate}
+ */
+export function getMidPoint(p1, p2) {
+  if (p1.length < 3 && p2.length < 3) {
+    return [
+      p1[0] + ((p2[0] - p1[0]) / 2),
+      p1[1] + ((p2[1] - p1[1]) / 2),
+      0,
+    ];
+  }
+  return [
+    p1[0] + ((p2[0] - p1[0]) / 2),
+    p1[1] + ((p2[1] - p1[1]) / 2),
+    p1[2] + ((p2[2] - p1[2]) / 2),
+  ];
+}
+
+/**
+ * Gets the pitch between two points in degrees.
+ * @param {import("ol/coordinate").Coordinate} p1 - mercator
+ * @param {import("ol/coordinate").Coordinate} p2 - mercator
+ * @returns {number} in degrees
+ */
+export function getCartesianPitch(p1, p2) {
+  let thirdPoint;
+  if (p1[2] > p2[2]) {
+    thirdPoint = p1.slice();
+    thirdPoint[2] = p2[2];
+  } else {
+    thirdPoint = p2.slice();
+    thirdPoint[2] = p1[2];
+  }
+  const scratch1 = mercatorToCartesian(p1);
+  const scratch2 = mercatorToCartesian(p2);
+  const scratch3 = mercatorToCartesian(thirdPoint);
+
+  Cartesian3.subtract(scratch2, scratch1, scratch2);
+  Cartesian3.subtract(scratch3, scratch1, scratch3);
+
+  Cartesian3.normalize(scratch2, scratch2);
+  Cartesian3.normalize(scratch3, scratch3);
+
+  let pitch;
+  if (p1[2] > p2[2]) {
+    pitch = CesiumMath.toDegrees(Math.acos(Cartesian3.dot(scratch2, scratch3))) - 90;
+  } else {
+    pitch = CesiumMath.toDegrees(Math.acos(Cartesian3.dot(scratch2, scratch3)));
+  }
+
+  return pitch;
 }
