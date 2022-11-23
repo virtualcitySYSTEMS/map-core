@@ -58,7 +58,9 @@ function createSelectionSet(layer, selectFeatureInteraction, highlightStyle, eve
   const featureChangedListener = selectFeatureInteraction.featuresChanged.addEventListener((newFeatures) => {
     const newIds = new Set(newFeatures.map((f) => {
       const id = f.getId();
-      allowPickingMap.set(id, f.get('olcs_allowPicking'));
+      if (!allowPickingMap.has(id)) {
+        allowPickingMap.set(id, f.get('olcs_allowPicking'));
+      }
       f[createSync] = true;
       f.set('olcs_allowPicking', false);
       return id;
@@ -123,7 +125,7 @@ function getDefaultHighlightStyle() {
  * @param {import("ol/style").Style=} [highlightStyle]
  * @returns {EditFeaturesSession}
  */
-export default function startEditFeaturesSession(
+function startEditFeaturesSession(
   app,
   layer,
   initialMode = TransformationMode.TRANSLATE,
@@ -309,3 +311,5 @@ export default function startEditFeaturesSession(
     setMode,
   };
 }
+
+export default startEditFeaturesSession;

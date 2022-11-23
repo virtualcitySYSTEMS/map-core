@@ -5,6 +5,7 @@ import VcsEvent from '../../vcsEvent.js';
 import { EventType } from '../../interaction/interactionType.js';
 import { maxZIndex } from '../layerCollection.js';
 import { markVolatile } from '../../context.js';
+import { PrimitiveOptionsType } from '../../layer/vectorProperties.js';
 
 /**
  * An editor session is a currently set of interactions to create or edit geometries & features.
@@ -41,6 +42,14 @@ export function setupScratchLayer(layerCollection) { // IDEA pass in stopped and
     vectorProperties: {
       altitudeMode: 'clampToGround',
       eyeOffset: [0, 0, -1],
+      primitiveOptions: {
+        type: PrimitiveOptionsType.SPHERE,
+        geometryOptions: {
+          radius: 4,
+        },
+        depthFailColor: 'rgba(255,255,255,0.47)',
+      },
+      modelAutoScale: true,
     },
     isDynamic: true,
     zIndex: maxZIndex,

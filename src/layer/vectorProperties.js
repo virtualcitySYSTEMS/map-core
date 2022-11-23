@@ -61,7 +61,7 @@ function getLogger() {
  * @typedef {Object} VectorPropertiesPrimitiveOptions
  * @property {PrimitiveOptionsType} type
  * @property {*} geometryOptions - the options for the specified geometry
- * @property {import("ol/color").Color} [depthFailColor]
+ * @property {import("ol/color").Color|import("ol/colorlike").ColorLike} [depthFailColor]
  * @property {import("ol/coordinate").Coordinate} [offset] an offset to apply to the geometry
  * @property {Object} [additionalOptions] - additional options passed to the Primitive constructor
  */

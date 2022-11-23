@@ -364,7 +364,7 @@ class Category extends VcsObject {
   /**
    * @protected
    * @param {T} item
-   * @returns {Array<Object>}
+   * @returns {Object}
    */
   _serializeItem(item) {
     const config = JSON.parse(JSON.stringify(item));

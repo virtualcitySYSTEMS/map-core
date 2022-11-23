@@ -30,7 +30,7 @@ import ObliqueMap from '../../map/obliqueMap.js';
  * @param {GeometryType} geometryType
  * @returns {CreateFeatureSession}
  */
-export default function startCreateFeatureSession(app, layer, geometryType) {
+function startCreateFeatureSession(app, layer, geometryType) {
   check(app, VcsApp);
   check(layer, VectorLayer);
   check(geometryType, Object.values(GeometryType));
@@ -180,3 +180,5 @@ export default function startCreateFeatureSession(app, layer, geometryType) {
     stop,
   };
 }
+
+export default startCreateFeatureSession;

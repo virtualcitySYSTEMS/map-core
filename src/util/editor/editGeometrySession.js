@@ -14,6 +14,7 @@ import geometryIsValid from './validateGeoemetry.js';
 import ObliqueMap from '../../map/obliqueMap.js';
 import { emptyStyle } from '../../style/styleHelpers.js';
 import MapInteractionController from './interactions/mapInteractionController.js';
+import { originalStyle } from '../../layer/featureVisibility.js';
 
 /**
  * @typedef {EditorSession} EditGeometrySession
@@ -228,6 +229,7 @@ function createEditSimplePolygonInteraction(feature, scratchLayer) {
 function createEditPointInteraction(feature, scratchLayer) {
   const vertex = createVertex(feature.getGeometry().getCoordinates());
   const featureStyle = feature.getStyle();
+  feature[originalStyle] = featureStyle;
   feature.setStyle(emptyStyle);
   scratchLayer.addFeatures([vertex]);
   const translateVertex = new TranslateVertexInteraction();
@@ -255,7 +257,7 @@ function createEditPointInteraction(feature, scratchLayer) {
  * @param {import("@vcmap/core").VectorLayer} layer
  * @returns {EditGeometrySession}
  */
-export default function startEditGeometrySession(app, layer) {
+function startEditGeometrySession(app, layer) {
   const {
     interactionChain,
     removed: interactionRemoved,
@@ -399,3 +401,5 @@ export default function startEditGeometrySession(app, layer) {
     stop,
   };
 }
+
+export default startEditGeometrySession;
