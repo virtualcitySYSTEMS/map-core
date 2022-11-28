@@ -26,7 +26,8 @@ const exportData = data.toString()
   .replace(/export\svar\s\[0][^;]+;\n/g, '')
   .replace(/^\s+_[^;]+;/gm, '')
   .replace(/LRUCache</g, 'import("ol/structs/LRUCache").default<')
-  .replace(/extends import\("ol"\).Feature<import\("ol\/geom\/Geometry"\).default>/, 'extends olFeature<Geometry>');
+  .replace(/extends import\("ol"\).Feature<import\("ol\/geom\/Geometry"\).default>/, 'extends olFeature<Geometry>')
+  .replace(/^export\sconst\senum/gm, 'export enum');
 
 const overrideCollection = overrideCollectionData.toString()
   .replace(/import.*;/, '');
@@ -43,7 +44,7 @@ import Style from 'ol/style/Style';
 ${exportData}
 ${overrideCollection}
 ${editor}
-`,
+${await fs.promises.readFile('./build/tsd/overrides.d.ts')}`,
 );
 
 console.log('verifying definitions');

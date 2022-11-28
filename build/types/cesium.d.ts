@@ -22,7 +22,7 @@ declare module "@vcmap/cesium" {
         attributes?: Object;
         olFeature?: import("ol").Feature<import("ol/geom").Geometry>;
         getId():number|string;
-        getProperty(string): any;
+        getProperty(key: string): any;
     }
 
     interface Primitive {
