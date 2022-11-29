@@ -2,14 +2,17 @@ declare module "@vcmap/cesium" {
     interface Entity {
         getId():number|string;
         getProperty(key: string): any;
+        [vcsLayerName]: string|null;
     }
 
     interface Cesium3DTileFeature {
         getId():number|string;
+        [vcsLayerName]: string|null;
     }
 
     interface Cesium3DTilePointFeature {
         getId():number|string;
+        [vcsLayerName]: string|null;
     }
 
     interface StyleExpression {
@@ -47,7 +50,7 @@ declare module "ol/geom" {
 declare module "ol/index" {
     interface Feature<Geometry> {
         getProperty(key: string): any;
-
         getPropertyInherited(key: string): any;
+        [vcsLayerName]: string|null;
     }
 }

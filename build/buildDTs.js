@@ -27,7 +27,8 @@ const exportData = data.toString()
   .replace(/^\s+_[^;]+;/gm, '')
   .replace(/LRUCache</g, 'import("ol/structs/LRUCache").default<')
   .replace(/extends import\("ol"\).Feature<import\("ol\/geom\/Geometry"\).default>/, 'extends olFeature<Geometry>')
-  .replace(/^export\sconst\senum/gm, 'export enum');
+  .replace(/^export\sconst\senum/gm, 'export enum')
+  .replace(/^(export\sconst.*:\s?)symbol/gm, '$1unique symbol');
 
 const overrideCollection = overrideCollectionData.toString()
   .replace(/import.*;/, '');
