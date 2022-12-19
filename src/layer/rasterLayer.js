@@ -24,8 +24,8 @@ import { layerClassRegistry } from '../classRegistry.js';
  * @property {number} maxLevel
  * @property {string} tilingSchema
  * @property {number} opacity
- * @property {import("@vcmap/cesium").SplitDirection} splitDirection
  * @property {Extent|undefined} extent
+ * @property {import("@vcmap/cesium").SplitDirection} splitDirection
  */
 
 /**

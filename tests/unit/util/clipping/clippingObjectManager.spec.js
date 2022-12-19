@@ -206,7 +206,7 @@ describe('util.clipping.ClippingObjectManager', () => {
 
     it('should remove the clipping object from the default clipping objects', () => {
       mapCollection.clippingObjectManager.removeClippingObject(clippingObject);
-      expect(mapCollection.clippingObjectManager._defaultClippingObjects.size).to.be.equal(2);
+      expect(mapCollection.clippingObjectManager._defaultClippingObjects.size).to.be.equal(0);
     });
 
     it('should remove event listeners', () => {

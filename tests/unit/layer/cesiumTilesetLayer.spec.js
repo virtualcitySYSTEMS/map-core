@@ -1,5 +1,4 @@
 import {
-  SplitDirection,
   Matrix4,
   BoundingSphere,
   Cartesian3,
@@ -13,7 +12,7 @@ import VcsApp from '../../../src/vcsApp.js';
 import getDummyCesium3DTileset from './cesium/getDummyCesium3DTileset.js';
 import Projection, { wgs84Projection } from '../../../src/util/projection.js';
 import Extent from '../../../src/util/extent.js';
-import { createTilesetServer, getVcsEventSpy, setCesiumMap, createDummyCesium3DTileFeature } from '../helpers/cesiumHelpers.js';
+import { createTilesetServer, setCesiumMap, createDummyCesium3DTileFeature } from '../helpers/cesiumHelpers.js';
 import { VectorStyleItem } from '../../../index.js';
 
 describe('CesiumTilesetLayer', () => {
@@ -55,32 +54,6 @@ describe('CesiumTilesetLayer', () => {
       const cesiumTileset1 = new CesiumTilesetLayer({ url: 'test/tileset2.json' });
       expect(cesiumTileset1).to.have.property('url', 'test/tileset2.json');
       cesiumTileset1.destroy();
-    });
-  });
-
-  describe('splitDirection', () => {
-    it('should return the split direction', () => {
-      cesiumTileset.splitDirection = SplitDirection.LEFT;
-      expect(cesiumTileset.splitDirection).to.equal(SplitDirection.LEFT);
-    });
-
-    it('should raise the splitDirectionChanged event', () => {
-      const spy = getVcsEventSpy(cesiumTileset.splitDirectionChanged, sandbox);
-      cesiumTileset.splitDirection = SplitDirection.LEFT;
-      expect(spy).to.have.been.calledWith(SplitDirection.LEFT);
-    });
-
-    it('should not raise the splitDirectionChanged event, if it does not changed', () => {
-      cesiumTileset.splitDirection = SplitDirection.LEFT;
-      const spy = getVcsEventSpy(cesiumTileset.splitDirectionChanged, sandbox);
-      cesiumTileset.splitDirection = SplitDirection.LEFT;
-      expect(spy).to.not.have.been.called;
-    });
-
-    it('should update the splitDirection of its implementations', () => {
-      const [impl] = cesiumTileset.getImplementationsForMap(cesiumMap);
-      cesiumTileset.splitDirection = SplitDirection.LEFT;
-      expect(impl.splitDirection).to.equal(SplitDirection.LEFT);
     });
   });
 
@@ -226,7 +199,6 @@ describe('CesiumTilesetLayer', () => {
             test: true,
             maximumMemoryUsage: 64,
           },
-          splitDirection: 'left',
           offset: [0, 0, 20],
         };
         configuredLayer = new CesiumTilesetLayer(inputConfig);
@@ -247,10 +219,6 @@ describe('CesiumTilesetLayer', () => {
 
       it('should configure screenSpaceErrorMobile', () => {
         expect(outputConfig).to.have.property('screenSpaceErrorMobile', inputConfig.screenSpaceErrorMobile);
-      });
-
-      it('should configure splitDirection', () => {
-        expect(outputConfig).to.have.property('splitDirection', inputConfig.splitDirection);
       });
 
       it('should configure tilesetOptions', () => {

@@ -140,7 +140,7 @@ class CesiumTilesetCesiumImpl extends LayerImplementation {
       this.map.addPrimitiveCollection(this.cesium3DTileset);
       await super.initialize();
       if (this.splitDirection) {
-        this.updateSplitDirection(this.splitDirection);
+        this.cesium3DTileset.splitDirection = this.splitDirection;
       }
       this.updateStyle(this.style);
     }
@@ -250,17 +250,9 @@ class CesiumTilesetCesiumImpl extends LayerImplementation {
    * @param {import("@vcmap/cesium").SplitDirection} splitDirection
    */
   updateSplitDirection(splitDirection) {
-    const { splitScreen } = this.map;
-    if (splitScreen) { // XXX edge case: what if the map get splitScreen added later?
-      const previousClippingObject = splitScreen.getClippingObjectForDirection(this.splitDirection);
-      if (previousClippingObject) {
-        previousClippingObject.removeLayer(this.name);
-      }
-      this.splitDirection = splitDirection;
-      const currentClippingObject = splitScreen.getClippingObjectForDirection(this.splitDirection);
-      if (currentClippingObject) {
-        currentClippingObject.addLayer(this.name);
-      }
+    this.splitDirection = splitDirection;
+    if (this.cesium3DTileset) {
+      this.cesium3DTileset.splitDirection = splitDirection;
     }
   }
 
@@ -340,13 +332,6 @@ class CesiumTilesetCesiumImpl extends LayerImplementation {
 
     if (this._onStyleChangeRemover) {
       this._onStyleChangeRemover();
-    }
-
-    if (this.splitDirection && this.map.splitScreen) {
-      const previousClippingObject = this.map.splitScreen.getClippingObjectForDirection(this.splitDirection);
-      if (previousClippingObject) {
-        previousClippingObject.removeLayer(this.name);
-      }
     }
 
     super.destroy();

@@ -55,20 +55,10 @@ describe('CesiumTilesetCesiumImpl', () => {
   });
 
   describe('updating split direction', () => {
-    it('should add this layer to the current split direction clippingObject', async () => {
+    it('should set the split direction on the cesium3DTileset', async () => {
       await cesiumTilesetCesium.activate();
       cesiumTilesetCesium.updateSplitDirection(SplitDirection.LEFT);
-      const clippingObject = cesiumMap.splitScreen.getClippingObjectForDirection(cesiumTilesetCesium.splitDirection);
-      expect(clippingObject.layerNames).to.include(cesiumTilesetCesium.name);
-    });
-
-    it('should remove itself from the previous split directions clippingObject', async () => {
-      await cesiumTilesetCesium.activate();
-      cesiumTilesetCesium.updateSplitDirection(SplitDirection.LEFT);
-      const clippingObject = cesiumMap.splitScreen.getClippingObjectForDirection(cesiumTilesetCesium.splitDirection);
-      clippingObject.addLayer(cesiumTilesetCesium.name);
-      cesiumTilesetCesium.updateSplitDirection(SplitDirection.NONE);
-      expect(clippingObject.layerNames).to.be.empty;
+      expect(cesiumTilesetCesium.cesium3DTileset).to.have.property('splitDirection', SplitDirection.LEFT);
     });
   });
 
@@ -106,8 +96,7 @@ describe('CesiumTilesetCesiumImpl', () => {
     it('should update the split direction on initialize', async () => {
       cesiumTilesetCesium.splitDirection = SplitDirection.LEFT;
       await cesiumTilesetCesium.initialize();
-      const clippingObject = cesiumMap.splitScreen.getClippingObjectForDirection(cesiumTilesetCesium.splitDirection);
-      expect(clippingObject.layerNames).to.include(cesiumTilesetCesium.name);
+      expect(cesiumTilesetCesium.cesium3DTileset.splitDirection).to.equal(cesiumTilesetCesium.splitDirection);
     });
 
     describe('setting of model matrix', () => {

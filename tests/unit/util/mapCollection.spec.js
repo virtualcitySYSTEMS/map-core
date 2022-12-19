@@ -7,7 +7,6 @@ import { getVcsEventSpy, getCesiumMap } from '../helpers/cesiumHelpers.js';
 import LayerCollection from '../../../src/util/layerCollection.js';
 import Layer from '../../../src/layer/layer.js';
 import VcsMap from '../../../src/map/vcsMap.js';
-import SplitScreen from '../../../src/util/splitScreen.js';
 import { makeOverrideCollection } from '../../../index.js';
 
 describe('MapCollection', () => {
@@ -50,10 +49,6 @@ describe('MapCollection', () => {
     it('should set the layerCollection to the map collections layerCollection', () => {
       expect(map.layerCollection).to.equal(mapCollection.layerCollection);
     });
-
-    it('should set the splitScreen', () => {
-      expect(map.splitScreen).to.equal(mapCollection.splitScreen);
-    });
   });
 
   describe('removing a map', () => {
@@ -85,10 +80,6 @@ describe('MapCollection', () => {
       it('should set an empty layerCollection to the map', () => {
         expect(map.layerCollection).to.not.equal(mapCollection.layerCollection);
         expect(map.layerCollection).to.be.an.instanceOf(LayerCollection);
-      });
-
-      it('should set the splitScreen', () => {
-        expect(map.splitScreen).to.be.null;
       });
     });
 
@@ -122,10 +113,6 @@ describe('MapCollection', () => {
 
       it('should set the layerCollection to the map collections layerCollection', () => {
         expect(map.layerCollection).to.equal(mapCollection.layerCollection);
-      });
-
-      it('should set the splitScreen', () => {
-        expect(map.splitScreen).to.equal(mapCollection.splitScreen);
       });
     });
 
@@ -187,6 +174,69 @@ describe('MapCollection', () => {
     });
   });
 
+  describe('split position', () => {
+    let mapCollection;
+    let map;
+
+    before(() => {
+      mapCollection = new MapCollection();
+      map = new OpenlayersMap({});
+      mapCollection.add(map);
+      mapCollection.setTarget(target);
+    });
+
+    after(() => {
+      map.destroy();
+      mapCollection.destroy();
+    });
+
+    it('should return position', () => {
+      mapCollection._splitPosition = 0.1;
+      expect(mapCollection.splitPosition).to.equal(0.1);
+    });
+
+    it('should set position', () => {
+      mapCollection.splitPosition = 0.6;
+      expect(mapCollection.splitPosition).to.equal(0.6);
+    });
+
+    it('should throw, when setting bellow 0', () => {
+      function setBellowZero() {
+        mapCollection.splitPosition = -1;
+      }
+
+      expect(setBellowZero).to.throw('Position must be between 0 and 1');
+    });
+
+    it('should throw, when setting above 1', () => {
+      function setAboveZero() {
+        mapCollection.splitPosition = 2;
+      }
+
+      expect(setAboveZero).to.throw('Position must be between 0 and 1');
+    });
+
+    it('should update splitPosition and raise splitPositionChanged event', () => {
+      const { splitPosition } = mapCollection;
+      const spy = sinon.spy();
+      mapCollection.splitPositionChanged.addEventListener(spy);
+      mapCollection.splitPosition += 0.1;
+      expect(mapCollection.splitPosition).to.equal(splitPosition + 0.1);
+      expect(map.splitPosition).to.equal(mapCollection.splitPosition);
+      expect(spy).to.have.been.calledOnceWith(splitPosition + 0.1);
+    });
+
+    it('should NOT update splitPosition and raise splitPositionChanged event, if the delta is too small', () => {
+      const { splitPosition } = mapCollection;
+      const spy = sinon.spy();
+      mapCollection.splitPositionChanged.addEventListener(spy);
+      mapCollection.splitPosition += 0.00001;
+      expect(mapCollection.splitPosition).to.equal(splitPosition);
+      expect(map.splitPosition).to.equal(mapCollection.splitPosition);
+      expect(spy).to.not.have.been.called;
+    });
+  });
+
   describe('setting a target', () => {
     let mapCollection;
     let map;
@@ -209,34 +259,6 @@ describe('MapCollection', () => {
 
     it('should set the target on the map', () => {
       expect(map.target).to.equal(target);
-    });
-  });
-
-  describe('setting a splitScreen', () => {
-    let mapCollection;
-    let map;
-    let splitScreen;
-
-    before(() => {
-      mapCollection = new MapCollection();
-      map = new OpenlayersMap({});
-      mapCollection.add(map);
-      splitScreen = new SplitScreen(mapCollection.clippingObjectManager);
-      splitScreen.position = 1;
-      mapCollection.splitScreen = splitScreen;
-    });
-
-    after(() => {
-      map.destroy();
-      mapCollection.destroy();
-    });
-
-    it('should set the splitScreen', () => {
-      expect(mapCollection.splitScreen).to.equal(splitScreen);
-    });
-
-    it('should set the splitScreen on the map', () => {
-      expect(map.splitScreen).to.equal(splitScreen);
     });
   });
 

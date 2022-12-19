@@ -27,6 +27,8 @@ class VectorCesiumImpl extends LayerImplementation {
     this.vectorProperties = options.vectorProperties;
     /** @type {import("ol/source").Vector<import("ol/geom/Geometry").default>} */
     this.source = options.source;
+    /** @type {import("@vcmap/cesium").SplitDirection} */
+    this.splitDirection = options.splitDirection;
     /** @type {import("@vcmap/core").StyleItem} */
     this.style = options.style;
     /** @type {import("@vcmap/core").FeatureVisibility} */
@@ -104,7 +106,7 @@ class VectorCesiumImpl extends LayerImplementation {
    */
   async _setupContext(cesiumMap) {
     const rootCollection = /** @type {import("@vcmap/cesium").PrimitiveCollection} */ (this._rootCollection);
-    this._context = new VectorContext(cesiumMap, rootCollection);
+    this._context = new VectorContext(cesiumMap, rootCollection, this.splitDirection);
     cesiumMap.addPrimitiveCollection(rootCollection);
   }
 
@@ -120,6 +122,9 @@ class VectorCesiumImpl extends LayerImplementation {
       await this._setupContext(this.map);
     }
     await super.initialize();
+    if (this.splitDirection) {
+      this.updateSplitDirection(this.splitDirection);
+    }
   }
 
   /**
@@ -215,6 +220,16 @@ class VectorCesiumImpl extends LayerImplementation {
       features.forEach((f) => {
         this._featureChanged(f);
       });
+    }
+  }
+
+  /**
+   * @param {import("@vcmap/cesium").SplitDirection} splitDirection
+   */
+  updateSplitDirection(splitDirection) {
+    this.splitDirection = splitDirection;
+    if (this.initialized) {
+      this._context.updateSplitDirection(splitDirection);
     }
   }
 

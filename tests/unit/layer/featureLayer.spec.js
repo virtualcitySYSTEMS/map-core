@@ -1,18 +1,26 @@
 import Style from 'ol/style/Style.js';
 import Fill from 'ol/style/Fill.js';
+import { SplitDirection } from '@vcmap/cesium';
 import DeclarativeStyleItem from '../../../src/style/declarativeStyleItem.js';
 import VectorStyleItem from '../../../src/style/vectorStyleItem.js';
 import FeatureLayer from '../../../src/layer/featureLayer.js';
-import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
+import VectorLayer from '../../../src/layer/vectorLayer.js';
+import { getVcsEventSpy, setCesiumMap } from '../helpers/cesiumHelpers.js';
 import GlobalHider from '../../../src/layer/globalHider.js';
+import VcsApp from '../../../src/vcsApp.js';
 
 describe('FeatureLayer', () => {
   let sandbox;
+  let app;
   /** @type {import("@vcmap/core").FeatureLayer} */
   let featureLayer;
+  /** @type {import("@vcmap/core").CesiumMap} */
+  let cesiumMap;
 
-  before(() => {
+  before(async () => {
     sandbox = sinon.createSandbox();
+    app = new VcsApp();
+    cesiumMap = await setCesiumMap(app);
   });
 
   beforeEach(() => {
@@ -22,6 +30,10 @@ describe('FeatureLayer', () => {
   afterEach(() => {
     sandbox.restore();
     featureLayer.destroy();
+  });
+
+  after(() => {
+    app.destroy();
   });
 
   describe('setting globalHider', () => {
@@ -57,6 +69,34 @@ describe('FeatureLayer', () => {
     });
   });
 
+  describe('splitDirection', () => {
+    it('should return the split direction', () => {
+      featureLayer.splitDirection = SplitDirection.LEFT;
+      expect(featureLayer.splitDirection).to.equal(SplitDirection.LEFT);
+    });
+
+    it('should raise the splitDirectionChanged event', () => {
+      const spy = getVcsEventSpy(featureLayer.splitDirectionChanged, sandbox);
+      featureLayer.splitDirection = SplitDirection.LEFT;
+      expect(spy).to.have.been.calledWith(SplitDirection.LEFT);
+    });
+
+    it('should not raise the splitDirectionChanged event, if it does not changed', () => {
+      featureLayer.splitDirection = SplitDirection.LEFT;
+      const spy = getVcsEventSpy(featureLayer.splitDirectionChanged, sandbox);
+      featureLayer.splitDirection = SplitDirection.LEFT;
+      expect(spy).to.not.have.been.called;
+    });
+
+    it('should update the splitDirection of its implementations', () => {
+      // FeatureLayer has no direct impls, but its children e.g. VectorLayer
+      const vectorLayer = new VectorLayer({});
+      const [impl] = vectorLayer.getImplementationsForMap(cesiumMap);
+      vectorLayer.splitDirection = SplitDirection.LEFT;
+      expect(impl.splitDirection).to.equal(SplitDirection.LEFT);
+    });
+  });
+
   describe('getting a config', () => {
     describe('of a default object', () => {
       it('should return an object with type and name for default layers', () => {
@@ -79,6 +119,7 @@ describe('FeatureLayer', () => {
               color: '#FF00FF',
             },
           },
+          splitDirection: 'left',
         };
         configuredLayer = new FeatureLayer(inputConfig);
         outputConfig = configuredLayer.toJSON();
@@ -97,6 +138,10 @@ describe('FeatureLayer', () => {
               color: [255, 0, 255, 1],
             },
           });
+      });
+
+      it('should configure splitDirection', () => {
+        expect(outputConfig).to.have.property('splitDirection', inputConfig.splitDirection);
       });
     });
   });

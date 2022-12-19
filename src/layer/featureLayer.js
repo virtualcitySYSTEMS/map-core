@@ -2,6 +2,7 @@ import Style from 'ol/style/Style.js';
 
 import { check } from '@vcsuite/check';
 import { parseInteger } from '@vcsuite/parsers';
+import { SplitDirection } from '@vcmap/cesium';
 import Layer from './layer.js';
 import StyleItem from '../style/styleItem.js';
 import VectorStyleItem from '../style/vectorStyleItem.js';
@@ -14,6 +15,7 @@ import { layerClassRegistry } from '../classRegistry.js';
  * @typedef {LayerOptions} FeatureLayerOptions
  * @property {DeclarativeStyleItemOptions|VectorStyleItemOptions|import("@vcmap/core").StyleItem|undefined} style
  * @property {number} [balloonHeightOffset=10]
+ * @property {string|undefined} splitDirection - either 'left' or 'right', if omitted none is applied (for 3D Vector currently only Models are split-able)
  * @property {FeatureVisibility|undefined} featureVisibility - vcs:undocumented
  * @api
  */
@@ -21,6 +23,7 @@ import { layerClassRegistry } from '../classRegistry.js';
 /**
  * @typedef {LayerImplementationOptions} FeatureLayerImplementationOptions
  * @property {GlobalHider} globalHider
+ * @property {import("@vcmap/cesium").SplitDirection} splitDirection
  * @property {FeatureVisibility} featureVisibility
  * @property {import("@vcmap/core").StyleItem} style
  * @api
@@ -37,6 +40,7 @@ import { layerClassRegistry } from '../classRegistry.js';
 /**
  * @typedef {import("@vcmap/core").LayerImplementation<import("@vcmap/core").VcsMap>} FeatureLayerImplementation
  * @property {function(import("@vcmap/core").StyleItem, boolean=):void} updateStyle
+ * @property {function(import("@vcmap/cesium").SplitDirection):void} updateSplitDirection
  */
 
 /**
@@ -44,6 +48,7 @@ import { layerClassRegistry } from '../classRegistry.js';
  * @class
  * @abstract
  * @extends {Layer}
+ * @implements {SplitLayer}
  * @api
  */
 class FeatureLayer extends Layer {
@@ -58,6 +63,7 @@ class FeatureLayer extends Layer {
       ...Layer.getDefaultOptions(),
       style: undefined,
       balloonHeightOffset: 10,
+      splitDirection: undefined,
     };
   }
 
@@ -90,6 +96,21 @@ class FeatureLayer extends Layer {
      * @api
      */
     this.balloonHeightOffset = parseInteger(options.balloonHeightOffset, defaultOptions.balloonHeightOffset);
+    /** @type {import("@vcmap/cesium").SplitDirection} */
+    this._splitDirection = SplitDirection.NONE;
+
+    if (options.splitDirection) {
+      this._splitDirection = options.splitDirection === 'left' ?
+        SplitDirection.LEFT :
+        SplitDirection.RIGHT;
+    }
+
+    /**
+     * raised if the split direction changes, is passed the split direction as its only argument
+     * @type {VcsEvent<import("@vcmap/cesium").SplitDirection>}
+     * @api
+     */
+    this.splitDirectionChanged = new VcsEvent();
     /**
      * FeatureVisibility tracks the highlighting and hiding of features on this layer
      * @type {FeatureVisibility}
@@ -118,6 +139,26 @@ class FeatureLayer extends Layer {
   }
 
   /**
+   * @api
+   * The splitDirection to be applied - for 3D vector features currently only working on points with a Model
+   * @type {import("@vcmap/cesium").SplitDirection}
+   */
+  get splitDirection() { return this._splitDirection; }
+
+  /**
+   * @param {import("@vcmap/cesium").SplitDirection} direction
+   */
+  set splitDirection(direction) {
+    if (direction !== this._splitDirection) {
+      this.getImplementations().forEach((impl) => {
+        /** @type {FeatureLayerImplementation} */ (impl).updateSplitDirection(direction);
+      });
+      this._splitDirection = direction;
+      this.splitDirectionChanged.raiseEvent(this._splitDirection);
+    }
+  }
+
+  /**
    * @returns {FeatureLayerImplementationOptions}
    */
   getImplementationOptions() {
@@ -126,6 +167,7 @@ class FeatureLayer extends Layer {
       globalHider: this.globalHider,
       featureVisibility: this.featureVisibility,
       style: this.style,
+      splitDirection: this.splitDirection,
     };
   }
 
@@ -194,6 +236,11 @@ class FeatureLayer extends Layer {
     if (!this.getStyleOrDefaultStyle().equals(this._style)) {
       config.style = this.style.toJSON();
     }
+    if (this._splitDirection !== SplitDirection.NONE) {
+      config.splitDirection = this._splitDirection === SplitDirection.RIGHT ?
+        'right' :
+        'left';
+    }
     return config;
   }
 
@@ -205,6 +252,7 @@ class FeatureLayer extends Layer {
       this.featureVisibility.destroy();
     }
     this.styleChanged.destroy();
+    this.splitDirectionChanged.destroy();
     super.destroy();
   }
 }

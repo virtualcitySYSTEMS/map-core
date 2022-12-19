@@ -352,6 +352,25 @@ class CesiumMap extends VcsMap {
   }
 
   /**
+   * @type {number}
+   * @inheritDoc
+   */
+  get splitPosition() {
+    return super.splitPosition;
+  }
+
+  /**
+   * @param {number} position
+   * @inheritDoc
+   */
+  set splitPosition(position) {
+    super.splitPosition = position;
+    if (this._cesiumWidget) {
+      this._cesiumWidget.scene.splitPosition = position;
+    }
+  }
+
+  /**
    * @returns {import("@vcmap/cesium").TerrainProvider}
    * @api
    * @readonly
@@ -525,7 +544,7 @@ class CesiumMap extends VcsMap {
       this._cesiumWidget.scene.globe.depthTestAgainstTerrain = true;
       this._cesiumWidget.scene.highDynamicRange = false;
       // this._cesiumWidget.scene.logarithmicDepthBuffer = false; // TODO observe this
-      this._cesiumWidget.scene.splitPosition = 0.5;
+      this._cesiumWidget.scene.splitPosition = this.splitPosition;
 
       this._cesiumWidget.scene.globe.enableLighting = this.enableLightning;
 

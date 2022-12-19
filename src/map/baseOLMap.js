@@ -61,6 +61,23 @@ class BaseOLMap extends VcsMap {
   }
 
   /**
+   * @type {number}
+   * @inheritDoc
+   */
+  get splitPosition() {
+    return super.splitPosition;
+  }
+
+  /**
+   * @param {number} position
+   * @inheritDoc
+   */
+  set splitPosition(position) {
+    super.splitPosition = position;
+    this.requestRender();
+  }
+
+  /**
    * @returns {import("ol/Map").default}
    * @readonly
    * @api

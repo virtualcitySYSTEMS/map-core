@@ -153,12 +153,10 @@ class VcsMap extends VcsObject {
      */
     this.pointerInteractionEvent = new VcsEvent();
     /**
-     * If present, the split screen to use on this map. Is set by the mapCollection
-     * @type {import("@vcmap/core").SplitScreen|null}
-     * @api
+     * The split position to use on this map. Is set by the mapCollection
+     * @type {number}
      */
-    this.splitScreen = null;
-
+    this._splitPosition = 0.5;
     /**
      * @type {VcsEvent<VcsMapRenderEvent>}
      * @private
@@ -227,6 +225,26 @@ class VcsMap extends VcsObject {
     }
 
     this._setLayerCollectionListeners();
+  }
+
+  /**
+   * @type {number}
+   */
+  get splitPosition() {
+    return this._splitPosition;
+  }
+
+  /**
+   * The splitPosition should always be aligned with the mapCollection's splitPosition.
+   * Use mapCollection to change splitPosition.
+   * @param {number} position
+   */
+  set splitPosition(position) {
+    check(position, Number);
+    if (position < 0 || position > 1) {
+      throw new Error('Position must be between 0 and 1');
+    }
+    this._splitPosition = position;
   }
 
   /**

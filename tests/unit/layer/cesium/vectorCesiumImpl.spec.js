@@ -6,6 +6,7 @@ import Fill from 'ol/style/Fill.js';
 import OLText from 'ol/style/Text.js';
 import Feature from 'ol/Feature.js';
 
+import { SplitDirection } from '@vcmap/cesium';
 import VcsApp from '../../../../src/vcsApp.js';
 import VectorLayer from '../../../../src/layer/vectorLayer.js';
 import { setCesiumMap } from '../../helpers/cesiumHelpers.js';
@@ -104,6 +105,13 @@ describe('VectorCesiumImpl', () => {
       await vectorLayer.initialize();
       expect(addFeature).to.have.been.calledWith(feature);
       expect(addFeature).to.have.been.calledWith(pointFeature);
+    });
+
+    it('should update the split direction on initialize', async () => {
+      const updateSplitDirection = sandbox.spy(vectorLayer, 'updateSplitDirection');
+      vectorLayer.splitDirection = SplitDirection.LEFT;
+      await vectorLayer.initialize();
+      expect(updateSplitDirection).to.have.been.calledWith(SplitDirection.LEFT);
     });
   });
 

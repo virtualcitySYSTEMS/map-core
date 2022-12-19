@@ -1,5 +1,7 @@
 import Feature from 'ol/Feature.js';
-import { Primitive, PrimitiveCollection, Cartesian3, Matrix4 } from '@vcmap/cesium';
+import {
+  Primitive, PrimitiveCollection, Cartesian3, Matrix4, Model, SplitDirection,
+} from '@vcmap/cesium';
 import VectorContext, {
   addPrimitiveToContext,
   setReferenceForPicking,
@@ -19,7 +21,7 @@ describe('VectorContext', () => {
 
   beforeEach(() => {
     collection = new PrimitiveCollection({ destroyPrimitives: true });
-    vectorContext = new VectorContext(map, collection);
+    vectorContext = new VectorContext(map, collection, SplitDirection.NONE);
   });
 
   afterEach(() => {
@@ -259,7 +261,7 @@ describe('VectorContext', () => {
         primitive = new Primitive({});
         scaled = new Primitive({});
         pCollection = new PrimitiveCollection({ destroyPrimitives: true });
-        context = new VectorContext(map, pCollection);
+        context = new VectorContext(map, pCollection, SplitDirection.NONE);
         context.addPrimitives([primitive], feature, true);
         context.addScaledPrimitives([scaled], feature, true);
         context.addBillboards([{}], feature, true);
@@ -301,7 +303,7 @@ describe('VectorContext', () => {
         primitive = new Primitive({});
         scaled = new Primitive({});
         pCollection = new PrimitiveCollection({ destroyPrimitives: true });
-        context = new VectorContext(map, pCollection);
+        context = new VectorContext(map, pCollection, SplitDirection.NONE);
         context.addPrimitives([primitive], feature, true);
         context.addScaledPrimitives([scaled], feature, true);
         context.addBillboards([{}], feature, true);
@@ -332,6 +334,36 @@ describe('VectorContext', () => {
       it('should clear all lablel', () => {
         expect(pCollection.contains(lablel)).to.be.false;
       });
+    });
+  });
+
+  describe('updateSplitDirection', () => {
+    let context;
+    let pCollection;
+    let feature;
+    let primitive;
+    let scaled;
+
+    before(() => {
+      feature = new Feature({});
+      primitive = Model.fromGltf({ url: 'test' });
+      scaled = Model.fromGltf({ url: 'test' });
+      pCollection = new PrimitiveCollection({ destroyPrimitives: true });
+      context = new VectorContext(map, pCollection, SplitDirection.NONE);
+      context.addPrimitives([primitive], feature, true);
+      context.addScaledPrimitives([scaled], feature, true);
+    });
+
+    after(() => {
+      context.destroy();
+      pCollection.destroy();
+    });
+
+    it('should update split direction on context and set split direction on Models', () => {
+      context.updateSplitDirection(SplitDirection.LEFT);
+      expect(context.splitDirection).to.equal(SplitDirection.LEFT);
+      expect(primitive.splitDirection).to.equal(SplitDirection.LEFT);
+      expect(scaled.splitDirection).to.equal(SplitDirection.LEFT);
     });
   });
 

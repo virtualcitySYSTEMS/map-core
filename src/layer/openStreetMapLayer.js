@@ -177,6 +177,12 @@ class OpenStreetMapLayer extends Layer {
       config.maxLevel = this.maxLevel;
     }
 
+    if (this._splitDirection !== SplitDirection.NONE) {
+      config.splitDirection = this._splitDirection === SplitDirection.RIGHT ?
+        'right' :
+        'left';
+    }
+
     return config;
   }
 

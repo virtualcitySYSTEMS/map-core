@@ -84,6 +84,7 @@ import { layerClassRegistry } from '../classRegistry.js';
  * VectorLayer Layer for OpenlayersMap, Cesium and ObliqueMap
  * @class
  * @extends {FeatureLayer}
+ * @implements {SplitLayer}
  * @api stable
  */
 class VectorLayer extends FeatureLayer {

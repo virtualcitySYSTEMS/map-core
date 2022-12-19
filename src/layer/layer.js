@@ -58,6 +58,12 @@ import GlobalHider from './globalHider.js';
  */
 
 /**
+ * @typedef {LayerImplementationOptions} SplitLayerImplementationOptions
+ * @property {import("@vcmap/cesium").SplitDirection} splitDirection
+ * @api
+ */
+
+/**
  * Layer implementations for the {@link CesiumMap} map
  * @namespace cesium
  * @api stable

@@ -23,7 +23,6 @@ class VectorRasterTileCesiumImpl extends RasterLayerCesiumImpl {
     const rasterLayerOptions = {
       ...options,
       tilingSchema: 'mercator',
-      splitDirection: undefined,
       opacity: undefined,
     };
     super(map, rasterLayerOptions);

@@ -93,6 +93,12 @@ class ClusterContext {
     removeArrayFromCollection(this.entities, cache.labels);
   }
 
+  /**
+   * @param {import("@vcmap/cesium").SplitDirection} splitDirection
+   */
+  // eslint-disable-next-line class-methods-use-this,no-unused-vars
+  updateSplitDirection(splitDirection) {}
+
   clear() {
     this.entities.removeAll();
     this.featureToBillboardMap.clear();

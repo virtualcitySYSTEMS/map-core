@@ -5,7 +5,6 @@ import Collection from './collection.js';
 import EventHandler from '../interaction/eventHandler.js';
 import LayerCollection from './layerCollection.js';
 import ClippingObjectManager from './clipping/clippingObjectManager.js';
-import SplitScreen from './splitScreen.js';
 
 /**
  * @typedef {Object} MapCollectionInitializationError
@@ -133,16 +132,21 @@ class MapCollection extends Collection {
     this.clippingObjectManager = new ClippingObjectManager(this._layerCollection);
 
     /**
-     * @type {SplitScreen}
-     * @private
-     */
-    this._splitScreen = new SplitScreen(this.clippingObjectManager);
-
-    /**
      * @type {Array<Function>}
      * @private
      */
     this._mapPointerListeners = [];
+    /**
+     * @type {number}
+     * @private
+     */
+    this._splitPosition = 0.5;
+    /**
+     * Event raised when the maps split position changes. It passed the position as its only argument.
+     * @type {VcsEvent<number>}
+     * @api
+     */
+    this.splitPositionChanged = new VcsEvent();
     /**
      * @type {VcsEvent<VcsMapRenderEvent>}
      * @private
@@ -195,24 +199,30 @@ class MapCollection extends Collection {
   }
 
   /**
-   * The current split screen
-   * @type {SplitScreen}
+   * The current splitPosition
+   * @type {number}
    */
-  get splitScreen() {
-    return this._splitScreen;
+  get splitPosition() {
+    return this._splitPosition;
   }
 
   /**
-   * Set split screen for these maps.
-   * @param {SplitScreen} splitScreen
+   * Set the splitPosition for these maps.
+   * @param {number} position
    */
-  set splitScreen(splitScreen) {
-    check(splitScreen, SplitScreen);
+  set splitPosition(position) {
+    check(position, Number);
+    if (position < 0 || position > 1) {
+      throw new Error('Position must be between 0 and 1');
+    }
 
-    this._splitScreen = splitScreen;
-    this._array.forEach((map) => {
-      map.splitScreen = this._splitScreen;
-    });
+    if (Math.abs(this._splitPosition - position) > 0.0001) {
+      this._splitPosition = position;
+      this._array.forEach((map) => {
+        map.splitPosition = this._splitPosition;
+      });
+      this.splitPositionChanged.raiseEvent(position);
+    }
   }
 
   /**
@@ -225,7 +235,7 @@ class MapCollection extends Collection {
   }
 
   /**
-   * Adds a map to the collection. This will set the collections target, {@link SplitScreen}
+   * Adds a map to the collection. This will set the collections target
    * and the collections {@link LayerCollection} on the map.
    * It will add map event listeners and pass them to the event handler of this collection.
    * @param {import("@vcmap/core").VcsMap} map
@@ -237,7 +247,6 @@ class MapCollection extends Collection {
       this._mapPointerListeners
         .push(map.pointerInteractionEvent.addEventListener(this.eventHandler.handleMapEvent.bind(this.eventHandler)));
       map.layerCollection = this._layerCollection;
-      map.splitScreen = this._splitScreen;
       map.setTarget(this._target);
     }
     return added;
@@ -261,7 +270,6 @@ class MapCollection extends Collection {
     }
     if (this.has(map)) {
       map.setTarget(null);
-      map.splitScreen = null;
       map.layerCollection = new LayerCollection();
     }
     return super._remove(map);
@@ -400,7 +408,6 @@ class MapCollection extends Collection {
     }
 
     this.clippingObjectManager.mapActivated(map);
-    this._splitScreen.mapActivated(map);
     this._postRenderListener();
     this._postRenderListener = this._activeMap.postRender.addEventListener((event) => {
       this.postRender.raiseEvent(event);
@@ -430,8 +437,7 @@ class MapCollection extends Collection {
     this.mapActivated.destroy();
     this.clippingObjectManager.destroy();
     this.clippingObjectManager = null;
-    this._splitScreen.destroy();
-    this._splitScreen = null;
+    this.splitPositionChanged.destroy();
     this.fallbackMapActivated.destroy();
     this.initializeError.destroy();
 

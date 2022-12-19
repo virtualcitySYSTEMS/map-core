@@ -1,4 +1,4 @@
-import { SplitDirection, Matrix4 } from '@vcmap/cesium';
+import { Matrix4 } from '@vcmap/cesium';
 
 import { checkMaybe } from '@vcsuite/check';
 import { parseInteger } from '@vcsuite/parsers';
@@ -7,7 +7,6 @@ import VectorStyleItem from '../style/vectorStyleItem.js';
 import FeatureLayer from './featureLayer.js';
 import CesiumTilesetCesiumImpl, { getExtentFromTileset } from './cesium/cesiumTilesetCesiumImpl.js';
 import CesiumMap from '../map/cesiumMap.js';
-import VcsEvent from '../vcsEvent.js';
 import Extent from '../util/extent.js';
 import { mercatorProjection } from '../util/projection.js';
 import { isMobile } from '../util/isMobile.js';
@@ -21,7 +20,6 @@ import { layerClassRegistry } from '../classRegistry.js';
  * @property {Object|undefined} tilesetOptions
  * @property {import("@vcmap/core").VectorStyleItem|VectorStyleItemOptions|undefined} highlightStyle
  * @property {import("@vcmap/core").FeatureVisibility|undefined} featureVisibility
- * @property {string|undefined} splitDirection - either 'left' or 'right', if omitted none is applied
  * @property {import("ol/coordinate").Coordinate|undefined} offset - an offset of x, y, z. x and y in degrees longitude/latitude respectively
  * @api
  */
@@ -36,7 +34,6 @@ import { layerClassRegistry } from '../classRegistry.js';
 /**
  * @typedef {FeatureLayerImplementationOptions} CesiumTilesetImplementationOptions
  * @property {Object|undefined} tilesetOptions
- * @property {import("@vcmap/cesium").SplitDirection} splitDirection
  * @property {Array<CesiumTilesetTilesetProperties>|undefined} tilesetProperties
  * @property {import("@vcmap/cesium").Matrix4|undefined} modelMatrix
  * @property {import("ol/coordinate").Coordinate|undefined} offset
@@ -47,7 +44,6 @@ import { layerClassRegistry } from '../classRegistry.js';
  * represents a specific Building layer for cesium.
  * @class
  * @extends {FeatureLayer}
- * @implements {SplitLayer}
  * @api stable
  */
 class CesiumTilesetLayer extends FeatureLayer {
@@ -65,7 +61,6 @@ class CesiumTilesetLayer extends FeatureLayer {
       screenSpaceErrorMobile: 32,
       maximumMemoryUsage: 16,
       tilesetOptions: {},
-      splitDirection: undefined,
       offset: undefined,
     };
   }
@@ -108,22 +103,6 @@ class CesiumTilesetLayer extends FeatureLayer {
       maximumMemoryUsage: this.maximumMemoryUsage,
       ...tilesetOptions,
     };
-
-    /** @type {import("@vcmap/cesium").SplitDirection} */
-    this._splitDirection = SplitDirection.NONE;
-
-    if (options.splitDirection) {
-      this._splitDirection = options.splitDirection === 'left' ?
-        SplitDirection.LEFT :
-        SplitDirection.RIGHT;
-    }
-
-    /**
-     * raised if the split direction changes, is passed the split direction as its only argument
-     * @type {VcsEvent<import("@vcmap/cesium").SplitDirection>}
-     * @api
-     */
-    this.splitDirectionChanged = new VcsEvent();
 
     /**
      * @type {import("@vcmap/cesium").Matrix4|undefined}
@@ -186,25 +165,6 @@ class CesiumTilesetLayer extends FeatureLayer {
   }
 
   /**
-   * @api
-   * @type {import("@vcmap/cesium").SplitDirection}
-   */
-  get splitDirection() { return this._splitDirection; }
-
-  /**
-   * @param {import("@vcmap/cesium").SplitDirection} direction
-   */
-  set splitDirection(direction) {
-    if (direction !== this._splitDirection) {
-      this.getImplementations().forEach((impl) => {
-        /** @type {CesiumTilesetCesiumImpl} */ (impl).updateSplitDirection(direction);
-      });
-      this._splitDirection = direction;
-      this.splitDirectionChanged.raiseEvent(this._splitDirection);
-    }
-  }
-
-  /**
    * @inheritDoc
    * @returns {CesiumTilesetImplementationOptions}
    */
@@ -212,7 +172,6 @@ class CesiumTilesetLayer extends FeatureLayer {
     return {
       ...super.getImplementationOptions(),
       tilesetOptions: this.tilesetOptions,
-      splitDirection: this.splitDirection,
       modelMatrix: this.modelMatrix,
       offset: this.offset,
     };
@@ -331,12 +290,6 @@ class CesiumTilesetLayer extends FeatureLayer {
       config.tilesetOptions = tilesetOptions;
     }
 
-    if (this._splitDirection !== SplitDirection.NONE) {
-      config.splitDirection = this._splitDirection === SplitDirection.RIGHT ?
-        'right' :
-        'left';
-    }
-
     if (Array.isArray(this.offset)) {
       config.offset = this.offset.slice();
     }
@@ -350,7 +303,6 @@ class CesiumTilesetLayer extends FeatureLayer {
    */
   destroy() {
     super.destroy();
-    this.splitDirectionChanged.destroy();
   }
 }
 
