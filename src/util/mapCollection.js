@@ -47,7 +47,7 @@ async function setCesiumToOLViewpoint(cesiumMap, olMap) {
 // @ts-ignore
 class MapCollection extends Collection {
   /**
-   * Creates a LayerCollection from an iterable of layers, such as an Array.
+   * Creates a MapCollection from an iterable of maps, such as an Array.
    * @param {Iterable<import("@vcmap/core").VcsMap>} iterable
    * @returns {MapCollection}
    * @override
