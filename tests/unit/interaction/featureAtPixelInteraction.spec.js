@@ -1,4 +1,4 @@
-import { Cartesian3, Cartesian2, Clock, JulianDate, Entity } from '@vcmap/cesium';
+import { Cartesian3, Cartesian2, Clock, JulianDate, Entity } from '@vcmap-cesium/engine';
 import Feature from 'ol/Feature.js';
 import FeatureAtPixel from '../../../src/interaction/featureAtPixelInteraction.js';
 import OpenlayersMap from '../../../src/map/openlayersMap.js';

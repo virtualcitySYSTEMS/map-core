@@ -16,16 +16,16 @@ import {
   Primitive,
   Color,
   PolylineMaterialAppearance,
-} from '@vcmap/cesium';
+} from '@vcmap-cesium/engine';
 import { parseInteger, parseNumber } from '@vcsuite/parsers';
 import { getCesiumColor } from '../../style/styleHelpers.js';
 import { createSync } from '../../layer/vectorSymbols.js';
 
 /**
- * @param {import("@vcmap/cesium").Scene} scene
+ * @param {import("@vcmap-cesium/engine").Scene} scene
  * @param {import("ol/style/Fill").default} fill
  * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
- * @returns {import("@vcmap/cesium").MaterialAppearance}
+ * @returns {import("@vcmap-cesium/engine").MaterialAppearance}
  */
 export function getMaterialAppearance(scene, fill, feature) {
   const options = {
@@ -62,10 +62,10 @@ export function getMaterialAppearance(scene, fill, feature) {
 /**
  *
  * @param {Object} options
- * @param {Array<import("@vcmap/cesium").Geometry>} geometries
- * @param {import("@vcmap/cesium").Color} color
- * @param {import("@vcmap/cesium").ClassificationType} classificationType
- * @returns {import("@vcmap/cesium").ClassificationPrimitive}
+ * @param {Array<import("@vcmap-cesium/engine").Geometry>} geometries
+ * @param {import("@vcmap-cesium/engine").Color} color
+ * @param {import("@vcmap-cesium/engine").ClassificationType} classificationType
+ * @returns {import("@vcmap-cesium/engine").ClassificationPrimitive}
  */
 export function createClassificationPrimitive(options, geometries, color, classificationType) {
   const instances = geometries.map(geometry => new GeometryInstance({
@@ -98,14 +98,14 @@ export function createClassificationPrimitive(options, geometries, color, classi
 
 /**
  *
- * @param {import("@vcmap/cesium").Scene} scene
+ * @param {import("@vcmap-cesium/engine").Scene} scene
  * @param {import("@vcmap/core").VectorProperties} vectorProperties
  * @param {boolean} allowPicking
  * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
- * @param {Array<import("@vcmap/cesium").Geometry>} geometries
+ * @param {Array<import("@vcmap-cesium/engine").Geometry>} geometries
  * @param {import("ol/style/Style").default} style
  * @param {boolean} groundPrimitive
- * @returns {import("@vcmap/cesium").Primitive|import("@vcmap/cesium").GroundPrimitive|import("@vcmap/cesium").ClassificationPrimitive|null}
+ * @returns {import("@vcmap-cesium/engine").Primitive|import("@vcmap-cesium/engine").GroundPrimitive|import("@vcmap-cesium/engine").ClassificationPrimitive|null}
  */
 export function createPrimitive(scene, vectorProperties, allowPicking, feature, geometries, style, groundPrimitive) {
   const classificationType = vectorProperties.getClassificationType(feature);
@@ -143,13 +143,13 @@ export function createPrimitive(scene, vectorProperties, allowPicking, feature, 
 
 /**
  *
- * @param {import("@vcmap/cesium").Scene} scene
+ * @param {import("@vcmap-cesium/engine").Scene} scene
  * @param {import("@vcmap/core").VectorProperties} vectorProperties
  * @param {boolean} allowPicking
  * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
- * @param {Array<import("@vcmap/cesium").Geometry>} geometries
+ * @param {Array<import("@vcmap-cesium/engine").Geometry>} geometries
  * @param {import("ol/style/Style").default} style
- * @returns {import("@vcmap/cesium").Primitive}
+ * @returns {import("@vcmap-cesium/engine").Primitive}
  */
 export function createOutlinePrimitive(scene, vectorProperties, allowPicking, feature, geometries, style) {
   const color = getCesiumColor(style.getStroke().getColor(), [0, 0, 0, 1]);
@@ -182,14 +182,14 @@ export function createOutlinePrimitive(scene, vectorProperties, allowPicking, fe
 
 /**
  *
- * @param {import("@vcmap/cesium").Scene} scene
+ * @param {import("@vcmap-cesium/engine").Scene} scene
  * @param {import("@vcmap/core").VectorProperties} vectorProperties
  * @param {boolean} allowPicking
  * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
- * @param {Array<import("@vcmap/cesium").PolylineGeometry|import("@vcmap/cesium").GroundPolylineGeometry>} geometries
+ * @param {Array<import("@vcmap-cesium/engine").PolylineGeometry|import("@vcmap-cesium/engine").GroundPolylineGeometry>} geometries
  * @param {import("ol/style/Style").default} style
  * @param {boolean} groundPrimitive
- * @returns {import("@vcmap/cesium").Primitive|import("@vcmap/cesium").GroundPolylinePrimitive|null}
+ * @returns {import("@vcmap-cesium/engine").Primitive|import("@vcmap-cesium/engine").GroundPolylinePrimitive|null}
  */
 export function createLinePrimitive(
   scene, vectorProperties, allowPicking, feature, geometries, style, groundPrimitive,
@@ -328,7 +328,7 @@ export function validateStoreys(storeys, storeyHeights) {
 
 /**
  * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
- * @param {import("@vcmap/cesium").HeightReference} heightReference
+ * @param {import("@vcmap-cesium/engine").HeightReference} heightReference
  * @param {import("@vcmap/core").VectorProperties} vectorProperties
  * @returns {number}
  */
@@ -469,7 +469,7 @@ export function getStoreyOptions(storeyHeights, initialHeight, down, result) {
  * @param {import("ol/style/Style").default} style
  * @param {Array<import("ol/geom/SimpleGeometry").default>} geometries
  * @param {import("@vcmap/core").VectorProperties} vectorProperties
- * @param {import("@vcmap/cesium").Scene} scene
+ * @param {import("@vcmap-cesium/engine").Scene} scene
  * @param {VectorGeometryFactoryType} geometryFactory
  * @param {import("@vcmap/core").VectorContext|import("@vcmap/core").ClusterContext} context
  */

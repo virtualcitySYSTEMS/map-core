@@ -2,18 +2,18 @@
 /* eslint-disable no-continue */
 import { boundingExtent, getBottomLeft, getBottomRight, getTopLeft, getTopRight } from 'ol/extent.js';
 import { transform } from 'ol/proj.js';
-import { Cartesian2 } from '@vcmap/cesium';
+import { Cartesian2 } from '@vcmap-cesium/engine';
 import { ObliqueViewDirection } from './obliqueViewDirection.js';
 import { getHeightFromTerrainProvider } from '../layer/terrainHelpers.js';
 import { cartesian2DDistance } from '../util/math.js';
 import { mercatorProjection, wgs84Projection } from '../util/projection.js';
 
 /**
- * @type {import("@vcmap/cesium").Cartesian2}
+ * @type {import("@vcmap-cesium/engine").Cartesian2}
  */
 let scratchCartesian2A = new Cartesian2();
 /**
- * @type {import("@vcmap/cesium").Cartesian2}
+ * @type {import("@vcmap-cesium/engine").Cartesian2}
  */
 let scratchCartesian2B = new Cartesian2();
 

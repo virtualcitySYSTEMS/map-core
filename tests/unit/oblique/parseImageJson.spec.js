@@ -1,6 +1,6 @@
 import proj4 from 'proj4';
 import { get as getProjection } from 'ol/proj.js';
-import { Cartesian3, Matrix4, Matrix3 } from '@vcmap/cesium';
+import { Cartesian3, Matrix4, Matrix3 } from '@vcmap-cesium/engine';
 import { parseImageData, parseImageMeta, parseLegacyImageData } from '../../../src/oblique/parseImageJson.js';
 import { ObliqueViewDirection } from '../../../src/oblique/obliqueViewDirection.js';
 import Projection from '../../../src/util/projection.js';

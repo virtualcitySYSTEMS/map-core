@@ -9,7 +9,7 @@ import {
   Cartesian3,
   Math as CesiumMath,
   Resource,
-} from '@vcmap/cesium';
+} from '@vcmap-cesium/engine';
 import CesiumTilesetLayer from '../../../../src/layer/cesiumTilesetLayer.js';
 import DeclarativeStyleItem from '../../../../src/style/declarativeStyleItem.js';
 import VcsApp from '../../../../src/vcsApp.js';

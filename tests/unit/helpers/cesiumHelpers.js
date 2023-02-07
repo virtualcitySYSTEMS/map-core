@@ -15,7 +15,7 @@ import {
   Cesium3DTileFeature,
   TweenCollection,
   ContextLimits,
-} from '@vcmap/cesium';
+} from '@vcmap-cesium/engine';
 import CesiumTilesetLayer from '../../../src/layer/cesiumTilesetLayer.js';
 import DataSourceLayer from '../../../src/layer/dataSourceLayer.js';
 import CesiumMap from '../../../src/map/cesiumMap.js';

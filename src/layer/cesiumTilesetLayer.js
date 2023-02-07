@@ -1,4 +1,4 @@
-import { Matrix4 } from '@vcmap/cesium';
+import { Matrix4 } from '@vcmap-cesium/engine';
 
 import { checkMaybe } from '@vcsuite/check';
 import { parseInteger } from '@vcsuite/parsers';
@@ -35,7 +35,7 @@ import { layerClassRegistry } from '../classRegistry.js';
  * @typedef {FeatureLayerImplementationOptions} CesiumTilesetImplementationOptions
  * @property {Object|undefined} tilesetOptions
  * @property {Array<CesiumTilesetTilesetProperties>|undefined} tilesetProperties
- * @property {import("@vcmap/cesium").Matrix4|undefined} modelMatrix
+ * @property {import("@vcmap-cesium/engine").Matrix4|undefined} modelMatrix
  * @property {import("ol/coordinate").Coordinate|undefined} offset
  * @api
  */
@@ -105,7 +105,7 @@ class CesiumTilesetLayer extends FeatureLayer {
     };
 
     /**
-     * @type {import("@vcmap/cesium").Matrix4|undefined}
+     * @type {import("@vcmap-cesium/engine").Matrix4|undefined}
      * @private
      */
     this._modelMatrix = undefined;
@@ -121,14 +121,14 @@ class CesiumTilesetLayer extends FeatureLayer {
    * A model matrix to apply to each cesium3DTileset created from this layer.
    * This will overwrite any modelMatrix calculated by the offset property.
    * @api
-   * @returns {import("@vcmap/cesium").Matrix4|undefined}
+   * @returns {import("@vcmap-cesium/engine").Matrix4|undefined}
    */
   get modelMatrix() {
     return this._modelMatrix;
   }
 
   /**
-   * @param {import("@vcmap/cesium").Matrix4|undefined} modelMatrix
+   * @param {import("@vcmap-cesium/engine").Matrix4|undefined} modelMatrix
    */
   set modelMatrix(modelMatrix) {
     checkMaybe(modelMatrix, Matrix4);
@@ -191,7 +191,7 @@ class CesiumTilesetLayer extends FeatureLayer {
 
   /**
    * @inheritDoc
-   * @param {import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature} object
+   * @param {import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature} object
    * @returns {?Object}
    */
   objectClickedHandler(object) {

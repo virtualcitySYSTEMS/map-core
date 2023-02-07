@@ -117,7 +117,7 @@ class VectorObliqueImpl extends LayerObliqueImpl {
   }
 
   /**
-   * @param {import("@vcmap/cesium").SplitDirection} splitDirection
+   * @param {import("@vcmap-cesium/engine").SplitDirection} splitDirection
    */
   // eslint-disable-next-line class-methods-use-this,no-unused-vars
   updateSplitDirection(splitDirection) {}

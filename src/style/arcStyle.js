@@ -1,6 +1,6 @@
 import { parseInteger, parseNumber } from '@vcsuite/parsers';
 import { check } from '@vcsuite/check';
-import { Cartesian2, Cartesian3, CatmullRomSpline, Matrix3 } from '@vcmap/cesium';
+import { Cartesian2, Cartesian3, CatmullRomSpline, Matrix3 } from '@vcmap-cesium/engine';
 import { LineString } from 'ol/geom.js';
 import { unByKey } from 'ol/Observable.js';
 import { v4 as uuidv4 } from 'uuid';

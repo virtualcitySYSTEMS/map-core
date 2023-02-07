@@ -1,4 +1,4 @@
-import { Math as CesiumMath } from '@vcmap/cesium';
+import { Math as CesiumMath } from '@vcmap-cesium/engine';
 import { getCartesianBearing, getCartesianPitch, getMidPoint, modulo } from '../../../index.js';
 
 describe('modulo', () => {

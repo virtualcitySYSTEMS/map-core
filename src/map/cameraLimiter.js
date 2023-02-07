@@ -1,4 +1,4 @@
-import { Cartographic, Ellipsoid, Math as CesiumMath, sampleTerrain, sampleTerrainMostDetailed } from '@vcmap/cesium';
+import { Cartographic, Ellipsoid, Math as CesiumMath, sampleTerrain, sampleTerrainMostDetailed } from '@vcmap-cesium/engine';
 import { checkMaybe } from '@vcsuite/check';
 import { parseInteger, parseNumber, parseEnumValue } from '@vcsuite/parsers';
 import { getTerrainProviderForUrl, isTerrainTileAvailable } from '../layer/terrainHelpers.js';
@@ -60,7 +60,7 @@ class CameraLimiter {
      */
     this._terrainUrl = options.terrainUrl || defaultOptions.terrainUrl;
     /**
-     * @type {import("@vcmap/cesium").CesiumTerrainProvider|null}
+     * @type {import("@vcmap-cesium/engine").CesiumTerrainProvider|null}
      * @private
      */
     this._terrainProvider = this._terrainUrl ? getTerrainProviderForUrl({ url: this._terrainUrl }) : null;
@@ -78,7 +78,7 @@ class CameraLimiter {
     this.level = options.level === null ? null : parseInteger(options.level, defaultOptions.level);
     /**
      * last checked camera position
-     * @type {import("@vcmap/cesium").Cartographic}
+     * @type {import("@vcmap-cesium/engine").Cartographic}
      */
     this.lastCheckedPosition = new Cartographic();
     /**
@@ -116,8 +116,8 @@ class CameraLimiter {
   }
 
   /**
-   * @param {import("@vcmap/cesium").Cartographic} cameraCartographic
-   * @returns {Promise<Array<import("@vcmap/cesium").Cartographic>>}
+   * @param {import("@vcmap-cesium/engine").Cartographic} cameraCartographic
+   * @returns {Promise<Array<import("@vcmap-cesium/engine").Cartographic>>}
    * @private
    */
   _limitWithLevel(cameraCartographic) {
@@ -128,8 +128,8 @@ class CameraLimiter {
   }
 
   /**
-   * @param {import("@vcmap/cesium").Cartographic} cameraCartographic
-   * @returns {Promise<Array<import("@vcmap/cesium").Cartographic>>}
+   * @param {import("@vcmap-cesium/engine").Cartographic} cameraCartographic
+   * @returns {Promise<Array<import("@vcmap-cesium/engine").Cartographic>>}
    * @private
    */
   _limitMostDetailed(cameraCartographic) {
@@ -137,7 +137,7 @@ class CameraLimiter {
   }
 
   /**
-   * @param {import("@vcmap/cesium").Cartographic} cameraCartographic
+   * @param {import("@vcmap-cesium/engine").Cartographic} cameraCartographic
    * @returns {Promise<void>}
    * @private
    */
@@ -156,7 +156,7 @@ class CameraLimiter {
 
   /**
    * Limits the given camera based on this limiters specs.
-   * @param {import("@vcmap/cesium").Camera} camera
+   * @param {import("@vcmap-cesium/engine").Camera} camera
    * @api
    * @returns {Promise<void>}
    */

@@ -1,4 +1,4 @@
-import { SplitDirection } from '@vcmap/cesium';
+import { SplitDirection } from '@vcmap-cesium/engine';
 import ExclusiveManager from '../../src/util/exclusiveManager.js';
 import OpenStreetMapLayer from '../../src/layer/openStreetMapLayer.js';
 import LayerState from '../../src/layer/layerState.js';

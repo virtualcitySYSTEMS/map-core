@@ -1,4 +1,4 @@
-import { Cartesian2 } from '@vcmap/cesium';
+import { Cartesian2 } from '@vcmap-cesium/engine';
 import { unByKey } from 'ol/Observable.js';
 import OLMap from 'ol/Map.js';
 import { defaults as defaultInteractions } from 'ol/interaction.js';

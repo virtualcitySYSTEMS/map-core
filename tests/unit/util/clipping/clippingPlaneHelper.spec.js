@@ -15,7 +15,7 @@ import {
   Plane,
   Matrix3,
   JulianDate,
-} from '@vcmap/cesium';
+} from '@vcmap-cesium/engine';
 import { Point } from 'ol/geom.js';
 import {
   clearClippingPlanes,

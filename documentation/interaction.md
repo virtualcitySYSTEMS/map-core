@@ -26,10 +26,10 @@ Every time the active event type of the interaction is raised, an `InteractionEv
 /**
  * @typedef {MapEvent} InteractionEvent
  * @property {EventType} type
- * @property {undefined|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature|import("@vcmap/cesium").Entity} feature - a potential feature at said location
+ * @property {undefined|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature|import("@vcmap-cesium/engine").Entity} feature - a potential feature at said location
  * @property {boolean|undefined} stopPropagation - if set to true, the event chain is interrupted
  * @property {undefined|ObliqueParameters} obliqueParameters - additional parameters from oblique if obliquemode is active
- * @property {import("@vcmap/cesium").Ray|undefined} ray - potential ray
+ * @property {import("@vcmap-cesium/engine").Ray|undefined} ray - potential ray
  * @property {boolean|undefined} exactPosition - whether the position is exact, eg with translucentDepthPicking on
  * @api
  */

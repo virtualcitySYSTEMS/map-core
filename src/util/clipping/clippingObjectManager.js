@@ -31,7 +31,7 @@ class ClippingObjectManager {
      */
     this._exclusiveClippingObjects = null;
     /**
-     * @type {Map<(import("@vcmap/cesium").Globe|import("@vcmap/cesium").Entity|import("@vcmap/cesium").Cesium3DTileset), ClippingObject>}
+     * @type {Map<(import("@vcmap-cesium/engine").Globe|import("@vcmap-cesium/engine").Entity|import("@vcmap-cesium/engine").Cesium3DTileset), ClippingObject>}
      * @private
      */
     this._targetsMap = new Map();

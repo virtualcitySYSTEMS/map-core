@@ -15,17 +15,17 @@ import {
   SphereGeometry,
   SphereOutlineGeometry,
   Transforms,
-} from '@vcmap/cesium';
+} from '@vcmap-cesium/engine';
 import { RegularShape } from 'ol/style.js';
 import { createSync } from '../../layer/vectorSymbols.js';
 import { PrimitiveOptionsType } from '../../layer/vectorProperties.js';
 import { getCesiumColor } from '../../style/styleHelpers.js';
 
 /**
- * @param {import("@vcmap/cesium").Primitive|import("@vcmap/cesium").Model} primitive
- * @param {import("@vcmap/cesium").Matrix4} transform
- * @param {import("@vcmap/cesium").Cartesian3} scale
- * @param {import("@vcmap/cesium").Cartesian3} offset
+ * @param {import("@vcmap-cesium/engine").Primitive|import("@vcmap-cesium/engine").Model} primitive
+ * @param {import("@vcmap-cesium/engine").Matrix4} transform
+ * @param {import("@vcmap-cesium/engine").Cartesian3} scale
+ * @param {import("@vcmap-cesium/engine").Cartesian3} offset
  */
 function makeOffsetAutoScalePrimitive(primitive, transform, scale, offset) {
   const { modelMatrix } = primitive;
@@ -49,8 +49,8 @@ function makeOffsetAutoScalePrimitive(primitive, transform, scale, offset) {
 }
 
 /**
- * @param {import("@vcmap/cesium").Primitive|import("@vcmap/cesium").Model} primitive
- * @param {import("@vcmap/cesium").Cartesian3} scale
+ * @param {import("@vcmap-cesium/engine").Primitive|import("@vcmap-cesium/engine").Model} primitive
+ * @param {import("@vcmap-cesium/engine").Cartesian3} scale
  */
 function makeScaledAutoScalePrimitive(primitive, scale) {
   const { modelMatrix } = primitive;
@@ -70,15 +70,15 @@ function makeScaledAutoScalePrimitive(primitive, scale) {
 }
 
 /**
- * @param {import("@vcmap/cesium").Primitive|import("@vcmap/cesium").Model} primitive
- * @param {import("@vcmap/cesium").Cartesian3} position - will be mutated
- * @param {import("@vcmap/cesium").Scene} scene
- * @param {import("@vcmap/cesium").Cartesian3} [offset]
+ * @param {import("@vcmap-cesium/engine").Primitive|import("@vcmap-cesium/engine").Model} primitive
+ * @param {import("@vcmap-cesium/engine").Cartesian3} position - will be mutated
+ * @param {import("@vcmap-cesium/engine").Scene} scene
+ * @param {import("@vcmap-cesium/engine").Cartesian3} [offset]
  * @returns {Promise<void>}
  */
 async function placePrimitiveOnTerrain(primitive, position, scene, offset) {
   await sampleTerrainMostDetailed(
-    /** @type {import("@vcmap/cesium").CesiumTerrainProvider} */ (scene.globe.terrainProvider),
+    /** @type {import("@vcmap-cesium/engine").CesiumTerrainProvider} */ (scene.globe.terrainProvider),
     [Cartographic.fromCartesian(position)],
   )
     .then(([cartoWithNewHeight]) => {
@@ -98,10 +98,10 @@ async function placePrimitiveOnTerrain(primitive, position, scene, offset) {
 /**
  * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
  * @param {Array<import("ol/coordinate").Coordinate>} wgs84Positions
- * @param {Array<import("@vcmap/cesium").Cartesian3>} positions
+ * @param {Array<import("@vcmap-cesium/engine").Cartesian3>} positions
  * @param {import("@vcmap/core").VectorProperties} vectorProperties
- * @param {import("@vcmap/cesium").Scene} scene
- * @returns {null|{ primitives: Array<import("@vcmap/cesium").Model>, options: VectorPropertiesModelOptions }}
+ * @param {import("@vcmap-cesium/engine").Scene} scene
+ * @returns {null|{ primitives: Array<import("@vcmap-cesium/engine").Model>, options: VectorPropertiesModelOptions }}
  */
 export function getModelOptions(feature, wgs84Positions, positions, vectorProperties, scene) {
   const options = vectorProperties.getModel(feature);
@@ -151,9 +151,9 @@ export function getModelOptions(feature, wgs84Positions, positions, vectorProper
 
 /**
  * @param {VectorPropertiesPrimitiveOptions} options
- * @param {import("@vcmap/cesium").Color} color
+ * @param {import("@vcmap-cesium/engine").Color} color
  * @param {boolean} [outline]
- * @returns {import("@vcmap/cesium").GeometryInstance|null}
+ * @returns {import("@vcmap-cesium/engine").GeometryInstance|null}
  */
 function getGeometryInstanceFromOptions(options, color, outline) {
   const { type } = options;
@@ -205,10 +205,10 @@ function getGeometryInstanceFromOptions(options, color, outline) {
  * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
  * @param {import("ol/style/Style").default} style
  * @param {Array<import("ol/coordinate").Coordinate>} wgs84Positions
- * @param {Array<import("@vcmap/cesium").Cartesian3>} positions
+ * @param {Array<import("@vcmap-cesium/engine").Cartesian3>} positions
  * @param {import("@vcmap/core").VectorProperties} vectorProperties
- * @param {import("@vcmap/cesium").Scene} scene
- * @returns {null|{ primitives: Array<import("@vcmap/cesium").Primitive>, options: VectorPropertiesPrimitive}}
+ * @param {import("@vcmap-cesium/engine").Scene} scene
+ * @returns {null|{ primitives: Array<import("@vcmap-cesium/engine").Primitive>, options: VectorPropertiesPrimitive}}
  */
 export function getPrimitiveOptions(feature, style, wgs84Positions, positions, vectorProperties, scene) {
   const options = vectorProperties.getPrimitive(feature);

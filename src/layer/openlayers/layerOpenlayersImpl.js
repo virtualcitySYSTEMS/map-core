@@ -1,11 +1,11 @@
-import { SplitDirection } from '@vcmap/cesium';
+import { SplitDirection } from '@vcmap-cesium/engine';
 import { unByKey } from 'ol/Observable.js';
 import { vcsLayerName } from '../layerSymbols.js';
 import LayerImplementation from '../layerImplementation.js';
 
 /**
  * @typedef {LayerImplementationOptions} LayerOpenlayersImplementationOptions
- * @property {import("@vcmap/cesium").SplitDirection} splitDirection
+ * @property {import("@vcmap-cesium/engine").SplitDirection} splitDirection
  */
 
 /**
@@ -26,7 +26,7 @@ class LayerOpenlayersImpl extends LayerImplementation {
      * @type {import("ol/layer").Layer<import("ol/source/Source").default>|null}
      */
     this.olLayer = null;
-    /** @type {import("@vcmap/cesium").SplitDirection} */
+    /** @type {import("@vcmap-cesium/engine").SplitDirection} */
     this.splitDirection = options.splitDirection;
     /**
      * @type {Array<import("ol/events").EventsKey>|null}
@@ -79,7 +79,7 @@ class LayerOpenlayersImpl extends LayerImplementation {
   getOLLayer() { throw new Error(); }
 
   /**
-   * @param {import("@vcmap/cesium").SplitDirection} splitDirection
+   * @param {import("@vcmap-cesium/engine").SplitDirection} splitDirection
    */
   updateSplitDirection(splitDirection) {
     this.splitDirection = splitDirection;

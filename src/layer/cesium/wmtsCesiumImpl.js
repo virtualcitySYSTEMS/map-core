@@ -1,4 +1,4 @@
-import { Rectangle, WebMapTileServiceImageryProvider, ImageryLayer as CesiumImageryLayer } from '@vcmap/cesium';
+import { Rectangle, WebMapTileServiceImageryProvider, ImageryLayer as CesiumImageryLayer } from '@vcmap-cesium/engine';
 import RasterLayerCesiumImpl from './rasterLayerCesiumImpl.js';
 import { wgs84Projection } from '../../util/projection.js';
 import { getTilingScheme } from '../rasterLayer.js';
@@ -61,7 +61,7 @@ class WmtsCesiumImpl extends RasterLayerCesiumImpl {
 
 
   /**
-   * @returns {import("@vcmap/cesium").ImageryLayer}
+   * @returns {import("@vcmap-cesium/engine").ImageryLayer}
    */
   getCesiumLayer() {
     // This is a bug in Cesium, they cant cope with {Layer} placeholder..

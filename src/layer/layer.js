@@ -10,8 +10,8 @@ import GlobalHider from './globalHider.js';
 
 /**
  * @typedef {import("@vcmap/core").Layer} SplitLayer
- * @property {import("@vcmap/cesium").SplitDirection} splitDirection
- * @property {VcsEvent<import("@vcmap/cesium").SplitDirection>} splitDirectionChanged
+ * @property {import("@vcmap-cesium/engine").SplitDirection} splitDirection
+ * @property {VcsEvent<import("@vcmap-cesium/engine").SplitDirection>} splitDirectionChanged
  */
 
 /**
@@ -59,7 +59,7 @@ import GlobalHider from './globalHider.js';
 
 /**
  * @typedef {LayerImplementationOptions} SplitLayerImplementationOptions
- * @property {import("@vcmap/cesium").SplitDirection} splitDirection
+ * @property {import("@vcmap-cesium/engine").SplitDirection} splitDirection
  * @api
  */
 

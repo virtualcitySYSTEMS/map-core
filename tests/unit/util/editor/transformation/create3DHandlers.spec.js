@@ -4,7 +4,7 @@ import {
   CylinderGeometry,
   Math as CesiumMath,
   PolylineGeometry,
-} from '@vcmap/cesium';
+} from '@vcmap-cesium/engine';
 import {
   AXIS_AND_PLANES,
   create3DHandlers,
@@ -14,9 +14,9 @@ import {
 import { getCesiumMap } from '../../../helpers/cesiumHelpers.js';
 
 /**
- * @param {import("@vcmap/cesium").PrimitiveCollection} collection
- * @param {function(import("@vcmap/cesium").Primitive):boolean} predicate
- * @returns {null|import("@vcmap/cesium").Primitive}
+ * @param {import("@vcmap-cesium/engine").PrimitiveCollection} collection
+ * @param {function(import("@vcmap-cesium/engine").Primitive):boolean} predicate
+ * @returns {null|import("@vcmap-cesium/engine").Primitive}
  */
 function findPrimitive(collection, predicate) {
   const { length } = collection;
@@ -31,9 +31,9 @@ function findPrimitive(collection, predicate) {
 }
 
 /**
- * @param {import("@vcmap/cesium").PrimitiveCollection} collection
- * @param {function(import("@vcmap/cesium").Primitive):boolean} predicate
- * @returns {Array<import("@vcmap/cesium").Primitive>}
+ * @param {import("@vcmap-cesium/engine").PrimitiveCollection} collection
+ * @param {function(import("@vcmap-cesium/engine").Primitive):boolean} predicate
+ * @returns {Array<import("@vcmap-cesium/engine").Primitive>}
  */
 function filterPrimitives(collection, predicate) {
   const { length } = collection;
@@ -49,8 +49,8 @@ function filterPrimitives(collection, predicate) {
 }
 
 /**
- * @param {import("@vcmap/cesium").PrimitiveCollection} collection
- * @param {function(import("@vcmap/cesium").Primitive, number):any} cb
+ * @param {import("@vcmap-cesium/engine").PrimitiveCollection} collection
+ * @param {function(import("@vcmap-cesium/engine").Primitive, number):any} cb
  */
 function forEachPrimitive(collection, cb) {
   const { length } = collection;

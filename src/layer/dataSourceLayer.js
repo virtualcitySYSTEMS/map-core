@@ -1,4 +1,4 @@
-import { EntityCollection } from '@vcmap/cesium';
+import { EntityCollection } from '@vcmap-cesium/engine';
 import Layer from './layer.js';
 import CesiumMap from '../map/cesiumMap.js';
 import DataSourceCesiumImpl from './cesium/dataSourceCesiumImpl.js';
@@ -8,15 +8,15 @@ import { layerClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {Object} DataSourcePickedObject
- * @property {import("@vcmap/cesium").Entity} id
+ * @property {import("@vcmap-cesium/engine").Entity} id
  * @property {ClickPosition} clickedPosition
  * @property {Object} attributes
  */
 
 /**
  * @typedef {LayerImplementationOptions} DataSourceImplementationOptions
- * @property {import("@vcmap/cesium").EntityCollection} entities
- * @property {import("@vcmap/cesium").DataSourceClock|undefined} clock
+ * @property {import("@vcmap-cesium/engine").EntityCollection} entities
+ * @property {import("@vcmap-cesium/engine").DataSourceClock|undefined} clock
  * @api
  */
 
@@ -36,12 +36,12 @@ class DataSourceLayer extends Layer {
     super(options);
     /**
      * The entities of this layer. Use the `addEntity` API to add Enitities to ensure interoperability with vcm interfaces
-     * @type {import("@vcmap/cesium").EntityCollection}
+     * @type {import("@vcmap-cesium/engine").EntityCollection}
      * @api
      */
     this.entities = new EntityCollection();
     /**
-     * @type {import("@vcmap/cesium").DataSourceClock|undefined}
+     * @type {import("@vcmap-cesium/engine").DataSourceClock|undefined}
      */
     this.clock = undefined;
     /**
@@ -148,7 +148,7 @@ class DataSourceLayer extends Layer {
 
   /**
    * adds an entity
-   * @param {import("@vcmap/cesium").Entity.ConstructorOptions|import("@vcmap/cesium").Entity} options - Cesium Entity options or the entity
+   * @param {import("@vcmap-cesium/engine").Entity.ConstructorOptions|import("@vcmap-cesium/engine").Entity} options - Cesium Entity options or the entity
    * @param {?Object=} attributes - a set of properties, typically used for rendering a balloon
    * @param {boolean=} allowPicking - whether to override the layers allowPicking setting for this entity
    * @returns {null|string} the entities id

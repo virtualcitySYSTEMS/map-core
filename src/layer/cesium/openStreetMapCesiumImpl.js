@@ -1,4 +1,4 @@
-import { OpenStreetMapImageryProvider, ImageryLayer as CesiumImageryLayer } from '@vcmap/cesium';
+import { OpenStreetMapImageryProvider, ImageryLayer as CesiumImageryLayer } from '@vcmap-cesium/engine';
 import RasterLayerCesiumImpl from './rasterLayerCesiumImpl.js';
 
 /**
@@ -11,7 +11,7 @@ class OpenStreetMapCesiumImpl extends RasterLayerCesiumImpl {
 
   /**
    * @inheritDoc
-   * @returns {import("@vcmap/cesium").ImageryLayer}
+   * @returns {import("@vcmap-cesium/engine").ImageryLayer}
    */
   getCesiumLayer() {
     return new CesiumImageryLayer(

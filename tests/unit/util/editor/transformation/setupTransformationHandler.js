@@ -1,6 +1,6 @@
 import { v4 } from 'uuid';
 import { Feature } from 'ol';
-import { IntersectionTests } from '@vcmap/cesium';
+import { IntersectionTests } from '@vcmap-cesium/engine';
 import {
   createTransformationHandler,
   handlerSymbol,
@@ -68,7 +68,7 @@ export function createHandlerFeature(axis) {
 }
 
 /**
- * @param {Array<import("@vcmap/cesium").Cartesian3>} calls
+ * @param {Array<import("@vcmap-cesium/engine").Cartesian3>} calls
  * @param {import("sinon").default} [sandbox]
  * @returns {(function(): void)|*}
  */

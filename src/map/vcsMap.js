@@ -129,7 +129,7 @@ class VcsMap extends VcsObject {
     this.fallbackMap = options.fallbackMap || null;
 
     /**
-     * @type {Map<string, Set<import("@vcmap/cesium").CustomDataSource|import("@vcmap/cesium").CzmlDataSource|import("@vcmap/cesium").PrimitiveCollection|import("@vcmap/cesium").Cesium3DTileset|import("@vcmap/cesium").ImageryLayer|import("ol/layer/Layer").default<import("ol/source").Source>>>}
+     * @type {Map<string, Set<import("@vcmap-cesium/engine").CustomDataSource|import("@vcmap-cesium/engine").CzmlDataSource|import("@vcmap-cesium/engine").PrimitiveCollection|import("@vcmap-cesium/engine").Cesium3DTileset|import("@vcmap-cesium/engine").ImageryLayer|import("ol/layer/Layer").default<import("ol/source").Source>>>}
      * @private
      */
     this._visualizations = new Map();
@@ -342,7 +342,7 @@ class VcsMap extends VcsObject {
   /**
    * Validates a visualization. A visualization must have the vcsLayeName symbol set and a layer with said name must be
    * part of the maps layerCollection.
-   * @param {import("@vcmap/cesium").CustomDataSource|import("@vcmap/cesium").PrimitiveCollection|import("@vcmap/cesium").Cesium3DTileset|import("@vcmap/cesium").ImageryLayer|import("ol/layer/Layer").default<import("ol/source").Source>} item
+   * @param {import("@vcmap-cesium/engine").CustomDataSource|import("@vcmap-cesium/engine").PrimitiveCollection|import("@vcmap-cesium/engine").Cesium3DTileset|import("@vcmap-cesium/engine").ImageryLayer|import("ol/layer/Layer").default<import("ol/source").Source>} item
    * @returns {boolean}
    */
   validateVisualization(item) {
@@ -357,7 +357,7 @@ class VcsMap extends VcsObject {
 
   /**
    * Adds a visualization to the visualizations map for its layer. The visualization must be valid, use validateVisualization first
-   * @param {import("@vcmap/cesium").CustomDataSource|import("@vcmap/cesium").PrimitiveCollection|import("@vcmap/cesium").Cesium3DTileset|import("@vcmap/cesium").ImageryLayer|import("ol/layer/Layer").default<import("ol/source").Source>} item
+   * @param {import("@vcmap-cesium/engine").CustomDataSource|import("@vcmap-cesium/engine").PrimitiveCollection|import("@vcmap-cesium/engine").Cesium3DTileset|import("@vcmap-cesium/engine").ImageryLayer|import("ol/layer/Layer").default<import("ol/source").Source>} item
    */
   addVisualization(item) {
     if (!this.validateVisualization(item)) {
@@ -372,7 +372,7 @@ class VcsMap extends VcsObject {
 
   /**
    * Removes a visualization
-   * @param {import("@vcmap/cesium").PrimitiveCollection|import("@vcmap/cesium").Cesium3DTileset|import("@vcmap/cesium").ImageryLayer|import("ol/layer/Layer").default<import("ol/source").Source>|import("@vcmap/cesium").CustomDataSource} item
+   * @param {import("@vcmap-cesium/engine").PrimitiveCollection|import("@vcmap-cesium/engine").Cesium3DTileset|import("@vcmap-cesium/engine").ImageryLayer|import("ol/layer/Layer").default<import("ol/source").Source>|import("@vcmap-cesium/engine").CustomDataSource} item
    */
   removeVisualization(item) {
     const layerName = item[vcsLayerName];
@@ -388,7 +388,7 @@ class VcsMap extends VcsObject {
   /**
    * Gets the visualizations for a specific layer.
    * @param {import("@vcmap/core").Layer} layer
-   * @returns {Set<import("@vcmap/cesium").PrimitiveCollection|import("@vcmap/cesium").Cesium3DTileset|import("@vcmap/cesium").ImageryLayer|import("ol/layer/Layer").default<import("ol/source").Source>|import("@vcmap/cesium").CustomDataSource>}
+   * @returns {Set<import("@vcmap-cesium/engine").PrimitiveCollection|import("@vcmap-cesium/engine").Cesium3DTileset|import("@vcmap-cesium/engine").ImageryLayer|import("ol/layer/Layer").default<import("ol/source").Source>|import("@vcmap-cesium/engine").CustomDataSource>}
    * @api
    */
   getVisualizationsForLayer(layer) {
@@ -397,7 +397,7 @@ class VcsMap extends VcsObject {
 
   /**
    * Get all visualizations added to this map.
-   * @returns {Array<import("@vcmap/cesium").PrimitiveCollection|import("@vcmap/cesium").Cesium3DTileset|import("@vcmap/cesium").ImageryLayer|import("ol/layer/Layer").default<import("ol/source").Source>|import("@vcmap/cesium").CustomDataSource>}
+   * @returns {Array<import("@vcmap-cesium/engine").PrimitiveCollection|import("@vcmap-cesium/engine").Cesium3DTileset|import("@vcmap-cesium/engine").ImageryLayer|import("ol/layer/Layer").default<import("ol/source").Source>|import("@vcmap-cesium/engine").CustomDataSource>}
    * @api
    */
   getVisualizations() {

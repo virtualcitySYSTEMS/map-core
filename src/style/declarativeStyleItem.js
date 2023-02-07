@@ -1,4 +1,4 @@
-import { Color, ConditionsExpression, Expression, Cesium3DTileStyle } from '@vcmap/cesium';
+import { Color, ConditionsExpression, Expression, Cesium3DTileStyle } from '@vcmap-cesium/engine';
 import { is } from '@vcsuite/check';
 
 import Style from 'ol/style/Style.js';
@@ -65,7 +65,7 @@ import { styleClassRegistry } from '../classRegistry.js';
  * @api
  */
 
-/** @type {import("@vcmap/cesium").Color} */
+/** @type {import("@vcmap-cesium/engine").Color} */
 const scratchColor = new Color();
 
 const defaultText = new OLText({
@@ -76,7 +76,7 @@ const defaultText = new OLText({
 });
 
 /**
- * @param {import("@vcmap/cesium").Cesium3DTileStyle} style
+ * @param {import("@vcmap-cesium/engine").Cesium3DTileStyle} style
  * @param {string} key
  * @param {DeclarativeStyleOptions} options
  */
@@ -109,7 +109,7 @@ class DeclarativeStyleItem extends StyleItem {
     const declarativeStyle = options.declarativeStyle || {};
     declarativeStyle.show = declarativeStyle.show != null ? declarativeStyle.show : true;
 
-    /** @type {import("@vcmap/cesium").Cesium3DTileStyle} */
+    /** @type {import("@vcmap-cesium/engine").Cesium3DTileStyle} */
     this.cesiumStyle = new Cesium3DTileStyle(declarativeStyle);
 
     this._style = this._styleFunction.bind(this);
@@ -234,7 +234,9 @@ class DeclarativeStyleItem extends StyleItem {
       this.cesiumStyle.color.evaluate(feature, scratchColor) :
       Color.WHITE;
     if (color) {
-      style.setFill(new Fill({ color: cesiumColorToColor(/** @type {import("@vcmap/cesium").Color} */ (color)) }));
+      style.setFill(new Fill({
+        color: cesiumColorToColor(/** @type {import("@vcmap-cesium/engine").Color} */ (color)),
+      }));
     }
 
     this._evaluateStroke(feature, style);
@@ -256,14 +258,16 @@ class DeclarativeStyleItem extends StyleItem {
       Color.WHITE;
     if (color) {
       if (isExtruded) {
-        style.setFill(new Fill({ color: cesiumColorToColor(/** @type {import("@vcmap/cesium").Color} */(color)) }));
+        style.setFill(new Fill({
+          color: cesiumColorToColor(/** @type {import("@vcmap-cesium/engine").Color} */(color)),
+        }));
       } else {
         const strokeWidth = this.cesiumStyle.strokeWidth ?
           this.cesiumStyle.strokeWidth.evaluate(feature) :
           1;
         style.setStroke(new Stroke({
           width: Number.isFinite(strokeWidth) ? strokeWidth : 1,
-          color: cesiumColorToColor(/** @type {import("@vcmap/cesium").Color} */ (color)),
+          color: cesiumColorToColor(/** @type {import("@vcmap-cesium/engine").Color} */ (color)),
         }));
       }
     }
@@ -312,7 +316,7 @@ class DeclarativeStyleItem extends StyleItem {
               this.cesiumStyle.labelOutlineWidth.evaluate(feature) :
               1;
             textStyle.setStroke(new Stroke({
-              color: cesiumColorToColor(/** @type {import("@vcmap/cesium").Color} */ (outlineColor)),
+              color: cesiumColorToColor(/** @type {import("@vcmap-cesium/engine").Color} */ (outlineColor)),
               width: outlineWidth,
             }));
           }
@@ -357,7 +361,7 @@ class DeclarativeStyleItem extends StyleItem {
       if (!this._circleCache.has(circleCacheKey)) {
         const circleOptions = {
           radius,
-          fill: new Fill({ color: cesiumColorToColor(/** @type {import("@vcmap/cesium").Color} */ (color)) }),
+          fill: new Fill({ color: cesiumColorToColor(/** @type {import("@vcmap-cesium/engine").Color} */ (color)) }),
         };
         if (width) {
           circleOptions.stroke = new Stroke({

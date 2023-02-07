@@ -5,7 +5,7 @@ import {
   Math as CesiumMath,
   Rectangle,
   Cesium3DTileFeature,
-} from '@vcmap/cesium';
+} from '@vcmap-cesium/engine';
 import Circle from 'ol/geom/Circle.js';
 import CesiumTilesetLayer from '../../../src/layer/cesiumTilesetLayer.js';
 import VcsApp from '../../../src/vcsApp.js';

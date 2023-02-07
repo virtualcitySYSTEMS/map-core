@@ -1,4 +1,4 @@
-import { CesiumTerrainProvider, Cartographic, Cartesian2, sampleTerrainMostDetailed } from '@vcmap/cesium';
+import { CesiumTerrainProvider, Cartographic, Cartesian2, sampleTerrainMostDetailed } from '@vcmap-cesium/engine';
 import { getTransform } from 'ol/proj.js';
 import { wgs84Projection } from '../util/projection.js';
 
@@ -11,13 +11,13 @@ import { wgs84Projection } from '../util/projection.js';
  */
 
 /**
- * @type {Object<string, import("@vcmap/cesium").CesiumTerrainProvider>}
+ * @type {Object<string, import("@vcmap-cesium/engine").CesiumTerrainProvider>}
  */
 const terrainProviders = {};
 
 /**
  * @param {TerrainProviderOptions} options
- * @returns {import("@vcmap/cesium").CesiumTerrainProvider}
+ * @returns {import("@vcmap-cesium/engine").CesiumTerrainProvider}
  */
 export function getTerrainProviderForUrl(options) {
   if (!terrainProviders[options.url]) {
@@ -37,7 +37,7 @@ export function getTerrainProviderForUrl(options) {
 
 /**
  * changes input coordinate Array in place, new height can also be accessed by coordinates[x][2]
- * @param {import("@vcmap/cesium").CesiumTerrainProvider} terrainProvider
+ * @param {import("@vcmap-cesium/engine").CesiumTerrainProvider} terrainProvider
  * @param {Array<import("ol/coordinate").Coordinate>} coordinates
  * @param {import("@vcmap/core").Projection=} optSourceProjection - if input is not WGS84
  * @param {Array<import("ol/coordinate").Coordinate>=} result
@@ -70,9 +70,9 @@ export function getHeightFromTerrainProvider(terrainProvider, coordinates, optSo
 
 /**
  * checks, whether a terrain tile is available at given position or not
- * @param {import("@vcmap/cesium").CesiumTerrainProvider} terrainProvider
+ * @param {import("@vcmap-cesium/engine").CesiumTerrainProvider} terrainProvider
  * @param {number} level
- * @param {import("@vcmap/cesium").Cartographic} position
+ * @param {import("@vcmap-cesium/engine").Cartographic} position
  * @returns {boolean}
  */
 export function isTerrainTileAvailable(terrainProvider, level, position) {

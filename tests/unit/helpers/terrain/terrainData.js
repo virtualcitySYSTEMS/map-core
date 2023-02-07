@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { CesiumTerrainProvider } from '@vcmap/cesium';
+import { CesiumTerrainProvider } from '@vcmap-cesium/engine';
 import importJSON from '../importJSON.js';
 import getFileNameFromUrl from '../getFileNameFromUrl.js';
 

@@ -1,7 +1,7 @@
 import {
   Plane,
   Transforms,
-} from '@vcmap/cesium';
+} from '@vcmap-cesium/engine';
 import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import { EventType } from '../../../interaction/interactionType.js';
 import { handlerSymbol } from '../editorSymbols.js';
@@ -15,11 +15,11 @@ import { AXIS_AND_PLANES } from './transformationTypes.js';
 import CesiumMap from '../../../map/cesiumMap.js';
 
 /**
- * @param {function(import("ol/coordinate").Coordinate, import("@vcmap/cesium").Cartesian2):import("ol/coordinate").Coordinate} getPosition
+ * @param {function(import("ol/coordinate").Coordinate, import("@vcmap-cesium/engine").Cartesian2):import("ol/coordinate").Coordinate} getPosition
  * @param {InteractionEvent} event
  * @param {TransformationHandler} transformationHandler
  * @param {AXIS_AND_PLANES} axis
- * @returns {function(import("ol/coordinate").Coordinate, import("@vcmap/cesium").Cartesian2):Array<number>}
+ * @returns {function(import("ol/coordinate").Coordinate, import("@vcmap-cesium/engine").Cartesian2):Array<number>}
  */
 function createGetScaledEvent(getPosition, event, transformationHandler, axis) {
   const { center } = transformationHandler;
@@ -93,7 +93,7 @@ class ScaleInteraction extends AbstractInteraction {
      */
     this._scaled = new VcsEvent();
     /**
-     * @type {null|function(import("ol/coordinate").Coordinate, import("@vcmap/cesium").Cartesian2):Array<number>}
+     * @type {null|function(import("ol/coordinate").Coordinate, import("@vcmap-cesium/engine").Cartesian2):Array<number>}
      * @private
      */
     this._getScaleEvent = null;
@@ -138,7 +138,7 @@ class ScaleInteraction extends AbstractInteraction {
   /**
    * @param {AXIS_AND_PLANES} axis
    * @param {InteractionEvent} event
-   * @returns {function(import("ol/coordinate").Coordinate, import("@vcmap/cesium").Cartesian2):Array<number>}
+   * @returns {function(import("ol/coordinate").Coordinate, import("@vcmap-cesium/engine").Cartesian2):Array<number>}
    * @private
    */
   _dragAlongPlane3D(axis, event) {
@@ -161,7 +161,7 @@ class ScaleInteraction extends AbstractInteraction {
   /**
    * @param {AXIS_AND_PLANES} axis
    * @param {InteractionEvent} event
-   * @returns {function(import("ol/coordinate").Coordinate, import("@vcmap/cesium").Cartesian2):Array<number>}
+   * @returns {function(import("ol/coordinate").Coordinate, import("@vcmap-cesium/engine").Cartesian2):Array<number>}
    * @private
    */
   _dragAlongPlane2D(axis, event) {

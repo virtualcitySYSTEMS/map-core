@@ -1,4 +1,4 @@
-import { Cartographic, Cartesian3, Math as CesiumMath } from '@vcmap/cesium';
+import { Cartographic, Cartesian3, Math as CesiumMath } from '@vcmap-cesium/engine';
 import AbstractInteraction from './abstractInteraction.js';
 import Projection, { mercatorProjection } from '../util/projection.js';
 import { EventType, ModificationKeyType, PointerKeyType } from './interactionType.js';
@@ -12,12 +12,12 @@ class CoordinateAtPixel extends AbstractInteraction {
   constructor() {
     super(EventType.ALL, ModificationKeyType.ALL, PointerKeyType.ALL);
     /**
-     * @type {import("@vcmap/cesium").Cartographic}
+     * @type {import("@vcmap-cesium/engine").Cartographic}
      * @private
      */
     this._scratchCartographic = new Cartographic();
     /**
-     * @type {import("@vcmap/cesium").Cartesian3}
+     * @type {import("@vcmap-cesium/engine").Cartesian3}
      * @private
      */
     this._scratchCartesian = new Cartesian3();

@@ -32,7 +32,7 @@ class ExtrudeInteraction extends AbstractInteraction {
      */
     this._extruded = new VcsEvent();
     /**
-     * @type {null|function(import("ol/coordinate").Coordinate, import("@vcmap/cesium").Cartesian2):number}
+     * @type {null|function(import("ol/coordinate").Coordinate, import("@vcmap-cesium/engine").Cartesian2):number}
      * @private
      */
     this._getExtrudeEvent = null;

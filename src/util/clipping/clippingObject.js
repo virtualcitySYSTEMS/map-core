@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cesium3DTileset } from '@vcmap/cesium';
+import { Cesium3DTileset } from '@vcmap-cesium/engine';
 
 import { check } from '@vcsuite/check';
 import { parseBoolean } from '@vcsuite/parsers';
@@ -25,7 +25,7 @@ import LayerCollection from '../layerCollection.js';
  * @typedef {Object} ClippingObjectOptions
  * @property {Array<string>|undefined} layerNames
  * @property {Array<ClippingObjectEntityOption>|undefined} entities
- * @property {import("@vcmap/cesium").ClippingPlaneCollection|undefined} clippingPlaneCollection
+ * @property {import("@vcmap-cesium/engine").ClippingPlaneCollection|undefined} clippingPlaneCollection
  * @property {boolean} [terrain=false]
  * @property {boolean} [local=false] - if not local, coordinates are expected in ECEF
  * @api
@@ -78,12 +78,12 @@ class ClippingObject {
     /**
      * Key is a semantic identifier, eg. layerName or layerName-entitiyId, depending on the target. Targets
      * represent Cesium Object which support the clippingPlanes API
-     * @type {Map<(string|symbol), import("@vcmap/cesium").Entity|import("@vcmap/cesium").Cesium3DTileset|import("@vcmap/cesium").Globe>}
+     * @type {Map<(string|symbol), import("@vcmap-cesium/engine").Entity|import("@vcmap-cesium/engine").Cesium3DTileset|import("@vcmap-cesium/engine").Globe>}
      */
     this.targets = new Map();
 
     /**
-     * @type {import("@vcmap/cesium").ClippingPlaneCollection|null}
+     * @type {import("@vcmap-cesium/engine").ClippingPlaneCollection|null}
      * @private
      */
     this._clippingPlaneCollection = options.clippingPlaneCollection || null;
@@ -124,12 +124,12 @@ class ClippingObject {
   /**
    * The current Cesium.ClippingPlaneCollection. To update the collection, set this property to the new definition.
    * @api
-   * @type {import("@vcmap/cesium").ClippingPlaneCollection|null}
+   * @type {import("@vcmap-cesium/engine").ClippingPlaneCollection|null}
    */
   get clippingPlaneCollection() { return this._clippingPlaneCollection; }
 
   /**
-   * @param {import("@vcmap/cesium").ClippingPlaneCollection} clippingPlaneCollection
+   * @param {import("@vcmap-cesium/engine").ClippingPlaneCollection} clippingPlaneCollection
    */
   set clippingPlaneCollection(clippingPlaneCollection) {
     this._clippingPlaneCollection = clippingPlaneCollection;
@@ -206,7 +206,7 @@ class ClippingObject {
             [];
 
           if (tilesets.length > 0) {
-            tilesets.forEach(/** @param {import("@vcmap/cesium").Cesium3DTileset} tileset */ (tileset) => {
+            tilesets.forEach(/** @param {import("@vcmap-cesium/engine").Cesium3DTileset} tileset */ (tileset) => {
               tileset.readyPromise.then((cesium3DTileset) => {
                 if (this.layerNames.includes(layer.name) && layer.active) {
                   this.targets.set(layer.name, cesium3DTileset);
@@ -242,7 +242,7 @@ class ClippingObject {
           .forEach((eo) => {
             const key = `${eo.layerName}-${eo.entityId}`;
             if (layer.active) {
-              const entity = /** @type {import("@vcmap/cesium").CustomDataSource} */ (dataSource)
+              const entity = /** @type {import("@vcmap-cesium/engine").CustomDataSource} */ (dataSource)
                 .entities.getById(eo.entityId);
               if (entity) {
                 this.targets.set(key, entity);

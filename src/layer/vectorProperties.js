@@ -1,5 +1,5 @@
 import deepEqual from 'fast-deep-equal';
-import { Cartesian3, ClassificationType, HeightReference, NearFarScalar } from '@vcmap/cesium';
+import { Cartesian3, ClassificationType, HeightReference, NearFarScalar } from '@vcmap-cesium/engine';
 import { check, checkMaybe } from '@vcsuite/check';
 import { parseBoolean, parseEnumKey, parseInteger, parseNumber } from '@vcsuite/parsers';
 import { getLogger as getLoggerByName } from '@vcsuite/logger';
@@ -88,10 +88,10 @@ export const PrimitiveOptionsType = {
 };
 
 /**
- * @enum {import("@vcmap/cesium").HeightReference}
- * @property {import("@vcmap/cesium").HeightReference} clampToGround
- * @property {import("@vcmap/cesium").HeightReference} absolute
- * @property {import("@vcmap/cesium").HeightReference} relativeToGround
+ * @enum {import("@vcmap-cesium/engine").HeightReference}
+ * @property {import("@vcmap-cesium/engine").HeightReference} clampToGround
+ * @property {import("@vcmap-cesium/engine").HeightReference} absolute
+ * @property {import("@vcmap-cesium/engine").HeightReference} relativeToGround
  * @const
  */
 export const AltitudeModeCesium = {
@@ -101,10 +101,10 @@ export const AltitudeModeCesium = {
 };
 
 /**
- * @enum {import("@vcmap/cesium").ClassificationType}
- * @property {import("@vcmap/cesium").ClassificationType} both
- * @property {import("@vcmap/cesium").ClassificationType} cesium3DTile
- * @property {import("@vcmap/cesium").ClassificationType} terrain
+ * @enum {import("@vcmap-cesium/engine").ClassificationType}
+ * @property {import("@vcmap-cesium/engine").ClassificationType} both
+ * @property {import("@vcmap-cesium/engine").ClassificationType} cesium3DTile
+ * @property {import("@vcmap-cesium/engine").ClassificationType} terrain
  * @const
  */
 export const ClassificationTypeCesium = {
@@ -115,8 +115,8 @@ export const ClassificationTypeCesium = {
 
 /**
  * @param {Array<number>} value
- * @param {import("@vcmap/cesium").NearFarScalar|undefined} defaultValue
- * @returns {import("@vcmap/cesium").NearFarScalar|undefined}
+ * @param {import("@vcmap-cesium/engine").NearFarScalar|undefined} defaultValue
+ * @returns {import("@vcmap-cesium/engine").NearFarScalar|undefined}
  */
 export function parseNearFarScalar(value, defaultValue) {
   if (Array.isArray(value)) {
@@ -132,8 +132,8 @@ export function parseNearFarScalar(value, defaultValue) {
 
 /**
  * @param {Array<number>} value
- * @param {import("@vcmap/cesium").Cartesian3|undefined} defaultValue
- * @returns {import("@vcmap/cesium").Cartesian3|undefined}
+ * @param {import("@vcmap-cesium/engine").Cartesian3|undefined} defaultValue
+ * @returns {import("@vcmap-cesium/engine").Cartesian3|undefined}
  */
 export function parseCartesian3(value, defaultValue) {
   if (Array.isArray(value)) {
@@ -171,7 +171,7 @@ export function parseStoreyHeights(storeyHeights, defaultStoreyHeights) {
 }
 
 /**
- * @param {import("@vcmap/cesium").HeightReference} altitudeMode
+ * @param {import("@vcmap-cesium/engine").HeightReference} altitudeMode
  * @returns {string}
  */
 export function getAltitudeModeOptions(altitudeMode) {
@@ -180,7 +180,7 @@ export function getAltitudeModeOptions(altitudeMode) {
 }
 
 /**
- * @param {import("@vcmap/cesium").ClassificationType} classificationType
+ * @param {import("@vcmap-cesium/engine").ClassificationType} classificationType
  * @returns {string}
  */
 export function getClassificationTypeOptions(classificationType) {
@@ -189,7 +189,7 @@ export function getClassificationTypeOptions(classificationType) {
 }
 
 /**
- * @param {import("@vcmap/cesium").NearFarScalar} nearFarScalar
+ * @param {import("@vcmap-cesium/engine").NearFarScalar} nearFarScalar
  * @returns {Array<number>|undefined}
  */
 export function getNearFarValueOptions(nearFarScalar) {
@@ -197,7 +197,7 @@ export function getNearFarValueOptions(nearFarScalar) {
 }
 
 /**
- * @param {import("@vcmap/cesium").Cartesian3} cartesian3
+ * @param {import("@vcmap-cesium/engine").Cartesian3} cartesian3
  * @returns {Array<number>|undefined}
  */
 export function getCartesian3Options(cartesian3) {
@@ -252,7 +252,7 @@ class VectorProperties {
   constructor(options) {
     const defaultValues = VectorProperties.getDefaultOptions();
     /**
-     * @type {import("@vcmap/cesium").HeightReference}
+     * @type {import("@vcmap-cesium/engine").HeightReference}
      * @private
      */
     this._altitudeMode = parseEnumKey(options.altitudeMode, AltitudeModeCesium, HeightReference.CLAMP_TO_GROUND);
@@ -264,20 +264,20 @@ class VectorProperties {
     this._allowPicking = parseBoolean(options.allowPicking, defaultValues.allowPicking);
 
     /**
-     * @type {import("@vcmap/cesium").ClassificationType|undefined}
+     * @type {import("@vcmap-cesium/engine").ClassificationType|undefined}
      * @private
      */
     this._classificationType = parseEnumKey(options.classificationType, ClassificationTypeCesium, undefined);
 
 
     /**
-     * @type {import("@vcmap/cesium").NearFarScalar|undefined}
+     * @type {import("@vcmap-cesium/engine").NearFarScalar|undefined}
      * @private
      */
     this._scaleByDistance = parseNearFarScalar(options.scaleByDistance, undefined);
 
     /**
-     * @type {import("@vcmap/cesium").Cartesian3|undefined}
+     * @type {import("@vcmap-cesium/engine").Cartesian3|undefined}
      * @private
      */
     this._eyeOffset = parseCartesian3(options.eyeOffset, undefined);
@@ -411,7 +411,7 @@ class VectorProperties {
   }
 
   /**
-   * @type {import("@vcmap/cesium").HeightReference}
+   * @type {import("@vcmap-cesium/engine").HeightReference}
    * @api
    */
   get altitudeMode() {
@@ -419,7 +419,7 @@ class VectorProperties {
   }
 
   /**
-   * @param {import("@vcmap/cesium").HeightReference} altitudeMode
+   * @param {import("@vcmap-cesium/engine").HeightReference} altitudeMode
    */
   set altitudeMode(altitudeMode) {
     if (altitudeMode !== this._altitudeMode) {
@@ -431,7 +431,7 @@ class VectorProperties {
 
   /**
    * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
-   * @returns {import("@vcmap/cesium").HeightReference}
+   * @returns {import("@vcmap-cesium/engine").HeightReference}
    * @api
    */
   getAltitudeMode(feature) {
@@ -470,7 +470,7 @@ class VectorProperties {
 
 
   /**
-   * @type {import("@vcmap/cesium").ClassificationType|undefined}
+   * @type {import("@vcmap-cesium/engine").ClassificationType|undefined}
    * @api
    */
   get classificationType() {
@@ -478,7 +478,7 @@ class VectorProperties {
   }
 
   /**
-   * @param {import("@vcmap/cesium").ClassificationType|undefined} classificationType
+   * @param {import("@vcmap-cesium/engine").ClassificationType|undefined} classificationType
    */
   set classificationType(classificationType) {
     if (classificationType !== this._classificationType) {
@@ -490,7 +490,7 @@ class VectorProperties {
 
   /**
    * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
-   * @returns {import("@vcmap/cesium").ClassificationType|undefined}
+   * @returns {import("@vcmap-cesium/engine").ClassificationType|undefined}
    * @api
    */
   getClassificationType(feature) {
@@ -499,7 +499,7 @@ class VectorProperties {
   }
 
   /**
-   * @type {import("@vcmap/cesium").NearFarScalar|undefined}
+   * @type {import("@vcmap-cesium/engine").NearFarScalar|undefined}
    * @api
    */
   get scaleByDistance() {
@@ -507,7 +507,7 @@ class VectorProperties {
   }
 
   /**
-   * @param {import("@vcmap/cesium").NearFarScalar|undefined} value
+   * @param {import("@vcmap-cesium/engine").NearFarScalar|undefined} value
    */
   set scaleByDistance(value) {
     if (!NearFarScalar.equals(value, this._scaleByDistance)) {
@@ -519,7 +519,7 @@ class VectorProperties {
 
   /**
    * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
-   * @returns {import("@vcmap/cesium").NearFarScalar|undefined}
+   * @returns {import("@vcmap-cesium/engine").NearFarScalar|undefined}
    * @api
    */
   getScaleByDistance(feature) {
@@ -528,7 +528,7 @@ class VectorProperties {
   }
 
   /**
-   * @type {import("@vcmap/cesium").Cartesian3|undefined}
+   * @type {import("@vcmap-cesium/engine").Cartesian3|undefined}
    * @api
    */
   get eyeOffset() {
@@ -536,7 +536,7 @@ class VectorProperties {
   }
 
   /**
-   * @param {import("@vcmap/cesium").Cartesian3|undefined} value
+   * @param {import("@vcmap-cesium/engine").Cartesian3|undefined} value
    */
   set eyeOffset(value) {
     if (!Cartesian3.equals(this.eyeOffset, value)) {
@@ -548,7 +548,7 @@ class VectorProperties {
 
   /**
    * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
-   * @returns {import("@vcmap/cesium").Cartesian3}
+   * @returns {import("@vcmap-cesium/engine").Cartesian3}
    * @api
    */
   getEyeOffset(feature) {

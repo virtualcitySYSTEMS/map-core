@@ -1,5 +1,5 @@
 import { unByKey } from 'ol/Observable.js';
-import { PrimitiveCollection } from '@vcmap/cesium';
+import { PrimitiveCollection } from '@vcmap-cesium/engine';
 
 import convert from '../../util/featureconverter/convert.js';
 import VectorContext from './vectorContext.js';
@@ -27,7 +27,7 @@ class VectorCesiumImpl extends LayerImplementation {
     this.vectorProperties = options.vectorProperties;
     /** @type {import("ol/source").Vector<import("ol/geom/Geometry").default>} */
     this.source = options.source;
-    /** @type {import("@vcmap/cesium").SplitDirection} */
+    /** @type {import("@vcmap-cesium/engine").SplitDirection} */
     this.splitDirection = options.splitDirection;
     /** @type {import("@vcmap/core").StyleItem} */
     this.style = options.style;
@@ -45,7 +45,7 @@ class VectorCesiumImpl extends LayerImplementation {
     this._removeVectorPropertiesChangeHandler = () => {};
 
     /**
-     * @type {import("@vcmap/cesium").PrimitiveCollection|import("@vcmap/cesium").CustomDataSource}
+     * @type {import("@vcmap-cesium/engine").PrimitiveCollection|import("@vcmap-cesium/engine").CustomDataSource}
      * @protected
      */
     this._rootCollection = new PrimitiveCollection();
@@ -68,7 +68,7 @@ class VectorCesiumImpl extends LayerImplementation {
      */
     this._context = null;
     /**
-     * @type {import("@vcmap/cesium").Scene|null}
+     * @type {import("@vcmap-cesium/engine").Scene|null}
      * @private
      */
     this._scene = null;
@@ -105,7 +105,7 @@ class VectorCesiumImpl extends LayerImplementation {
    * @protected
    */
   async _setupContext(cesiumMap) {
-    const rootCollection = /** @type {import("@vcmap/cesium").PrimitiveCollection} */ (this._rootCollection);
+    const rootCollection = /** @type {import("@vcmap-cesium/engine").PrimitiveCollection} */ (this._rootCollection);
     this._context = new VectorContext(cesiumMap, rootCollection, this.splitDirection);
     cesiumMap.addPrimitiveCollection(rootCollection);
   }
@@ -224,7 +224,7 @@ class VectorCesiumImpl extends LayerImplementation {
   }
 
   /**
-   * @param {import("@vcmap/cesium").SplitDirection} splitDirection
+   * @param {import("@vcmap-cesium/engine").SplitDirection} splitDirection
    */
   updateSplitDirection(splitDirection) {
     this.splitDirection = splitDirection;

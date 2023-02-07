@@ -1,4 +1,4 @@
-import { Cartesian3, Matrix3, Matrix4 } from '@vcmap/cesium';
+import { Cartesian3, Matrix3, Matrix4 } from '@vcmap-cesium/engine';
 import ObliqueImage from '../../../src/oblique/obliqueImage.js';
 import ObliqueImageMeta from '../../../src/oblique/obliqueImageMeta.js';
 

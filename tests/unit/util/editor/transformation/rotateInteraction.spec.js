@@ -1,6 +1,6 @@
 import { Feature } from 'ol';
 import { Point } from 'ol/geom.js';
-import { Math as CesiumMath } from '@vcmap/cesium';
+import { Math as CesiumMath } from '@vcmap-cesium/engine';
 import { getCesiumMap } from '../../../helpers/cesiumHelpers.js';
 import { createHandlerFeature, patchPickRay, setupTransformationHandler } from './setupTransformationHandler.js';
 import {

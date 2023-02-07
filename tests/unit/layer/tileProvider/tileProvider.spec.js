@@ -1,5 +1,5 @@
 import LRUCache from 'ol/structs/LRUCache.js';
-import { Math as CesiumMath } from '@vcmap/cesium';
+import { Math as CesiumMath } from '@vcmap-cesium/engine';
 import Point from 'ol/geom/Point.js';
 import Feature from 'ol/Feature.js';
 import TileProvider, { mercatorResolutionsToLevel } from '../../../../src/layer/tileProvider/tileProvider.js';

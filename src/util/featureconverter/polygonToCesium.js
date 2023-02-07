@@ -6,7 +6,7 @@ import {
   GroundPolylineGeometry,
   PolygonHierarchy,
   PolylineGeometry,
-} from '@vcmap/cesium';
+} from '@vcmap-cesium/engine';
 import { parseNumber } from '@vcsuite/parsers';
 import { addPrimitivesToContext } from './featureconverterHelper.js';
 import Projection from '../projection.js';
@@ -17,7 +17,7 @@ import { getFlatCoordinatesFromSimpleGeometry } from '../geometryHelpers.js';
  * @param {number} height
  * @param {boolean} perPositionHeight
  * @param {number=} extrudedHeight
- * @returns {Array<import("@vcmap/cesium").PolygonGeometry>}
+ * @returns {Array<import("@vcmap-cesium/engine").PolygonGeometry>}
  * @private
  */
 export function createSolidGeometries(options, height, perPositionHeight, extrudedHeight) {
@@ -37,7 +37,7 @@ export function createSolidGeometries(options, height, perPositionHeight, extrud
  * @param {number} height
  * @param {boolean} perPositionHeight
  * @param {number=} extrudedHeight
- * @returns {Array<import("@vcmap/cesium").PolygonOutlineGeometry>}
+ * @returns {Array<import("@vcmap-cesium/engine").PolygonOutlineGeometry>}
  * @private
  */
 export function createOutlineGeometries(options, height, perPositionHeight, extrudedHeight) {
@@ -54,7 +54,7 @@ export function createOutlineGeometries(options, height, perPositionHeight, extr
  * @param {Object} options
  * @param {number} height
  * @param {boolean} perPositionHeight
- * @returns {Array<import("@vcmap/cesium").PolygonGeometry>}
+ * @returns {Array<import("@vcmap-cesium/engine").PolygonGeometry>}
  * @private
  */
 export function createFillGeometries(options, height, perPositionHeight) {
@@ -213,7 +213,7 @@ export function validatePolygon(polygon) {
  * @param {import("ol/style/Style").default} style
  * @param {Array<import("ol/geom/Polygon").default>} geometries
  * @param {import("@vcmap/core").VectorProperties} vectorProperties
- * @param {import("@vcmap/cesium").Scene} scene
+ * @param {import("@vcmap-cesium/engine").Scene} scene
  * @param {import("@vcmap/core").VectorContext|import("@vcmap/core").ClusterContext} context
  */
 export default function polygonToCesium(feature, style, geometries, vectorProperties, scene, context) {

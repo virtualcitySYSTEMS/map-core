@@ -14,7 +14,7 @@ import {
   Primitive,
   SphereGeometry,
   SphereOutlineGeometry,
-} from '@vcmap/cesium';
+} from '@vcmap-cesium/engine';
 import VectorProperties, { PrimitiveOptionsType } from '../../../../src/layer/vectorProperties.js';
 import { getModelOptions, getPrimitiveOptions } from '../../../../src/util/featureconverter/pointHelpers.js';
 import { getTerrainProvider } from '../../helpers/terrain/terrainData.js';

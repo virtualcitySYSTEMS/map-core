@@ -1,6 +1,6 @@
 /* eslint-disable no-template-curly-in-string */
 import Stroke from 'ol/style/Stroke.js';
-import { Color, VerticalOrigin } from '@vcmap/cesium';
+import { Color, VerticalOrigin } from '@vcmap-cesium/engine';
 import Icon from 'ol/style/Icon.js';
 import Style from 'ol/style/Style.js';
 import OLText from 'ol/style/Text.js';
@@ -179,7 +179,7 @@ class VectorStyleItem extends StyleItem {
     this.label = this._label;
 
     /**
-     * @type {import("@vcmap/cesium").Color}
+     * @type {import("@vcmap-cesium/engine").Color}
      * @private
      */
     this._cesiumColor = new Color();
@@ -301,7 +301,7 @@ class VectorStyleItem extends StyleItem {
   /**
    * the current fill color as a cesium color
    * @readonly
-   * @type {import("@vcmap/cesium").Color}
+   * @type {import("@vcmap-cesium/engine").Color}
    * @api
    */
   get cesiumFillColor() {
@@ -898,7 +898,7 @@ export const defaultVectorStyle = new VectorStyleItem(getDefaultVectorStyleItemO
 styleClassRegistry.registerClass(VectorStyleItem.className, VectorStyleItem);
 
 /**
- * @param {import("@vcmap/cesium").Color} cesiumColor
+ * @param {import("@vcmap-cesium/engine").Color} cesiumColor
  * @returns {VectorStyleItem}
  */
 export function fromCesiumColor(cesiumColor) {

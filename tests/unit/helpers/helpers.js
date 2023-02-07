@@ -1,4 +1,4 @@
-import { Math as CesiumMath } from '@vcmap/cesium';
+import { Math as CesiumMath } from '@vcmap-cesium/engine';
 
 /**
  * helper function to wait for a timeout use: await timeout(1);

@@ -1,5 +1,5 @@
 import Feature from 'ol/Feature.js';
-import { Cesium3DTileFeature, Cesium3DTilePointFeature, SplitDirection } from '@vcmap/cesium';
+import { Cesium3DTileFeature, Cesium3DTilePointFeature, SplitDirection } from '@vcmap-cesium/engine';
 import VectorSource from 'ol/source/Vector.js';
 import { createEmpty, extend as extendExtent } from 'ol/extent.js';
 
@@ -155,7 +155,7 @@ class FeatureStoreLayer extends VectorLayer {
     this.screenSpaceError = this.vcsMeta.screenSpaceError;
 
     /**
-     * @type {import("@vcmap/cesium").Event.RemoveCallback}
+     * @type {import("@vcmap-cesium/engine").Event.RemoveCallback}
      * @private
      */
     this._removeVectorPropertiesChangeHandler = this.vectorProperties.propertyChanged.addEventListener(() => {
@@ -442,7 +442,7 @@ class FeatureStoreLayer extends VectorLayer {
   }
 
   /**
-   * @param {Object|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Cesium3DTilePointFeature|import("@vcmap/cesium").Cesium3DTileFeature} feature
+   * @param {Object|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap-cesium/engine").Cesium3DTilePointFeature|import("@vcmap-cesium/engine").Cesium3DTileFeature} feature
    * @returns {?Object}
    */
   objectClickedHandler(feature) {

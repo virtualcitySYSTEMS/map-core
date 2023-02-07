@@ -1,4 +1,4 @@
-import { SplitDirection } from '@vcmap/cesium';
+import { SplitDirection } from '@vcmap-cesium/engine';
 
 import { parseNumberRange, parseInteger } from '@vcsuite/parsers';
 import Layer from './layer.js';
@@ -46,7 +46,7 @@ class OpenStreetMapLayer extends Layer {
     super(options);
     const defaultOptions = OpenStreetMapLayer.getDefaultOptions();
     /**
-     * @type {import("@vcmap/cesium").SplitDirection}
+     * @type {import("@vcmap-cesium/engine").SplitDirection}
      * @private
      */
     this._splitDirection = SplitDirection.NONE;
@@ -70,7 +70,7 @@ class OpenStreetMapLayer extends Layer {
 
     /**
      * raised if the split direction changes, is passed the split direction as its only argument
-     * @type {VcsEvent<import("@vcmap/cesium").SplitDirection>}
+     * @type {VcsEvent<import("@vcmap-cesium/engine").SplitDirection>}
      * @api
      */
     this.splitDirectionChanged = new VcsEvent();
@@ -85,12 +85,12 @@ class OpenStreetMapLayer extends Layer {
 
   /**
    * @api
-   * @type {import("@vcmap/cesium").SplitDirection}
+   * @type {import("@vcmap-cesium/engine").SplitDirection}
    */
   get splitDirection() { return this._splitDirection; }
 
   /**
-   * @param {import("@vcmap/cesium").SplitDirection} direction
+   * @param {import("@vcmap-cesium/engine").SplitDirection} direction
    */
   set splitDirection(direction) {
     if (direction !== this._splitDirection) {

@@ -6,7 +6,7 @@ import {
   Math as CesiumMath,
   Plane,
   Ray, IntersectionTests, Cartographic, HeightReference,
-} from '@vcmap/cesium';
+} from '@vcmap-cesium/engine';
 
 import { mercatorToCartesian } from '../math.js';
 import { getFlatCoordinatesFromGeometry } from '../geometryHelpers.js';
@@ -109,8 +109,8 @@ export function pointOnLine2D(start, end, point, epsilon) {
 
 /**
  * @param {import("ol/coordinate").Coordinate} originCoordinates
- * @param {import("@vcmap/cesium").Scene} scene
- * @returns {!import("@vcmap/cesium").Plane}
+ * @param {import("@vcmap-cesium/engine").Scene} scene
+ * @returns {!import("@vcmap-cesium/engine").Plane}
  */
 export function createCameraVerticalPlane(originCoordinates, scene) {
   scratchCartesian31 = mercatorToCartesian(originCoordinates, scratchCartesian31);
@@ -123,8 +123,8 @@ export function createCameraVerticalPlane(originCoordinates, scene) {
 
 /**
  * @param {import("ol/coordinate").Coordinate} originCoordinates
- * @param {import("@vcmap/cesium").Scene} scene
- * @returns {!import("@vcmap/cesium").Plane}
+ * @param {import("@vcmap-cesium/engine").Scene} scene
+ * @returns {!import("@vcmap-cesium/engine").Plane}
  */
 export function createHorizontalPlane(originCoordinates, scene) {
   scratchCartesian31 = mercatorToCartesian(originCoordinates, scratchCartesian31);
@@ -134,10 +134,10 @@ export function createHorizontalPlane(originCoordinates, scene) {
 }
 
 /**
- * @param {import("@vcmap/cesium").Plane} plane
- * @param {import("@vcmap/cesium").Camera} camera
- * @param {import("@vcmap/cesium").Cartesian2} windowPosition
- * @returns {import("@vcmap/cesium").Cartographic}
+ * @param {import("@vcmap-cesium/engine").Plane} plane
+ * @param {import("@vcmap-cesium/engine").Camera} camera
+ * @param {import("@vcmap-cesium/engine").Cartesian2} windowPosition
+ * @returns {import("@vcmap-cesium/engine").Cartographic}
  */
 export function getCartographicFromPlane(plane, camera, windowPosition) {
   const ray = camera.getPickRay(windowPosition, new Ray());

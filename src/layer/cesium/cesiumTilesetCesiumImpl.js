@@ -7,7 +7,7 @@ import {
   Cartographic,
   Rectangle,
   Math as CesiumMath,
-} from '@vcmap/cesium';
+} from '@vcmap-cesium/engine';
 import { createEmpty } from 'ol/extent.js';
 import LayerImplementation from '../layerImplementation.js';
 import { vcsLayerName } from '../layerSymbols.js';
@@ -21,7 +21,7 @@ import { circleFromCenterRadius } from '../../util/geometryHelpers.js';
 export const cesiumTilesetLastUpdated = Symbol('cesiumTilesetLastUpdated');
 
 /**
- * @param {import("@vcmap/cesium").Cesium3DTileset} cesium3DTileset
+ * @param {import("@vcmap-cesium/engine").Cesium3DTileset} cesium3DTileset
  * @returns {import("ol/extent").Extent} in mercator
  */
 export function getExtentFromTileset(cesium3DTileset) {
@@ -73,11 +73,11 @@ class CesiumTilesetCesiumImpl extends LayerImplementation {
   constructor(map, options) {
     super(map, options);
 
-    /** @type {import("@vcmap/cesium").Cesium3DTileset} */
+    /** @type {import("@vcmap-cesium/engine").Cesium3DTileset} */
     this.cesium3DTileset = null;
     /** @type {Object} */
     this.tilesetOptions = options.tilesetOptions;
-    /** @type {import("@vcmap/cesium").SplitDirection} */
+    /** @type {import("@vcmap-cesium/engine").SplitDirection} */
     this.splitDirection = options.splitDirection;
     /** @type {import("@vcmap/core").StyleItem} */
     this.style = options.style;
@@ -87,17 +87,17 @@ class CesiumTilesetCesiumImpl extends LayerImplementation {
     this.globalHider = options.globalHider;
     /** @type {Array<CesiumTilesetTilesetProperties>} */
     this.tilesetProperties = options.tilesetProperties;
-    /** @type {import("@vcmap/cesium").Matrix4} */
+    /** @type {import("@vcmap-cesium/engine").Matrix4} */
     this.modelMatrix = options.modelMatrix;
     /** @type {import("ol/coordinate").Coordinate} */
     this.offset = options.offset;
     /**
-     * @type {Promise<import("@vcmap/cesium").Cesium3DTileset>}
+     * @type {Promise<import("@vcmap-cesium/engine").Cesium3DTileset>}
      * @private
      */
     this._initializedPromise = null;
     /**
-     * @type {import("@vcmap/cesium").Cartesian3}
+     * @type {import("@vcmap-cesium/engine").Cartesian3}
      * @private
      */
     this._originalOrigin = null;
@@ -114,7 +114,7 @@ class CesiumTilesetCesiumImpl extends LayerImplementation {
    */
   async initialize() {
     if (!this._initializedPromise) {
-      /** @type {import("@vcmap/cesium").Cesium3DTileset} */
+      /** @type {import("@vcmap-cesium/engine").Cesium3DTileset} */
       this.cesium3DTileset = new Cesium3DTileset(this.tilesetOptions);
       if (this.tilesetProperties) {
         this.tilesetProperties.forEach(({ key, value }) => {
@@ -167,7 +167,7 @@ class CesiumTilesetCesiumImpl extends LayerImplementation {
   }
 
   /**
-   * @param {import("@vcmap/cesium").Matrix4=} modelMatrix
+   * @param {import("@vcmap-cesium/engine").Matrix4=} modelMatrix
    */
   updateModelMatrix(modelMatrix) {
     this.modelMatrix = modelMatrix;
@@ -247,7 +247,7 @@ class CesiumTilesetCesiumImpl extends LayerImplementation {
   }
 
   /**
-   * @param {import("@vcmap/cesium").SplitDirection} splitDirection
+   * @param {import("@vcmap-cesium/engine").SplitDirection} splitDirection
    */
   updateSplitDirection(splitDirection) {
     this.splitDirection = splitDirection;
@@ -257,7 +257,7 @@ class CesiumTilesetCesiumImpl extends LayerImplementation {
   }
 
   /**
-   * @param {import("@vcmap/cesium").Cesium3DTile} tile
+   * @param {import("@vcmap-cesium/engine").Cesium3DTile} tile
    */
   applyStyle(tile) {
     if (tile.content instanceof Composite3DTileContent) {
@@ -270,7 +270,7 @@ class CesiumTilesetCesiumImpl extends LayerImplementation {
   }
 
   /**
-   * @param {import("@vcmap/cesium").Cesium3DTileContent} content
+   * @param {import("@vcmap-cesium/engine").Cesium3DTileContent} content
    */
   styleContent(content) {
     if (

@@ -1,4 +1,4 @@
-import { SplitDirection, WebMercatorTilingScheme, GeographicTilingScheme, Cartographic } from '@vcmap/cesium';
+import { SplitDirection, WebMercatorTilingScheme, GeographicTilingScheme, Cartographic } from '@vcmap-cesium/engine';
 import { getBottomLeft, getBottomRight, getTopLeft, getTopRight } from 'ol/extent.js';
 
 import { parseInteger, parseNumberRange, parseEnumValue } from '@vcsuite/parsers';
@@ -25,13 +25,13 @@ import { layerClassRegistry } from '../classRegistry.js';
  * @property {string} tilingSchema
  * @property {number} opacity
  * @property {Extent|undefined} extent
- * @property {import("@vcmap/cesium").SplitDirection} splitDirection
+ * @property {import("@vcmap-cesium/engine").SplitDirection} splitDirection
  */
 
 /**
  * @typedef {import("@vcmap/core").LayerImplementation<import("@vcmap/core").VcsMap>} RasterLayerImplementation
  * @property {function(number):void} updateOpacity
- * @property {function(import("@vcmap/cesium").SplitDirection):void} updateSplitDirection
+ * @property {function(import("@vcmap-cesium/engine").SplitDirection):void} updateSplitDirection
  * @api
  */
 
@@ -50,7 +50,7 @@ export const TilingScheme = {
 /**
  * Gets the tiling scheme associated with this layerConfig
  * @param {Object} layerOptions
- * @returns {import("@vcmap/cesium").WebMercatorTilingScheme|import("@vcmap/cesium").GeographicTilingScheme}
+ * @returns {import("@vcmap-cesium/engine").WebMercatorTilingScheme|import("@vcmap-cesium/engine").GeographicTilingScheme}
  */
 export function getTilingScheme(layerOptions) {
   const tilingSchemeOptions = {};
@@ -68,7 +68,7 @@ export function getTilingScheme(layerOptions) {
 
 /**
  * @param {Extent} extent
- * @param {import("@vcmap/cesium").GeographicTilingScheme|import("@vcmap/cesium").WebMercatorTilingScheme} tilingScheme
+ * @param {import("@vcmap-cesium/engine").GeographicTilingScheme|import("@vcmap-cesium/engine").WebMercatorTilingScheme} tilingScheme
  * @param {number} maxLevel
  * @param {number} [minLevel=0]
  * @returns {number}
@@ -164,7 +164,7 @@ class RasterLayer extends Layer {
      */
     this._opacity = parseNumberRange(options.opacity, defaultOptions.opacity, 0.0, 1.0);
 
-    /** @type {import("@vcmap/cesium").SplitDirection} */
+    /** @type {import("@vcmap-cesium/engine").SplitDirection} */
     this._splitDirection = SplitDirection.NONE;
 
     if (options.splitDirection) {
@@ -175,7 +175,7 @@ class RasterLayer extends Layer {
 
     /**
      * raised if the split direction changes, is passed the split direction as its only argument
-     * @type {VcsEvent<import("@vcmap/cesium").SplitDirection>}
+     * @type {VcsEvent<import("@vcmap-cesium/engine").SplitDirection>}
      * @api
      */
     this.splitDirectionChanged = new VcsEvent();
@@ -184,12 +184,12 @@ class RasterLayer extends Layer {
   /**
    * The split directions of this layer
    * @api
-   * @type {import("@vcmap/cesium").SplitDirection}
+   * @type {import("@vcmap-cesium/engine").SplitDirection}
    */
   get splitDirection() { return this._splitDirection; }
 
   /**
-   * @param {import("@vcmap/cesium").SplitDirection} direction
+   * @param {import("@vcmap-cesium/engine").SplitDirection} direction
    */
   set splitDirection(direction) {
     if (direction !== this._splitDirection) {

@@ -1,4 +1,4 @@
-import { ArcType, Cartesian3, HeightReference } from '@vcmap/cesium';
+import { ArcType, Cartesian3, HeightReference } from '@vcmap-cesium/engine';
 import Projection from '../projection.js';
 import { addPrimitivesToContext } from './featureconverterHelper.js';
 import {
@@ -47,7 +47,7 @@ export function getCoordinates(coords, geometries) {
 
 /**
  * @param {Array<import("ol/coordinate").Coordinate>} arcCoords - the coordinates of the arc to use instead of the geometries coordinates if height mode is absolute
- * @param {import("@vcmap/cesium").HeightReference} altitudeMode
+ * @param {import("@vcmap-cesium/engine").HeightReference} altitudeMode
  * @returns {VectorGeometryFactoryType}
  */
 function getGeometryFactory(arcCoords, altitudeMode) {
@@ -72,7 +72,7 @@ function getGeometryFactory(arcCoords, altitudeMode) {
  * @param {import("@vcmap/core").ArcStyle} style
  * @param {Array<import("ol/geom/LineString").default>} geometries
  * @param {import("@vcmap/core").VectorProperties} vectorProperties
- * @param {import("@vcmap/cesium").Scene} scene
+ * @param {import("@vcmap-cesium/engine").Scene} scene
  * @param {import("@vcmap/core").VectorContext|import("@vcmap/core").ClusterContext} context
  */
 export default function arcToCesium(feature, style, geometries, vectorProperties, scene, context) {

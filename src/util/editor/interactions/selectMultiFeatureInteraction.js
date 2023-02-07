@@ -83,7 +83,7 @@ class SelectMultiFeatureInteraction extends AbstractInteraction {
   }
 
   /**
-   * @param {Array<import("ol").Feature|import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature|import("@vcmap/cesium").Entity>} features
+   * @param {Array<import("ol").Feature|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature|import("@vcmap-cesium/engine").Entity>} features
    * @returns {Promise<void>}
    */
   async setSelectionSet(features) {
@@ -103,7 +103,7 @@ class SelectMultiFeatureInteraction extends AbstractInteraction {
   }
 
   /**
-   * @param {import("ol").Feature|import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature|import("@vcmap/cesium").Entity} feature
+   * @param {import("ol").Feature|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature|import("@vcmap-cesium/engine").Entity} feature
    * @returns {Promise<void>}
    * @private
    */

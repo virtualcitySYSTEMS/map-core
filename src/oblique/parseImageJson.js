@@ -1,4 +1,4 @@
-import { Matrix3, Cartesian3, Matrix4 } from '@vcmap/cesium';
+import { Matrix3, Cartesian3, Matrix4 } from '@vcmap-cesium/engine';
 import ObliqueImage from './obliqueImage.js';
 import { obliqueViewDirectionNames } from './obliqueViewDirection.js';
 import ImageMeta from './obliqueImageMeta.js';
@@ -41,7 +41,7 @@ export function getVersionFromImageJson(json) {
  * @param {ObliqueImageJson} json
  * @param {string} url
  * @param {import("@vcmap/core").Projection=} projection
- * @param {import("@vcmap/cesium").CesiumTerrainProvider=} terrainProvider
+ * @param {import("@vcmap-cesium/engine").CesiumTerrainProvider=} terrainProvider
  * @returns {Array<import("@vcmap/core").ObliqueImageMeta>}
  */
 export function parseImageMeta(json, url, projection, terrainProvider) {

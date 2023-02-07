@@ -1,4 +1,4 @@
-import { Entity, SplitDirection } from '@vcmap/cesium';
+import { Entity, SplitDirection } from '@vcmap-cesium/engine';
 import Layer from '../../../src/layer/layer.js';
 import LayerCollection from '../../../src/util/layerCollection.js';
 import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';

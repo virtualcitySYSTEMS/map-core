@@ -34,7 +34,7 @@ class EditGeometryMouseOverInteraction extends AbstractInteraction {
   constructor(layerName) {
     super(EventType.MOVE, ModificationKeyType.ALL);
     /**
-     * @type {import("ol").Feature|import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature|null}
+     * @type {import("ol").Feature|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature|null}
      * @private
      */
     this._lastFeature = null;
@@ -64,7 +64,7 @@ class EditGeometryMouseOverInteraction extends AbstractInteraction {
         event.feature[vertexSymbol]
       )
     ) {
-      this._lastFeature = /** @type {import("ol").Feature|import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature} */
+      this._lastFeature = /** @type {import("ol").Feature|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature} */
         (event.feature);
     } else {
       this._lastFeature = null;

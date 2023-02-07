@@ -5,7 +5,7 @@ import {
   GroundPolylineGeometry,
   PolylineGeometry,
   Math as CesiumMath, HeightReference,
-} from '@vcmap/cesium';
+} from '@vcmap-cesium/engine';
 import { Feature } from 'ol';
 import { Point } from 'ol/geom.js';
 import { parseNumber } from '@vcsuite/parsers';
@@ -27,7 +27,7 @@ import { getPrimitiveOptions } from './pointHelpers.js';
 /**
  * @param {import("ol/coordinate").Coordinate} from
  * @param {import("ol/coordinate").Coordinate} to
- * @param {import("@vcmap/cesium").HeightReference} heightReference
+ * @param {import("@vcmap-cesium/engine").HeightReference} heightReference
  * @returns {ArrowOptions}
  */
 function getArrowOptions(from, to, heightReference) {
@@ -45,7 +45,7 @@ function getArrowOptions(from, to, heightReference) {
  * @param {import("@vcmap/core").ArrowStyle} style
  * @param {Array<import("ol/geom").LineString>} validGeometries
  * @param {import("@vcmap/core").VectorProperties} vectorProperties
- * @param {import("@vcmap/cesium").Scene} scene
+ * @param {import("@vcmap-cesium/engine").Scene} scene
  * @param {VectorGeometryFactoryType} lineGeometryFactory
  * @param {import("@vcmap/core").VectorContext|import("@vcmap/core").ClusterContext} context
  */
@@ -107,7 +107,7 @@ export function addArrowsToContext(
  * @param {number} height
  * @param {boolean} perPositionHeight
  * @param {number=} extrudedHeight
- * @returns {Array<import("@vcmap/cesium").WallGeometry>}
+ * @returns {Array<import("@vcmap-cesium/engine").WallGeometry>}
  * @private
  */
 export function createSolidGeometries(options, height, perPositionHeight, extrudedHeight) {
@@ -123,7 +123,7 @@ export function createSolidGeometries(options, height, perPositionHeight, extrud
  * @param {number} height
  * @param {boolean} perPositionHeight
  * @param {number=} extrudedHeight
- * @returns {Array<import("@vcmap/cesium").WallOutlineGeometry>}
+ * @returns {Array<import("@vcmap-cesium/engine").WallOutlineGeometry>}
  * @private
  */
 export function createOutlineGeometries(options, height, perPositionHeight, extrudedHeight) {
@@ -152,7 +152,7 @@ export function createFillGeometries(options, height, perPositionHeight) {
 /**
  * @param {Object} options
  * @param {import("ol/style/Style").default} style
- * @returns {Array<import("@vcmap/cesium").GroundPolylineGeometry>}
+ * @returns {Array<import("@vcmap-cesium/engine").GroundPolylineGeometry>}
  * @private
  */
 export function createGroundLineGeometries(options, style) {
@@ -166,7 +166,7 @@ export function createGroundLineGeometries(options, style) {
 /**
  * @param {Object} options
  * @param {import("ol/style/Style").default} style
- * @returns {Array<import("@vcmap/cesium").PolylineGeometry>}
+ * @returns {Array<import("@vcmap-cesium/engine").PolylineGeometry>}
  * @private
  */
 export function createLineGeometries(options, style) {
@@ -255,7 +255,7 @@ export function validateLineString(lineString) {
  * @param {import("ol/style/Style").default} style
  * @param {Array<import("ol/geom/LineString").default>} geometries
  * @param {import("@vcmap/core").VectorProperties} vectorProperties
- * @param {import("@vcmap/cesium").Scene} scene
+ * @param {import("@vcmap-cesium/engine").Scene} scene
  * @param {import("@vcmap/core").VectorContext|import("@vcmap/core").ClusterContext} context
  */
 export default function lineStringToCesium(feature, style, geometries, vectorProperties, scene, context) {

@@ -1,4 +1,4 @@
-import { JulianDate } from '@vcmap/cesium';
+import { JulianDate } from '@vcmap-cesium/engine';
 import { getOpenlayersMap } from '../helpers/openlayersHelpers.js';
 import Viewpoint from '../../../src/util/viewpoint.js';
 import MapCollection from '../../../src/util/mapCollection.js';

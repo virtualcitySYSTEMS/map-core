@@ -1,7 +1,7 @@
 import { Feature } from 'ol';
 import { Circle, LineString, Point, Polygon } from 'ol/geom.js';
 import { Fill, Icon, Stroke, Style } from 'ol/style.js';
-import { Color } from '@vcmap/cesium';
+import { Color } from '@vcmap-cesium/engine';
 import { unByKey } from 'ol/Observable.js';
 import { handlerSymbol } from '../editorSymbols.js';
 import { AXIS_AND_PLANES, greyedOutColor, is1DAxis, is2DAxis, TransformationMode } from './transformationTypes.js';

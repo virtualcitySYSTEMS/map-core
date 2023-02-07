@@ -11,7 +11,7 @@ import {
   PerInstanceColorAppearance,
   GroundPolylinePrimitive,
   PolylineMaterialAppearance,
-} from '@vcmap/cesium';
+} from '@vcmap-cesium/engine';
 import Fill from 'ol/style/Fill.js';
 import Style from 'ol/style/Style.js';
 import Stroke from 'ol/style/Stroke.js';

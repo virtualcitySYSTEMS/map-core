@@ -1,4 +1,4 @@
-import { EasingFunction } from '@vcmap/cesium';
+import { EasingFunction } from '@vcmap-cesium/engine';
 import { parseBoolean, parseNumber } from '@vcsuite/parsers';
 import Projection, { wgs84Projection } from './projection.js';
 import VcsObject from '../vcsObject.js';
@@ -142,7 +142,7 @@ class Viewpoint extends VcsObject {
 
   /**
    * The current easing function
-   * @type {import("@vcmap/cesium").EasingFunction.Callback|null}
+   * @type {import("@vcmap-cesium/engine").EasingFunction.Callback|null}
    * @api
    * @readonly
    */

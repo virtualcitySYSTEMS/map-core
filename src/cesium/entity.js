@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { Entity } from '@vcmap/cesium';
+import { Entity } from '@vcmap-cesium/engine';
 
 /**
  * @returns {string|number}

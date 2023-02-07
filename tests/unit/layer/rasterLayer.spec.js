@@ -1,4 +1,4 @@
-import { SplitDirection, GeographicTilingScheme } from '@vcmap/cesium';
+import { SplitDirection, GeographicTilingScheme } from '@vcmap-cesium/engine';
 
 import RasterLayer, { calculateMinLevel } from '../../../src/layer/rasterLayer.js';
 import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';

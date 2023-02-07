@@ -1,5 +1,5 @@
 import { Feature } from 'ol';
-import { Cartesian2 } from '@vcmap/cesium';
+import { Cartesian2 } from '@vcmap-cesium/engine';
 import { getCesiumMap } from '../../../helpers/cesiumHelpers.js';
 import { AXIS_AND_PLANES, handlerSymbol, SelectMultiFeatureInteraction, VectorLayer } from '../../../../../index.js';
 import EnsureHandlerSelectionInteraction

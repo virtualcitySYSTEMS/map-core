@@ -54,7 +54,7 @@ class SelectSingleFeatureInteraction extends AbstractInteraction {
       if (!(this._selectedFeature && event.feature.getId() === this._selectedFeature.getId())) {
         event.stopPropagation = true;
         await this.selectFeature(
-          /** @type {import("ol").Feature|import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature} */
+          /** @type {import("ol").Feature|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature} */
           (event.feature),
         );
       }
@@ -67,7 +67,7 @@ class SelectSingleFeatureInteraction extends AbstractInteraction {
   /**
    * Selects the given feature. if passed in a tiled feature store feature, it will be converted. Do not pass in uneditable features (feature which do not
    * belong to the layer for which this interaction was created)
-   * @param {import("ol").Feature|import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature} feature
+   * @param {import("ol").Feature|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature} feature
    * @returns {Promise<void>}
    */
   async selectFeature(feature) {

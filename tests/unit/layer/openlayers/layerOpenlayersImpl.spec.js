@@ -1,5 +1,5 @@
 import Layer from 'ol/layer/Layer.js';
-import { SplitDirection } from '@vcmap/cesium';
+import { SplitDirection } from '@vcmap-cesium/engine';
 import LayerOpenlayersImpl from '../../../../src/layer/openlayers/layerOpenlayersImpl.js';
 import VcsApp from '../../../../src/vcsApp.js';
 import { setOpenlayersMap } from '../../helpers/openlayersHelpers.js';

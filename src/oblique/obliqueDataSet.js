@@ -73,7 +73,7 @@ class ObliqueDataSet {
      */
     this._terrainProviderOptions = terrainProviderOptions ? { ...terrainProviderOptions } : undefined;
     /**
-     * @type {import("@vcmap/cesium").CesiumTerrainProvider|undefined}
+     * @type {import("@vcmap-cesium/engine").CesiumTerrainProvider|undefined}
      * @private
      */
     this._terrainProvider = this._terrainProviderOptions ?
@@ -138,7 +138,7 @@ class ObliqueDataSet {
   }
 
   /**
-   * @type {import("@vcmap/cesium").CesiumTerrainProvider|undefined}
+   * @type {import("@vcmap-cesium/engine").CesiumTerrainProvider|undefined}
    * @readonly
    */
   get terrainProvider() {

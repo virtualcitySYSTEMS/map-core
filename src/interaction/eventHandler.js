@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cartesian2 } from '@vcmap/cesium';
+import { Cartesian2 } from '@vcmap-cesium/engine';
 
 import { check, checkMaybe } from '@vcsuite/check';
 import { getLogger as getLoggerByName } from '@vcsuite/logger';
@@ -27,7 +27,7 @@ import VcsEvent from '../vcsEvent.js';
  * @typedef {Object} MapEvent
  * @property {PointerEventType} pointerEvent
  * @property {import("@vcmap/core").VcsMap} map
- * @property {import("@vcmap/cesium").Cartesian2} windowPosition
+ * @property {import("@vcmap-cesium/engine").Cartesian2} windowPosition
  * @property {import("@vcmap/core").ModificationKeyType} key
  * @property {import("@vcmap/core").PointerKeyType} pointer
  * @property {import("ol/coordinate").Coordinate|undefined} position - position in web mercator coordinates
@@ -38,7 +38,7 @@ import VcsEvent from '../vcsEvent.js';
 
 /**
  * @typedef {Object} LastClick
- * @property {import("@vcmap/cesium").Cartesian2} windowPosition - vcs:undocumented
+ * @property {import("@vcmap-cesium/engine").Cartesian2} windowPosition - vcs:undocumented
  * @property {number|null} time - vcs:undocumented
  * @api
  */

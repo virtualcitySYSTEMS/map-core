@@ -1,4 +1,4 @@
-declare module "@vcmap/cesium" {
+declare module "@vcmap-cesium/engine" {
     interface Entity {
         getId():number|string;
         getProperty(key: string): any;
@@ -16,13 +16,13 @@ declare module "@vcmap/cesium" {
     }
 
     interface StyleExpression {
-        evaluate(feature: import("@vcmap/cesium").Cesium3DTileFeature | import("ol/Feature").default<import("ol/geom/Geometry").default>):any;
-        evaluateColor(feature: import("@vcmap/cesium").Cesium3DTileFeature | import("ol/Feature").default<import("ol/geom/Geometry").default>):import("@vcmap/cesium").Color;
+        evaluate(feature: import("@vcmap-cesium/engine").Cesium3DTileFeature | import("ol/Feature").default<import("ol/geom/Geometry").default>):any;
+        evaluateColor(feature: import("@vcmap-cesium/engine").Cesium3DTileFeature | import("ol/Feature").default<import("ol/geom/Geometry").default>):import("@vcmap-cesium/engine").Color;
     }
 
     interface Expression {
-        evaluate(feature: import("@vcmap/cesium").Cesium3DTileFeature | import("ol/Feature").default<import("ol/geom/Geometry").default>):any;
-        evaluateColor(feature: import("@vcmap/cesium").Cesium3DTileFeature | import("ol/Feature").default<import("ol/geom/Geometry").default>):import("@vcmap/cesium").Color;
+        evaluate(feature: import("@vcmap-cesium/engine").Cesium3DTileFeature | import("ol/Feature").default<import("ol/geom/Geometry").default>):any;
+        evaluateColor(feature: import("@vcmap-cesium/engine").Cesium3DTileFeature | import("ol/Feature").default<import("ol/geom/Geometry").default>):import("@vcmap-cesium/engine").Color;
     }
 }
 

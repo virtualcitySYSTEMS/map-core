@@ -6,7 +6,7 @@ import {
   Cartesian2,
   LabelStyle,
   HorizontalOrigin,
-} from '@vcmap/cesium';
+} from '@vcmap-cesium/engine';
 import { Icon } from 'ol/style.js';
 import ImageState from 'ol/ImageState.js';
 import { parseNumber } from '@vcsuite/parsers';
@@ -33,7 +33,7 @@ export function getCoordinates(geometries) {
 /**
  * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
  * @param {import("ol/style/Style").default} style
- * @param {import("@vcmap/cesium").HeightReference} heightReference
+ * @param {import("@vcmap-cesium/engine").HeightReference} heightReference
  * @param {import("@vcmap/core").VectorProperties} vectorProperties
  * @returns {Object|null}
  */
@@ -86,7 +86,7 @@ export function getBillboardOptions(feature, style, heightReference, vectorPrope
  * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
  * @param {import("ol/style/Style").default} style style.getText().getFill() is set by default to be #333,
  * if no fill is required set Fill empty by using style.getText().setFill()
- * @param {import("@vcmap/cesium").HeightReference} heightReference
+ * @param {import("@vcmap-cesium/engine").HeightReference} heightReference
  * @param {import("@vcmap/core").VectorProperties} vectorProperties
  * @returns {Object|null}
  */
@@ -193,7 +193,7 @@ export function validatePoint(point) {
  * returns positions (cartesian3) and WGS84 coordinates
  * @param {Array<import("ol/coordinate").Coordinate>} coordinates
  * @param {VectorHeightInfo} heightInfo
- * @returns {{positions:Array<import("@vcmap/cesium").Cartesian3>, wgs84Positions:Array<import("ol/coordinate").Coordinate>}}
+ * @returns {{positions:Array<import("@vcmap-cesium/engine").Cartesian3>, wgs84Positions:Array<import("ol/coordinate").Coordinate>}}
  */
 export function getCartesian3AndWGS84FromCoordinates(coordinates, heightInfo) {
   const wgs84Positions = new Array(coordinates.length);
@@ -219,9 +219,9 @@ export function getCartesian3AndWGS84FromCoordinates(coordinates, heightInfo) {
 /**
  * @param {Array<import("ol/coordinate").Coordinate>} wgs84Positions
  * @param {VectorHeightInfo} heightInfo
- * @param {Array<import("@vcmap/cesium").Cartesian3>} positions
+ * @param {Array<import("@vcmap-cesium/engine").Cartesian3>} positions
  * @param {import("ol/style/Style").default} style
- * @returns {Array<import("@vcmap/cesium").PolylineGeometry>}
+ * @returns {Array<import("@vcmap-cesium/engine").PolylineGeometry>}
  * @private
  */
 export function getLineGeometries(wgs84Positions, heightInfo, positions, style) {
@@ -244,7 +244,7 @@ export function getLineGeometries(wgs84Positions, heightInfo, positions, style) 
  * @param {import("ol/style/Style").default} style
  * @param {Array<import("ol/geom/Point").default>} geometries
  * @param {import("@vcmap/core").VectorProperties} vectorProperties
- * @param {import("@vcmap/cesium").Scene} scene
+ * @param {import("@vcmap-cesium/engine").Scene} scene
  * @param {import("@vcmap/core").VectorContext|import("@vcmap/core").ClusterContext} context
  */
 export default function pointToCesium(feature, style, geometries, vectorProperties, scene, context) {

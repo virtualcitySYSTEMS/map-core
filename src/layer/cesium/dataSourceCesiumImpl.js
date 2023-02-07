@@ -4,13 +4,13 @@ import {
   BoundingSphere,
   HeadingPitchRange,
   Math as CesiumMath,
-} from '@vcmap/cesium';
+} from '@vcmap-cesium/engine';
 import LayerImplementation from '../layerImplementation.js';
 import { vcsLayerName } from '../layerSymbols.js';
 
 /**
- * @param {import("@vcmap/cesium").EntityCollection} source
- * @param {import("@vcmap/cesium").EntityCollection} destination
+ * @param {import("@vcmap-cesium/engine").EntityCollection} source
+ * @param {import("@vcmap-cesium/engine").EntityCollection} destination
  * @returns {Function}
  */
 function synchronizeEntityCollections(source, destination) {
@@ -39,16 +39,16 @@ class DataSourceCesiumImpl extends LayerImplementation {
     super(map, options);
 
     /**
-     * @type {import("@vcmap/cesium").CustomDataSource|import("@vcmap/cesium").CzmlDataSource}
+     * @type {import("@vcmap-cesium/engine").CustomDataSource|import("@vcmap-cesium/engine").CzmlDataSource}
      */
     this.dataSource = new CustomDataSource(this.name);
     this.dataSource[vcsLayerName] = this.name;
     /**
-     * @type {import("@vcmap/cesium").EntityCollection}
+     * @type {import("@vcmap-cesium/engine").EntityCollection}
      */
     this.entities = options.entities;
     /**
-     * @type {import("@vcmap/cesium").DataSourceClock|undefined}
+     * @type {import("@vcmap-cesium/engine").DataSourceClock|undefined}
      */
     this.clock = options.clock;
     /**

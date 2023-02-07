@@ -1,4 +1,4 @@
-import { HeightReference } from '@vcmap/cesium';
+import { HeightReference } from '@vcmap-cesium/engine';
 import {
   createEmpty as createEmptyExtent,
   extend as extendExtent,

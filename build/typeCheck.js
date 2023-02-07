@@ -106,7 +106,7 @@ async function typeCheck() {
       '@vcmap/core': ['.types/index.js'],
     },
     types: [
-      './node_modules/@vcmap/cesium/Source/Cesium',
+      './node_modules/@vcmap-cesium/engine/index',
       './build/types/cesium',
       './build/types/ol',
       './build/types/vcs',

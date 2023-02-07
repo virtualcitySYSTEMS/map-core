@@ -2,7 +2,7 @@
  * Type overrides for types extended by the @vcmap/core API
  */
 
-declare module "@vcmap/cesium" {
+declare module "@vcmap-cesium/engine" {
     interface Scene {
         render():void;
         frameState: FrameState;
@@ -11,10 +11,10 @@ declare module "@vcmap/cesium" {
 
     interface TileBoundingVolume {
         boundingVolume?: Object;
-        boundingSphere?: import("@vcmap/cesium").BoundingSphere;
-        rectangle?: import("@vcmap/cesium").Rectangle;
+        boundingSphere?: import("@vcmap-cesium/engine").BoundingSphere;
+        rectangle?: import("@vcmap-cesium/engine").Rectangle;
         distanceToCamera(frameState: Object):number;
-        intersectPlane(plane: import("@vcmap/cesium").Plane):import("@vcmap/cesium").Intersect;
+        intersectPlane(plane: import("@vcmap-cesium/engine").Plane):import("@vcmap-cesium/engine").Intersect;
     }
 
     interface Entity {
@@ -75,51 +75,51 @@ declare module "@vcmap/cesium" {
     }
 
     interface Cesium3DTileset {
-        clippingPlanesOriginMatrix: import("@vcmap/cesium").Matrix4;
+        clippingPlanesOriginMatrix: import("@vcmap-cesium/engine").Matrix4;
     }
 
     interface DataSourceDisplay {
-        getBoundingSphere(entity: import("@vcmap/cesium").Entity, allowPartial: boolean, result: import("@vcmap/cesium").BoundingSphere):import("@vcmap/cesium").BoundingSphereState;
+        getBoundingSphere(entity: import("@vcmap-cesium/engine").Entity, allowPartial: boolean, result: import("@vcmap-cesium/engine").BoundingSphere):import("@vcmap-cesium/engine").BoundingSphereState;
     }
 
     interface Cesium3DTileFeature {
-        content: import("@vcmap/cesium").Cesium3DTileContent;
+        content: import("@vcmap-cesium/engine").Cesium3DTileContent;
         _batchId: number;
         getId():number|string;
     }
 
     interface Cesium3DTilePointFeature {
-        content: import("@vcmap/cesium").Cesium3DTileContent;
+        content: import("@vcmap-cesium/engine").Cesium3DTileContent;
         _batchId: number;
         getId():number|string;
     }
 
     interface Cesium3DTileStyle {
-        strokeColor: import("@vcmap/cesium").StyleExpression;
-        strokeWidth: import("@vcmap/cesium").StyleExpression;
-        scale: import("@vcmap/cesium").StyleExpression;
+        strokeColor: import("@vcmap-cesium/engine").StyleExpression;
+        strokeWidth: import("@vcmap-cesium/engine").StyleExpression;
+        scale: import("@vcmap-cesium/engine").StyleExpression;
     }
 
     interface StyleExpression {
-        evaluate(feature: import("@vcmap/cesium").Cesium3DTileFeature | import("ol/Feature").default<import("ol/geom/Geometry").default>):any;
-        evaluateColor(feature: import("@vcmap/cesium").Cesium3DTileFeature | import("ol/Feature").default<import("ol/geom/Geometry").default>):import("@vcmap/cesium").Color;
+        evaluate(feature: import("@vcmap-cesium/engine").Cesium3DTileFeature | import("ol/Feature").default<import("ol/geom/Geometry").default>):any;
+        evaluateColor(feature: import("@vcmap-cesium/engine").Cesium3DTileFeature | import("ol/Feature").default<import("ol/geom/Geometry").default>):import("@vcmap-cesium/engine").Color;
     }
 
     interface Expression {
-        evaluate(feature: import("@vcmap/cesium").Cesium3DTileFeature | import("ol/Feature").default<import("ol/geom/Geometry").default>):any;
-        evaluateColor(feature: import("@vcmap/cesium").Cesium3DTileFeature | import("ol/Feature").default<import("ol/geom/Geometry").default>):import("@vcmap/cesium").Color;
+        evaluate(feature: import("@vcmap-cesium/engine").Cesium3DTileFeature | import("ol/Feature").default<import("ol/geom/Geometry").default>):any;
+        evaluateColor(feature: import("@vcmap-cesium/engine").Cesium3DTileFeature | import("ol/Feature").default<import("ol/geom/Geometry").default>):import("@vcmap-cesium/engine").Color;
     }
 
     interface ShadowMap {
         viewshed?: {
-            shadowColor?: import("@vcmap/cesium").Color,
-            visibleColor?: import("@vcmap/cesium").Color,
+            shadowColor?: import("@vcmap-cesium/engine").Color,
+            visibleColor?: import("@vcmap-cesium/engine").Color,
             distance?: number,
         },
     }
 
     interface ScreenSpaceEventHandler {
-        _positions: import("@vcmap/cesium").Cartesian2[];
+        _positions: import("@vcmap-cesium/engine").Cartesian2[];
     }
 
     export class Cesium3DTileBatchTable {
@@ -132,11 +132,11 @@ declare module "@vcmap/cesium" {
 
     class FrameState {
         context: Context;
-        creditDisplay: import("@vcmap/cesium").CreditDisplay;
+        creditDisplay: import("@vcmap-cesium/engine").CreditDisplay;
         frameNumber: number;
     }
 
     export namespace PolygonPipeline {
-        function triangulate(positions: import("@vcmap/cesium").Cartesian2[], holes?: number[]):number[];
+        function triangulate(positions: import("@vcmap-cesium/engine").Cartesian2[], holes?: number[]):number[];
     }
 }

@@ -1,4 +1,4 @@
-import { Rectangle, SingleTileImageryProvider, ImageryLayer } from '@vcmap/cesium';
+import { Rectangle, SingleTileImageryProvider, ImageryLayer } from '@vcmap-cesium/engine';
 import RasterLayerCesiumImpl from './rasterLayerCesiumImpl.js';
 import { wgs84Projection } from '../../util/projection.js';
 
@@ -21,7 +21,7 @@ class SingleImageCesiumImpl extends RasterLayerCesiumImpl {
   }
 
   /**
-   * @returns {import("@vcmap/cesium").ImageryLayer}
+   * @returns {import("@vcmap-cesium/engine").ImageryLayer}
    */
   getCesiumLayer() {
     const options = {

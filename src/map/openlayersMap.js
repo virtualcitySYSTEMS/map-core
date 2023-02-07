@@ -1,4 +1,4 @@
-import { Math as CesiumMath } from '@vcmap/cesium';
+import { Math as CesiumMath } from '@vcmap-cesium/engine';
 import View from 'ol/View.js';
 import { getTransform } from 'ol/proj.js';
 import { inAndOut } from 'ol/easing.js';

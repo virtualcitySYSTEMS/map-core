@@ -13,9 +13,9 @@ async function fixCesiumTypes() {
     path.resolve(path.dirname(fileName), '..') === process.cwd() &&
     fs.existsSync(path.join(process.cwd(), 'build', 'types'))
   ) {
-    console.log('Moving Cesium.d.ts');
+    console.log('Moving cesium engine index.d.ts');
     await fs.promises.cp(
-      path.join(process.cwd(), 'node_modules', '@vcmap', 'cesium', 'Source', 'Cesium.d.ts'),
+      path.join(process.cwd(), 'node_modules', '@vcmap-cesium', 'engine', 'index.d.ts'),
       path.join(process.cwd(), 'build', 'types', 'Cesium_module.d.ts'),
       { force: true },
     );

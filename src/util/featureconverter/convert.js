@@ -19,7 +19,7 @@ import ArcStyle, { featureArcStruct } from '../../style/arcStyle.js';
  * @param {import("ol/geom/Geometry").default} geometry
  * @param {import("ol/style/Style").default} style
  * @param {import("@vcmap/core").VectorProperties} vectorProperties
- * @param {import("@vcmap/cesium").Scene} scene
+ * @param {import("@vcmap-cesium/engine").Scene} scene
  * @param {import("@vcmap/core").VectorContext|import("@vcmap/core").ClusterContext} context
  */
 function convertGeometry(feature, geometry, style, vectorProperties, scene, context) {
@@ -76,7 +76,7 @@ export function getStylesArray(style, feature, resolution = 1) {
  * @param {import("ol/style/Style").StyleLike} style
  * @param {import("@vcmap/core").VectorProperties} vectorProperties
  * @param {import("@vcmap/core").VectorContext|import("@vcmap/core").ClusterContext} context
- * @param {import("@vcmap/cesium").Scene} scene
+ * @param {import("@vcmap-cesium/engine").Scene} scene
  */
 export default function convert(feature, style, vectorProperties, context, scene) {
   const styles = getStylesArray(feature.getStyle() || style, feature, 0);

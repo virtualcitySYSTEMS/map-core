@@ -1,4 +1,4 @@
-import { Plane, Transforms } from '@vcmap/cesium';
+import { Plane, Transforms } from '@vcmap-cesium/engine';
 import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import { EventType } from '../../../interaction/interactionType.js';
 import { handlerSymbol } from '../editorSymbols.js';
@@ -34,7 +34,7 @@ class TranslateInteraction extends AbstractInteraction {
      */
     this._translated = new VcsEvent();
     /**
-     * @type {null|function(import("ol/coordinate").Coordinate, import("@vcmap/cesium").Cartesian2):import("ol/coordinate").Coordinate}
+     * @type {null|function(import("ol/coordinate").Coordinate, import("@vcmap-cesium/engine").Cartesian2):import("ol/coordinate").Coordinate}
      * @private
      */
     this._getTranslateEvent = null;
@@ -85,7 +85,7 @@ class TranslateInteraction extends AbstractInteraction {
   /**
    * @param {AXIS_AND_PLANES} axis
    * @param {InteractionEvent} event
-   * @returns {function(import("ol/coordinate").Coordinate, import("@vcmap/cesium").Cartesian2):import("ol/coordinate").Coordinate}
+   * @returns {function(import("ol/coordinate").Coordinate, import("@vcmap-cesium/engine").Cartesian2):import("ol/coordinate").Coordinate}
    * @private
    */
   _dragAlongAxis3D(axis, event) {
@@ -121,7 +121,7 @@ class TranslateInteraction extends AbstractInteraction {
   /**
    * @param {AXIS_AND_PLANES} axis
    * @param {InteractionEvent} event
-   * @returns {function(import("ol/coordinate").Coordinate, import("@vcmap/cesium").Cartesian2):import("ol/coordinate").Coordinate}
+   * @returns {function(import("ol/coordinate").Coordinate, import("@vcmap-cesium/engine").Cartesian2):import("ol/coordinate").Coordinate}
    * @private
    */
   _dragAlongPlane3D(axis, event) {
@@ -155,7 +155,7 @@ class TranslateInteraction extends AbstractInteraction {
   /**
    * @param {AXIS_AND_PLANES} axis
    * @param {InteractionEvent} event
-   * @returns {function(import("ol/coordinate").Coordinate, import("@vcmap/cesium").Cartesian2):import("ol/coordinate").Coordinate}
+   * @returns {function(import("ol/coordinate").Coordinate, import("@vcmap-cesium/engine").Cartesian2):import("ol/coordinate").Coordinate}
    * @private
    */
   _dragAlongAxis2D(axis, event) {
@@ -180,7 +180,7 @@ class TranslateInteraction extends AbstractInteraction {
   /**
    * @param {AXIS_AND_PLANES} axis
    * @param {InteractionEvent} event
-   * @returns {function(import("ol/coordinate").Coordinate, import("@vcmap/cesium").Cartesian2):import("ol/coordinate").Coordinate}
+   * @returns {function(import("ol/coordinate").Coordinate, import("@vcmap-cesium/engine").Cartesian2):import("ol/coordinate").Coordinate}
    * @private
    */
   // eslint-disable-next-line class-methods-use-this

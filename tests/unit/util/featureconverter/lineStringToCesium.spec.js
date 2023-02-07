@@ -13,7 +13,7 @@ import {
   GroundPolylinePrimitive,
   Matrix4,
   Transforms,
-} from '@vcmap/cesium';
+} from '@vcmap-cesium/engine';
 import Style from 'ol/style/Style.js';
 import Stroke from 'ol/style/Stroke.js';
 import Feature from 'ol/Feature.js';

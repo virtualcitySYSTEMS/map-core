@@ -1,6 +1,6 @@
 import Style from 'ol/style/Style.js';
 import Fill from 'ol/style/Fill.js';
-import { SplitDirection } from '@vcmap/cesium';
+import { SplitDirection } from '@vcmap-cesium/engine';
 import DeclarativeStyleItem from '../../../src/style/declarativeStyleItem.js';
 import VectorStyleItem from '../../../src/style/vectorStyleItem.js';
 import FeatureLayer from '../../../src/layer/featureLayer.js';

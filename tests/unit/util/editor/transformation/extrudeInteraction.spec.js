@@ -1,6 +1,6 @@
 import { Feature } from 'ol';
 import { Point } from 'ol/geom.js';
-import { Cartographic } from '@vcmap/cesium';
+import { Cartographic } from '@vcmap-cesium/engine';
 import { getCesiumMap } from '../../../helpers/cesiumHelpers.js';
 import { AXIS_AND_PLANES, EventType, ExtrudeInteraction, TransformationMode } from '../../../../../index.js';
 import { setupTransformationHandler, createHandlerFeature, patchPickRay } from './setupTransformationHandler.js';

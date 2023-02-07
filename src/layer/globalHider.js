@@ -29,7 +29,7 @@ class GlobalHider {
      */
     this.hiddenObjects = {};
     /**
-     * @type {Object<string, Set<import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature|import("@vcmap/cesium").Entity>>}
+     * @type {Object<string, Set<import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature|import("@vcmap-cesium/engine").Entity>>}
      * @private
      */
     this._hiddenObjectFeatures = {};
@@ -101,7 +101,7 @@ class GlobalHider {
 
   /**
    * @param {number|string} uuid
-   * @param {import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature|import("@vcmap/cesium").Entity} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature|import("@vcmap-cesium/engine").Entity} feature
    */
   addFeature(uuid, feature) {
     if (!this._hiddenObjectFeatures[uuid]) {
@@ -115,7 +115,7 @@ class GlobalHider {
 
   /**
    * @param {string|number} uuid
-   * @param {import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature|import("@vcmap/cesium").Entity} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature|import("@vcmap-cesium/engine").Entity} feature
    * @returns {boolean}
    */
   hasFeature(uuid, feature) {

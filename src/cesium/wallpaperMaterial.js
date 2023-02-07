@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { Material, Cartesian2 } from '@vcmap/cesium';
+import { Material, Cartesian2 } from '@vcmap-cesium/engine';
 
 /**
  * @file Wallpaper Material to implement openlayers pattern support in cesium

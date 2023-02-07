@@ -5,19 +5,19 @@ import { removeFeatureFromMap, addPrimitiveToContext, removeArrayFromCollection 
  */
 class ClusterContext {
   /**
-   * @param {import("@vcmap/cesium").CustomDataSource} dataSource
+   * @param {import("@vcmap-cesium/engine").CustomDataSource} dataSource
    */
   constructor(dataSource) {
-    /** @type {import("@vcmap/cesium").EntityCollection} */
+    /** @type {import("@vcmap-cesium/engine").EntityCollection} */
     this.entities = dataSource.entities;
-    /** @type {Map<import("ol").Feature<import("ol/geom/Geometry").default>, Array<import("@vcmap/cesium").Entity>>} */
+    /** @type {Map<import("ol").Feature<import("ol/geom/Geometry").default>, Array<import("@vcmap-cesium/engine").Entity>>} */
     this.featureToBillboardMap = new Map();
-    /** @type {Map<import("ol").Feature<import("ol/geom/Geometry").default>, Array<import("@vcmap/cesium").Entity>>} */
+    /** @type {Map<import("ol").Feature<import("ol/geom/Geometry").default>, Array<import("@vcmap-cesium/engine").Entity>>} */
     this.featureToLabelMap = new Map();
   }
 
   /**
-   * @param {Array<import("@vcmap/cesium").Primitive|import("@vcmap/cesium").GroundPrimitive|import("@vcmap/cesium").GroundPolylinePrimitive|import("@vcmap/cesium").ClassificationPrimitive|import("@vcmap/cesium").Model>} primitives
+   * @param {Array<import("@vcmap-cesium/engine").Primitive|import("@vcmap-cesium/engine").GroundPrimitive|import("@vcmap-cesium/engine").GroundPolylinePrimitive|import("@vcmap-cesium/engine").ClassificationPrimitive|import("@vcmap-cesium/engine").Model>} primitives
    * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @param {boolean=} allowPicking
    */
@@ -25,7 +25,7 @@ class ClusterContext {
   addPrimitives(primitives, feature, allowPicking) {}
 
   /**
-   * @param {Array<import("@vcmap/cesium").Primitive|import("@vcmap/cesium").GroundPrimitive|import("@vcmap/cesium").GroundPolylinePrimitive|import("@vcmap/cesium").ClassificationPrimitive|import("@vcmap/cesium").Model>} primitives
+   * @param {Array<import("@vcmap-cesium/engine").Primitive|import("@vcmap-cesium/engine").GroundPrimitive|import("@vcmap-cesium/engine").GroundPolylinePrimitive|import("@vcmap-cesium/engine").ClassificationPrimitive|import("@vcmap-cesium/engine").Model>} primitives
    * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @param {boolean=} allowPicking
    */
@@ -94,7 +94,7 @@ class ClusterContext {
   }
 
   /**
-   * @param {import("@vcmap/cesium").SplitDirection} splitDirection
+   * @param {import("@vcmap-cesium/engine").SplitDirection} splitDirection
    */
   // eslint-disable-next-line class-methods-use-this,no-unused-vars
   updateSplitDirection(splitDirection) {}

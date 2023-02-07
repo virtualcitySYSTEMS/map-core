@@ -1,4 +1,4 @@
-import { Event as CesiumEvent, Rectangle, Math as CesiumMath } from '@vcmap/cesium';
+import { Event as CesiumEvent, Rectangle, Math as CesiumMath } from '@vcmap-cesium/engine';
 import { compose, create as createTransform, scale as scaleTransform } from 'ol/transform.js';
 import { rectangleToExtent } from '../tileProvider/tileProvider.js';
 import { wgs84ToMercatorTransformer } from '../../util/projection.js';
@@ -31,7 +31,7 @@ export function toContext(extent, center, context, tileSize) {
  * creates a canvas and draws the features on the canvas;
  * @param {Array<import("ol").Feature<import("ol/geom/Geometry").default>>} features
  * @param {import("ol/extent").Extent} extent
- * @param {import("@vcmap/cesium").Cartographic} center
+ * @param {import("@vcmap-cesium/engine").Cartographic} center
  * @param {import("ol/size").Size} tileSize
  * @returns {HTMLCanvasElement}
  */
@@ -76,7 +76,7 @@ class VectorTileImageryProvider {
     this.tileProvider = options.tileProvider;
 
     /**
-     * @type {import("@vcmap/cesium").WebMercatorTilingScheme}
+     * @type {import("@vcmap-cesium/engine").WebMercatorTilingScheme}
      * @private
      */
     this._tilingScheme = this.tileProvider.tilingScheme;
@@ -88,7 +88,7 @@ class VectorTileImageryProvider {
     this._tileSize = options.tileSize;
 
     /**
-     * @type {import("@vcmap/cesium").Event}
+     * @type {import("@vcmap-cesium/engine").Event}
      * @private
      */
     this._errorEvent = new CesiumEvent();
@@ -150,7 +150,7 @@ class VectorTileImageryProvider {
   }
 
   /**
-   * @returns {import("@vcmap/cesium").Rectangle}
+   * @returns {import("@vcmap-cesium/engine").Rectangle}
    */
   get rectangle() {
     return this._tilingScheme.rectangle;
@@ -185,7 +185,7 @@ class VectorTileImageryProvider {
   }
 
   /**
-   * @returns {import("@vcmap/cesium").TilingScheme}
+   * @returns {import("@vcmap-cesium/engine").TilingScheme}
    */
   get tilingScheme() {
     return this._tilingScheme;
@@ -197,7 +197,7 @@ class VectorTileImageryProvider {
   }
 
   /**
-   * @returns {import("@vcmap/cesium").Event}
+   * @returns {import("@vcmap-cesium/engine").Event}
    */
   get errorEvent() {
     return this._errorEvent;

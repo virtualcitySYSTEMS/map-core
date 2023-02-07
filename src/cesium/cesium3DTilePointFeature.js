@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { Cesium3DTilePointFeature } from '@vcmap/cesium';
+import { Cesium3DTilePointFeature } from '@vcmap-cesium/engine';
 
 /**
  * @returns {string|number}

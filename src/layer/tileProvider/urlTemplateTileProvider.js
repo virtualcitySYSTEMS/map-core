@@ -1,4 +1,4 @@
-import { Math as CesiumMath, Rectangle } from '@vcmap/cesium';
+import { Math as CesiumMath, Rectangle } from '@vcmap-cesium/engine';
 import { parseGeoJSON } from '../geojsonHelpers.js';
 import TileProvider from './tileProvider.js';
 import { requestJson } from '../../util/fetch.js';
@@ -19,7 +19,7 @@ import { tileProviderClassRegistry } from '../../classRegistry.js';
  * @param {number} x
  * @param {number} y
  * @param {number} z
- * @param {import("@vcmap/cesium").Rectangle=} tilingExtent
+ * @param {import("@vcmap-cesium/engine").Rectangle=} tilingExtent
  * @param {string=} locale
  * @returns {string}
  */

@@ -1,6 +1,6 @@
 import nock from 'nock';
 import Feature from 'ol/Feature.js';
-import { ClassificationType } from '@vcmap/cesium';
+import { ClassificationType } from '@vcmap-cesium/engine';
 import GeoJSONLayer, { featureFromOptions } from '../../../src/layer/geojsonLayer.js';
 import { setOpenlayersMap } from '../helpers/openlayersHelpers.js';
 import VcsApp from '../../../src/vcsApp.js';

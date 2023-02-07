@@ -16,9 +16,9 @@ class RasterLayerCesiumImpl extends LayerImplementation {
    */
   constructor(map, options) {
     super(map, options);
-    /** @type {import("@vcmap/cesium").ImageryLayer|null} */
+    /** @type {import("@vcmap-cesium/engine").ImageryLayer|null} */
     this.cesiumLayer = null;
-    /** @type {import("@vcmap/cesium").SplitDirection} */
+    /** @type {import("@vcmap-cesium/engine").SplitDirection} */
     this.splitDirection = options.splitDirection;
     /** @type {number} */
     this.minLevel = options.minLevel;
@@ -47,7 +47,7 @@ class RasterLayerCesiumImpl extends LayerImplementation {
   }
 
   /**
-   * @param {import("@vcmap/cesium").SplitDirection} splitDirection
+   * @param {import("@vcmap-cesium/engine").SplitDirection} splitDirection
    */
   updateSplitDirection(splitDirection) {
     this.splitDirection = splitDirection;
@@ -58,7 +58,7 @@ class RasterLayerCesiumImpl extends LayerImplementation {
 
   // eslint-disable-next-line jsdoc/require-returns-check
   /**
-   * @returns {import("@vcmap/cesium").ImageryLayer}
+   * @returns {import("@vcmap-cesium/engine").ImageryLayer}
    */
   // eslint-disable-next-line class-methods-use-this
   getCesiumLayer() { throw new Error('implementation error'); }

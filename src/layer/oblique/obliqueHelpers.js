@@ -1,7 +1,7 @@
 import Circle from 'ol/geom/Circle.js';
 import { fromCircle } from 'ol/geom/Polygon.js';
 import { getTransform } from 'ol/proj.js';
-import { Cartographic, sampleTerrainMostDetailed } from '@vcmap/cesium';
+import { Cartographic, sampleTerrainMostDetailed } from '@vcmap-cesium/engine';
 import { cartesian2DDistance } from '../../util/math.js';
 import Projection, { mercatorProjection, wgs84Projection } from '../../util/projection.js';
 import { actuallyIsCircle, alreadyTransformedToImage, obliqueGeometry } from '../vectorSymbols.js';

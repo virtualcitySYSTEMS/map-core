@@ -1,4 +1,4 @@
-import { Cartesian2, Math as CesiumMath } from '@vcmap/cesium';
+import { Cartesian2, Math as CesiumMath } from '@vcmap-cesium/engine';
 import { Point } from 'ol/geom.js';
 import {
   AXIS_AND_PLANES,

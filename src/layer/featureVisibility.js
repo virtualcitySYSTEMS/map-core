@@ -1,4 +1,4 @@
-import { Color, Cesium3DTileFeature, Cesium3DTilePointFeature, Entity as CesiumEntity } from '@vcmap/cesium';
+import { Color, Cesium3DTileFeature, Cesium3DTilePointFeature, Entity as CesiumEntity } from '@vcmap-cesium/engine';
 import Feature from 'ol/Feature.js';
 import Style from 'ol/style/Style.js';
 
@@ -37,7 +37,7 @@ export const globalHidden = Symbol('globalHidden');
 /**
  * @typedef {Object} HighlightedObject
  * @property {VectorStyleItem} style
- * @property {Set<import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature>} features
+ * @property {Set<import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature>} features
  */
 
 /**
@@ -48,7 +48,7 @@ export const globalHidden = Symbol('globalHidden');
  */
 
 /**
- * @param {import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature} feature
+ * @param {import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature} feature
  * @returns {boolean}
  */
 export function featureExists(feature) {
@@ -59,7 +59,7 @@ export function featureExists(feature) {
 }
 
 /**
- * @param {import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Entity} feature
+ * @param {import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap-cesium/engine").Entity} feature
  * @private
  */
 export function hideFeature(feature) {
@@ -77,7 +77,7 @@ export function hideFeature(feature) {
 
 /**
  * Caches the original style on the feature using the originalStyle symbol
- * @param {import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Entity} feature
+ * @param {import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap-cesium/engine").Entity} feature
  * @private
  */
 export function cacheOriginalStyle(feature) {
@@ -94,7 +94,7 @@ export function cacheOriginalStyle(feature) {
 }
 
 /**
- * @param {import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Entity} feature
+ * @param {import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap-cesium/engine").Entity} feature
  * @private
  */
 export function resetOriginalStyle(feature) {
@@ -113,7 +113,7 @@ export function resetOriginalStyle(feature) {
 }
 
 /**
- * @param {import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Entity} feature
+ * @param {import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap-cesium/engine").Entity} feature
  * @private
  */
 export function highlightFeature(feature) {
@@ -132,7 +132,7 @@ export function highlightFeature(feature) {
 
 /**
  * Updates the cached original style
- * @param {import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature|import("ol").Feature<import("ol/geom/Geometry").default>} feature
+ * @param {import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature|import("ol").Feature<import("ol/geom/Geometry").default>} feature
  * @private
  */
 export function updateOriginalStyle(feature) {
@@ -146,7 +146,7 @@ export function updateOriginalStyle(feature) {
 }
 
 /**
- * @param {import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature|import("ol").Feature<import("ol/geom/Geometry").default>} feature
+ * @param {import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature|import("ol").Feature<import("ol/geom/Geometry").default>} feature
  */
 function unhighlightFeature(feature) {
   delete feature[highlighted];
@@ -154,7 +154,7 @@ function unhighlightFeature(feature) {
 }
 
 /**
- * @param {import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Cesium3DTilePointFeature|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Entity} feature
+ * @param {import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap-cesium/engine").Entity} feature
  * @param {symbol} symbol
  * @private
  */
@@ -238,7 +238,7 @@ export function synchronizeFeatureVisibility(source, destination) {
  */
 class FeatureVisibility {
   constructor() {
-    /** @type {Object<string, Set<(import("@vcmap/cesium").Cesium3DTileFeature|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Entity)>>} */
+    /** @type {Object<string, Set<(import("@vcmap-cesium/engine").Cesium3DTileFeature|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap-cesium/engine").Entity)>>} */
     this.hiddenObjects = {};
     /** @type {Object<string, HighlightedObject>} */
     this.highlightedObjects = {};
@@ -253,8 +253,8 @@ class FeatureVisibility {
   }
 
   /**
-   * highlights a number of features by ID (import("@vcmap/cesium").Cesium3DTileFeature|ol/Feature) with the given color.
-   * @param {Object<string, (VectorStyleItem|import("@vcmap/cesium").Color|import("ol/style/Style").default)>} toHighlight
+   * highlights a number of features by ID (import("@vcmap-cesium/engine").Cesium3DTileFeature|ol/Feature) with the given color.
+   * @param {Object<string, (VectorStyleItem|import("@vcmap-cesium/engine").Color|import("ol/style/Style").default)>} toHighlight
    * @api stable
    */
   highlight(toHighlight) {
@@ -298,7 +298,7 @@ class FeatureVisibility {
   }
 
   /**
-   * unhighlights a number of features given by the ID (import("@vcmap/cesium").Cesium3DTileFeature|import("ol").Feature<import("ol/geom/Geometry").default>)
+   * unhighlights a number of features given by the ID (import("@vcmap-cesium/engine").Cesium3DTileFeature|import("ol").Feature<import("ol/geom/Geometry").default>)
    * @param {Array<string>} toUnHighlight Array with IDS to unhighlight
    * @api stable
    */
@@ -330,7 +330,7 @@ class FeatureVisibility {
 
   /**
    * @param {string|number} id
-   * @param {import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Cesium3DTileFeature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap-cesium/engine").Cesium3DTileFeature} feature
    * @returns {boolean}
    */
   hasHighlightFeature(id, feature) {
@@ -339,7 +339,7 @@ class FeatureVisibility {
 
   /**
    * @param {string|number} id
-   * @param {import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Cesium3DTileFeature} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap-cesium/engine").Cesium3DTileFeature} feature
    */
   addHighlightFeature(id, feature) {
     if (this.highlightedObjects[id]) {
@@ -403,7 +403,7 @@ class FeatureVisibility {
 
   /**
    * @param {string|number} id
-   * @param {import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Entity} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Entity} feature
    * @returns {boolean}
    */
   hasHiddenFeature(id, feature) {
@@ -412,7 +412,7 @@ class FeatureVisibility {
 
   /**
    * @param {string|number} id
-   * @param {import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Cesium3DTileFeature|import("@vcmap/cesium").Entity} feature
+   * @param {import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Entity} feature
    */
   addHiddenFeature(id, feature) {
     if (this.hiddenObjects[id]) {

@@ -1,4 +1,4 @@
-import { JulianDate, DataSourceClock } from '@vcmap/cesium';
+import { JulianDate, DataSourceClock } from '@vcmap-cesium/engine';
 import CzmlLayer from '../../../src/layer/czmlLayer.js';
 import { vcsLayerName } from '../../../src/layer/layerSymbols.js';
 import importJSON from '../helpers/importJSON.js';

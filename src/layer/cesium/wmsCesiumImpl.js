@@ -1,4 +1,4 @@
-import { ImageryLayer as CesiumImageryLayer, Rectangle, WebMercatorTilingScheme, WebMapServiceImageryProvider } from '@vcmap/cesium';
+import { ImageryLayer as CesiumImageryLayer, Rectangle, WebMercatorTilingScheme, WebMapServiceImageryProvider } from '@vcmap-cesium/engine';
 
 import RasterLayerCesiumImpl from './rasterLayerCesiumImpl.js';
 import { wgs84Projection } from '../../util/projection.js';

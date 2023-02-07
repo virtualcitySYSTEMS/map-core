@@ -1,6 +1,6 @@
 /* eslint-disable no-self-assign */
 import Feature from 'ol/Feature.js';
-import { ClassificationType, HeightReference, NearFarScalar, Cartesian3 } from '@vcmap/cesium';
+import { ClassificationType, HeightReference, NearFarScalar, Cartesian3 } from '@vcmap-cesium/engine';
 import VectorProperties, {
   parseCartesian3,
   parseNearFarScalar,

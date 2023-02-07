@@ -1,4 +1,4 @@
-import { Entity, ClippingPlaneCollection } from '@vcmap/cesium';
+import { Entity, ClippingPlaneCollection } from '@vcmap-cesium/engine';
 import ClippingObject from '../../../../src/util/clipping/clippingObject.js';
 import VcsApp from '../../../../src/vcsApp.js';
 import VectorLayer from '../../../../src/layer/vectorLayer.js';

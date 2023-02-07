@@ -1,4 +1,4 @@
-import { Cartesian3, Cartesian4, Matrix3, Matrix4 } from '@vcmap/cesium';
+import { Cartesian3, Cartesian4, Matrix3, Matrix4 } from '@vcmap-cesium/engine';
 import { transformCWIFC } from './helpers.js';
 import { getHeightFromTerrainProvider } from '../layer/terrainHelpers.js';
 
@@ -10,11 +10,11 @@ import { getHeightFromTerrainProvider } from '../layer/terrainHelpers.js';
  * @property {!Array<import("ol/coordinate").Coordinate>} groundCoordinates
  * @property {!import("ol/coordinate").Coordinate} centerPointOnGround
  * @property {!import("@vcmap/core").ObliqueImageMeta} meta
- * @property {import("@vcmap/cesium").Cartesian3|undefined} projectionCenter
- * @property {import("@vcmap/cesium").Matrix3|undefined} pToRealworld
- * @property {import("@vcmap/cesium").Matrix4|undefined} pToImage
+ * @property {import("@vcmap-cesium/engine").Cartesian3|undefined} projectionCenter
+ * @property {import("@vcmap-cesium/engine").Matrix3|undefined} pToRealworld
+ * @property {import("@vcmap-cesium/engine").Matrix4|undefined} pToImage
  * @property {import("@vcmap/core").Projection|undefined} [projection]
- * @property {import("@vcmap/cesium").CesiumTerrainProvider|undefined} terrainProvider
+ * @property {import("@vcmap-cesium/engine").CesiumTerrainProvider|undefined} terrainProvider
  * @api
  */
 
@@ -70,20 +70,20 @@ class ObliqueImage {
 
     /**
      * The transformation matrix image to real world (in image world projection).
-     * @type {import("@vcmap/cesium").Matrix3}
+     * @type {import("@vcmap-cesium/engine").Matrix3}
      * @api
      */
     this.pToRealworld = options.pToRealworld || null;
 
     /**
      * The transformation matrix real to image (in image world projection).
-     * @type {import("@vcmap/cesium").Matrix4}
+     * @type {import("@vcmap-cesium/engine").Matrix4}
      */
     this.pToImage = options.pToImage || null;
 
     /**
      * The projection center in image world projection
-     * @type {import("@vcmap/cesium").Cartesian3}
+     * @type {import("@vcmap-cesium/engine").Cartesian3}
      * @api
      */
     this.projectionCenter = options.projectionCenter || null;

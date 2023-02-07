@@ -8,14 +8,14 @@ import {
   MaterialAppearance, Math as CesiumMath, Matrix3, Matrix4, PolygonHierarchy, PolylineGeometry,
   PolylineMaterialAppearance,
   Primitive, PrimitiveCollection, Transforms,
-} from '@vcmap/cesium';
+} from '@vcmap-cesium/engine';
 import { handlerSymbol } from '../editorSymbols.js';
 import { AXIS_AND_PLANES, greyedOutColor, is1DAxis, is2DAxis, TransformationMode } from './transformationTypes.js';
 import Projection from '../../projection.js';
 import { mercatorToCartesian } from '../../math.js';
 
 /**
- * @param {import("@vcmap/cesium").Primitive} primitive
+ * @param {import("@vcmap-cesium/engine").Primitive} primitive
  */
 function setFeatureOnPrimitive(primitive) {
   if (primitive[handlerSymbol]) {
@@ -26,8 +26,8 @@ function setFeatureOnPrimitive(primitive) {
 }
 
 /**
- * @param {import("@vcmap/cesium").Color} color
- * @returns {{ depthFailAppearance: import("@vcmap/cesium").PolylineMaterialAppearance, appearance: import("@vcmap/cesium").PolylineMaterialAppearance }}
+ * @param {import("@vcmap-cesium/engine").Color} color
+ * @returns {{ depthFailAppearance: import("@vcmap-cesium/engine").PolylineMaterialAppearance, appearance: import("@vcmap-cesium/engine").PolylineMaterialAppearance }}
  */
 function createPolylineAppearances(color) {
   return {
@@ -45,8 +45,8 @@ function createPolylineAppearances(color) {
 }
 
 /**
- * @param {import("@vcmap/cesium").Color} color
- * @returns {{ depthFailAppearance: import("@vcmap/cesium").PolylineMaterialAppearance, appearance: import("@vcmap/cesium").PolylineMaterialAppearance }}
+ * @param {import("@vcmap-cesium/engine").Color} color
+ * @returns {{ depthFailAppearance: import("@vcmap-cesium/engine").PolylineMaterialAppearance, appearance: import("@vcmap-cesium/engine").PolylineMaterialAppearance }}
  */
 function getPolygonAppearance(color) {
   return {
@@ -67,9 +67,9 @@ function getPolygonAppearance(color) {
 
 /**
  * @param {AXIS_AND_PLANES} axis
- * @param {import("@vcmap/cesium").Matrix4} modelMatrix
+ * @param {import("@vcmap-cesium/engine").Matrix4} modelMatrix
  * @param {boolean} [greyOut=false]
- * @returns {import("@vcmap/cesium").Primitive}
+ * @returns {import("@vcmap-cesium/engine").Primitive}
  */
 function createRingPrimitive(axis, modelMatrix, greyOut = false) {
   let color;
@@ -169,7 +169,7 @@ function createRhumbLinePositions(centerWgs84, direction) {
 /**
  * @param {AXIS_AND_PLANES} axis
  * @param {import("ol/coordinate").Coordinate} center
- * @returns {import("@vcmap/cesium").PrimitiveCollection}
+ * @returns {import("@vcmap-cesium/engine").PrimitiveCollection}
  */
 function createAxisPrimitive(axis, center) {
   const primitives = [];
@@ -232,7 +232,7 @@ function createAxisPrimitive(axis, center) {
 }
 
 /**
- * @param {import("@vcmap/cesium").PrimitiveCollection} primitiveCollection
+ * @param {import("@vcmap-cesium/engine").PrimitiveCollection} primitiveCollection
  * @returns {function(AXIS_AND_PLANES, import("ol/coordinate").Coordinate):void}
  */
 function createShowAxisPrimitive(primitiveCollection) {
@@ -250,12 +250,12 @@ function createShowAxisPrimitive(primitiveCollection) {
 }
 
 /**
- * @param {import("@vcmap/cesium").CylinderGeometry|import("@vcmap/cesium").BoxGeometry} geometry
- * @param {import("@vcmap/cesium").Color} color
- * @param {import("@vcmap/cesium").Matrix4} modelMatrix
- * @param {import("@vcmap/cesium").Matrix4} geometryModelMatrix
+ * @param {import("@vcmap-cesium/engine").CylinderGeometry|import("@vcmap-cesium/engine").BoxGeometry} geometry
+ * @param {import("@vcmap-cesium/engine").Color} color
+ * @param {import("@vcmap-cesium/engine").Matrix4} modelMatrix
+ * @param {import("@vcmap-cesium/engine").Matrix4} geometryModelMatrix
  * @param {boolean} allowPicking
- * @returns {import("@vcmap/cesium").Primitive}
+ * @returns {import("@vcmap-cesium/engine").Primitive}
  */
 function createAxisEndingPrimitive(geometry, color, modelMatrix, geometryModelMatrix, allowPicking) {
   const primitive = new Primitive({
@@ -285,10 +285,10 @@ function createAxisEndingPrimitive(geometry, color, modelMatrix, geometryModelMa
 
 /**
  * @param {AXIS_AND_PLANES} axis
- * @param {import("@vcmap/cesium").Matrix4} modelMatrix
+ * @param {import("@vcmap-cesium/engine").Matrix4} modelMatrix
  * @param {TransformationMode} mode
  * @param {boolean} [greyOut=false]
- * @returns {Array<import("@vcmap/cesium").Primitive>}
+ * @returns {Array<import("@vcmap-cesium/engine").Primitive>}
  */
 function createLineAxisPrimitives(axis, modelMatrix, mode, greyOut = false) {
   let to;
@@ -362,9 +362,9 @@ function createLineAxisPrimitives(axis, modelMatrix, mode, greyOut = false) {
 
 /**
  * @param {AXIS_AND_PLANES} plane
- * @param {import("@vcmap/cesium").Matrix4} modelMatrix
+ * @param {import("@vcmap-cesium/engine").Matrix4} modelMatrix
  * @param {boolean} [greyOut]
- * @returns {import("@vcmap/cesium").Primitive}
+ * @returns {import("@vcmap-cesium/engine").Primitive}
  */
 function createPlanePrimitive(plane, modelMatrix, greyOut = false) {
   let positions;
@@ -415,8 +415,8 @@ function createPlanePrimitive(plane, modelMatrix, greyOut = false) {
 }
 
 /**
- * @param {import("@vcmap/cesium").PrimitiveCollection} primitiveCollection
- * @returns {(function(AXIS_AND_PLANES, import("@vcmap/cesium").Matrix4, TransformationMode): void)}
+ * @param {import("@vcmap-cesium/engine").PrimitiveCollection} primitiveCollection
+ * @returns {(function(AXIS_AND_PLANES, import("@vcmap-cesium/engine").Matrix4, TransformationMode): void)}
  */
 function createShowShadowPrimitive(primitiveCollection) {
   let primitive;

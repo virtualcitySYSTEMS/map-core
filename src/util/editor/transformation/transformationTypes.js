@@ -1,4 +1,4 @@
-import { Color } from '@vcmap/cesium';
+import { Color } from '@vcmap-cesium/engine';
 
 /**
  * Handlers are map specific transformation handlers wich enable the use of the transformation interactions.
@@ -58,7 +58,7 @@ export const TransformationMode = {
 
 /**
  * @const
- * @type {import("@vcmap/cesium").Color}
+ * @type {import("@vcmap-cesium/engine").Color}
  */
 export const greyedOutColor = Color.GRAY.withAlpha(0.5);
 

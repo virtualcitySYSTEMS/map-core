@@ -5,7 +5,7 @@ import {
   Cesium3DTileFeature,
   Cesium3DTilePointFeature,
   Entity,
-} from '@vcmap/cesium';
+} from '@vcmap-cesium/engine';
 
 import AbstractInteraction from './abstractInteraction.js';
 import Projection from '../util/projection.js';

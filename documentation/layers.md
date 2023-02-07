@@ -33,8 +33,8 @@ The interface is defined as:
 ```js
 /**
  * @typedef {import("@vcmap/core").Layer} SplitLayer
- * @property {import("@vcmap/cesium").SplitDirection} splitDirection
- * @property {VcsEvent<import("@vcmap/cesium").SplitDirection>} splitDirectionChanged
+ * @property {import("@vcmap-cesium/engine").SplitDirection} splitDirection
+ * @property {VcsEvent<import("@vcmap-cesium/engine").SplitDirection>} splitDirectionChanged
  */
 ```
 

@@ -5,7 +5,7 @@ import {
   Matrix4,
   ClippingPlaneCollection,
   Cesium3DTileset as ActualCesium3DTileset,
-} from '@vcmap/cesium';
+} from '@vcmap-cesium/engine';
 
 class Cesium3DTileset {
   constructor() {

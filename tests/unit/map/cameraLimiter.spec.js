@@ -1,4 +1,4 @@
-import { Cartographic, Ellipsoid } from '@vcmap/cesium';
+import { Cartographic, Ellipsoid } from '@vcmap-cesium/engine';
 import nock from 'nock';
 import { setCesiumMap } from '../helpers/cesiumHelpers.js';
 import VcsApp from '../../../src/vcsApp.js';

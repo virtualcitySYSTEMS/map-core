@@ -2,7 +2,7 @@ import {
   Cartesian2,
   Plane,
   Transforms,
-} from '@vcmap/cesium';
+} from '@vcmap-cesium/engine';
 import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import { EventType } from '../../../interaction/interactionType.js';
 import { handlerSymbol } from '../editorSymbols.js';
@@ -22,8 +22,8 @@ import CesiumMap from '../../../map/cesiumMap.js';
  */
 
 /**
- * @param {import("@vcmap/cesium").Cartesian2} start
- * @param {import("@vcmap/cesium").Cartesian2} end
+ * @param {import("@vcmap-cesium/engine").Cartesian2} start
+ * @param {import("@vcmap-cesium/engine").Cartesian2} end
  * @param {number} angle
  * @returns {number}
  */
@@ -33,10 +33,10 @@ function determineOrientation(start, end, angle) {
 }
 
 /**
- * @param {function(import("ol/coordinate").Coordinate, import("@vcmap/cesium").Cartesian2):import("@vcmap/cesium").Cartesian2} getPosition
+ * @param {function(import("ol/coordinate").Coordinate, import("@vcmap-cesium/engine").Cartesian2):import("@vcmap-cesium/engine").Cartesian2} getPosition
  * @param {InteractionEvent} event
  * @param {AXIS_AND_PLANES} axis
- * @returns {function(import("ol/coordinate").Coordinate, import("@vcmap/cesium").Cartesian2):RotationEvent}
+ * @returns {function(import("ol/coordinate").Coordinate, import("@vcmap-cesium/engine").Cartesian2):RotationEvent}
  */
 function createGetRotationEvent(getPosition, event, axis) {
   let currentPosition = getPosition(event.positionOrPixel, event.windowPosition);
@@ -76,7 +76,7 @@ class RotateInteraction extends AbstractInteraction {
      */
     this._rotated = new VcsEvent();
     /**
-     * @type {null|function(import("ol/coordinate").Coordinate, import("@vcmap/cesium").Cartesian2):{angle: number, axis: AXIS_AND_PLANES}}
+     * @type {null|function(import("ol/coordinate").Coordinate, import("@vcmap-cesium/engine").Cartesian2):{angle: number, axis: AXIS_AND_PLANES}}
      * @private
      */
     this._getRotationEvent = null;
@@ -118,7 +118,7 @@ class RotateInteraction extends AbstractInteraction {
   /**
    * @param {AXIS_AND_PLANES} axis
    * @param {InteractionEvent} event
-   * @returns {function(import("ol/coordinate").Coordinate, import("@vcmap/cesium").Cartesian2):{angle: number, axis: AXIS_AND_PLANES}}
+   * @returns {function(import("ol/coordinate").Coordinate, import("@vcmap-cesium/engine").Cartesian2):{angle: number, axis: AXIS_AND_PLANES}}
    * @private
    */
   _dragAlongPlane3D(axis, event) {
@@ -158,7 +158,7 @@ class RotateInteraction extends AbstractInteraction {
   /**
    * @param {AXIS_AND_PLANES} axis
    * @param {InteractionEvent} event
-   * @returns {function(import("ol/coordinate").Coordinate, import("@vcmap/cesium").Cartesian2):{angle: number, axis: AXIS_AND_PLANES}}
+   * @returns {function(import("ol/coordinate").Coordinate, import("@vcmap-cesium/engine").Cartesian2):{angle: number, axis: AXIS_AND_PLANES}}
    * @private
    */
   _dragAlongPlane2D(axis, event) {

@@ -3,7 +3,7 @@ import Fill from 'ol/style/Fill.js';
 import Stroke from 'ol/style/Stroke.js';
 import OLText from 'ol/style/Text.js';
 import Style from 'ol/style/Style.js';
-import { Color } from '@vcmap/cesium';
+import { Color } from '@vcmap-cesium/engine';
 
 import { getLogger as getLoggerByName } from '@vcsuite/logger';
 
@@ -65,7 +65,7 @@ export function hexToOlColor(h, opacity) {
 }
 
 /**
- * @param {import("@vcmap/cesium").Color} cesiumColor
+ * @param {import("@vcmap-cesium/engine").Color} cesiumColor
  * @returns {import("ol/color").Color}
  */
 export function cesiumColorToColor(cesiumColor) {
@@ -77,7 +77,7 @@ export function cesiumColorToColor(cesiumColor) {
 /**
  * converts an openlayers color to a cesium Color
  * @param {import("ol/color").Color} olColor
- * @returns {import("@vcmap/cesium").Color}
+ * @returns {import("@vcmap-cesium/engine").Color}
  * @api
  */
 export function olColorToCesiumColor(olColor) {
@@ -130,7 +130,7 @@ export function parseColor(color, defaultColor) {
  *
  * @param {import("ol/color").Color|import("ol/colorlike").ColorLike} color
  * @param {import("ol/color").Color} defaultColor
- * @returns {import("@vcmap/cesium").Color}
+ * @returns {import("@vcmap-cesium/engine").Color}
  */
 export function getCesiumColor(color, defaultColor) {
   const olColor = parseColor(color, defaultColor);

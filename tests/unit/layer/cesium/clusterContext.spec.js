@@ -1,4 +1,4 @@
-import { CustomDataSource } from '@vcmap/cesium';
+import { CustomDataSource } from '@vcmap-cesium/engine';
 import Feature from 'ol/Feature.js';
 import ClusterContext from '../../../../src/layer/cesium/clusterContext.js';
 

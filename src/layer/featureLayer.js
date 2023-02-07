@@ -2,7 +2,7 @@ import Style from 'ol/style/Style.js';
 
 import { check } from '@vcsuite/check';
 import { parseInteger } from '@vcsuite/parsers';
-import { SplitDirection } from '@vcmap/cesium';
+import { SplitDirection } from '@vcmap-cesium/engine';
 import Layer from './layer.js';
 import StyleItem from '../style/styleItem.js';
 import VectorStyleItem from '../style/vectorStyleItem.js';
@@ -23,7 +23,7 @@ import { layerClassRegistry } from '../classRegistry.js';
 /**
  * @typedef {LayerImplementationOptions} FeatureLayerImplementationOptions
  * @property {GlobalHider} globalHider
- * @property {import("@vcmap/cesium").SplitDirection} splitDirection
+ * @property {import("@vcmap-cesium/engine").SplitDirection} splitDirection
  * @property {FeatureVisibility} featureVisibility
  * @property {import("@vcmap/core").StyleItem} style
  * @api
@@ -40,7 +40,7 @@ import { layerClassRegistry } from '../classRegistry.js';
 /**
  * @typedef {import("@vcmap/core").LayerImplementation<import("@vcmap/core").VcsMap>} FeatureLayerImplementation
  * @property {function(import("@vcmap/core").StyleItem, boolean=):void} updateStyle
- * @property {function(import("@vcmap/cesium").SplitDirection):void} updateSplitDirection
+ * @property {function(import("@vcmap-cesium/engine").SplitDirection):void} updateSplitDirection
  */
 
 /**
@@ -96,7 +96,7 @@ class FeatureLayer extends Layer {
      * @api
      */
     this.balloonHeightOffset = parseInteger(options.balloonHeightOffset, defaultOptions.balloonHeightOffset);
-    /** @type {import("@vcmap/cesium").SplitDirection} */
+    /** @type {import("@vcmap-cesium/engine").SplitDirection} */
     this._splitDirection = SplitDirection.NONE;
 
     if (options.splitDirection) {
@@ -107,7 +107,7 @@ class FeatureLayer extends Layer {
 
     /**
      * raised if the split direction changes, is passed the split direction as its only argument
-     * @type {VcsEvent<import("@vcmap/cesium").SplitDirection>}
+     * @type {VcsEvent<import("@vcmap-cesium/engine").SplitDirection>}
      * @api
      */
     this.splitDirectionChanged = new VcsEvent();
@@ -141,12 +141,12 @@ class FeatureLayer extends Layer {
   /**
    * @api
    * The splitDirection to be applied - for 3D vector features currently only working on points with a Model
-   * @type {import("@vcmap/cesium").SplitDirection}
+   * @type {import("@vcmap-cesium/engine").SplitDirection}
    */
   get splitDirection() { return this._splitDirection; }
 
   /**
-   * @param {import("@vcmap/cesium").SplitDirection} direction
+   * @param {import("@vcmap-cesium/engine").SplitDirection} direction
    */
   set splitDirection(direction) {
     if (direction !== this._splitDirection) {
@@ -180,7 +180,7 @@ class FeatureLayer extends Layer {
   }
 
   /**
-   * @param {Object|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap/cesium").Cesium3DTilePointFeature|import("@vcmap/cesium").Cesium3DTileFeature|DataSourcePickedObject} object
+   * @param {Object|import("ol").Feature<import("ol/geom/Geometry").default>|import("@vcmap-cesium/engine").Cesium3DTilePointFeature|import("@vcmap-cesium/engine").Cesium3DTileFeature|DataSourcePickedObject} object
    * @returns {?Object}
    */
   // eslint-disable-next-line no-unused-vars,class-methods-use-this

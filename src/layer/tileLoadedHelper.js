@@ -41,7 +41,7 @@ export async function tiledLayerLoaded(layer, timeout) {
 }
 
 /**
- * @param {import("@vcmap/cesium").Globe} globe
+ * @param {import("@vcmap-cesium/engine").Globe} globe
  * @param {number=} timeout
  * @returns {Promise<void>}
  */

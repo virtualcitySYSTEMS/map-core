@@ -46,11 +46,11 @@ import { layerClassRegistry } from '../classRegistry.js';
  * @typedef {Object} VectorGeometryFactoryType
  * @property {function(Array<import("ol/geom/SimpleGeometry").default>):Array<import("ol/coordinate").Coordinate>} getCoordinates
  * @property {function(import("ol/geom/SimpleGeometry").default, number):Object} getGeometryOptions
- * @property {function(Object, number, boolean, number=):Array<import("@vcmap/cesium").PolygonGeometry|import("@vcmap/cesium").CircleGeometry|import("@vcmap/cesium").WallGeometry>} createSolidGeometries
- * @property {function(Object, number, boolean, number=):Array<import("@vcmap/cesium").CircleOutlineGeometry|import("@vcmap/cesium").WallOutlineGeometry|import("@vcmap/cesium").PolygonOutlineGeometry>} createOutlineGeometries
- * @property {function(Object, number, boolean):Array<import("@vcmap/cesium").CircleGeometry|import("@vcmap/cesium").PolygonGeometry>} createFillGeometries
- * @property {function(Object, import("ol/style/Style").default):Array<import("@vcmap/cesium").GroundPolylineGeometry>} createGroundLineGeometries
- * @property {function(Object, import("ol/style/Style").default):Array<import("@vcmap/cesium").PolylineGeometry>} createLineGeometries
+ * @property {function(Object, number, boolean, number=):Array<import("@vcmap-cesium/engine").PolygonGeometry|import("@vcmap-cesium/engine").CircleGeometry|import("@vcmap-cesium/engine").WallGeometry>} createSolidGeometries
+ * @property {function(Object, number, boolean, number=):Array<import("@vcmap-cesium/engine").CircleOutlineGeometry|import("@vcmap-cesium/engine").WallOutlineGeometry|import("@vcmap-cesium/engine").PolygonOutlineGeometry>} createOutlineGeometries
+ * @property {function(Object, number, boolean):Array<import("@vcmap-cesium/engine").CircleGeometry|import("@vcmap-cesium/engine").PolygonGeometry>} createFillGeometries
+ * @property {function(Object, import("ol/style/Style").default):Array<import("@vcmap-cesium/engine").GroundPolylineGeometry>} createGroundLineGeometries
+ * @property {function(Object, import("ol/style/Style").default):Array<import("@vcmap-cesium/engine").PolylineGeometry>} createLineGeometries
  * @api
  */
 
@@ -62,7 +62,7 @@ import { layerClassRegistry } from '../classRegistry.js';
  * @property {number} groundLevel - the level above or below mean sea level (minZ value or ground_level or 0)
  * @property {number} skirt - a negative height to <i>push</i> the geometry visually into the ground
  * @property {boolean} perPositionHeight
- * @property {import("@vcmap/cesium").HeightReference} heightReference heightReference of the feature.
+ * @property {import("@vcmap-cesium/engine").HeightReference} heightReference heightReference of the feature.
  * @property {number} heightAboveGroundAdjustment
  * @api
  */

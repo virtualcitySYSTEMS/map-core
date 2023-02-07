@@ -1,7 +1,7 @@
 import Feature from 'ol/Feature.js';
 import {
   Primitive, PrimitiveCollection, Cartesian3, Matrix4, Model, SplitDirection,
-} from '@vcmap/cesium';
+} from '@vcmap-cesium/engine';
 import VectorContext, {
   addPrimitiveToContext,
   setReferenceForPicking,

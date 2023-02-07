@@ -6,28 +6,28 @@ import {
   Cartesian3,
   Math as CesiumMath,
   Model,
-} from '@vcmap/cesium';
+} from '@vcmap-cesium/engine';
 import Viewpoint from '../../util/viewpoint.js';
 
 /**
  * @typedef {Object} VectorContextFeatureCache
- * @property {Array<import("@vcmap/cesium").Primitive|import("@vcmap/cesium").GroundPrimitive|import("@vcmap/cesium").GroundPolylinePrimitive|import("@vcmap/cesium").ClassificationPrimitive|import("@vcmap/cesium").Model>|undefined} primitives
- * @property {Array<import("@vcmap/cesium").Primitive|import("@vcmap/cesium").GroundPrimitive|import("@vcmap/cesium").GroundPolylinePrimitive|import("@vcmap/cesium").ClassificationPrimitive|import("@vcmap/cesium").Model>|undefined} scaledPrimitives
- * @property {Array<import("@vcmap/cesium").Billboard|import("@vcmap/cesium").Entity>|undefined} billboards
- * @property {Array<import("@vcmap/cesium").Label|import("@vcmap/cesium").Entity>|undefined} labels
+ * @property {Array<import("@vcmap-cesium/engine").Primitive|import("@vcmap-cesium/engine").GroundPrimitive|import("@vcmap-cesium/engine").GroundPolylinePrimitive|import("@vcmap-cesium/engine").ClassificationPrimitive|import("@vcmap-cesium/engine").Model>|undefined} primitives
+ * @property {Array<import("@vcmap-cesium/engine").Primitive|import("@vcmap-cesium/engine").GroundPrimitive|import("@vcmap-cesium/engine").GroundPolylinePrimitive|import("@vcmap-cesium/engine").ClassificationPrimitive|import("@vcmap-cesium/engine").Model>|undefined} scaledPrimitives
+ * @property {Array<import("@vcmap-cesium/engine").Billboard|import("@vcmap-cesium/engine").Entity>|undefined} billboards
+ * @property {Array<import("@vcmap-cesium/engine").Label|import("@vcmap-cesium/engine").Entity>|undefined} labels
  */
 
 /**
  * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
- * @param {import("@vcmap/cesium").Primitive|import("@vcmap/cesium").GroundPrimitive|import("@vcmap/cesium").GroundPolylinePrimitive|import("@vcmap/cesium").ClassificationPrimitive|import("@vcmap/cesium").Label|import("@vcmap/cesium").Billboard|import("@vcmap/cesium").Entity|import("@vcmap/cesium").Model} primitive
+ * @param {import("@vcmap-cesium/engine").Primitive|import("@vcmap-cesium/engine").GroundPrimitive|import("@vcmap-cesium/engine").GroundPolylinePrimitive|import("@vcmap-cesium/engine").ClassificationPrimitive|import("@vcmap-cesium/engine").Label|import("@vcmap-cesium/engine").Billboard|import("@vcmap-cesium/engine").Entity|import("@vcmap-cesium/engine").Model} primitive
  */
 export function setReferenceForPicking(feature, primitive) {
   primitive.olFeature = feature;
 }
 
 /**
- * @param {import("@vcmap/cesium").PrimitiveCollection|import("@vcmap/cesium").BillboardCollection|import("@vcmap/cesium").LabelCollection|import("@vcmap/cesium").EntityCollection=} collection
- * @param {Array<import("@vcmap/cesium").Primitive|import("@vcmap/cesium").GroundPrimitive|import("@vcmap/cesium").GroundPolylinePrimitive|import("@vcmap/cesium").ClassificationPrimitive|import("@vcmap/cesium").Billboard|import("@vcmap/cesium").Label|import("@vcmap/cesium").Entity|import("@vcmap/cesium").Model>=} array
+ * @param {import("@vcmap-cesium/engine").PrimitiveCollection|import("@vcmap-cesium/engine").BillboardCollection|import("@vcmap-cesium/engine").LabelCollection|import("@vcmap-cesium/engine").EntityCollection=} collection
+ * @param {Array<import("@vcmap-cesium/engine").Primitive|import("@vcmap-cesium/engine").GroundPrimitive|import("@vcmap-cesium/engine").GroundPolylinePrimitive|import("@vcmap-cesium/engine").ClassificationPrimitive|import("@vcmap-cesium/engine").Billboard|import("@vcmap-cesium/engine").Label|import("@vcmap-cesium/engine").Entity|import("@vcmap-cesium/engine").Model>=} array
  */
 export function removeArrayFromCollection(collection, array) {
   if (array) {
@@ -39,8 +39,8 @@ export function removeArrayFromCollection(collection, array) {
 
 /**
  * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
- * @param {Map<import("ol").Feature<import("ol/geom/Geometry").default>, Array<import("@vcmap/cesium").Primitive|import("@vcmap/cesium").GroundPrimitive|import("@vcmap/cesium").GroundPolylinePrimitive|import("@vcmap/cesium").ClassificationPrimitive|import("@vcmap/cesium").Billboard|import("@vcmap/cesium").Label|import("@vcmap/cesium").Entity|import("@vcmap/cesium").Model>>} featuresMap
- * @param {import("@vcmap/cesium").PrimitiveCollection|import("@vcmap/cesium").BillboardCollection|import("@vcmap/cesium").LabelCollection|import("@vcmap/cesium").EntityCollection} primitiveCollection
+ * @param {Map<import("ol").Feature<import("ol/geom/Geometry").default>, Array<import("@vcmap-cesium/engine").Primitive|import("@vcmap-cesium/engine").GroundPrimitive|import("@vcmap-cesium/engine").GroundPolylinePrimitive|import("@vcmap-cesium/engine").ClassificationPrimitive|import("@vcmap-cesium/engine").Billboard|import("@vcmap-cesium/engine").Label|import("@vcmap-cesium/engine").Entity|import("@vcmap-cesium/engine").Model>>} featuresMap
+ * @param {import("@vcmap-cesium/engine").PrimitiveCollection|import("@vcmap-cesium/engine").BillboardCollection|import("@vcmap-cesium/engine").LabelCollection|import("@vcmap-cesium/engine").EntityCollection} primitiveCollection
  * @returns {boolean} - if a feature was removed from the map
  */
 export function removeFeatureFromMap(feature, featuresMap, primitiveCollection) {
@@ -49,12 +49,12 @@ export function removeFeatureFromMap(feature, featuresMap, primitiveCollection) 
 }
 
 /**
- * @param {Array<import("@vcmap/cesium").Primitive|import("@vcmap/cesium").GroundPrimitive|import("@vcmap/cesium").GroundPolylinePrimitive|import("@vcmap/cesium").ClassificationPrimitive|import("@vcmap/cesium").Entity.ConstructorOptions|import("@vcmap/cesium").Model|Object>} primitives
+ * @param {Array<import("@vcmap-cesium/engine").Primitive|import("@vcmap-cesium/engine").GroundPrimitive|import("@vcmap-cesium/engine").GroundPolylinePrimitive|import("@vcmap-cesium/engine").ClassificationPrimitive|import("@vcmap-cesium/engine").Entity.ConstructorOptions|import("@vcmap-cesium/engine").Model|Object>} primitives
  * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
  * @param {boolean} allowPicking
- * @param {import("@vcmap/cesium").BillboardCollection|import("@vcmap/cesium").LabelCollection|import("@vcmap/cesium").PrimitiveCollection|import("@vcmap/cesium").EntityCollection} primitiveCollection
- * @param {Map<import("ol").Feature<import("ol/geom/Geometry").default>, Array<import("@vcmap/cesium").Billboard|import("@vcmap/cesium").Label|import("@vcmap/cesium").Primitive|import("@vcmap/cesium").GroundPrimitive|import("@vcmap/cesium").GroundPolylinePrimitive|import("@vcmap/cesium").ClassificationPrimitive|import("@vcmap/cesium").Entity|import("@vcmap/cesium").Model>>} featureMap
- * @param {import("@vcmap/cesium").SplitDirection} [splitDirection]
+ * @param {import("@vcmap-cesium/engine").BillboardCollection|import("@vcmap-cesium/engine").LabelCollection|import("@vcmap-cesium/engine").PrimitiveCollection|import("@vcmap-cesium/engine").EntityCollection} primitiveCollection
+ * @param {Map<import("ol").Feature<import("ol/geom/Geometry").default>, Array<import("@vcmap-cesium/engine").Billboard|import("@vcmap-cesium/engine").Label|import("@vcmap-cesium/engine").Primitive|import("@vcmap-cesium/engine").GroundPrimitive|import("@vcmap-cesium/engine").GroundPolylinePrimitive|import("@vcmap-cesium/engine").ClassificationPrimitive|import("@vcmap-cesium/engine").Entity|import("@vcmap-cesium/engine").Model>>} featureMap
+ * @param {import("@vcmap-cesium/engine").SplitDirection} [splitDirection]
  */
 export function addPrimitiveToContext(
   primitives,
@@ -86,8 +86,8 @@ export function addPrimitiveToContext(
 
 /**
  * Sets splitDirection on primitives. Currently only Model primitives support splitting.
- * @param {import("@vcmap/cesium").SplitDirection} splitDirection
- * @param {import("@vcmap/cesium").PrimitiveCollection} primitives
+ * @param {import("@vcmap-cesium/engine").SplitDirection} splitDirection
+ * @param {import("@vcmap-cesium/engine").PrimitiveCollection} primitives
  */
 export function setSplitDirectionOnPrimitives(splitDirection, primitives) {
   for (let i = 0; i < primitives.length; i++) {
@@ -105,7 +105,7 @@ export function setSplitDirectionOnPrimitives(splitDirection, primitives) {
 const scaleSymbol = Symbol('Scale');
 /**
  * self scaling scratch
- * @type {import("@vcmap/cesium").Cartesian3}
+ * @type {import("@vcmap-cesium/engine").Cartesian3}
  */
 const scratchCenter = new Cartesian3();
 
@@ -113,7 +113,7 @@ const scratchCenter = new Cartesian3();
  * Creates a self scaling primitive collection. It will scale a primitive of model in the collection
  * in such a fashion, that the cartesian unit of 1 equals 1 pixel.
  * @param {import("@vcmap/core").CesiumMap} map
- * @param {import("@vcmap/cesium").PrimitiveCollection} primitiveCollection
+ * @param {import("@vcmap-cesium/engine").PrimitiveCollection} primitiveCollection
  * @param {{value: boolean}}dirtyRef
  * @returns {function():void}
  */
@@ -153,32 +153,32 @@ export function setupScalingPrimitiveCollection(map, primitiveCollection, dirtyR
 class VectorContext {
   /**
    * @param {import("@vcmap/core").CesiumMap} map
-   * @param {import("@vcmap/cesium").PrimitiveCollection} rootCollection
-   * @param {import("@vcmap/cesium").SplitDirection} splitDirection
+   * @param {import("@vcmap-cesium/engine").PrimitiveCollection} rootCollection
+   * @param {import("@vcmap-cesium/engine").SplitDirection} splitDirection
    */
   constructor(map, rootCollection, splitDirection) {
     const scene = map.getScene();
-    /** @type {import("@vcmap/cesium").PrimitiveCollection} */
+    /** @type {import("@vcmap-cesium/engine").PrimitiveCollection} */
     this.primitives = new PrimitiveCollection();
-    /** @type {import("@vcmap/cesium").PrimitiveCollection} */
+    /** @type {import("@vcmap-cesium/engine").PrimitiveCollection} */
     this.scaledPrimitives = new PrimitiveCollection();
-    /** @type {import("@vcmap/cesium").BillboardCollection} */
+    /** @type {import("@vcmap-cesium/engine").BillboardCollection} */
     this.billboards = new BillboardCollection({ scene });
-    /** @type {import("@vcmap/cesium").LabelCollection} */
+    /** @type {import("@vcmap-cesium/engine").LabelCollection} */
     this.labels = new LabelCollection({ scene });
-    /** @type {Map<import("ol").Feature<import("ol/geom/Geometry").default>, Array<import("@vcmap/cesium").Primitive|import("@vcmap/cesium").GroundPrimitive|import("@vcmap/cesium").GroundPolylinePrimitive|import("@vcmap/cesium").ClassificationPrimitive|import("@vcmap/cesium").Model>>} */
+    /** @type {Map<import("ol").Feature<import("ol/geom/Geometry").default>, Array<import("@vcmap-cesium/engine").Primitive|import("@vcmap-cesium/engine").GroundPrimitive|import("@vcmap-cesium/engine").GroundPolylinePrimitive|import("@vcmap-cesium/engine").ClassificationPrimitive|import("@vcmap-cesium/engine").Model>>} */
     this.featureToPrimitiveMap = new Map();
-    /** @type {Map<import("ol").Feature<import("ol/geom/Geometry").default>, Array<import("@vcmap/cesium").Primitive|import("@vcmap/cesium").GroundPrimitive|import("@vcmap/cesium").GroundPolylinePrimitive|import("@vcmap/cesium").ClassificationPrimitive|import("@vcmap/cesium").Model>>} */
+    /** @type {Map<import("ol").Feature<import("ol/geom/Geometry").default>, Array<import("@vcmap-cesium/engine").Primitive|import("@vcmap-cesium/engine").GroundPrimitive|import("@vcmap-cesium/engine").GroundPolylinePrimitive|import("@vcmap-cesium/engine").ClassificationPrimitive|import("@vcmap-cesium/engine").Model>>} */
     this.featureToScaledPrimitiveMap = new Map();
-    /** @type {Map<import("ol").Feature<import("ol/geom/Geometry").default>, Array<import("@vcmap/cesium").Billboard>>} */
+    /** @type {Map<import("ol").Feature<import("ol/geom/Geometry").default>, Array<import("@vcmap-cesium/engine").Billboard>>} */
     this.featureToBillboardMap = new Map();
-    /** @type {Map<import("ol").Feature<import("ol/geom/Geometry").default>, Array<import("@vcmap/cesium").Label>>} */
+    /** @type {Map<import("ol").Feature<import("ol/geom/Geometry").default>, Array<import("@vcmap-cesium/engine").Label>>} */
     this.featureToLabelMap = new Map();
-    /** @type {import("@vcmap/cesium").SplitDirection} */
+    /** @type {import("@vcmap-cesium/engine").SplitDirection} */
     this.splitDirection = splitDirection;
 
     /**
-     * @type {import("@vcmap/cesium").PrimitiveCollection}
+     * @type {import("@vcmap-cesium/engine").PrimitiveCollection}
      * @private
      */
     this._rootCollection = rootCollection;
@@ -192,7 +192,7 @@ class VectorContext {
   }
 
   /**
-   * @param {Array<import("@vcmap/cesium").Primitive|import("@vcmap/cesium").GroundPrimitive|import("@vcmap/cesium").GroundPolylinePrimitive|import("@vcmap/cesium").ClassificationPrimitive|import("@vcmap/cesium").Model>} primitives
+   * @param {Array<import("@vcmap-cesium/engine").Primitive|import("@vcmap-cesium/engine").GroundPrimitive|import("@vcmap-cesium/engine").GroundPolylinePrimitive|import("@vcmap-cesium/engine").ClassificationPrimitive|import("@vcmap-cesium/engine").Model>} primitives
    * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @param {boolean=} allowPicking
    */
@@ -208,7 +208,7 @@ class VectorContext {
   }
 
   /**
-   * @param {Array<import("@vcmap/cesium").Primitive|import("@vcmap/cesium").GroundPrimitive|import("@vcmap/cesium").GroundPolylinePrimitive|import("@vcmap/cesium").ClassificationPrimitive|import("@vcmap/cesium").Model>} primitives
+   * @param {Array<import("@vcmap-cesium/engine").Primitive|import("@vcmap-cesium/engine").GroundPrimitive|import("@vcmap-cesium/engine").GroundPolylinePrimitive|import("@vcmap-cesium/engine").ClassificationPrimitive|import("@vcmap-cesium/engine").Model>} primitives
    * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @param {boolean=} allowPicking
    */
@@ -297,7 +297,7 @@ class VectorContext {
 
   /**
    * Updates splitDirection on primitives. Currently only Model primitives support splitting.
-   * @param {import("@vcmap/cesium").SplitDirection} splitDirection
+   * @param {import("@vcmap-cesium/engine").SplitDirection} splitDirection
    */
   updateSplitDirection(splitDirection) {
     this.splitDirection = splitDirection;

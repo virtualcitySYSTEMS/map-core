@@ -1,4 +1,4 @@
-import { Entity } from '@vcmap/cesium';
+import { Entity } from '@vcmap-cesium/engine';
 import { setCesiumMap } from '../../helpers/cesiumHelpers.js';
 import VcsApp from '../../../../src/vcsApp.js';
 import DataSourceLayer from '../../../../src/layer/dataSourceLayer.js';

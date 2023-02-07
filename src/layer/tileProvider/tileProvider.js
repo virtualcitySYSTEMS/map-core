@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import RBush from 'rbush';
 import { check } from '@vcsuite/check';
-import { Rectangle, Math as CesiumMath, WebMercatorTilingScheme, Cartographic } from '@vcmap/cesium';
+import { Rectangle, Math as CesiumMath, WebMercatorTilingScheme, Cartographic } from '@vcmap-cesium/engine';
 import LRUCache from 'ol/structs/LRUCache.js';
 import { buffer, createOrUpdateFromCoordinate } from 'ol/extent.js';
 import { parseBoolean, parseInteger } from '@vcsuite/parsers';
@@ -35,7 +35,7 @@ for (let i = 0; i < mercatorResolutionsToLevel.length; i++) {
 
 /**
  * transforms cesium geographic rectangle to mercator extent
- * @param {import("@vcmap/cesium").Rectangle} rectangle in wgs84 radians
+ * @param {import("@vcmap-cesium/engine").Rectangle} rectangle in wgs84 radians
  * @returns {import("ol/extent").Extent} extent in mercator
  */
 export function rectangleToExtent(rectangle) {
@@ -106,7 +106,7 @@ class TileProvider extends VcsObject {
 
     /**
      * Cesium Webmercator TilingScheme
-     * @type {import("@vcmap/cesium").WebMercatorTilingScheme}
+     * @type {import("@vcmap-cesium/engine").WebMercatorTilingScheme}
      * @api
      * @readonly
      */
@@ -392,7 +392,7 @@ class TileProvider extends VcsObject {
 
   /**
    * @param {number} baseLevel
-   * @param {import("@vcmap/cesium").Cartographic} tileCenter
+   * @param {import("@vcmap-cesium/engine").Cartographic} tileCenter
    * @returns {Promise<import("rbush").default<tileProviderRTreeEntry>|null>}
    * @private
    */

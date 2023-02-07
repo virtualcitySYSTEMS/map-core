@@ -6,7 +6,7 @@ import Fill from 'ol/style/Fill.js';
 import OLText from 'ol/style/Text.js';
 import Feature from 'ol/Feature.js';
 
-import { SplitDirection } from '@vcmap/cesium';
+import { SplitDirection } from '@vcmap-cesium/engine';
 import VcsApp from '../../../../src/vcsApp.js';
 import VectorLayer from '../../../../src/layer/vectorLayer.js';
 import { setCesiumMap } from '../../helpers/cesiumHelpers.js';

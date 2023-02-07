@@ -20,7 +20,7 @@ import {
   Label,
   Primitive,
   SphereGeometry,
-} from '@vcmap/cesium';
+} from '@vcmap-cesium/engine';
 import Fill from 'ol/style/Fill.js';
 import Stroke from 'ol/style/Stroke.js';
 import VectorProperties, { PrimitiveOptionsType } from '../../../../src/layer/vectorProperties.js';

@@ -1,4 +1,4 @@
-import { Cesium3DTileStyle, Cesium3DTileColorBlendMode } from '@vcmap/cesium';
+import { Cesium3DTileStyle, Cesium3DTileColorBlendMode } from '@vcmap-cesium/engine';
 import deepEqual from 'fast-deep-equal';
 
 import { parseEnumValue } from '@vcsuite/parsers';
@@ -8,7 +8,7 @@ import { styleClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {VcsObjectOptions} StyleItemOptions
- * @property {number} [colorBlendMode=import("@vcmap/cesium").Cesium3DTileColorBlendMode.HIGHLIGHT] - colorBlendMode for 3D Tiledataset @see https://cesiumjs.org/import("@vcmap/cesium").Build/Documentation/Cesium3DTileColorBlendMode.html
+ * @property {number} [colorBlendMode=import("@vcmap-cesium/engine").Cesium3DTileColorBlendMode.HIGHLIGHT] - colorBlendMode for 3D Tiledataset @see https://cesiumjs.org/import("@vcmap-cesium/engine").Build/Documentation/Cesium3DTileColorBlendMode.html
  * @api
  */
 
@@ -39,7 +39,7 @@ class StyleItem extends VcsObject {
 
     /**
      * The 3D representation of this style
-     * @type {import("@vcmap/cesium").Cesium3DTileStyle}
+     * @type {import("@vcmap-cesium/engine").Cesium3DTileStyle}
      * @api
      */
     this.cesiumStyle = new Cesium3DTileStyle({ show: true });
@@ -51,8 +51,8 @@ class StyleItem extends VcsObject {
      */
     this.styleChanged = new VcsEvent();
 
-    /** @type {import("@vcmap/cesium").Cesium3DTileColorBlendMode} */
-    this.colorBlendMode = /** @type {import("@vcmap/cesium").Cesium3DTileColorBlendMode} */(parseEnumValue(
+    /** @type {import("@vcmap-cesium/engine").Cesium3DTileColorBlendMode} */
+    this.colorBlendMode = /** @type {import("@vcmap-cesium/engine").Cesium3DTileColorBlendMode} */(parseEnumValue(
       options.colorBlendMode, Cesium3DTileColorBlendMode, Cesium3DTileColorBlendMode.HIGHLIGHT,
     ));
 

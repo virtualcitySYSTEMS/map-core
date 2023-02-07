@@ -9,7 +9,7 @@ import {
   DataSourceClock,
   Clock,
   JulianDate,
-} from '@vcmap/cesium';
+} from '@vcmap-cesium/engine';
 
 import Layer from '../../../src/layer/layer.js';
 import { vcsLayerName } from '../../../src/layer/layerSymbols.js';
@@ -20,7 +20,6 @@ import Projection from '../../../src/util/projection.js';
 import CesiumMap, { synchronizeClock } from '../../../src/map/cesiumMap.js';
 import { getCesiumMap } from '../helpers/cesiumHelpers.js';
 import CameraLimiter from '../../../src/map/cameraLimiter.js';
-import getDummyCesium3DTileset from '../layer/cesium/getDummyCesium3DTileset.js';
 
 describe('CesiumMap', () => {
   let sandbox;
@@ -863,80 +862,6 @@ describe('CesiumMap', () => {
         expect(map.getScene().camera.positionCartographic.height).to.be.closeTo(200, 0.00001);
         done();
       }, 100);
-    });
-  });
-
-  describe('setting the debug flag', () => {
-    describe('on an empty map', () => {
-      let map;
-
-      before(() => {
-        map = getCesiumMap();
-        map.debug = true;
-      });
-
-      after(() => {
-        map.destroy();
-      });
-
-      it('should set the debug flag', () => {
-        expect(map.debug).to.be.true;
-      });
-
-      it('should add the cesium inspector container', () => {
-        const elem = map.mapElement.querySelector('.vcm-cesium-inspector');
-        expect(elem).to.be.an.instanceOf(HTMLElement);
-      });
-
-      it('should not show the cesium inspector, if not active', () => {
-        const elem = map.mapElement.querySelector('.vcm-cesium-inspector');
-        expect(elem.style).to.have.property('display', 'none');
-      });
-
-      it('should set the debug flags on any Cesium3DTileset visualization added', () => {
-        const tileset = getDummyCesium3DTileset();
-        const layer = new Layer({});
-        tileset[vcsLayerName] = layer.name;
-        map.layerCollection.add(layer);
-        map.addPrimitiveCollection(tileset);
-        expect(tileset.debugShowBoundingVolume).to.be.true;
-        expect(tileset.debugShowContentBoundingVolume).to.be.true;
-        expect(tileset.debugShowRenderingStatistics).to.be.true;
-        layer.destroy();
-      });
-    });
-
-    describe('on an active map with visualizations', () => {
-      let map;
-      let layer;
-      let tileset;
-
-      before(async () => {
-        map = getCesiumMap();
-        tileset = getDummyCesium3DTileset();
-        layer = new Layer({});
-        tileset[vcsLayerName] = layer.name;
-        map.layerCollection.add(layer);
-        map.addVisualization(tileset);
-        await map.activate();
-        map.debug = true;
-      });
-
-      after(() => {
-        map.destroy();
-        layer.destroy();
-      });
-
-      it('should show the cesium inspector, if not active', () => {
-        const elem = map.mapElement.querySelector('.vcm-cesium-inspector');
-        expect(elem.style).to.have.property('display', '');
-      });
-
-      it('should set the debug flags on any Cesium3DTileset visualization added', () => {
-        expect(tileset.debugShowBoundingVolume).to.be.true;
-        expect(tileset.debugShowContentBoundingVolume).to.be.true;
-        expect(tileset.debugShowRenderingStatistics).to.be.true;
-      });
     });
   });
 

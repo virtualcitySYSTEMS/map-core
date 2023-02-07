@@ -11,7 +11,7 @@ import {
   PerInstanceColorAppearance,
   FrustumOutlineGeometry,
   destroyObject,
-} from '@vcmap/cesium';
+} from '@vcmap-cesium/engine';
 
 const scratchRight = new Cartesian3();
 const scratchRotation = new Matrix3();
@@ -22,8 +22,8 @@ const scratchSplits = [1.0, 100000.0];
 
 /**
  * @typedef {Object} VcsCameraPrimitiveOptions
- * @property {import("@vcmap/cesium").Camera} camera
- * @property {import("@vcmap/cesium").Color|undefined} [color=Color.YELLOW]
+ * @property {import("@vcmap-cesium/engine").Camera} camera
+ * @property {import("@vcmap-cesium/engine").Color|undefined} [color=Color.YELLOW]
  * @property {boolean|undefined} [show=true]
  * @property {boolean|undefined} [allowPicking=true]
  * @property {Object|undefined} id

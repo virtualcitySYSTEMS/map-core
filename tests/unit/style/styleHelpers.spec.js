@@ -1,4 +1,4 @@
-import { Color } from '@vcmap/cesium';
+import { Color } from '@vcmap-cesium/engine';
 import {
   cesiumColorToColor,
   hexToOlColor,

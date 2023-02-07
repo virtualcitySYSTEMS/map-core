@@ -1,4 +1,4 @@
-import { CzmlDataSource } from '@vcmap/cesium';
+import { CzmlDataSource } from '@vcmap-cesium/engine';
 
 import DataSourceLayer from './dataSourceLayer.js';
 import { vcsLayerName } from './layerSymbols.js';
@@ -76,7 +76,7 @@ class CzmlLayer extends DataSourceLayer {
    * @private
    */
   async _loadData() {
-    await /** @type {import("@vcmap/cesium").CzmlDataSource} */ (this.dataSource)
+    await /** @type {import("@vcmap-cesium/engine").CzmlDataSource} */ (this.dataSource)
       .load(this.url, this.sourceUri ? { sourceUri: this.sourceUri } : undefined);
 
     this.entities.values.forEach((entity) => {
