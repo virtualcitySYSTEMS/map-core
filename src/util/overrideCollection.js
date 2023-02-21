@@ -23,6 +23,7 @@ function getLogger() {
  * @property {function(T):T|null} override - returns the overriden item or null if the item could not be inserted (this would be the result of a race condition)
  * @property {Map<string, Array<Object>>} shadowMap
  * @property {function(Array<Object>, string):Promise<void>} parseItems
+ * @property {function(string):Object} getSerializedByKey
  * @property {function(string):Promise<void>} removeContext
  * @property {function(string):Array<Object>} serializeContext
  * @template {*} T
@@ -131,6 +132,18 @@ function makeOverrideCollection(
         .filter(i => i)
         .forEach((i) => { overrideCollection.override(i); });
     }
+  };
+
+  /**
+   * @param {string} key
+   * @returns {Object|undefined}
+   */
+  overrideCollection.getSerializedByKey = function getSerializedByKey(key) {
+    const item = overrideCollection.getByKey(key);
+    if (item) {
+      return serialize(item);
+    }
+    return undefined;
   };
 
   overrideCollection.removed.addEventListener(async (item) => {

@@ -10,6 +10,7 @@ export interface OverrideCollectionInterface<T extends any> {
     shadowMap: Map<string, object[]>;
     override: (item: T) => T;
     parseItems: (items: object[], contextId: string) => Promise<void>;
+    getSerializedByKey: (key: string) => object;
     removeContext: (contextId: string) => Promise<void>;
     serializeContext: (contextId: string) => object[];
 }
@@ -19,6 +20,7 @@ export class OverrideCollection<T extends any> extends Collection<T> implements 
     shadowMap: Map<string, object[]>;
     override: (item: T) => T;
     parseItems: (items: object[], contextId: string) => Promise<void>;
+    getSerializedByKey: (key: string) => object;
     removeContext: (contextId: string) => Promise<void>;
     serializeContext: (contextId: string) => object[];
 }
@@ -28,6 +30,7 @@ export class OverrideLayerCollection extends LayerCollection implements Override
     shadowMap: Map<string, object[]>;
     override: (item: Layer) => Layer;
     parseItems: (items: object[], contextId: string) => Promise<void>;
+    getSerializedByKey: (key: string) => object;
     removeContext: (contextId: string) => Promise<void>;
     serializeContext: (contextId: string) => object[];
 }
@@ -37,6 +40,7 @@ export class OverrideMapCollection extends MapCollection implements OverrideColl
     shadowMap: Map<string, object[]>;
     override: (item: VcsMap) => VcsMap;
     parseItems: (items: object[], contextId: string) => Promise<void>;
+    getSerializedByKey: (key: string) => object;
     removeContext: (contextId: string) => Promise<void>;
     serializeContext: (contextId: string) => object[];
 }

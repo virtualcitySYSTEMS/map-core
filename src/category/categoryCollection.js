@@ -1,6 +1,5 @@
 import { getLogger as getLoggerByName } from '@vcsuite/logger';
 import Category from './category.js';
-import './appBackedCategory.js';
 import IndexedCollection from '../util/indexedCollection.js';
 import { getObjectFromClassRegistry } from '../classRegistry.js';
 
