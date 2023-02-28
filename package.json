@@ -50,6 +50,7 @@
     "mocha-junit-reporter": "^2.0.2",
     "nock": "^13.2.4",
     "node-fetch": "^3.2.0",
+    "resize-observer-polyfill": "1.5.1",
     "sinon": "^9.2.4",
     "sinon-chai": "^3.6.0",
     "tui-jsdoc-template": "^1.2.2",
@@ -57,7 +58,7 @@
   },
   "peerDependencies": {
     "@vcmap-cesium/engine": "~1.1.2",
-    "ol": "~7.1.0"
+    "ol": "~7.2.2"
   },
   "eslintConfig": {
     "extends": [
