@@ -11,6 +11,7 @@ import ArrowStyle from './arrowStyle.js';
  * @typedef {ArrowStyleOptions} ArcStyleOptions
  * @property {number} [arcFactor=0.15] - factor to calculate the 'height' of an arc, based on the distance from start to end
  * @property {number} [numberOfSegments=64] - number of segments to interpolate the arc by
+ * @property {number} [offset=0] - offset in m(mercator) from the arc end and arc start to the start/end points Is only rendered if offset * 2 < distance between start and endpoint
  */
 
 /**
@@ -32,17 +33,6 @@ export const featureArcStruct = Symbol('FeatureArcStruct');
  * @type {symbol}
  */
 const featureArcStyleId = Symbol('ArcStyleId');
-
-/**
- * @param {import("ol/coordinate").Coordinate} p1
- * @param {import("ol/coordinate").Coordinate} p2
- * @param {number} factor
- * @returns {number}
- */
-function determineArcHeight(p1, p2, factor) {
-  const distance = cartesian2DDistance(p1, p2);
-  return distance * factor;
-}
 
 /**
  * Gets the radius of the circle covering p1, p2, p3. see https://math.stackexchange.com/a/1460096
@@ -117,26 +107,29 @@ function determineQuadrantOffset(center, coordinate, angle) {
  * @param {import("ol/coordinate").Coordinate} center
  * @param {number} radius
  * @param {number} numberOfSegments
+ * @param {number} offset
  * @returns {Array<import("ol/coordinate").Coordinate>}
  */
-function interpolateBetweenAngles(p1, p2, center, radius, numberOfSegments) {
+function interpolateBetweenAngles(p1, p2, center, radius, numberOfSegments, offset) {
   const zeroVector = Cartesian2.UNIT_X;
   const p1V = new Cartesian2(p1[0] - center[0], p1[1] - center[1]);
   const p2V = new Cartesian2(p2[0] - center[0], p2[1] - center[1]);
   let startAngle = Cartesian2.angleBetween(zeroVector, p1V);
   startAngle = determineQuadrantOffset(center, p1, startAngle);
-  const distance = Cartesian2.angleBetween(p1V, p2V);
+  let distance = Cartesian2.angleBetween(p1V, p2V);
   const coordinates = new Array(numberOfSegments);
+  const offsetAngle = offset / radius;
+  startAngle += offsetAngle;
+  distance -= offsetAngle * 2;
 
-  for (let i = 0; i < numberOfSegments; ++i) {
-    const angle = startAngle + (modulo(i, numberOfSegments) * distance) / numberOfSegments;
+  for (let i = 0; i <= numberOfSegments; ++i) {
+    const angle = startAngle + (modulo(i, numberOfSegments + 1) * distance) / numberOfSegments;
     coordinates[i] = [
       center[0] + radius * Math.cos(angle),
       center[1] + radius * Math.sin(angle),
       0,
     ];
   }
-  coordinates.push([p2[0], p2[1], 0]);
   return coordinates;
 }
 
@@ -146,19 +139,38 @@ function interpolateBetweenAngles(p1, p2, center, radius, numberOfSegments) {
  * @param {number} arcHeight
  * @param {number} numberOfSegments
  * @param {number} arcFactor
+ * @param {number} offset
  * @returns {Array<import("ol/coordinate").Coordinate>}
  */
-function getArcCoordinates(p1, p2, arcHeight, numberOfSegments, arcFactor) {
+function getArcCoordinates(p1, p2, arcHeight, numberOfSegments, arcFactor, offset) {
   const midPoint = getMidPoint(p1, p2);
   midPoint[2] += (arcHeight / 2);
-  const distance = cartesian2DDistance(p1, p2) / numberOfSegments;
+  const fullDistance = cartesian2DDistance(p1, p2);
+
+  const p1Cartesian = new Cartesian3(p1[0], p1[1], p1[2] ?? 0);
+  const midPointCartesian = new Cartesian3(midPoint[0], midPoint[1], midPoint[2] ?? 0);
+  const p2Cartesian = new Cartesian3(p2[0], p2[1], p2[2] ?? 0);
+  let points;
+  if (offset > 0) {
+    const distanceP1Midpoint = Cartesian3.distance(p1Cartesian, midPointCartesian);
+    const offsetNumber = (1 / distanceP1Midpoint) * offset;
+
+    const arcHeightCorrection = arcHeight / 4;
+    const offsetHeightCorrection =
+      (offsetNumber > 0.5 ? Math.abs(1 - offsetNumber) : offsetNumber) * arcHeightCorrection;
+    const newP1 = Cartesian3.lerp(p1Cartesian, midPointCartesian, offsetNumber, new Cartesian3());
+    newP1.z += offsetHeightCorrection;
+    const newP2 = Cartesian3.lerp(p2Cartesian, midPointCartesian, offsetNumber, new Cartesian3());
+    newP2.z += offsetHeightCorrection;
+    points = [newP1, midPointCartesian, newP2];
+  } else {
+    points = [p1Cartesian, midPointCartesian, p2Cartesian];
+  }
+
+  const distance = (fullDistance - offset * 2) / 64;
   const spline = new CatmullRomSpline({
     times: [0, 0.5, 1],
-    points: [
-      new Cartesian3(p1[0], p1[1], p1[2] ?? 0),
-      new Cartesian3(midPoint[0], midPoint[1], midPoint[2] ?? 0),
-      new Cartesian3(p2[0], p2[1], p2[2] ?? 0),
-    ],
+    points,
     firstTangent: new Cartesian3(0, 0, arcFactor * distance),
     lastTangent: new Cartesian3(0, 0, -arcFactor * distance),
   });
@@ -177,8 +189,9 @@ function getArcCoordinates(p1, p2, arcHeight, numberOfSegments, arcFactor) {
  * @param {number} arcFactor
  * @param {import("ol").Feature} feature
  * @param {number} numberOfSegments
+ * @param {number} offset
  */
-function createFeatureArc(arcFactor, feature, numberOfSegments) {
+function createFeatureArc(arcFactor, feature, numberOfSegments, offset) {
   if (feature[featureArcStruct]) {
     feature[featureArcStruct].destroy();
   }
@@ -187,20 +200,27 @@ function createFeatureArc(arcFactor, feature, numberOfSegments) {
   const destroy = () => {
     unByKey(listeners);
   };
-  listeners.push(feature.on('change:geometry', () => { createFeatureArc(arcFactor, feature, numberOfSegments); }));
+  listeners.push(feature.on('change:geometry', () => { createFeatureArc(arcFactor, feature, numberOfSegments, offset); }));
 
   if (geometry instanceof LineString) {
-    listeners.push(geometry.on('change', () => { createFeatureArc(arcFactor, feature, numberOfSegments); }));
+    listeners.push(geometry.on('change', () => { createFeatureArc(arcFactor, feature, numberOfSegments, offset); }));
     const p1 = geometry.getFirstCoordinate();
     const p2 = geometry.getLastCoordinate();
-    const arcHeight = determineArcHeight(p1, p2, arcFactor);
+    const distance = cartesian2DDistance(p1, p2);
+    const arcHeight = distance * arcFactor;
+    // check offset validity
+    let validOffset = offset;
+    if ((offset * 2) > distance) {
+      validOffset = 0;
+    }
     const midPoint = getMidPointOnArc(p1, p2, arcHeight);
     const { center, radius } = determineCircle(p1, p2, midPoint);
 
-    const coordinates = interpolateBetweenAngles(p1, p2, center, radius, numberOfSegments);
+    const coordinates = interpolateBetweenAngles(p1, p2, center, radius, numberOfSegments, validOffset);
+    const c = getArcCoordinates(p1, p2, arcHeight, numberOfSegments, arcFactor, validOffset);
     feature[featureArcStruct] = {
       geometry: new LineString(coordinates),
-      coordinates: getArcCoordinates(p1, p2, arcHeight, numberOfSegments, arcFactor),
+      coordinates: c,
       destroy,
     };
   } else {
@@ -241,6 +261,11 @@ class ArcStyle extends ArrowStyle {
      * @private
      */
     this._numberOfSegments = parseInteger(options.numberOfSegments, 64);
+    /**
+     * @type {number}
+     * @private
+     */
+    this._offset = parseNumber(options.offset, 0);
 
     this.setGeometry(this._getFeatureArcGeometry.bind(this));
   }
@@ -260,6 +285,25 @@ class ArcStyle extends ArrowStyle {
     check(value, Number);
     if (value !== this._numberOfSegments && value > 0 && Number.isInteger(value)) {
       this._numberOfSegments = value;
+      this._revisionId = uuidv4();
+    }
+  }
+
+  /**
+   * An offset from the arc end/start to the starting point / end point
+   * @type {number}
+   */
+  get offset() {
+    return this._offset;
+  }
+
+  /**
+   * @param {number} value
+   */
+  set offset(value) {
+    check(value, Number);
+    if (value !== this._offset && value > 0) {
+      this._offset = value;
       this._revisionId = uuidv4();
     }
   }
@@ -288,7 +332,7 @@ class ArcStyle extends ArrowStyle {
    */
   _getFeatureArcGeometry(feature) {
     if (!feature[featureArcStruct] || feature[featureArcStyleId] !== this._revisionId) {
-      createFeatureArc(this._arcFactor, feature, this._numberOfSegments);
+      createFeatureArc(this._arcFactor, feature, this._numberOfSegments, this._offset);
       feature[featureArcStyleId] = this._revisionId;
     }
     return feature[featureArcStruct].geometry;

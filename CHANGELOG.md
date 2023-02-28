@@ -1,4 +1,19 @@
-###   5.0.0-rc.next
+###   5.0.0-rc.27
+- Removed AppedBackedCategory, use Category
+- added `getSerializedByKey` method to overrideCollection
+- added offset option to ArcStyle to offset the arrow from the starting and endpoint
+- Updated Openlayers to 7.2
+- Removed unused Underscore.template dependency
+
+###   5.0.0-rc.26
+- Update to Cesium 101 (now uses only the @cesium/engine)
+- updated documentation
+
+###   5.0.0-rc.25
+- Updated Splitscreen and splitDirection handling
+- small TS fixes
+
+###   5.0.0-rc.24
 - Editor: Adds a `EditFeaturesSession` to transform features.
 - Feature converter can now draw primitives at point locations using `olcs_primitiveOptions`.
 - Adds `ArrowStyle` & `ArcStyle`. Special OL Styles to style LineStrings with.

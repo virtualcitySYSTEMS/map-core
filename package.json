@@ -81,7 +81,6 @@
     "proj4": "^2.7.5",
     "rbush": ">=3.0.1",
     "rbush-knn": "^3.0.1",
-    "underscore.template": "^0.1.7",
     "uuid": "^8.3.2"
   }
 }
