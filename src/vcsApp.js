@@ -486,7 +486,9 @@ class VcsApp {
     config.obliqueCollections = this._obliqueCollections.serializeContext(contextId);
     config.viewpoints = this._viewpoints.serializeContext(contextId);
     config.styles = this._styles.serializeContext(contextId);
-    config.categories = [...this._categories].map(c => c.serializeContext(contextId));
+    config.categories = [...this._categories]
+      .map(c => c.serializeContext(contextId))
+      .filter(c => !!c);
 
     return config;
   }
