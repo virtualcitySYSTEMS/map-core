@@ -109,10 +109,26 @@ class IndexedCollection extends Collection {
     let target = targetIndex;
     target = target >= 0 ? target : 0;
     target = target < this._array.length ? target : this._array.length - 1;
-    this._array.splice(itemIndex, 1);
-    this._array.splice(target, 0, item);
-    this.moved.raiseEvent(item);
+    if (itemIndex !== target) {
+      this._array.splice(itemIndex, 1);
+      this._array.splice(target, 0, item);
+      this.moved.raiseEvent(item);
+    }
     return target;
+  }
+
+  /**
+   * Moves an item to a provided index
+   * @param {T} item
+   * @param {number} targetIndex
+   * @returns {number|null} the new index of the item
+   */
+  moveTo(item, targetIndex) {
+    const index = this._array.indexOf(item);
+    if (index > -1) {
+      return this._move(item, index, targetIndex);
+    }
+    return null;
   }
 
   /**

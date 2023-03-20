@@ -137,7 +137,7 @@ describe('CategoryCollection', () => {
           },
         ];
         await app.categories.parseCategoryItems('foo', items, 'foo');
-        app.contextRemoved.raiseEvent({ id: 'foo' });
+        app.contextRemoved.raiseEvent({ _id: 'foo' });
         await app.categories.requestCategory({ name: 'foo', type: Category.className, classRegistryName: 'layerClassRegistry' });
       });
 

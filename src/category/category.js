@@ -338,7 +338,7 @@ class Category extends VcsObject {
     }
     this._app = app;
     this._contextRemovedListener = this._app.contextRemoved.addEventListener((context) => {
-      this._collection.removeContext(context.id);
+      this._collection.removeContext(context._id);
     });
     if (this._layer) {
       this._app.layers.add(this._layer);
@@ -381,7 +381,7 @@ class Category extends VcsObject {
    * @param {string} contextId
    * @returns {{ name: string, items: Array<Object>}|null}
    */
-  serializeForContext(contextId) {
+  serializeContext(contextId) {
     if (this._collection.size === 0) {
       return null;
     }

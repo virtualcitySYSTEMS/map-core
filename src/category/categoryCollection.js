@@ -37,7 +37,7 @@ class CategoryCollection extends IndexedCollection {
      */
     this._contextRemovedListener = this._app.contextRemoved.addEventListener((context) => {
       this._cache.forEach((contextMap, name) => {
-        contextMap.delete(context.id);
+        contextMap.delete(context._id);
         if (contextMap.size === 0) {
           this._cache.delete(name);
         }

@@ -1,9 +1,12 @@
-import { v5 as uuidv5, v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import { contextIdSymbol } from './vcsAppContextHelpers.js';
+import Projection from './util/projection.js';
 
 /**
  * @typedef {Object} VcsAppConfig
- * @property {string|undefined} [id]
+ * @property {string|undefined} [_id]
+ * @property {string|undefined} [name]
+ * @property {string|undefined} [description]
  * @property {Array<LayerOptions>} [layers]
  * @property {Array<VcsMapOptions>} [maps]
  * @property {Array<StyleItemOptions>} [styles]
@@ -14,11 +17,6 @@ import { contextIdSymbol } from './vcsAppContextHelpers.js';
  * @property {Array<{ name: string, items: Array<Object> }>} [categories]
  * @property {Array<ObliqueCollectionOptions>} [obliqueCollections]
  */
-
-/**
- * @type {string}
- */
-const uniqueNamespace = '9c27cc2d-552f-4637-9194-09329ed4c1dc';
 
 /**
  * The id of the volatile context. Objects with this id shall never be serialized.
@@ -45,36 +43,43 @@ class Context {
    */
   constructor(config) {
     /**
+     * @type {string}
+     * @private
+     */
+    this._uuid = config._id || uuidv4();
+    /**
+     * @type {string}
+     */
+    this.name = config.name;
+    /**
+     * @type {string}
+     */
+    this.description = config.description;
+    /**
+     * @type {string}
+     */
+    this.startingViewpointName = config.startingViewpointName;
+    /**
+     * @type {string}
+     */
+    this.startingMapName = config.startingMapName;
+    /**
+     * @type {Projection|undefined}
+     */
+    this.projection = config.projection ? new Projection(config.projection) : undefined;
+    /**
      * @type {VcsAppConfig}
      * @private
      */
     this._config = config;
-    /**
-     * @type {string}
-     * @private
-     */
-    this._checkSum = uuidv5(JSON.stringify(config), uniqueNamespace);
-    /**
-     * @type {string}
-     * @private
-     */
-    this._id = config.id || this._checkSum;
   }
 
   /**
    * @type {string}
    * @readonly
    */
-  get id() {
-    return this._id;
-  }
-
-  /**
-   * @type {string}
-   * @readonly
-   */
-  get checkSum() {
-    return this._checkSum;
+  get _id() {
+    return this._uuid;
   }
 
   /**
@@ -83,6 +88,41 @@ class Context {
    */
   get config() {
     return JSON.parse(JSON.stringify(this._config));
+  }
+
+  /**
+   * Sets the config object by serializing all runtime objects of the current app.
+   * @param {import("@vcmap/core").VcsApp} app
+   */
+  setConfigFromApp(app) {
+    this._config = app.serializeContext(this._uuid);
+  }
+
+
+  /**
+   * @returns {VcsAppConfig}
+   */
+  toJson() {
+    const config = {};
+    if (this._config._id) {
+      config._id = this._config._id;
+    }
+    if (this.name) {
+      config.name = this.name;
+    }
+    if (this.description) {
+      config.description = this.description;
+    }
+    if (this.startingViewpointName) {
+      config.startingViewpointName = this.startingViewpointName;
+    }
+    if (this.startingMapName) {
+      config.startingMapName = this.startingMapName;
+    }
+    if (this.projection) {
+      config.projection = this.projection.toJSON();
+    }
+    return config;
   }
 }
 

@@ -66,14 +66,14 @@ class VcsApp {
      * @type {Context}
      * @private
      */
-    this._defaultDynamicContext = new Context({ id: defaultDynamicContextId });
+    this._defaultDynamicContext = new Context({ _id: defaultDynamicContextId });
     /**
      * @type {Context}
      * @private
      */
     this._dynamicContext = this._defaultDynamicContext;
 
-    const getDynamicContextId = () => this._dynamicContext.id;
+    const getDynamicContextId = () => this._dynamicContext._id;
 
     /**
      * @type {VcsEvent<string>}
@@ -175,7 +175,7 @@ class VcsApp {
      * @type {IndexedCollection<Context>}
      * @private
      */
-    this._contexts = new IndexedCollection('id');
+    this._contexts = new IndexedCollection('_id');
     this._contexts.add(this._dynamicContext);
     /**
      * @type {OverrideClassRegistry<import("@vcmap/core").Category<Object|import("@vcmap/core").VcsObject>>}
@@ -322,7 +322,7 @@ class VcsApp {
    * @type {string}
    * @readonly
    */
-  get dynamicContextId() { return this._dynamicContext.id; }
+  get dynamicContextId() { return this._dynamicContext._id; }
 
   /**
    * @type {VcsEvent<string>}
@@ -391,17 +391,17 @@ class VcsApp {
       setDefaultProjectionOptions(config.projection);
     }
 
-    await this._styles.parseItems(config.styles, context.id);
-    await this._layers.parseItems(config.layers, context.id);
+    await this._styles.parseItems(config.styles, context._id);
+    await this._layers.parseItems(config.layers, context._id);
     // TODO add flights & ade here
 
-    await this._obliqueCollections.parseItems(config.obliqueCollections, context.id);
-    await this._viewpoints.parseItems(config.viewpoints, context.id);
-    await this._maps.parseItems(config.maps, context.id);
+    await this._obliqueCollections.parseItems(config.obliqueCollections, context._id);
+    await this._viewpoints.parseItems(config.viewpoints, context._id);
+    await this._maps.parseItems(config.maps, context._id);
 
     if (Array.isArray(config.categories)) {
       await Promise.all((config.categories).map(async ({ name, items }) => {
-        await this._categories.parseCategoryItems(name, items, context.id);
+        await this._categories.parseCategoryItems(name, items, context._id);
       }));
     }
   }
@@ -414,7 +414,7 @@ class VcsApp {
   async _setContextState(context) {
     const { config } = context;
     [...this._layers]
-      .filter(l => l[contextIdSymbol] === context.id)
+      .filter(l => l[contextIdSymbol] === context._id)
       .forEach((l) => {
         if (l.activeOnStartup) {
           l.activate()
@@ -428,7 +428,7 @@ class VcsApp {
       });
 
     const activeObliqueCollection = [...this._obliqueCollections]
-      .find(c => c[contextIdSymbol] === context.id && c.activeOnStartup);
+      .find(c => c[contextIdSymbol] === context._id && c.activeOnStartup);
 
     if (activeObliqueCollection) {
       [...this._maps]
@@ -460,7 +460,7 @@ class VcsApp {
     this._contextMutationPromise = this._contextMutationPromise
       .then(async () => {
         if (this._contexts.has(context)) {
-          getLogger().info(`context with id ${context.id} already loaded`);
+          getLogger().info(`context with id ${context._id} already loaded`);
           return;
         }
 
@@ -469,6 +469,26 @@ class VcsApp {
         this._contexts.add(context);
       });
     return this._contextMutationPromise;
+  }
+
+  /**
+   * @param {string} contextId
+   * @returns {VcsAppConfig}
+   */
+  serializeContext(contextId) {
+    check(contextId, String);
+    if (!this._contexts.hasKey(contextId)) {
+      throw new Error('Context is not managed by this app, call add(context) before');
+    }
+    const config = this._contexts.getByKey(contextId).toJson();
+    config.maps = this._maps.serializeContext(contextId);
+    config.layers = this._layers.serializeContext(contextId);
+    config.obliqueCollections = this._obliqueCollections.serializeContext(contextId);
+    config.viewpoints = this._viewpoints.serializeContext(contextId);
+    config.styles = this._styles.serializeContext(contextId);
+    config.categories = [...this._categories].map(c => c.serializeContext(contextId));
+
+    return config;
   }
 
   /**

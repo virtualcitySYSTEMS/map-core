@@ -1,3 +1,9 @@
+###   5.0.0-next
+- Introduced `moveTo` API for IndexedCollections
+- Refactored context class adding new properties and renaming `id` to `_id`
+- Adding an API to context to update `setConfigFromApp` and serialize `toJson` a context
+- Adding an API to vcsApp `serializeContext`
+
 ###   5.0.0-rc.27
 - Removed AppedBackedCategory, use Category
 - added `getSerializedByKey` method to overrideCollection

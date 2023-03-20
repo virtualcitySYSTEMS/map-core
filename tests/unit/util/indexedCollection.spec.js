@@ -229,6 +229,52 @@ describe('IndexedCollection', () => {
       expect(collection.indexOf(array[1])).to.equal(index);
     });
 
+    it('should move item to target index', () => {
+      const index = collection.moveTo(array[0], 3);
+      expect(index).to.equal(3);
+      expect([...collection]).to.have.ordered.deep.members(
+        [{ name: 1 }, { name: 2 }, { name: 3 }, { name: 0 }, { name: 4 }],
+      );
+    });
+
+    it('should return null, if item is not part of the collection', () => {
+      const moved = sinon.spy();
+      collection.moved.addEventListener(moved);
+      const index = collection.moveTo({ name: 'x' }, 3);
+      expect(index).to.be.null;
+      expect(moved).to.not.have.been.called;
+    });
+
+    it('should clip target index to array length', () => {
+      const index = collection.moveTo(array[0], 10 * array.length);
+      expect(index).to.equal(array.length - 1);
+      expect([...collection]).to.have.ordered.deep.members(
+        [{ name: 1 }, { name: 2 }, { name: 3 }, { name: 4 }, { name: 0 }],
+      );
+    });
+
+    it('should clip negative target indices to zero', () => {
+      const index = collection.moveTo(array[2], -2);
+      expect(index).to.equal(0);
+      expect(collection.indexOf(array[2])).to.equal(index);
+    });
+
+    it('should not raise a moved event, if moving to the same index', () => {
+      const moved = sinon.spy();
+      collection.moved.addEventListener(moved);
+      const index = collection.moveTo(array[0], 0);
+      expect(collection.indexOf(array[0])).to.equal(index);
+      expect(moved).to.not.have.been.called;
+    });
+
+    it('should not raise a moved event, if clipped index equals target index', () => {
+      const moved = sinon.spy();
+      collection.moved.addEventListener(moved);
+      const index = collection.moveTo(array[array.length - 1], 10 * array.length);
+      expect(index).to.equal(array.length - 1);
+      expect(moved).to.not.have.been.called;
+    });
+
     it('should return null, if the item is not part of the collection', () => {
       const raiseIndex = collection.raise({ name: 1 }, 3);
       const lowerIndex = collection.lower({ name: 1 }, 3);

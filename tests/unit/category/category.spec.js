@@ -241,7 +241,7 @@ describe('Category', () => {
     describe('of an empty category', () => {
       it('should return null', () => {
         const category = new Category({});
-        expect(category.serializeForContext('foo')).to.be.null;
+        expect(category.serializeContext('foo')).to.be.null;
         category.destroy();
       });
     });
@@ -261,7 +261,7 @@ describe('Category', () => {
         const bazItem = new VcsObject({ name: 'baz' });
         bazItem[contextIdSymbol] = 'foo';
         category.collection.add(bazItem);
-        serialized = category.serializeForContext('foo');
+        serialized = category.serializeContext('foo');
         category.destroy();
       });
 
@@ -299,7 +299,7 @@ describe('Category', () => {
 
         await new Promise((done) => {
           setTimeout(() => {
-            serialized = category.serializeForContext('foo');
+            serialized = category.serializeContext('foo');
             category.destroy();
             done();
           }, 20);

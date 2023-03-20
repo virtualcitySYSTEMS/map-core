@@ -42,7 +42,7 @@ describe('vcsApp', () => {
       });
 
       it('should add the context', () => {
-        expect(app.getContextById(context.id)).to.equal(context);
+        expect(app.getContextById(context._id)).to.equal(context);
       });
 
       it('should raise the contextAdded event', () => {
@@ -117,7 +117,7 @@ describe('vcsApp', () => {
       });
 
       it('should add the context', () => {
-        expect(app.getContextById(context.id)).to.equal(context);
+        expect(app.getContextById(context._id)).to.equal(context);
       });
 
       it('should raise the contextAdded event', () => {
@@ -217,7 +217,7 @@ describe('vcsApp', () => {
       });
 
       it('should add the context once', () => {
-        expect(app.getContextById(context.id)).to.equal(context);
+        expect(app.getContextById(context._id)).to.equal(context);
       });
 
       it('should raise the contextAdded event once', () => {
@@ -278,7 +278,7 @@ describe('vcsApp', () => {
         removed = sinon.spy();
         app.contextRemoved.addEventListener(removed);
         await app.addContext(context);
-        await app.removeContext(context.id);
+        await app.removeContext(context._id);
       });
 
       after(() => {
@@ -286,7 +286,7 @@ describe('vcsApp', () => {
       });
 
       it('should remove the context', () => {
-        expect(app.getContextById(context.id)).to.be.undefined;
+        expect(app.getContextById(context._id)).to.be.undefined;
       });
 
       it('should raise the contextRemoved event', () => {
@@ -329,7 +329,7 @@ describe('vcsApp', () => {
         removed = sinon.spy();
         app.contextRemoved.addEventListener(removed);
         await app.addContext(context);
-        await app.removeContext(context.id);
+        await app.removeContext(context._id);
       });
 
       after(() => {
@@ -337,7 +337,7 @@ describe('vcsApp', () => {
       });
 
       it('should remove the context', () => {
-        expect(app.getContextById(context.id)).to.be.undefined;
+        expect(app.getContextById(context._id)).to.be.undefined;
       });
 
       it('should raise the contextRemoved event once', () => {
