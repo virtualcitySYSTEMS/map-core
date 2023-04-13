@@ -1,7 +1,7 @@
 import { check } from '@vcsuite/check';
 import { v4 as uuidv4 } from 'uuid';
 import { Feature } from 'ol';
-import { contextIdSymbol, destroyCollection } from '../vcsAppContextHelpers.js';
+import { moduleIdSymbol, destroyCollection } from '../vcsModuleHelpers.js';
 import makeOverrideCollection, { isOverrideCollection } from '../util/overrideCollection.js';
 import VcsObject from '../vcsObject.js';
 import VectorLayer from '../layer/vectorLayer.js';
@@ -25,7 +25,7 @@ import VcsEvent from '../vcsEvent.js';
 /**
  * @type {*|string}
  */
-const categoryContextId = uuidv4();
+const categoryModuleId = uuidv4();
 
 /**
  * @param {import("@vcmap/core").VectorLayer} layer
@@ -69,7 +69,7 @@ function checkMergeOptionOverride(key, value, defaultOption, option) {
 /**
  * A category contains user based items and is a special container. The container should not be created directly, but via
  * the requestCategory API on the categories collection. Do not use toJSON to retrieve the state of a category, since
- * categories outlive contexts and may be changed with mergeOptions to no longer reflect your initial state. Requestors
+ * categories outlive modules and may be changed with mergeOptions to no longer reflect your initial state. Requestors
  * should keep track of the requested options themselves.
  * @class
  * @extends {VcsObject}
@@ -128,7 +128,7 @@ class Category extends VcsObject {
     this._layer = null;
     if (this._featureProperty) {
       this._layer = new VectorLayer(this._layerOptions);
-      this._layer[contextIdSymbol] = categoryContextId;
+      this._layer[moduleIdSymbol] = categoryModuleId;
     }
     /**
      * @type {string}
@@ -156,7 +156,7 @@ class Category extends VcsObject {
      * @type {function():void}
      * @private
      */
-    this._contextRemovedListener = () => {};
+    this._moduleRemovedListener = () => {};
   }
 
   /**
@@ -246,11 +246,11 @@ class Category extends VcsObject {
    * @returns {string}
    * @private
    */
-  _getDynamicContextId() {
+  _getDynamicModuleId() {
     if (!this._app) {
-      throw new Error('Cannot get dynamic context id, before setting the vcApp');
+      throw new Error('Cannot get dynamic module id, before setting the vcApp');
     }
-    return this._app.dynamicContextId;
+    return this._app.dynamicModuleId;
   }
 
   /**
@@ -305,7 +305,7 @@ class Category extends VcsObject {
       /** @type {OverrideCollection} */ (collection) :
       makeOverrideCollection(
         collection,
-        this._getDynamicContextId.bind(this),
+        this._getDynamicModuleId.bind(this),
         this._serializeItem.bind(this),
         this._deserializeItem.bind(this),
       );
@@ -337,8 +337,8 @@ class Category extends VcsObject {
       throw new Error('Cannot switch apps');
     }
     this._app = app;
-    this._contextRemovedListener = this._app.contextRemoved.addEventListener((context) => {
-      this._collection.removeContext(context._id);
+    this._moduleRemovedListener = this._app.moduleRemoved.addEventListener((module) => {
+      this._collection.removeModule(module._id);
     });
     if (this._layer) {
       this._app.layers.add(this._layer);
@@ -378,17 +378,17 @@ class Category extends VcsObject {
   }
 
   /**
-   * @param {string} contextId
+   * @param {string} moduleId
    * @returns {{ name: string, items: Array<Object>}|null}
    */
-  serializeContext(contextId) {
+  serializeModule(moduleId) {
     if (this._collection.size === 0) {
       return null;
     }
 
     return {
       name: this.name,
-      items: this.collection.serializeContext(contextId),
+      items: this.collection.serializeModule(moduleId),
     };
   }
 
@@ -431,8 +431,8 @@ class Category extends VcsObject {
 
     this._collectionListeners.forEach((cb) => { cb(); });
     this._collectionListeners.splice(0);
-    this._contextRemovedListener();
-    this._contextRemovedListener = () => {};
+    this._moduleRemovedListener();
+    this._moduleRemovedListener = () => {};
     destroyCollection(this._collection);
     this._collectionChanged.destroy();
     this._app = null;

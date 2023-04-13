@@ -20,12 +20,12 @@ class OverrideClassRegistry {
   constructor(coreClassRegistry) {
     this._coreClassRegistry = coreClassRegistry;
     /**
-     * @type {Map<string, { contextId: string, ctor: function(new: T, ...*) }>}
+     * @type {Map<string, { moduleId: string, ctor: function(new: T, ...*) }>}
      * @private
      */
     this._classMap = new Map();
     /**
-     * @type {Map<string, Array<{ contextId: string, ctor: function(new: T, ...*) }>>}
+     * @type {Map<string, Array<{ moduleId: string, ctor: function(new: T, ...*) }>>}
      * @private
      */
     this._classShadows = new Map();
@@ -49,18 +49,18 @@ class OverrideClassRegistry {
   }
 
   /**
-   * Register a class for a given context by name. If the class already exists, it will be replaced and replaced called with the classeName.
-   * @param {string} contextId
+   * Register a class for a given module by name. If the class already exists, it will be replaced and replaced called with the classeName.
+   * @param {string} moduleId
    * @param {string} className
    * @param {function(new: T, ...*)} ctor
    */
-  registerClass(contextId, className, ctor) {
-    check(contextId, String);
+  registerClass(moduleId, className, ctor) {
+    check(moduleId, String);
     check(className, String);
     check(ctor, Function);
 
     const entry = {
-      contextId,
+      moduleId,
       ctor,
     };
 
@@ -83,16 +83,16 @@ class OverrideClassRegistry {
    * Unregister a previously registered class. You can only unregister classes added to this registry, not the underlying core registry.
    * If when registering this class you have replaced class, it will be re-instated and replaced called.
    * If there is no previously registered class, it will be removed and removed will be called.
-   * @param {string} contextId
+   * @param {string} moduleId
    * @param {string} className
    */
-  unregisterClass(contextId, className) {
-    check(contextId, String);
+  unregisterClass(moduleId, className) {
+    check(moduleId, String);
     check(className, String);
 
     if (this._classShadows.has(className)) {
       const shadowsArray = this._classShadows.get(className);
-      const newShadowsArray = shadowsArray.filter(e => e.contextId !== contextId);
+      const newShadowsArray = shadowsArray.filter(e => e.moduleId !== moduleId);
       if (newShadowsArray.length === 0) {
         this._classShadows.delete(className);
       } else if (newShadowsArray.length !== shadowsArray.length) {
@@ -102,7 +102,7 @@ class OverrideClassRegistry {
 
     if (
       this._classMap.has(className) &&
-      this._classMap.get(className).contextId === contextId
+      this._classMap.get(className).moduleId === moduleId
     ) {
       this._classMap.delete(className);
       if (this._classShadows.has(className)) {
@@ -177,15 +177,15 @@ class OverrideClassRegistry {
   }
 
   /**
-   * Removes all classes registered from within a certain context. Will re-instate classes overwritten by the context
+   * Removes all classes registered from within a certain module. Will re-instate classes overwritten by the module
    * and call the appropriate events, outlined in unregisterClass.
-   * @param {string} contextId
+   * @param {string} moduleId
    */
-  removeContext(contextId) {
-    check(contextId, String);
+  removeModule(moduleId) {
+    check(moduleId, String);
 
     this._classMap.forEach((cb, className) => {
-      this.unregisterClass(contextId, className);
+      this.unregisterClass(moduleId, className);
     });
   }
 

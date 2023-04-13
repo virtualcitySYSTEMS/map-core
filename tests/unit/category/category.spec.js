@@ -5,7 +5,7 @@ import IndexedCollection from '../../../src/util/indexedCollection.js';
 import VectorStyleItem from '../../../src/style/vectorStyleItem.js';
 import VcsApp from '../../../src/vcsApp.js';
 import VcsObject from '../../../src/vcsObject.js';
-import { contextIdSymbol } from '../../../src/vcsAppContextHelpers.js';
+import { moduleIdSymbol } from '../../../src/vcsModuleHelpers.js';
 
 describe('Category', () => {
   let app;
@@ -147,17 +147,17 @@ describe('Category', () => {
         app1.destroy();
       });
 
-      it('should add the dynamic context Id of the app to the feature, if it does not have a context ID set', () => {
+      it('should add the dynamic module Id of the app to the feature, if it does not have a module ID set', () => {
         const item = { name: 'foo' };
         category.collection.add(item);
-        expect(item).to.have.property(contextIdSymbol, app1.dynamicContextId);
+        expect(item).to.have.property(moduleIdSymbol, app1.dynamicModuleId);
       });
 
-      it('should not overwrite the context id of an item which already has a context id', () => {
+      it('should not overwrite the module id of an item which already has a module id', () => {
         const item = { name: 'bar' };
-        item[contextIdSymbol] = 'bar';
+        item[moduleIdSymbol] = 'bar';
         category.collection.add(item);
-        expect(item).to.have.property(contextIdSymbol, 'bar');
+        expect(item).to.have.property(moduleIdSymbol, 'bar');
       });
     });
 
@@ -237,11 +237,11 @@ describe('Category', () => {
     });
   });
 
-  describe('serializing a category for a context', () => {
+  describe('serializing a category for a module', () => {
     describe('of an empty category', () => {
       it('should return null', () => {
         const category = new Category({});
-        expect(category.serializeContext('foo')).to.be.null;
+        expect(category.serializeModule('foo')).to.be.null;
         category.destroy();
       });
     });
@@ -255,17 +255,17 @@ describe('Category', () => {
           name: 'bar',
         });
         category.setApp(app);
-        fooItem = { name: 'foo', [contextIdSymbol]: 'foo' };
+        fooItem = { name: 'foo', [moduleIdSymbol]: 'foo' };
         category.collection.add(fooItem);
         category.collection.add({ name: 'bar' });
         const bazItem = new VcsObject({ name: 'baz' });
-        bazItem[contextIdSymbol] = 'foo';
+        bazItem[moduleIdSymbol] = 'foo';
         category.collection.add(bazItem);
-        serialized = category.serializeContext('foo');
+        serialized = category.serializeModule('foo');
         category.destroy();
       });
 
-      it('should serialize the items of said context', () => {
+      it('should serialize the items of said module', () => {
         expect(serialized).to.have.property('items').and.to.have.lengthOf(2);
         expect(serialized.items.map(i => i.name)).to.have.members(['foo', 'baz']);
       });
@@ -290,23 +290,23 @@ describe('Category', () => {
           featureProperty: 'feat',
         });
         category.setApp(app);
-        fooItem = { name: 'foo', [contextIdSymbol]: 'foo', feat: new OlFeature({ geometry: new Point([1, 1, 0]) }) };
+        fooItem = { name: 'foo', [moduleIdSymbol]: 'foo', feat: new OlFeature({ geometry: new Point([1, 1, 0]) }) };
         category.collection.add(fooItem);
         category.collection.add({ name: 'bar' });
         const bazItem = new VcsObject({ name: 'baz' });
-        bazItem[contextIdSymbol] = 'foo';
+        bazItem[moduleIdSymbol] = 'foo';
         category.collection.add(bazItem);
 
         await new Promise((done) => {
           setTimeout(() => {
-            serialized = category.serializeContext('foo');
+            serialized = category.serializeModule('foo');
             category.destroy();
             done();
           }, 20);
         });
       });
 
-      it('should serialize the items of said context', () => {
+      it('should serialize the items of said module', () => {
         expect(serialized).to.have.property('items').and.to.have.lengthOf(2);
         expect(serialized.items.map(i => i.name)).to.have.members(['foo', 'baz']);
       });

@@ -26,7 +26,7 @@ class CategoryCollection extends IndexedCollection {
      */
     this._app = app;
     /**
-     * Map of category names, where the value is a map of contextId and items.
+     * Map of category names, where the value is a map of moduleId and items.
      * @type {Map<string, Map<string, Array<Object>>>}
      * @private
      */
@@ -35,10 +35,10 @@ class CategoryCollection extends IndexedCollection {
      * @type {Function}
      * @private
      */
-    this._contextRemovedListener = this._app.contextRemoved.addEventListener((context) => {
-      this._cache.forEach((contextMap, name) => {
-        contextMap.delete(context._id);
-        if (contextMap.size === 0) {
+    this._moduleRemovedListener = this._app.moduleRemoved.addEventListener((module) => {
+      this._cache.forEach((moduleMap, name) => {
+        moduleMap.delete(module._id);
+        if (moduleMap.size === 0) {
           this._cache.delete(name);
         }
       });
@@ -60,8 +60,8 @@ class CategoryCollection extends IndexedCollection {
     if (added != null && this._cache.has(category.name)) {
       this._cache
         .get(category.name)
-        .forEach((items, contextId) => {
-          this.parseCategoryItems(category.name, items, contextId);
+        .forEach((items, moduleId) => {
+          this.parseCategoryItems(category.name, items, moduleId);
         });
 
       this._cache.delete(category.name);
@@ -83,18 +83,18 @@ class CategoryCollection extends IndexedCollection {
    * they will be cached, until such a category is requested.
    * @param {string} name
    * @param {Array<Object>} items
-   * @param {string} contextId
+   * @param {string} moduleId
    * @returns {Promise<void>}
    */
-  async parseCategoryItems(name, items, contextId) {
+  async parseCategoryItems(name, items, moduleId) {
     const category = this.getByKey(name);
 
     if (category) {
-      await category.collection.parseItems(items, contextId);
+      await category.collection.parseItems(items, moduleId);
     } else if (this._cache.has(name)) {
-      this._cache.get(name).set(contextId, items);
+      this._cache.get(name).set(moduleId, items);
     } else {
-      this._cache.set(name, new Map([[contextId, items]]));
+      this._cache.set(name, new Map([[moduleId, items]]));
     }
   }
 
@@ -135,7 +135,7 @@ class CategoryCollection extends IndexedCollection {
 
   destroy() {
     super.destroy();
-    this._contextRemovedListener();
+    this._moduleRemovedListener();
     this._cache.clear();
     this._app = null;
   }

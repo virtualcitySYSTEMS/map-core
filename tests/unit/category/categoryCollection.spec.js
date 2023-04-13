@@ -1,7 +1,7 @@
 import Category from '../../../src/category/category.js';
 import VectorLayer from '../../../src/layer/vectorLayer.js';
 import VcsApp from '../../../src/vcsApp.js';
-import { contextIdSymbol } from '../../../src/vcsAppContextHelpers.js';
+import { moduleIdSymbol } from '../../../src/vcsModuleHelpers.js';
 
 describe('CategoryCollection', () => {
   describe('parsing of items', () => {
@@ -121,7 +121,7 @@ describe('CategoryCollection', () => {
       });
     });
 
-    describe('of an unrequested category, if the context of said items gets removed later on', () => {
+    describe('of an unrequested category, if the module of said items gets removed later on', () => {
       let app;
 
       before(async () => {
@@ -137,7 +137,7 @@ describe('CategoryCollection', () => {
           },
         ];
         await app.categories.parseCategoryItems('foo', items, 'foo');
-        app.contextRemoved.raiseEvent({ _id: 'foo' });
+        app.moduleRemoved.raiseEvent({ _id: 'foo' });
         await app.categories.requestCategory({ name: 'foo', type: Category.className, classRegistryName: 'layerClassRegistry' });
       });
 
@@ -182,7 +182,7 @@ describe('CategoryCollection', () => {
       it('should set the vcsApp (tested via add public interface, which requires the app to be set)', () => {
         const item = { name: 'foo' };
         category.collection.add(item);
-        expect(item).to.have.property(contextIdSymbol, app.dynamicContextId);
+        expect(item).to.have.property(moduleIdSymbol, app.dynamicModuleId);
       });
     });
 

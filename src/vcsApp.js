@@ -1,16 +1,16 @@
 import { getLogger as getLoggerByName } from '@vcsuite/logger';
 import { v4 as uuidv4 } from 'uuid';
 import { check } from '@vcsuite/check';
-import Context from './context.js';
+import VcsModule from './vcsModule.js';
 import {
-  contextIdSymbol,
+  moduleIdSymbol,
   destroyCollection,
   deserializeViewpoint,
   deserializeMap,
   getLayerIndex,
   serializeLayer,
   deserializeLayer,
-} from './vcsAppContextHelpers.js';
+} from './vcsModuleHelpers.js';
 import makeOverrideCollection from './util/overrideCollection.js';
 import CategoryCollection from './category/categoryCollection.js';
 import MapCollection from './util/mapCollection.js';
@@ -50,7 +50,7 @@ const vcsApps = new Map();
 /**
  * @type {string}
  */
-export const defaultDynamicContextId = '_defaultDynamicContext';
+export const defaultDynamicModuleId = '_defaultDynamicModule';
 
 /**
  * @class
@@ -63,23 +63,23 @@ class VcsApp {
      */
     this._id = uuidv4();
     /**
-     * @type {Context}
+     * @type {VcsModule}
      * @private
      */
-    this._defaultDynamicContext = new Context({ _id: defaultDynamicContextId });
+    this._defaultDynamicModule = new VcsModule({ _id: defaultDynamicModuleId });
     /**
-     * @type {Context}
+     * @type {VcsModule}
      * @private
      */
-    this._dynamicContext = this._defaultDynamicContext;
+    this._dynamicModule = this._defaultDynamicModule;
 
-    const getDynamicContextId = () => this._dynamicContext._id;
+    const getDynamicModuleId = () => this._dynamicModule._id;
 
     /**
      * @type {VcsEvent<string>}
      * @private
      */
-    this._dynamicContextIdChanged = new VcsEvent();
+    this._dynamicModuleIdChanged = new VcsEvent();
 
     /**
      * represents the current Locale.
@@ -107,7 +107,7 @@ class VcsApp {
     // @ts-ignore
     this._maps = makeOverrideCollection(
       new MapCollection(),
-      getDynamicContextId,
+      getDynamicModuleId,
       null,
       deserializeMap.bind(null, this),
       VcsMap,
@@ -124,7 +124,7 @@ class VcsApp {
     // @ts-ignore
     this._layers = makeOverrideCollection(
       this._maps.layerCollection,
-      getDynamicContextId,
+      getDynamicModuleId,
       serializeLayer.bind(null, this),
       deserializeLayer.bind(null, this),
       Layer,
@@ -138,7 +138,7 @@ class VcsApp {
      */
     this._obliqueCollections = makeOverrideCollection(
       new Collection(),
-      getDynamicContextId,
+      getDynamicModuleId,
       null,
       config => new ObliqueCollection(config),
       ObliqueCollection,
@@ -149,7 +149,7 @@ class VcsApp {
      */
     this._viewpoints = makeOverrideCollection(
       new Collection(),
-      getDynamicContextId,
+      getDynamicModuleId,
       null,
       deserializeViewpoint,
       Viewpoint,
@@ -165,18 +165,18 @@ class VcsApp {
      */
     this._styles = makeOverrideCollection(
       new Collection(),
-      getDynamicContextId,
+      getDynamicModuleId,
       null,
       getObjectFromClassRegistry.bind(null, this._styleClassRegistry),
       StyleItem,
     );
 
     /**
-     * @type {IndexedCollection<Context>}
+     * @type {IndexedCollection<VcsModule>}
      * @private
      */
-    this._contexts = new IndexedCollection('_id');
-    this._contexts.add(this._dynamicContext);
+    this._modules = new IndexedCollection('_id');
+    this._modules.add(this._dynamicModule);
     /**
      * @type {OverrideClassRegistry<import("@vcmap/core").Category<Object|import("@vcmap/core").VcsObject>>}
      * @private
@@ -196,7 +196,7 @@ class VcsApp {
      * @type {Promise<void>}
      * @private
      */
-    this._contextMutationPromise = Promise.resolve();
+    this._moduleMutationPromise = Promise.resolve();
     /**
      * @type {OverrideClassRegistry<*>}
      * @private
@@ -299,36 +299,36 @@ class VcsApp {
   get destroyed() { return this._destroyed; }
 
   /**
-   * @type {Array<Context>}
+   * @type {Array<VcsModule>}
    * @readonly
    */
-  get contexts() {
-    return [...this._contexts];
+  get modules() {
+    return [...this._modules];
   }
 
   /**
-   * @returns {VcsEvent<Context>}
+   * @returns {VcsEvent<VcsModule>}
    * @readonly
    */
-  get contextAdded() { return this._contexts.added; }
+  get moduleAdded() { return this._modules.added; }
 
   /**
-   * @returns {VcsEvent<Context>}
+   * @returns {VcsEvent<VcsModule>}
    * @readonly
    */
-  get contextRemoved() { return this._contexts.removed; }
+  get moduleRemoved() { return this._modules.removed; }
 
   /**
    * @type {string}
    * @readonly
    */
-  get dynamicContextId() { return this._dynamicContext._id; }
+  get dynamicModuleId() { return this._dynamicModule._id; }
 
   /**
    * @type {VcsEvent<string>}
    * @readonly
    */
-  get dynamicContextIdChanged() { return this._dynamicContextIdChanged; }
+  get dynamicModuleIdChanged() { return this._dynamicModuleIdChanged; }
 
   /**
    * @type {OverrideClassRegistry<VcsMap>}
@@ -374,47 +374,47 @@ class VcsApp {
 
   /**
    * @param {string} id
-   * @returns {Context}
+   * @returns {VcsModule}
    */
-  getContextById(id) {
-    return this._contexts.getByKey(id);
+  getModuleById(id) {
+    return this._modules.getByKey(id);
   }
 
   /**
-   * @param {Context} context
+   * @param {VcsModule} module
    * @returns {Promise<void>}
    * @protected
    */
-  async _parseContext(context) {
-    const { config } = context;
+  async _parseModule(module) {
+    const { config } = module;
     if (config.projection) { // XXX this needs fixing. this should be _projections_ and there should be a `defaultProjection`
       setDefaultProjectionOptions(config.projection);
     }
 
-    await this._styles.parseItems(config.styles, context._id);
-    await this._layers.parseItems(config.layers, context._id);
+    await this._styles.parseItems(config.styles, module._id);
+    await this._layers.parseItems(config.layers, module._id);
     // TODO add flights & ade here
 
-    await this._obliqueCollections.parseItems(config.obliqueCollections, context._id);
-    await this._viewpoints.parseItems(config.viewpoints, context._id);
-    await this._maps.parseItems(config.maps, context._id);
+    await this._obliqueCollections.parseItems(config.obliqueCollections, module._id);
+    await this._viewpoints.parseItems(config.viewpoints, module._id);
+    await this._maps.parseItems(config.maps, module._id);
 
     if (Array.isArray(config.categories)) {
       await Promise.all((config.categories).map(async ({ name, items }) => {
-        await this._categories.parseCategoryItems(name, items, context._id);
+        await this._categories.parseCategoryItems(name, items, module._id);
       }));
     }
   }
 
   /**
-   * @param {Context} context
+   * @param {VcsModule} module
    * @returns {Promise<void>}
    * @protected
    */
-  async _setContextState(context) {
-    const { config } = context;
+  async _setModuleState(module) {
+    const { config } = module;
     [...this._layers]
-      .filter(l => l[contextIdSymbol] === context._id)
+      .filter(l => l[moduleIdSymbol] === module._id)
       .forEach((l) => {
         if (l.activeOnStartup) {
           l.activate()
@@ -428,7 +428,7 @@ class VcsApp {
       });
 
     const activeObliqueCollection = [...this._obliqueCollections]
-      .find(c => c[contextIdSymbol] === context._id && c.activeOnStartup);
+      .find(c => c[moduleIdSymbol] === module._id && c.activeOnStartup);
 
     if (activeObliqueCollection) {
       [...this._maps]
@@ -451,108 +451,108 @@ class VcsApp {
   }
 
   /**
-   * @param {Context} context
+   * @param {VcsModule} module
    * @returns {Promise<void>}
    */
-  addContext(context) {
-    check(context, Context);
+  addModule(module) {
+    check(module, VcsModule);
 
-    this._contextMutationPromise = this._contextMutationPromise
+    this._moduleMutationPromise = this._moduleMutationPromise
       .then(async () => {
-        if (this._contexts.has(context)) {
-          getLogger().info(`context with id ${context._id} already loaded`);
+        if (this._modules.has(module)) {
+          getLogger().info(`module with id ${module._id} already loaded`);
           return;
         }
 
-        await this._parseContext(context);
-        await this._setContextState(context);
-        this._contexts.add(context);
+        await this._parseModule(module);
+        await this._setModuleState(module);
+        this._modules.add(module);
       });
-    return this._contextMutationPromise;
+    return this._moduleMutationPromise;
   }
 
   /**
-   * @param {string} contextId
-   * @returns {VcsAppConfig}
+   * @param {string} moduleId
+   * @returns {VcsModuleConfig}
    */
-  serializeContext(contextId) {
-    check(contextId, String);
-    if (!this._contexts.hasKey(contextId)) {
-      throw new Error('Context is not managed by this app, call add(context) before');
+  serializeModule(moduleId) {
+    check(moduleId, String);
+    if (!this._modules.hasKey(moduleId)) {
+      throw new Error('VcsModule is not managed by this app, call add(module) before');
     }
-    const config = this._contexts.getByKey(contextId).toJson();
-    config.maps = this._maps.serializeContext(contextId);
-    config.layers = this._layers.serializeContext(contextId);
-    config.obliqueCollections = this._obliqueCollections.serializeContext(contextId);
-    config.viewpoints = this._viewpoints.serializeContext(contextId);
-    config.styles = this._styles.serializeContext(contextId);
+    const config = this._modules.getByKey(moduleId).toJSON();
+    config.maps = this._maps.serializeModule(moduleId);
+    config.layers = this._layers.serializeModule(moduleId);
+    config.obliqueCollections = this._obliqueCollections.serializeModule(moduleId);
+    config.viewpoints = this._viewpoints.serializeModule(moduleId);
+    config.styles = this._styles.serializeModule(moduleId);
     config.categories = [...this._categories]
-      .map(c => c.serializeContext(contextId))
+      .map(c => c.serializeModule(moduleId))
       .filter(c => !!c);
 
     return config;
   }
 
   /**
-   * sets the given context as the dynamic
-   * @param {Context} context
+   * sets the given module as the dynamic
+   * @param {VcsModule} module
    */
-  setDynamicContext(context) {
-    if (!this._contexts.has(context)) {
-      throw new Error('Context is not managed by this app, call add(context) before');
+  setDynamicModule(module) {
+    if (!this._modules.has(module)) {
+      throw new Error('VcsModule is not managed by this app, call add(module) before');
     }
-    if (this._dynamicContext !== context) {
-      this._dynamicContext = context;
-      this.dynamicContextIdChanged.raiseEvent(this.dynamicContextId);
+    if (this._dynamicModule !== module) {
+      this._dynamicModule = module;
+      this.dynamicModuleIdChanged.raiseEvent(this.dynamicModuleId);
     }
   }
 
   /**
-   * resets the dynamic Context to the "defaultDynamicContext"
+   * resets the dynamic VcsModule to the "defaultDynamicModule"
    */
-  resetDynamicContext() {
-    this.setDynamicContext(this._defaultDynamicContext);
+  resetDynamicModule() {
+    this.setDynamicModule(this._defaultDynamicModule);
   }
 
   /**
-   * @param {string} contextId
+   * @param {string} moduleId
    * @returns {Promise<void>}
    * @protected
    */
-  async _removeContext(contextId) {
+  async _removeModule(moduleId) {
     await Promise.all([
-      this._maps.removeContext(contextId),
-      this._layers.removeContext(contextId),
-      this._viewpoints.removeContext(contextId),
-      this._styles.removeContext(contextId),
-      this._obliqueCollections.removeContext(contextId),
+      this._maps.removeModule(moduleId),
+      this._layers.removeModule(moduleId),
+      this._viewpoints.removeModule(moduleId),
+      this._styles.removeModule(moduleId),
+      this._obliqueCollections.removeModule(moduleId),
     ]);
   }
 
   /**
-   * @param {string} contextId
+   * @param {string} moduleId
    * @returns {Promise<void>}
    */
-  removeContext(contextId) {
-    this._contextMutationPromise = this._contextMutationPromise
+  removeModule(moduleId) {
+    this._moduleMutationPromise = this._moduleMutationPromise
       .then(async () => {
-        const context = this._contexts.getByKey(contextId);
-        if (!context) {
-          getLogger().info(`context with id ${contextId} has alread been removed`);
+        const module = this._modules.getByKey(moduleId);
+        if (!module) {
+          getLogger().info(`module with id ${moduleId} has already been removed`);
           return;
         }
-        await this._removeContext(contextId);
-        this._contexts.remove(context);
+        await this._removeModule(moduleId);
+        this._modules.remove(module);
       });
 
-    return this._contextMutationPromise;
+    return this._moduleMutationPromise;
   }
 
   /**
    * Destroys the app and all its collections, their content and ui managers.
    */
   destroy() {
-    Object.defineProperty(this, '_contextMutationPromise', {
+    Object.defineProperty(this, '_moduleMutationPromise', {
       get() {
         throw new Error('VcsApp was destroyed');
       },
@@ -563,7 +563,7 @@ class VcsApp {
     destroyCollection(this._obliqueCollections);
     destroyCollection(this._viewpoints);
     destroyCollection(this._styles);
-    destroyCollection(this._contexts);
+    destroyCollection(this._modules);
     destroyCollection(this._categories);
     this._mapClassRegistry.destroy();
     this._layerClassRegistry.destroy();
@@ -575,7 +575,7 @@ class VcsApp {
     this.destroyed.raiseEvent();
     this.destroyed.destroy();
     this.localeChanged.destroy();
-    this.dynamicContextIdChanged.destroy();
+    this.dynamicModuleIdChanged.destroy();
   }
 }
 

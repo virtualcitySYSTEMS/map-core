@@ -71,7 +71,7 @@ export function getStylesArray(style, feature, resolution = 1) {
 
 /**
  * function to convert a feature to an array of Cesium.Primitives given a style and default properties. the resulting primitives
- * must be added to the contexts collections here
+ * must be added to the modules collections here
  * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
  * @param {import("ol/style/Style").StyleLike} style
  * @param {import("@vcmap/core").VectorProperties} vectorProperties

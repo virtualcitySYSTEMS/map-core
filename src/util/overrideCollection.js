@@ -2,7 +2,7 @@
 // eslint-disable-next-line max-classes-per-file
 import { check } from '@vcsuite/check';
 import { getLogger as getLoggerByName } from '@vcsuite/logger';
-import { contextIdSymbol } from '../vcsAppContextHelpers.js';
+import { moduleIdSymbol } from '../vcsModuleHelpers.js';
 import Collection from './collection.js';
 import VcsEvent from '../vcsEvent.js';
 
@@ -24,8 +24,8 @@ function getLogger() {
  * @property {Map<string, Array<Object>>} shadowMap
  * @property {function(Array<Object>, string):Promise<void>} parseItems
  * @property {function(string):Object} getSerializedByKey
- * @property {function(string):Promise<void>} removeContext
- * @property {function(string):Array<Object>} serializeContext
+ * @property {function(string):Promise<void>} removeModule
+ * @property {function(string):Array<Object>} serializeModule
  * @template {*} T
  */
 
@@ -37,7 +37,7 @@ export const isOverrideCollection = Symbol('OverrideCollection');
 
 /**
  * @param {Collection<T>} collection
- * @param {function():string} getDynamicContextId - function to get the current dynamic context id
+ * @param {function():string} getDynamicModuleId - function to get the current dynamic module id
  * @param {(function(T):Object)=} serializeItem - optional function to serialize an item, defaults to returning item.toJSON or item: i => (i.toJSON || i)
  * @param {(function(Object):(T|Promise<T>))=} deserializeItem - optional deserialization function. defaults to returning the passed object: i => i
  * @param {*=} ctor - optional constructor to validate deserialized items against. if passed, deserializeItem must be an instance of ctor.
@@ -47,7 +47,7 @@ export const isOverrideCollection = Symbol('OverrideCollection');
  */
 function makeOverrideCollection(
   collection,
-  getDynamicContextId,
+  getDynamicModuleId,
   serializeItem,
   deserializeItem,
   ctor,
@@ -92,7 +92,7 @@ function makeOverrideCollection(
       }
       const shadowsArray = overrideCollection.shadowMap.get(itemId);
       const serializedShadow = serialize(shadow);
-      serializedShadow[contextIdSymbol] = shadow[contextIdSymbol];
+      serializedShadow[moduleIdSymbol] = shadow[moduleIdSymbol];
       shadowsArray.push(serializedShadow);
     }
 
@@ -114,10 +114,10 @@ function makeOverrideCollection(
 
   /**
    * @param {Array<Object>} configArray
-   * @param {string} contextId
+   * @param {string} moduleId
    * @returns {Promise<void>}
    */
-  overrideCollection.parseItems = async function parseItems(configArray, contextId) {
+  overrideCollection.parseItems = async function parseItems(configArray, moduleId) {
     if (Array.isArray(configArray)) {
       const instanceArray = await Promise.all(configArray.map(async (config) => {
         const item = await deserialize(config);
@@ -125,7 +125,7 @@ function makeOverrideCollection(
           getLogger().warning(`Could not load item ${config[overrideCollection.uniqueKey]} of type ${config.type}`);
           return null;
         }
-        item[contextIdSymbol] = contextId;
+        item[moduleIdSymbol] = moduleId;
         return item;
       }));
       instanceArray
@@ -153,7 +153,7 @@ function makeOverrideCollection(
       const serializedShadow = overrideCollection.shadowMap.get(itemId).pop();
       if (serializedShadow) {
         const reincarnation = await deserialize(serializedShadow);
-        reincarnation[contextIdSymbol] = serializedShadow[contextIdSymbol];
+        reincarnation[moduleIdSymbol] = serializedShadow[moduleIdSymbol];
         // @ts-ignore
         const index = getShadowIndex(reincarnation, item, item[overrideCollection.previousIndexSymbol]);
         // @ts-ignore
@@ -167,18 +167,18 @@ function makeOverrideCollection(
   });
 
   overrideCollection.added.addEventListener((item) => {
-    if (!item[contextIdSymbol]) {
-      item[contextIdSymbol] = getDynamicContextId();
+    if (!item[moduleIdSymbol]) {
+      item[moduleIdSymbol] = getDynamicModuleId();
     }
   });
 
   /**
-   * @param {string} contextId
+   * @param {string} moduleId
    * @returns {Promise<void>}
    */
-  overrideCollection.removeContext = async function removeContext(contextId) {
+  overrideCollection.removeModule = async function removeModule(moduleId) {
     overrideCollection.shadowMap.forEach((shadowsArray, name) => {
-      const newShadowsArray = shadowsArray.filter(c => c[contextIdSymbol] !== contextId);
+      const newShadowsArray = shadowsArray.filter(c => c[moduleIdSymbol] !== moduleId);
       if (newShadowsArray.length === 0) {
         overrideCollection.shadowMap.delete(name);
       } else if (newShadowsArray.length !== shadowsArray.length) {
@@ -187,7 +187,7 @@ function makeOverrideCollection(
     });
 
     await Promise.all([...overrideCollection]
-      .filter(item => item[contextIdSymbol] === contextId)
+      .filter(item => item[moduleIdSymbol] === moduleId)
       .map(async (item) => {
         overrideCollection.remove(item);
         // @ts-ignore
@@ -204,18 +204,18 @@ function makeOverrideCollection(
   overrideCollection.replaced = new VcsEvent();
 
   /**
-   * @param {string} contextId
+   * @param {string} moduleId
    * @returns {Array<Object>}
    */
-  overrideCollection.serializeContext = function serializeContext(contextId) {
+  overrideCollection.serializeModule = function serializeModule(moduleId) {
     return [...overrideCollection]
       .map((item) => {
-        if (item[contextIdSymbol] === contextId) {
+        if (item[moduleIdSymbol] === moduleId) {
           return serialize(item);
         }
         if (overrideCollection.shadowMap.has(item[overrideCollection.uniqueKey])) {
           return overrideCollection.shadowMap.get(item[overrideCollection.uniqueKey])
-            .find(i => i[contextIdSymbol] === contextId);
+            .find(i => i[moduleIdSymbol] === moduleId);
         }
         return null;
       })

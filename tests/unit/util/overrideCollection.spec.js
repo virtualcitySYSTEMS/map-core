@@ -3,30 +3,30 @@ import Collection from '../../../src/util/collection.js';
 import IndexedCollection from '../../../src/util/indexedCollection.js';
 import VcsObject from '../../../src/vcsObject.js';
 import Layer from '../../../src/layer/layer.js';
-import { contextIdSymbol, destroyCollection } from '../../../src/vcsAppContextHelpers.js';
+import { moduleIdSymbol, destroyCollection } from '../../../src/vcsModuleHelpers.js';
 import { getObjectFromClassRegistry, layerClassRegistry } from '../../../index.js';
 
 
 describe('override collections', () => {
-  let getContextId;
+  let getModuleId;
 
   before(() => {
-    getContextId = () => 'dynamicContextId';
+    getModuleId = () => 'dynamicModuleId';
   });
 
   describe('making an override collection', () => {
     it('should make an override collection out of a collection', () => {
-      const collection = makeOverrideCollection(new Collection(), getContextId);
+      const collection = makeOverrideCollection(new Collection(), getModuleId);
       expect(collection).to.have.property('override');
       expect(collection).to.have.property('replaced');
       expect(collection).to.have.property('shadowMap');
       expect(collection).to.have.property('parseItems');
-      expect(collection).to.have.property('removeContext');
+      expect(collection).to.have.property('removeModule');
     });
 
     it('should throw an error, when trying to make a colleciton an override collection twice', () => {
-      const collection = makeOverrideCollection(new Collection(), getContextId);
-      expect(() => makeOverrideCollection(collection, getContextId)).to.throw;
+      const collection = makeOverrideCollection(new Collection(), getModuleId);
+      expect(() => makeOverrideCollection(collection, getModuleId)).to.throw;
     });
   });
 
@@ -38,13 +38,13 @@ describe('override collections', () => {
       let replaced = false;
 
       before(() => {
-        collection = makeOverrideCollection(new Collection(), getContextId);
+        collection = makeOverrideCollection(new Collection(), getModuleId);
         collection.replaced.addEventListener(() => {
           replaced = true;
         });
 
         item = new VcsObject({ name: 'foo' });
-        item[contextIdSymbol] = 'foo';
+        item[moduleIdSymbol] = 'foo';
         returnedItem = collection.override(item);
       });
 
@@ -65,13 +65,13 @@ describe('override collections', () => {
       });
     });
 
-    describe('if the object does not have a contextId', () => {
+    describe('if the object does not have a moduleId', () => {
       let item;
       let returnedItem;
       let collection;
 
       before(() => {
-        collection = makeOverrideCollection(new Collection(), getContextId);
+        collection = makeOverrideCollection(new Collection(), getModuleId);
         item = new VcsObject({ name: 'foo' });
         returnedItem = collection.override(item);
       });
@@ -88,8 +88,8 @@ describe('override collections', () => {
         expect(collection.has(item)).to.be.true;
       });
 
-      it('should add the contextId to the item', () => {
-        expect(item).to.have.property(contextIdSymbol, getContextId());
+      it('should add the moduleId to the item', () => {
+        expect(item).to.have.property(moduleIdSymbol, getModuleId());
       });
     });
 
@@ -101,17 +101,17 @@ describe('override collections', () => {
       let returnedItem;
 
       before(() => {
-        collection = makeOverrideCollection(new Collection(), getContextId, null, option => new VcsObject(option));
+        collection = makeOverrideCollection(new Collection(), getModuleId, null, option => new VcsObject(option));
         collection.replaced.addEventListener((event) => {
           replacementEvent = event;
         });
 
         existingItem = new VcsObject({ name: 'foo' });
-        existingItem[contextIdSymbol] = 'foo';
+        existingItem[moduleIdSymbol] = 'foo';
         collection.add(existingItem);
 
         item = new VcsObject({ name: 'foo' });
-        item[contextIdSymbol] = 'bar';
+        item[moduleIdSymbol] = 'bar';
         returnedItem = collection.override(item);
       });
 
@@ -133,7 +133,7 @@ describe('override collections', () => {
         expect(fooShadowMap).to.be.an('array')
           .and.to.have.lengthOf(1);
         expect(fooShadowMap[0]).to.have.property('name', 'foo');
-        expect(fooShadowMap[0]).to.have.property(contextIdSymbol, 'foo');
+        expect(fooShadowMap[0]).to.have.property(moduleIdSymbol, 'foo');
       });
 
       it('should call the replaced event with the new and old object', () => {
@@ -147,17 +147,17 @@ describe('override collections', () => {
       let collection;
 
       before(() => {
-        collection = makeOverrideCollection(new Collection(), getContextId, null, option => new VcsObject(option));
+        collection = makeOverrideCollection(new Collection(), getModuleId, null, option => new VcsObject(option));
         const existingItem1 = new VcsObject({ name: 'foo' });
-        existingItem1[contextIdSymbol] = 'foo';
+        existingItem1[moduleIdSymbol] = 'foo';
         collection.add(existingItem1);
 
         const existingItem2 = new VcsObject({ name: 'foo' });
-        existingItem2[contextIdSymbol] = 'bar';
+        existingItem2[moduleIdSymbol] = 'bar';
         collection.override(existingItem2);
 
         item = new VcsObject({ name: 'foo' });
-        item[contextIdSymbol] = 'baz';
+        item[moduleIdSymbol] = 'baz';
         collection.override(item);
       });
 
@@ -175,10 +175,10 @@ describe('override collections', () => {
         expect(fooShadowMap).to.be.an('array')
           .and.to.have.lengthOf(2);
         expect(fooShadowMap[0]).to.have.property('name', 'foo');
-        expect(fooShadowMap[0]).to.have.property(contextIdSymbol, 'foo');
+        expect(fooShadowMap[0]).to.have.property(moduleIdSymbol, 'foo');
 
         expect(fooShadowMap[1]).to.have.property('name', 'foo');
-        expect(fooShadowMap[1]).to.have.property(contextIdSymbol, 'bar');
+        expect(fooShadowMap[1]).to.have.property(moduleIdSymbol, 'bar');
       });
     });
 
@@ -193,7 +193,7 @@ describe('override collections', () => {
       before(() => {
         collection = makeOverrideCollection(
           new IndexedCollection(),
-          getContextId,
+          getModuleId,
           null,
           option => new VcsObject(option),
         );
@@ -202,21 +202,21 @@ describe('override collections', () => {
         });
 
         const placeHolderBefore = new VcsObject({ name: 'placeHolderBefore' });
-        placeHolderBefore[contextIdSymbol] = 'foo';
+        placeHolderBefore[moduleIdSymbol] = 'foo';
         collection.add(placeHolderBefore);
 
         existingItem = new VcsObject({ name: 'foo' });
-        existingItem[contextIdSymbol] = 'foo';
+        existingItem[moduleIdSymbol] = 'foo';
         collection.add(existingItem);
 
         const placeHolderAfter = new VcsObject({ name: 'placeHolderAfter' });
-        placeHolderAfter[contextIdSymbol] = 'foo';
+        placeHolderAfter[moduleIdSymbol] = 'foo';
         collection.add(placeHolderAfter);
 
         currentIndex = collection.indexOf(existingItem);
 
         item = new VcsObject({ name: 'foo' });
-        item[contextIdSymbol] = 'bar';
+        item[moduleIdSymbol] = 'bar';
         returnedItem = collection.override(item);
       });
 
@@ -242,7 +242,7 @@ describe('override collections', () => {
         expect(fooShadowMap).to.be.an('array')
           .and.to.have.lengthOf(1);
         expect(fooShadowMap[0]).to.have.property('name', 'foo');
-        expect(fooShadowMap[0]).to.have.property(contextIdSymbol, 'foo');
+        expect(fooShadowMap[0]).to.have.property(moduleIdSymbol, 'foo');
       });
 
       it('should call the replaced event with the replacement object', () => {
@@ -259,16 +259,16 @@ describe('override collections', () => {
 
       before(() => {
         uniqueSymbol = Symbol('unique');
-        collection = makeOverrideCollection(new Collection(uniqueSymbol), getContextId);
+        collection = makeOverrideCollection(new Collection(uniqueSymbol), getModuleId);
 
         const existingItem = new VcsObject({ name: 'foo' });
         existingItem[uniqueSymbol] = 'foo';
-        existingItem[contextIdSymbol] = 'foo';
+        existingItem[moduleIdSymbol] = 'foo';
         collection.add(existingItem);
 
         item = new VcsObject({ name: 'foo' });
         item[uniqueSymbol] = 'foo';
-        item[contextIdSymbol] = 'bar';
+        item[moduleIdSymbol] = 'bar';
         returnedItem = collection.override(item);
       });
 
@@ -290,7 +290,7 @@ describe('override collections', () => {
         expect(fooShadowMap).to.be.an('array')
           .and.to.have.lengthOf(1);
         expect(fooShadowMap[0]).to.have.property('name', 'foo');
-        expect(fooShadowMap[0]).to.have.property(contextIdSymbol, 'foo');
+        expect(fooShadowMap[0]).to.have.property(moduleIdSymbol, 'foo');
       });
     });
   });
@@ -301,9 +301,9 @@ describe('override collections', () => {
       let collection;
 
       before(() => {
-        collection = makeOverrideCollection(new Collection(), getContextId);
+        collection = makeOverrideCollection(new Collection(), getModuleId);
         item = new VcsObject({ name: 'foo' });
-        item[contextIdSymbol] = 'foo';
+        item[moduleIdSymbol] = 'foo';
         collection.override(item);
         collection.remove(item);
       });
@@ -322,14 +322,14 @@ describe('override collections', () => {
       let collection;
 
       before(() => {
-        collection = makeOverrideCollection(new Collection(), getContextId, null, option => new VcsObject(option));
+        collection = makeOverrideCollection(new Collection(), getModuleId, null, option => new VcsObject(option));
 
         const existingItem = new VcsObject({ name: 'foo' });
-        existingItem[contextIdSymbol] = 'foo';
+        existingItem[moduleIdSymbol] = 'foo';
         collection.add(existingItem);
 
         item = new VcsObject({ name: 'foo' });
-        item[contextIdSymbol] = 'bar';
+        item[moduleIdSymbol] = 'bar';
         collection.override(item);
         collection.remove(item);
       });
@@ -358,17 +358,17 @@ describe('override collections', () => {
       before(() => {
         collection = makeOverrideCollection(
           new Collection(),
-          getContextId,
+          getModuleId,
           null,
           option => Promise.resolve(new VcsObject(option)),
         );
 
         const existingItem = new VcsObject({ name: 'foo' });
-        existingItem[contextIdSymbol] = 'foo';
+        existingItem[moduleIdSymbol] = 'foo';
         collection.add(existingItem);
 
         item = new VcsObject({ name: 'foo' });
-        item[contextIdSymbol] = 'bar';
+        item[moduleIdSymbol] = 'bar';
         collection.override(item);
         collection.remove(item);
       });
@@ -395,17 +395,17 @@ describe('override collections', () => {
       let collection;
 
       before(() => {
-        collection = makeOverrideCollection(new Collection(), getContextId, null, option => new VcsObject(option));
+        collection = makeOverrideCollection(new Collection(), getModuleId, null, option => new VcsObject(option));
         const existingItem1 = new VcsObject({ name: 'foo' });
-        existingItem1[contextIdSymbol] = 'foo';
+        existingItem1[moduleIdSymbol] = 'foo';
         collection.add(existingItem1);
 
         const existingItem2 = new VcsObject({ name: 'foo' });
-        existingItem2[contextIdSymbol] = 'bar';
+        existingItem2[moduleIdSymbol] = 'bar';
         collection.override(existingItem2);
 
         item = new VcsObject({ name: 'foo' });
-        item[contextIdSymbol] = 'baz';
+        item[moduleIdSymbol] = 'baz';
         collection.override(item);
         collection.remove(item);
       });
@@ -421,7 +421,7 @@ describe('override collections', () => {
       it('should recreate the shadow', () => {
         const reincarnation = collection.getByKey('foo');
         expect(reincarnation).to.be.an.instanceOf(VcsObject);
-        expect(reincarnation).to.have.property(contextIdSymbol, 'bar');
+        expect(reincarnation).to.have.property(moduleIdSymbol, 'bar');
       });
 
       it('should keep previous shadows of the object', () => {
@@ -430,7 +430,7 @@ describe('override collections', () => {
         expect(fooShadowMap).to.be.an('array')
           .and.to.have.lengthOf(1);
         expect(fooShadowMap[0]).to.have.property('name', 'foo');
-        expect(fooShadowMap[0]).to.have.property(contextIdSymbol, 'foo');
+        expect(fooShadowMap[0]).to.have.property(moduleIdSymbol, 'foo');
       });
     });
 
@@ -442,25 +442,25 @@ describe('override collections', () => {
       before(() => {
         collection = makeOverrideCollection(
           new IndexedCollection(),
-          getContextId,
+          getModuleId,
           null,
           option => new VcsObject(option),
         );
 
         const placeHolderBefore = new VcsObject({ name: 'placeHolderBefore' });
-        placeHolderBefore[contextIdSymbol] = 'foo';
+        placeHolderBefore[moduleIdSymbol] = 'foo';
         collection.add(placeHolderBefore);
 
         const existingItem = new VcsObject({ name: 'foo' });
-        existingItem[contextIdSymbol] = 'foo';
+        existingItem[moduleIdSymbol] = 'foo';
         collection.add(existingItem);
 
         const placeHolderAfter = new VcsObject({ name: 'placeHolderAfter' });
-        placeHolderAfter[contextIdSymbol] = 'foo';
+        placeHolderAfter[moduleIdSymbol] = 'foo';
         collection.add(placeHolderAfter);
 
         item = new VcsObject({ name: 'foo' });
-        item[contextIdSymbol] = 'bar';
+        item[moduleIdSymbol] = 'bar';
         collection.override(item);
 
         currentIndex = collection.indexOf(item);
@@ -491,93 +491,93 @@ describe('override collections', () => {
     });
   });
 
-  describe('removing a context from an override collection', () => {
+  describe('removing a module from an override collection', () => {
     describe('shadowMap handling', () => {
       let collection;
 
       beforeEach(() => {
-        collection = makeOverrideCollection(new Collection(), getContextId, null, option => new VcsObject(option));
+        collection = makeOverrideCollection(new Collection(), getModuleId, null, option => new VcsObject(option));
       });
 
       afterEach(() => {
         destroyCollection(collection);
       });
 
-      it('should remove a shadow, if its part of the context', async () => {
+      it('should remove a shadow, if its part of the module', async () => {
         const item1 = new VcsObject({ name: 'foo' });
-        item1[contextIdSymbol] = 'foo';
+        item1[moduleIdSymbol] = 'foo';
         collection.add(item1);
 
         const item2 = new VcsObject({ name: 'foo' });
-        item2[contextIdSymbol] = 'bar';
+        item2[moduleIdSymbol] = 'bar';
         collection.override(item2);
 
         const item3 = new VcsObject({ name: 'foo' });
-        item3[contextIdSymbol] = 'baz';
+        item3[moduleIdSymbol] = 'baz';
         collection.override(item3);
 
-        await collection.removeContext('foo');
+        await collection.removeModule('foo');
 
         expect(collection.shadowMap.has('foo')).to.be.true;
         const fooShadowMap = collection.shadowMap.get('foo');
         expect(fooShadowMap).to.be.an('array')
           .and.to.have.lengthOf(1);
         expect(fooShadowMap[0]).to.have.property('name', 'foo');
-        expect(fooShadowMap[0]).to.have.property(contextIdSymbol, 'bar');
+        expect(fooShadowMap[0]).to.have.property(moduleIdSymbol, 'bar');
       });
 
-      it('should remove all shadows of a context', async () => {
+      it('should remove all shadows of a module', async () => {
         const item1 = new VcsObject({ name: 'foo' });
-        item1[contextIdSymbol] = 'foo';
+        item1[moduleIdSymbol] = 'foo';
         collection.add(item1);
 
         const item2 = new VcsObject({ name: 'foo' });
-        item2[contextIdSymbol] = 'foo';
+        item2[moduleIdSymbol] = 'foo';
         collection.override(item2);
 
         const item3 = new VcsObject({ name: 'foo' });
-        item3[contextIdSymbol] = 'bar';
+        item3[moduleIdSymbol] = 'bar';
         collection.override(item3);
 
         const item4 = new VcsObject({ name: 'foo' });
-        item4[contextIdSymbol] = 'baz';
+        item4[moduleIdSymbol] = 'baz';
         collection.override(item4);
 
-        await collection.removeContext('foo');
+        await collection.removeModule('foo');
 
         expect(collection.shadowMap.has('foo')).to.be.true;
         const fooShadowMap = collection.shadowMap.get('foo');
         expect(fooShadowMap).to.be.an('array')
           .and.to.have.lengthOf(1);
         expect(fooShadowMap[0]).to.have.property('name', 'foo');
-        expect(fooShadowMap[0]).to.have.property(contextIdSymbol, 'bar');
+        expect(fooShadowMap[0]).to.have.property(moduleIdSymbol, 'bar');
       });
 
-      it('should remove the map entry, if there are no more shadows after removing the context', async () => {
+      it('should remove the map entry, if there are no more shadows after removing the module', async () => {
         const item1 = new VcsObject({ name: 'foo' });
-        item1[contextIdSymbol] = 'foo';
+        item1[moduleIdSymbol] = 'foo';
         collection.add(item1);
 
         const item2 = new VcsObject({ name: 'foo' });
-        item2[contextIdSymbol] = 'bar';
+        item2[moduleIdSymbol] = 'bar';
         collection.override(item2);
 
-        await collection.removeContext('foo');
+        await collection.removeModule('foo');
 
         expect(collection.shadowMap.has('foo')).to.be.false;
       });
     });
 
-    describe('if there is an object with said context', () => {
+    describe('if there is an object with said module', () => {
       let collection;
       let item;
 
       before(async () => {
-        collection = makeOverrideCollection(new Collection(), getContextId, null, option => new VcsObject(option));
+        collection = makeOverrideCollection(new Collection(), getModuleId, null, option => new VcsObject(option));
         item = new VcsObject({ name: 'foo' });
-        item[contextIdSymbol] = 'foo';
+        item[moduleIdSymbol] = 'foo';
         collection.add(item);
-        await collection.removeContext('foo');
+        await collection.removeModule('foo');
       });
 
       after(() => {
@@ -593,22 +593,22 @@ describe('override collections', () => {
       });
     });
 
-    describe('if there is an object with said context and there is one shadow of the object', () => {
+    describe('if there is an object with said module and there is one shadow of the object', () => {
       let collection;
       let item;
 
       before(async () => {
-        collection = makeOverrideCollection(new Collection(), getContextId, null, option => new VcsObject(option));
+        collection = makeOverrideCollection(new Collection(), getModuleId, null, option => new VcsObject(option));
 
         const item1 = new VcsObject({ name: 'foo' });
-        item1[contextIdSymbol] = 'foo';
+        item1[moduleIdSymbol] = 'foo';
         collection.add(item1);
 
         item = new VcsObject({ name: 'foo' });
-        item[contextIdSymbol] = 'bar';
+        item[moduleIdSymbol] = 'bar';
         collection.override(item);
 
-        await collection.removeContext('bar');
+        await collection.removeModule('bar');
       });
 
       after(() => {
@@ -630,29 +630,29 @@ describe('override collections', () => {
       it('should reincarnate the shadow', () => {
         const reincarnation = collection.getByKey('foo');
         expect(reincarnation).to.be.an.instanceOf(VcsObject);
-        expect(reincarnation).to.have.property(contextIdSymbol, 'foo');
+        expect(reincarnation).to.have.property(moduleIdSymbol, 'foo');
       });
     });
 
-    describe('if there is an object with said context and there is more then one shadow of the object', () => {
+    describe('if there is an object with said module and there is more then one shadow of the object', () => {
       let collection;
       let item;
 
       before(async () => {
-        collection = makeOverrideCollection(new Collection(), getContextId, null, option => new VcsObject(option));
+        collection = makeOverrideCollection(new Collection(), getModuleId, null, option => new VcsObject(option));
         const item1 = new Layer({ name: 'foo' });
-        item1[contextIdSymbol] = 'foo';
+        item1[moduleIdSymbol] = 'foo';
         collection.add(item1);
 
         const item2 = new Layer({ name: 'foo' });
-        item2[contextIdSymbol] = 'bar';
+        item2[moduleIdSymbol] = 'bar';
         collection.override(item2);
 
         item = new Layer({ name: 'foo' });
-        item[contextIdSymbol] = 'baz';
+        item[moduleIdSymbol] = 'baz';
         collection.override(item);
 
-        await collection.removeContext('baz');
+        await collection.removeModule('baz');
       });
 
       after(() => {
@@ -673,13 +673,13 @@ describe('override collections', () => {
         expect(fooShadowMap).to.be.an('array')
           .and.to.have.lengthOf(1);
         expect(fooShadowMap[0]).to.have.property('name', 'foo');
-        expect(fooShadowMap[0]).to.have.property(contextIdSymbol, 'foo');
+        expect(fooShadowMap[0]).to.have.property(moduleIdSymbol, 'foo');
       });
 
       it('should reincarnate the last pushed shadow', () => {
         const reincarnation = collection.getByKey('foo');
         expect(reincarnation).to.be.an.instanceOf(VcsObject);
-        expect(reincarnation).to.have.property(contextIdSymbol, 'bar');
+        expect(reincarnation).to.have.property(moduleIdSymbol, 'bar');
       });
     });
   });
@@ -692,7 +692,7 @@ describe('override collections', () => {
       before(async () => {
         collection = makeOverrideCollection(
           new Collection(),
-          getContextId,
+          getModuleId,
           null,
           option => new VcsObject(option),
           VcsObject,
@@ -708,7 +708,7 @@ describe('override collections', () => {
           },
         ];
         await collection.parseItems(config, 'foo');
-        items = [...collection].filter(i => i[contextIdSymbol] === 'foo');
+        items = [...collection].filter(i => i[moduleIdSymbol] === 'foo');
       });
 
       after(() => {
@@ -733,7 +733,7 @@ describe('override collections', () => {
       before(async () => {
         collection = makeOverrideCollection(
           new Collection(),
-          getContextId,
+          getModuleId,
           null,
           getObjectFromClassRegistry.bind(null, layerClassRegistry),
           Layer,
@@ -753,7 +753,7 @@ describe('override collections', () => {
           },
         ];
         await collection.parseItems(config, 'foo');
-        items = [...collection].filter(i => i[contextIdSymbol] === 'foo');
+        items = [...collection].filter(i => i[moduleIdSymbol] === 'foo');
       });
 
       after(() => {
@@ -778,7 +778,7 @@ describe('override collections', () => {
       before(async () => {
         collection = makeOverrideCollection(
           new Collection(),
-          getContextId,
+          getModuleId,
           null,
           getObjectFromClassRegistry.bind(null, layerClassRegistry),
           Layer,
@@ -798,7 +798,7 @@ describe('override collections', () => {
           },
         ];
         await collection.parseItems(config, 'foo');
-        items = [...collection].filter(i => i[contextIdSymbol] === 'foo');
+        items = [...collection].filter(i => i[moduleIdSymbol] === 'foo');
       });
 
       after(() => {
@@ -823,7 +823,7 @@ describe('override collections', () => {
       before(async () => {
         collection = makeOverrideCollection(
           new Collection(),
-          getContextId,
+          getModuleId,
           null,
           getObjectFromClassRegistry.bind(null, layerClassRegistry),
           Layer,
@@ -846,7 +846,7 @@ describe('override collections', () => {
           },
         ];
         await collection.parseItems(config, 'foo');
-        items = [...collection].filter(i => i[contextIdSymbol] === 'foo');
+        items = [...collection].filter(i => i[moduleIdSymbol] === 'foo');
       });
 
       after(() => {
@@ -870,13 +870,13 @@ describe('override collections', () => {
       });
     });
 
-    describe('and removing the entire context, if the array contains duplicate entries', () => {
+    describe('and removing the entire module, if the array contains duplicate entries', () => {
       let collection;
 
       before(async () => {
         collection = makeOverrideCollection(
           new Collection(),
-          getContextId,
+          getModuleId,
           null,
           getObjectFromClassRegistry.bind(null, layerClassRegistry),
           Layer,
@@ -899,14 +899,14 @@ describe('override collections', () => {
           },
         ];
         await collection.parseItems(config, 'foo');
-        await collection.removeContext('foo');
+        await collection.removeModule('foo');
       });
 
       after(() => {
         destroyCollection(collection);
       });
 
-      it('should not recreate the shadows of the same context', () => {
+      it('should not recreate the shadows of the same module', () => {
         expect([...collection]).to.be.empty;
       });
 
@@ -916,70 +916,70 @@ describe('override collections', () => {
     });
   });
 
-  describe('serializing a context', () => {
+  describe('serializing a module', () => {
     describe('which has no shadows', () => {
       let items;
       let collection;
-      let serializedContext;
+      let serializedModule;
 
       before(() => {
-        collection = makeOverrideCollection(new IndexedCollection(), getContextId);
+        collection = makeOverrideCollection(new IndexedCollection(), getModuleId);
 
         items = ['foo', 'bar', 'baz']
           .map((name) => {
             const item = new VcsObject({ name });
-            item[contextIdSymbol] = 'foo';
+            item[moduleIdSymbol] = 'foo';
             collection.override(item);
             return item;
           });
 
         collection.override(new VcsObject({ name: 'grape' }));
-        serializedContext = collection.serializeContext('foo');
+        serializedModule = collection.serializeModule('foo');
       });
 
       after(() => {
         destroyCollection(collection);
       });
 
-      it('should serialize all items of said context', () => {
-        expect(serializedContext).to.have.lengthOf(items.length);
+      it('should serialize all items of said module', () => {
+        expect(serializedModule).to.have.lengthOf(items.length);
       });
 
       it('should return the serialized representation', () => {
-        expect(serializedContext).to.have.deep.ordered.members(items.map(i => i.toJSON()));
+        expect(serializedModule).to.have.deep.ordered.members(items.map(i => i.toJSON()));
       });
     });
 
     describe('which has shadows', () => {
       let items;
       let collection;
-      let serializedContext;
+      let serializedModule;
 
       before(() => {
-        collection = makeOverrideCollection(new IndexedCollection(), getContextId);
+        collection = makeOverrideCollection(new IndexedCollection(), getModuleId);
 
         items = ['foo', 'bar', 'baz']
           .map((name) => {
             const item = new VcsObject({ name });
-            item[contextIdSymbol] = 'foo';
+            item[moduleIdSymbol] = 'foo';
             collection.override(item);
             return item;
           });
 
         collection.override(new VcsObject({ name: 'bar' }));
-        serializedContext = collection.serializeContext('foo');
+        serializedModule = collection.serializeModule('foo');
       });
 
       after(() => {
         destroyCollection(collection);
       });
 
-      it('should serialize all items of said context', () => {
-        expect(serializedContext).to.have.lengthOf(items.length);
+      it('should serialize all items of said module', () => {
+        expect(serializedModule).to.have.lengthOf(items.length);
       });
 
       it('should return the serialized representation, maintaining the index', () => {
-        expect(serializedContext).to.have.deep.ordered.members(items.map(i => i.toJSON()));
+        expect(serializedModule).to.have.deep.ordered.members(items.map(i => i.toJSON()));
       });
     });
   });

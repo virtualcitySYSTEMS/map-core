@@ -17,7 +17,7 @@ import VcsEvent from '../vcsEvent.js';
  * GlobalHider globally hides features existing within a layer of a {@link LayerCollection}.
  * Features can be defined as hidden by {@link VcsAppConfig} or {@link LayerOptions}.
  * Hiding will be performed, when a {@link Context} is loaded, a {@link Layer} is activated or GlobalHider API is called.
- * A feature can be hidden multiple times by different actors, e.g. contexts, layers, which is handled by this class.
+ * A feature can be hidden multiple times by different actors, e.g. modules, layers, which is handled by this class.
  * A feature will be shown again, when a {@link Context} is removed, a {@link Layer} is deactivated or GlobalHider API is called.
  * @class
  */

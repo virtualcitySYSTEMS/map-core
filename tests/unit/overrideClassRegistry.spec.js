@@ -348,7 +348,7 @@ describe('OverrideClassRegistry', () => {
       replaced = sinon.spy();
       classRegistry.removed.addEventListener(removed);
       classRegistry.replaced.addEventListener(replaced);
-      classRegistry.removeContext('foo');
+      classRegistry.removeModule('foo');
     });
 
     after(() => {
@@ -364,7 +364,7 @@ describe('OverrideClassRegistry', () => {
       expect(classRegistry.getClass(overridenCoreClassName)).to.equal(Class);
     });
 
-    it('should remove shadows of classes overriden in other contexts', () => {
+    it('should remove shadows of classes overriden in other modules', () => {
       expect(removed).to.not.have.been.calledWith(Class.className);
       expect(classRegistry.getClass(Override.className)).to.equal(Override);
     });

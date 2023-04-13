@@ -12,10 +12,10 @@ function getLogger() {
 /**
  * @type {symbol}
  */
-export const contextIdSymbol = Symbol('contextId');
+export const moduleIdSymbol = Symbol('moduleId');
 
 /**
- * @typedef {LayerOptions} ContextLayerOptions
+ * @typedef {LayerOptions} ModuleLayerOptions
  * @property {string|StyleItemOptions} [style]
  * @property {TileProviderOptions} [tileProvider]
  * @property {AbstractFeatureProviderOptions} [featureProvider]
@@ -49,7 +49,7 @@ export function deserializeViewpoint(viewpointObject) {
 
 /**
  * @param {import("@vcmap/core").VcsApp} vcsApp
- * @param {ContextLayerOptions} layerConfig
+ * @param {ModuleLayerOptions} layerConfig
  * @returns {import("@vcmap/core").Layer|null}
  */
 export function deserializeLayer(vcsApp, layerConfig) {
@@ -81,10 +81,10 @@ export function deserializeLayer(vcsApp, layerConfig) {
 /**
  * @param {import("@vcmap/core").VcsApp} vcsApp
  * @param {import("@vcmap/core").Layer} layer
- * @returns {ContextLayerOptions}
+ * @returns {ModuleLayerOptions}
  */
 export function serializeLayer(vcsApp, layer) {
-  const serializedLayer = /** @type {ContextLayerOptions} */ (layer.toJSON());
+  const serializedLayer = /** @type {ModuleLayerOptions} */ (layer.toJSON());
   serializedLayer.zIndex = layer[vcsApp.layers.zIndexSymbol];
   if (
     /** @type {StyleItemOptions} */ (serializedLayer?.style)?.name &&

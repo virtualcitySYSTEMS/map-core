@@ -1,9 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
-import { contextIdSymbol } from './vcsAppContextHelpers.js';
+import { moduleIdSymbol } from './vcsModuleHelpers.js';
 import Projection from './util/projection.js';
 
 /**
- * @typedef {Object} VcsAppConfig
+ * @typedef {Object} VcsModuleConfig
  * @property {string|undefined} [_id]
  * @property {string|undefined} [name]
  * @property {string|undefined} [description]
@@ -19,27 +19,27 @@ import Projection from './util/projection.js';
  */
 
 /**
- * The id of the volatile context. Objects with this id shall never be serialized.
+ * The id of the volatile module. Objects with this id shall never be serialized.
  * @type {string}
  */
-export const volatileContextId = uuidv4();
+export const volatileModuleId = uuidv4();
 
 /**
  * This marks an object as "volatile". This ensures, that an object added to the {@see VcsApp}
- * will never be serialized into a context, regardless of the current dynamic context. Typical use case is a scratch layer
+ * will never be serialized into a module, regardless of the current dynamic module. Typical use case is a scratch layer
  * which represents temporary features.
  * @param {import("@vcmap/core").VcsObject|Object} object - the object to mark as volatile
  */
 export function markVolatile(object) {
-  object[contextIdSymbol] = volatileContextId;
+  object[moduleIdSymbol] = volatileModuleId;
 }
 
 /**
  * @class
  */
-class Context {
+class VcsModule {
   /**
-   * @param {VcsAppConfig} config
+   * @param {VcsModuleConfig} config
    */
   constructor(config) {
     /**
@@ -68,7 +68,7 @@ class Context {
      */
     this.projection = config.projection ? new Projection(config.projection) : undefined;
     /**
-     * @type {VcsAppConfig}
+     * @type {VcsModuleConfig}
      * @private
      */
     this._config = config;
@@ -83,7 +83,7 @@ class Context {
   }
 
   /**
-   * @type {VcsAppConfig}
+   * @type {VcsModuleConfig}
    * @readonly
    */
   get config() {
@@ -95,14 +95,14 @@ class Context {
    * @param {import("@vcmap/core").VcsApp} app
    */
   setConfigFromApp(app) {
-    this._config = app.serializeContext(this._uuid);
+    this._config = app.serializeModule(this._uuid);
   }
 
 
   /**
-   * @returns {VcsAppConfig}
+   * @returns {VcsModuleConfig}
    */
-  toJson() {
+  toJSON() {
     const config = {};
     if (this._config._id) {
       config._id = this._config._id;
@@ -126,4 +126,4 @@ class Context {
   }
 }
 
-export default Context;
+export default VcsModule;

@@ -4,7 +4,7 @@ import InteractionChain from '../../interaction/interactionChain.js';
 import VcsEvent from '../../vcsEvent.js';
 import { EventType } from '../../interaction/interactionType.js';
 import { maxZIndex } from '../layerCollection.js';
-import { markVolatile } from '../../context.js';
+import { markVolatile } from '../../vcsModule.js';
 import { PrimitiveOptionsType } from '../../layer/vectorProperties.js';
 
 /**

@@ -1,8 +1,10 @@
 ###   5.0.0-next
 - Introduced `moveTo` API for IndexedCollections
-- Refactored context class adding new properties and renaming `id` to `_id`
-- Adding an API to context to update `setConfigFromApp` and serialize `toJson` a context
-- Adding an API to vcsApp `serializeContext`
+- Breaking Change: renamed `Context` to `VcsModule`
+  - renamed all linked methods or properties, e.g. `addModule` or `removeModule`
+  - adding new properties to VcsModule class and renaming `id` to `_id`
+  - Adding an API to VcsModule to update (`setConfigFromApp`) and serialize (`toJSON`) it
+  - Adding an API to vcsApp `serializeModule`, which returns the serialized config of a VcsModule
 
 ###   5.0.0-rc.27
 - Removed AppedBackedCategory, use Category
@@ -30,7 +32,7 @@
 
 ###   5.0.0-rc.22
 - Updated Cesium to version 1.97
-- Editor: Adds a `EditoGeometrySession` to edit simple geometries.
+- Editor: Adds a `EditGeometrySession` to edit simple geometries.
 - Renamed ViewPoint to Viewpoint
 
 ###   5.0.0-rc.21
@@ -38,8 +40,8 @@
 
 ###   5.0.0-rc.20
 - changed OverrideCollection `replaced` event to { new:T, old:T }
-- added an API to vcsApp to control the dynamic Context `setDynamicContext`, `resetDynamicContext` and `dynamicContextIdChanged`
-- added an API to vcsApp to access the added context `app.contexts`
+- added an API to vcsApp to control the dynamic VcsModule `setDynamicContext`, `resetDynamicContext` and `dynamicContextIdChanged`
+- added an API to vcsApp to access the added context `app.modules`
 - removed DateTime Helpers
 - added vcsApp.locale 
 - added vcsApp.localeChanged
