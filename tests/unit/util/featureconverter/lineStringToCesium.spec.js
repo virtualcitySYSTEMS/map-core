@@ -27,7 +27,6 @@ import lineStringToCesium, {
 } from '../../../../src/util/featureconverter/lineStringToCesium.js';
 import Projection from '../../../../src/util/projection.js';
 import VectorProperties from '../../../../src/layer/vectorProperties.js';
-import { emptyStyle } from '../../../../src/style/styleHelpers.js';
 import VectorContext from '../../../../src/layer/cesium/vectorContext.js';
 import { getCesiumMap } from '../../helpers/cesiumHelpers.js';
 import { ArrowEnd, ArrowStyle, mercatorToCartesian, PrimitiveOptionsType } from '../../../../index.js';
@@ -265,7 +264,7 @@ describe('util.featureConverter.lineStringToCesium', () => {
     });
 
     it('should not create Primitives without a fill or stroke style', () => {
-      lineStringToCesium(feature, emptyStyle, geometries, vectorProperties, scene, context);
+      lineStringToCesium(feature, new Style({}), geometries, vectorProperties, scene, context);
       expect(context.featureToPrimitiveMap.size).to.be.equal(0);
       expect(context.featureToBillboardMap.size).to.be.equal(0);
       expect(context.featureToLabelMap.size).to.be.equal(0);

@@ -1,7 +1,6 @@
 import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import { EventType } from '../../../interaction/interactionType.js';
 import { vertexSymbol } from '../editorSymbols.js';
-import { emptyStyle } from '../../../style/styleHelpers.js';
 import VcsEvent from '../../../vcsEvent.js';
 
 /**
@@ -36,7 +35,7 @@ class TranslateVertexInteraction extends AbstractInteraction {
       this.vertexChanged.raiseEvent(this._vertex);
 
       if (event.type & EventType.DRAGEND) {
-        this._vertex.setStyle(null);
+        this._vertex.unset('olcs_allowPicking');
         this._vertex = null;
       }
       event.stopPropagation = true;
@@ -46,7 +45,7 @@ class TranslateVertexInteraction extends AbstractInteraction {
       event.feature[vertexSymbol]
     ) {
       this._vertex = /** @type {Vertex} */ (event.feature);
-      this._vertex.setStyle(emptyStyle);
+      this._vertex.set('olcs_allowPicking', false);
       event.stopPropagation = true;
     }
     return event;

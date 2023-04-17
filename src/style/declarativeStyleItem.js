@@ -11,7 +11,6 @@ import Fill from 'ol/style/Fill.js';
 import StyleItem from './styleItem.js';
 import {
   cesiumColorToColor,
-  emptyStyle,
   getDefaultCondition,
   whiteColor,
 } from './styleHelpers.js';
@@ -191,7 +190,7 @@ class DeclarativeStyleItem extends StyleItem {
   _styleFunction(feature) {
     const actualFeature = feature[originalFeatureSymbol] || feature;
     if (!this.cesiumStyle.show.evaluate(actualFeature)) {
-      return emptyStyle;
+      return undefined;
     }
 
     const geometryType = actualFeature.getGeometry().getType();
@@ -219,7 +218,7 @@ class DeclarativeStyleItem extends StyleItem {
     }
 
     this.getLogger().warning(`could not style geometry type: ${geometryType}`);
-    return emptyStyle;
+    return undefined;
   }
 
   /**

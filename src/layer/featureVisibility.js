@@ -3,7 +3,6 @@ import Feature from 'ol/Feature.js';
 import Style from 'ol/style/Style.js';
 
 import VectorStyleItem, { fromCesiumColor } from '../style/vectorStyleItem.js';
-import { emptyStyle } from '../style/styleHelpers.js';
 import VcsEvent from '../vcsEvent.js';
 
 /**
@@ -71,7 +70,7 @@ export function hideFeature(feature) {
   ) {
     feature.show = false;
   } else if (feature instanceof Feature) {
-    feature.setStyle(emptyStyle.clone());
+    feature.changed();
   }
 }
 
@@ -106,7 +105,7 @@ export function resetOriginalStyle(feature) {
     ) {
       feature.color = style;
     } else if (feature instanceof Feature) {
-      feature.setStyle(style);
+      feature.changed();
     }
     delete feature[originalStyle];
   }
@@ -125,7 +124,7 @@ export function highlightFeature(feature) {
     ) {
       feature.color = style.cesiumFillColor;
     } else if (feature instanceof Feature) {
-      feature.setStyle(/** @type {import("ol/style/Style").default} */ (style.style));
+      feature.changed();
     }
   }
 }

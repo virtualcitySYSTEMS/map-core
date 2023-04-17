@@ -14,3 +14,8 @@ export const vertexIndex = Symbol('VertexIndex');
  * @type {symbol}
  */
 export const handlerSymbol = Symbol('Handler');
+/**
+ * Symbol to identify which was the last editor mouse over handler that edited the cursor style.
+ * @type {symbol}
+ */
+export const mouseOverSymbol = Symbol('MouseOver');

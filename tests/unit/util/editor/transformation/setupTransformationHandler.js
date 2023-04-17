@@ -5,7 +5,6 @@ import {
   createTransformationHandler,
   handlerSymbol,
   mercatorProjection,
-  SelectMultiFeatureInteraction,
   VcsApp,
   VectorLayer,
 } from '../../../../../index.js';
@@ -16,11 +15,11 @@ import {
  * @property {VcsApp} app
  * @property {VectorLayer} layer
  * @property {VectorLayer} scratchLayer
- * @property {SelectMultiFeatureInteraction} featureSelection
  * @property {function():void} destroy
  */
 
 /**
+ * Helper function that is needed for tests.
  * @param {VcsMap} map
  * @param {TransformationMode} mode
  * @returns {Promise<TransformationSetup>}
@@ -41,16 +40,13 @@ export async function setupTransformationHandler(map, mode) {
   await layer.activate();
   await scratchLayer.activate();
 
-  const featureSelection = new SelectMultiFeatureInteraction(layer);
-  const transformationHandler = createTransformationHandler(map, layer, featureSelection, scratchLayer, mode);
+  const transformationHandler = createTransformationHandler(map, layer, scratchLayer, mode);
   return {
     transformationHandler,
     app,
     layer,
     scratchLayer,
-    featureSelection,
     destroy() {
-      featureSelection.destroy();
       transformationHandler.destroy();
       app.destroy();
     },

@@ -37,7 +37,7 @@ describe('RotateInteraction', () => {
     before(async () => {
       map = getCesiumMap({});
       setup = await setupTransformationHandler(map, TransformationMode.SCALE);
-      await setup.featureSelection.setSelectionSet([new Feature({ geometry: new Point([0, 0, 0]) })]);
+      await setup.transformationHandler.setFeatures([new Feature({ geometry: new Point([0, 0, 0]) })]);
       interaction = new RotateInteraction(setup.transformationHandler);
     });
 
@@ -191,7 +191,7 @@ describe('RotateInteraction', () => {
     before(async () => {
       map = await getOpenlayersMap({});
       setup = await setupTransformationHandler(map, TransformationMode.SCALE);
-      await setup.featureSelection.setSelectionSet([new Feature({ geometry: new Point([0, 0, 0]) })]);
+      await setup.transformationHandler.setFeatures([new Feature({ geometry: new Point([0, 0, 0]) })]);
       interaction = new RotateInteraction(setup.transformationHandler);
     });
 

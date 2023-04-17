@@ -5,6 +5,11 @@
   - adding new properties to VcsModule class and renaming `id` to `_id`
   - Adding an API to VcsModule to update (`setConfigFromApp`) and serialize (`toJSON`) it
   - Adding an API to vcsApp `serializeModule`, which returns the serialized config of a VcsModule
+- new highlight & hidden style handling on ol.Feature. Overwrites `getStyleFunction` prototype on ol.Feature.
+- layer properties in vcsMeta
+- changes the position of added exclusiveInteractions to the eventHandler. If no index is provided they are always pushed to the end of the array and therefore are executed last.
+- introduces `selectFeaturesSession`. Therefore removes selection capablities from `editFeaturesSession` and `editGeometrySession`.
+- splits mouse over handling so there is one for feature selection, one for feature editing and one for geometry editing editing.
 
 ###   5.0.0-rc.27
 - Removed AppedBackedCategory, use Category

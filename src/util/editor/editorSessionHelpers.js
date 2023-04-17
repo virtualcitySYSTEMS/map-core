@@ -23,11 +23,13 @@ import { PrimitiveOptionsType } from '../../layer/vectorProperties.js';
  * @property {string} CREATE
  * @property {string} EDIT_GEOMETRY
  * @property {string} EDIT_FEATURES
+ * @property {string} SELECT
  */
 export const SessionType = {
   CREATE: 'create',
   EDIT_GEOMETRY: 'editGeometry',
   EDIT_FEATURES: 'editFeatures',
+  SELECT: 'selectFeatures',
 };
 
 /**
@@ -77,16 +79,22 @@ export function setupScratchLayer(layerCollection) { // IDEA pass in stopped and
  * feature interaction to be active on CLICKMOVE & DRAGSTART. Destroying the setup will reset the interaction
  * to its previous active state.
  * @param {import("@vcmap/core").EventHandler} eventHandler
+ * @param {string} [interactionId]
  * @returns {{ interactionChain: InteractionChain, removed: VcsEvent<void>, destroy: function():void }}
  * @private
  */
-export function setupInteractionChain(eventHandler) {
+export function setupInteractionChain(eventHandler, interactionId) {
   const interactionChain = new InteractionChain();
   /**
    * @type {VcsEvent<void>}
    */
   const removed = new VcsEvent();
-  const listener = eventHandler.addExclusiveInteraction(interactionChain, () => { removed.raiseEvent(); });
+  const listener = eventHandler.addExclusiveInteraction(
+    interactionChain,
+    () => { removed.raiseEvent(); },
+    undefined,
+    interactionId,
+  );
   const currentFeatureInteractionEvent = eventHandler.featureInteraction.active;
   eventHandler.featureInteraction.setActive(EventType.CLICKMOVE | EventType.DRAGSTART);
 

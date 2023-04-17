@@ -215,18 +215,18 @@ class EventHandler {
    * Add a dynamic interaction to the interaction chain. This is the default methodology for
    * user map interactions, such as drawing or measuring. If another exclusive interaction is added,
    * this interaction is removed and a provided callback is called. Use the id parameter to add multiple interactions
-   * from the same source (if you don't wish to provide an {@link InteractionChain}
+   * from the same source (if you don't wish to provide an {@link InteractionChain})
    * @param {AbstractInteraction} interaction
    * @param {Function} removed - the callback for when the interaction is forcefully removed.
-   * @param {number=} [index=3] - the position at which to push the interaction
+   * @param {number=} index - the position at which to push the interaction. If no index is provided, the interaction is pushed at the end and therefore is executed last.
    * @param {string=} id - an id to allow for multiple interactions to belong to the same exclusive registerer
    * @returns {Function} function to remove the interaction with. returns number of removed interactions (0|1)
    * @api
    */
-  addExclusiveInteraction(interaction, removed, index = 3, id) {
+  addExclusiveInteraction(interaction, removed, index, id) {
     check(interaction, AbstractInteraction);
     check(removed, Function);
-    check(index, Number);
+    checkMaybe(index, Number);
     checkMaybe(id, String);
 
     if (this._exclusiveInteraction && this._exclusiveInteraction.id !== id) {

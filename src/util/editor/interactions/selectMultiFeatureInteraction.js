@@ -12,6 +12,7 @@ import { isTiledFeature } from '../../../layer/featureStoreLayer.js';
  * FeatureStore features will be converted to their dynamic state on selection.
  * @class
  * @extends {AbstractInteraction}
+ * @implements {SelectFeatureInteraction}
  */
 class SelectMultiFeatureInteraction extends AbstractInteraction {
   /**
@@ -47,16 +48,17 @@ class SelectMultiFeatureInteraction extends AbstractInteraction {
   /**
    * @returns {Array<import("ol").Feature>}
    */
-  get selectedFeatures() {
+  get selected() {
     return [...this._selectedFeatures.values()];
   }
 
   /**
-   * @param {string} featureId
+   * Checks if a feature with a spicific id is selected.
+   * @param {string | number} id
    * @returns {boolean}
    */
-  hasFeatureId(featureId) {
-    return this._selectedFeatures.has(featureId);
+  hasFeatureId(id) {
+    return this._selectedFeatures.has(id);
   }
 
   /**
@@ -72,9 +74,12 @@ class SelectMultiFeatureInteraction extends AbstractInteraction {
       if (event.key & ModificationKeyType.CTRL) {
         event.stopPropagation = true;
         await this._modifySelectionSet(event.feature);
-      } else if (!this._selectedFeatures.has(event.feature.getId())) {
+      } else if (
+        !this._selectedFeatures.has(event.feature.getId()) ||
+        (this._selectedFeatures.has(event.feature.getId()) && this._selectedFeatures.size > 1)
+      ) {
         event.stopPropagation = true;
-        await this.setSelectionSet([event.feature]);
+        await this.setSelected([event.feature]);
       }
     } else if (!(event.key & ModificationKeyType.CTRL)) {
       this.clear();
@@ -83,12 +88,13 @@ class SelectMultiFeatureInteraction extends AbstractInteraction {
   }
 
   /**
-   * @param {Array<import("ol").Feature|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature|import("@vcmap-cesium/engine").Entity>} features
+   * @param {Array<import("ol").Feature|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature|import("@vcmap-cesium/engine").Entity> | import("ol").Feature|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature|import("@vcmap-cesium/engine").Entity} features
    * @returns {Promise<void>}
    */
-  async setSelectionSet(features) {
+  async setSelected(features) {
     this._selectedFeatures.clear();
-    const olFeatures = await Promise.all(features.map((f) => {
+    const featureArray = Array.isArray(features) ? features : [features];
+    const olFeatures = await Promise.all(featureArray.map((f) => {
       if (f[isTiledFeature]) {
         return /** @type {import("@vcmap/core").FeatureStoreLayer} */ (this._layer)
           .switchStaticFeatureToDynamic(f.getId());
@@ -99,7 +105,7 @@ class SelectMultiFeatureInteraction extends AbstractInteraction {
       this._selectedFeatures.set(f.getId(), f);
     });
 
-    this._featuresChanged.raiseEvent(this.selectedFeatures);
+    this._featuresChanged.raiseEvent(this.selected);
   }
 
   /**
@@ -120,7 +126,7 @@ class SelectMultiFeatureInteraction extends AbstractInteraction {
       this._selectedFeatures.set(id, /** @type {import("ol").Feature} */ (olFeature));
     }
 
-    this._featuresChanged.raiseEvent(this.selectedFeatures);
+    this._featuresChanged.raiseEvent(this.selected);
   }
 
   /**

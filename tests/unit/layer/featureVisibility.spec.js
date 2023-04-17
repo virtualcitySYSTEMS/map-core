@@ -3,6 +3,7 @@ import Fill from 'ol/style/Fill.js';
 import Style from 'ol/style/Style.js';
 import OpenlayersText from 'ol/style/Text.js';
 import Feature from 'ol/Feature.js';
+import { expect } from 'chai';
 import FeatureVisibility, {
   FeatureVisibilityAction,
   globalHidden, hidden,
@@ -231,7 +232,7 @@ describe('FeatureVisibility', () => {
       });
     });
 
-    it('should set the style to originalStyle for ol.Features', () => {
+    it('should return original style for ol.Features', () => {
       featureVisibility.highlight({ test: Color.BLUE });
       const styles = [new Style(), new Style()];
       const features = [
@@ -246,6 +247,16 @@ describe('FeatureVisibility', () => {
       features.forEach(([feat, style]) => {
         expect(feat.getStyle()).to.equal(style);
       });
+    });
+
+    it('should return style function that returns array of original styles of ol.Feature', () => {
+      featureVisibility.highlight({ test: Color.BLUE });
+      const feature = new Feature();
+      const style = new Style();
+      feature.setStyle(style);
+      featureVisibility.addHighlightFeature('test', feature);
+      featureVisibility.unHighlight(['test']);
+      expect(feature.getStyleFunction()?.()).to.eql([style]);
     });
 
     it('should not reset the style for hidden ol.Features', () => {
@@ -315,6 +326,13 @@ describe('FeatureVisibility', () => {
       it('should set the highlight style on the feature', () => {
         featureVisibility.addHighlightFeature('test', feature);
         expect(feature.getStyle()).to.equal(highlightStyle.style);
+      });
+
+      it('should return highlight style function', () => {
+        const style = new Style();
+        feature.setStyle(style);
+        featureVisibility.addHighlightFeature('test', feature);
+        expect(feature.getStyleFunction()()[0]).to.equal(highlightStyle.style);
       });
 
       it('should set the highlight symbol', () => {
@@ -542,12 +560,17 @@ describe('FeatureVisibility', () => {
         expect(featureVisibility.hasHiddenFeature('test', feature)).to.be.true;
       });
 
-      it('should set an empty style clone on the feature', () => {
+      it('should return an empty style clone as style', () => {
         const empty = feature.getStyle();
         expect(empty.getFill()).to.be.null;
         expect(empty.getText()).to.be.null;
         expect(empty.getImage()).to.be.null;
         expect(empty.getStroke()).to.be.null;
+      });
+
+      it('should have style function which returns empty array', () => {
+        const styleFunctionResult = feature.getStyleFunction()();
+        expect(Array.isArray(styleFunctionResult) && styleFunctionResult.length === 0).to.be.true;
       });
 
       it('should set the hidden symbol', () => {

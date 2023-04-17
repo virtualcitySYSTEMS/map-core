@@ -1,15 +1,14 @@
 import { Feature } from 'ol';
 import { Cartesian2 } from '@vcmap-cesium/engine';
 import { getCesiumMap } from '../../../helpers/cesiumHelpers.js';
-import { AXIS_AND_PLANES, handlerSymbol, SelectMultiFeatureInteraction, VectorLayer } from '../../../../../index.js';
+import { AXIS_AND_PLANES, handlerSymbol } from '../../../../../index.js';
 import EnsureHandlerSelectionInteraction
   from '../../../../../src/util/editor/interactions/ensureHandlerSelectionInteraction.js';
 
 describe('EnsureHandlerSelectionInteraction', () => {
   let map;
-  let layer;
   let drillResults;
-  let featureSelection;
+  const currentFeatures = [];
   let ensureHandlerSelection;
   let drillPick;
 
@@ -20,9 +19,7 @@ describe('EnsureHandlerSelectionInteraction', () => {
       { primitive: { olFeature: {} } },
       { primitive: { olFeature: { [handlerSymbol]: AXIS_AND_PLANES.X } } },
     ];
-    layer = new VectorLayer({});
-    featureSelection = new SelectMultiFeatureInteraction(layer);
-    ensureHandlerSelection = new EnsureHandlerSelectionInteraction(featureSelection);
+    ensureHandlerSelection = new EnsureHandlerSelectionInteraction(currentFeatures);
   });
 
   beforeEach(() => {
@@ -30,7 +27,7 @@ describe('EnsureHandlerSelectionInteraction', () => {
   });
 
   afterEach(() => {
-    featureSelection.clear();
+    currentFeatures.length = 0;
     drillPick.restore();
   });
 
@@ -44,7 +41,7 @@ describe('EnsureHandlerSelectionInteraction', () => {
       map,
       windowPosition: new Cartesian2(0, 0),
     };
-    await featureSelection.setSelectionSet([new Feature()]);
+    currentFeatures.push(new Feature());
     await ensureHandlerSelection.pipe(event);
     expect(event.feature).to.equal(drillResults[2].primitive.olFeature);
   });

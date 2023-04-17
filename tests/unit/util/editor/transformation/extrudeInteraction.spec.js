@@ -15,7 +15,7 @@ describe('ExtrudeInteraction', () => {
     sandbox = sinon.createSandbox();
     map = getCesiumMap({});
     setup = await setupTransformationHandler(map, TransformationMode.EXTRUDE);
-    await setup.featureSelection.setSelectionSet([new Feature({ geometry: new Point([0, 0, 0]) })]);
+    await setup.transformationHandler.setFeatures([new Feature({ geometry: new Point([0, 0, 0]) })]);
   });
 
   afterEach(() => {

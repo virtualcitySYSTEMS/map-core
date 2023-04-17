@@ -437,16 +437,14 @@ export async function transformFromImage(image, imageCoordinate, options = {}) {
  * @returns {boolean}
  */
 export function hasSameOrigin(url) {
-  // relative Url, return true;
-  if (!/^[a-z][a-z0-9+.-]*:/.test(url)) {
-    return true;
-  }
-  // data uri, return true
-  if (/^data:/.test(url)) {
+  const windowUrl = new URL(window.location.href);
+  const parsedUrl = new URL(url, window.location.href);
+
+  if (parsedUrl.protocol === 'data:') {
     return true;
   }
 
-  const currentUri = new URL(window.location.href);
-  const uri = new URL(url);
-  return currentUri.host.toLowerCase() === uri.host.toLocaleLowerCase();
+  return windowUrl.origin === parsedUrl.origin &&
+    windowUrl.port === parsedUrl.port &&
+    windowUrl.protocol === parsedUrl.protocol;
 }

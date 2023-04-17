@@ -43,7 +43,7 @@ describe('SelectMultiFeatureInteraction', () => {
       });
 
       it('should set the currently selected features', () => {
-        expect(interaction.selectedFeatures).to.have.members([featureA]);
+        expect(interaction.selected).to.have.members([featureA]);
       });
 
       it('should raise the featuresChanged event', () => {
@@ -62,7 +62,7 @@ describe('SelectMultiFeatureInteraction', () => {
 
       before(async () => {
         interaction = new SelectMultiFeatureInteraction(layer);
-        await interaction.setSelectionSet([featureA]);
+        await interaction.setSelected([featureA]);
         featuresChangedListener = getVcsEventSpy(interaction.featuresChanged);
         event = { feature: featureA };
         await interaction.pipe(event);
@@ -73,7 +73,7 @@ describe('SelectMultiFeatureInteraction', () => {
       });
 
       it('should set the currently selected features', () => {
-        expect(interaction.selectedFeatures).to.have.members([featureA]);
+        expect(interaction.selected).to.have.members([featureA]);
       });
 
       it('should not raise the featuresChanged event', () => {
@@ -92,7 +92,7 @@ describe('SelectMultiFeatureInteraction', () => {
 
       before(async () => {
         interaction = new SelectMultiFeatureInteraction(layer);
-        await interaction.setSelectionSet([featureA]);
+        await interaction.setSelected([featureA]);
         featuresChangedListener = getVcsEventSpy(interaction.featuresChanged);
         event = { feature: featureA, key: ModificationKeyType.CTRL };
         await interaction.pipe(event);
@@ -103,7 +103,7 @@ describe('SelectMultiFeatureInteraction', () => {
       });
 
       it('should clear the currently selected features', () => {
-        expect(interaction.selectedFeatures).to.be.empty;
+        expect(interaction.selected).to.be.empty;
       });
 
       it('should raise the featuresChanged event', () => {
@@ -122,7 +122,7 @@ describe('SelectMultiFeatureInteraction', () => {
 
       before(async () => {
         interaction = new SelectMultiFeatureInteraction(layer);
-        await interaction.setSelectionSet([featureA]);
+        await interaction.setSelected([featureA]);
         featuresChangedListener = getVcsEventSpy(interaction.featuresChanged);
         event = { feature: featureB };
         await interaction.pipe(event);
@@ -133,7 +133,7 @@ describe('SelectMultiFeatureInteraction', () => {
       });
 
       it('should set the currently selected features to the new feature', () => {
-        expect(interaction.selectedFeatures).to.have.members([featureB]);
+        expect(interaction.selected).to.have.members([featureB]);
       });
 
       it('should raise the featuresChanged event with the selected features', () => {
@@ -152,7 +152,7 @@ describe('SelectMultiFeatureInteraction', () => {
 
       before(async () => {
         interaction = new SelectMultiFeatureInteraction(layer);
-        await interaction.setSelectionSet([featureA]);
+        await interaction.setSelected([featureA]);
         featuresChangedListener = getVcsEventSpy(interaction.featuresChanged);
         event = { feature: featureB, key: ModificationKeyType.CTRL };
         await interaction.pipe(event);
@@ -163,7 +163,7 @@ describe('SelectMultiFeatureInteraction', () => {
       });
 
       it('should set the currently selected features', () => {
-        expect(interaction.selectedFeatures).to.have.members([featureA, featureB]);
+        expect(interaction.selected).to.have.members([featureA, featureB]);
       });
 
       it('should raise the featuresChanged event with the selected features', () => {
@@ -192,7 +192,7 @@ describe('SelectMultiFeatureInteraction', () => {
       });
 
       it('should not set the selection set', () => {
-        expect(interaction.selectedFeatures).to.be.empty;
+        expect(interaction.selected).to.be.empty;
       });
 
       it('should not raise the featuresChanged event', () => {
@@ -211,7 +211,7 @@ describe('SelectMultiFeatureInteraction', () => {
 
       before(async () => {
         interaction = new SelectMultiFeatureInteraction(layer);
-        await interaction.setSelectionSet([featureA]);
+        await interaction.setSelected([featureA]);
         featuresChangedListener = getVcsEventSpy(interaction.featuresChanged);
         event = { feature: new Feature() };
         await interaction.pipe(event);
@@ -222,7 +222,7 @@ describe('SelectMultiFeatureInteraction', () => {
       });
 
       it('should not set the selection set', () => {
-        expect(interaction.selectedFeatures).to.be.be.empty;
+        expect(interaction.selected).to.be.be.empty;
       });
 
       it('should raise the featuresChanged event null', () => {
@@ -241,7 +241,7 @@ describe('SelectMultiFeatureInteraction', () => {
 
       before(async () => {
         interaction = new SelectMultiFeatureInteraction(layer);
-        await interaction.setSelectionSet([featureA]);
+        await interaction.setSelected([featureA]);
         featuresChangedListener = getVcsEventSpy(interaction.featuresChanged);
         event = { feature: null };
         await interaction.pipe(event);
@@ -252,7 +252,7 @@ describe('SelectMultiFeatureInteraction', () => {
       });
 
       it('should not set the selection set', () => {
-        expect(interaction.selectedFeatures).to.be.empty;
+        expect(interaction.selected).to.be.empty;
       });
 
       it('should raise the featuresChanged event with null', () => {
@@ -277,7 +277,7 @@ describe('SelectMultiFeatureInteraction', () => {
       const tiledFeature = new Feature();
       tiledFeature[isTiledFeature] = true;
       featuresChangedListener = getVcsEventSpy(interaction.featuresChanged);
-      await interaction.setSelectionSet([tiledFeature]);
+      await interaction.setSelected([tiledFeature]);
     });
 
     after(() => {
@@ -286,7 +286,7 @@ describe('SelectMultiFeatureInteraction', () => {
     });
 
     it('should add the dynamic feature to the selected features', () => {
-      expect(interaction.selectedFeatures).to.have.members([olFeature]);
+      expect(interaction.selected).to.have.members([olFeature]);
     });
 
     it('should raise the featuresChanged event with the dynamic feature', () => {

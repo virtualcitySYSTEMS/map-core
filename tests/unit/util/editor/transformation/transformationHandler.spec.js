@@ -24,12 +24,12 @@ describe('createTransformationHandler', () => {
     });
 
     it('should set the center based on the currently set features', async () => {
-      await setup.featureSelection.setSelectionSet([
+      await setup.transformationHandler.setFeatures([
         createFeatureWithId(new Point([1, 1, 1])),
       ]);
       await timeout(0);
       expect(setup.transformationHandler.center).to.have.members([1, 1, 1]);
-      await setup.featureSelection.setSelectionSet([
+      await setup.transformationHandler.setFeatures([
         createFeatureWithId(new Point([1, 1, 1])),
         createFeatureWithId(new Point([3, 3, 3])),
       ]);
@@ -38,17 +38,17 @@ describe('createTransformationHandler', () => {
     });
 
     it('should not show, if the feature set is cleared', async () => {
-      await setup.featureSelection.setSelectionSet([
+      await setup.transformationHandler.setFeatures([
         createFeatureWithId(new Point([1, 1, 1])),
       ]);
-      setup.featureSelection.clear();
+      setup.transformationHandler.setFeatures([]);
       expect(setup.transformationHandler.showing).to.be.false;
     });
 
     it('should place the center onto the terrain, if some features do not have height information', async () => {
       sinon.stub(map, 'getHeightFromTerrain')
         .callsFake(async (coords) => { coords[0][2] = 1; return coords; });
-      await setup.featureSelection.setSelectionSet([
+      await setup.transformationHandler.setFeatures([
         createFeatureWithId(new Point([1, 1, 0])),
       ]);
       await timeout(0);
@@ -58,7 +58,7 @@ describe('createTransformationHandler', () => {
     it('should place the center onto the terrain, if some features are clamp to ground', async () => {
       sinon.stub(map, 'getHeightFromTerrain')
         .callsFake(async (coords) => { coords[0][2] = 1; return coords; });
-      await setup.featureSelection.setSelectionSet([
+      await setup.transformationHandler.setFeatures([
         createFeatureWithId({ geometry: new Point([1, 1, 2]), olcs_altitudeMode: 'clampToGround' }),
       ]);
       await timeout(0);
@@ -68,7 +68,7 @@ describe('createTransformationHandler', () => {
     it('should not place center of all features are absolute features', async () => {
       sinon.stub(map, 'getHeightFromTerrain')
         .callsFake(async (coords) => { coords[0][2] = 1; return coords; });
-      await setup.featureSelection.setSelectionSet([
+      await setup.transformationHandler.setFeatures([
         createFeatureWithId({ geometry: new Point([1, 1, 1]), olcs_altitudeMode: 'absolute' }),
         createFeatureWithId({ geometry: new Point([3, 3, 3]), olcs_altitudeMode: 'absolute' }),
       ]);
@@ -83,11 +83,11 @@ describe('createTransformationHandler', () => {
           coords[0][2] = 1;
           return coords;
         });
-      await setup.featureSelection.setSelectionSet([
+      const promise = setup.transformationHandler.setFeatures([ // iher promise merken
         createFeatureWithId({ geometry: new Point([1, 1, 2]), olcs_altitudeMode: 'clampToGround' }),
       ]);
       expect(setup.transformationHandler.center).to.have.members([1, 1, 2]);
-      await timeout(0);
+      await promise; // hier promise erwarten
       expect(setup.transformationHandler.center).to.have.members([1, 1, 1]);
     });
 
@@ -100,10 +100,10 @@ describe('createTransformationHandler', () => {
           coords[0][2] = 1;
           return coords;
         });
-      await setup.featureSelection.setSelectionSet([
+      await setup.transformationHandler.setFeatures([
         createFeatureWithId({ geometry: new Point([1, 1, 2]), olcs_altitudeMode: 'clampToGround' }),
       ]);
-      await setup.featureSelection.setSelectionSet([
+      await setup.transformationHandler.setFeatures([
         createFeatureWithId({ geometry: new Point([3, 3, 3]), olcs_altitudeMode: 'clampToGround' }),
       ]);
       await timeout(55);
@@ -117,10 +117,10 @@ describe('createTransformationHandler', () => {
           coords[0][2] = 1;
           return coords;
         });
-      await setup.featureSelection.setSelectionSet([
+      await setup.transformationHandler.setFeatures([
         createFeatureWithId({ geometry: new Point([1, 1, 2]), olcs_altitudeMode: 'clampToGround' }),
       ]);
-      setup.featureSelection.clear();
+      setup.transformationHandler.setFeatures([]);
       await timeout(55);
       expect(setup.transformationHandler.showing).to.be.false;
     });
@@ -143,12 +143,12 @@ describe('createTransformationHandler', () => {
     });
 
     it('should set the center based on the currently set features', async () => {
-      await setup.featureSelection.setSelectionSet([
+      await setup.transformationHandler.setFeatures([
         createFeatureWithId(new Point([1, 1, 1])),
       ]);
       await timeout(0);
       expect(setup.transformationHandler.center).to.have.members([1, 1, 0]);
-      await setup.featureSelection.setSelectionSet([
+      await setup.transformationHandler.setFeatures([
         createFeatureWithId(new Point([1, 1, 1])),
         createFeatureWithId(new Point([3, 3, 3])),
       ]);
@@ -157,10 +157,10 @@ describe('createTransformationHandler', () => {
     });
 
     it('should not show, if the feature set is cleared', async () => {
-      await setup.featureSelection.setSelectionSet([
+      await setup.transformationHandler.setFeatures([
         createFeatureWithId(new Point([1, 1, 1])),
       ]);
-      setup.featureSelection.clear();
+      setup.transformationHandler.setFeatures([]);
       expect(setup.transformationHandler.showing).to.be.false;
     });
   });

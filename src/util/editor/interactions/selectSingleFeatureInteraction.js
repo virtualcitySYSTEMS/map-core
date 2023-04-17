@@ -9,6 +9,7 @@ import { isTiledFeature } from '../../../layer/featureStoreLayer.js';
  * Static FeatureStore features will be converted into their dynamic form
  * @class
  * @extends {AbstractInteraction}
+ * @implements {SelectFeatureInteraction}
  */
 class SelectSingleFeatureInteraction extends AbstractInteraction {
   /**
@@ -35,10 +36,10 @@ class SelectSingleFeatureInteraction extends AbstractInteraction {
   }
 
   /**
-   * @returns {import("ol").Feature|null}
+   * @returns {Array<import("ol").Feature>}
    */
-  get selectedFeature() {
-    return this._selectedFeature;
+  get selected() {
+    return this._selectedFeature ? [this._selectedFeature] : [];
   }
 
   /**
@@ -53,7 +54,7 @@ class SelectSingleFeatureInteraction extends AbstractInteraction {
     ) {
       if (!(this._selectedFeature && event.feature.getId() === this._selectedFeature.getId())) {
         event.stopPropagation = true;
-        await this.selectFeature(
+        await this.setSelected(
           /** @type {import("ol").Feature|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature} */
           (event.feature),
         );
@@ -67,18 +68,27 @@ class SelectSingleFeatureInteraction extends AbstractInteraction {
   /**
    * Selects the given feature. if passed in a tiled feature store feature, it will be converted. Do not pass in uneditable features (feature which do not
    * belong to the layer for which this interaction was created)
-   * @param {import("ol").Feature|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature} feature
+   * @param {Array<import("ol").Feature|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature|import("@vcmap-cesium/engine").Entity> | import("ol").Feature|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature|import("@vcmap-cesium/engine").Entity} feature
    * @returns {Promise<void>}
    */
-  async selectFeature(feature) {
-    let olFeature = feature;
+  async setSelected(feature) {
+    let olFeature = Array.isArray(feature) ? feature[0] : feature;
     if (feature[isTiledFeature]) {
       olFeature = await /** @type {import("@vcmap/core").FeatureStoreLayer} */ (this._layer)
-        .switchStaticFeatureToDynamic(feature.getId());
+        .switchStaticFeatureToDynamic(olFeature.getId());
     }
 
     this._selectedFeature = /** @type {import("ol").Feature} */ (olFeature);
     this.featureChanged.raiseEvent(this._selectedFeature);
+  }
+
+  /**
+   * Checks if a feature with a spicific id is selected.
+   * @param {string | number} id
+   * @returns {boolean}
+   */
+  hasFeatureId(id) {
+    return this._selectedFeature?.getId() === id;
   }
 
   /**
@@ -89,6 +99,15 @@ class SelectSingleFeatureInteraction extends AbstractInteraction {
       this._selectedFeature = null;
       this.featureChanged.raiseEvent(null);
     }
+  }
+
+  /**
+   * @inheritDoc
+   */
+  destroy() {
+    this._selectedFeature = null;
+    this.featureChanged.destroy();
+    super.destroy();
   }
 }
 

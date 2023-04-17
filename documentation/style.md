@@ -1,6 +1,53 @@
 # Style
 Most of this section is incomplete and shall have more content in future.
 
+- [Using ol.style.Style on ol.Feature](#Using ol.style.Style on ol.Feature)
+- [Arrows](#arrows)
+- [Arcs](#arcs)
+
+## Using ol.style.Style on ol.Feature
+To style a single `Feature`, you shall call the `.setStyle()` method with a 
+`StyleLike`. There are certain exceptions: when hiding or highlighting 
+features. It is required to use the layers `FeatureVisibility` or the `LayerCollection`s
+`.globalHider` to hide and highlight features.
+This ensures the features _style_ remains correct, even though the feature
+is rendered differently. The reason this works, is because he `@vcmap/core` patches
+`ol.Feature.prototype.getStyleFunction` to ensure hidden features are hidden
+and highlighted features highlighted _without_ changing the style on the feature.
+
+```javascript
+import { LayerCollection, VectorLayer } from '@vcmap/core';
+import { Feature } from 'ol';
+import { LineString } from 'ol/geom';
+import { Style, Stroke } from 'ol/style';
+
+const collection = new LayerCollection();
+const layer = new VectorLayer({});
+collection.add(layer);
+
+const features = [
+  new Feature({ geometry: new LineString([[0, 0], [1, 0]]) }),
+  new Feature({ geometry: new LineString([[0, 0], [0, 1]]) }),
+];
+
+const featureStyle = new Style({ stroke: new Stroke({ color: '#000000', widht: 1 }) });
+features.forEach((f) => { f.setStyle(featureStyle); });
+
+const [id1, id2] = layer.addFeatures(features);
+// the first feature is red
+layer.featureVisibility.highlight({ 
+  [id1]: new Style({ stroke: new Storke({ color: '#FF0000', width: 4 }) }), 
+});
+
+// the second feature is hidden
+collection.globalHider.hideObjects([id2]); 
+
+features.forEach((f) => {
+  assert(f.getStyle() === featureStyle);
+  assert(!f.getStyleFunction()().includes(featureStyle));
+});
+``` 
+
 ## Arrows
 You can create an `ArrowStyle`, which is a specialized `ol.style.Style`. It will
 render an arrow head at the end of a `ol.geom.LineString`. It will not render _any other

@@ -288,6 +288,10 @@ class VectorLayer extends FeatureLayer {
       // TODO embed icons here by running over all features? this is never used anywhere
     }
 
+    if (Object.keys(this.properties).length !== 0) {
+      vcsMeta.layerProperties = { ...this.properties };
+    }
+
     return vcsMeta;
   }
 
@@ -297,6 +301,9 @@ class VectorLayer extends FeatureLayer {
    */
   setVcsMeta(vcsMeta) { // XXX what about the style?
     this.vectorProperties.setVcsMeta(vcsMeta);
+    if (vcsMeta.layerProperties) {
+      Object.assign(this.properties, vcsMeta.layerProperties);
+    }
   }
 
   /**

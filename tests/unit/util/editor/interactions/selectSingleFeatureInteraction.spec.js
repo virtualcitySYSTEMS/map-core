@@ -36,7 +36,7 @@ describe('SelectSingleFeatureInteraction', () => {
       });
 
       it('should set the currently selected feature', () => {
-        expect(interaction.selectedFeature).to.equal(featureA);
+        expect(interaction.selected).to.have.members([featureA]);
       });
 
       it('should raise the featureChanged event', () => {
@@ -56,7 +56,7 @@ describe('SelectSingleFeatureInteraction', () => {
       before(async () => {
         featureChangedListener = sinon.spy();
         interaction = new SelectSingleFeatureInteraction(layer);
-        await interaction.selectFeature(featureA);
+        await interaction.setSelected(featureA);
         interaction.featureChanged.addEventListener(featureChangedListener);
         event = { feature: featureA };
         await interaction.pipe(event);
@@ -67,7 +67,7 @@ describe('SelectSingleFeatureInteraction', () => {
       });
 
       it('should set the currently selected feature', () => {
-        expect(interaction.selectedFeature).to.equal(featureA);
+        expect(interaction.selected).to.have.members([featureA]);
       });
 
       it('should not raise the featureChanged event', () => {
@@ -87,7 +87,7 @@ describe('SelectSingleFeatureInteraction', () => {
       before(async () => {
         featureChangedListener = sinon.spy();
         interaction = new SelectSingleFeatureInteraction(layer);
-        await interaction.selectFeature(featureA);
+        await interaction.setSelected(featureA);
         interaction.featureChanged.addEventListener(featureChangedListener);
         event = { feature: featureB };
         await interaction.pipe(event);
@@ -98,7 +98,7 @@ describe('SelectSingleFeatureInteraction', () => {
       });
 
       it('should set the currently selected feature', () => {
-        expect(interaction.selectedFeature).to.equal(featureB);
+        expect(interaction.selected).to.have.members([featureB]);
       });
 
       it('should raise the featureChanged event with the selected feature', () => {
@@ -128,7 +128,7 @@ describe('SelectSingleFeatureInteraction', () => {
       });
 
       it('should not set the currently selected feature', () => {
-        expect(interaction.selectedFeature).to.be.null;
+        expect(interaction.selected).to.be.empty;
       });
 
       it('should not raise the featureChanged event', () => {
@@ -148,7 +148,7 @@ describe('SelectSingleFeatureInteraction', () => {
       before(async () => {
         featureChangedListener = sinon.spy();
         interaction = new SelectSingleFeatureInteraction(layer);
-        await interaction.selectFeature(featureA);
+        await interaction.setSelected(featureA);
         interaction.featureChanged.addEventListener(featureChangedListener);
         event = { feature: new Feature() };
         await interaction.pipe(event);
@@ -159,7 +159,7 @@ describe('SelectSingleFeatureInteraction', () => {
       });
 
       it('should not set the currently selected feature', () => {
-        expect(interaction.selectedFeature).to.be.null;
+        expect(interaction.selected).to.be.empty;
       });
 
       it('should raise the featureChanged event null', () => {
@@ -179,7 +179,7 @@ describe('SelectSingleFeatureInteraction', () => {
       before(async () => {
         featureChangedListener = sinon.spy();
         interaction = new SelectSingleFeatureInteraction(layer);
-        await interaction.selectFeature(featureA);
+        await interaction.setSelected(featureA);
         interaction.featureChanged.addEventListener(featureChangedListener);
         event = { feature: null };
         await interaction.pipe(event);
@@ -190,7 +190,7 @@ describe('SelectSingleFeatureInteraction', () => {
       });
 
       it('should not set the currently selected feature', () => {
-        expect(interaction.selectedFeature).to.be.null;
+        expect(interaction.selected).to.be.empty;
       });
 
       it('should raise the featureChanged event with null', () => {
@@ -216,7 +216,7 @@ describe('SelectSingleFeatureInteraction', () => {
       tiledFeature[isTiledFeature] = true;
       featureChangedListener = sinon.spy();
       interaction.featureChanged.addEventListener(featureChangedListener);
-      await interaction.selectFeature(tiledFeature);
+      await interaction.setSelected(tiledFeature);
     });
 
     after(() => {
@@ -225,7 +225,7 @@ describe('SelectSingleFeatureInteraction', () => {
     });
 
     it('should not set the currently selected feature to the dynamic feature', () => {
-      expect(interaction.selectedFeature).to.equal(olFeature);
+      expect(interaction.selected).to.have.members([olFeature]);
     });
 
     it('should raise the featureChanged event with the dynamic feature', () => {

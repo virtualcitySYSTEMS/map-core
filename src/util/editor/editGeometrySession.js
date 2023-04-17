@@ -1,6 +1,6 @@
 import { getLogger } from '@vcsuite/logger';
+import { unByKey } from 'ol/Observable.js';
 import { GeometryType, SessionType, setupInteractionChain, setupScratchLayer } from './editorSessionHelpers.js';
-import SelectSingleFeatureInteraction from './interactions/selectSingleFeatureInteraction.js';
 import InteractionChain from '../../interaction/interactionChain.js';
 import VcsEvent from '../../vcsEvent.js';
 import TranslateVertexInteraction from './interactions/translateVertexInteraction.js';
@@ -11,14 +11,12 @@ import EditGeometryMouseOverInteraction from './interactions/editGeometryMouseOv
 import { cartesian2DDistance, modulo } from '../math.js';
 import { createSync, obliqueGeometry } from '../../layer/vectorSymbols.js';
 import geometryIsValid from './validateGeoemetry.js';
-import ObliqueMap from '../../map/obliqueMap.js';
-import { emptyStyle } from '../../style/styleHelpers.js';
 import MapInteractionController from './interactions/mapInteractionController.js';
-import { originalStyle } from '../../layer/featureVisibility.js';
 
 /**
  * @typedef {EditorSession} EditGeometrySession
- * @property {SelectSingleFeatureInteraction} featureSelection - the feature selection for this session.
+ * @property {function(import("ol").Feature):void} setFeature - Sets the feature for the edit session.
+ * @property {import("ol").Feature | null} feature - Gets the current feature of the edit session.
  */
 
 /**
@@ -82,12 +80,15 @@ function createEditLineStringGeometryInteraction(feature, scratchLayer) {
  * @returns {EditGeometryInteraction}
  */
 function createEditCircleGeometryInteraction(feature, scratchLayer) {
+  /** @type {import("ol/geom").Circle} */
   const geometry = feature[obliqueGeometry] ?? feature.getGeometry();
   const vertices = geometry.getCoordinates().map(createVertex);
   scratchLayer.addFeatures(vertices);
 
   const translateVertex = new TranslateVertexInteraction();
+  let suspend;
   translateVertex.vertexChanged.addEventListener((vertex) => {
+    suspend = true;
     if (vertices.indexOf(vertex) === 1) {
       const coords = geometry.getCoordinates();
       coords[1] = vertex.getGeometry().getCoordinates();
@@ -96,6 +97,16 @@ function createEditCircleGeometryInteraction(feature, scratchLayer) {
     } else {
       geometry.setCenter(vertex.getGeometry().getCoordinates());
       vertices[1].getGeometry().setCoordinates(geometry.getCoordinates()[1]);
+    }
+    suspend = false;
+  });
+
+  const geometryListener = geometry.on('change', () => {
+    if (!suspend) {
+      geometry.getCoordinates()
+        .forEach((c, index) => {
+          vertices[index].getGeometry().setCoordinates(c);
+        });
     }
   });
 
@@ -106,6 +117,7 @@ function createEditCircleGeometryInteraction(feature, scratchLayer) {
     destroy: () => {
       scratchLayer.removeFeaturesById(vertices.map(v => v.getId()));
       interactionChain.destroy();
+      unByKey(geometryListener);
     },
   };
 }
@@ -119,7 +131,7 @@ function createEditBBoxGeometryInteraction(feature, scratchLayer) {
   const geometry = feature[obliqueGeometry] ?? feature.getGeometry();
   const vertices = geometry.getCoordinates()[0].map(createVertex);
   scratchLayer.addFeatures(vertices);
-
+  let suspend = false;
   const translateVertex = new TranslateVertexInteraction();
   translateVertex.vertexChanged.addEventListener((vertex) => {
     const vertexIndex = vertices.indexOf(vertex);
@@ -156,9 +168,19 @@ function createEditBBoxGeometryInteraction(feature, scratchLayer) {
     updateOtherVertex(rightOfIndex);
     updateOtherVertex(leftOfIndex);
 
+    suspend = true;
     geometry.setCoordinates([vertices.map(f => f.getGeometry().getCoordinates())]);
+    suspend = false;
   });
 
+  const geometryListener = geometry.on('change', () => {
+    if (!suspend) {
+      geometry.getCoordinates()[0]
+        .forEach((c, index) => {
+          vertices[index].getGeometry().setCoordinates(c);
+        });
+    }
+  });
   const interactionChain = new InteractionChain([translateVertex]);
 
   return {
@@ -166,6 +188,7 @@ function createEditBBoxGeometryInteraction(feature, scratchLayer) {
     destroy: () => {
       scratchLayer.removeFeaturesById(vertices.map(v => v.getId()));
       interactionChain.destroy();
+      unByKey(geometryListener);
     },
   };
 }
@@ -224,17 +247,28 @@ function createEditSimplePolygonInteraction(feature, scratchLayer) {
 /**
  * @param {import("ol").Feature<import("ol/geom").Point>} feature
  * @param {import("@vcmap/core").VectorLayer} scratchLayer
+ * @param {import("@vcmap/core").VectorLayer} layer
  * @returns {EditGeometryInteraction}
  */
-function createEditPointInteraction(feature, scratchLayer) {
-  const vertex = createVertex(feature.getGeometry().getCoordinates());
-  const featureStyle = feature.getStyle();
-  feature[originalStyle] = featureStyle;
-  feature.setStyle(emptyStyle);
+function createEditPointInteraction(feature, scratchLayer, layer) {
+  const geometry = feature[obliqueGeometry] ?? feature.getGeometry();
+  const vertex = createVertex(geometry.getCoordinates());
+  const featureIdArray = [feature.getId()];
+  layer.featureVisibility.hideObjects(featureIdArray);
+  vertex[createSync] = true;
   scratchLayer.addFeatures([vertex]);
   const translateVertex = new TranslateVertexInteraction();
+  let suspend = false;
   translateVertex.vertexChanged.addEventListener(() => {
+    suspend = true;
     feature.getGeometry().setCoordinates(vertex.getGeometry().getCoordinates());
+    suspend = false;
+  });
+
+  const geometryListener = geometry.on('change', () => {
+    if (!suspend) {
+      vertex.getGeometry().setCoordinates(geometry.getCoordinates());
+    }
   });
 
   const interactionChain = new InteractionChain([
@@ -246,7 +280,8 @@ function createEditPointInteraction(feature, scratchLayer) {
     destroy: () => {
       interactionChain.destroy();
       scratchLayer.removeFeaturesById([vertex.getId()]);
-      feature.setStyle(featureStyle);
+      layer.featureVisibility.showObjects(featureIdArray);
+      unByKey(geometryListener);
     },
   };
 }
@@ -255,24 +290,22 @@ function createEditPointInteraction(feature, scratchLayer) {
  * Creates the edit geometry session.
  * @param {import("@vcmap/core").VcsApp} app
  * @param {import("@vcmap/core").VectorLayer} layer
+ * @param {string} [interactionId] id for registering mutliple exclusive interaction. Needed to run a selection session at the same time as a edit features session.
  * @returns {EditGeometrySession}
  */
-function startEditGeometrySession(app, layer) {
+function startEditGeometrySession(app, layer, interactionId) {
   const {
     interactionChain,
     removed: interactionRemoved,
     destroy: destroyInteractionChain,
-  } = setupInteractionChain(app.maps.eventHandler);
+  } = setupInteractionChain(app.maps.eventHandler, interactionId);
 
   const scratchLayer = setupScratchLayer(app.layers);
-
-  const selectFeatureInteraction = new SelectSingleFeatureInteraction(layer);
-  interactionChain.addInteraction(selectFeatureInteraction);
 
   const mapInteractionController = new MapInteractionController();
   interactionChain.addInteraction(mapInteractionController);
 
-  const mouseOverInteraction = new EditGeometryMouseOverInteraction(layer.name);
+  const mouseOverInteraction = new EditGeometryMouseOverInteraction();
   interactionChain.addInteraction(mouseOverInteraction);
 
   /**
@@ -284,11 +317,12 @@ function startEditGeometrySession(app, layer) {
    * @type {EditGeometryInteraction|null}
    */
   let currentInteractionSet = null;
-  let currentFeature = null;
   /**
-   * @type {ObliqueMap|null}
+   * The feature that is set for the edit session.
+   * @type {import("ol").Feature}
    */
-  let obliqueMap = null;
+  let currentFeature = null;
+
 
   const destroyCurrentInteractionSet = () => {
     if (currentInteractionSet) {
@@ -304,18 +338,15 @@ function startEditGeometrySession(app, layer) {
       }
     }
     currentFeature = null;
-
-    if (obliqueMap) {
-      obliqueMap.switchEnabled = true;
-    }
   };
 
-  selectFeatureInteraction.featureChanged.addEventListener((feature) => {
+  /**
+   * Creates an interaction set from an edit geometry interaction. If the geometry of the feature is not supported a message is logged.
+   * @param {import("ol").Feature} feature The feature to be edited.
+   */
+  function createCurrentInteractionSet(feature) {
     destroyCurrentInteractionSet();
     if (feature) {
-      if (obliqueMap) {
-        obliqueMap.switchEnabled = false;
-      }
       currentFeature = feature;
       currentFeature[createSync] = true;
       const geometry = feature[obliqueGeometry] ?? feature.getGeometry();
@@ -341,6 +372,7 @@ function startEditGeometrySession(app, layer) {
         currentInteractionSet = createEditPointInteraction(
           /** @type {import("ol").Feature<import("ol/geom").Point>} */ (feature),
           scratchLayer,
+          layer,
         );
       } else if (geometryType === GeometryType.Circle) {
         currentInteractionSet = createEditCircleGeometryInteraction(
@@ -355,35 +387,20 @@ function startEditGeometrySession(app, layer) {
         getLogger('EditGeometrySession').warning(`Geometry of type ${geometryType} is currently not supported`);
         currentFeature[createSync] = false;
         currentFeature = null;
-        selectFeatureInteraction.clear();
       }
     }
-  });
+  }
 
-  let obliqueImageChangedListener = () => {};
   const setupActiveMap = () => {
     mapInteractionController.reset();
     mouseOverInteraction.reset();
-    selectFeatureInteraction.clear();
-    obliqueImageChangedListener();
-    const { activeMap } = app.maps;
-    if (activeMap instanceof ObliqueMap) {
-      obliqueMap = activeMap;
-      obliqueImageChangedListener = /** @type {ObliqueMap} */ (activeMap).imageChanged
-        .addEventListener(() => {
-          selectFeatureInteraction.clear();
-        });
-    } else {
-      obliqueMap = null;
-      obliqueImageChangedListener = () => {};
-    }
+    createCurrentInteractionSet(null);
   };
   const mapActivatedListener = app.maps.mapActivated.addEventListener(setupActiveMap);
   setupActiveMap();
 
   const stop = () => {
     app.layers.remove(scratchLayer);
-    obliqueImageChangedListener();
     mapActivatedListener();
     mapInteractionController.reset();
     mouseOverInteraction.reset();
@@ -396,9 +413,14 @@ function startEditGeometrySession(app, layer) {
 
   return {
     type: SessionType.EDIT_GEOMETRY,
-    featureSelection: selectFeatureInteraction,
     stopped,
     stop,
+    setFeature(feature) {
+      createCurrentInteractionSet(feature);
+    },
+    get feature() {
+      return currentFeature;
+    },
   };
 }
 

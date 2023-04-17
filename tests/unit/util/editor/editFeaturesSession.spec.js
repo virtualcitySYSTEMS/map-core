@@ -1,8 +1,9 @@
+import { expect } from 'chai';
 import { Cartesian2, Math as CesiumMath } from '@vcmap-cesium/engine';
 import { Point } from 'ol/geom.js';
+import Feature from 'ol/Feature.js';
 import {
   AXIS_AND_PLANES,
-  createSync,
   EventType, mercatorToCartesian,
   ModificationKeyType,
   ObliqueMap,
@@ -28,6 +29,7 @@ describe('startEditFeaturesSession', () => {
   let defaultMap;
   let obliqueMap;
   let cesiumMap;
+  const interactionId = 'edit_features_test';
 
   before(async () => {
     defaultMap = new OpenlayersMap({});
@@ -46,12 +48,88 @@ describe('startEditFeaturesSession', () => {
     app.destroy();
   });
 
+  describe('setting features', () => {
+    /** @type {EditFeaturesSession} */
+    let session;
+    /** @type {import("ol").Feature} */
+    let feature;
+
+    before(() => {
+      session = startEditFeaturesSession(app, layer);
+      feature = createFeatureWithId(new Point([0, 0, 0]));
+      session.setFeatures([feature]);
+    });
+
+    after(() => {
+      session.stop();
+    });
+
+    it('should set the features', () => {
+      expect(session.features).to.have.members([feature]);
+    });
+
+    it('should set allowPicking false', async () => {
+      expect(feature.getProperties()).to.have.property('olcs_allowPicking', false);
+    });
+
+    describe('changing features', () => {
+      let newFeature;
+
+      before(() => {
+        newFeature = new Feature({ geometry: new Point([0, 0, 0]) });
+        session.setFeatures([newFeature]);
+      });
+
+      it('should set the new features', () => {
+        expect(session.features).to.have.members([newFeature]);
+      });
+
+      it('should clear allow picking for previous features', () => {
+        expect(feature.getProperties()).to.not.have.property('olcs_allowPicking');
+      });
+    });
+
+    describe('removing all features', () => {
+      before(() => {
+        session.setFeatures([]);
+      });
+
+      it('should have an empty array as features', () => {
+        expect(session.features).to.be.empty;
+      });
+    });
+  });
+
+  describe('removing a feature with allowPicking set', () => {
+    it('should maintain allowPicking', async () => {
+      const feature = createFeatureWithId(new Point([0, 0, 0]));
+      feature.set('olcs_allowPicking', true);
+      layer.addFeatures([feature]);
+
+      const session = startEditFeaturesSession(app, layer);
+      await session.setFeatures([feature]);
+      expect(feature.get('olcs_allowPicking')).to.be.false;
+      session.setFeatures([]);
+      expect(feature.get('olcs_allowPicking')).to.be.true;
+    });
+  });
+
+  describe('stopping an edit session', () => {
+    it('should unset allowPicking false', async () => {
+      const session = startEditFeaturesSession(app, layer);
+      const feature = createFeatureWithId(new Point([0, 0, 0]));
+      session.setFeatures([feature]);
+      session.stop();
+      expect(feature.getProperties()).to.not.have.property('olcs_allowPicking');
+    });
+  });
+
   describe('starting a TRANSLATE session', () => {
     /** @type {EditFeaturesSession} */
     let session;
 
     before(() => {
-      session = startEditFeaturesSession(app, layer, TransformationMode.TRANSLATE);
+      session = startEditFeaturesSession(app, layer, interactionId, TransformationMode.TRANSLATE);
     });
 
     after(() => {
@@ -68,7 +146,7 @@ describe('startEditFeaturesSession', () => {
 
     it('should add the translate interaction', async () => {
       const point = new Point([1, 1, 1]);
-      await session.featureSelection.setSelectionSet([createFeatureWithId(point)]);
+      await session.setFeatures([createFeatureWithId(point)]);
       const feature = createHandlerFeature(AXIS_AND_PLANES.X);
       await app.maps.eventHandler.interactions[3].pipe({
         map: app.maps.activeMap,
@@ -103,7 +181,7 @@ describe('startEditFeaturesSession', () => {
     let session;
 
     before(() => {
-      session = startEditFeaturesSession(app, layer, TransformationMode.ROTATE);
+      session = startEditFeaturesSession(app, layer, interactionId, TransformationMode.ROTATE);
     });
 
     after(() => {
@@ -121,7 +199,7 @@ describe('startEditFeaturesSession', () => {
     it('should add the rotate interaction', async () => {
       const point1 = new Point([1, 1, 0]);
       const point2 = new Point([-1, -1, 0]);
-      await session.featureSelection.setSelectionSet([
+      await session.setFeatures([
         createFeatureWithId(point1),
         createFeatureWithId(point2),
       ]);
@@ -160,7 +238,7 @@ describe('startEditFeaturesSession', () => {
     let session;
 
     before(() => {
-      session = startEditFeaturesSession(app, layer, TransformationMode.SCALE);
+      session = startEditFeaturesSession(app, layer, interactionId, TransformationMode.SCALE);
     });
 
     after(() => {
@@ -178,7 +256,7 @@ describe('startEditFeaturesSession', () => {
     it('should add the scale interaction', async () => {
       const point1 = new Point([1, 1, 0]);
       const point2 = new Point([-1, -1, 0]);
-      await session.featureSelection.setSelectionSet([
+      await session.setFeatures([
         createFeatureWithId(point1),
         createFeatureWithId(point2),
       ]);
@@ -218,7 +296,7 @@ describe('startEditFeaturesSession', () => {
 
     before(async () => {
       await app.maps.setActiveMap(cesiumMap.name);
-      session = startEditFeaturesSession(app, layer, TransformationMode.EXTRUDE);
+      session = startEditFeaturesSession(app, layer, interactionId, TransformationMode.EXTRUDE);
     });
 
     after(async () => {
@@ -251,7 +329,7 @@ describe('startEditFeaturesSession', () => {
         });
 
         feature = createFeatureWithId(new Point([1, 1, 0]));
-        await session.featureSelection.setSelectionSet([
+        await session.setFeatures([
           feature,
         ]);
         const handlerFeature = createHandlerFeature(AXIS_AND_PLANES.Z);
@@ -309,7 +387,7 @@ describe('startEditFeaturesSession', () => {
     let session;
 
     before(async () => {
-      session = startEditFeaturesSession(app, layer, TransformationMode.EXTRUDE);
+      session = startEditFeaturesSession(app, layer, interactionId, TransformationMode.EXTRUDE);
     });
 
     after(async () => {
@@ -358,314 +436,12 @@ describe('startEditFeaturesSession', () => {
     });
   });
 
-  describe('feature selection', () => {
-    describe('selecting a feature', () => {
-      let feature;
-
-      before(async () => {
-        feature = createFeatureWithId(new Point([0, 0, 0]));
-      });
-
-      after(async () => { // catch all if oblique spec throws
-        await app.maps.setActiveMap(defaultMap.name);
-      });
-
-      describe('selecting a feature', () => {
-        let session;
-
-        before(async () => {
-          session = startEditFeaturesSession(app, layer);
-          await session.featureSelection.setSelectionSet([feature]);
-        });
-
-        after(() => {
-          session.stop();
-        });
-
-        it('should set create sync on the features', async () => {
-          expect(feature).to.have.property(createSync, true);
-        });
-
-        it('should highlight the feature', async () => {
-          expect(layer.featureVisibility.highlightedObjects).to.have.property(feature.getId());
-        });
-
-        it('should set allowPicking false', async () => {
-          expect(feature.getProperties()).to.have.property('olcs_allowPicking', false);
-        });
-      });
-
-      describe('oblique map handling', () => {
-        it('should set switchEnabled false on oblique maps', async () => {
-          const session = startEditFeaturesSession(app, layer);
-          await app.maps.setActiveMap(obliqueMap.name);
-          await session.featureSelection.setSelectionSet([feature]);
-          expect(obliqueMap.switchEnabled).to.be.false;
-          session.stop();
-          await app.maps.setActiveMap(defaultMap.name);
-        });
-      });
-    });
-
-    describe('clearing the feature selection', () => {
-      let feature;
-
-      before(async () => {
-        feature = createFeatureWithId(new Point([0, 0, 0]));
-        layer.addFeatures([feature]);
-      });
-
-      after(async () => { // catch all if oblique spec throws
-        await app.maps.setActiveMap(defaultMap.name);
-        layer.removeFeaturesById([feature.getId()]);
-      });
-
-      describe('deselecting a feature', () => {
-        let session;
-
-        before(async () => {
-          session = startEditFeaturesSession(app, layer);
-          await session.featureSelection.setSelectionSet([feature]);
-          session.featureSelection.clear();
-        });
-
-        after(() => {
-          session.stop();
-        });
-
-        it('should unset create sync on the features', async () => {
-          expect(feature).to.not.have.property(createSync);
-        });
-
-        it('should unhighlight the feature', async () => {
-          expect(layer.featureVisibility.highlightedObjects).to.not.have.property(feature.getId());
-        });
-
-        it('should unset allowPicking false', async () => {
-          expect(feature.getProperties()).to.not.have.property('olcs_allowPicking');
-        });
-      });
-
-      describe('oblique map handling', () => {
-        it('should set switchEnabled true if unselecting a feature', async () => {
-          const session = startEditFeaturesSession(app, layer);
-          await app.maps.setActiveMap(obliqueMap.name);
-          await session.featureSelection.setSelectionSet([feature]);
-          await session.featureSelection.clear();
-          expect(obliqueMap.switchEnabled).to.be.true;
-          session.stop();
-          await app.maps.setActiveMap(defaultMap.name);
-        });
-      });
-    });
-
-    describe('changing a selection set', () => {
-      let feature1;
-      let feature2;
-      let feature3;
-
-      before(async () => {
-        feature1 = createFeatureWithId(new Point([0, 0, 0]));
-        feature2 = createFeatureWithId(new Point([0, 0, 0]));
-        feature3 = createFeatureWithId(new Point([0, 0, 0]));
-        layer.addFeatures([feature1, feature2, feature3]);
-      });
-
-      after(async () => { // catch all if oblique spec throws
-        await app.maps.setActiveMap(defaultMap.name);
-        layer.removeFeaturesById([feature1.getId(), feature2.getId(), feature3.getId()]);
-      });
-
-      describe('deselecting a feature', () => {
-        let session;
-
-        before(async () => {
-          session = startEditFeaturesSession(app, layer);
-          await session.featureSelection.setSelectionSet([feature1, feature2]);
-          await session.featureSelection.setSelectionSet([feature1, feature3]);
-        });
-
-        after(() => {
-          session.stop();
-        });
-
-        it('should set create sync on the features', async () => {
-          expect(feature1).to.have.property(createSync, true);
-          expect(feature2).to.not.have.property(createSync);
-          expect(feature3).to.have.property(createSync, true);
-        });
-
-        it('should highlight the feature', async () => {
-          expect(layer.featureVisibility.highlightedObjects).to.have.keys([feature1.getId(), feature3.getId()]);
-        });
-
-        it('should unset/set allowPicking accordingly', async () => {
-          expect(feature1.getProperties()).to.have.property('olcs_allowPicking', false);
-          expect(feature2.getProperties()).to.not.have.property('olcs_allowPicking');
-          expect(feature3.getProperties()).to.have.property('olcs_allowPicking', false);
-        });
-      });
-
-      describe('oblique map handling', () => {
-        it('should set switchEnabled false on oblique maps', async () => {
-          const session = startEditFeaturesSession(app, layer);
-          await app.maps.setActiveMap(obliqueMap.name);
-          await session.featureSelection.setSelectionSet([feature1, feature2]);
-          await session.featureSelection.setSelectionSet([feature1, feature3]);
-          expect(obliqueMap.switchEnabled).to.be.false;
-          session.stop();
-          await app.maps.setActiveMap(defaultMap.name);
-        });
-      });
-    });
-
-    describe('unselecting a feature with allowPicking set', () => {
-      it('should maintain allowPicking', async () => {
-        const feature = createFeatureWithId(new Point([0, 0, 0]));
-        feature.set('olcs_allowPicking', true);
-        layer.addFeatures([feature]);
-
-        const session = startEditFeaturesSession(app, layer);
-        await session.featureSelection.setSelectionSet([feature]);
-        expect(feature.get('olcs_allowPicking')).to.be.false;
-        session.featureSelection.clear();
-        expect(feature.get('olcs_allowPicking')).to.be.true;
-      });
-    });
-  });
-
-  describe('stopping a session', () => {
-    let session;
-
-    beforeEach(() => {
-      session = startEditFeaturesSession(app, layer);
-    });
-
-    after(async () => { // catch all if oblique spec throws
-      await app.maps.setActiveMap(defaultMap.name);
-    });
-
-    it('should remove the interaction', () => {
-      const interaction = app.maps.eventHandler.interactions[3];
-      session.stop();
-      expect(app.maps.eventHandler.interactions).to.not.include(interaction);
-    });
-
-    it('should call stopped', () => {
-      const spy = sinon.spy();
-      session.stopped.addEventListener(spy);
-      session.stop();
-      expect(spy).to.have.been.called;
-    });
-
-    describe('with a feature selected', () => {
-      let feature;
-
-      beforeEach(async () => {
-        feature = createFeatureWithId(new Point([0, 0, 0]));
-        await session.featureSelection.setSelectionSet([feature]);
-        layer.addFeatures([feature]);
-      });
-
-      afterEach(() => {
-        layer.removeFeaturesById([feature.getId()]);
-      });
-
-      it('should remove create sync on the features', async () => {
-        session.stop();
-        expect(feature).to.not.have.property(createSync);
-      });
-
-      it('should unhighlight the feature', async () => {
-        session.stop();
-        expect(layer.featureVisibility.highlightedObjects).to.not.have.property(feature.getId());
-      });
-
-      it('should unset allowPicking false', async () => {
-        session.stop();
-        expect(feature.getProperties()).to.not.have.property('olcs_allowPicking');
-      });
-
-      it('should reset switchEnabled on oblique maps', async () => {
-        await app.maps.setActiveMap(obliqueMap.name);
-        session.stop();
-        expect(obliqueMap.switchEnabled).to.be.true;
-        await app.maps.setActiveMap(defaultMap.name);
-      });
-    });
-  });
-
-  describe('changing the active map to an oblique map', () => {
-    let session;
-
-    beforeEach(() => {
-      session = startEditFeaturesSession(app, layer);
-    });
-
-    afterEach(async () => {
-      session.stop();
-      await app.maps.setActiveMap(defaultMap.name);
-    });
-
-    it('should clear the current selection', async () => {
-      await session.featureSelection.setSelectionSet([createFeatureWithId(new Point([0, 0, 0]))]);
-      await app.maps.setActiveMap(obliqueMap.name);
-      expect(session.featureSelection.selectedFeatures).to.be.empty;
-    });
-
-    describe('image changed listener', async () => {
-      beforeEach(async () => {
-        await app.maps.setActiveMap(obliqueMap.name);
-      });
-
-      it('should clear the current selection', async () => {
-        await session.featureSelection.setSelectionSet([createFeatureWithId(new Point([0, 0, 0]))]);
-        obliqueMap.imageChanged.raiseEvent();
-        expect(session.featureSelection.selectedFeatures).to.be.empty;
-      });
-    });
-  });
-
-  describe('changing the active map from an oblique map', () => {
-    let session;
-
-    before(async () => {
-      await app.maps.setActiveMap(obliqueMap.name);
-      session = startEditFeaturesSession(app, layer);
-    });
-
-    after(async () => {
-      session.stop();
-      await app.maps.setActiveMap(defaultMap.name);
-    });
-
-    it('should clear the current selection', async () => {
-      await session.featureSelection.setSelectionSet([createFeatureWithId(new Point([0, 0, 0]))]);
-      await app.maps.setActiveMap(defaultMap.name);
-      expect(session.featureSelection.selectedFeatures).to.be.empty;
-    });
-
-    it('should no longer listen to image changed', async () => {
-      await app.maps.setActiveMap(defaultMap.name);
-      const feature = createFeatureWithId(new Point([0, 0, 0]));
-      await session.featureSelection.setSelectionSet([feature]);
-      obliqueMap.imageChanged.raiseEvent();
-      expect(session.featureSelection.selectedFeatures).to.include.members([feature]);
-    });
-
-    it('should reset switchEnabled, if a feature was selected', async () => {
-      await session.featureSelection.setSelectionSet([createFeatureWithId(new Point([0, 0, 0]))]);
-      await app.maps.setActiveMap(defaultMap.name);
-      expect(obliqueMap.switchEnabled).to.be.true;
-    });
-  });
-
   describe('changing the active map from a cesium map with extrude mode on', () => {
     let session;
 
     beforeEach(async () => {
       await app.maps.setActiveMap(cesiumMap.name);
-      session = startEditFeaturesSession(app, layer, TransformationMode.EXTRUDE);
+      session = startEditFeaturesSession(app, layer, interactionId, TransformationMode.EXTRUDE);
     });
 
     afterEach(async () => {

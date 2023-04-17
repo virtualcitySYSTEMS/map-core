@@ -11,15 +11,15 @@ import CesiumMap from '../../../map/cesiumMap.js';
  */
 class EnsureHandlerSelectionInteraction extends AbstractInteraction {
   /**
-   * @param {import("@vcmap/core").SelectMultiFeatureInteraction} selectMultiFeatureInteraction
+   * @param {Array<import("ol").Feature>} selectedFeatures Reference to the selected features.
    */
-  constructor(selectMultiFeatureInteraction) {
+  constructor(selectedFeatures) {
     super(EventType.DRAGSTART | EventType.MOVE);
     /**
-     * @type {import("@vcmap/core").SelectMultiFeatureInteraction}
+     * @type {Array<import("ol").Feature>}
      * @private
      */
-    this._featureSelection = selectMultiFeatureInteraction;
+    this._featureSelection = selectedFeatures;
   }
 
   /**
@@ -29,7 +29,7 @@ class EnsureHandlerSelectionInteraction extends AbstractInteraction {
   async pipe(event) {
     if (
       event.feature &&
-      this._featureSelection.selectedFeatures.length > 0 &&
+      this._featureSelection.length > 0 &&
       !event.feature[handlerSymbol] &&
       event.map instanceof CesiumMap
     ) {

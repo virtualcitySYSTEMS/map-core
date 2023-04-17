@@ -13,6 +13,7 @@ import { getFlatCoordinatesFromGeometry } from '../geometryHelpers.js';
 import CesiumMap from '../../map/cesiumMap.js';
 import { vertexSymbol } from './editorSymbols.js';
 import Vector from '../../layer/vectorLayer.js';
+import { createSync } from '../../layer/vectorSymbols.js';
 
 /**
  * @param {import("ol/coordinate").Coordinate} coordinate
@@ -26,6 +27,7 @@ export function createVertex(coordinate) {
   });
   vertex[vertexSymbol] = true;
   vertex[Vector.doNotTransform] = true;
+  vertex[createSync] = true;
   return vertex;
 }
 
@@ -193,7 +195,7 @@ export async function placeGeometryOnTerrain(geometry, map) {
  * @param {import("@vcmap/core").VcsMap} cesiumMap
  * @returns {Promise<void>}
  */
-export async function ensureFeatureAbsolute(feature, layer, cesiumMap) {
+export async function ensureFeatureAbsolute(feature, layer, cesiumMap) { // XXX this does not ensure 3D coordinates
   const layerIsClamped = layer.vectorProperties.altitudeMode === HeightReference.CLAMP_TO_GROUND;
   const altitudeMode = feature.get('olcs_altitudeMode');
   if (altitudeMode === 'clampToGround' || (!altitudeMode && layerIsClamped)) {

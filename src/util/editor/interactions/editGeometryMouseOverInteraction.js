@@ -1,10 +1,8 @@
-import { vertexSymbol } from '../editorSymbols.js';
+import { mouseOverSymbol, vertexSymbol } from '../editorSymbols.js';
 import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import { ModificationKeyType, EventType } from '../../../interaction/interactionType.js';
-import { vcsLayerName } from '../../../layer/layerSymbols.js';
 
 /**
- * only exported for tests
  * @type {Object}
  */
 export const cursorMap = { // TODO these can now be designed custom. IE11 no linger required
@@ -16,7 +14,7 @@ export const cursorMap = { // TODO these can now be designed custom. IE11 no lin
   select: 'pointer',
   edit: 'pointer', // fa pencil
   translateVertex: 'move', // fa-stack pointer-move
-  removeVertex: 'pointer', // fa-stack pencil-minus
+  removeVertex: 'no-drop', // fa-stack pencil-minus
   insertVertex: 'cell', // fa-stack pencil-plus
   addToSelection: 'cell', // fa-stack pointer-black
   removeFromSelection: 'not-allowed',
@@ -28,21 +26,13 @@ export const cursorMap = { // TODO these can now be designed custom. IE11 no lin
  * @extends {AbstractInteraction}
  */
 class EditGeometryMouseOverInteraction extends AbstractInteraction {
-  /**
-   * @param {string} layerName - the layer name of the currently editing layer
-   */
-  constructor(layerName) {
-    super(EventType.MOVE, ModificationKeyType.ALL);
+  constructor() {
+    super(EventType.MOVE, ModificationKeyType.NONE | ModificationKeyType.SHIFT);
     /**
      * @type {import("ol").Feature|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature|null}
      * @private
      */
-    this._lastFeature = null;
-    /**
-     * The layer name to react to
-     * @type {string}
-     */
-    this.layerName = layerName;
+    this._currentVertex = null;
     /**
      * @type {CSSStyleDeclaration}
      */
@@ -57,17 +47,11 @@ class EditGeometryMouseOverInteraction extends AbstractInteraction {
    * @returns {Promise<InteractionEvent>}
    */
   async pipe(event) {
-    if (
-      event.feature &&
-      (
-        event.feature[vcsLayerName] === this.layerName ||
-        event.feature[vertexSymbol]
-      )
-    ) {
-      this._lastFeature = /** @type {import("ol").Feature|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature} */
+    if (event.feature && event.feature[vertexSymbol]) {
+      this._currentVertex = /** @type {import("ol").Feature|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature} */
         (event.feature);
     } else {
-      this._lastFeature = null;
+      this._currentVertex = null;
     }
     this._evaluate(event.key);
     return event;
@@ -104,18 +88,16 @@ class EditGeometryMouseOverInteraction extends AbstractInteraction {
    * @private
    */
   _evaluate(modifier) {
-    if (this._lastFeature) {
-      if (this._lastFeature[vertexSymbol]) {
-        if (modifier === ModificationKeyType.SHIFT) {
-          this.cursorStyle.cursor = cursorMap.removeVertex;
-        } else {
-          this.cursorStyle.cursor = cursorMap.translateVertex;
-        }
+    if (this._currentVertex) {
+      if (modifier === ModificationKeyType.SHIFT) {
+        this.cursorStyle.cursor = cursorMap.removeVertex;
       } else {
-        this.cursorStyle.cursor = cursorMap.select;
+        this.cursorStyle.cursor = cursorMap.translateVertex;
       }
-    } else {
+      this.cursorStyle[mouseOverSymbol] = this.id;
+    } else if (this.cursorStyle?.[mouseOverSymbol] === this.id) {
       this.cursorStyle.cursor = cursorMap.auto;
+      delete this.cursorStyle[mouseOverSymbol];
     }
   }
 
@@ -123,6 +105,7 @@ class EditGeometryMouseOverInteraction extends AbstractInteraction {
    * @inheritDoc
    */
   destroy() {
+    this.reset();
     this.cursorStyle = null;
     super.destroy();
   }

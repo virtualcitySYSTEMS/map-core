@@ -1,7 +1,6 @@
-import { handlerSymbol } from '../editorSymbols.js';
+import { handlerSymbol, mouseOverSymbol } from '../editorSymbols.js';
 import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import { ModificationKeyType, EventType } from '../../../interaction/interactionType.js';
-import { vcsLayerName } from '../../../layer/layerSymbols.js';
 import { cursorMap } from './editGeometryMouseOverInteraction.js';
 
 /**
@@ -10,27 +9,13 @@ import { cursorMap } from './editGeometryMouseOverInteraction.js';
  * @extends {AbstractInteraction}
  */
 class EditFeaturesMouseOverInteraction extends AbstractInteraction {
-  /**
-   * @param {string} layerName - the layer name of the currently editing layer
-   * @param {import("@vcmap/core").SelectMultiFeatureInteraction} selectMultiFeatureInteraction
-   */
-  constructor(layerName, selectMultiFeatureInteraction) {
-    super(EventType.MOVE, ModificationKeyType.ALL);
+  constructor() {
+    super(EventType.MOVE, ModificationKeyType.NONE);
     /**
      * @type {import("ol").Feature|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature|null}
      * @private
      */
-    this._lastFeature = null;
-    /**
-     * @type {import("@vcmap/core").SelectMultiFeatureInteraction}
-     * @private
-     */
-    this._selectMultiFeatureInteraction = selectMultiFeatureInteraction;
-    /**
-     * The layer name to react to
-     * @type {string}
-     */
-    this.layerName = layerName;
+    this._currentHandler = null;
     /**
      * @type {CSSStyleDeclaration}
      */
@@ -46,24 +31,15 @@ class EditFeaturesMouseOverInteraction extends AbstractInteraction {
    */
   async pipe(event) {
     if (
-      event.feature &&
-      (event.feature[vcsLayerName] === this.layerName || event.feature[handlerSymbol])
+      event.feature && event.feature[handlerSymbol]
     ) {
-      this._lastFeature = /** @type {import("ol").Feature|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature} */
+      this._currentHandler = /** @type {import("ol").Feature|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature} */
         (event.feature);
     } else {
-      this._lastFeature = null;
+      this._currentHandler = null;
     }
-    this._evaluate(event.key);
+    this._evaluate();
     return event;
-  }
-
-  /**
-   * @inheritDoc
-   * @param {ModificationKeyType} modifier
-   */
-  modifierChanged(modifier) {
-    this._evaluate(modifier);
   }
 
   /**
@@ -85,26 +61,15 @@ class EditFeaturesMouseOverInteraction extends AbstractInteraction {
   }
 
   /**
-   * @param {ModificationKeyType} modifier
    * @private
    */
-  _evaluate(modifier) {
-    if (this._lastFeature) {
-      if (this._lastFeature[handlerSymbol]) {
-        this.cursorStyle.cursor = cursorMap.select;
-      } else if (modifier === ModificationKeyType.CTRL) {
-        if (!this._selectMultiFeatureInteraction.hasFeatureId(/** @type {string} */ (this._lastFeature.getId()))) {
-          this.cursorStyle.cursor = cursorMap.addToSelection;
-        } else {
-          this.cursorStyle.cursor = cursorMap.removeFromSelection;
-        }
-      } else if (!this._selectMultiFeatureInteraction.hasFeatureId(/** @type {string} */ (this._lastFeature.getId()))) {
-        this.cursorStyle.cursor = cursorMap.select;
-      } else {
-        this.cursorStyle.cursor = cursorMap.auto;
-      }
-    } else {
+  _evaluate() {
+    if (this._currentHandler) {
+      this.cursorStyle.cursor = cursorMap.translate;
+      this.cursorStyle[mouseOverSymbol] = this.id;
+    } else if (this.cursorStyle?.[mouseOverSymbol] === this.id) {
       this.cursorStyle.cursor = cursorMap.auto;
+      delete this.cursorStyle[mouseOverSymbol];
     }
   }
 
@@ -112,6 +77,7 @@ class EditFeaturesMouseOverInteraction extends AbstractInteraction {
    * @inheritDoc
    */
   destroy() {
+    this.reset();
     this.cursorStyle = null;
     super.destroy();
   }

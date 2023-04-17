@@ -83,7 +83,6 @@ function getCenterFromFeatures2D(features) {
  * In most scenarios, this function must not be called directly and the startEditFeatureSession used instead.
  * @param {import("@vcmap/core").VcsMap} map
  * @param {import("@vcmap/core").VectorLayer} layer
- * @param {import("@vcmap/core").SelectMultiFeatureInteraction} selectMultiFeatureInteraction
  * @param {import("@vcmap/core").VectorLayer} scratchLayer
  * @param {import("@vcmap/core").TransformationMode} mode
  * @returns {TransformationHandler}
@@ -91,7 +90,6 @@ function getCenterFromFeatures2D(features) {
 export default function createTransformationHandler(
   map,
   layer,
-  selectMultiFeatureInteraction,
   scratchLayer,
   mode,
 ) {
@@ -106,12 +104,11 @@ export default function createTransformationHandler(
   let cesiumMap = null;
 
   let cancelAsyncSetting = () => {};
-  const handleFeaturesChanged = async () => {
+  const setFeatures = async (features) => {
     cancelAsyncSetting();
-    const { selectedFeatures } = selectMultiFeatureInteraction;
-    const show = selectedFeatures.length > 0;
+    const show = features.length > 0;
     if (show) {
-      const { center: newCenter, someClamped, someNoTerrain } = getCenterFromFeatures(selectedFeatures);
+      const { center: newCenter, someClamped, someNoTerrain } = getCenterFromFeatures(features);
       center = newCenter;
       if (!cesiumMap || !someNoTerrain) { // only set center sync, if updating will not change it too drastically (to avoid jumps)
         handlerFeatures.show = true;
@@ -140,8 +137,6 @@ export default function createTransformationHandler(
     handlerFeatures = create2DHandlers(map, scratchLayer, mode);
     getCenterFromFeatures = getCenterFromFeatures2D;
   }
-  handleFeaturesChanged();
-  const featuresChangedListener = selectMultiFeatureInteraction.featuresChanged.addEventListener(handleFeaturesChanged);
 
   return {
     get showing() { return handlerFeatures.show; },
@@ -158,9 +153,9 @@ export default function createTransformationHandler(
       center[2] += dz;
       handlerFeatures.setCenter(center);
     },
+    setFeatures,
     destroy() {
       cancelAsyncSetting();
-      featuresChangedListener();
       handlerFeatures.destroy();
       scratchLayer.removeAllFeatures();
     },

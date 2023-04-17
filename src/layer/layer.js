@@ -31,6 +31,7 @@ import GlobalHider from './globalHider.js';
  * @property {number|undefined} screenSpaceError
  * @property {*|undefined} flightOptions
  * @property {string|undefined} baseUrl
+ * @property {Object|undefined} [layerProperties] - the layers properties bag
  * @api
  */
 
@@ -86,7 +87,7 @@ import GlobalHider from './globalHider.js';
  * @type {string}
  * @const
  */
-export const vcsMetaVersion = '2.0';
+export const vcsMetaVersion = '2.1';
 
 /**
  * Abstract base class for Layers.

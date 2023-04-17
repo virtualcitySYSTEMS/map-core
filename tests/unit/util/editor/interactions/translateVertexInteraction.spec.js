@@ -1,6 +1,6 @@
 import { Feature } from 'ol';
 import { Point } from 'ol/geom.js';
-import { emptyStyle, EventType, TranslateVertexInteraction, vertexSymbol } from '../../../../../index.js';
+import { EventType, TranslateVertexInteraction, vertexSymbol } from '../../../../../index.js';
 
 describe('TranslateVertexInteraction', () => {
   describe('starting vertex translation', () => {
@@ -24,8 +24,8 @@ describe('TranslateVertexInteraction', () => {
       expect(event.stopPropagation).to.be.true;
     });
 
-    it('should set the vertex style to the empty style', () => {
-      expect(vertex.getStyle()).to.equal(emptyStyle);
+    it('should set the vertex allowPicking to be false', () => {
+      expect(vertex.get('olcs_allowPicking')).to.be.false;
     });
   });
 
@@ -108,7 +108,7 @@ describe('TranslateVertexInteraction', () => {
     });
 
     it('should reset the vertex style', () => {
-      expect(vertex.getStyle()).to.be.null;
+      expect(vertex.get('olcs_allowPicking')).to.be.undefined;
     });
   });
 });

@@ -89,11 +89,90 @@ function waitForOne() {
 }
 ```
 
+### Selecting Features
+To select features of a layer, you must start the `EditGeometrySession` using
+the `startEditGeometrySession` helper.
+
+```javascript
+import {
+  VcsApp,
+  VectorLayer,
+  startSelectFeaturesSession,
+  SelectionMode,
+} from '@vcmap/core';
+import { Circle, Fill, Style, Stroke } from 'ol/style.js';
+
+// The app on which all things happen
+const app = new VcsApp();
+// The layer we wish to edit
+const layer = new VectorLayer();
+app.layers.add(layer);
+await layer.activate();
+
+/**
+ * This will start a selection session on the layer indefinitly
+ */
+function selectLayerFeatures() {
+  startSelectFeaturesSession(app, layer);
+}
+
+/**
+ * In order to select specific features they can be set on the session.
+ * The selection can also be cleared.
+ * @param {string} featureId
+ */
+async function setAndClearTheCurrentFeatures(featureId) {
+  const session = startSelectFeaturesSession(app, layer);
+  const feature = layer.getFeatureById(featureId);
+  await session.setCurrentFeatures([feature]);
+  session.clearSelection();
+}
+
+/**
+ * You can change the initial mode and change the mode afterwards.
+ * Additionally you can listen to mode changes.
+ */
+function changingSelecionMode() {
+  const session = startSelectFeaturesSession(app, layer, undefined, SelectionMode.SINGLE);
+  session.modeChanged.addEventListener((newMode) => {
+    console.log(`The new selection mode is ${newMode}`);
+  });
+  session.setMode(SelectionMode.MULTI);
+}
+
+/**
+ * You can change the selection style
+ */
+function startWithDifferentSelectionStyle() {
+  const fill = new Fill({ color: 'rgba(153,204,255,0.2)' });
+  const stroke = new Stroke({ color: '#0099ff', width: 2 });
+  const style = new Style({
+    fill,
+    stroke,
+    image: new Circle({ fill, stroke, radius: 14 }),
+  });
+  startSelectFeaturesSession(app, layer, undefined, SelectionMode.SINGLE, style);
+}
+
+/**
+ * You can sync information from the session with another structure.
+ * @param {{ currentFeatures: Array<import("ol").Feature>}} info
+ */
+function snycInfo(info) {
+  const session = startSelectFeaturesSession(app, layer);
+  session.featuresChanged.addEventListener((features) => {
+    info.currentFeatures = features;
+  });
+}
+```
+
 ### Editing Feature Geometries
 To edit the feature geometries in a layer, you must start the `EditGeometrySession` using
 the `startEditGeometrySession` helper.
-This session provides a feature selection, to select a single feature & the required
-interactions to edit the currently selected feature.
+In order to edit the geometry of a feature, it must be set on the session.
+For using this session with a select session, see the [Select and Edit Chapter](#selecting-and-editing-features).
+
+When used without a select features session, the enableSwitch property of the oblique map must be set manually false while editing.
 
 The following outlines some example use cases:
 ```javascript
@@ -119,48 +198,24 @@ function editLayerGeometries() {
 }
 
 /**
- * You can sync information from the session with another structure.
- * @param {{ currentFeature: import("ol").Feature|null|null}}
- */
-function snycInfo(info) {
-  const session = startEditGeometrySession(app, layer);
-  session.featureSelection.featureChanged.addEventListener((feature) => {
-    info.currentFeature = feature;
-  });
-}
-
-/**
- * If you know the feature you wish to edit beforehand, you can do the following
+ * In order to edit a feature you need to use the setFeature function.
  * @param {string} featureId
  */
 async function setTheCurrentFeature(featureId) {
   const session = startEditGeometrySession(app, layer);
   const feature = layer.getFeatureById(featureId);
-  await session.featureSelection.selectFeature(feature); 
+  await session.setFeature(feature); 
 }
 
 /**
- * If you wish to only edit one feature and then stop the session
- * @param {string} featureId
- */
-async function stopAfter(featureId) {
-  const session = startEditGeometrySession(app, layer);
-  const feature = layer.getFeatureById(featureId);
-  await session.featureSelection.selectFeature(feature);
-  session.featureSelection.featureChanged.addEventListener(() => {
-    session.stop();
-  });
-}
-
-/**
- * You can finish editing a feature, if you clear the selection. 
+ * You can finish editing a feature, if you set null as feature. 
  * @param {VcsEvent<void>} finishEvent
  */
 function finishEvent(finishEvent) {
   const session = startEditGeometrySession(app, layer);
   finishEvent.addEventListener(() => {
-    if (session.featureSelection.selectedFeature) {
-      session.featureSelection.clear();
+    if (session.feature) {
+      session.setFeature(null);
     }
   });
 }
@@ -170,18 +225,19 @@ function finishEvent(finishEvent) {
 There are four ways to transform features. This includes in all viewers 1) translate, 2) 
 scale and 3) rotate. In 3D, you can also extrude features. Transformations can be applied
 to a selection set, as opposed to editing of geometries, which only works on single features.
+In order to edit features, they must be set on the session.
+For using this session with a select session, see the [Select and Edit Chapter](#selecting-and-editing-features).
 
-Once you have started a session, the session will take care of handling map changes &
-oblique images changes and trys to maintain the users selection set (of course this cannot
+Once you have started a session, the session will take care of handling map changes and trys to maintain the users selection set (of course this cannot
 be done in oblique). You can also change the _mode_ of the current session
 without clearing the selectiong set.
+When used without a select features session, the enableSwitch property of the oblique map must be set manually false while editing.
 
 ```javascript
 import { 
   VcsApp, 
   VectorLayer,
   startEditFeaturesSession, 
-  GeometryType,
   TransformationMode,
 } from '@vcmap/core';
 
@@ -200,52 +256,20 @@ function editLayerGeometries() {
 }
 
 /**
- * You can sync information from the session with another structure.
- * @param {{ currentFeature: import("ol").Feature|null|null}}
- */
-function snycInfo(info) {
-  const session = startEditFeaturesSession(app, layer);
-  session.featureSelection.featuresChanged.addEventListener((features) => {
-    info.currentFeature = features[0];
-  });
-}
-
-/**
- * If you know the feature you wish to edit beforehand, you can do the following
+ * In order to edit a feature you need to use the setFeatures function.
  * @param {string} featureId
  */
 async function setTheCurrentFeatures(featureId) {
   const session = startEditFeaturesSession(app, layer);
   const feature = layer.getFeatureById(featureId);
-  await session.featureSelection.setSelectionSet([feature]); 
-}
-
-/**
- * If you wish to only edit one feature and then stop the session
- * @param {string} featureId
- */
-async function stopAfter(featureId) {
-  const session = startEditFeaturesSession(app, layer);
-  const feature = layer.getFeatureById(featureId);
-  await session.featureSelection.setSelectionSet([feature]);
-  session.featureSelection.featureChanged.addEventListener(() => {
-    session.stop();
-  });
+  await session.setFeatures([feature]); 
 }
 
 /**
  * You can change the initial mode
  */
 function startWithRotate() {
-  startEditFeaturesSession(app, layer, TransformationMode.ROTATE);
-}
-
-/**
- * You can set a different highlight style
- * @param {import("@vcmap/core").VectorStyleItem} style
- */
-function customHighlightStyle(style) {
-  startEditFeaturesSession(app, layer, TransformationMode.TRANSLATE, style);
+  startEditFeaturesSession(app, layer, undefined, TransformationMode.ROTATE);
 }
 
 /**
@@ -259,4 +283,41 @@ function listenToModeChanged() {
   session.setMode(TransformationMode.ROTATE);
   session.setMode(TransformationMode.SCALE);
 }
+```
+### Selecting and editing features
+
+To edit selected features a SelectFeaturesSession must be started first. With the help of the featuresChanged event the features can then be passed to the Edit session. In the following this will be demonstrated using the `EditFeaturesSession`. Whe using `EditGeometrySession`, the mode of the feature selection should be `SelectionMode.SINGLE`.
+
+```javascript
+import {
+  VcsApp,
+  VectorLayer,
+  startSelectFeaturesSession,
+  startEditFeaturesSession,
+} from '@vcmap/core';
+
+/**
+ * Set selected features for feature transformation session.
+ */
+function selectFeaturesForEditing() {
+  const selectSession = startSelectFeaturesSession(app, layer);
+  const editSession = startEditFeaturesSession(app, layer);
+
+  selectSession.featuresChanged.addEventListener((features) => {
+    editSession.setFeatures(features);
+  });
+}
+
+/**
+ * Stop edit session when select session is stopped.
+ */
+function listenToStop() {
+  const selectSession = startSelectFeaturesSession(app, layer);
+  const editSession = startEditFeaturesSession(app, layer);
+
+  selectSession.stopped.addEventListener(() => {
+    editSession.stop();
+  });
+}
+
 ```

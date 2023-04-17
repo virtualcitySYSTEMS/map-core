@@ -19,6 +19,7 @@ import { Color } from '@vcmap-cesium/engine';
  * @property {import("ol/coordinate").Coordinate} center - readonly current center of the handler. this is a copy, not a reference
  * @property {AXIS_AND_PLANES} showAxis - highlight the given axis
  * @property {boolean} showing - readonly value indicating whether the handlers are showing (proxy for: features are selected)
+ * @property {function(Array<import("ol").Feature>):void} setFeatures - Sets transformation handle features. The handler is located in the center of the features.
  * @property {function():void} destroy - destroy the handler and any resources created by it
  */
 

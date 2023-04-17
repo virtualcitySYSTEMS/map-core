@@ -1,4 +1,4 @@
-import { VcsEvent } from '@vcmap/core';
+import { VcsEvent, AbstractInteraction } from '@vcmap/core';
 
 /**
  * This is a common interface for all geometry creation interactions.
@@ -18,3 +18,9 @@ export interface CreateInteraction<T extends import("ol/geom").Geometry> {
 }
 
 export type Vertex = import("ol").Feature<import("ol/geom").Point>;
+
+export interface SelectFeatureInteraction extends AbstractInteraction {
+    readonly selected: Array<import("ol").Feature>;
+    setSelected(features: Array<import("ol").Feature|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature|import("@vcmap-cesium/engine").Entity> | import("ol").Feature|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature|import("@vcmap-cesium/engine").Entity ):void;
+    hasFeatureId(id: string): boolean;
+}

@@ -98,7 +98,7 @@ class LayerCollection extends IndexedCollection {
   get zIndexSymbol() { return this._zIndexSymbol; }
 
   /**
-   * The current global hider
+   * The current global hider of these layers
    * @type {GlobalHider}
    */
   get globalHider() {
@@ -106,8 +106,10 @@ class LayerCollection extends IndexedCollection {
   }
 
   /**
-   * Set global hider for these maps.
+   * The current global hider of these layers
+   * @type {GlobalHider}
    * @param {GlobalHider} globalHider
+   * @returns {void}
    */
   set globalHider(globalHider) {
     check(globalHider, GlobalHider);
