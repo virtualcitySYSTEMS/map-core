@@ -16,7 +16,11 @@ describe('CzmlLayer', () => {
       server.autoRespond = true;
       server.respondImmediately = true;
       server.respondWith('/dynamicPoint.czml', (res) => {
-        res.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(dynamicPoint));
+        res.respond(
+          200,
+          { 'Content-Type': 'application/json' },
+          JSON.stringify(dynamicPoint),
+        );
       });
       layer = new CzmlLayer({
         url: '/dynamicPoint.czml',
@@ -34,7 +38,10 @@ describe('CzmlLayer', () => {
     });
 
     it('should set the layer name on all entities', () => {
-      expect(layer.entities.values[0]).to.have.property(vcsLayerName, layer.name);
+      expect(layer.entities.values[0]).to.have.property(
+        vcsLayerName,
+        layer.name,
+      );
     });
 
     it('should set the clock from the czml', () => {
@@ -72,7 +79,10 @@ describe('CzmlLayer', () => {
       });
 
       it('should configure sourceUri', () => {
-        expect(outputConfig).to.have.property('sourceUri', inputConfig.sourceUri);
+        expect(outputConfig).to.have.property(
+          'sourceUri',
+          inputConfig.sourceUri,
+        );
       });
     });
   });

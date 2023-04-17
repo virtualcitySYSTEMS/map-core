@@ -36,7 +36,9 @@ import { layerClassRegistry } from '../classRegistry.js';
  * @api stable
  */
 class WMSLayer extends RasterLayer {
-  static get className() { return 'WMSLayer'; }
+  static get className() {
+    return 'WMSLayer';
+  }
 
   /**
    * @returns {WMSOptions}
@@ -68,7 +70,9 @@ class WMSLayer extends RasterLayer {
     if (options.parameters) {
       let parsedParameters;
       if (typeof options.parameters === 'string') {
-        parsedParameters = Object.fromEntries(new URLSearchParams(options.parameters));
+        parsedParameters = Object.fromEntries(
+          new URLSearchParams(options.parameters),
+        );
       } else if (options.parameters instanceof Object) {
         parsedParameters = options.parameters;
       }
@@ -88,16 +92,17 @@ class WMSLayer extends RasterLayer {
     /** @type {import("ol/size").Size} */
     this.tileSize = options.tileSize || defaultOptions.tileSize;
     /** @type {boolean} */
-    this.highResolution = parseBoolean(options.highResolution, defaultOptions.highResolution);
+    this.highResolution = parseBoolean(
+      options.highResolution,
+      defaultOptions.highResolution,
+    );
     /**
      * @type {WMSFeatureProviderOptions}
      * @private
      */
-    this._featureInfoOptions = options.featureInfo || defaultOptions.featureInfo;
-    this._supportedMaps = [
-      CesiumMap.className,
-      OpenlayersMap.className,
-    ];
+    this._featureInfoOptions =
+      options.featureInfo || defaultOptions.featureInfo;
+    this._supportedMaps = [CesiumMap.className, OpenlayersMap.className];
   }
 
   /**
@@ -223,21 +228,38 @@ class WMSLayer extends RasterLayer {
       config.highResolution = this.highResolution;
     }
 
-    if (this.tileSize[0] !== defaultOptions.tileSize[0] || this.tileSize[1] !== defaultOptions.tileSize[1]) {
-      config.tileSize = /** @type {import("ol/size").Size} */ (this.tileSize.slice());
+    if (
+      this.tileSize[0] !== defaultOptions.tileSize[0] ||
+      this.tileSize[1] !== defaultOptions.tileSize[1]
+    ) {
+      config.tileSize = /** @type {import("ol/size").Size} */ (
+        this.tileSize.slice()
+      );
     }
 
-    if (this.featureProvider && this.featureProvider instanceof WMSFeatureProvider) {
+    if (
+      this.featureProvider &&
+      this.featureProvider instanceof WMSFeatureProvider
+    ) {
       const featureInfoConfig = this.featureProvider.toJSON();
-      if (this.tileSize[0] === featureInfoConfig.tileSize[0] || this.tileSize[1] === featureInfoConfig.tileSize[1]) {
+      if (
+        this.tileSize[0] === featureInfoConfig.tileSize[0] ||
+        this.tileSize[1] === featureInfoConfig.tileSize[1]
+      ) {
         delete featureInfoConfig.tileSize;
       }
-      if (Object.entries(this.parameters).every(([key, value]) => featureInfoConfig.parameters[key] === value)) {
+      if (
+        Object.entries(this.parameters).every(
+          ([key, value]) => featureInfoConfig.parameters[key] === value,
+        )
+      ) {
         delete featureInfoConfig.parameters;
       }
       if (
         featureInfoConfig.extent &&
-        new Extent(/** @type {ExtentOptions} */ (featureInfoConfig.extent)).equals(this.extent)
+        new Extent(
+          /** @type {ExtentOptions} */ (featureInfoConfig.extent),
+        ).equals(this.extent)
       ) {
         delete featureInfoConfig.extent;
       }

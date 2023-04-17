@@ -3,7 +3,9 @@ import Layer from './layer.js';
 import CesiumMap from '../map/cesiumMap.js';
 import DataSourceCesiumImpl from './cesium/dataSourceCesiumImpl.js';
 import { vcsLayerName } from './layerSymbols.js';
-import FeatureVisibility, { FeatureVisibilityAction } from './featureVisibility.js';
+import FeatureVisibility, {
+  FeatureVisibilityAction,
+} from './featureVisibility.js';
 import { layerClassRegistry } from '../classRegistry.js';
 
 /**
@@ -27,7 +29,9 @@ import { layerClassRegistry } from '../classRegistry.js';
  * @api stable
  */
 class DataSourceLayer extends Layer {
-  static get className() { return 'DataSourceLayer'; }
+  static get className() {
+    return 'DataSourceLayer';
+  }
 
   /**
    * @param {LayerOptions} options
@@ -56,9 +60,7 @@ class DataSourceLayer extends Layer {
      */
     this._featureVisibilityListeners = [];
 
-    this._supportedMaps = [
-      CesiumMap.className,
-    ];
+    this._supportedMaps = [CesiumMap.className];
   }
 
   /**
@@ -74,7 +76,9 @@ class DataSourceLayer extends Layer {
    * @private
    */
   _setUpFeatureVisibility() {
-    this._featureVisibilityListeners.forEach((cb) => { cb(); });
+    this._featureVisibilityListeners.forEach((cb) => {
+      cb();
+    });
 
     this._featureVisibilityListeners = [
       this.featureVisibility.changed.addEventListener(({ action, ids }) => {
@@ -100,16 +104,18 @@ class DataSourceLayer extends Layer {
     ];
 
     if (this.globalHider) {
-      this._featureVisibilityListeners.push(this.globalHider.changed.addEventListener(({ action, ids }) => {
-        if (action === FeatureVisibilityAction.HIDE) {
-          ids.forEach((id) => {
-            const entity = this.entities.getById(id);
-            if (entity) {
-              this.globalHider.addFeature(id, entity);
-            }
-          });
-        }
-      }));
+      this._featureVisibilityListeners.push(
+        this.globalHider.changed.addEventListener(({ action, ids }) => {
+          if (action === FeatureVisibilityAction.HIDE) {
+            ids.forEach((id) => {
+              const entity = this.entities.getById(id);
+              if (entity) {
+                this.globalHider.addFeature(id, entity);
+              }
+            });
+          }
+        }),
+      );
     }
   }
 
@@ -205,7 +211,9 @@ class DataSourceLayer extends Layer {
    */
   destroy() {
     this.entities.removeAll();
-    this._featureVisibilityListeners.forEach((cb) => { cb(); });
+    this._featureVisibilityListeners.forEach((cb) => {
+      cb();
+    });
     this._featureVisibilityListeners = [];
     this.featureVisibility.destroy();
     super.destroy();

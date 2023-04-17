@@ -16,7 +16,6 @@ import { requestJson } from '../util/fetch.js';
  */
 export const featureFromOptions = Symbol('featureFromOptions');
 
-
 /**
  * GeojsonLayer layer for Cesium, OpenlayersMap and ObliqueMap
  * @class
@@ -24,7 +23,9 @@ export const featureFromOptions = Symbol('featureFromOptions');
  * @api stable
  */
 class GeoJSONLayer extends VectorLayer {
-  static get className() { return 'GeoJSONLayer'; }
+  static get className() {
+    return 'GeoJSONLayer';
+  }
 
   /**
    * @returns {GeoJSONOptions}
@@ -75,7 +76,9 @@ class GeoJSONLayer extends VectorLayer {
    */
   async reload() {
     if (this._dataFetchedPromise) {
-      const configFeatures = this.getFeatures().filter(f => f[featureFromOptions]);
+      const configFeatures = this.getFeatures().filter(
+        (f) => f[featureFromOptions],
+      );
       this.removeAllFeatures();
       this.source.addFeatures(configFeatures);
       this._dataFetchedPromise = null;
@@ -100,10 +103,9 @@ class GeoJSONLayer extends VectorLayer {
         features: this._featuresToLoad,
       });
 
-      this.getFeatures()
-        .forEach((f) => {
-          f[featureFromOptions] = true;
-        });
+      this.getFeatures().forEach((f) => {
+        f[featureFromOptions] = true;
+      });
 
       this._featuresToLoad.splice(0);
       this._featuresToLoad = undefined;
@@ -111,9 +113,11 @@ class GeoJSONLayer extends VectorLayer {
 
     if (this.url) {
       this._dataFetchedPromise = requestJson(this.url)
-        .then(data => this._parseGeojsonData(data))
+        .then((data) => this._parseGeojsonData(data))
         .catch((err) => {
-          this.getLogger().warning(`Could not send request for loading layer content (${err.message})`);
+          this.getLogger().warning(
+            `Could not send request for loading layer content (${err.message})`,
+          );
           return Promise.reject(err);
         });
     } else {
@@ -160,9 +164,11 @@ class GeoJSONLayer extends VectorLayer {
     if (Array.isArray(this._featuresToLoad)) {
       config.features = this._featuresToLoad.slice();
     } else {
-      const features = this.getFeatures().filter(f => f[featureFromOptions]);
+      const features = this.getFeatures().filter((f) => f[featureFromOptions]);
       if (features.length > 0) {
-        config.features = features.map(f => writeGeoJSONFeature(f, { writeStyle: true, writeId: true }));
+        config.features = features.map((f) =>
+          writeGeoJSONFeature(f, { writeStyle: true, writeId: true }),
+        );
       }
     }
 

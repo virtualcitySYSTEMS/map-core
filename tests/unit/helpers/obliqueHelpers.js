@@ -8,7 +8,10 @@ import ObliqueDataSet from '../../../src/oblique/obliqueDataSet.js';
 import importJSON from './importJSON.js';
 import getFileNameFromUrl from './getFileNameFromUrl.js';
 
-const fileName = getFileNameFromUrl(import.meta.url, '../../../data/oblique/imageData/imagev35.json');
+const fileName = getFileNameFromUrl(
+  import.meta.url,
+  '../../../data/oblique/imageData/imagev35.json',
+);
 const imageJson = await importJSON(fileName);
 
 /**
@@ -31,10 +34,7 @@ function getStartingViewpoint() {
     name: '5b609a0d-28a1-4f4e-ba6c-29f2592fa889',
     distance: 264.6285087486175,
     cameraPosition: null,
-    groundPosition: [
-      13.41528061371218,
-      52.50232648590358,
-    ],
+    groundPosition: [13.41528061371218, 52.50232648590358],
     heading: 0,
     pitch: -90,
     roll: 0,
@@ -61,11 +61,14 @@ export function getObliqueDataSet(scope) {
       url: 'http://localhost/terrain/',
     };
   }
-  const obliqueDataSet = new ObliqueDataSet('http://localhost/', obliqueProjection, terrainProvider);
+  const obliqueDataSet = new ObliqueDataSet(
+    'http://localhost/',
+    obliqueProjection,
+    terrainProvider,
+  );
   obliqueDataSet.initialize(imageJson);
   return obliqueDataSet;
 }
-
 
 /**
  * @param {Array<ObliqueDataSet>=} obliqueDataSets
@@ -81,11 +84,11 @@ export function getObliqueCollection(obliqueDataSets) {
 }
 
 /**
- * @param {ObliqueOptions} mapOptions
+ * @param {ObliqueOptions} [mapOptions={}]
  * @param {Scope=} scope optional server, if provided the map will be initialized with a terrainProvider
  * @returns {Promise<ObliqueMap>}
  */
-export async function getObliqueMap(mapOptions = {}, scope) {
+export async function getObliqueMap(mapOptions = {}, scope = undefined) {
   const obliqueDataSet = getObliqueDataSet(scope);
   const obliqueCollection = getObliqueCollection([obliqueDataSet]);
   const map = new ObliqueMap(mapOptions);

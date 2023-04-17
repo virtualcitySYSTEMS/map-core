@@ -154,9 +154,11 @@ describe('MapCollection', () => {
       mapCollection = new MapCollection();
       map = new OpenlayersMap({});
       mapCollection.add(map);
-      layerCollection = LayerCollection.from([new Layer({
-        name: 'layer1',
-      })]);
+      layerCollection = LayerCollection.from([
+        new Layer({
+          name: 'layer1',
+        }),
+      ]);
       mapCollection.layerCollection = layerCollection;
     });
 
@@ -304,7 +306,9 @@ describe('MapCollection', () => {
         event = e;
       });
       openlayers.requestRender();
-      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      await new Promise((resolve) => {
+        setTimeout(resolve, 100);
+      });
       expect(event).to.not.be.null;
       expect(event).to.have.property('map', openlayers);
     });
@@ -363,7 +367,10 @@ describe('MapCollection', () => {
         });
 
         it('should publish the MAP_FALLBACK_ACTIVATED event', async () => {
-          const spy = getVcsEventSpy(mapCollection.fallbackMapActivated, sandbox);
+          const spy = getVcsEventSpy(
+            mapCollection.fallbackMapActivated,
+            sandbox,
+          );
           await mapCollection.setActiveMap(openlayers.name);
           expect(spy).to.have.been.called;
         });
@@ -397,7 +404,10 @@ describe('MapCollection', () => {
         });
 
         it('should raise the fallback map activated event', async () => {
-          const spy = getVcsEventSpy(mapCollection.fallbackMapActivated, sandbox);
+          const spy = getVcsEventSpy(
+            mapCollection.fallbackMapActivated,
+            sandbox,
+          );
           await mapCollection.setActiveMap(openlayers.name);
           expect(spy).to.have.been.called;
         });
@@ -445,7 +455,15 @@ describe('MapCollection', () => {
 
     beforeEach(() => {
       mapCollection = new MapCollection();
-      makeOverrideCollection(mapCollection, () => { return 'uuid'; }, null, null, VcsMap);
+      makeOverrideCollection(
+        mapCollection,
+        () => {
+          return 'uuid';
+        },
+        null,
+        null,
+        VcsMap,
+      );
     });
 
     afterEach(() => {

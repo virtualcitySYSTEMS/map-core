@@ -1,4 +1,8 @@
-import { Rectangle, SingleTileImageryProvider, ImageryLayer } from '@vcmap-cesium/engine';
+import {
+  Rectangle,
+  SingleTileImageryProvider,
+  ImageryLayer,
+} from '@vcmap-cesium/engine';
 import RasterLayerCesiumImpl from './rasterLayerCesiumImpl.js';
 import { wgs84Projection } from '../../util/projection.js';
 
@@ -8,7 +12,9 @@ import { wgs84Projection } from '../../util/projection.js';
  * @extends {RasterLayerCesiumImpl}
  */
 class SingleImageCesiumImpl extends RasterLayerCesiumImpl {
-  static get className() { return 'SingleImageCesiumImpl'; }
+  static get className() {
+    return 'SingleImageCesiumImpl';
+  }
 
   /**
    * @param {import("@vcmap/core").CesiumMap} map
@@ -31,7 +37,12 @@ class SingleImageCesiumImpl extends RasterLayerCesiumImpl {
 
     const extent = this.extent.getCoordinatesInProjection(wgs84Projection);
     if (extent) {
-      options.rectangle = Rectangle.fromDegrees(extent[0], extent[1], extent[2], extent[3]);
+      options.rectangle = Rectangle.fromDegrees(
+        extent[0],
+        extent[1],
+        extent[2],
+        extent[3],
+      );
     }
 
     const imageryProvider = new SingleTileImageryProvider(options);

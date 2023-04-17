@@ -8,7 +8,9 @@ import RasterLayerOpenlayersImpl from './rasterLayerOpenlayersImpl.js';
  * @extends {RasterLayerOpenlayersImpl}
  */
 class OpenStreetMapOpenlayersImpl extends RasterLayerOpenlayersImpl {
-  static get className() { return 'OpenStreetMapOpenlayersImpl'; }
+  static get className() {
+    return 'OpenStreetMapOpenlayersImpl';
+  }
 
   /**
    * @returns {import("ol/layer/Tile").default}

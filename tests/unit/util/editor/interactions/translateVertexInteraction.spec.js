@@ -1,6 +1,10 @@
 import { Feature } from 'ol';
 import { Point } from 'ol/geom.js';
-import { EventType, TranslateVertexInteraction, vertexSymbol } from '../../../../../index.js';
+import {
+  EventType,
+  TranslateVertexInteraction,
+  vertexSymbol,
+} from '../../../../../index.js';
 
 describe('TranslateVertexInteraction', () => {
   describe('starting vertex translation', () => {
@@ -57,7 +61,9 @@ describe('TranslateVertexInteraction', () => {
     });
 
     it('should set the vertex geometry to the position of the event', () => {
-      expect(vertex.getGeometry().getCoordinates()).to.have.ordered.members([2, 1, 0]);
+      expect(vertex.getGeometry().getCoordinates()).to.have.ordered.members([
+        2, 1, 0,
+      ]);
     });
 
     it('should call vertexChanged for each drag event', () => {
@@ -99,7 +105,9 @@ describe('TranslateVertexInteraction', () => {
     });
 
     it('should set the vertex geometry to the position of the event', () => {
-      expect(vertex.getGeometry().getCoordinates()).to.have.ordered.members([2, 1, 0]);
+      expect(vertex.getGeometry().getCoordinates()).to.have.ordered.members([
+        2, 1, 0,
+      ]);
     });
 
     it('should call vertexChanged for each drag event & drag end event', () => {

@@ -10,7 +10,9 @@ import { isSameOrigin } from '../../util/urlHelpers.js';
  * @extends {RasterLayerOpenlayersImpl}
  */
 class SingleImageOpenlayersImpl extends RasterLayerOpenlayersImpl {
-  static get className() { return 'SingleImageOpenlayersImpl'; }
+  static get className() {
+    return 'SingleImageOpenlayersImpl';
+  }
 
   /**
    * @param {import("@vcmap/core").OpenlayersMap} map

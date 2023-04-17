@@ -2,14 +2,15 @@ import LayerImplementation from '../layerImplementation.js';
 import { vcsLayerName } from '../layerSymbols.js';
 import { getTerrainProviderForUrl } from '../terrainHelpers.js';
 
-
 /**
  * TerrainLayer implementation for {@link CesiumMap}
  * @class
  * @extends {LayerImplementation<import("@vcmap/core").CesiumMap>}}
  */
 class TerrainCesiumImpl extends LayerImplementation {
-  static get className() { return 'TerrainCesiumImpl'; }
+  static get className() {
+    return 'TerrainCesiumImpl';
+  }
 
   /**
    * @param {import("@vcmap/core").CesiumMap} map

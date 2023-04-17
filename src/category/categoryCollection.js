@@ -35,14 +35,16 @@ class CategoryCollection extends IndexedCollection {
      * @type {Function}
      * @private
      */
-    this._moduleRemovedListener = this._app.moduleRemoved.addEventListener((module) => {
-      this._cache.forEach((moduleMap, name) => {
-        moduleMap.delete(module._id);
-        if (moduleMap.size === 0) {
-          this._cache.delete(name);
-        }
-      });
-    });
+    this._moduleRemovedListener = this._app.moduleRemoved.addEventListener(
+      (module) => {
+        this._cache.forEach((moduleMap, name) => {
+          moduleMap.delete(module._id);
+          if (moduleMap.size === 0) {
+            this._cache.delete(name);
+          }
+        });
+      },
+    );
   }
 
   /**
@@ -50,7 +52,8 @@ class CategoryCollection extends IndexedCollection {
    * @param {Category<Object|import("@vcmap/core").VcsObject>} category
    * @returns {number|null}
    */
-  add(category) { // XXX use a symbol to enforce using request over add?
+  add(category) {
+    // XXX use a symbol to enforce using request over add?
     if (this.hasKey(category.name)) {
       return null;
     }
@@ -58,11 +61,9 @@ class CategoryCollection extends IndexedCollection {
     category.setApp(this._app);
     const added = super.add(category);
     if (added != null && this._cache.has(category.name)) {
-      this._cache
-        .get(category.name)
-        .forEach((items, moduleId) => {
-          this.parseCategoryItems(category.name, items, moduleId);
-        });
+      this._cache.get(category.name).forEach((items, moduleId) => {
+        this.parseCategoryItems(category.name, items, moduleId);
+      });
 
       this._cache.delete(category.name);
     }
@@ -73,7 +74,8 @@ class CategoryCollection extends IndexedCollection {
    * Categories should be static. Removing them can lead to undefined behavior.
    * @param {Category<Object|import("@vcmap/core").VcsObject>} category
    */
-  remove(category) { // XXX add logger warning?
+  remove(category) {
+    // XXX add logger warning?
     super.remove(category);
     this._cache.delete(category.name);
   }
@@ -110,7 +112,9 @@ class CategoryCollection extends IndexedCollection {
     }
 
     if (!options.type) {
-      getLogger().warning(`Implicitly typing category ${options.name} as ${Category.className}`);
+      getLogger().warning(
+        `Implicitly typing category ${options.name} as ${Category.className}`,
+      );
       options.type = Category.className;
     }
 
@@ -119,7 +123,10 @@ class CategoryCollection extends IndexedCollection {
       category = this.getByKey(options.name);
       category.mergeOptions(options);
     } else {
-      category = await getObjectFromClassRegistry(this._app.categoryClassRegistry, options);
+      category = await getObjectFromClassRegistry(
+        this._app.categoryClassRegistry,
+        options,
+      );
       if (category) {
         if (this.add(category) == null) {
           return null;
@@ -128,7 +135,9 @@ class CategoryCollection extends IndexedCollection {
     }
 
     if (!category) {
-      throw new Error(`Category ${options.name} with type ${options.type} could not be created`);
+      throw new Error(
+        `Category ${options.name} with type ${options.type} could not be created`,
+      );
     }
     return category;
   }

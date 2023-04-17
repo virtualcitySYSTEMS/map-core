@@ -2,8 +2,7 @@ import { Feature } from 'ol';
 import { Cartesian2 } from '@vcmap-cesium/engine';
 import { getCesiumMap } from '../../../helpers/cesiumHelpers.js';
 import { AXIS_AND_PLANES, handlerSymbol } from '../../../../../index.js';
-import EnsureHandlerSelectionInteraction
-  from '../../../../../src/util/editor/interactions/ensureHandlerSelectionInteraction.js';
+import EnsureHandlerSelectionInteraction from '../../../../../src/util/editor/interactions/ensureHandlerSelectionInteraction.js';
 
 describe('EnsureHandlerSelectionInteraction', () => {
   let map;
@@ -19,7 +18,9 @@ describe('EnsureHandlerSelectionInteraction', () => {
       { primitive: { olFeature: {} } },
       { primitive: { olFeature: { [handlerSymbol]: AXIS_AND_PLANES.X } } },
     ];
-    ensureHandlerSelection = new EnsureHandlerSelectionInteraction(currentFeatures);
+    ensureHandlerSelection = new EnsureHandlerSelectionInteraction(
+      currentFeatures,
+    );
   });
 
   beforeEach(() => {

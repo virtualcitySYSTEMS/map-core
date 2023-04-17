@@ -25,7 +25,9 @@ import { layerClassRegistry } from '../classRegistry.js';
  * @implements {SplitLayer}
  */
 class OpenStreetMapLayer extends Layer {
-  static get className() { return 'OpenStreetMapLayer'; }
+  static get className() {
+    return 'OpenStreetMapLayer';
+  }
 
   /**
    * @returns {OpenStreetMapOptions}
@@ -52,21 +54,24 @@ class OpenStreetMapLayer extends Layer {
     this._splitDirection = SplitDirection.NONE;
 
     if (options.splitDirection) {
-      this._splitDirection = options.splitDirection === 'left' ?
-        SplitDirection.LEFT :
-        SplitDirection.RIGHT;
+      this._splitDirection =
+        options.splitDirection === 'left'
+          ? SplitDirection.LEFT
+          : SplitDirection.RIGHT;
     }
 
-    this._supportedMaps = [
-      CesiumMap.className,
-      OpenlayersMap.className,
-    ];
+    this._supportedMaps = [CesiumMap.className, OpenlayersMap.className];
 
     /**
      * @type {number}
      * @private
      */
-    this._opacity = parseNumberRange(options.opacity, defaultOptions.opacity, 0.0, 1.0);
+    this._opacity = parseNumberRange(
+      options.opacity,
+      defaultOptions.opacity,
+      0.0,
+      1.0,
+    );
 
     /**
      * raised if the split direction changes, is passed the split direction as its only argument
@@ -87,7 +92,9 @@ class OpenStreetMapLayer extends Layer {
    * @api
    * @type {import("@vcmap-cesium/engine").SplitDirection}
    */
-  get splitDirection() { return this._splitDirection; }
+  get splitDirection() {
+    return this._splitDirection;
+  }
 
   /**
    * @param {import("@vcmap-cesium/engine").SplitDirection} direction
@@ -108,7 +115,9 @@ class OpenStreetMapLayer extends Layer {
    * @api
    * @type {number}
    */
-  get opacity() { return this._opacity; }
+  get opacity() {
+    return this._opacity;
+  }
 
   /**
    * @param {number} opacity
@@ -146,11 +155,15 @@ class OpenStreetMapLayer extends Layer {
    */
   createImplementationsForMap(map) {
     if (map instanceof OpenlayersMap) {
-      return [new OpenStreetMapOpenlayersImpl(map, this.getImplementationOptions())];
+      return [
+        new OpenStreetMapOpenlayersImpl(map, this.getImplementationOptions()),
+      ];
     }
 
     if (map instanceof CesiumMap) {
-      return [new OpenStreetMapCesiumImpl(map, this.getImplementationOptions())];
+      return [
+        new OpenStreetMapCesiumImpl(map, this.getImplementationOptions()),
+      ];
     }
     return [];
   }
@@ -164,9 +177,8 @@ class OpenStreetMapLayer extends Layer {
     const defaultOptions = OpenStreetMapLayer.getDefaultOptions();
 
     if (this._splitDirection !== SplitDirection.NONE) {
-      config.splitDirection = this._splitDirection === SplitDirection.RIGHT ?
-        'right' :
-        'left';
+      config.splitDirection =
+        this._splitDirection === SplitDirection.RIGHT ? 'right' : 'left';
     }
 
     if (this.opacity !== defaultOptions.opacity) {
@@ -178,9 +190,8 @@ class OpenStreetMapLayer extends Layer {
     }
 
     if (this._splitDirection !== SplitDirection.NONE) {
-      config.splitDirection = this._splitDirection === SplitDirection.RIGHT ?
-        'right' :
-        'left';
+      config.splitDirection =
+        this._splitDirection === SplitDirection.RIGHT ? 'right' : 'left';
     }
 
     return config;
@@ -195,5 +206,8 @@ class OpenStreetMapLayer extends Layer {
   }
 }
 
-layerClassRegistry.registerClass(OpenStreetMapLayer.className, OpenStreetMapLayer);
+layerClassRegistry.registerClass(
+  OpenStreetMapLayer.className,
+  OpenStreetMapLayer,
+);
 export default OpenStreetMapLayer;

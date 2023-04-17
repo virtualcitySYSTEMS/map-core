@@ -1,21 +1,33 @@
 import Feature from 'ol/Feature.js';
-import { Cesium3DTileFeature, Cesium3DTilePointFeature, SplitDirection } from '@vcmap-cesium/engine';
+import {
+  Cesium3DTileFeature,
+  Cesium3DTilePointFeature,
+  SplitDirection,
+} from '@vcmap-cesium/engine';
 import VectorSource from 'ol/source/Vector.js';
 import { createEmpty, extend as extendExtent } from 'ol/extent.js';
 
 import VectorLayer from './vectorLayer.js';
-import { featureStoreStateSymbol, FeatureStoreLayerState } from './featureStoreLayerState.js';
+import {
+  featureStoreStateSymbol,
+  FeatureStoreLayerState,
+} from './featureStoreLayerState.js';
 import { parseGeoJSON } from './geojsonHelpers.js';
 import { mercatorProjection } from '../util/projection.js';
 import FeatureStoreLayerChanges from './featureStoreLayerChanges.js';
-import VectorStyleItem, { defaultVectorStyle, vectorStyleSymbol } from '../style/vectorStyleItem.js';
+import VectorStyleItem, {
+  defaultVectorStyle,
+  vectorStyleSymbol,
+} from '../style/vectorStyleItem.js';
 import FeatureVisibility, {
   FeatureVisibilityAction,
   originalStyle,
   synchronizeFeatureVisibility,
   updateOriginalStyle,
 } from './featureVisibility.js';
-import CesiumTilesetCesiumImpl, { getExtentFromTileset } from './cesium/cesiumTilesetCesiumImpl.js';
+import CesiumTilesetCesiumImpl, {
+  getExtentFromTileset,
+} from './cesium/cesiumTilesetCesiumImpl.js';
 import CesiumMap from '../map/cesiumMap.js';
 import OpenlayersMap from '../map/openlayersMap.js';
 import ObliqueMap from '../map/obliqueMap.js';
@@ -80,7 +92,9 @@ export const isTiledFeature = Symbol('isTiledFeature');
  * @api
  */
 class FeatureStoreLayer extends VectorLayer {
-  static get className() { return 'FeatureStoreLayer'; }
+  static get className() {
+    return 'FeatureStoreLayer';
+  }
 
   /**
    * @returns {FeatureStoreOptions}
@@ -129,10 +143,13 @@ class FeatureStoreLayer extends VectorLayer {
     this.layerId = options.id;
 
     /** @type {FeatureStoreStaticRepresentation} */
-    this.staticRepresentation = options.staticRepresentation || defaultOptions.staticRepresentation;
+    this.staticRepresentation =
+      options.staticRepresentation || defaultOptions.staticRepresentation;
 
     /** @type {Set<string|number>} */
-    this.hiddenStaticFeatureIds = new Set(options.hiddenStaticFeatureIds || defaultOptions.hiddenStaticFeatureIds);
+    this.hiddenStaticFeatureIds = new Set(
+      options.hiddenStaticFeatureIds || defaultOptions.hiddenStaticFeatureIds,
+    );
 
     /**
      * @type {FeatureStoreLayerChanges}
@@ -158,9 +175,10 @@ class FeatureStoreLayer extends VectorLayer {
      * @type {import("@vcmap-cesium/engine").Event.RemoveCallback}
      * @private
      */
-    this._removeVectorPropertiesChangeHandler = this.vectorProperties.propertyChanged.addEventListener(() => {
-      this.changeTracker.values.changed = true;
-    });
+    this._removeVectorPropertiesChangeHandler =
+      this.vectorProperties.propertyChanged.addEventListener(() => {
+        this.changeTracker.values.changed = true;
+      });
 
     /**
      * a function to retrieve a single feature from the server
@@ -168,7 +186,8 @@ class FeatureStoreLayer extends VectorLayer {
      * @returns {Promise<string|Object>}
      * @api
      */
-    this.injectedFetchDynamicFeatureFunc = options.injectedFetchDynamicFeatureFunc;
+    this.injectedFetchDynamicFeatureFunc =
+      options.injectedFetchDynamicFeatureFunc;
     /**
      * @type {FeatureVisibility}
      * @private
@@ -180,10 +199,15 @@ class FeatureStoreLayer extends VectorLayer {
      * @private
      */
     this._featureVisibilitySyncListeners = [
-      synchronizeFeatureVisibility(this.featureVisibility, this._staticFeatureVisibility),
+      synchronizeFeatureVisibility(
+        this.featureVisibility,
+        this._staticFeatureVisibility,
+      ),
       this._staticFeatureVisibility.changed.addEventListener(({ action }) => {
         if (action === FeatureVisibilityAction.SHOW) {
-          this._staticFeatureVisibility.hideObjects([...this.hiddenStaticFeatureIds]);
+          this._staticFeatureVisibility.hideObjects([
+            ...this.hiddenStaticFeatureIds,
+          ]);
         }
       }),
     ];
@@ -215,10 +239,10 @@ class FeatureStoreLayer extends VectorLayer {
         features: options.features,
         vcsMeta: options.vcsMeta,
       };
-      const { style, features } = parseGeoJSON(
-        featureCollection,
-        { targetProjection: mercatorProjection, dynamicStyle: true },
-      );
+      const { style, features } = parseGeoJSON(featureCollection, {
+        targetProjection: mercatorProjection,
+        dynamicStyle: true,
+      });
       if (style) {
         this._defaultStyle = style;
         this.setStyle(style);
@@ -233,10 +257,11 @@ class FeatureStoreLayer extends VectorLayer {
    */
   initialize() {
     if (!this.initialized) {
-      return super.initialize()
-        .then(() => {
-          this._staticFeatureVisibility.hideObjects([...this.hiddenStaticFeatureIds]);
-        });
+      return super.initialize().then(() => {
+        this._staticFeatureVisibility.hideObjects([
+          ...this.hiddenStaticFeatureIds,
+        ]);
+      });
     }
     return super.initialize();
   }
@@ -254,19 +279,20 @@ class FeatureStoreLayer extends VectorLayer {
           dynamicStyle: true,
         });
         const isDeclarative = this.style instanceof DeclarativeStyleItem;
-        features
-          .forEach((feature) => {
-            feature[Layer.vcsLayerNameSymbol] = this.name;
-            feature[isTiledFeature] = true;
-            if (isDeclarative && feature[vectorStyleSymbol]) {
-              feature.setStyle();
-            }
-            if (this._setEditing && this._setEditing.featureType != null) {
-              feature[this._setEditing.symbol] = this._setEditing.featureType;
-            }
-          });
+        features.forEach((feature) => {
+          feature[Layer.vcsLayerNameSymbol] = this.name;
+          feature[isTiledFeature] = true;
+          if (isDeclarative && feature[vectorStyleSymbol]) {
+            feature.setStyle();
+          }
+          if (this._setEditing && this._setEditing.featureType != null) {
+            feature[this._setEditing.symbol] = this._setEditing.featureType;
+          }
+        });
         this._twoDimStaticSource.addFeatures(
-          /** @type {Array<import("ol").Feature<import("ol/geom/Geometry").default>>} */ (features),
+          /** @type {Array<import("ol").Feature<import("ol/geom/Geometry").default>>} */ (
+            features
+          ),
         );
       })();
     }
@@ -291,38 +317,56 @@ class FeatureStoreLayer extends VectorLayer {
    */
   // @ts-ignore
   createImplementationsForMap(map) {
-    const impls = /** @type {Array<import("@vcmap/core").LayerImplementation>} */
+    const impls =
+      /** @type {Array<import("@vcmap/core").LayerImplementation>} */
       (super.createImplementationsForMap(map));
-    if (map instanceof CesiumMap && this.staticRepresentation && this.staticRepresentation.threeDim) {
-      impls.push(new CesiumTilesetCesiumImpl(map, /** @type {CesiumTilesetImplementationOptions} */ ({
-        url: this.staticRepresentation.threeDim,
-        tilesetOptions: {
-          maximumScreenSpaceError: isMobile() ? this.screenSpaceErrorMobile : this.screenSpaceError,
-          url: this.staticRepresentation.threeDim,
-        },
-        tilesetProperties: [
-          {
-            key: isTiledFeature,
-            value: true,
-          },
-        ],
-        name: this.name,
-        style: this.style,
-        featureVisibility: this._staticFeatureVisibility,
-        globalHider: this.globalHider,
-        splitDirection: SplitDirection.NONE,
-        jumpToLocation: false,
-      })));
+    if (
+      map instanceof CesiumMap &&
+      this.staticRepresentation &&
+      this.staticRepresentation.threeDim
+    ) {
+      impls.push(
+        new CesiumTilesetCesiumImpl(
+          map,
+          /** @type {CesiumTilesetImplementationOptions} */ ({
+            url: this.staticRepresentation.threeDim,
+            tilesetOptions: {
+              maximumScreenSpaceError: isMobile()
+                ? this.screenSpaceErrorMobile
+                : this.screenSpaceError,
+              url: this.staticRepresentation.threeDim,
+            },
+            tilesetProperties: [
+              {
+                key: isTiledFeature,
+                value: true,
+              },
+            ],
+            name: this.name,
+            style: this.style,
+            featureVisibility: this._staticFeatureVisibility,
+            globalHider: this.globalHider,
+            splitDirection: SplitDirection.NONE,
+            jumpToLocation: false,
+          }),
+        ),
+      );
     } else if (this.staticRepresentation && this.staticRepresentation.twoDim) {
       this._loadTwoDim();
       if (map instanceof OpenlayersMap) {
-        impls.push(new VectorOpenlayersImpl(map, this._getTwoDimStaticImplOptions()));
+        impls.push(
+          new VectorOpenlayersImpl(map, this._getTwoDimStaticImplOptions()),
+        );
       } else if (map instanceof ObliqueMap) {
-        impls.push(new VectorObliqueImpl(map, this._getTwoDimStaticImplOptions()));
+        impls.push(
+          new VectorObliqueImpl(map, this._getTwoDimStaticImplOptions()),
+        );
       }
     }
     // eslint-disable-next-line max-len
-    return /** @type {Array<VectorObliqueImpl|import("@vcmap/core").VectorCesiumImpl|VectorOpenlayersImpl|CesiumTilesetCesiumImpl>} */ (impls);
+    return /** @type {Array<VectorObliqueImpl|import("@vcmap/core").VectorCesiumImpl|VectorOpenlayersImpl|CesiumTilesetCesiumImpl>} */ (
+      impls
+    );
   }
 
   /**
@@ -359,13 +403,15 @@ class FeatureStoreLayer extends VectorLayer {
       }
 
       const isDeclarative = this.style instanceof DeclarativeStyleItem;
-      this._twoDimStyleChanged = this.style.styleChanged.addEventListener(() => {
-        this._twoDimStaticSource.getFeatures().forEach((f) => {
-          if (isDeclarative || !f[vectorStyleSymbol]) {
-            f.changed();
-          }
-        });
-      });
+      this._twoDimStyleChanged = this.style.styleChanged.addEventListener(
+        () => {
+          this._twoDimStaticSource.getFeatures().forEach((f) => {
+            if (isDeclarative || !f[vectorStyleSymbol]) {
+              f.changed();
+            }
+          });
+        },
+      );
     }
   }
 
@@ -426,14 +472,13 @@ class FeatureStoreLayer extends VectorLayer {
     if (this.staticRepresentation.twoDim) {
       if (this._twoDimLoaded) {
         this._twoDimLoaded.then(() => {
-          this._twoDimStaticSource.getFeatures()
-            .forEach((f) => {
-              if (featureType != null) {
-                f[symbol] = featureType;
-              } else {
-                delete f[symbol];
-              }
-            });
+          this._twoDimStaticSource.getFeatures().forEach((f) => {
+            if (featureType != null) {
+              f[symbol] = featureType;
+            } else {
+              delete f[symbol];
+            }
+          });
         });
       } else {
         this._setEditing = { symbol, featureType };
@@ -446,8 +491,14 @@ class FeatureStoreLayer extends VectorLayer {
    * @returns {?Object}
    */
   objectClickedHandler(feature) {
-    if ((feature instanceof Cesium3DTileFeature || feature instanceof Cesium3DTilePointFeature)) {
-      return CesiumTilesetLayer.prototype.objectClickedHandler.call(this, feature);
+    if (
+      feature instanceof Cesium3DTileFeature ||
+      feature instanceof Cesium3DTilePointFeature
+    ) {
+      return CesiumTilesetLayer.prototype.objectClickedHandler.call(
+        this,
+        feature,
+      );
     } else if (feature instanceof Feature) {
       return super.objectClickedHandler(feature);
     }
@@ -464,12 +515,17 @@ class FeatureStoreLayer extends VectorLayer {
       return this.extent;
     }
     const extent = super.getZoomToExtent();
-    const mercatorExtent = extent ? extent.getCoordinatesInProjection(mercatorProjection) : createEmpty();
+    const mercatorExtent = extent
+      ? extent.getCoordinatesInProjection(mercatorProjection)
+      : createEmpty();
     if (this.staticRepresentation.threeDim) {
-      const threeDImpl = /** @type {CesiumTilesetCesiumImpl} */ (this.getImplementations()
-        .find((impl) => {
-          return impl instanceof CesiumTilesetCesiumImpl && impl.cesium3DTileset;
-        }));
+      const threeDImpl = /** @type {CesiumTilesetCesiumImpl} */ (
+        this.getImplementations().find((impl) => {
+          return (
+            impl instanceof CesiumTilesetCesiumImpl && impl.cesium3DTileset
+          );
+        })
+      );
 
       if (threeDImpl) {
         const threeDimExtent = getExtentFromTileset(threeDImpl.cesium3DTileset);
@@ -505,12 +561,11 @@ class FeatureStoreLayer extends VectorLayer {
       this.screenSpaceError = value;
     }
 
-    this.getImplementations()
-      .forEach((impl) => {
-        if (impl instanceof CesiumTilesetCesiumImpl && impl.cesium3DTileset) {
-          impl.cesium3DTileset.maximumScreenSpaceError = value;
-        }
-      });
+    this.getImplementations().forEach((impl) => {
+      if (impl instanceof CesiumTilesetCesiumImpl && impl.cesium3DTileset) {
+        impl.cesium3DTileset.maximumScreenSpaceError = value;
+      }
+    });
   }
 
   /**
@@ -527,15 +582,13 @@ class FeatureStoreLayer extends VectorLayer {
     if (this.injectedFetchDynamicFeatureFunc) {
       return this.injectedFetchDynamicFeatureFunc(featureId)
         .then((result) => {
-          const { features } = parseGeoJSON(
-            result,
-            {
-              targetProjection: mercatorProjection,
-              defaultStyle: this.defaultStyle instanceof VectorStyleItem ?
-                this.defaultStyle :
-                defaultVectorStyle,
-            },
-          );
+          const { features } = parseGeoJSON(result, {
+            targetProjection: mercatorProjection,
+            defaultStyle:
+              this.defaultStyle instanceof VectorStyleItem
+                ? this.defaultStyle
+                : defaultVectorStyle,
+          });
           this._staticFeatureVisibility.hideObjects([featureId]);
           this.hiddenStaticFeatureIds.add(featureId);
           this.addFeatures(features);
@@ -586,13 +639,17 @@ class FeatureStoreLayer extends VectorLayer {
     const defaultOptions = FeatureStoreLayer.getDefaultOptions();
 
     delete config.projection;
-    config.vcsMeta = this.vectorProperties
-      .getVcsMeta({ ...VectorProperties.getDefaultOptions(), ...defaultOptions.vcsMeta });
+    config.vcsMeta = this.vectorProperties.getVcsMeta({
+      ...VectorProperties.getDefaultOptions(),
+      ...defaultOptions.vcsMeta,
+    });
     if (Object.keys(config.vcsMeta).length === 0) {
       delete config.vcsMeta;
     }
 
-    if (this.vcsMeta.screenSpaceError !== defaultOptions.vcsMeta.screenSpaceError) {
+    if (
+      this.vcsMeta.screenSpaceError !== defaultOptions.vcsMeta.screenSpaceError
+    ) {
       config.vcsMeta = config.vcsMeta || {};
       config.vcsMeta.screenSpaceError = this.vcsMeta.screenSpaceError;
     }
@@ -617,7 +674,9 @@ class FeatureStoreLayer extends VectorLayer {
       this._twoDimStyleChanged();
       this._twoDimStyleChanged = null;
     }
-    this._featureVisibilitySyncListeners.forEach((cb) => { cb(); });
+    this._featureVisibilitySyncListeners.forEach((cb) => {
+      cb();
+    });
     this._featureVisibilitySyncListeners = [];
     this._staticFeatureVisibility.destroy();
     this.changeTracker.destroy();
@@ -628,5 +687,8 @@ class FeatureStoreLayer extends VectorLayer {
   }
 }
 
-layerClassRegistry.registerClass(FeatureStoreLayer.className, FeatureStoreLayer);
+layerClassRegistry.registerClass(
+  FeatureStoreLayer.className,
+  FeatureStoreLayer,
+);
 export default FeatureStoreLayer;

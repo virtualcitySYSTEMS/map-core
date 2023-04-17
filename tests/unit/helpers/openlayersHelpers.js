@@ -15,7 +15,10 @@ export async function getOpenlayersMap(mapOptions) {
  * @returns {Promise<OpenlayersMap>}
  */
 export async function setOpenlayersMap(app) {
-  const map = await getOpenlayersMap({ layerCollection: app.layers, target: app.maps.target });
+  const map = await getOpenlayersMap({
+    layerCollection: app.layers,
+    target: app.maps.target,
+  });
   app.maps.add(map);
   await app.maps.setActiveMap(map.name);
   return map;

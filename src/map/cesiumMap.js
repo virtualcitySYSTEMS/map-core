@@ -34,7 +34,11 @@ import Viewpoint from '../util/viewpoint.js';
 import Projection, { mercatorProjection } from '../util/projection.js';
 import { getHeightFromTerrainProvider } from '../layer/terrainHelpers.js';
 import { vcsLayerName } from '../layer/layerSymbols.js';
-import { ModificationKeyType, PointerEventType, PointerKeyType } from '../interaction/interactionType.js';
+import {
+  ModificationKeyType,
+  PointerEventType,
+  PointerKeyType,
+} from '../interaction/interactionType.js';
 import CameraLimiter from './cameraLimiter.js';
 import { mapClassRegistry } from '../classRegistry.js';
 
@@ -70,7 +74,9 @@ export function ensureInCollection(cesiumCollection, item, layerCollection) {
       let index = primitivesLength;
       for (let i = 0; i < primitivesLength; i++) {
         const collectionItem = cesiumCollection.get(i);
-        if (layerCollection.indexOfKey(collectionItem[vcsLayerName]) > targetIndex) {
+        if (
+          layerCollection.indexOfKey(collectionItem[vcsLayerName]) > targetIndex
+        ) {
           index = i;
           break;
         }
@@ -87,7 +93,11 @@ export function ensureInCollection(cesiumCollection, item, layerCollection) {
  * @param {import("@vcmap/core").LayerCollection} layerCollection
  * @private
  */
-export async function ensureInDataSourceCollection(dataSourceCollection, dataSource, layerCollection) {
+export async function ensureInDataSourceCollection(
+  dataSourceCollection,
+  dataSource,
+  layerCollection,
+) {
   const targetIndex = layerCollection.indexOfKey(dataSource[vcsLayerName]);
   if (targetIndex > -1) {
     if (!dataSourceCollection.contains(dataSource)) {
@@ -98,7 +108,9 @@ export async function ensureInDataSourceCollection(dataSourceCollection, dataSou
     let index = dataSourceLength;
     for (let i = 0; i < dataSourceLength; i++) {
       const collectionItem = dataSourceCollection.get(i);
-      if (layerCollection.indexOfKey(collectionItem[vcsLayerName]) > targetIndex) {
+      if (
+        layerCollection.indexOfKey(collectionItem[vcsLayerName]) > targetIndex
+      ) {
         index = i;
         break;
       }
@@ -128,7 +140,11 @@ export async function ensureInDataSourceCollection(dataSourceCollection, dataSou
  * @param {import("@vcmap/core").LayerCollection} layerCollection
  * @private
  */
-export function indexChangedOnPrimitive(primitiveCollection, item, layerCollection) {
+export function indexChangedOnPrimitive(
+  primitiveCollection,
+  item,
+  layerCollection,
+) {
   const { destroyPrimitives } = primitiveCollection;
   primitiveCollection.destroyPrimitives = false;
   primitiveCollection.remove(item);
@@ -142,7 +158,11 @@ export function indexChangedOnPrimitive(primitiveCollection, item, layerCollecti
  * @param {import("@vcmap/core").LayerCollection} layerCollection
  * @private
  */
-export function indexChangedOnImageryLayer(imageryLayerCollection, item, layerCollection) {
+export function indexChangedOnImageryLayer(
+  imageryLayerCollection,
+  item,
+  layerCollection,
+) {
   imageryLayerCollection.remove(item, false);
   ensureInCollection(imageryLayerCollection, item, layerCollection);
 }
@@ -153,7 +173,11 @@ export function indexChangedOnImageryLayer(imageryLayerCollection, item, layerCo
  * @param {import("@vcmap/core").LayerCollection} layerCollection
  * @private
  */
-export function indexChangedOnDataSource(dataSourceCollection, item, layerCollection) {
+export function indexChangedOnDataSource(
+  dataSourceCollection,
+  item,
+  layerCollection,
+) {
   ensureInDataSourceCollection(dataSourceCollection, item, layerCollection);
 }
 
@@ -167,8 +191,12 @@ export function synchronizeClock(source, target) {
   target.clockRange = source.clockRange;
   target.clockStep = source.clockStep;
   target.multiplier = source.multiplier;
-  if (!target.startTime || !target.startTime.equals(source.startTime) ||
-    !target.stopTime || !target.stopTime.equals(source.stopTime)) {
+  if (
+    !target.startTime ||
+    !target.startTime.equals(source.startTime) ||
+    !target.stopTime ||
+    !target.stopTime.equals(source.stopTime)
+  ) {
     target.startTime = source.startTime;
     target.stopTime = source.stopTime;
     target.currentTime = source.currentTime;
@@ -185,7 +213,9 @@ export function synchronizeClock(source, target) {
  * @api stable
  */
 class CesiumMap extends VcsMap {
-  static get className() { return 'CesiumMap'; }
+  static get className() {
+    return 'CesiumMap';
+  }
 
   /**
    * @returns {CesiumMapOptions}
@@ -239,10 +269,16 @@ class CesiumMap extends VcsMap {
     this._dataSourceClocks = [];
 
     /** @type {boolean} */
-    this.enableLightning = parseBoolean(options.enableLightning, defaultOptions.enableLightning);
+    this.enableLightning = parseBoolean(
+      options.enableLightning,
+      defaultOptions.enableLightning,
+    );
 
     /** @type {number} */
-    this.tileCacheSize = parseInteger(options.tileCacheSize, defaultOptions.tileCacheSize);
+    this.tileCacheSize = parseInteger(
+      options.tileCacheSize,
+      defaultOptions.tileCacheSize,
+    );
 
     /** @type {import("@vcmap-cesium/engine").ScreenSpaceEventHandler} */
     this.screenSpaceEventHandler = null;
@@ -264,7 +300,9 @@ class CesiumMap extends VcsMap {
      * @type {import("@vcmap-cesium/engine").Color}
      * @api
      */
-    this.globeColor = Color.fromCssColorString(options.globeColor || defaultOptions.globeColor);
+    this.globeColor = Color.fromCssColorString(
+      options.globeColor || defaultOptions.globeColor,
+    );
 
     /** @type {import("@vcmap-cesium/engine").DataSourceDisplay|null} */
     this._clusterDataSourceDisplay = null;
@@ -289,7 +327,8 @@ class CesiumMap extends VcsMap {
      * @type {CameraLimiterOptions}
      * @private
      */
-    this._cameraLimiterOptions = options.cameraLimiter || defaultOptions.cameraLimiter;
+    this._cameraLimiterOptions =
+      options.cameraLimiter || defaultOptions.cameraLimiter;
     /**
      * @type {Function}
      * @private
@@ -359,7 +398,11 @@ class CesiumMap extends VcsMap {
 
     if (this._cameraLimiter !== limiter) {
       this._cameraLimiter = limiter;
-      if (this._cameraLimiter && !this._preUpdateListener && this._cesiumWidget) {
+      if (
+        this._cameraLimiter &&
+        !this._preUpdateListener &&
+        this._cesiumWidget
+      ) {
         this._setupPreUpdateListener();
       } else if (!this._cameraLimiter && this._preUpdateListener) {
         this._preUpdateListener();
@@ -372,11 +415,12 @@ class CesiumMap extends VcsMap {
    * @private
    */
   _setupPreUpdateListener() {
-    this._preUpdateListener = this._cesiumWidget.scene.preUpdate.addEventListener(() => {
-      if (this._cameraLimiter) {
-        this._cameraLimiter.limitCamera(this._cesiumWidget.scene.camera);
-      }
-    });
+    this._preUpdateListener =
+      this._cesiumWidget.scene.preUpdate.addEventListener(() => {
+        if (this._cameraLimiter) {
+          this._cameraLimiter.limitCamera(this._cesiumWidget.scene.camera);
+        }
+      });
   }
 
   /**
@@ -404,39 +448,99 @@ class CesiumMap extends VcsMap {
    */
   _setupInteractions() {
     const mods = [
-      { csModifier: KeyboardEventModifier.ALT, vcsModifier: ModificationKeyType.ALT },
-      { csModifier: KeyboardEventModifier.CTRL, vcsModifier: ModificationKeyType.CTRL },
-      { csModifier: KeyboardEventModifier.SHIFT, vcsModifier: ModificationKeyType.SHIFT },
+      {
+        csModifier: KeyboardEventModifier.ALT,
+        vcsModifier: ModificationKeyType.ALT,
+      },
+      {
+        csModifier: KeyboardEventModifier.CTRL,
+        vcsModifier: ModificationKeyType.CTRL,
+      },
+      {
+        csModifier: KeyboardEventModifier.SHIFT,
+        vcsModifier: ModificationKeyType.SHIFT,
+      },
       { csModifier: undefined, vcsModifier: ModificationKeyType.NONE },
     ];
 
     const types = [
-      { type: ScreenSpaceEventType.LEFT_DOWN, pointerEvent: PointerEventType.DOWN, pointer: PointerKeyType.LEFT },
-      { type: ScreenSpaceEventType.LEFT_UP, pointerEvent: PointerEventType.UP, pointer: PointerKeyType.LEFT },
-      { type: ScreenSpaceEventType.RIGHT_DOWN, pointerEvent: PointerEventType.DOWN, pointer: PointerKeyType.RIGHT },
-      { type: ScreenSpaceEventType.RIGHT_UP, pointerEvent: PointerEventType.UP, pointer: PointerKeyType.RIGHT },
-      { type: ScreenSpaceEventType.MIDDLE_DOWN, pointerEvent: PointerEventType.DOWN, pointer: PointerKeyType.MIDDLE },
-      { type: ScreenSpaceEventType.MIDDLE_UP, pointerEvent: PointerEventType.UP, pointer: PointerKeyType.MIDDLE },
-      { type: ScreenSpaceEventType.MOUSE_MOVE, pointerEvent: PointerEventType.MOVE, pointer: PointerKeyType.ALL },
+      {
+        type: ScreenSpaceEventType.LEFT_DOWN,
+        pointerEvent: PointerEventType.DOWN,
+        pointer: PointerKeyType.LEFT,
+      },
+      {
+        type: ScreenSpaceEventType.LEFT_UP,
+        pointerEvent: PointerEventType.UP,
+        pointer: PointerKeyType.LEFT,
+      },
+      {
+        type: ScreenSpaceEventType.RIGHT_DOWN,
+        pointerEvent: PointerEventType.DOWN,
+        pointer: PointerKeyType.RIGHT,
+      },
+      {
+        type: ScreenSpaceEventType.RIGHT_UP,
+        pointerEvent: PointerEventType.UP,
+        pointer: PointerKeyType.RIGHT,
+      },
+      {
+        type: ScreenSpaceEventType.MIDDLE_DOWN,
+        pointerEvent: PointerEventType.DOWN,
+        pointer: PointerKeyType.MIDDLE,
+      },
+      {
+        type: ScreenSpaceEventType.MIDDLE_UP,
+        pointerEvent: PointerEventType.UP,
+        pointer: PointerKeyType.MIDDLE,
+      },
+      {
+        type: ScreenSpaceEventType.MOUSE_MOVE,
+        pointerEvent: PointerEventType.MOVE,
+        pointer: PointerKeyType.ALL,
+      },
     ];
 
-    this._screenSpaceListeners = types.map(({ pointerEvent, pointer, type }) => {
-      return mods.map(({ csModifier, vcsModifier }) => {
-        const handler = type === ScreenSpaceEventType.MOUSE_MOVE ?
-          (csEvent) => {
-            if (this._cesiumWidget.scene.frameState.frameNumber !== this._lastEventFrameNumber) {
-              this._lastEventFrameNumber = this._cesiumWidget.scene.frameState.frameNumber;
-              this._raisePointerInteraction(vcsModifier, pointer, pointerEvent, csEvent);
-            }
-          } :
-          (csEvent) => {
-            this._raisePointerInteraction(vcsModifier, pointer, pointerEvent, csEvent);
-          };
+    this._screenSpaceListeners = types
+      .map(({ pointerEvent, pointer, type }) => {
+        return mods.map(({ csModifier, vcsModifier }) => {
+          const handler =
+            type === ScreenSpaceEventType.MOUSE_MOVE
+              ? (csEvent) => {
+                  if (
+                    this._cesiumWidget.scene.frameState.frameNumber !==
+                    this._lastEventFrameNumber
+                  ) {
+                    this._lastEventFrameNumber =
+                      this._cesiumWidget.scene.frameState.frameNumber;
+                    this._raisePointerInteraction(
+                      vcsModifier,
+                      pointer,
+                      pointerEvent,
+                      csEvent,
+                    );
+                  }
+                }
+              : (csEvent) => {
+                  this._raisePointerInteraction(
+                    vcsModifier,
+                    pointer,
+                    pointerEvent,
+                    csEvent,
+                  );
+                };
 
-        this.screenSpaceEventHandler.setInputAction(handler, type, csModifier);
-        return () => { this.screenSpaceEventHandler.removeInputAction(type, csModifier); };
-      });
-    }).flat();
+          this.screenSpaceEventHandler.setInputAction(
+            handler,
+            type,
+            csModifier,
+          );
+          return () => {
+            this.screenSpaceEventHandler.removeInputAction(type, csModifier);
+          };
+        });
+      })
+      .flat();
   }
 
   /**
@@ -451,7 +555,12 @@ class CesiumMap extends VcsMap {
         imageryProvider: false,
         shadows: false,
         terrainShadows: ShadowMode.ENABLED,
-        contextOptions: { webgl: { failIfMajorPerformanceCaveat: false, antialias: this.webGLaa } },
+        contextOptions: {
+          webgl: {
+            failIfMajorPerformanceCaveat: false,
+            antialias: this.webGLaa,
+          },
+        },
       });
       this._cesiumWidget.scene.globe.tileCacheSize = this.tileCacheSize;
       this._cesiumWidget.scene.globe.baseColor = this.globeColor;
@@ -468,11 +577,13 @@ class CesiumMap extends VcsMap {
 
       const { clock } = this._cesiumWidget;
       clock.shouldAnimate = true;
-      this._listeners.push(clock.onTick.addEventListener(() => {
-        this.dataSourceDisplayClock.tick();
-        const time = this.dataSourceDisplayClock.currentTime;
-        this.dataSourceDisplay.update(time);
-      }));
+      this._listeners.push(
+        clock.onTick.addEventListener(() => {
+          this.dataSourceDisplayClock.tick();
+          const time = this.dataSourceDisplayClock.currentTime;
+          this.dataSourceDisplay.update(time);
+        }),
+      );
 
       // deactivate cesium Requestthrottling let the browser manage that
       // RequestScheduler.throttleRequests = false;
@@ -490,7 +601,9 @@ class CesiumMap extends VcsMap {
       this.setDay(this.defaultJDate);
 
       // hide default cesium credits container
-      const creditsContainer = document.getElementsByClassName('cesium-widget-credits');
+      const creditsContainer = document.getElementsByClassName(
+        'cesium-widget-credits',
+      );
       if (creditsContainer) {
         for (let i = 0; i < creditsContainer.length; i++) {
           const element = /** @type {HTMLElement} */ (creditsContainer[i]);
@@ -505,18 +618,30 @@ class CesiumMap extends VcsMap {
       if (this._cameraLimiter) {
         this._setupPreUpdateListener();
       }
-      this.screenSpaceEventHandler = new ScreenSpaceEventHandler(this._cesiumWidget.scene.canvas);
+      this.screenSpaceEventHandler = new ScreenSpaceEventHandler(
+        this._cesiumWidget.scene.canvas,
+      );
       this._setupInteractions();
       this.initialized = true;
 
       this.defaultTerrainProvider = this._cesiumWidget.scene.terrainProvider;
       this._terrainProvider = this.defaultTerrainProvider;
-      this._listeners.push(this._cesiumWidget.scene.terrainProviderChanged
-        .addEventListener(this._terrainProviderChanged.bind(this)));
+      this._listeners.push(
+        this._cesiumWidget.scene.terrainProviderChanged.addEventListener(
+          this._terrainProviderChanged.bind(this),
+        ),
+      );
 
-      this._listeners.push(this._cesiumWidget.scene.postRender.addEventListener((eventScene, time) => {
-        this.postRender.raiseEvent({ map: this, originalEvent: { scene: eventScene, time } });
-      }));
+      this._listeners.push(
+        this._cesiumWidget.scene.postRender.addEventListener(
+          (eventScene, time) => {
+            this.postRender.raiseEvent({
+              map: this,
+              originalEvent: { scene: eventScene, time },
+            });
+          },
+        ),
+      );
     }
   }
 
@@ -553,7 +678,9 @@ class CesiumMap extends VcsMap {
     return terrainProvider.readyPromise.then(() => {
       if (terrainProvider.availability) {
         return getHeightFromTerrainProvider(
-          /** @type {import("@vcmap-cesium/engine").CesiumTerrainProvider} */(terrainProvider),
+          /** @type {import("@vcmap-cesium/engine").CesiumTerrainProvider} */ (
+            terrainProvider
+          ),
           positions,
           mercatorProjection,
           positions,
@@ -584,10 +711,17 @@ class CesiumMap extends VcsMap {
     let groundPosition = null;
     let distance = null;
     const ray = new Ray(cam.position, cam.direction);
-    const groundPositionCartesian = this._cesiumWidget.scene.globe.pick(ray, this._cesiumWidget.scene);
+    const groundPositionCartesian = this._cesiumWidget.scene.globe.pick(
+      ray,
+      this._cesiumWidget.scene,
+    );
     if (groundPositionCartesian) {
-      distance = Cartesian3.distance(groundPositionCartesian, cameraPositionCartesian);
-      const groundPositionCartographic = Ellipsoid.WGS84.cartesianToCartographic(groundPositionCartesian);
+      distance = Cartesian3.distance(
+        groundPositionCartesian,
+        cameraPositionCartesian,
+      );
+      const groundPositionCartographic =
+        Ellipsoid.WGS84.cartesianToCartographic(groundPositionCartesian);
       groundPosition = [
         CesiumMath.toDegrees(groundPositionCartographic.longitude),
         CesiumMath.toDegrees(groundPositionCartographic.latitude),
@@ -629,18 +763,26 @@ class CesiumMap extends VcsMap {
     const roll = CesiumMath.toRadians(viewpoint.roll);
     if (viewpoint.cameraPosition) {
       const cameraCoords = viewpoint.cameraPosition;
-      cameraPosition = Cartesian3.fromDegrees(cameraCoords[0], cameraCoords[1], cameraCoords[2]);
+      cameraPosition = Cartesian3.fromDegrees(
+        cameraCoords[0],
+        cameraCoords[1],
+        cameraCoords[2],
+      );
     } else {
       if (!viewpoint.groundPosition) {
         return;
       }
       const groundPositionCoords = viewpoint.groundPosition;
       if (!groundPositionCoords[2]) {
-        const positions = await this.getHeightFromTerrain([Projection.wgs84ToMercator(groundPositionCoords)]);
+        const positions = await this.getHeightFromTerrain([
+          Projection.wgs84ToMercator(groundPositionCoords),
+        ]);
         groundPositionCoords[2] = positions[0][2];
       }
       const groundPosition = Cartesian3.fromDegrees(
-        groundPositionCoords[0], groundPositionCoords[1], groundPositionCoords[2],
+        groundPositionCoords[0],
+        groundPositionCoords[1],
+        groundPositionCoords[2],
       );
       const clonedCamera = new Camera(this._cesiumWidget.scene);
       const options = {
@@ -669,8 +811,12 @@ class CesiumMap extends VcsMap {
         const flightOptions = {
           destination: cameraPosition,
           orientation: cameraOptions,
-          complete: () => { resolve(); },
-          cancel: () => { resolve(); },
+          complete: () => {
+            resolve();
+          },
+          cancel: () => {
+            resolve();
+          },
         };
 
         if (viewpoint.duration) {
@@ -723,8 +869,15 @@ class CesiumMap extends VcsMap {
    */
   getCurrentResolution(coordinate) {
     const wgs84Coordinate = Projection.mercatorToWgs84(coordinate);
-    const cartesian = Cartesian3.fromDegrees(wgs84Coordinate[0], wgs84Coordinate[1], wgs84Coordinate[2]);
-    return this._getCurrentResolutionFromCartesianLatitude(cartesian, CesiumMath.toRadians(wgs84Coordinate[1]));
+    const cartesian = Cartesian3.fromDegrees(
+      wgs84Coordinate[0],
+      wgs84Coordinate[1],
+      wgs84Coordinate[2],
+    );
+    return this._getCurrentResolutionFromCartesianLatitude(
+      cartesian,
+      CesiumMath.toRadians(wgs84Coordinate[1]),
+    );
   }
 
   /**
@@ -732,7 +885,10 @@ class CesiumMap extends VcsMap {
    * @returns {number}
    */
   getCurrentResolutionFromCartesian(cartesian) {
-    return this._getCurrentResolutionFromCartesianLatitude(cartesian, Cartographic.fromCartesian(cartesian).latitude);
+    return this._getCurrentResolutionFromCartesianLatitude(
+      cartesian,
+      Cartographic.fromCartesian(cartesian).latitude,
+    );
   }
 
   /**
@@ -750,13 +906,17 @@ class CesiumMap extends VcsMap {
    * @api stable
    */
   setDataSourceDisplayClock(clock) {
-    const activeClock = this._dataSourceClocks[this._dataSourceClocks.length - 1];
+    const activeClock =
+      this._dataSourceClocks[this._dataSourceClocks.length - 1];
     if (clock !== activeClock) {
       if (this._clockSyncListener) {
         this._clockSyncListener();
         this._clockSyncListener = null;
       }
-      this._clockSyncListener = synchronizeClock(clock, this.dataSourceDisplayClock);
+      this._clockSyncListener = synchronizeClock(
+        clock,
+        this.dataSourceDisplayClock,
+      );
     }
     this._dataSourceClocks.push(clock);
   }
@@ -771,12 +931,17 @@ class CesiumMap extends VcsMap {
     if (idx > -1) {
       this._dataSourceClocks.splice(idx, 1);
       if (idx === this._dataSourceClocks.length) {
-        const activeClock = this._dataSourceClocks[this._dataSourceClocks.length - 1] || this._defaultClock;
+        const activeClock =
+          this._dataSourceClocks[this._dataSourceClocks.length - 1] ||
+          this._defaultClock;
         if (this._clockSyncListener) {
           this._clockSyncListener();
           this._clockSyncListener = null;
         }
-        this._clockSyncListener = synchronizeClock(activeClock, this.dataSourceDisplayClock);
+        this._clockSyncListener = synchronizeClock(
+          activeClock,
+          this.dataSourceDisplayClock,
+        );
       }
     }
   }
@@ -842,7 +1007,8 @@ class CesiumMap extends VcsMap {
     const dataSourceCollection = new DataSourceCollection();
     function visualizersCallback(scene, entityCluster, dataSource) {
       const { entities } = dataSource;
-      return [new BillboardVisualizer(entityCluster, entities),
+      return [
+        new BillboardVisualizer(entityCluster, entities),
         new LabelVisualizer(entityCluster, entities),
         new PointVisualizer(entityCluster, entities),
       ];
@@ -854,9 +1020,11 @@ class CesiumMap extends VcsMap {
       visualizersCallback,
     });
 
-    this._listeners.push(this._cesiumWidget.clock.onTick.addEventListener((clock) => {
-      this._clusterDataSourceDisplay.update(clock.currentTime);
-    }));
+    this._listeners.push(
+      this._cesiumWidget.clock.onTick.addEventListener((clock) => {
+        this._clusterDataSourceDisplay.update(clock.currentTime);
+      }),
+    );
 
     return dataSourceCollection;
   }
@@ -870,11 +1038,23 @@ class CesiumMap extends VcsMap {
     if (viz) {
       viz.forEach((item) => {
         if (item instanceof PrimitiveCollection) {
-          indexChangedOnPrimitive(this.getScene().primitives, item, this.layerCollection);
+          indexChangedOnPrimitive(
+            this.getScene().primitives,
+            item,
+            this.layerCollection,
+          );
         } else if (item instanceof ImageryLayer) {
-          indexChangedOnImageryLayer(this.getScene().imageryLayers, item, this.layerCollection);
+          indexChangedOnImageryLayer(
+            this.getScene().imageryLayers,
+            item,
+            this.layerCollection,
+          );
         } else if (item instanceof CustomDataSource) {
-          indexChangedOnDataSource(this.dataSourceDisplay.dataSources, item, this.layerCollection);
+          indexChangedOnDataSource(
+            this.dataSourceDisplay.dataSources,
+            item,
+            this.layerCollection,
+          );
         }
       });
     }
@@ -887,7 +1067,11 @@ class CesiumMap extends VcsMap {
   addPrimitiveCollection(primitiveCollection) {
     if (this.validateVisualization(primitiveCollection)) {
       this.addVisualization(primitiveCollection);
-      ensureInCollection(this.getScene().primitives, primitiveCollection, this.layerCollection);
+      ensureInCollection(
+        this.getScene().primitives,
+        primitiveCollection,
+        this.layerCollection,
+      );
     }
   }
 
@@ -895,7 +1079,8 @@ class CesiumMap extends VcsMap {
    * Internal API to unregister the visualization for a layers implementation
    * @param {import("@vcmap-cesium/engine").PrimitiveCollection} primitiveCollection
    */
-  removePrimitiveCollection(primitiveCollection) { // XXX add destroy as boolean?
+  removePrimitiveCollection(primitiveCollection) {
+    // XXX add destroy as boolean?
     this.removeVisualization(primitiveCollection);
     this.getScene()?.primitives.remove(primitiveCollection);
   }
@@ -907,7 +1092,11 @@ class CesiumMap extends VcsMap {
   addImageryLayer(imageryLayer) {
     if (this.validateVisualization(imageryLayer)) {
       this.addVisualization(imageryLayer);
-      ensureInCollection(this.getScene().imageryLayers, imageryLayer, this.layerCollection);
+      ensureInCollection(
+        this.getScene().imageryLayers,
+        imageryLayer,
+        this.layerCollection,
+      );
     }
   }
 
@@ -928,7 +1117,11 @@ class CesiumMap extends VcsMap {
   async addDataSource(dataSource) {
     if (this.validateVisualization(dataSource)) {
       this.addVisualization(dataSource);
-      await ensureInDataSourceCollection(this.dataSourceDisplay.dataSources, dataSource, this.layerCollection);
+      await ensureInDataSourceCollection(
+        this.dataSourceDisplay.dataSources,
+        dataSource,
+        this.layerCollection,
+      );
     }
   }
 
@@ -938,7 +1131,10 @@ class CesiumMap extends VcsMap {
    */
   removeDataSource(dataSource) {
     this.removeVisualization(dataSource);
-    if (!this.dataSourceDisplay.isDestroyed() && !this.dataSourceDisplay.dataSources.isDestroyed()) {
+    if (
+      !this.dataSourceDisplay.isDestroyed() &&
+      !this.dataSourceDisplay.dataSources.isDestroyed()
+    ) {
       this.dataSourceDisplay.dataSources.remove(dataSource);
     }
   }
@@ -993,8 +1189,15 @@ class CesiumMap extends VcsMap {
     const { camera } = this._cesiumWidget.scene;
 
     const target = Cartesian3.fromDegrees(coords[0], coords[1], 0.0);
-    const cullingVolume = camera.frustum.computeCullingVolume(camera.positionWC, camera.directionWC, camera.upWC);
-    if (cullingVolume.computeVisibility(new BoundingSphere(target)) === Intersect.INSIDE) {
+    const cullingVolume = camera.frustum.computeCullingVolume(
+      camera.positionWC,
+      camera.directionWC,
+      camera.upWC,
+    );
+    if (
+      cullingVolume.computeVisibility(new BoundingSphere(target)) ===
+      Intersect.INSIDE
+    ) {
       return true;
     }
     return false;
@@ -1008,7 +1211,9 @@ class CesiumMap extends VcsMap {
    */
   _terrainProviderChanged(terrainProvider) {
     if (this.terrainProvider !== terrainProvider) {
-      const layer = this.layerCollection.getByKey(this.terrainProvider[vcsLayerName]);
+      const layer = this.layerCollection.getByKey(
+        this.terrainProvider[vcsLayerName],
+      );
       this._terrainProvider = terrainProvider;
       if (layer) {
         layer.deactivate();
@@ -1078,17 +1283,20 @@ class CesiumMap extends VcsMap {
     if (this.dataSourceDisplay && !this.dataSourceDisplay.isDestroyed()) {
       this.dataSourceDisplay.destroy();
     }
-    this._screenSpaceListeners.forEach((cb) => { cb(); });
+    this._screenSpaceListeners.forEach((cb) => {
+      cb();
+    });
     if (this.screenSpaceEventHandler) {
       this.screenSpaceEventHandler.destroy();
       this.screenSpaceEventHandler = null;
     }
-    this._listeners.forEach((cb) => { cb(); });
+    this._listeners.forEach((cb) => {
+      cb();
+    });
     this._listeners = [];
 
     this._terrainProvider = null;
     this.defaultTerrainProvider = null;
-
 
     if (this._clockSyncListener) {
       this._clockSyncListener();
@@ -1104,7 +1312,9 @@ class CesiumMap extends VcsMap {
       this._cameraLimiter = null;
     }
 
-    [...this.layerCollection].forEach((l) => { l.removedFromMap(this); });
+    [...this.layerCollection].forEach((l) => {
+      l.removedFromMap(this);
+    });
 
     if (this._clusterDataSourceDisplay) {
       this._clusterDataSourceDisplay.destroy();
@@ -1122,7 +1332,9 @@ class CesiumMap extends VcsMap {
       this._cesiumInspector = null;
     }
     if (this._cesiumInspectorContainer) {
-      this._cesiumInspectorContainer.parentElement.removeChild(this._cesiumInspectorContainer);
+      this._cesiumInspectorContainer.parentElement.removeChild(
+        this._cesiumInspectorContainer,
+      );
       this._cesiumInspectorContainer = null;
     }
     super.destroy();

@@ -50,9 +50,13 @@ const specificLayerImpl = {};
  * @api stable
  */
 class VcsMap extends VcsObject {
-  static get className() { return 'VcsMap'; }
+  static get className() {
+    return 'VcsMap';
+  }
 
-  static get specificLayerImpl() { return specificLayerImpl; }
+  static get specificLayerImpl() {
+    return specificLayerImpl;
+  }
 
   /**
    * @returns {VcsMapOptions}
@@ -300,7 +304,8 @@ class VcsMap extends VcsObject {
       this._target.removeChild(this.mapElement);
     }
 
-    this._target = typeof target === 'string' ? document.getElementById(target) : target;
+    this._target =
+      typeof target === 'string' ? document.getElementById(target) : target;
     if (this._target) {
       this._target.appendChild(this.mapElement);
     }
@@ -361,7 +366,9 @@ class VcsMap extends VcsObject {
    */
   addVisualization(item) {
     if (!this.validateVisualization(item)) {
-      throw new Error('Visualization item is not valid, validate before adding');
+      throw new Error(
+        'Visualization item is not valid, validate before adding',
+      );
     }
     const layerName = item[vcsLayerName];
     if (!this._visualizations.has(layerName)) {
@@ -402,7 +409,7 @@ class VcsMap extends VcsObject {
    */
   getVisualizations() {
     return [...this._visualizations.values()]
-      .map(layerVisualizations => [...layerVisualizations])
+      .map((layerVisualizations) => [...layerVisualizations])
       .flat();
   }
 
@@ -422,7 +429,9 @@ class VcsMap extends VcsObject {
         return;
       }
       this._state = MapState.ACTIVE;
-      await Promise.all([...this.layerCollection].map(layer => layer.mapActivated(this)));
+      await Promise.all(
+        [...this.layerCollection].map((layer) => layer.mapActivated(this)),
+      );
       if (this._state !== MapState.ACTIVE) {
         return;
       }
@@ -505,7 +514,9 @@ class VcsMap extends VcsObject {
    * @api
    */
   // eslint-disable-next-line no-unused-vars,class-methods-use-this
-  pointIsVisible(coords) { return false; }
+  pointIsVisible(coords) {
+    return false;
+  }
 
   /**
    * Requests this map to render when possible
@@ -540,7 +551,9 @@ class VcsMap extends VcsObject {
     }
     this._target = null;
 
-    this._collectionListeners.forEach((cb) => { cb(); });
+    this._collectionListeners.forEach((cb) => {
+      cb();
+    });
     this._collectionListeners = [];
 
     if (this.layerCollection) {

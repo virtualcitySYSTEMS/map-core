@@ -40,7 +40,10 @@ describe('EditGeometryMouseOverInteraction', () => {
     });
 
     it('should change the cursor style, to remove, if hovering over a vertex with shift', async () => {
-      await interaction.pipe({ feature: vertex, key: ModificationKeyType.SHIFT });
+      await interaction.pipe({
+        feature: vertex,
+        key: ModificationKeyType.SHIFT,
+      });
       expect(cursorStyle.cursor).to.equal(cursorMap.removeVertex);
     });
 

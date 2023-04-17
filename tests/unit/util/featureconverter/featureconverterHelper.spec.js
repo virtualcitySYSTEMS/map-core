@@ -38,7 +38,13 @@ describe('util.featureconverter.vectorLayerHelper', () => {
 
     before(() => {
       testFeature = new Feature({
-        geometry: new Polygon([[[0, 0, 0], [1, 0, 0], [1, 1, 0]]]),
+        geometry: new Polygon([
+          [
+            [0, 0, 0],
+            [1, 0, 0],
+            [1, 1, 0],
+          ],
+        ]),
       });
       testScene = getMockScene();
     });
@@ -50,28 +56,51 @@ describe('util.featureconverter.vectorLayerHelper', () => {
     });
 
     it('should set flat to true', () => {
-      const testMaterial = getMaterialAppearance(testScene, testFill, testFeature);
+      const testMaterial = getMaterialAppearance(
+        testScene,
+        testFill,
+        testFeature,
+      );
       expect(testMaterial).to.have.property('flat', true);
     });
 
     it('should set translucent to false for fully opaque fills', () => {
-      const testMaterial = getMaterialAppearance(testScene, testFill, testFeature);
+      const testMaterial = getMaterialAppearance(
+        testScene,
+        testFill,
+        testFeature,
+      );
       expect(testMaterial).to.have.property('translucent', false);
     });
 
     it('should set translucent to true for transparent fills', () => {
       testFill.setColor([0, 0, 0, 0.5]);
-      const testMaterial = getMaterialAppearance(testScene, testFill, testFeature);
+      const testMaterial = getMaterialAppearance(
+        testScene,
+        testFill,
+        testFeature,
+      );
       expect(testMaterial).to.have.property('translucent', true);
     });
 
     it('should set depthTest to true', () => {
-      const testMaterial = getMaterialAppearance(testScene, testFill, testFeature);
-      expect(testMaterial.renderState.depthTest).to.have.property('enabled', true);
+      const testMaterial = getMaterialAppearance(
+        testScene,
+        testFill,
+        testFeature,
+      );
+      expect(testMaterial.renderState.depthTest).to.have.property(
+        'enabled',
+        true,
+      );
     });
 
     it('should create a color material', () => {
-      const testMaterial = getMaterialAppearance(testScene, testFill, testFeature);
+      const testMaterial = getMaterialAppearance(
+        testScene,
+        testFill,
+        testFeature,
+      );
       expect(testMaterial.material).to.have.property('type', 'Color');
     });
   });
@@ -80,7 +109,12 @@ describe('util.featureconverter.vectorLayerHelper', () => {
     let test;
 
     before(() => {
-      test = createClassificationPrimitive({}, [], Color.RED, ClassificationType.TERRAIN);
+      test = createClassificationPrimitive(
+        {},
+        [],
+        Color.RED,
+        ClassificationType.TERRAIN,
+      );
     });
 
     after(() => {
@@ -121,10 +155,21 @@ describe('util.featureconverter.vectorLayerHelper', () => {
     });
 
     it('should set classificationType based on the input', () => {
-      expect(test).to.have.property('classificationType', ClassificationType.TERRAIN);
+      expect(test).to.have.property(
+        'classificationType',
+        ClassificationType.TERRAIN,
+      );
       test.destroy();
-      test = createClassificationPrimitive({}, [], Color.RED, ClassificationType.BOTH);
-      expect(test).to.have.property('classificationType', ClassificationType.BOTH);
+      test = createClassificationPrimitive(
+        {},
+        [],
+        Color.RED,
+        ClassificationType.BOTH,
+      );
+      expect(test).to.have.property(
+        'classificationType',
+        ClassificationType.BOTH,
+      );
     });
   });
 
@@ -144,7 +189,13 @@ describe('util.featureconverter.vectorLayerHelper', () => {
 
     beforeEach(() => {
       feature = new Feature({
-        geometry: new Polygon([[[0, 0, 0], [1, 0, 0], [1, 1, 0]]]),
+        geometry: new Polygon([
+          [
+            [0, 0, 0],
+            [1, 0, 0],
+            [1, 1, 0],
+          ],
+        ]),
       });
     });
 
@@ -154,37 +205,85 @@ describe('util.featureconverter.vectorLayerHelper', () => {
 
     it('should create a ClassificationPrimitive for classified features which are not ground primitives', () => {
       feature.set('olcs_classificationType', 'both');
-      const primitive = createPrimitive(scene, vectorProperties, true, feature, geometries, style, false);
+      const primitive = createPrimitive(
+        scene,
+        vectorProperties,
+        true,
+        feature,
+        geometries,
+        style,
+        false,
+      );
       expect(primitive).to.be.an.instanceOf(ClassificationPrimitive);
       primitive.destroy();
     });
 
     it('should create GroundPrimitives for classified ground primitives, setting their classification type', () => {
       feature.set('olcs_classificationType', 'both');
-      const primitive = createPrimitive(scene, vectorProperties, true, feature, geometries, style, true);
+      const primitive = createPrimitive(
+        scene,
+        vectorProperties,
+        true,
+        feature,
+        geometries,
+        style,
+        true,
+      );
       expect(primitive).to.be.an.instanceOf(GroundPrimitive);
       expect(primitive.classificationType).to.equal(ClassificationType.BOTH);
       primitive.destroy();
     });
 
     it('should create a Primitive for non-ground, non-classification features', () => {
-      const primitive = createPrimitive(scene, vectorProperties, true, feature, geometries, style, false);
+      const primitive = createPrimitive(
+        scene,
+        vectorProperties,
+        true,
+        feature,
+        geometries,
+        style,
+        false,
+      );
       expect(primitive).to.be.an.instanceOf(Primitive);
       primitive.destroy();
     });
 
     it('should create a Primitive for non-classification ground features, defaulting to terrain only classification.', () => {
-      const primitive = createPrimitive(scene, vectorProperties, true, feature, geometries, style, true);
+      const primitive = createPrimitive(
+        scene,
+        vectorProperties,
+        true,
+        feature,
+        geometries,
+        style,
+        true,
+      );
       expect(primitive).to.be.an.instanceOf(GroundPrimitive);
       expect(primitive.classificationType).to.equal(ClassificationType.TERRAIN);
       primitive.destroy();
     });
 
     it('should set allowPicking based on the input', () => {
-      let primitive = createPrimitive(scene, vectorProperties, false, feature, geometries, style, false);
+      let primitive = createPrimitive(
+        scene,
+        vectorProperties,
+        false,
+        feature,
+        geometries,
+        style,
+        false,
+      );
       expect(primitive.allowPicking).to.be.false;
       primitive.destroy();
-      primitive = createPrimitive(scene, vectorProperties, true, feature, geometries, style, false);
+      primitive = createPrimitive(
+        scene,
+        vectorProperties,
+        true,
+        feature,
+        geometries,
+        style,
+        false,
+      );
       expect(primitive.allowPicking).to.be.true;
       primitive.destroy();
     });
@@ -205,7 +304,10 @@ describe('util.featureconverter.vectorLayerHelper', () => {
 
     beforeEach(() => {
       feature = new Feature({
-        geometry: new LineString([[1, 1, 0], [2, 2, 0]]),
+        geometry: new LineString([
+          [1, 1, 0],
+          [2, 2, 0],
+        ]),
       });
       style = new Style({
         stroke: new Stroke({
@@ -219,37 +321,81 @@ describe('util.featureconverter.vectorLayerHelper', () => {
     });
 
     it('should return a Primitive', () => {
-      const primitive = createOutlinePrimitive(scene, vectorProperties, true, feature, geometries, style);
+      const primitive = createOutlinePrimitive(
+        scene,
+        vectorProperties,
+        true,
+        feature,
+        geometries,
+        style,
+      );
       expect(primitive).to.be.an.instanceOf(Primitive);
       primitive.destroy();
     });
 
     it('should set allowPicking based on input', () => {
-      let primitive = createOutlinePrimitive(scene, vectorProperties, true, feature, geometries, style);
+      let primitive = createOutlinePrimitive(
+        scene,
+        vectorProperties,
+        true,
+        feature,
+        geometries,
+        style,
+      );
       expect(primitive.allowPicking).to.be.true;
       primitive.destroy();
 
-      primitive = createOutlinePrimitive(scene, vectorProperties, false, feature, geometries, style);
+      primitive = createOutlinePrimitive(
+        scene,
+        vectorProperties,
+        false,
+        feature,
+        geometries,
+        style,
+      );
       expect(primitive.allowPicking).to.be.false;
       primitive.destroy();
     });
 
     describe('appearance', () => {
       it('should create a PerInstanceColorAppearance', () => {
-        const primitive = createOutlinePrimitive(scene, vectorProperties, true, feature, geometries, style);
-        expect(primitive.appearance).to.be.an.instanceOf(PerInstanceColorAppearance);
+        const primitive = createOutlinePrimitive(
+          scene,
+          vectorProperties,
+          true,
+          feature,
+          geometries,
+          style,
+        );
+        expect(primitive.appearance).to.be.an.instanceOf(
+          PerInstanceColorAppearance,
+        );
         primitive.destroy();
       });
 
       it('should set translucent to false for opaque strokes', () => {
-        const primitive = createOutlinePrimitive(scene, vectorProperties, true, feature, geometries, style);
+        const primitive = createOutlinePrimitive(
+          scene,
+          vectorProperties,
+          true,
+          feature,
+          geometries,
+          style,
+        );
         expect(primitive.appearance.translucent).to.be.false;
         primitive.destroy();
       });
 
       it('should set translucent to false for translucent strokes', () => {
         style.getStroke().setColor([0, 0, 0, 0.5]);
-        const primitive = createOutlinePrimitive(scene, vectorProperties, true, feature, geometries, style);
+        const primitive = createOutlinePrimitive(
+          scene,
+          vectorProperties,
+          true,
+          feature,
+          geometries,
+          style,
+        );
         expect(primitive.appearance.translucent).to.be.true;
         primitive.destroy();
       });
@@ -272,7 +418,11 @@ describe('util.featureconverter.vectorLayerHelper', () => {
 
     beforeEach(() => {
       feature = new Feature({
-        geometry: new LineString([[0, 0, 0], [1, 0, 0], [1, 1, 0]]),
+        geometry: new LineString([
+          [0, 0, 0],
+          [1, 0, 0],
+          [1, 1, 0],
+        ]),
       });
     });
 
@@ -282,63 +432,148 @@ describe('util.featureconverter.vectorLayerHelper', () => {
 
     it('should create GroundPrimitives for classified ground primitives, setting their classification type', () => {
       feature.set('olcs_classificationType', 'both');
-      const primitive = createLinePrimitive(scene, vectorProperties, true, feature, geometries, style, true);
+      const primitive = createLinePrimitive(
+        scene,
+        vectorProperties,
+        true,
+        feature,
+        geometries,
+        style,
+        true,
+      );
       expect(primitive).to.be.an.instanceOf(GroundPolylinePrimitive);
       expect(primitive.classificationType).to.equal(ClassificationType.BOTH);
       primitive.destroy();
     });
 
     it('should create a Primitive for non-ground, non-classification features', () => {
-      const primitive = createLinePrimitive(scene, vectorProperties, true, feature, geometries, style, false);
+      const primitive = createLinePrimitive(
+        scene,
+        vectorProperties,
+        true,
+        feature,
+        geometries,
+        style,
+        false,
+      );
       expect(primitive).to.be.an.instanceOf(Primitive);
       primitive.destroy();
     });
 
     it('should create a Primitive for non-classification ground features, defaulting to terrain only classification', () => {
-      const primitive = createLinePrimitive(scene, vectorProperties, true, feature, geometries, style, true);
+      const primitive = createLinePrimitive(
+        scene,
+        vectorProperties,
+        true,
+        feature,
+        geometries,
+        style,
+        true,
+      );
       expect(primitive).to.be.an.instanceOf(GroundPolylinePrimitive);
       expect(primitive.classificationType).to.equal(ClassificationType.TERRAIN);
       primitive.destroy();
     });
 
     it('should set allowPicking based on the input', () => {
-      let primitive = createLinePrimitive(scene, vectorProperties, false, feature, geometries, style, false);
+      let primitive = createLinePrimitive(
+        scene,
+        vectorProperties,
+        false,
+        feature,
+        geometries,
+        style,
+        false,
+      );
       expect(primitive.allowPicking).to.be.false;
       primitive.destroy();
-      primitive = createLinePrimitive(scene, vectorProperties, true, feature, geometries, style, false);
+      primitive = createLinePrimitive(
+        scene,
+        vectorProperties,
+        true,
+        feature,
+        geometries,
+        style,
+        false,
+      );
       expect(primitive.allowPicking).to.be.true;
       primitive.destroy();
     });
 
     describe('appearance', () => {
       it('should create a PerInstanceColorAppearance', () => {
-        const primitive = createLinePrimitive(scene, vectorProperties, true, feature, geometries, style, false);
-        expect(primitive.appearance).to.be.an.instanceOf(PolylineMaterialAppearance);
+        const primitive = createLinePrimitive(
+          scene,
+          vectorProperties,
+          true,
+          feature,
+          geometries,
+          style,
+          false,
+        );
+        expect(primitive.appearance).to.be.an.instanceOf(
+          PolylineMaterialAppearance,
+        );
         primitive.destroy();
       });
 
       it('should create a color typed material for non-dashed strokes', () => {
-        const primitive = createLinePrimitive(scene, vectorProperties, true, feature, geometries, style, false);
+        const primitive = createLinePrimitive(
+          scene,
+          vectorProperties,
+          true,
+          feature,
+          geometries,
+          style,
+          false,
+        );
         expect(primitive.appearance.material).to.have.property('type', 'Color');
         primitive.destroy();
       });
 
       it('should create a stripe material for dashed strokes', () => {
         style.getStroke().setLineDash([1, 1]);
-        const primitive = createLinePrimitive(scene, vectorProperties, true, feature, geometries, style, false);
-        expect(primitive.appearance.material).to.have.property('type', 'Stripe');
+        const primitive = createLinePrimitive(
+          scene,
+          vectorProperties,
+          true,
+          feature,
+          geometries,
+          style,
+          false,
+        );
+        expect(primitive.appearance.material).to.have.property(
+          'type',
+          'Stripe',
+        );
         primitive.destroy();
       });
 
       it('should set translucent to false for opaque strokes', () => {
-        const primitive = createLinePrimitive(scene, vectorProperties, true, feature, geometries, style, false);
+        const primitive = createLinePrimitive(
+          scene,
+          vectorProperties,
+          true,
+          feature,
+          geometries,
+          style,
+          false,
+        );
         expect(primitive.appearance.translucent).to.be.false;
         primitive.destroy();
       });
 
       it('should set translucent to false for translucent strokes', () => {
         style.getStroke().setColor([0, 0, 0, 0.5]);
-        const primitive = createLinePrimitive(scene, vectorProperties, true, feature, geometries, style, false);
+        const primitive = createLinePrimitive(
+          scene,
+          vectorProperties,
+          true,
+          feature,
+          geometries,
+          style,
+          false,
+        );
         expect(primitive.appearance.translucent).to.be.true;
         primitive.destroy();
       });
@@ -347,12 +582,18 @@ describe('util.featureconverter.vectorLayerHelper', () => {
 
   describe('getMinHeightOrGroundLevel', () => {
     it('should return the groundLevel, if its a finite number', () => {
-      const height = getMinHeightOrGroundLevel(1, [[0, 0, -1], [1, 1, 1]]);
+      const height = getMinHeightOrGroundLevel(1, [
+        [0, 0, -1],
+        [1, 1, 1],
+      ]);
       expect(height).to.equal(1);
     });
 
     it('should return the minimum height of the coordinates if no ground level is supplied', () => {
-      const height = getMinHeightOrGroundLevel(null, [[0, 0, -1], [1, 1, 1]]);
+      const height = getMinHeightOrGroundLevel(null, [
+        [0, 0, -1],
+        [1, 1, 1],
+      ]);
       expect(height).to.equal(-1);
     });
 
@@ -474,7 +715,9 @@ describe('util.featureconverter.vectorLayerHelper', () => {
 
       const heightInfo = getHeightInfo(feature, vectorProperties, []);
       expect(heightInfo.extruded).to.equal(true);
-      expect(heightInfo.storeyHeightsAboveGround).to.have.ordered.members([2, 2]);
+      expect(heightInfo.storeyHeightsAboveGround).to.have.ordered.members([
+        2, 2,
+      ]);
     });
 
     it('legacy case extrudedHeight + storeyHeight', () => {
@@ -485,7 +728,9 @@ describe('util.featureconverter.vectorLayerHelper', () => {
       });
       const heightInfo = getHeightInfo(feature, vectorProperties, []);
       expect(heightInfo.extruded).to.equal(true);
-      expect(heightInfo.storeyHeightsAboveGround).to.have.ordered.members([2, 1]);
+      expect(heightInfo.storeyHeightsAboveGround).to.have.ordered.members([
+        2, 1,
+      ]);
     });
 
     it('legacy case negative extrudedHeight + storeyHeight', () => {
@@ -497,7 +742,9 @@ describe('util.featureconverter.vectorLayerHelper', () => {
       const heightInfo = getHeightInfo(feature, vectorProperties, []);
       expect(heightInfo.extruded).to.equal(true);
       expect(heightInfo.storeyHeightsAboveGround).to.be.empty;
-      expect(heightInfo.storeyHeightsBelowGround).to.have.ordered.members([2, 1]);
+      expect(heightInfo.storeyHeightsBelowGround).to.have.ordered.members([
+        2, 1,
+      ]);
     });
 
     it('legacy case extrudedHeight + storeyNumber', () => {
@@ -508,7 +755,9 @@ describe('util.featureconverter.vectorLayerHelper', () => {
       });
       const heightInfo = getHeightInfo(feature, vectorProperties, []);
       expect(heightInfo.extruded).to.equal(true);
-      expect(heightInfo.storeyHeightsAboveGround).to.have.ordered.members([2, 2]);
+      expect(heightInfo.storeyHeightsAboveGround).to.have.ordered.members([
+        2, 2,
+      ]);
     });
 
     it('legacy case negative extrudedHeight + storeyNumber', () => {
@@ -519,7 +768,9 @@ describe('util.featureconverter.vectorLayerHelper', () => {
       });
       const heightInfo = getHeightInfo(feature, vectorProperties, []);
       expect(heightInfo.extruded).to.equal(true);
-      expect(heightInfo.storeyHeightsBelowGround).to.have.ordered.members([2, 2]);
+      expect(heightInfo.storeyHeightsBelowGround).to.have.ordered.members([
+        2, 2,
+      ]);
     });
 
     it('legacy case storeyNumber + layer storeyHeight', () => {
@@ -531,7 +782,9 @@ describe('util.featureconverter.vectorLayerHelper', () => {
       });
       const heightInfo = getHeightInfo(feature, vectorProperties, []);
       expect(heightInfo.extruded).to.equal(true);
-      expect(heightInfo.storeyHeightsAboveGround).to.have.ordered.members([4, 4]);
+      expect(heightInfo.storeyHeightsAboveGround).to.have.ordered.members([
+        4, 4,
+      ]);
     });
 
     it('storeys above and below ground above 100 should be set to 100', () => {
@@ -613,7 +866,11 @@ describe('util.featureconverter.vectorLayerHelper', () => {
     it('should extract the minimum z value as the groundlevel from the coordinates', () => {
       vectorProperties = new VectorProperties({});
       const feature = new Feature({});
-      const heightInfo = getHeightInfo(feature, vectorProperties, [[1, 2, 3], [1, 2, 4], [1, 2, 2]]);
+      const heightInfo = getHeightInfo(feature, vectorProperties, [
+        [1, 2, 3],
+        [1, 2, 4],
+        [1, 2, 2],
+      ]);
       expect(heightInfo.groundLevel).to.equal(2);
     });
   });
@@ -630,19 +887,31 @@ describe('util.featureconverter.vectorLayerHelper', () => {
 
     it('should return 0 if heightReference is CLAMP_TO_GROUND', () => {
       heightReference = HeightReference.CLAMP_TO_GROUND;
-      const heightAboveGround = getHeightAboveGround(feature, heightReference, vectorProperties);
+      const heightAboveGround = getHeightAboveGround(
+        feature,
+        heightReference,
+        vectorProperties,
+      );
       expect(heightAboveGround).to.equal(0);
     });
 
     it('should return 0 if heightReference is NONE', () => {
       heightReference = HeightReference.NONE;
-      const heightAboveGround = getHeightAboveGround(feature, heightReference, vectorProperties);
+      const heightAboveGround = getHeightAboveGround(
+        feature,
+        heightReference,
+        vectorProperties,
+      );
       expect(heightAboveGround).to.equal(0);
     });
 
     it('should return heightAboveGround from vectorProperties if heightReference is RELATIVE_TO_GROUND', () => {
       heightReference = HeightReference.RELATIVE_TO_GROUND;
-      const heightAboveGround = getHeightAboveGround(feature, heightReference, vectorProperties);
+      const heightAboveGround = getHeightAboveGround(
+        feature,
+        heightReference,
+        vectorProperties,
+      );
       expect(heightAboveGround).to.equal(5);
     });
   });

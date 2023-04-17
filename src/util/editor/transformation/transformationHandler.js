@@ -28,13 +28,16 @@ function getCenterFromFeatures3D(layer, features) {
   const extent3D = new Extent3D();
   let someClamped = false;
   let someNoTerrain = false;
-  const layerIsClamped = layer.vectorProperties.altitudeMode === HeightReference.CLAMP_TO_GROUND;
+  const layerIsClamped =
+    layer.vectorProperties.altitudeMode === HeightReference.CLAMP_TO_GROUND;
 
   features.forEach((f) => {
     const geometry = f.getGeometry();
     extent3D.extendWithGeometry(geometry);
     if (!someNoTerrain) {
-      const firstCoordinates = /** @type {import("ol/geom").SimpleGeometry} */ (geometry).getFirstCoordinate();
+      const firstCoordinates = /** @type {import("ol/geom").SimpleGeometry} */ (
+        geometry
+      ).getFirstCoordinate();
       if (!firstCoordinates[2]) {
         someNoTerrain = true;
       }
@@ -42,7 +45,8 @@ function getCenterFromFeatures3D(layer, features) {
 
     if (!someClamped) {
       const altitudeMode = f.get('olcs_altitudeMode');
-      someClamped = altitudeMode === 'clampToGround' || (!altitudeMode && layerIsClamped);
+      someClamped =
+        altitudeMode === 'clampToGround' || (!altitudeMode && layerIsClamped);
     }
   });
   const center = extent3D.getCenter();
@@ -108,16 +112,23 @@ export default function createTransformationHandler(
     cancelAsyncSetting();
     const show = features.length > 0;
     if (show) {
-      const { center: newCenter, someClamped, someNoTerrain } = getCenterFromFeatures(features);
+      const {
+        center: newCenter,
+        someClamped,
+        someNoTerrain,
+      } = getCenterFromFeatures(features);
       center = newCenter;
-      if (!cesiumMap || !someNoTerrain) { // only set center sync, if updating will not change it too drastically (to avoid jumps)
+      if (!cesiumMap || !someNoTerrain) {
+        // only set center sync, if updating will not change it too drastically (to avoid jumps)
         handlerFeatures.show = true;
         handlerFeatures.setCenter(center);
       }
       handlerFeatures.greyOutZ = someClamped;
       if (cesiumMap && (someClamped || someNoTerrain)) {
         let cancel = false;
-        cancelAsyncSetting = () => { cancel = true; };
+        cancelAsyncSetting = () => {
+          cancel = true;
+        };
         await cesiumMap.getHeightFromTerrain([center]);
         if (!cancel) {
           handlerFeatures.show = true;
@@ -139,8 +150,12 @@ export default function createTransformationHandler(
   }
 
   return {
-    get showing() { return handlerFeatures.show; },
-    get center() { return center.slice(); },
+    get showing() {
+      return handlerFeatures.show;
+    },
+    get center() {
+      return center.slice();
+    },
     get showAxis() {
       return handlerFeatures.showAxis;
     },

@@ -11,16 +11,23 @@ describe('writeStyle', () => {
           hasExtrusion: 'Number(${olcs_extrudedHeight}) > 0',
         },
         pointOutlineColor: {
-          conditions: [
-            ['Boolean(${image})===true', 'color("#00FF00")'],
-          ],
+          conditions: [['Boolean(${image})===true', 'color("#00FF00")']],
         },
         color: {
           conditions: [
             ['Boolean(${noFill})===true', 'false'],
-            ['${class} === "up"', 'color("#FF0000") * vec4(1, 1, 1, ${hasExtrusion} ? 0.5 : 1.0)'],
-            ['${class} === "middle"', 'color("#00FF00") * vec4(1, 1, 1, ${hasExtrusion} ? 0.5 : 1.0)'],
-            ['${class} === "down"', 'color("#0000FF") * vec4(1, 1, 1, ${hasExtrusion} ? 0.5 : 1.0)'],
+            [
+              '${class} === "up"',
+              'color("#FF0000") * vec4(1, 1, 1, ${hasExtrusion} ? 0.5 : 1.0)',
+            ],
+            [
+              '${class} === "middle"',
+              'color("#00FF00") * vec4(1, 1, 1, ${hasExtrusion} ? 0.5 : 1.0)',
+            ],
+            [
+              '${class} === "down"',
+              'color("#0000FF") * vec4(1, 1, 1, ${hasExtrusion} ? 0.5 : 1.0)',
+            ],
             ['${image} === "sensor"', 'color("#FF00FF")'],
             ['${image} === "marker"', 'color("#00FFFF")'],
             ['true', 'color("#FFFFFF")'],

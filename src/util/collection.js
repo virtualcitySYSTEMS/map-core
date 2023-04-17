@@ -62,7 +62,7 @@ class Collection {
     this.removed = new VcsEvent();
   }
 
-  * [Symbol.iterator]() {
+  *[Symbol.iterator]() {
     const arrayLength = this._array.length;
     for (let i = 0; i < arrayLength; i++) {
       yield this._array[i];
@@ -75,14 +75,18 @@ class Collection {
    * @type {string|symbol}
    * @api
    */
-  get uniqueKey() { return this._uniqueKey; }
+  get uniqueKey() {
+    return this._uniqueKey;
+  }
 
   /**
    * @readonly
    * @type {number}
    * @api
    */
-  get size() { return this._array.length; }
+  get size() {
+    return this._array.length;
+  }
 
   /**
    * Returns an item identified by the unique constraint key. Returns null, if there is no uniqueness constraint.
@@ -94,7 +98,7 @@ class Collection {
     if (!this._uniqueKey) {
       return undefined;
     }
-    return this._array.find(e => e[this._uniqueKey] === value);
+    return this._array.find((e) => e[this._uniqueKey] === value);
   }
 
   /**
@@ -180,7 +184,7 @@ class Collection {
     if (!this._uniqueKey) {
       return undefined;
     }
-    return this._array.some(e => e[this._uniqueKey] === value);
+    return this._array.some((e) => e[this._uniqueKey] === value);
   }
 
   /**
@@ -188,7 +192,9 @@ class Collection {
    * @api
    */
   clear() {
-    this._array.forEach((i) => { this.removed.raiseEvent(i); });
+    this._array.forEach((i) => {
+      this.removed.raiseEvent(i);
+    });
     this._array.splice(0);
   }
 

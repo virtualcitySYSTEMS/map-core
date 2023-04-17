@@ -82,12 +82,13 @@ describe('VcsEvent', () => {
   describe('awaiting listeners', () => {
     it('should await listeners', async () => {
       const spy = sandbox.spy();
-      const listener = () => new Promise((resolve) => {
-        setTimeout(() => {
-          spy();
-          resolve();
-        }, 100);
-      });
+      const listener = () =>
+        new Promise((resolve) => {
+          setTimeout(() => {
+            spy();
+            resolve();
+          }, 100);
+        });
       event.addEventListener(listener);
       await event.awaitRaisedEvent();
       expect(spy).to.have.been.called;

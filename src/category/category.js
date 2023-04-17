@@ -2,14 +2,19 @@ import { check } from '@vcsuite/check';
 import { v4 as uuidv4 } from 'uuid';
 import { Feature } from 'ol';
 import { moduleIdSymbol, destroyCollection } from '../vcsModuleHelpers.js';
-import makeOverrideCollection, { isOverrideCollection } from '../util/overrideCollection.js';
+import makeOverrideCollection, {
+  isOverrideCollection,
+} from '../util/overrideCollection.js';
 import VcsObject from '../vcsObject.js';
 import VectorLayer from '../layer/vectorLayer.js';
 import IndexedCollection from '../util/indexedCollection.js';
 import { parseGeoJSON, writeGeoJSONFeature } from '../layer/geojsonHelpers.js';
 import Collection from '../util/collection.js';
 import { getStyleOrDefaultStyle } from '../style/styleFactory.js';
-import { categoryClassRegistry, getObjectFromClassRegistry } from '../classRegistry.js';
+import {
+  categoryClassRegistry,
+  getObjectFromClassRegistry,
+} from '../classRegistry.js';
 import OverrideClassRegistry from '../overrideClassRegistry.js';
 import VcsEvent from '../vcsEvent.js';
 
@@ -38,8 +43,13 @@ function assignLayerOptions(layer, options) {
   }
 
   if (options.highlightStyle) {
-    const highlightStyle = getStyleOrDefaultStyle(options.highlightStyle, layer.highlightStyle);
-    layer.setHighlightStyle(/** @type {import("@vcmap/core").VectorStyleItem} */ (highlightStyle));
+    const highlightStyle = getStyleOrDefaultStyle(
+      options.highlightStyle,
+      layer.highlightStyle,
+    );
+    layer.setHighlightStyle(
+      /** @type {import("@vcmap/core").VectorStyleItem} */ (highlightStyle),
+    );
   }
 
   if (options.vectorProperties) {
@@ -60,7 +70,8 @@ function assignLayerOptions(layer, options) {
  * @returns {void}
  */
 function checkMergeOptionOverride(key, value, defaultOption, option) {
-  const isOverride = option == null ? value !== defaultOption : option !== value;
+  const isOverride =
+    option == null ? value !== defaultOption : option !== value;
   if (isOverride) {
     throw new Error(`Cannot merge options, values of ${key} do not match`);
   }
@@ -76,7 +87,9 @@ function checkMergeOptionOverride(key, value, defaultOption, option) {
  * @template {Object|VcsObject} T
  */
 class Category extends VcsObject {
-  static get className() { return 'Category'; }
+  static get className() {
+    return 'Category';
+  }
 
   /**
    * @returns {CategoryOptions}
@@ -110,7 +123,8 @@ class Category extends VcsObject {
      * @type {string}
      * @private
      */
-    this._featureProperty = options.featureProperty || defaultOptions.featureProperty;
+    this._featureProperty =
+      options.featureProperty || defaultOptions.featureProperty;
     /**
      * @type {string|symbol}
      * @private
@@ -163,7 +177,9 @@ class Category extends VcsObject {
    * @type {string|symbol}
    * @readonly
    */
-  get classRegistryName() { return this._classRegistryName; }
+  get classRegistryName() {
+    return this._classRegistryName;
+  }
 
   /**
    * The collection of this category.
@@ -179,7 +195,9 @@ class Category extends VcsObject {
    * @type {VcsEvent<void>}
    * @readonly
    */
-  get collectionChanged() { return this._collectionChanged; }
+  get collectionChanged() {
+    return this._collectionChanged;
+  }
 
   /**
    * Returns the layer of this collection. Caution, do not use the layer API to add or remove items.
@@ -206,14 +224,17 @@ class Category extends VcsObject {
         feature = geoJsonFeature;
       } else if (typeof geoJsonFeature === 'object') {
         const { features } = parseGeoJSON(geoJsonFeature);
-        if (features[0]) { // XXX do we warn on feature collection?
+        if (features[0]) {
+          // XXX do we warn on feature collection?
           feature = features[0];
         }
       }
 
       if (feature) {
         feature.setId(id);
-        setTimeout(() => { this._layer.addFeatures([feature]); }, 0); // We need to set a timeout, since removing and adding the feature in the same sync call leads to undefined behavior in OL TODO recheck in ol 6.11
+        setTimeout(() => {
+          this._layer.addFeatures([feature]);
+        }, 0); // We need to set a timeout, since removing and adding the feature in the same sync call leads to undefined behavior in OL TODO recheck in ol 6.11
       }
     }
   }
@@ -272,7 +293,12 @@ class Category extends VcsObject {
       defaultOptions.featureProperty,
       options.featureProperty,
     );
-    checkMergeOptionOverride('keyProperty', this._keyProperty, defaultOptions.keyProperty, options.keyProperty);
+    checkMergeOptionOverride(
+      'keyProperty',
+      this._keyProperty,
+      defaultOptions.keyProperty,
+      options.keyProperty,
+    );
     this.title = options.title || this.title;
     if (options.layerOptions && this._layer) {
       assignLayerOptions(this._layer, options.layerOptions);
@@ -290,10 +316,14 @@ class Category extends VcsObject {
     check(collection, Collection);
 
     if (this._keyProperty !== collection.uniqueKey) {
-      throw new Error('The collections key property does not match the categories key property');
+      throw new Error(
+        'The collections key property does not match the categories key property',
+      );
     }
 
-    this._collectionListeners.forEach((cb) => { cb(); });
+    this._collectionListeners.forEach((cb) => {
+      cb();
+    });
     if (this._collection) {
       destroyCollection(this._collection);
     }
@@ -301,16 +331,18 @@ class Category extends VcsObject {
       this._layer.removeAllFeatures(); // XXX should we call `itemRemoved` instead?
     }
 
-    this._collection = collection[isOverrideCollection] ?
-      /** @type {OverrideCollection} */ (collection) :
-      makeOverrideCollection(
-        collection,
-        this._getDynamicModuleId.bind(this),
-        this._serializeItem.bind(this),
-        this._deserializeItem.bind(this),
-      );
+    this._collection = collection[isOverrideCollection]
+      ? /** @type {OverrideCollection} */ (collection)
+      : makeOverrideCollection(
+          collection,
+          this._getDynamicModuleId.bind(this),
+          this._serializeItem.bind(this),
+          this._deserializeItem.bind(this),
+        );
 
-    [...this.collection].forEach((item) => { this._itemAdded(item); });
+    [...this.collection].forEach((item) => {
+      this._itemAdded(item);
+    });
     /**
      * @type {Array<function():void>}
      * @private
@@ -323,8 +355,10 @@ class Category extends VcsObject {
 
     // @ts-ignore
     if (this._collection.moved) {
-      // @ts-ignore
-      this._collectionListeners.push(this._collection.moved.addEventListener(this._itemMoved.bind(this)));
+      this._collectionListeners.push(
+        // @ts-ignore
+        this._collection.moved.addEventListener(this._itemMoved.bind(this)),
+      );
     }
     this.collectionChanged.raiseEvent();
   }
@@ -337,9 +371,11 @@ class Category extends VcsObject {
       throw new Error('Cannot switch apps');
     }
     this._app = app;
-    this._moduleRemovedListener = this._app.moduleRemoved.addEventListener((module) => {
-      this._collection.removeModule(module._id);
-    });
+    this._moduleRemovedListener = this._app.moduleRemoved.addEventListener(
+      (module) => {
+        this._collection.removeModule(module._id);
+      },
+    );
     if (this._layer) {
       this._app.layers.add(this._layer);
     }
@@ -354,7 +390,9 @@ class Category extends VcsObject {
     if (!this._app) {
       throw new Error('Cannot deserialize item before setting the vcApp');
     }
-    const classRegistry = this._classRegistryName ? this._app[this._classRegistryName] : null;
+    const classRegistry = this._classRegistryName
+      ? this._app[this._classRegistryName]
+      : null;
     if (classRegistry && classRegistry instanceof OverrideClassRegistry) {
       return getObjectFromClassRegistry(classRegistry, config);
     }
@@ -429,7 +467,9 @@ class Category extends VcsObject {
       this._layer.destroy();
     }
 
-    this._collectionListeners.forEach((cb) => { cb(); });
+    this._collectionListeners.forEach((cb) => {
+      cb();
+    });
     this._collectionListeners.splice(0);
     this._moduleRemovedListener();
     this._moduleRemovedListener = () => {};
@@ -441,4 +481,3 @@ class Category extends VcsObject {
 
 export default Category;
 categoryClassRegistry.registerClass(Category.className, Category);
-

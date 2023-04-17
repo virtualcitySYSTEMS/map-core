@@ -2,19 +2,27 @@ import { Feature } from 'ol';
 import { Point } from 'ol/geom.js';
 import { Math as CesiumMath } from '@vcmap-cesium/engine';
 import { getCesiumMap } from '../../../helpers/cesiumHelpers.js';
-import { createHandlerFeature, patchPickRay, setupTransformationHandler } from './setupTransformationHandler.js';
+import {
+  createHandlerFeature,
+  patchPickRay,
+  setupTransformationHandler,
+} from './setupTransformationHandler.js';
 import {
   EventType,
   AXIS_AND_PLANES,
   TransformationMode,
-  RotateInteraction, mercatorToCartesian,
+  RotateInteraction,
+  mercatorToCartesian,
 } from '../../../../../index.js';
 import { getOpenlayersMap } from '../../../helpers/openlayersHelpers.js';
 
 function ensureRotateEvent(event, angle, axis) {
   expect(event).to.have.property('axis', axis);
-  expect(event).to.have.property('angle')
-    .and.to.satisfy(a => CesiumMath.equalsEpsilon(a, angle, CesiumMath.EPSILON5));
+  expect(event)
+    .to.have.property('angle')
+    .and.to.satisfy((a) =>
+      CesiumMath.equalsEpsilon(a, angle, CesiumMath.EPSILON5),
+    );
 }
 
 describe('RotateInteraction', () => {
@@ -37,7 +45,9 @@ describe('RotateInteraction', () => {
     before(async () => {
       map = getCesiumMap({});
       setup = await setupTransformationHandler(map, TransformationMode.SCALE);
-      await setup.transformationHandler.setFeatures([new Feature({ geometry: new Point([0, 0, 0]) })]);
+      await setup.transformationHandler.setFeatures([
+        new Feature({ geometry: new Point([0, 0, 0]) }),
+      ]);
       interaction = new RotateInteraction(setup.transformationHandler);
     });
 
@@ -49,12 +59,15 @@ describe('RotateInteraction', () => {
     it('should rotate around the Z axis', async () => {
       const spy = sandbox.spy();
       interaction.rotated.addEventListener(spy);
-      patchPickRay([
-        mercatorToCartesian([0.5, 0.5, 0]),
-        mercatorToCartesian([-0.5, -0.5, 2]),
-        mercatorToCartesian([0.5, -0.5, 4]),
-        mercatorToCartesian([0.5, -0.5, 4]),
-      ], sandbox);
+      patchPickRay(
+        [
+          mercatorToCartesian([0.5, 0.5, 0]),
+          mercatorToCartesian([-0.5, -0.5, 2]),
+          mercatorToCartesian([0.5, -0.5, 4]),
+          mercatorToCartesian([0.5, -0.5, 4]),
+        ],
+        sandbox,
+      );
       const feature = createHandlerFeature(AXIS_AND_PLANES.Z);
       await interaction.pipe({
         map,
@@ -94,12 +107,15 @@ describe('RotateInteraction', () => {
     it('should rotate around the X axis', async () => {
       const spy = sandbox.spy();
       interaction.rotated.addEventListener(spy);
-      patchPickRay([
-        mercatorToCartesian([0, 0.5, 0.5]),
-        mercatorToCartesian([2, -0.5, -0.5]),
-        mercatorToCartesian([2, 0.5, -0.5]),
-        mercatorToCartesian([5, 0.5, -0.5]),
-      ], sandbox);
+      patchPickRay(
+        [
+          mercatorToCartesian([0, 0.5, 0.5]),
+          mercatorToCartesian([2, -0.5, -0.5]),
+          mercatorToCartesian([2, 0.5, -0.5]),
+          mercatorToCartesian([5, 0.5, -0.5]),
+        ],
+        sandbox,
+      );
       const feature = createHandlerFeature(AXIS_AND_PLANES.X);
       await interaction.pipe({
         map,
@@ -139,12 +155,15 @@ describe('RotateInteraction', () => {
     it('should rotate around the Y axis', async () => {
       const spy = sandbox.spy();
       interaction.rotated.addEventListener(spy);
-      patchPickRay([
-        mercatorToCartesian([0.5, 0, 0.5]),
-        mercatorToCartesian([-0.5, 2, -0.5]),
-        mercatorToCartesian([0.5, 2, -0.5]),
-        mercatorToCartesian([0.5, 5, -0.5]),
-      ], sandbox);
+      patchPickRay(
+        [
+          mercatorToCartesian([0.5, 0, 0.5]),
+          mercatorToCartesian([-0.5, 2, -0.5]),
+          mercatorToCartesian([0.5, 2, -0.5]),
+          mercatorToCartesian([0.5, 5, -0.5]),
+        ],
+        sandbox,
+      );
       const feature = createHandlerFeature(AXIS_AND_PLANES.Y);
       await interaction.pipe({
         map,
@@ -191,7 +210,9 @@ describe('RotateInteraction', () => {
     before(async () => {
       map = await getOpenlayersMap({});
       setup = await setupTransformationHandler(map, TransformationMode.SCALE);
-      await setup.transformationHandler.setFeatures([new Feature({ geometry: new Point([0, 0, 0]) })]);
+      await setup.transformationHandler.setFeatures([
+        new Feature({ geometry: new Point([0, 0, 0]) }),
+      ]);
       interaction = new RotateInteraction(setup.transformationHandler);
     });
 

@@ -27,7 +27,6 @@ function setupVectorLayer() {
     [ids[2]]: highlightStyle,
   });
 
-
   return {
     vectorLayer,
     highlightStyle,
@@ -72,22 +71,43 @@ describe('VectorHelpers', () => {
 
     it('should add highlighted features', () => {
       const feature = impl.source.getFeatureById(setup.highlightFeatureId);
-      expect(impl.featureVisibility.hasHighlightFeature(setup.highlightFeatureId, feature)).to.be.true;
+      expect(
+        impl.featureVisibility.hasHighlightFeature(
+          setup.highlightFeatureId,
+          feature,
+        ),
+      ).to.be.true;
     });
 
     it('should add highlighted features, even if they are hidden', () => {
-      const feature = impl.source.getFeatureById(setup.hiddenHighlightedFeatureId);
-      expect(impl.featureVisibility.hasHighlightFeature(setup.hiddenHighlightedFeatureId, feature)).to.be.true;
+      const feature = impl.source.getFeatureById(
+        setup.hiddenHighlightedFeatureId,
+      );
+      expect(
+        impl.featureVisibility.hasHighlightFeature(
+          setup.hiddenHighlightedFeatureId,
+          feature,
+        ),
+      ).to.be.true;
     });
 
     it('should add hidden features', () => {
       const feature = impl.source.getFeatureById(setup.hiddenFeatureId);
-      expect(impl.featureVisibility.hasHiddenFeature(setup.hiddenFeatureId, feature)).to.be.true;
+      expect(
+        impl.featureVisibility.hasHiddenFeature(setup.hiddenFeatureId, feature),
+      ).to.be.true;
     });
 
     it('should add hidden features, even if they are highlighted', () => {
-      const feature = impl.source.getFeatureById(setup.hiddenHighlightedFeatureId);
-      expect(impl.featureVisibility.hasHiddenFeature(setup.hiddenHighlightedFeatureId, feature)).to.be.true;
+      const feature = impl.source.getFeatureById(
+        setup.hiddenHighlightedFeatureId,
+      );
+      expect(
+        impl.featureVisibility.hasHiddenFeature(
+          setup.hiddenHighlightedFeatureId,
+          feature,
+        ),
+      ).to.be.true;
     });
 
     it('should set FV last updated to now', () => {
@@ -104,7 +124,10 @@ describe('VectorHelpers', () => {
       setup = setupVectorLayer();
       [impl] = setup.vectorLayer.createImplementationsForMap(openlayers);
       impl.hasFeatureUUID = true;
-      impl.globalHider.hideObjects([setup.hiddenFeatureId, setup.hiddenHighlightedFeatureId]);
+      impl.globalHider.hideObjects([
+        setup.hiddenFeatureId,
+        setup.hiddenHighlightedFeatureId,
+      ]);
       updateGlobalHider(impl.globalHider, impl.source);
       now = Date.now();
       sandbox.useFakeTimers(now);
@@ -117,12 +140,17 @@ describe('VectorHelpers', () => {
 
     it('should add hidden features', () => {
       const feature = impl.source.getFeatureById(setup.hiddenFeatureId);
-      expect(impl.globalHider.hasFeature(setup.hiddenFeatureId, feature)).to.be.true;
+      expect(impl.globalHider.hasFeature(setup.hiddenFeatureId, feature)).to.be
+        .true;
     });
 
     it('should add hidden features, even if they are highlighted', () => {
-      const feature = impl.source.getFeatureById(setup.hiddenHighlightedFeatureId);
-      expect(impl.globalHider.hasFeature(setup.hiddenHighlightedFeatureId, feature)).to.be.true;
+      const feature = impl.source.getFeatureById(
+        setup.hiddenHighlightedFeatureId,
+      );
+      expect(
+        impl.globalHider.hasFeature(setup.hiddenHighlightedFeatureId, feature),
+      ).to.be.true;
     });
 
     it('should set FV last updated to now', () => {
@@ -141,14 +169,20 @@ describe('VectorHelpers', () => {
       before(() => {
         setup = setupVectorLayer();
         [impl] = setup.vectorLayer.createImplementationsForMap(openlayers);
-        listeners = synchronizeFeatureVisibilityWithSource(impl.featureVisibility, impl.source, impl.globalHider);
+        listeners = synchronizeFeatureVisibilityWithSource(
+          impl.featureVisibility,
+          impl.source,
+          impl.globalHider,
+        );
         now = Date.now();
         clock = sandbox.useFakeTimers(now);
       });
 
       after(() => {
         sandbox.restore();
-        listeners.forEach((cb) => { cb(); });
+        listeners.forEach((cb) => {
+          cb();
+        });
         setup.vectorLayer.destroy();
       });
 
@@ -156,15 +190,23 @@ describe('VectorHelpers', () => {
         clock.tick(1);
         const feature = impl.source.getFeatureById(setup.hiddenFeatureId);
         impl.globalHider.hideObjects([setup.hiddenFeatureId]);
-        expect(impl.globalHider.hasFeature(setup.hiddenFeatureId, feature)).to.be.true;
+        expect(impl.globalHider.hasFeature(setup.hiddenFeatureId, feature)).to
+          .be.true;
         expect(impl.source[globalHiderLastUpdated]).to.equal(Date.now());
       });
 
       it('should add a featureVisibility highlight listener', () => {
         clock.tick(1);
         const feature = impl.source.getFeatureById(setup.hiddenFeatureId);
-        impl.featureVisibility.highlight({ [setup.hiddenFeatureId]: setup.highlightStyle });
-        expect(impl.featureVisibility.hasHighlightFeature(setup.hiddenFeatureId, feature)).to.be.true;
+        impl.featureVisibility.highlight({
+          [setup.hiddenFeatureId]: setup.highlightStyle,
+        });
+        expect(
+          impl.featureVisibility.hasHighlightFeature(
+            setup.hiddenFeatureId,
+            feature,
+          ),
+        ).to.be.true;
         expect(impl.source[fvLastUpdated]).to.equal(Date.now());
       });
 
@@ -172,7 +214,12 @@ describe('VectorHelpers', () => {
         clock.tick(1);
         const feature = impl.source.getFeatureById(setup.highlightFeatureId);
         impl.featureVisibility.hideObjects([setup.highlightFeatureId]);
-        expect(impl.featureVisibility.hasHiddenFeature(setup.highlightFeatureId, feature)).to.be.true;
+        expect(
+          impl.featureVisibility.hasHiddenFeature(
+            setup.highlightFeatureId,
+            feature,
+          ),
+        ).to.be.true;
         expect(impl.source[fvLastUpdated]).to.equal(Date.now());
       });
     });
@@ -191,18 +238,37 @@ describe('VectorHelpers', () => {
       });
 
       it('should update hidden and highlighted features', () => {
-        const listeners = synchronizeFeatureVisibilityWithSource(impl.featureVisibility, impl.source, impl.globalHider);
+        const listeners = synchronizeFeatureVisibilityWithSource(
+          impl.featureVisibility,
+          impl.source,
+          impl.globalHider,
+        );
         const hiddenFeature = impl.source.getFeatureById(setup.hiddenFeatureId);
-        expect(impl.featureVisibility.hasHiddenFeature(setup.hiddenFeatureId, hiddenFeature)).to.be.true;
-        listeners.forEach((cb) => { cb(); });
+        expect(
+          impl.featureVisibility.hasHiddenFeature(
+            setup.hiddenFeatureId,
+            hiddenFeature,
+          ),
+        ).to.be.true;
+        listeners.forEach((cb) => {
+          cb();
+        });
       });
 
       it('should update globalHider', () => {
         impl.globalHider.hideObjects([setup.hiddenFeatureId]);
-        const listeners = synchronizeFeatureVisibilityWithSource(impl.featureVisibility, impl.source, impl.globalHider);
+        const listeners = synchronizeFeatureVisibilityWithSource(
+          impl.featureVisibility,
+          impl.source,
+          impl.globalHider,
+        );
         const hiddenFeature = impl.source.getFeatureById(setup.hiddenFeatureId);
-        expect(impl.globalHider.hasFeature(setup.hiddenFeatureId, hiddenFeature)).to.be.true;
-        listeners.forEach((cb) => { cb(); });
+        expect(
+          impl.globalHider.hasFeature(setup.hiddenFeatureId, hiddenFeature),
+        ).to.be.true;
+        listeners.forEach((cb) => {
+          cb();
+        });
       });
     });
 
@@ -216,14 +282,20 @@ describe('VectorHelpers', () => {
       before(() => {
         setup = setupVectorLayer();
         [impl] = setup.vectorLayer.createImplementationsForMap(openlayers);
-        listeners = synchronizeFeatureVisibilityWithSource(impl.featureVisibility, impl.source, impl.globalHider);
+        listeners = synchronizeFeatureVisibilityWithSource(
+          impl.featureVisibility,
+          impl.source,
+          impl.globalHider,
+        );
         now = Date.now();
         clock = sandbox.useFakeTimers(now);
       });
 
       after(() => {
         sandbox.restore();
-        listeners.forEach((cb) => { cb(); });
+        listeners.forEach((cb) => {
+          cb();
+        });
         setup.vectorLayer.destroy();
       });
 
@@ -245,7 +317,8 @@ describe('VectorHelpers', () => {
         feature.setId(id);
         impl.featureVisibility.highlight({ [id]: setup.highlightStyle });
         setup.vectorLayer.addFeatures([feature]);
-        expect(impl.featureVisibility.hasHighlightFeature(id, feature)).to.be.true;
+        expect(impl.featureVisibility.hasHighlightFeature(id, feature)).to.be
+          .true;
         expect(impl.source[fvLastUpdated]).to.equal(Date.now());
       });
 
@@ -271,7 +344,11 @@ describe('VectorHelpers', () => {
       before(() => {
         setup = setupVectorLayer();
         [impl] = setup.vectorLayer.createImplementationsForMap(openlayers);
-        listeners = synchronizeFeatureVisibilityWithSource(impl.featureVisibility, impl.source, impl.globalHider);
+        listeners = synchronizeFeatureVisibilityWithSource(
+          impl.featureVisibility,
+          impl.source,
+          impl.globalHider,
+        );
         now = Date.now();
         clock = sandbox.useFakeTimers(now);
       });

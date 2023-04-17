@@ -3,7 +3,9 @@ const exportedLongNames = new Set();
 exports.handlers = {
   newDoclet({ doclet }) {
     if (doclet.longname === 'module.exports') {
-      doclet.longname = doclet.meta.code.node.id ? doclet.meta.code.node.id.name : doclet.meta.code.node.name;
+      doclet.longname = doclet.meta.code.node.id
+        ? doclet.meta.code.node.id.name
+        : doclet.meta.code.node.name;
     }
     if (typeof doclet?.meta?.code?.name === 'string') {
       if (doclet.meta.code.name === 'module.exports') {

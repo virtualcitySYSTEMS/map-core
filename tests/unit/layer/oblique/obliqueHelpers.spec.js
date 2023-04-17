@@ -7,7 +7,10 @@ import {
   alreadyTransformedToImage,
   obliqueGeometry,
 } from '../../../../src/layer/vectorSymbols.js';
-import { getPolygonizedGeometry, setNewGeometry } from '../../../../src/layer/oblique/obliqueHelpers.js';
+import {
+  getPolygonizedGeometry,
+  setNewGeometry,
+} from '../../../../src/layer/oblique/obliqueHelpers.js';
 
 describe('Helpers', () => {
   describe('setting a new geometry on an oblique feature', () => {
@@ -24,7 +27,8 @@ describe('Helpers', () => {
         originalFeature.setGeometry(new Point([1, 1, 0]));
         setNewGeometry(originalFeature, obliqueFeature);
         const obliqueGeom = obliqueFeature.getGeometry();
-        expect(originalFeature).to.have.property(obliqueGeometry)
+        expect(originalFeature)
+          .to.have.property(obliqueGeometry)
           .and.to.equal(obliqueGeom);
       });
 
@@ -89,7 +93,13 @@ describe('Helpers', () => {
 
       before(() => {
         feature = new Feature();
-        const geom = new Polygon([[[1, 1, 0], [0, 1, 0], [0, 0, 0]]]);
+        const geom = new Polygon([
+          [
+            [1, 1, 0],
+            [0, 1, 0],
+            [0, 0, 0],
+          ],
+        ]);
         geom.set('_vcsGeomType', 'bbox');
         feature.setGeometry(geom);
         convertedGeometry = getPolygonizedGeometry(feature);
@@ -131,7 +141,13 @@ describe('Helpers', () => {
 
       before(() => {
         feature = new Feature();
-        const geom = new Polygon([[[1, 1, 0], [0, 1, 0], [0, 0, 0]]]);
+        const geom = new Polygon([
+          [
+            [1, 1, 0],
+            [0, 1, 0],
+            [0, 0, 0],
+          ],
+        ]);
         geom.set('_vcsGeomType', 'bbox');
         feature.setGeometry(geom);
         convertedGeometry = getPolygonizedGeometry(feature, true);

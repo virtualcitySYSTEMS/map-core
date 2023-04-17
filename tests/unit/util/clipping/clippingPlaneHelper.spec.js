@@ -22,7 +22,8 @@ import {
   copyClippingPlanesToCollection,
   createClippingPlaneCollection,
   setClippingPlanes,
-  createClippingFeature, getClippingOptions,
+  createClippingFeature,
+  getClippingOptions,
 } from '../../../../src/util/clipping/clippingPlaneHelper.js';
 import Projection from '../../../../src/util/projection.js';
 import getDummyCesium3DTileset from '../../layer/cesium/getDummyCesium3DTileset.js';
@@ -55,8 +56,10 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
 
     beforeEach(() => {
       feature = new Feature();
-      sandbox.stub(Projection, 'mercatorToWgs84').callsFake(coords => coords);
-      sandbox.stub(Cartesian3, 'fromDegrees').callsFake((x, y, z) => new Cartesian3(x, y, z));
+      sandbox.stub(Projection, 'mercatorToWgs84').callsFake((coords) => coords);
+      sandbox
+        .stub(Cartesian3, 'fromDegrees')
+        .callsFake((x, y, z) => new Cartesian3(x, y, z));
     });
 
     describe('Point', () => {
@@ -91,39 +94,75 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
       let geometry;
 
       beforeEach(() => {
-        geometry = new LineString([[1, 1, 0], [2, 1, 0]]);
+        geometry = new LineString([
+          [1, 1, 0],
+          [2, 1, 0],
+        ]);
         feature.setGeometry(geometry);
       });
 
       it('should create a vertical plane per segment', () => {
-        geometry.setCoordinates([[1, 1, 0], [2, 1, 0], [2, 2, 0]]);
-        const planes = createClippingPlaneCollection(feature, { createVerticalPlanes: true });
+        geometry.setCoordinates([
+          [1, 1, 0],
+          [2, 1, 0],
+          [2, 2, 0],
+        ]);
+        const planes = createClippingPlaneCollection(feature, {
+          createVerticalPlanes: true,
+        });
         expect(planes).to.have.length(2);
         expectedPlane(planes.get(0), 0, 0, 0, 1);
         expectedPlane(planes.get(1), 0, 0, 0, -1);
       });
 
       it('should create two ending planes, if there is only one segment', () => {
-        const planes = createClippingPlaneCollection(feature, { createVerticalPlanes: true, createEndingPlanes: true });
+        const planes = createClippingPlaneCollection(feature, {
+          createVerticalPlanes: true,
+          createEndingPlanes: true,
+        });
         expect(planes).to.have.length(3);
-        expectedPlane(planes.get(0), 0, -0.7071067811865475, 0.7071067811865475, 0);
-        expectedPlane(planes.get(1), 0, 0.4472135954999579, -0.8944271909999159, 0);
+        expectedPlane(
+          planes.get(0),
+          0,
+          -0.7071067811865475,
+          0.7071067811865475,
+          0,
+        );
+        expectedPlane(
+          planes.get(1),
+          0,
+          0.4472135954999579,
+          -0.8944271909999159,
+          0,
+        );
         expectedPlane(planes.get(2), 0, 0, 0, 1);
       });
 
       it('should create bottom plane, if absolute', () => {
-        geometry.setCoordinates([[1, 1, 1], [2, 1, 1]]);
+        geometry.setCoordinates([
+          [1, 1, 1],
+          [2, 1, 1],
+        ]);
         feature.set('olcs_altitudeMode', 'absolute');
-        const planes = createClippingPlaneCollection(feature, { createTopPlane: true, createBottomPlane: true });
+        const planes = createClippingPlaneCollection(feature, {
+          createTopPlane: true,
+          createBottomPlane: true,
+        });
         expect(planes).to.have.length(1);
         expectedPlane(planes.get(0), 1, 0, 0, -1);
       });
 
       it('should create top and bottom planes, if absolute & extruded', () => {
-        geometry.setCoordinates([[1, 1, 1], [2, 1, 1]]);
+        geometry.setCoordinates([
+          [1, 1, 1],
+          [2, 1, 1],
+        ]);
         feature.set('olcs_extrudedHeight', 1);
         feature.set('olcs_altitudeMode', 'absolute');
-        const planes = createClippingPlaneCollection(feature, { createTopPlane: true, createBottomPlane: true });
+        const planes = createClippingPlaneCollection(feature, {
+          createTopPlane: true,
+          createBottomPlane: true,
+        });
         expect(planes).to.have.length(2);
         expectedPlane(planes.get(0), 1, 0, 0, -1);
         expectedPlane(planes.get(1), -2, 0, 0, 1);
@@ -134,12 +173,21 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
       let geometry;
 
       beforeEach(() => {
-        geometry = new Polygon([[[1, 1, 0], [2, 1, 0], [2, 2, 0], [1, 2, 0]]]);
+        geometry = new Polygon([
+          [
+            [1, 1, 0],
+            [2, 1, 0],
+            [2, 2, 0],
+            [1, 2, 0],
+          ],
+        ]);
         feature.setGeometry(geometry);
       });
 
       it('should create a vertical plane per segment', () => {
-        const planes = createClippingPlaneCollection(feature, { createVerticalPlanes: true });
+        const planes = createClippingPlaneCollection(feature, {
+          createVerticalPlanes: true,
+        });
         expect(planes).to.have.length(4);
         expectedPlane(planes.get(0), 0, 0, 0, 1);
         expectedPlane(planes.get(1), 0, 0, 0, -1);
@@ -149,7 +197,10 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
 
       it('should create bottom plane, if absolute', () => {
         feature.set('olcs_altitudeMode', 'absolute');
-        const planes = createClippingPlaneCollection(feature, { createTopPlane: true, createBottomPlane: true });
+        const planes = createClippingPlaneCollection(feature, {
+          createTopPlane: true,
+          createBottomPlane: true,
+        });
         expect(planes).to.have.length(1);
         expectedPlane(planes.get(0), -0, 0, 0, -1);
       });
@@ -157,7 +208,10 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
       it('should create top and bottom planes, if absolute & extruded', () => {
         feature.set('olcs_extrudedHeight', 1);
         feature.set('olcs_altitudeMode', 'absolute');
-        const planes = createClippingPlaneCollection(feature, { createTopPlane: true, createBottomPlane: true });
+        const planes = createClippingPlaneCollection(feature, {
+          createTopPlane: true,
+          createBottomPlane: true,
+        });
         expect(planes).to.have.length(2);
         expectedPlane(planes.get(0), -0, 0, 0, -1);
         expectedPlane(planes.get(1), -1, 0, 0, 1);
@@ -201,7 +255,24 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
     });
 
     it('should clone the sources model matrix', () => {
-      source.modelMatrix = new Matrix4(1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 1);
+      source.modelMatrix = new Matrix4(
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2,
+        3,
+        3,
+        3,
+        3,
+        1,
+        1,
+        1,
+        1,
+      );
       copyClippingPlanesToCollection(source, result);
       expect(source.modelMatrix.equals(result.modelMatrix)).to.be.true;
       expect(result.modelMatrix).to.not.equal(source.modelMatrix);
@@ -240,7 +311,9 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
       const entity = new Entity({ model: {} });
       clearClippingPlanes(entity);
       expect(entity.model).to.have.property('clippingPlanes');
-      expect(entity.model.clippingPlanes.getValue()).to.be.an.instanceOf(ClippingPlaneCollection);
+      expect(entity.model.clippingPlanes.getValue()).to.be.an.instanceOf(
+        ClippingPlaneCollection,
+      );
     });
 
     it('should clear the clipping planes of a Cesium3DTileset', () => {
@@ -257,7 +330,9 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
     it('should add an empty clippingPlanesCollection to any target', () => {
       const globe = new Globe();
       clearClippingPlanes(globe);
-      expect(globe).to.have.property('clippingPlanes').that.is.an.instanceOf(ClippingPlaneCollection);
+      expect(globe)
+        .to.have.property('clippingPlanes')
+        .that.is.an.instanceOf(ClippingPlaneCollection);
       globe.destroy();
     });
   });
@@ -309,7 +384,10 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
           Matrix4.inverse(tileset.clippingPlanesOriginMatrix, new Matrix4()),
           new Matrix3(),
         );
-        const transformationMatrix = Matrix4.fromRotationTranslation(rotation, new Cartesian3());
+        const transformationMatrix = Matrix4.fromRotationTranslation(
+          rotation,
+          new Cartesian3(),
+        );
         setClippingPlanes(tileset, collection);
         expect(transform).to.have.been.called;
         const { args } = transform.getCall(0);
@@ -331,7 +409,11 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
 
       it('should multiply any previous model matrix on the collection', () => {
         const multiply = sandbox.spy(Matrix4, 'multiply');
-        collection.modelMatrix = Matrix4.multiplyByScalar(Matrix4.IDENTITY, 2, new Matrix4());
+        collection.modelMatrix = Matrix4.multiplyByScalar(
+          Matrix4.IDENTITY,
+          2,
+          new Matrix4(),
+        );
         setClippingPlanes(tileset, collection);
         expect(multiply).to.have.been.called;
       });
@@ -378,8 +460,9 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
 
       it('should clear any previous planes', () => {
         const plane = new ClippingPlane(new Cartesian3(1, 1, 1), -1);
-        entity.model.clippingPlanes =
-          new ConstantProperty(new ClippingPlaneCollection({ planes: [plane] }));
+        entity.model.clippingPlanes = new ConstantProperty(
+          new ClippingPlaneCollection({ planes: [plane] }),
+        );
         setClippingPlanes(entity, collection);
         const clippingPlanes = entity.model.clippingPlanes.getValue();
         expect(clippingPlanes).to.have.length(1);
@@ -391,7 +474,8 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
         setClippingPlanes(entity, collection);
         expect(inverse).to.have.been.called;
         const { args, returnValue } = inverse.getCall(0);
-        expect(args[0].equals(entity.computeModelMatrix(JulianDate.now()))).to.be.true;
+        expect(args[0].equals(entity.computeModelMatrix(JulianDate.now()))).to
+          .be.true;
         const clippingPlanes = entity.model.clippingPlanes.getValue();
         expect(clippingPlanes.modelMatrix).to.equal(returnValue);
       });
@@ -407,8 +491,11 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
         collection.modelMatrix = Matrix4.fromScale(new Cartesian3(2, 1, 1));
         setClippingPlanes(entity, collection);
         const clippingPlanes = entity.model.clippingPlanes.getValue();
-        expect(multiply).to.have.been
-          .calledWith(clippingPlanes.modelMatrix, collection.modelMatrix, clippingPlanes.modelMatrix);
+        expect(multiply).to.have.been.calledWith(
+          clippingPlanes.modelMatrix,
+          collection.modelMatrix,
+          clippingPlanes.modelMatrix,
+        );
       });
 
       it('should not multiply any previous model matrix, if its an IDENTITY', () => {
@@ -441,37 +528,68 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
 
     describe('polygon', () => {
       it('should create a feature with a polygon geometry', () => {
-        const feature = createClippingFeature([0, 0], cesiumMap.getScene().camera);
+        const feature = createClippingFeature(
+          [0, 0],
+          cesiumMap.getScene().camera,
+        );
         expect(feature.getGeometry()).to.be.an.instanceOf(Polygon);
       });
 
       it('should create a polygon around the given coordinate', () => {
         sandbox.stub(Polygon.prototype, 'transform');
-        const geometry = createClippingFeature([0, 0], cesiumMap.getScene().camera).getGeometry();
-        expect(getCenter(geometry.getExtent()).map(c => Math.round(c))).to.have.members([0, 0]);
+        const geometry = createClippingFeature(
+          [0, 0],
+          cesiumMap.getScene().camera,
+        ).getGeometry();
+        expect(
+          getCenter(geometry.getExtent()).map((c) => Math.round(c)),
+        ).to.have.members([0, 0]);
       });
 
       it('should create a polygon with a size defined by the offset', () => {
-        const geometry = createClippingFeature([0, 0], cesiumMap.getScene().camera, false, 1).getGeometry();
-        const roundedSize = getSize(geometry.getExtent()).map(c => Math.round(c));
+        const geometry = createClippingFeature(
+          [0, 0],
+          cesiumMap.getScene().camera,
+          false,
+          1,
+        ).getGeometry();
+        const roundedSize = getSize(geometry.getExtent()).map((c) =>
+          Math.round(c),
+        );
         expect(roundedSize).to.have.members([1, 1]);
       });
     });
 
     describe('line', () => {
       it('should create a feature with a line', () => {
-        const feature = createClippingFeature([0, 0], cesiumMap.getScene().camera, true);
+        const feature = createClippingFeature(
+          [0, 0],
+          cesiumMap.getScene().camera,
+          true,
+        );
         expect(feature.getGeometry()).to.be.an.instanceOf(LineString);
       });
 
       it('should create a line extending by the offset, away from the coordinate', () => {
-        const geometry = createClippingFeature([0, 0], cesiumMap.getScene().camera, true, 1).getGeometry();
-        const roundedSize = getSize(geometry.getExtent()).map(c => Math.round(c));
+        const geometry = createClippingFeature(
+          [0, 0],
+          cesiumMap.getScene().camera,
+          true,
+          1,
+        ).getGeometry();
+        const roundedSize = getSize(geometry.getExtent()).map((c) =>
+          Math.round(c),
+        );
         expect(roundedSize).to.have.members([2, 0]);
       });
 
       it('should extrude the feature by twice the offset', () => {
-        const feature = createClippingFeature([0, 0], cesiumMap.getScene().camera, true, 1);
+        const feature = createClippingFeature(
+          [0, 0],
+          cesiumMap.getScene().camera,
+          true,
+          1,
+        );
         expect(feature.get('olcs_extrudedHeight')).to.equal(2);
       });
     });

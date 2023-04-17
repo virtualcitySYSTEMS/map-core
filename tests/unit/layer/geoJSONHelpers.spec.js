@@ -9,9 +9,15 @@ import {
   writeGeoJSONFeature,
   updateLegacyFeature,
 } from '../../../src/layer/geojsonHelpers.js';
-import Projection, { mercatorProjection, wgs84Projection } from '../../../src/util/projection.js';
+import Projection, {
+  mercatorProjection,
+  wgs84Projection,
+} from '../../../src/util/projection.js';
 import VectorLayer from '../../../src/layer/vectorLayer.js';
-import { FeatureStoreLayerState, featureStoreStateSymbol } from '../../../src/layer/featureStoreLayerState.js';
+import {
+  FeatureStoreLayerState,
+  featureStoreStateSymbol,
+} from '../../../src/layer/featureStoreLayerState.js';
 import importJSON from '../helpers/importJSON.js';
 
 const testGeoJSON = await importJSON('./tests/data/testGeoJSON.json');
@@ -22,7 +28,7 @@ describe('GeoJSONLayer', () => {
     features = [
       new Feature({
         name: 'point',
-        geometry: new Point([392017.60, 5817532.02, 20]),
+        geometry: new Point([392017.6, 5817532.02, 20]),
       }),
       new Feature({
         name: 'circle',
@@ -35,7 +41,9 @@ describe('GeoJSONLayer', () => {
     it('should correctly parse a geometry, removing the last vertex of polygons', () => {
       testGeoJSON.geometries.forEach((geomObject) => {
         const text = JSON.stringify(geomObject);
-        const [feature] = parseGeoJSON(text, { targetProjection: wgs84Projection }).features;
+        const [feature] = parseGeoJSON(text, {
+          targetProjection: wgs84Projection,
+        }).features;
         const geometry = feature.getGeometry();
         let testCoords = geomObject.coordinates;
         if (geomObject.type === 'Polygon') {
@@ -45,21 +53,22 @@ describe('GeoJSONLayer', () => {
             return noEnding;
           });
         } else if (geomObject.type === 'MultiPolygon') {
-          testCoords = geomObject.coordinates.map(poly => poly.map((ring) => {
-            const noEnding = ring.slice();
-            noEnding.pop();
-            return noEnding;
-          }));
+          testCoords = geomObject.coordinates.map((poly) =>
+            poly.map((ring) => {
+              const noEnding = ring.slice();
+              noEnding.pop();
+              return noEnding;
+            }),
+          );
         }
         expect(geometry.getCoordinates()).to.have.deep.members(testCoords);
       });
     });
 
     it('should read a feature', () => {
-      const [feature] = parseGeoJSON(
-        JSON.stringify(testGeoJSON.feature),
-        { targetProjection: wgs84Projection },
-      ).features;
+      const [feature] = parseGeoJSON(JSON.stringify(testGeoJSON.feature), {
+        targetProjection: wgs84Projection,
+      }).features;
       const properties = feature.getProperties();
       expect(properties).to.have.property('foo', 1);
       expect(properties).to.have.property('bar', 'test');
@@ -70,18 +79,21 @@ describe('GeoJSONLayer', () => {
     });
 
     it('should read geometry in Mercator if no targetProjection is given, also should set alreadyTransformed Symbol', () => {
-      const [feature] = parseGeoJSON(JSON.stringify(testGeoJSON.feature)).features;
+      const [feature] = parseGeoJSON(
+        JSON.stringify(testGeoJSON.feature),
+      ).features;
       const geometry = feature.getGeometry();
       expect(geometry).to.be.an.instanceOf(Point);
       expect(geometry[VectorLayer.alreadyTransformedToMercator]).to.be.true;
-      expect(geometry.getCoordinates()).to.have.members([111319.49079327358, 111325.14286638486, 1]);
+      expect(geometry.getCoordinates()).to.have.members([
+        111319.49079327358, 111325.14286638486, 1,
+      ]);
     });
 
     it('should read a circle', () => {
-      const [feature] = parseGeoJSON(
-        JSON.stringify(testGeoJSON.circle),
-        { targetProjection: wgs84Projection },
-      ).features;
+      const [feature] = parseGeoJSON(JSON.stringify(testGeoJSON.circle), {
+        targetProjection: wgs84Projection,
+      }).features;
       const geometry = feature.getGeometry();
       expect(geometry).to.be.an.instanceOf(Circle);
       expect(geometry.getRadius()).to.equal(testGeoJSON.circle.radius);
@@ -90,19 +102,22 @@ describe('GeoJSONLayer', () => {
     it('should read a circle, forceing XYZ layout', () => {
       const twoDCircle = JSON.parse(JSON.stringify(testGeoJSON.circle));
       twoDCircle.geometry.coordinates.pop();
-      const [feature] = parseGeoJSON(
-        JSON.stringify(twoDCircle),
-        { targetProjection: wgs84Projection },
-      ).features;
+      const [feature] = parseGeoJSON(JSON.stringify(twoDCircle), {
+        targetProjection: wgs84Projection,
+      }).features;
       const geometry = feature.getGeometry();
       expect(geometry).to.be.an.instanceOf(Circle);
       expect(geometry.getRadius()).to.equal(testGeoJSON.circle.radius);
     });
 
     it('should read a FeatureCollection', () => {
-      const parsedFeatures = parseGeoJSON(JSON.stringify(testGeoJSON.featureCollection)).features;
+      const parsedFeatures = parseGeoJSON(
+        JSON.stringify(testGeoJSON.featureCollection),
+      ).features;
       expect(parsedFeatures).to.have.length(2);
-      parsedFeatures.forEach((f) => { expect(f.get('name')).to.exist; });
+      parsedFeatures.forEach((f) => {
+        expect(f.get('name')).to.exist;
+      });
     });
 
     it('should set the featureStore state on feature store objects', () => {
@@ -116,7 +131,10 @@ describe('GeoJSONLayer', () => {
       };
       const fArray = parseGeoJSON(featureObj).features;
       expect(fArray).to.have.length(1);
-      expect(fArray[0]).to.have.property(featureStoreStateSymbol, FeatureStoreLayerState.DYNAMIC);
+      expect(fArray[0]).to.have.property(
+        featureStoreStateSymbol,
+        FeatureStoreLayerState.DYNAMIC,
+      );
     });
 
     it('should exclude features without a geometry', () => {
@@ -136,7 +154,10 @@ describe('GeoJSONLayer', () => {
       expect(feats).to.have.length(1);
       expect(feats[0].get('foo')).to.equal(1);
 
-      const feat = parseGeoJSON({ type: 'Feature', properties: { test: true } }).features;
+      const feat = parseGeoJSON({
+        type: 'Feature',
+        properties: { test: true },
+      }).features;
       expect(feat).to.be.an('array').and.to.be.empty;
     });
 
@@ -169,11 +190,9 @@ describe('GeoJSONLayer', () => {
       const feat = features[0];
       feat.setId('myId');
       const featObjWithoutId = writeGeoJSONFeature(feat, { writeId: false });
-      expect(featObjWithoutId)
-        .to.not.have.property('id');
+      expect(featObjWithoutId).to.not.have.property('id');
       const featObjWithId = writeGeoJSONFeature(feat, { writeId: true });
-      expect(featObjWithId)
-        .to.have.property('id').and.to.equal('myId');
+      expect(featObjWithId).to.have.property('id').and.to.equal('myId');
     });
   });
 
@@ -182,15 +201,11 @@ describe('GeoJSONLayer', () => {
       const string = writeGeoJSON({ features });
       const json = JSON.parse(string);
       expect(json).to.have.property('type', 'FeatureCollection');
-      expect(json)
-        .to.have.property('features')
-        .and.to.have.length(2);
+      expect(json).to.have.property('features').and.to.have.length(2);
 
       const jsonFeatures = json.features;
       jsonFeatures.forEach((f) => {
-        expect(f)
-          .to.have.property('properties')
-          .and.to.have.property('name');
+        expect(f).to.have.property('properties').and.to.have.property('name');
         expect(f)
           .to.have.property('geometry')
           .and.to.have.property('type', 'Point');
@@ -205,28 +220,38 @@ describe('GeoJSONLayer', () => {
     });
 
     it('should write out polygons closed', () => {
-      const coords = [[
-        [0, 0, 0],
-        [10, 0, 0],
-        [10, 10, 0],
-        [0, 10, 0],
-      ], [
-        [2, 2, 0],
-        [2, 8, 0],
-        [8, 8, 0],
-        [8, 2, 0],
-      ]];
+      const coords = [
+        [
+          [0, 0, 0],
+          [10, 0, 0],
+          [10, 10, 0],
+          [0, 10, 0],
+        ],
+        [
+          [2, 2, 0],
+          [2, 8, 0],
+          [8, 8, 0],
+          [8, 2, 0],
+        ],
+      ];
 
-      coords.forEach((ring) => { ring.forEach((coord) => { Projection.wgs84ToMercator(coord, true); }); });
+      coords.forEach((ring) => {
+        ring.forEach((coord) => {
+          Projection.wgs84ToMercator(coord, true);
+        });
+      });
       const feature = new Feature({
         name: 'circle',
         geometry: new Polygon(coords, 'XYZ'),
       });
-      const featureCollection = writeGeoJSON({ features: [feature] }, { asObject: true });
+      const featureCollection = writeGeoJSON(
+        { features: [feature] },
+        { asObject: true },
+      );
       expect(featureCollection)
         .to.have.property('features')
         .and.to.have.length(1);
-      const polygon = testGeoJSON.geometries.find(g => g.type === 'Polygon');
+      const polygon = testGeoJSON.geometries.find((g) => g.type === 'Polygon');
       expect(featureCollection.features[0])
         .to.have.property('geometry')
         .and.to.have.property('coordinates')
@@ -241,10 +266,10 @@ describe('GeoJSONLayer', () => {
   describe('~write/parseGeoJSON', () => {
     it('should parse what has been written', () => {
       const written = writeGeoJSON({ features });
-      const parsedAgain = parseGeoJSON(written, { targetProjection: mercatorProjection });
-      expect(parsedAgain)
-        .to.have.property('features')
-        .to.have.length(2);
+      const parsedAgain = parseGeoJSON(written, {
+        targetProjection: mercatorProjection,
+      });
+      expect(parsedAgain).to.have.property('features').to.have.length(2);
       parsedAgain.features.forEach((f, i) => {
         const original = features[i];
         expect(f.get('name')).to.equal(original.get('name'));
@@ -252,12 +277,21 @@ describe('GeoJSONLayer', () => {
         const originalGeom = original.getGeometry();
         expect(geom.getType()).to.equal(originalGeom.getType());
         if (geom.getType() !== 'Circle') {
-          expect(geom.getCoordinates().map(c => Math.round(c)))
-            .to.have.deep.members(originalGeom.getCoordinates().map(c => Math.round(c)));
+          expect(
+            geom.getCoordinates().map((c) => Math.round(c)),
+          ).to.have.deep.members(
+            originalGeom.getCoordinates().map((c) => Math.round(c)),
+          );
         } else {
-          expect(geom.getCenter().map(c => Math.round(c)))
-            .to.have.deep.members(originalGeom.getCenter().map(c => Math.round(c)));
-          expect(geom.getRadius()).to.be.closeTo(originalGeom.getRadius(), 0.00001);
+          expect(
+            geom.getCenter().map((c) => Math.round(c)),
+          ).to.have.deep.members(
+            originalGeom.getCenter().map((c) => Math.round(c)),
+          );
+          expect(geom.getRadius()).to.be.closeTo(
+            originalGeom.getRadius(),
+            0.00001,
+          );
         }
       });
     });
@@ -346,4 +380,3 @@ describe('GeoJSONLayer', () => {
     });
   });
 });
-

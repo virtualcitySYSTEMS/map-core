@@ -18,7 +18,10 @@ describe('LayerImplementation', () => {
   });
 
   beforeEach(() => {
-    implementation = new LayerImplementation(map, layer.getImplementationOptions());
+    implementation = new LayerImplementation(
+      map,
+      layer.getImplementationOptions(),
+    );
   });
 
   afterEach(() => {

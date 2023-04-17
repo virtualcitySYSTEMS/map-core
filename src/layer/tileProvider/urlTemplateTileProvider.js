@@ -62,7 +62,9 @@ class URLTemplateTileProvider extends TileProvider {
    * @readonly
    * @returns {string}
    */
-  static get className() { return 'URLTemplateTileProvider'; }
+  static get className() {
+    return 'URLTemplateTileProvider';
+  }
 
   /**
    * @returns {URLTemplateTileProviderOptions}
@@ -86,7 +88,6 @@ class URLTemplateTileProvider extends TileProvider {
      */
     this.url = options.url || defaultOptions.url;
   }
-
 
   /**
    * @type {string}
@@ -127,7 +128,9 @@ class URLTemplateTileProvider extends TileProvider {
    * @returns {URLTemplateTileProviderOptions}
    */
   toJSON() {
-    const config = /** @type {URLTemplateTileProviderOptions} */ (super.toJSON());
+    const config = /** @type {URLTemplateTileProviderOptions} */ (
+      super.toJSON()
+    );
 
     if (this.url) {
       config.url = this.url;
@@ -138,4 +141,7 @@ class URLTemplateTileProvider extends TileProvider {
 }
 
 export default URLTemplateTileProvider;
-tileProviderClassRegistry.registerClass(URLTemplateTileProvider.className, URLTemplateTileProvider);
+tileProviderClassRegistry.registerClass(
+  URLTemplateTileProvider.className,
+  URLTemplateTileProvider,
+);

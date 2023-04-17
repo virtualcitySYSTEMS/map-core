@@ -4,7 +4,8 @@ import {
   WallOutlineGeometry,
   GroundPolylineGeometry,
   PolylineGeometry,
-  Math as CesiumMath, HeightReference,
+  Math as CesiumMath,
+  HeightReference,
 } from '@vcmap-cesium/engine';
 import { Feature } from 'ol';
 import { Point } from 'ol/geom.js';
@@ -31,12 +32,15 @@ import { getPrimitiveOptions } from './pointHelpers.js';
  * @returns {ArrowOptions}
  */
 function getArrowOptions(from, to, heightReference) {
-  let pitch = heightReference === HeightReference.NONE ? getCartesianPitch(to, from) : 0;
+  let pitch =
+    heightReference === HeightReference.NONE ? getCartesianPitch(to, from) : 0;
   pitch += 90;
   return {
     location: to,
     pitch,
-    heading: CesiumMath.toDegrees(getCartesianBearing(from, to) + CesiumMath.PI_OVER_TWO),
+    heading: CesiumMath.toDegrees(
+      getCartesianBearing(from, to) + CesiumMath.PI_OVER_TWO,
+    ),
   };
 }
 
@@ -50,7 +54,13 @@ function getArrowOptions(from, to, heightReference) {
  * @param {import("@vcmap/core").VectorContext|import("@vcmap/core").ClusterContext} context
  */
 export function addArrowsToContext(
-  feature, style, validGeometries, vectorProperties, scene, lineGeometryFactory, context,
+  feature,
+  style,
+  validGeometries,
+  vectorProperties,
+  scene,
+  lineGeometryFactory,
+  context,
 ) {
   if (style.end === ArrowEnd.NONE || !style.primitiveOptions?.geometryOptions) {
     return;
@@ -60,11 +70,19 @@ export function addArrowsToContext(
   validGeometries.forEach((geom) => {
     const coordinates = lineGeometryFactory.getCoordinates([geom]);
     if (style.end === ArrowEnd.START || style.end === ArrowEnd.BOTH) {
-      arrowOptions.push(getArrowOptions(coordinates[1], coordinates[0], heightReference));
+      arrowOptions.push(
+        getArrowOptions(coordinates[1], coordinates[0], heightReference),
+      );
     }
 
     if (style.end === ArrowEnd.END || style.end === ArrowEnd.BOTH) {
-      arrowOptions.push(getArrowOptions(coordinates.at(-2), coordinates.at(-1), heightReference));
+      arrowOptions.push(
+        getArrowOptions(
+          coordinates.at(-2),
+          coordinates.at(-1),
+          heightReference,
+        ),
+      );
     }
   });
 
@@ -86,7 +104,11 @@ export function addArrowsToContext(
     });
 
     const wgs84Position = Projection.mercatorToWgs84(arrowOption.location);
-    const cartesianLocation = Cartesian3.fromDegrees(wgs84Position[0], wgs84Position[1], wgs84Position[2]);
+    const cartesianLocation = Cartesian3.fromDegrees(
+      wgs84Position[0],
+      wgs84Position[1],
+      wgs84Position[2],
+    );
     const primitiveOptions = getPrimitiveOptions(
       arrowFeature,
       usedStyle,
@@ -97,7 +119,11 @@ export function addArrowsToContext(
     );
 
     if (primitiveOptions.primitives) {
-      context.addScaledPrimitives(primitiveOptions.primitives, feature, allowPicking);
+      context.addScaledPrimitives(
+        primitiveOptions.primitives,
+        feature,
+        allowPicking,
+      );
     }
   });
 }
@@ -110,12 +136,19 @@ export function addArrowsToContext(
  * @returns {Array<import("@vcmap-cesium/engine").WallGeometry>}
  * @private
  */
-export function createSolidGeometries(options, height, perPositionHeight, extrudedHeight) {
-  return [WallGeometry.fromConstantHeights({
-    ...options,
-    maximumHeight: !perPositionHeight ? height : undefined,
-    minimumHeight: extrudedHeight,
-  })];
+export function createSolidGeometries(
+  options,
+  height,
+  perPositionHeight,
+  extrudedHeight,
+) {
+  return [
+    WallGeometry.fromConstantHeights({
+      ...options,
+      maximumHeight: !perPositionHeight ? height : undefined,
+      minimumHeight: extrudedHeight,
+    }),
+  ];
 }
 
 /**
@@ -126,14 +159,21 @@ export function createSolidGeometries(options, height, perPositionHeight, extrud
  * @returns {Array<import("@vcmap-cesium/engine").WallOutlineGeometry>}
  * @private
  */
-export function createOutlineGeometries(options, height, perPositionHeight, extrudedHeight) {
+export function createOutlineGeometries(
+  options,
+  height,
+  perPositionHeight,
+  extrudedHeight,
+) {
   // maxium and minimum are flipped, to create the same perPositionHeight behaviour as in polygons
   // WallGeometries extrudes down instead of up, so we switch the behaviour and extrude in the other direction
-  return [WallOutlineGeometry.fromConstantHeights({
-    ...options,
-    maximumHeight: !perPositionHeight ? height : undefined,
-    minimumHeight: extrudedHeight,
-  })];
+  return [
+    WallOutlineGeometry.fromConstantHeights({
+      ...options,
+      maximumHeight: !perPositionHeight ? height : undefined,
+      minimumHeight: extrudedHeight,
+    }),
+  ];
 }
 
 /**
@@ -148,7 +188,6 @@ export function createFillGeometries(options, height, perPositionHeight) {
   return [];
 }
 
-
 /**
  * @param {Object} options
  * @param {import("ol/style/Style").default} style
@@ -157,10 +196,12 @@ export function createFillGeometries(options, height, perPositionHeight) {
  */
 export function createGroundLineGeometries(options, style) {
   const width = parseNumber(style.getStroke().getWidth(), 1.0);
-  return [new GroundPolylineGeometry({
-    ...options,
-    width,
-  })];
+  return [
+    new GroundPolylineGeometry({
+      ...options,
+      width,
+    }),
+  ];
 }
 
 /**
@@ -171,10 +212,12 @@ export function createGroundLineGeometries(options, style) {
  */
 export function createLineGeometries(options, style) {
   const width = parseNumber(style.getStroke().getWidth(), 1.0);
-  return [new PolylineGeometry({
-    ...options,
-    width,
-  })];
+  return [
+    new PolylineGeometry({
+      ...options,
+      width,
+    }),
+  ];
 }
 
 /**
@@ -191,7 +234,11 @@ export function getGeometryOptions(geometry, positionHeightAdjustment) {
     if (wgs84Coords[2] != null) {
       wgs84Coords[2] += positionHeightAdjustment;
     }
-    return Cartesian3.fromDegrees(wgs84Coords[0], wgs84Coords[1], wgs84Coords[2]);
+    return Cartesian3.fromDegrees(
+      wgs84Coords[0],
+      wgs84Coords[1],
+      wgs84Coords[2],
+    );
   });
   return { positions };
 }
@@ -244,7 +291,7 @@ export function validateLineString(lineString) {
   const flatCoordinates = lineString.getFlatCoordinates();
   const minimumValues = lineString.getStride() * 2;
   if (flatCoordinates && flatCoordinates.length >= minimumValues) {
-    return flatCoordinates.every(value => Number.isFinite(value));
+    return flatCoordinates.every((value) => Number.isFinite(value));
   }
   return false;
 }
@@ -258,14 +305,39 @@ export function validateLineString(lineString) {
  * @param {import("@vcmap-cesium/engine").Scene} scene
  * @param {import("@vcmap/core").VectorContext|import("@vcmap/core").ClusterContext} context
  */
-export default function lineStringToCesium(feature, style, geometries, vectorProperties, scene, context) {
+export default function lineStringToCesium(
+  feature,
+  style,
+  geometries,
+  vectorProperties,
+  scene,
+  context,
+) {
   if (!style.getFill() && !style.getStroke()) {
     return;
   }
   const lineGeometryFactory = getGeometryFactory();
-  const validGeometries = geometries.filter(lineString => validateLineString(lineString));
-  addPrimitivesToContext(feature, style, validGeometries, vectorProperties, scene, lineGeometryFactory, context);
+  const validGeometries = geometries.filter((lineString) =>
+    validateLineString(lineString),
+  );
+  addPrimitivesToContext(
+    feature,
+    style,
+    validGeometries,
+    vectorProperties,
+    scene,
+    lineGeometryFactory,
+    context,
+  );
   if (style instanceof ArrowStyle) {
-    addArrowsToContext(feature, style, validGeometries, vectorProperties, scene, lineGeometryFactory, context);
+    addArrowsToContext(
+      feature,
+      style,
+      validGeometries,
+      vectorProperties,
+      scene,
+      lineGeometryFactory,
+      context,
+    );
   }
 }

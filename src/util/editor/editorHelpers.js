@@ -5,7 +5,10 @@ import {
   Cartesian3,
   Math as CesiumMath,
   Plane,
-  Ray, IntersectionTests, Cartographic, HeightReference,
+  Ray,
+  IntersectionTests,
+  Cartographic,
+  HeightReference,
 } from '@vcmap-cesium/engine';
 
 import { mercatorToCartesian } from '../math.js';
@@ -46,15 +49,34 @@ let scratchCartesian33 = new Cartesian3();
  * @returns {!import("ol/coordinate").Coordinate}
  */
 export function getClosestPointOn2DLine(start, end, point) {
-  scratchCartesian21 = Cartesian2.fromElements(end[0] - start[0], end[1] - start[1], scratchCartesian21);
+  scratchCartesian21 = Cartesian2.fromElements(
+    end[0] - start[0],
+    end[1] - start[1],
+    scratchCartesian21,
+  );
   if (scratchCartesian21.equals(Cartesian2.ZERO)) {
     scratchCartesian21 = Cartesian2.fromElements(1, 1, scratchCartesian21);
   }
-  scratchCartesian21 = Cartesian2.normalize(scratchCartesian21, scratchCartesian21);
-  scratchCartesian22 = Cartesian2.fromElements(point[0] - start[0], point[1] - start[1], scratchCartesian22);
+  scratchCartesian21 = Cartesian2.normalize(
+    scratchCartesian21,
+    scratchCartesian21,
+  );
+  scratchCartesian22 = Cartesian2.fromElements(
+    point[0] - start[0],
+    point[1] - start[1],
+    scratchCartesian22,
+  );
   const lambda = Cartesian2.dot(scratchCartesian21, scratchCartesian22);
-  scratchCartesian21 = Cartesian2.multiplyByScalar(scratchCartesian21, lambda, scratchCartesian21);
-  return [scratchCartesian21.x + start[0], scratchCartesian21.y + start[1], point[2]];
+  scratchCartesian21 = Cartesian2.multiplyByScalar(
+    scratchCartesian21,
+    lambda,
+    scratchCartesian21,
+  );
+  return [
+    scratchCartesian21.x + start[0],
+    scratchCartesian21.y + start[1],
+    point[2],
+  ];
 }
 
 /**
@@ -65,12 +87,24 @@ export function getClosestPointOn2DLine(start, end, point) {
  * @returns {boolean}
  */
 export function pointOnLine3D(start, end, point, epsilon) {
-  scratchCartesian31 = Cartesian3
-    .fromElements(end[0] - start[0], end[1] - start[1], end[2] - start[2], scratchCartesian31);
-  scratchCartesian32 = Cartesian3
-    .fromElements(point[0] - start[0], point[1] - start[1], point[2] - start[2], scratchCartesian32);
-  scratchCartesian33 = Cartesian3
-    .fromElements(point[0] - end[0], point[1] - end[1], point[2] - point[2], scratchCartesian33);
+  scratchCartesian31 = Cartesian3.fromElements(
+    end[0] - start[0],
+    end[1] - start[1],
+    end[2] - start[2],
+    scratchCartesian31,
+  );
+  scratchCartesian32 = Cartesian3.fromElements(
+    point[0] - start[0],
+    point[1] - start[1],
+    point[2] - start[2],
+    scratchCartesian32,
+  );
+  scratchCartesian33 = Cartesian3.fromElements(
+    point[0] - end[0],
+    point[1] - end[1],
+    point[2] - point[2],
+    scratchCartesian33,
+  );
   const mag1 = Cartesian3.magnitude(scratchCartesian31);
   if (
     mag1 < Cartesian3.magnitude(scratchCartesian32) ||
@@ -79,9 +113,18 @@ export function pointOnLine3D(start, end, point, epsilon) {
     return false;
   }
 
-  scratchCartesian31 = Cartesian3.normalize(scratchCartesian31, scratchCartesian31);
-  scratchCartesian32 = Cartesian3.normalize(scratchCartesian32, scratchCartesian32);
-  return scratchCartesian31.equalsEpsilon(scratchCartesian32, epsilon || CesiumMath.EPSILON5);
+  scratchCartesian31 = Cartesian3.normalize(
+    scratchCartesian31,
+    scratchCartesian31,
+  );
+  scratchCartesian32 = Cartesian3.normalize(
+    scratchCartesian32,
+    scratchCartesian32,
+  );
+  return scratchCartesian31.equalsEpsilon(
+    scratchCartesian32,
+    epsilon || CesiumMath.EPSILON5,
+  );
 }
 
 /**
@@ -92,9 +135,21 @@ export function pointOnLine3D(start, end, point, epsilon) {
  * @returns {boolean}
  */
 export function pointOnLine2D(start, end, point, epsilon) {
-  scratchCartesian21 = Cartesian2.fromElements(end[0] - start[0], end[1] - start[1], scratchCartesian21);
-  scratchCartesian22 = Cartesian2.fromElements(point[0] - start[0], point[1] - start[1], scratchCartesian22);
-  scratchCartesian23 = Cartesian2.fromElements(point[0] - end[0], point[1] - end[1], scratchCartesian23);
+  scratchCartesian21 = Cartesian2.fromElements(
+    end[0] - start[0],
+    end[1] - start[1],
+    scratchCartesian21,
+  );
+  scratchCartesian22 = Cartesian2.fromElements(
+    point[0] - start[0],
+    point[1] - start[1],
+    scratchCartesian22,
+  );
+  scratchCartesian23 = Cartesian2.fromElements(
+    point[0] - end[0],
+    point[1] - end[1],
+    scratchCartesian23,
+  );
   const mag1 = Cartesian2.magnitude(scratchCartesian21);
   if (
     mag1 < Cartesian2.magnitude(scratchCartesian22) ||
@@ -103,10 +158,19 @@ export function pointOnLine2D(start, end, point, epsilon) {
     return false;
   }
 
-  scratchCartesian21 = Cartesian2.normalize(scratchCartesian21, scratchCartesian21);
-  scratchCartesian22 = Cartesian2.normalize(scratchCartesian22, scratchCartesian22);
+  scratchCartesian21 = Cartesian2.normalize(
+    scratchCartesian21,
+    scratchCartesian21,
+  );
+  scratchCartesian22 = Cartesian2.normalize(
+    scratchCartesian22,
+    scratchCartesian22,
+  );
 
-  return scratchCartesian21.equalsEpsilon(scratchCartesian22, epsilon || CesiumMath.EPSILON5);
+  return scratchCartesian21.equalsEpsilon(
+    scratchCartesian22,
+    epsilon || CesiumMath.EPSILON5,
+  );
 }
 
 /**
@@ -115,10 +179,23 @@ export function pointOnLine2D(start, end, point, epsilon) {
  * @returns {!import("@vcmap-cesium/engine").Plane}
  */
 export function createCameraVerticalPlane(originCoordinates, scene) {
-  scratchCartesian31 = mercatorToCartesian(originCoordinates, scratchCartesian31);
-  scratchCartesian32 = scene.globe.ellipsoid.geodeticSurfaceNormal(scratchCartesian31, scratchCartesian32);
-  scratchCartesian32 = Cartesian3.cross(scene.camera.rightWC, scratchCartesian32, scratchCartesian32);
-  scratchCartesian32 = Cartesian3.normalize(scratchCartesian32, scratchCartesian32);
+  scratchCartesian31 = mercatorToCartesian(
+    originCoordinates,
+    scratchCartesian31,
+  );
+  scratchCartesian32 = scene.globe.ellipsoid.geodeticSurfaceNormal(
+    scratchCartesian31,
+    scratchCartesian32,
+  );
+  scratchCartesian32 = Cartesian3.cross(
+    scene.camera.rightWC,
+    scratchCartesian32,
+    scratchCartesian32,
+  );
+  scratchCartesian32 = Cartesian3.normalize(
+    scratchCartesian32,
+    scratchCartesian32,
+  );
 
   return Plane.fromPointNormal(scratchCartesian31, scratchCartesian32);
 }
@@ -129,8 +206,14 @@ export function createCameraVerticalPlane(originCoordinates, scene) {
  * @returns {!import("@vcmap-cesium/engine").Plane}
  */
 export function createHorizontalPlane(originCoordinates, scene) {
-  scratchCartesian31 = mercatorToCartesian(originCoordinates, scratchCartesian31);
-  scratchCartesian32 = scene.globe.ellipsoid.geodeticSurfaceNormal(scratchCartesian31, scratchCartesian32);
+  scratchCartesian31 = mercatorToCartesian(
+    originCoordinates,
+    scratchCartesian31,
+  );
+  scratchCartesian32 = scene.globe.ellipsoid.geodeticSurfaceNormal(
+    scratchCartesian31,
+    scratchCartesian32,
+  );
 
   return Plane.fromPointNormal(scratchCartesian31, scratchCartesian32);
 }
@@ -195,8 +278,10 @@ export async function placeGeometryOnTerrain(geometry, map) {
  * @param {import("@vcmap/core").VcsMap} cesiumMap
  * @returns {Promise<void>}
  */
-export async function ensureFeatureAbsolute(feature, layer, cesiumMap) { // XXX this does not ensure 3D coordinates
-  const layerIsClamped = layer.vectorProperties.altitudeMode === HeightReference.CLAMP_TO_GROUND;
+export async function ensureFeatureAbsolute(feature, layer, cesiumMap) {
+  // XXX this does not ensure 3D coordinates
+  const layerIsClamped =
+    layer.vectorProperties.altitudeMode === HeightReference.CLAMP_TO_GROUND;
   const altitudeMode = feature.get('olcs_altitudeMode');
   if (altitudeMode === 'clampToGround' || (!altitudeMode && layerIsClamped)) {
     feature.set('olcs_altitudeMode', 'absolute', true);

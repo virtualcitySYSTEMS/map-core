@@ -50,25 +50,47 @@ describe('IndexedCollection', () => {
       });
 
       it('should respect the unique key, removing any duplicates, if passed an input iterable', () => {
-        collection = IndexedCollection.from([{ name: 1 }, { name: 2 }, 3, { name: 2 }]);
+        collection = IndexedCollection.from([
+          { name: 1 },
+          { name: 2 },
+          3,
+          { name: 2 },
+        ]);
         expect(collection.size).to.equal(2);
       });
 
       it('should allow the setting of a string unique key', () => {
-        collection = IndexedCollection.from([{ name: 1, id: 1 }, { name: 2, id: 2 }, { name: 2, id: 3 }], 'id');
+        collection = IndexedCollection.from(
+          [
+            { name: 1, id: 1 },
+            { name: 2, id: 2 },
+            { name: 2, id: 3 },
+          ],
+          'id',
+        );
         expect(collection.size).to.equal(3);
         expect(collection.uniqueKey).to.equal('id');
       });
 
       it('should allow a symbol as a unique key', () => {
         const id = Symbol('id');
-        collection = IndexedCollection.from([{ name: 1, [id]: 1 }, { name: 2, [id]: 2 }, { name: 2, [id]: 3 }], id);
+        collection = IndexedCollection.from(
+          [
+            { name: 1, [id]: 1 },
+            { name: 2, [id]: 2 },
+            { name: 2, [id]: 3 },
+          ],
+          id,
+        );
         expect(collection.size).to.equal(3);
         expect(collection.uniqueKey).to.equal(id);
       });
 
       it('should allow the ignoring of a unique key', () => {
-        collection = IndexedCollection.from([{ name: 1 }, { name: 2 }, 3, { name: 2 }], false);
+        collection = IndexedCollection.from(
+          [{ name: 1 }, { name: 2 }, 3, { name: 2 }],
+          false,
+        );
         expect(collection.size).to.equal(4);
         expect(collection.uniqueKey).to.be.undefined;
       });
@@ -158,10 +180,17 @@ describe('IndexedCollection', () => {
   describe('removing', () => {
     it('should set the previous index symbol on a removed item', () => {
       const item = { name: 'bar' };
-      const collection = IndexedCollection.from([{ name: 'foo' }, item, { name: 'baz' }]);
+      const collection = IndexedCollection.from([
+        { name: 'foo' },
+        item,
+        { name: 'baz' },
+      ]);
       const currentIndex = collection.indexOf(item);
       collection.remove(item);
-      expect(item).to.have.property(collection.previousIndexSymbol, currentIndex);
+      expect(item).to.have.property(
+        collection.previousIndexSymbol,
+        currentIndex,
+      );
     });
   });
 
@@ -170,7 +199,7 @@ describe('IndexedCollection', () => {
     let array;
 
     before(() => {
-      array = [...new Array(5).keys()].map(name => ({ name }));
+      array = [...new Array(5).keys()].map((name) => ({ name }));
     });
 
     beforeEach(() => {
@@ -232,9 +261,13 @@ describe('IndexedCollection', () => {
     it('should move item to target index', () => {
       const index = collection.moveTo(array[0], 3);
       expect(index).to.equal(3);
-      expect([...collection]).to.have.ordered.deep.members(
-        [{ name: 1 }, { name: 2 }, { name: 3 }, { name: 0 }, { name: 4 }],
-      );
+      expect([...collection]).to.have.ordered.deep.members([
+        { name: 1 },
+        { name: 2 },
+        { name: 3 },
+        { name: 0 },
+        { name: 4 },
+      ]);
     });
 
     it('should return null, if item is not part of the collection', () => {
@@ -248,9 +281,13 @@ describe('IndexedCollection', () => {
     it('should clip target index to array length', () => {
       const index = collection.moveTo(array[0], 10 * array.length);
       expect(index).to.equal(array.length - 1);
-      expect([...collection]).to.have.ordered.deep.members(
-        [{ name: 1 }, { name: 2 }, { name: 3 }, { name: 4 }, { name: 0 }],
-      );
+      expect([...collection]).to.have.ordered.deep.members([
+        { name: 1 },
+        { name: 2 },
+        { name: 3 },
+        { name: 4 },
+        { name: 0 },
+      ]);
     });
 
     it('should clip negative target indices to zero', () => {
@@ -270,7 +307,10 @@ describe('IndexedCollection', () => {
     it('should not raise a moved event, if clipped index equals target index', () => {
       const moved = sinon.spy();
       collection.moved.addEventListener(moved);
-      const index = collection.moveTo(array[array.length - 1], 10 * array.length);
+      const index = collection.moveTo(
+        array[array.length - 1],
+        10 * array.length,
+      );
       expect(index).to.equal(array.length - 1);
       expect(moved).to.not.have.been.called;
     });

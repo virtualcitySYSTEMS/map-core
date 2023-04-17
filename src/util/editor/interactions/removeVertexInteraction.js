@@ -1,5 +1,8 @@
 import AbstractInteraction from '../../../interaction/abstractInteraction.js';
-import { EventType, ModificationKeyType } from '../../../interaction/interactionType.js';
+import {
+  EventType,
+  ModificationKeyType,
+} from '../../../interaction/interactionType.js';
 import { vertexSymbol } from '../editorSymbols.js';
 import VcsEvent from '../../../vcsEvent.js';
 

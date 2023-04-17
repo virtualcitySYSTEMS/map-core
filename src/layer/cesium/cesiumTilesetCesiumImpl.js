@@ -41,7 +41,12 @@ export function getExtentFromTileset(cesium3DTileset) {
       CesiumMath.toDegrees(scratchNE.longitude),
       CesiumMath.toDegrees(scratchNE.latitude),
     ]);
-    return /** @type {import("ol/extent").Extent} */ ([mercatorSW[0], mercatorSW[1], mercatorNE[0], mercatorNE[1]]);
+    return /** @type {import("ol/extent").Extent} */ ([
+      mercatorSW[0],
+      mercatorSW[1],
+      mercatorNE[0],
+      mercatorNE[1],
+    ]);
   }
 
   const { center, radius } = cesium3DTileset.boundingSphere;
@@ -64,7 +69,9 @@ export function getExtentFromTileset(cesium3DTileset) {
  */
 class CesiumTilesetCesiumImpl extends LayerImplementation {
   /** @type {string} */
-  static get className() { return 'CesiumTilesetCesiumImpl'; }
+  static get className() {
+    return 'CesiumTilesetCesiumImpl';
+  }
 
   /**
    * @param {import("@vcmap/core").CesiumMap} map
@@ -122,7 +129,9 @@ class CesiumTilesetCesiumImpl extends LayerImplementation {
         });
       }
       this.cesium3DTileset[vcsLayerName] = this.name;
-      this.cesium3DTileset.tileVisible.addEventListener(this.applyStyle.bind(this));
+      this.cesium3DTileset.tileVisible.addEventListener(
+        this.applyStyle.bind(this),
+      );
       this.cesium3DTileset.tileUnload.addEventListener((tile) => {
         delete tile[cesiumTilesetLastUpdated];
       });
@@ -130,7 +139,9 @@ class CesiumTilesetCesiumImpl extends LayerImplementation {
       this._initializedPromise = this.cesium3DTileset.readyPromise;
 
       await this._initializedPromise;
-      this._originalOrigin = Cartesian3.clone(this.cesium3DTileset.boundingSphere.center);
+      this._originalOrigin = Cartesian3.clone(
+        this.cesium3DTileset.boundingSphere.center,
+      );
 
       if (this.modelMatrix) {
         this.cesium3DTileset.modelMatrix = this.modelMatrix;
@@ -155,12 +166,18 @@ class CesiumTilesetCesiumImpl extends LayerImplementation {
       if (!this.offset) {
         this.cesium3DTileset.modelMatrix = Matrix4.IDENTITY;
       } else {
-        const cartographicCenter = Cartographic.fromCartesian(this._originalOrigin);
+        const cartographicCenter = Cartographic.fromCartesian(
+          this._originalOrigin,
+        );
         cartographicCenter.longitude += CesiumMath.toRadians(this.offset[0]);
         cartographicCenter.latitude += CesiumMath.toRadians(this.offset[1]);
         cartographicCenter.height += this.offset[2];
         const offset = Cartographic.toCartesian(cartographicCenter);
-        const translation = Cartesian3.subtract(offset, this._originalOrigin, offset);
+        const translation = Cartesian3.subtract(
+          offset,
+          this._originalOrigin,
+          offset,
+        );
         this.cesium3DTileset.modelMatrix = Matrix4.fromTranslation(translation);
       }
     }
@@ -225,17 +242,24 @@ class CesiumTilesetCesiumImpl extends LayerImplementation {
       if (this._onStyleChangeRemover) {
         this._onStyleChangeRemover();
       }
-      this._onStyleChangeRemover = this.style.styleChanged.addEventListener(() => {
-        this.cesium3DTileset.makeStyleDirty();
-        this._styleLastUpdated = Date.now();
-      });
+      this._onStyleChangeRemover = this.style.styleChanged.addEventListener(
+        () => {
+          this.cesium3DTileset.makeStyleDirty();
+          this._styleLastUpdated = Date.now();
+        },
+      );
       this._styleLastUpdated = Date.now();
       this.cesium3DTileset.readyPromise.then(() => {
         if (this.cesium3DTileset.colorBlendMode !== this.style.colorBlendMode) {
           // we only support replace and mix mode if the _3DTILESDIFFUSE Flag is set in the tileset
-          if (this.style.colorBlendMode !== Cesium3DTileColorBlendMode.HIGHLIGHT) {
-            // eslint-disable-next-line no-underscore-dangle
-            if (this.cesium3DTileset.extras && this.cesium3DTileset.extras._3DTILESDIFFUSE) {
+          if (
+            this.style.colorBlendMode !== Cesium3DTileColorBlendMode.HIGHLIGHT
+          ) {
+            if (
+              this.cesium3DTileset.extras &&
+              // eslint-disable-next-line no-underscore-dangle
+              this.cesium3DTileset.extras._3DTILESDIFFUSE
+            ) {
               this.cesium3DTileset.colorBlendMode = this.style.colorBlendMode;
             }
           } else {
@@ -295,11 +319,17 @@ class CesiumTilesetCesiumImpl extends LayerImplementation {
             this.featureVisibility.addHighlightFeature(id, feature);
           }
 
-          if (this.featureVisibility.hiddenObjects[id] && !this.featureVisibility.hasHiddenFeature(id, feature)) {
+          if (
+            this.featureVisibility.hiddenObjects[id] &&
+            !this.featureVisibility.hasHiddenFeature(id, feature)
+          ) {
             this.featureVisibility.addHiddenFeature(id, feature);
           }
 
-          if (this.globalHider.hiddenObjects[id] && !this.globalHider.hasFeature(id, feature)) {
+          if (
+            this.globalHider.hiddenObjects[id] &&
+            !this.globalHider.hasFeature(id, feature)
+          ) {
             this.globalHider.addFeature(id, feature);
           }
 

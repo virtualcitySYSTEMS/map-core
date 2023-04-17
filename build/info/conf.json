@@ -8,14 +8,9 @@
   },
   "source": {
     "includePattern": "\\.js$",
-    "include":[
-      "src"
-    ]
+    "include": ["src"]
   },
-  "plugins": [
-    "jsdoc-plugin-typescript",
-    "build/info/toTypescript-plugin"
-  ],
+  "plugins": ["jsdoc-plugin-typescript", "build/info/toTypescript-plugin"],
   "typescript": {
     "moduleRoot": "src"
   }

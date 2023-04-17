@@ -1,30 +1,45 @@
 import { SplitDirection, GeographicTilingScheme } from '@vcmap-cesium/engine';
 
-import RasterLayer, { calculateMinLevel } from '../../../src/layer/rasterLayer.js';
+import RasterLayer, {
+  calculateMinLevel,
+} from '../../../src/layer/rasterLayer.js';
 import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
 import Extent from '../../../src/util/extent.js';
 import { getOpenlayersMap } from '../helpers/openlayersHelpers.js';
 import AbstractRasterLayerOL from '../../../src/layer/openlayers/rasterLayerOpenlayersImpl.js';
-import { mercatorProjection, wgs84Projection } from '../../../src/util/projection.js';
+import {
+  mercatorProjection,
+  wgs84Projection,
+} from '../../../src/util/projection.js';
 
 describe('RasterLayer.calculateMinLevel', () => {
   describe('calculating min level', () => {
     describe('with an invalid extent', () => {
       it('should not alter min level', () => {
-        const minLevel = calculateMinLevel(new Extent({
-          coordinates: [],
-          projection: wgs84Projection.toJSON(),
-        }), new GeographicTilingScheme(), 18, 0);
+        const minLevel = calculateMinLevel(
+          new Extent({
+            coordinates: [],
+            projection: wgs84Projection.toJSON(),
+          }),
+          new GeographicTilingScheme(),
+          18,
+          0,
+        );
         expect(minLevel).to.equal(0);
       });
     });
 
     describe('with a valid extent', () => {
       it('should reduce the min level to a reasonable size', () => {
-        const minLevel = calculateMinLevel(new Extent({
-          coordinates: [12, 51, 13, 53],
-          projection: wgs84Projection.toJSON(),
-        }), new GeographicTilingScheme(), 18, 0);
+        const minLevel = calculateMinLevel(
+          new Extent({
+            coordinates: [12, 51, 13, 53],
+            projection: wgs84Projection.toJSON(),
+          }),
+          new GeographicTilingScheme(),
+          18,
+          0,
+        );
         expect(minLevel).to.equal(7);
       });
     });
@@ -70,7 +85,9 @@ describe('RasterLayer', () => {
 
     it('should call updateSplitDirection on all implementations', () => {
       const updateSplitDirection = sandbox.spy();
-      sandbox.stub(ARL, 'getImplementations').returns([{ updateSplitDirection, destroy() {} }]);
+      sandbox
+        .stub(ARL, 'getImplementations')
+        .returns([{ updateSplitDirection, destroy() {} }]);
       ARL.splitDirection = SplitDirection.LEFT;
       expect(updateSplitDirection).to.have.been.called;
     });
@@ -115,7 +132,10 @@ describe('RasterLayer', () => {
       });
 
       it('should configure tilingSchema', () => {
-        expect(outputConfig).to.have.property('tilingSchema', inputConfig.tilingSchema);
+        expect(outputConfig).to.have.property(
+          'tilingSchema',
+          inputConfig.tilingSchema,
+        );
       });
 
       it('should configure opacity', () => {
@@ -123,7 +143,10 @@ describe('RasterLayer', () => {
       });
 
       it('should configure splitDirection', () => {
-        expect(outputConfig).to.have.property('splitDirection', inputConfig.splitDirection);
+        expect(outputConfig).to.have.property(
+          'splitDirection',
+          inputConfig.splitDirection,
+        );
       });
     });
   });

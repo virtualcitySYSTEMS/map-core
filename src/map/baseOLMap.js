@@ -4,7 +4,11 @@ import OLMap from 'ol/Map.js';
 import { defaults as defaultInteractions } from 'ol/interaction.js';
 import VcsMap from './vcsMap.js';
 import { vcsLayerName } from '../layer/layerSymbols.js';
-import { ModificationKeyType, PointerEventType, PointerKeyType } from '../interaction/interactionType.js';
+import {
+  ModificationKeyType,
+  PointerEventType,
+  PointerKeyType,
+} from '../interaction/interactionType.js';
 import { mapClassRegistry } from '../classRegistry.js';
 
 /**
@@ -39,7 +43,9 @@ export function ensureLayerInCollection(layers, layer, layerCollection) {
  * @extends {VcsMap}
  */
 class BaseOLMap extends VcsMap {
-  static get className() { return 'BaseOLMap'; }
+  static get className() {
+    return 'BaseOLMap';
+  }
 
   /**
    * @param {VcsMapOptions} options
@@ -98,7 +104,9 @@ class BaseOLMap extends VcsMap {
       1: PointerKeyType.MIDDLE,
       2: PointerKeyType.RIGHT,
     };
-    let key = olEvent.originalEvent.shiftKey ? ModificationKeyType.SHIFT : ModificationKeyType.NONE;
+    let key = olEvent.originalEvent.shiftKey
+      ? ModificationKeyType.SHIFT
+      : ModificationKeyType.NONE;
     key = olEvent.originalEvent.ctrlKey ? ModificationKeyType.CTRL : key;
     key = olEvent.originalEvent.altKey ? ModificationKeyType.ALT : key;
     if (key !== ModificationKeyType.NONE) {
@@ -145,32 +153,43 @@ class BaseOLMap extends VcsMap {
         }),
         target: this.mapElement,
       });
-      // @ts-ignore
-      const pointerDownListener = /** @type {import("ol/events").EventsKey} */ (this.olMap.on('pointerdown', (event) => {
-        this._raisePointerInteraction(
-          /** @type {import("ol/MapBrowserEvent").default}  */ (event),
-          PointerEventType.DOWN,
-        );
-      }));
-      // @ts-ignore
-      const pointerUpListener = /** @type {import("ol/events").EventsKey} */ (this.olMap.on('pointerup', (event) => {
-        this._raisePointerInteraction(
-          /** @type {import("ol/MapBrowserEvent").default}  */ (event),
-          PointerEventType.UP,
-        );
-      }));
+      const pointerDownListener = /** @type {import("ol/events").EventsKey} */ (
+        // @ts-ignore
+        this.olMap.on('pointerdown', (event) => {
+          this._raisePointerInteraction(
+            /** @type {import("ol/MapBrowserEvent").default}  */ (event),
+            PointerEventType.DOWN,
+          );
+        })
+      );
+      const pointerUpListener = /** @type {import("ol/events").EventsKey} */ (
+        // @ts-ignore
+        this.olMap.on('pointerup', (event) => {
+          this._raisePointerInteraction(
+            /** @type {import("ol/MapBrowserEvent").default}  */ (event),
+            PointerEventType.UP,
+          );
+        })
+      );
 
-      const pointerMoveListener = /** @type {import("ol/events").EventsKey} */ (this.olMap
-        .on('pointermove', (event) => {
+      const pointerMoveListener = /** @type {import("ol/events").EventsKey} */ (
+        this.olMap.on('pointermove', (event) => {
           this._raisePointerInteraction(event, PointerEventType.MOVE);
-        }));
+        })
+      );
 
-      const postRenderListener = /** @type {import("ol/events").EventsKey} */ (this.olMap
-        .on('postrender', (originalEvent) => {
+      const postRenderListener = /** @type {import("ol/events").EventsKey} */ (
+        this.olMap.on('postrender', (originalEvent) => {
           this.postRender.raiseEvent({ map: this, originalEvent });
-        }));
+        })
+      );
 
-      this._olListeners.push(pointerDownListener, pointerUpListener, pointerMoveListener, postRenderListener);
+      this._olListeners.push(
+        pointerDownListener,
+        pointerUpListener,
+        pointerMoveListener,
+        postRenderListener,
+      );
     }
   }
 
@@ -192,12 +211,17 @@ class BaseOLMap extends VcsMap {
   indexChanged(layer) {
     const viz = this.getVisualizationsForLayer(layer);
     if (viz) {
-      viz.forEach(/** @param {import("ol/layer/Layer").default<import("ol/source").Source>} olLayer */ (olLayer) => {
-        const layers = /** @type {import("ol/Collection").default<import("ol/layer/Layer").default<import("ol/source").Source>>} */
-          (this._olMap.getLayers());
-        layers.remove(olLayer);
-        ensureLayerInCollection(layers, olLayer, this.layerCollection);
-      });
+      viz.forEach(
+        /** @param {import("ol/layer/Layer").default<import("ol/source").Source>} olLayer */ (
+          olLayer,
+        ) => {
+          const layers =
+            /** @type {import("ol/Collection").default<import("ol/layer/Layer").default<import("ol/source").Source>>} */
+            (this._olMap.getLayers());
+          layers.remove(olLayer);
+          ensureLayerInCollection(layers, olLayer, this.layerCollection);
+        },
+      );
     }
   }
 
@@ -233,7 +257,9 @@ class BaseOLMap extends VcsMap {
   disableMovement(prevent) {
     super.disableMovement(prevent);
     if (this._olMap) {
-      this._olMap.getInteractions().forEach((i) => { i.setActive(!prevent); });
+      this._olMap.getInteractions().forEach((i) => {
+        i.setActive(!prevent);
+      });
     }
   }
 

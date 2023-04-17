@@ -13,13 +13,37 @@ describe('ol.geom.GeometryCollection', () => {
 
   beforeEach(() => {
     point = new Point([0, 0, 0], 'XYZ');
-    lineString = new LineString([[1, 1, 1], [2, 2, 2]], 'XYZ');
-    polygon = new Polygon([
-      [[0, 0, 0], [10, 0, 0], [10, 10, 0], [0, 10, 0]],
-      [[2, 2, 0], [2, 8, 0], [8, 8, 0], [8, 2, 0]],
-    ], 'XYZ');
+    lineString = new LineString(
+      [
+        [1, 1, 1],
+        [2, 2, 2],
+      ],
+      'XYZ',
+    );
+    polygon = new Polygon(
+      [
+        [
+          [0, 0, 0],
+          [10, 0, 0],
+          [10, 10, 0],
+          [0, 10, 0],
+        ],
+        [
+          [2, 2, 0],
+          [2, 8, 0],
+          [8, 8, 0],
+          [8, 2, 0],
+        ],
+      ],
+      'XYZ',
+    );
     circle = new Circle([0, 0, 0], 20, 'XYZ');
-    geometryCollection = new GeometryCollection([point, lineString, polygon, circle]);
+    geometryCollection = new GeometryCollection([
+      point,
+      lineString,
+      polygon,
+      circle,
+    ]);
   });
 
   describe('#getCoordinates', () => {
@@ -39,9 +63,21 @@ describe('ol.geom.GeometryCollection', () => {
     it('should set the coordinates of each geometry', () => {
       const coords = [
         [2, 2, 2],
-        [[4, 4, 4], [1, 1, 1]],
-        [[[0, 0, 0], [1, 0, 0], [0, 1, 0]]],
-        [[2, 2, 2], [5, 2, 2]],
+        [
+          [4, 4, 4],
+          [1, 1, 1],
+        ],
+        [
+          [
+            [0, 0, 0],
+            [1, 0, 0],
+            [0, 1, 0],
+          ],
+        ],
+        [
+          [2, 2, 2],
+          [5, 2, 2],
+        ],
       ];
       geometryCollection.setCoordinates(coords);
       [point, lineString, polygon, circle] = geometryCollection.getGeometries();

@@ -28,7 +28,11 @@ export function getGeometryOptions(coords, geometry, positionHeightAdjustment) {
     if (wgs84Coords[2] != null) {
       wgs84Coords[2] += positionHeightAdjustment;
     }
-    return Cartesian3.fromDegrees(wgs84Coords[0], wgs84Coords[1], wgs84Coords[2]);
+    return Cartesian3.fromDegrees(
+      wgs84Coords[0],
+      wgs84Coords[1],
+      wgs84Coords[2],
+    );
   });
   return { positions, arcType: ArcType.NONE };
 }
@@ -52,12 +56,14 @@ export function getCoordinates(coords, geometries) {
  */
 function getGeometryFactory(arcCoords, altitudeMode) {
   return {
-    getCoordinates: altitudeMode === HeightReference.NONE ?
-      getCoordinates.bind(null, arcCoords) :
-      getLineStringCoordinates,
-    getGeometryOptions: altitudeMode === HeightReference.NONE ?
-      getGeometryOptions.bind(null, arcCoords) :
-      getLineStringGeometryOptions,
+    getCoordinates:
+      altitudeMode === HeightReference.NONE
+        ? getCoordinates.bind(null, arcCoords)
+        : getLineStringCoordinates,
+    getGeometryOptions:
+      altitudeMode === HeightReference.NONE
+        ? getGeometryOptions.bind(null, arcCoords)
+        : getLineStringGeometryOptions,
     createSolidGeometries,
     createOutlineGeometries,
     createFillGeometries,
@@ -75,13 +81,41 @@ function getGeometryFactory(arcCoords, altitudeMode) {
  * @param {import("@vcmap-cesium/engine").Scene} scene
  * @param {import("@vcmap/core").VectorContext|import("@vcmap/core").ClusterContext} context
  */
-export default function arcToCesium(feature, style, geometries, vectorProperties, scene, context) {
+export default function arcToCesium(
+  feature,
+  style,
+  geometries,
+  vectorProperties,
+  scene,
+  context,
+) {
   if (!style.getFill() && !style.getStroke()) {
     return;
   }
   const altitudeMode = vectorProperties.getAltitudeMode(feature);
-  const arcGeometryFactory = getGeometryFactory(feature[featureArcStruct].coordinates, altitudeMode);
-  const validGeometries = geometries.filter(lineString => validateLineString(lineString));
-  addPrimitivesToContext(feature, style, validGeometries, vectorProperties, scene, arcGeometryFactory, context);
-  addArrowsToContext(feature, style, validGeometries, vectorProperties, scene, arcGeometryFactory, context); // IDEA what about labels?
+  const arcGeometryFactory = getGeometryFactory(
+    feature[featureArcStruct].coordinates,
+    altitudeMode,
+  );
+  const validGeometries = geometries.filter((lineString) =>
+    validateLineString(lineString),
+  );
+  addPrimitivesToContext(
+    feature,
+    style,
+    validGeometries,
+    vectorProperties,
+    scene,
+    arcGeometryFactory,
+    context,
+  );
+  addArrowsToContext(
+    feature,
+    style,
+    validGeometries,
+    vectorProperties,
+    scene,
+    arcGeometryFactory,
+    context,
+  ); // IDEA what about labels?
 }

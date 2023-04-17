@@ -31,13 +31,18 @@ function waitForImplTilesLoaded(impl, timeout) {
  * @returns {Promise<void>}
  */
 export async function tiledLayerLoaded(layer, timeout) {
-  const impls = /** @type {Array<CesiumTilesetCesiumImpl>} */
-    (layer.getImplementations().filter(i => i instanceof CesiumTilesetCesiumImpl));
-  if (!layer.active || impls.every(i => i.cesium3DTileset.tilesLoaded)) {
+  const impls =
+    /** @type {Array<CesiumTilesetCesiumImpl>} */
+    (
+      layer
+        .getImplementations()
+        .filter((i) => i instanceof CesiumTilesetCesiumImpl)
+    );
+  if (!layer.active || impls.every((i) => i.cesium3DTileset.tilesLoaded)) {
     return;
   }
 
-  await Promise.all(impls.map(i => waitForImplTilesLoaded(i, timeout)));
+  await Promise.all(impls.map((i) => waitForImplTilesLoaded(i, timeout)));
 }
 
 /**

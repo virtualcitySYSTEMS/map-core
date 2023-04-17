@@ -1,7 +1,10 @@
 import { unByKey } from 'ol/Observable.js';
 import Feature from 'ol/Feature.js';
 import { check } from '@vcsuite/check';
-import { FeatureStoreLayerState, featureStoreStateSymbol } from './featureStoreLayerState.js';
+import {
+  FeatureStoreLayerState,
+  featureStoreStateSymbol,
+} from './featureStoreLayerState.js';
 import { parseGeoJSON, writeGeoJSONFeature } from './geojsonHelpers.js';
 import VcsObject from '../vcsObject.js';
 import { requestJson } from '../util/fetch.js';
@@ -92,7 +95,9 @@ export function createCommitActions(added, edited, removed) {
  * @api
  */
 class FeatureStoreLayerChanges extends VcsObject {
-  static get className() { return 'FeatureStoreLayerChanges'; }
+  static get className() {
+    return 'FeatureStoreLayerChanges';
+  }
 
   /**
    * @param {import("@vcmap/core").FeatureStoreLayer} layer
@@ -128,7 +133,9 @@ class FeatureStoreLayerChanges extends VcsObject {
    * @returns {boolean}
    * @api
    */
-  get active() { return Object.values(this._changesListeners).some(c => c !== null); }
+  get active() {
+    return Object.values(this._changesListeners).some((c) => c !== null);
+  }
 
   /**
    * starts tracking changes on the layer
@@ -137,15 +144,24 @@ class FeatureStoreLayerChanges extends VcsObject {
    */
   track() {
     if (this._changesListeners.addfeature === null) {
-      this._changesListeners.addfeature = this.layer.source.on('addfeature', this._featureAdded.bind(this));
+      this._changesListeners.addfeature = this.layer.source.on(
+        'addfeature',
+        this._featureAdded.bind(this),
+      );
     }
 
     if (this._changesListeners.changefeature === null) {
-      this._changesListeners.changefeature = this.layer.source.on('changefeature', this._featureChanged.bind(this));
+      this._changesListeners.changefeature = this.layer.source.on(
+        'changefeature',
+        this._featureChanged.bind(this),
+      );
     }
 
     if (this._changesListeners.removefeature === null) {
-      this._changesListeners.removefeature = this.layer.source.on('removefeature', this._featureRemoved.bind(this));
+      this._changesListeners.removefeature = this.layer.source.on(
+        'removefeature',
+        this._featureRemoved.bind(this),
+      );
     }
   }
 
@@ -168,7 +184,11 @@ class FeatureStoreLayerChanges extends VcsObject {
    * @api
    */
   async commitChanges(url, headers = {}) {
-    const actions = createCommitActions(this._addedFeatures, this._editedFeatures, this._removedFeatures);
+    const actions = createCommitActions(
+      this._addedFeatures,
+      this._editedFeatures,
+      this._removedFeatures,
+    );
     if (actions.length > 0) {
       const data = await requestJson(url.toString(), {
         method: 'POST',
@@ -176,7 +196,9 @@ class FeatureStoreLayerChanges extends VcsObject {
           ...headers,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(actions.map(a => ({ action: a.action, feature: a.feature }))),
+        body: JSON.stringify(
+          actions.map((a) => ({ action: a.action, feature: a.feature })),
+        ),
       });
 
       const failures = data.failedActions.map(({ index, error }) => {
@@ -187,7 +209,7 @@ class FeatureStoreLayerChanges extends VcsObject {
       });
 
       actions
-        .filter(a => a)
+        .filter((a) => a)
         .forEach(({ action, success }) => {
           if (action === 'add') {
             success(data.insertedIds.shift()._id); // XXX should this be shift or should we find the index?
@@ -198,7 +220,11 @@ class FeatureStoreLayerChanges extends VcsObject {
       await Promise.all(failures);
     } else {
       try {
-        await Promise.all([...this._convertedFeatures].map(async (f) => { await this._resetFeature(f); }));
+        await Promise.all(
+          [...this._convertedFeatures].map(async (f) => {
+            await this._resetFeature(f);
+          }),
+        );
       } catch (err) {
         this.getLogger().error(err.message);
       }
@@ -213,10 +239,18 @@ class FeatureStoreLayerChanges extends VcsObject {
    */
   async reset() {
     const promises = [];
-    this._addedFeatures.forEach((f) => { promises.push(this._resetFeature(f)); });
-    this._editedFeatures.forEach((f) => { promises.push(this._resetFeature(f)); });
-    this._removedFeatures.forEach((f) => { promises.push(this._resetFeature(f)); });
-    this._convertedFeatures.forEach((f) => { promises.push(this._resetFeature(f)); });
+    this._addedFeatures.forEach((f) => {
+      promises.push(this._resetFeature(f));
+    });
+    this._editedFeatures.forEach((f) => {
+      promises.push(this._resetFeature(f));
+    });
+    this._removedFeatures.forEach((f) => {
+      promises.push(this._resetFeature(f));
+    });
+    this._convertedFeatures.forEach((f) => {
+      promises.push(this._resetFeature(f));
+    });
     return Promise.all(promises)
       .then(() => {
         this._resetValues();
@@ -245,14 +279,18 @@ class FeatureStoreLayerChanges extends VcsObject {
       return Promise.resolve();
     }
 
-    return this.layer.injectedFetchDynamicFeatureFunc(featureId)
+    return this.layer
+      .injectedFetchDynamicFeatureFunc(featureId)
       .then((data) => {
         const { features } = parseGeoJSON(data);
         this.layer.removeFeaturesById(idArray);
         this.layer.addFeatures(features);
       })
       .catch((err) => {
-        this.getLogger().error('failed to reset feature, giving up', err.message);
+        this.getLogger().error(
+          'failed to reset feature, giving up',
+          err.message,
+        );
       });
   }
 
@@ -297,7 +335,9 @@ class FeatureStoreLayerChanges extends VcsObject {
     if (!feature[featureStoreStateSymbol]) {
       this._addedFeatures.add(feature);
       this.values.changed = true;
-    } else if (feature[featureStoreStateSymbol] === FeatureStoreLayerState.STATIC) {
+    } else if (
+      feature[featureStoreStateSymbol] === FeatureStoreLayerState.STATIC
+    ) {
       this._convertedFeatures.add(feature);
       this.values.changed = true;
     }

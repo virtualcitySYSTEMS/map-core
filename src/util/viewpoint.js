@@ -23,10 +23,9 @@ export function propertyEqualsEpsilon(left, right, epsilon) {
  * @returns {boolean}
  */
 export function angleEqualsEpsilon(left, right, epsilon) {
-  const diff = (left - right) - Math.trunc((left - right) / 360) * 360;
+  const diff = left - right - Math.trunc((left - right) / 360) * 360;
   return Math.abs(diff) <= epsilon;
 }
-
 
 /**
  * compares two coordinates componentwise
@@ -36,8 +35,11 @@ export function angleEqualsEpsilon(left, right, epsilon) {
  * @returns {boolean}
  */
 export function coordinateEqualsEpsilon(left, right, epsilon) {
-  return left !== null && right !== null &&
-    left.every((val, idx) => propertyEqualsEpsilon(val, right[idx], epsilon));
+  return (
+    left !== null &&
+    right !== null &&
+    left.every((val, idx) => propertyEqualsEpsilon(val, right[idx], epsilon))
+  );
 }
 
 /**
@@ -61,7 +63,9 @@ export function coordinateEqualsEpsilon(left, right, epsilon) {
  * @api stable
  */
 class Viewpoint extends VcsObject {
-  static get className() { return 'Viewpoint'; }
+  static get className() {
+    return 'Viewpoint';
+  }
 
   /**
    * @param {ViewpointOptions} options
@@ -76,8 +80,11 @@ class Viewpoint extends VcsObject {
      * @api
      */
     this.cameraPosition = null;
-    if (Array.isArray(options.cameraPosition) && options.cameraPosition.length === 3) {
-      this.cameraPosition = options.cameraPosition.map(c => Number(c));
+    if (
+      Array.isArray(options.cameraPosition) &&
+      options.cameraPosition.length === 3
+    ) {
+      this.cameraPosition = options.cameraPosition.map((c) => Number(c));
     }
 
     /**
@@ -88,7 +95,7 @@ class Viewpoint extends VcsObject {
      */
     this.groundPosition = null;
     if (Array.isArray(options.groundPosition)) {
-      this.groundPosition = options.groundPosition.map(c => Number(c));
+      this.groundPosition = options.groundPosition.map((c) => Number(c));
     }
 
     /**
@@ -97,7 +104,10 @@ class Viewpoint extends VcsObject {
      * @type {?number}
      * @api
      */
-    this.distance = parseNumber(options.distance, this.cameraPosition ? this.cameraPosition[2] : 1000);
+    this.distance = parseNumber(
+      options.distance,
+      this.cameraPosition ? this.cameraPosition[2] : 1000,
+    );
 
     /**
      * heading, angle between 0 and 360 degree 0° = North, 90° = east ...
@@ -147,7 +157,9 @@ class Viewpoint extends VcsObject {
    * @readonly
    */
   get easingFunction() {
-    return this.easingFunctionName ? EasingFunction[this.easingFunctionName] : null;
+    return this.easingFunctionName
+      ? EasingFunction[this.easingFunctionName]
+      : null;
   }
 
   /**
@@ -184,7 +196,10 @@ class Viewpoint extends VcsObject {
    * @api stable
    */
   toString() {
-    const stringRep = `Viewpoint: [Ground:${String(this.groundPosition ? this.groundPosition : null)}]` +
+    const stringRep =
+      `Viewpoint: [Ground:${String(
+        this.groundPosition ? this.groundPosition : null,
+      )}]` +
       `[Camera:${String(this.cameraPosition ? this.cameraPosition : null)}]` +
       `[Distance:${this.distance}]` +
       `[heading:${this.distance}]` +
@@ -200,9 +215,10 @@ class Viewpoint extends VcsObject {
    * @api
    */
   static createViewpointFromExtent(extent) {
-    const extentCoordinates = extent instanceof Extent ?
-      extent.getCoordinatesInProjection(wgs84Projection) :
-      extent;
+    const extentCoordinates =
+      extent instanceof Extent
+        ? extent.getCoordinatesInProjection(wgs84Projection)
+        : extent;
 
     if (extentCoordinates && extentCoordinates.length === 4) {
       const minx = extentCoordinates[0];
@@ -216,7 +232,7 @@ class Viewpoint extends VcsObject {
       if (delta < 0.001) {
         distance = 400;
       } else {
-        distance = (delta) * 300000;
+        distance = delta * 300000;
       }
 
       return new Viewpoint({
@@ -240,11 +256,11 @@ class Viewpoint extends VcsObject {
   static parseURLparameter(urlParameter) {
     let { cameraPosition, groundPosition } = urlParameter;
     if (cameraPosition != null) {
-      cameraPosition = cameraPosition.split(',').map(c => Number(c));
+      cameraPosition = cameraPosition.split(',').map((c) => Number(c));
     }
 
     if (groundPosition != null) {
-      groundPosition = groundPosition.split(',').map(c => Number(c));
+      groundPosition = groundPosition.split(',').map((c) => Number(c));
     }
 
     if (urlParameter.epsg != null) {
@@ -252,10 +268,18 @@ class Viewpoint extends VcsObject {
       const srcProjection = new Projection({ epsg, proj4: proj4String });
       const destProjection = wgs84Projection;
       if (groundPosition) {
-        groundPosition = Projection.transform(destProjection, srcProjection, groundPosition);
+        groundPosition = Projection.transform(
+          destProjection,
+          srcProjection,
+          groundPosition,
+        );
       }
       if (cameraPosition) {
-        cameraPosition = Projection.transform(destProjection, srcProjection, cameraPosition);
+        cameraPosition = Projection.transform(
+          destProjection,
+          srcProjection,
+          cameraPosition,
+        );
       }
     }
 
@@ -278,15 +302,17 @@ class Viewpoint extends VcsObject {
    * @returns {boolean}
    */
   isValid() {
-    const hasCamera = this.cameraPosition &&
+    const hasCamera =
+      this.cameraPosition &&
       Array.isArray(this.cameraPosition) &&
       this.cameraPosition.length === 3 &&
-      this.cameraPosition.every(position => Number.isFinite(position));
-    const hasGround = this.groundPosition &&
+      this.cameraPosition.every((position) => Number.isFinite(position));
+    const hasGround =
+      this.groundPosition &&
       Array.isArray(this.groundPosition) &&
       this.groundPosition.length > 1 &&
       this.groundPosition.length < 4 &&
-      this.groundPosition.every(position => Number.isFinite(position));
+      this.groundPosition.every((position) => Number.isFinite(position));
     if (!hasGround && !hasCamera) {
       return false;
     }
@@ -312,16 +338,23 @@ class Viewpoint extends VcsObject {
    * @returns {boolean}
    */
   equals(other, epsilon = 0) {
-    return other === this || (
-      other !== null &&
-      propertyEqualsEpsilon(other.distance, this.distance, epsilon) &&
-      angleEqualsEpsilon(other.heading, this.heading, epsilon) &&
-      angleEqualsEpsilon(other.pitch, this.pitch, epsilon) &&
-      angleEqualsEpsilon(other.roll, this.roll, epsilon) &&
-      (
-        coordinateEqualsEpsilon(other.cameraPosition, this.cameraPosition, epsilon) ||
-        coordinateEqualsEpsilon(other.groundPosition, this.groundPosition, epsilon)
-      )
+    return (
+      other === this ||
+      (other !== null &&
+        propertyEqualsEpsilon(other.distance, this.distance, epsilon) &&
+        angleEqualsEpsilon(other.heading, this.heading, epsilon) &&
+        angleEqualsEpsilon(other.pitch, this.pitch, epsilon) &&
+        angleEqualsEpsilon(other.roll, this.roll, epsilon) &&
+        (coordinateEqualsEpsilon(
+          other.cameraPosition,
+          this.cameraPosition,
+          epsilon,
+        ) ||
+          coordinateEqualsEpsilon(
+            other.groundPosition,
+            this.groundPosition,
+            epsilon,
+          )))
     );
   }
 }

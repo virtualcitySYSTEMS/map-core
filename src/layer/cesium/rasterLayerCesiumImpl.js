@@ -8,7 +8,9 @@ import LayerImplementation from '../layerImplementation.js';
  * @implements {RasterLayerImplementation}
  */
 class RasterLayerCesiumImpl extends LayerImplementation {
-  static get className() { return 'RasterLayerCesiumImpl'; }
+  static get className() {
+    return 'RasterLayerCesiumImpl';
+  }
 
   /**
    * @param {import("@vcmap/core").CesiumMap} map
@@ -61,7 +63,9 @@ class RasterLayerCesiumImpl extends LayerImplementation {
    * @returns {import("@vcmap-cesium/engine").ImageryLayer}
    */
   // eslint-disable-next-line class-methods-use-this
-  getCesiumLayer() { throw new Error('implementation error'); }
+  getCesiumLayer() {
+    throw new Error('implementation error');
+  }
 
   /**
    * @inheritDoc

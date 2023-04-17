@@ -15,8 +15,13 @@ import {
   SphereGeometry,
   SphereOutlineGeometry,
 } from '@vcmap-cesium/engine';
-import VectorProperties, { PrimitiveOptionsType } from '../../../../src/layer/vectorProperties.js';
-import { getModelOptions, getPrimitiveOptions } from '../../../../src/util/featureconverter/pointHelpers.js';
+import VectorProperties, {
+  PrimitiveOptionsType,
+} from '../../../../src/layer/vectorProperties.js';
+import {
+  getModelOptions,
+  getPrimitiveOptions,
+} from '../../../../src/util/featureconverter/pointHelpers.js';
 import { getTerrainProvider } from '../../helpers/terrain/terrainData.js';
 import { getMockScene } from '../../helpers/cesiumHelpers.js';
 
@@ -34,7 +39,8 @@ describe('point helpers', () => {
 
     before(() => {
       const scope = nock('http://localhost');
-      scope.get('/test.glb')
+      scope
+        .get('/test.glb')
         .reply(200, {}, { 'Content-Type': 'application/json' });
       feature = new Feature({
         olcs_modelUrl: 'http://localhost/test.glb',
@@ -42,9 +48,19 @@ describe('point helpers', () => {
       });
       const coordinates = [[1, 1, 2]];
       scene = getMockScene();
-      positions = coordinates.map(pos => Cartesian3.fromDegrees(...pos));
-      vectorProperties = new VectorProperties({ modelScaleX: 2, modelScaleY: 4, modelScaleZ: 8 });
-      [model] = getModelOptions(feature, coordinates, positions, vectorProperties, scene).primitives;
+      positions = coordinates.map((pos) => Cartesian3.fromDegrees(...pos));
+      vectorProperties = new VectorProperties({
+        modelScaleX: 2,
+        modelScaleY: 4,
+        modelScaleZ: 8,
+      });
+      [model] = getModelOptions(
+        feature,
+        coordinates,
+        positions,
+        vectorProperties,
+        scene,
+      ).primitives;
     });
 
     after(() => {
@@ -71,24 +87,27 @@ describe('point helpers', () => {
     it('should set a 2D point onto the terrain', (done) => {
       const scene2 = getMockScene();
       const scope = nock('http://localhost');
-      scope.get('/test.glb')
+      scope
+        .get('/test.glb')
         .reply(200, {}, { 'Content-Type': 'application/json' });
       scene2.globe.terrainProvider = getTerrainProvider(scope);
       const twoD = [[13.374517914005413, 52.501750770534045, 0]];
       const [twoDModel] = getModelOptions(
         feature,
         twoD,
-        twoD.map(pos => Cartesian3.fromDegrees(...pos)),
+        twoD.map((pos) => Cartesian3.fromDegrees(...pos)),
         vectorProperties,
         scene2,
       ).primitives;
       const { modelMatrix } = twoDModel;
-      const cartographicBefore = Cartographic
-        .fromCartesian(Matrix4.getTranslation(modelMatrix, new Cartesian3()));
+      const cartographicBefore = Cartographic.fromCartesian(
+        Matrix4.getTranslation(modelMatrix, new Cartesian3()),
+      );
       expect(cartographicBefore.height).to.equal(0);
       setTimeout(() => {
-        const cartographicAfter = Cartographic
-          .fromCartesian(Matrix4.getTranslation(twoDModel.modelMatrix, new Cartesian3()));
+        const cartographicAfter = Cartographic.fromCartesian(
+          Matrix4.getTranslation(twoDModel.modelMatrix, new Cartesian3()),
+        );
 
         expect(cartographicAfter.height).to.not.equal(0);
         done();
@@ -101,7 +120,7 @@ describe('point helpers', () => {
 
       before(() => {
         const coordinates = [[1, 1, 2]];
-        positions = coordinates.map(pos => Cartesian3.fromDegrees(...pos));
+        positions = coordinates.map((pos) => Cartesian3.fromDegrees(...pos));
         autoscaleVectorProperties = new VectorProperties({
           modelScaleX: 2,
           modelScaleY: 4,
@@ -127,7 +146,10 @@ describe('point helpers', () => {
       });
 
       it('should apply the scale to the models model matrix', () => {
-        const scale = Matrix4.getScale(autoscaleModel.modelMatrix, new Cartesian3());
+        const scale = Matrix4.getScale(
+          autoscaleModel.modelMatrix,
+          new Cartesian3(),
+        );
         expect(scale.x).to.closeTo(2, CesiumMath.EPSILON8);
         expect(scale.y).to.closeTo(4, CesiumMath.EPSILON8);
         expect(scale.z).to.closeTo(8, CesiumMath.EPSILON8);
@@ -135,12 +157,23 @@ describe('point helpers', () => {
 
       it('should reset the scale, if setting a new modelMatrix', () => {
         const modelMatrix = autoscaleModel.modelMatrix.clone();
-        autoscaleModel.modelMatrix = Matrix4.setScale(modelMatrix, new Cartesian3(2, 2, 2), new Matrix4());
-        const scale = Matrix4.getScale(autoscaleModel.modelMatrix, new Cartesian3());
+        autoscaleModel.modelMatrix = Matrix4.setScale(
+          modelMatrix,
+          new Cartesian3(2, 2, 2),
+          new Matrix4(),
+        );
+        const scale = Matrix4.getScale(
+          autoscaleModel.modelMatrix,
+          new Cartesian3(),
+        );
         expect(scale.x).to.closeTo(4, CesiumMath.EPSILON8);
         expect(scale.y).to.closeTo(8, CesiumMath.EPSILON8);
         expect(scale.z).to.closeTo(16, CesiumMath.EPSILON8);
-        autoscaleModel.modelMatrix = Matrix4.setScale(modelMatrix, Cartesian3.ONE, new Matrix4());
+        autoscaleModel.modelMatrix = Matrix4.setScale(
+          modelMatrix,
+          Cartesian3.ONE,
+          new Matrix4(),
+        );
         Matrix4.getScale(autoscaleModel.modelMatrix, scale);
         expect(scale.x).to.closeTo(2, CesiumMath.EPSILON8);
         expect(scale.y).to.closeTo(4, CesiumMath.EPSILON8);
@@ -167,8 +200,12 @@ describe('point helpers', () => {
         });
         const coordinates = [[1, 1, 2]];
         scene = getMockScene();
-        positions = coordinates.map(pos => Cartesian3.fromDegrees(...pos));
-        vectorProperties = new VectorProperties({ modelScaleX: 2, modelScaleY: 4, modelScaleZ: 8 });
+        positions = coordinates.map((pos) => Cartesian3.fromDegrees(...pos));
+        vectorProperties = new VectorProperties({
+          modelScaleX: 2,
+          modelScaleY: 4,
+          modelScaleZ: 8,
+        });
         const style = new Style({
           image: new RegularShape({
             fill: new Fill({ color: '#FF00FF' }),
@@ -192,7 +229,9 @@ describe('point helpers', () => {
 
       it('should create a primitive', () => {
         expect(primitive).to.be.an.instanceOf(Primitive);
-        expect(primitive.geometryInstances[0].geometry).to.be.an.instanceOf(SphereGeometry);
+        expect(primitive.geometryInstances[0].geometry).to.be.an.instanceOf(
+          SphereGeometry,
+        );
       });
 
       it('should apply allow picking', () => {
@@ -209,7 +248,11 @@ describe('point helpers', () => {
 
     describe('of an elevation less primitive', () => {
       it('should set a 2D point onto the terrain', (done) => {
-        const vectorProperties = new VectorProperties({ modelScaleX: 2, modelScaleY: 4, modelScaleZ: 8 });
+        const vectorProperties = new VectorProperties({
+          modelScaleX: 2,
+          modelScaleY: 4,
+          modelScaleZ: 8,
+        });
         const style = new Style({
           image: new RegularShape({
             fill: new Fill({ color: '#FF00FF' }),
@@ -230,18 +273,20 @@ describe('point helpers', () => {
           feature,
           style,
           twoD,
-          twoD.map(pos => Cartesian3.fromDegrees(...pos)),
+          twoD.map((pos) => Cartesian3.fromDegrees(...pos)),
           vectorProperties,
           scene2,
         ).primitives;
         vectorProperties.destroy();
         const { modelMatrix } = primitive;
-        const cartographicBefore = Cartographic
-          .fromCartesian(Matrix4.getTranslation(modelMatrix, new Cartesian3()));
+        const cartographicBefore = Cartographic.fromCartesian(
+          Matrix4.getTranslation(modelMatrix, new Cartesian3()),
+        );
         expect(cartographicBefore.height).to.equal(0);
         setTimeout(() => {
-          const cartographicAfter = Cartographic
-            .fromCartesian(Matrix4.getTranslation(primitive.modelMatrix, new Cartesian3()));
+          const cartographicAfter = Cartographic.fromCartesian(
+            Matrix4.getTranslation(primitive.modelMatrix, new Cartesian3()),
+          );
 
           expect(cartographicAfter.height).to.not.equal(0);
           done();
@@ -267,8 +312,12 @@ describe('point helpers', () => {
         });
         const coordinates = [[1, 1, 2]];
         scene = getMockScene();
-        positions = coordinates.map(pos => Cartesian3.fromDegrees(...pos));
-        vectorProperties = new VectorProperties({ modelScaleX: 2, modelScaleY: 4, modelScaleZ: 8 });
+        positions = coordinates.map((pos) => Cartesian3.fromDegrees(...pos));
+        vectorProperties = new VectorProperties({
+          modelScaleX: 2,
+          modelScaleY: 4,
+          modelScaleZ: 8,
+        });
         const style = new Style({
           image: new RegularShape({
             fill: new Fill({ color: '#FF00FF' }),
@@ -293,12 +342,16 @@ describe('point helpers', () => {
 
       it('should create a primitive', () => {
         expect(primitive).to.be.an.instanceOf(Primitive);
-        expect(primitive.geometryInstances[0].geometry).to.be.an.instanceOf(SphereGeometry);
+        expect(primitive.geometryInstances[0].geometry).to.be.an.instanceOf(
+          SphereGeometry,
+        );
       });
 
       it('should create an outline primitive', () => {
         expect(outline).to.be.an.instanceOf(Primitive);
-        expect(outline.geometryInstances[0].geometry).to.be.an.instanceOf(SphereOutlineGeometry);
+        expect(outline.geometryInstances[0].geometry).to.be.an.instanceOf(
+          SphereOutlineGeometry,
+        );
       });
 
       it('should apply allow picking', () => {
@@ -341,8 +394,12 @@ describe('point helpers', () => {
         });
         const coordinates = [[1, 1, 2]];
         scene = getMockScene();
-        positions = coordinates.map(pos => Cartesian3.fromDegrees(...pos));
-        vectorProperties = new VectorProperties({ modelScaleX: 2, modelScaleY: 4, modelScaleZ: 8 });
+        positions = coordinates.map((pos) => Cartesian3.fromDegrees(...pos));
+        vectorProperties = new VectorProperties({
+          modelScaleX: 2,
+          modelScaleY: 4,
+          modelScaleZ: 8,
+        });
         const style = new Style({
           image: new RegularShape({
             stroke: new Stroke({ color: '#FF00FF', width: 1 }),
@@ -366,7 +423,9 @@ describe('point helpers', () => {
 
       it('should create an outline primitive', () => {
         expect(outline).to.be.an.instanceOf(Primitive);
-        expect(outline.geometryInstances[0].geometry).to.be.an.instanceOf(SphereOutlineGeometry);
+        expect(outline.geometryInstances[0].geometry).to.be.an.instanceOf(
+          SphereOutlineGeometry,
+        );
       });
 
       it('should apply allow picking', () => {
@@ -400,8 +459,12 @@ describe('point helpers', () => {
         });
         const coordinates = [[1, 1, 2]];
         scene = getMockScene();
-        positions = coordinates.map(pos => Cartesian3.fromDegrees(...pos));
-        vectorProperties = new VectorProperties({ modelScaleX: 2, modelScaleY: 4, modelScaleZ: 8 });
+        positions = coordinates.map((pos) => Cartesian3.fromDegrees(...pos));
+        vectorProperties = new VectorProperties({
+          modelScaleX: 2,
+          modelScaleY: 4,
+          modelScaleZ: 8,
+        });
         const style = new Style({
           image: new RegularShape({
             stroke: new Stroke({ color: '#FF00FF', width: 1 }),
@@ -425,12 +488,16 @@ describe('point helpers', () => {
 
       it('should create a primitive', () => {
         expect(primitive).to.be.an.instanceOf(Primitive);
-        expect(primitive.geometryInstances[0].geometry).to.be.an.instanceOf(SphereGeometry);
+        expect(primitive.geometryInstances[0].geometry).to.be.an.instanceOf(
+          SphereGeometry,
+        );
       });
 
       it('should create an outline primitive', () => {
         expect(outline).to.be.an.instanceOf(Primitive);
-        expect(outline.geometryInstances[0].geometry).to.be.an.instanceOf(SphereOutlineGeometry);
+        expect(outline.geometryInstances[0].geometry).to.be.an.instanceOf(
+          SphereOutlineGeometry,
+        );
       });
 
       it('should apply allow picking', () => {
@@ -473,8 +540,12 @@ describe('point helpers', () => {
         });
         const coordinates = [[1, 1, 2]];
         scene = getMockScene();
-        positions = coordinates.map(pos => Cartesian3.fromDegrees(...pos));
-        vectorProperties = new VectorProperties({ modelScaleX: 2, modelScaleY: 4, modelScaleZ: 8 });
+        positions = coordinates.map((pos) => Cartesian3.fromDegrees(...pos));
+        vectorProperties = new VectorProperties({
+          modelScaleX: 2,
+          modelScaleY: 4,
+          modelScaleZ: 8,
+        });
         const style = new Style({
           fill: new Fill({ color: '#FF00FF' }),
           image: new Icon({
@@ -499,7 +570,9 @@ describe('point helpers', () => {
 
       it('should create a primitive', () => {
         expect(primitive).to.be.an.instanceOf(Primitive);
-        expect(primitive.geometryInstances[0].geometry).to.be.an.instanceOf(SphereGeometry);
+        expect(primitive.geometryInstances[0].geometry).to.be.an.instanceOf(
+          SphereGeometry,
+        );
       });
 
       it('should apply allow picking', () => {
@@ -532,8 +605,12 @@ describe('point helpers', () => {
         });
         const coordinates = [[1, 1, 2]];
         scene = getMockScene();
-        positions = coordinates.map(pos => Cartesian3.fromDegrees(...pos));
-        vectorProperties = new VectorProperties({ modelScaleX: 2, modelScaleY: 4, modelScaleZ: 8 });
+        positions = coordinates.map((pos) => Cartesian3.fromDegrees(...pos));
+        vectorProperties = new VectorProperties({
+          modelScaleX: 2,
+          modelScaleY: 4,
+          modelScaleZ: 8,
+        });
         const style = new Style({
           image: new RegularShape({
             fill: new Fill({ color: '#FF00FF' }),
@@ -557,7 +634,9 @@ describe('point helpers', () => {
 
       it('should create a primitive', () => {
         expect(primitive).to.be.an.instanceOf(Primitive);
-        expect(primitive.geometryInstances[0].geometry).to.be.an.instanceOf(SphereGeometry);
+        expect(primitive.geometryInstances[0].geometry).to.be.an.instanceOf(
+          SphereGeometry,
+        );
       });
 
       it('should apply allow picking', () => {
@@ -572,7 +651,10 @@ describe('point helpers', () => {
       });
 
       it('should apply the offset, scaled', () => {
-        const translation = Matrix4.getTranslation(primitive.modelMatrix, new Cartesian3());
+        const translation = Matrix4.getTranslation(
+          primitive.modelMatrix,
+          new Cartesian3(),
+        );
         const carto = Cartographic.fromCartesian(translation);
         expect(carto.height).to.closeTo(10, CesiumMath.EPSILON5);
       });
@@ -597,7 +679,7 @@ describe('point helpers', () => {
         });
         const coordinates = [[1, 1, 2]];
         scene = getMockScene();
-        positions = coordinates.map(pos => Cartesian3.fromDegrees(...pos));
+        positions = coordinates.map((pos) => Cartesian3.fromDegrees(...pos));
         vectorProperties = new VectorProperties({});
         const style = new Style({
           image: new RegularShape({
@@ -622,7 +704,9 @@ describe('point helpers', () => {
 
       it('should create a primitive', () => {
         expect(primitive).to.be.an.instanceOf(Primitive);
-        expect(primitive.geometryInstances[0].geometry).to.be.an.instanceOf(SphereGeometry);
+        expect(primitive.geometryInstances[0].geometry).to.be.an.instanceOf(
+          SphereGeometry,
+        );
       });
 
       it('should apply allow picking', () => {
@@ -630,19 +714,35 @@ describe('point helpers', () => {
       });
 
       it('should apply the offset, scaled', () => {
-        const translation = Matrix4.getTranslation(primitive.modelMatrix, new Cartesian3());
+        const translation = Matrix4.getTranslation(
+          primitive.modelMatrix,
+          new Cartesian3(),
+        );
         const carto = Cartographic.fromCartesian(translation);
         expect(carto.height).to.closeTo(3, CesiumMath.EPSILON5);
       });
 
       it('should reset the offset, if setting a new modelMatrix', () => {
         const modelMatrix = primitive.modelMatrix.clone();
-        primitive.modelMatrix = Matrix4.setScale(modelMatrix, new Cartesian3(2, 2, 2), new Matrix4());
-        const translation = Matrix4.getTranslation(primitive.modelMatrix, new Cartesian3());
-        expect(Cartographic.fromCartesian(translation).height).to.closeTo(4, CesiumMath.EPSILON5);
+        primitive.modelMatrix = Matrix4.setScale(
+          modelMatrix,
+          new Cartesian3(2, 2, 2),
+          new Matrix4(),
+        );
+        const translation = Matrix4.getTranslation(
+          primitive.modelMatrix,
+          new Cartesian3(),
+        );
+        expect(Cartographic.fromCartesian(translation).height).to.closeTo(
+          4,
+          CesiumMath.EPSILON5,
+        );
         primitive.modelMatrix = modelMatrix;
         Matrix4.getTranslation(primitive.modelMatrix, translation);
-        expect(Cartographic.fromCartesian(translation).height).to.closeTo(3, CesiumMath.EPSILON5);
+        expect(Cartographic.fromCartesian(translation).height).to.closeTo(
+          3,
+          CesiumMath.EPSILON5,
+        );
       });
     });
 
@@ -664,8 +764,12 @@ describe('point helpers', () => {
         });
         const coordinates = [[1, 1, 2]];
         scene = getMockScene();
-        positions = coordinates.map(pos => Cartesian3.fromDegrees(...pos));
-        vectorProperties = new VectorProperties({ modelScaleX: 2, modelScaleY: 4, modelScaleZ: 8 });
+        positions = coordinates.map((pos) => Cartesian3.fromDegrees(...pos));
+        vectorProperties = new VectorProperties({
+          modelScaleX: 2,
+          modelScaleY: 4,
+          modelScaleZ: 8,
+        });
         const style = new Style({
           image: new RegularShape({
             fill: new Fill({ color: '#FF00FF' }),
@@ -689,7 +793,9 @@ describe('point helpers', () => {
 
       it('should create a primitive', () => {
         expect(primitive).to.be.an.instanceOf(Primitive);
-        expect(primitive.geometryInstances[0].geometry).to.be.an.instanceOf(SphereGeometry);
+        expect(primitive.geometryInstances[0].geometry).to.be.an.instanceOf(
+          SphereGeometry,
+        );
       });
 
       it('should apply allow picking', () => {
@@ -705,12 +811,20 @@ describe('point helpers', () => {
 
       it('should reset the scale, if setting a new modelMatrix', () => {
         const modelMatrix = primitive.modelMatrix.clone();
-        primitive.modelMatrix = Matrix4.setScale(modelMatrix, new Cartesian3(2, 2, 2), new Matrix4());
+        primitive.modelMatrix = Matrix4.setScale(
+          modelMatrix,
+          new Cartesian3(2, 2, 2),
+          new Matrix4(),
+        );
         const scale = Matrix4.getScale(primitive.modelMatrix, new Cartesian3());
         expect(scale.x).to.closeTo(4, CesiumMath.EPSILON8);
         expect(scale.y).to.closeTo(8, CesiumMath.EPSILON8);
         expect(scale.z).to.closeTo(16, CesiumMath.EPSILON8);
-        primitive.modelMatrix = Matrix4.setScale(modelMatrix, Cartesian3.ONE, new Matrix4());
+        primitive.modelMatrix = Matrix4.setScale(
+          modelMatrix,
+          Cartesian3.ONE,
+          new Matrix4(),
+        );
         Matrix4.getScale(primitive.modelMatrix, scale);
         expect(scale.x).to.closeTo(2, CesiumMath.EPSILON8);
         expect(scale.y).to.closeTo(4, CesiumMath.EPSILON8);
@@ -737,8 +851,12 @@ describe('point helpers', () => {
         });
         const coordinates = [[1, 1, 2]];
         scene = getMockScene();
-        positions = coordinates.map(pos => Cartesian3.fromDegrees(...pos));
-        vectorProperties = new VectorProperties({ modelScaleX: 2, modelScaleY: 4, modelScaleZ: 8 });
+        positions = coordinates.map((pos) => Cartesian3.fromDegrees(...pos));
+        vectorProperties = new VectorProperties({
+          modelScaleX: 2,
+          modelScaleY: 4,
+          modelScaleZ: 8,
+        });
         const style = new Style({
           image: new RegularShape({
             fill: new Fill({ color: '#FF00FF' }),
@@ -762,7 +880,9 @@ describe('point helpers', () => {
 
       it('should create a primitive', () => {
         expect(primitive).to.be.an.instanceOf(Primitive);
-        expect(primitive.geometryInstances[0].geometry).to.be.an.instanceOf(SphereGeometry);
+        expect(primitive.geometryInstances[0].geometry).to.be.an.instanceOf(
+          SphereGeometry,
+        );
       });
 
       it('should apply allow picking', () => {
@@ -778,12 +898,20 @@ describe('point helpers', () => {
 
       it('should reset the scale, if setting a new modelMatrix', () => {
         const modelMatrix = primitive.modelMatrix.clone();
-        primitive.modelMatrix = Matrix4.setScale(modelMatrix, new Cartesian3(2, 2, 2), new Matrix4());
+        primitive.modelMatrix = Matrix4.setScale(
+          modelMatrix,
+          new Cartesian3(2, 2, 2),
+          new Matrix4(),
+        );
         const scale = Matrix4.getScale(primitive.modelMatrix, new Cartesian3());
         expect(scale.x).to.closeTo(4, CesiumMath.EPSILON8);
         expect(scale.y).to.closeTo(8, CesiumMath.EPSILON8);
         expect(scale.z).to.closeTo(16, CesiumMath.EPSILON8);
-        primitive.modelMatrix = Matrix4.setScale(modelMatrix, Cartesian3.ONE, new Matrix4());
+        primitive.modelMatrix = Matrix4.setScale(
+          modelMatrix,
+          Cartesian3.ONE,
+          new Matrix4(),
+        );
         Matrix4.getScale(primitive.modelMatrix, scale);
         expect(scale.x).to.closeTo(2, CesiumMath.EPSILON8);
         expect(scale.y).to.closeTo(4, CesiumMath.EPSILON8);
@@ -792,12 +920,29 @@ describe('point helpers', () => {
 
       it('should reset the offset, if setting a new modelMatrix', () => {
         const modelMatrix = primitive.modelMatrix.clone();
-        primitive.modelMatrix = Matrix4.setScale(modelMatrix, new Cartesian3(2, 2, 2), new Matrix4());
-        const translation = Matrix4.getTranslation(primitive.modelMatrix, new Cartesian3());
-        expect(Cartographic.fromCartesian(translation).height).to.closeTo(18, CesiumMath.EPSILON5);
-        primitive.modelMatrix = Matrix4.setScale(modelMatrix, Cartesian3.ONE, new Matrix4());
+        primitive.modelMatrix = Matrix4.setScale(
+          modelMatrix,
+          new Cartesian3(2, 2, 2),
+          new Matrix4(),
+        );
+        const translation = Matrix4.getTranslation(
+          primitive.modelMatrix,
+          new Cartesian3(),
+        );
+        expect(Cartographic.fromCartesian(translation).height).to.closeTo(
+          18,
+          CesiumMath.EPSILON5,
+        );
+        primitive.modelMatrix = Matrix4.setScale(
+          modelMatrix,
+          Cartesian3.ONE,
+          new Matrix4(),
+        );
         Matrix4.getTranslation(primitive.modelMatrix, translation);
-        expect(Cartographic.fromCartesian(translation).height).to.closeTo(10, CesiumMath.EPSILON5);
+        expect(Cartographic.fromCartesian(translation).height).to.closeTo(
+          10,
+          CesiumMath.EPSILON5,
+        );
       });
     });
 
@@ -808,8 +953,14 @@ describe('point helpers', () => {
         });
         const coordinates = [[1, 1, 2]];
         const scene = getMockScene();
-        const positions = coordinates.map(pos => Cartesian3.fromDegrees(...pos));
-        const vectorProperties = new VectorProperties({ modelScaleX: 2, modelScaleY: 4, modelScaleZ: 8 });
+        const positions = coordinates.map((pos) =>
+          Cartesian3.fromDegrees(...pos),
+        );
+        const vectorProperties = new VectorProperties({
+          modelScaleX: 2,
+          modelScaleY: 4,
+          modelScaleZ: 8,
+        });
         const style = new Style({
           fill: new Fill({ color: '#FF00FF' }),
           image: new Icon({
@@ -838,8 +989,14 @@ describe('point helpers', () => {
         });
         const coordinates = [[1, 1, 2]];
         const scene = getMockScene();
-        const positions = coordinates.map(pos => Cartesian3.fromDegrees(...pos));
-        const vectorProperties = new VectorProperties({ modelScaleX: 2, modelScaleY: 4, modelScaleZ: 8 });
+        const positions = coordinates.map((pos) =>
+          Cartesian3.fromDegrees(...pos),
+        );
+        const vectorProperties = new VectorProperties({
+          modelScaleX: 2,
+          modelScaleY: 4,
+          modelScaleZ: 8,
+        });
         const style = new Style({
           fill: new Fill({ color: '#FF00FF' }),
         });

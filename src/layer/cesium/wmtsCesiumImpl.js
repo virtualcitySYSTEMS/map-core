@@ -1,4 +1,8 @@
-import { Rectangle, WebMapTileServiceImageryProvider, ImageryLayer as CesiumImageryLayer } from '@vcmap-cesium/engine';
+import {
+  Rectangle,
+  WebMapTileServiceImageryProvider,
+  ImageryLayer as CesiumImageryLayer,
+} from '@vcmap-cesium/engine';
 import RasterLayerCesiumImpl from './rasterLayerCesiumImpl.js';
 import { wgs84Projection } from '../../util/projection.js';
 import { getTilingScheme } from '../rasterLayer.js';
@@ -9,7 +13,9 @@ import { getTilingScheme } from '../rasterLayer.js';
  * @extends {RasterLayerCesiumImpl}
  */
 class WmtsCesiumImpl extends RasterLayerCesiumImpl {
-  static get className() { return 'WmtsCesiumImpl'; }
+  static get className() {
+    return 'WmtsCesiumImpl';
+  }
 
   /**
    * @param {import("@vcmap/core").CesiumMap} map
@@ -59,13 +65,15 @@ class WmtsCesiumImpl extends RasterLayerCesiumImpl {
     this.matrixIds = options.matrixIds;
   }
 
-
   /**
    * @returns {import("@vcmap-cesium/engine").ImageryLayer}
    */
   getCesiumLayer() {
     // This is a bug in Cesium, they cant cope with {Layer} placeholder..
-    const url = this.url.indexOf('{Layer}') !== -1 ? this.url.replace('{Layer}', this.layer) : this.url;
+    const url =
+      this.url.indexOf('{Layer}') !== -1
+        ? this.url.replace('{Layer}', this.layer)
+        : this.url;
     const extent = this.extent.getCoordinatesInProjection(wgs84Projection);
     const options = {
       url,
@@ -74,11 +82,15 @@ class WmtsCesiumImpl extends RasterLayerCesiumImpl {
       format: this.format,
       tileMatrixSetID: this.tileMatrixSetID,
       maximumLevel: this.maxLevel,
-      rectangle: Rectangle.fromDegrees(extent[0], extent[1], extent[2], extent[3]),
+      rectangle: Rectangle.fromDegrees(
+        extent[0],
+        extent[1],
+        extent[2],
+        extent[3],
+      ),
       tileWidth: this.tileSize[0],
       tileHeight: this.tileSize[1],
     };
-
 
     options.tilingScheme = getTilingScheme({
       tilingSchema: this.tilingSchema,

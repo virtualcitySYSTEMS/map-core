@@ -47,12 +47,15 @@ describe('MVTTileProvider', () => {
     });
 
     it('should apply id Property as featureId', () => {
-      expect(loaded[0].getId()).to.equal('9da902d4-2d74-4798-b6b4-795a50e7f6cf');
+      expect(loaded[0].getId()).to.equal(
+        '9da902d4-2d74-4798-b6b4-795a50e7f6cf',
+      );
     });
 
     it('should transform local coordinates from southWest Corner to mercator', () => {
-      expect(loaded[0].getGeometry().getFirstCoordinate())
-        .to.have.members([1488993.3109952325, 6894008.455096615]);
+      expect(loaded[0].getGeometry().getFirstCoordinate()).to.have.members([
+        1488993.3109952325, 6894008.455096615,
+      ]);
     });
   });
 
@@ -81,7 +84,10 @@ describe('MVTTileProvider', () => {
       });
 
       it('should configure idProperty', () => {
-        expect(outputConfig).to.have.property('idProperty', inputConfig.idProperty);
+        expect(outputConfig).to.have.property(
+          'idProperty',
+          inputConfig.idProperty,
+        );
       });
     });
   });

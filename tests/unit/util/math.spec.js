@@ -1,5 +1,10 @@
 import { Math as CesiumMath } from '@vcmap-cesium/engine';
-import { getCartesianBearing, getCartesianPitch, getMidPoint, modulo } from '../../../index.js';
+import {
+  getCartesianBearing,
+  getCartesianPitch,
+  getMidPoint,
+  modulo,
+} from '../../../index.js';
 
 describe('modulo', () => {
   it('should return the modulo of 5 % 2', () => {
@@ -22,7 +27,7 @@ describe('modulo', () => {
 describe('getCartesianBearing', () => {
   it('should return the bearing of a segment of two cartesian values', () => {
     expect(getCartesianBearing([0, 0], [1, 0])).to.equal(Math.PI / 2);
-    expect(getCartesianBearing([1, 0], [0, 0])).to.equal(Math.PI + (Math.PI / 2));
+    expect(getCartesianBearing([1, 0], [0, 0])).to.equal(Math.PI + Math.PI / 2);
     expect(getCartesianBearing([0, 0], [1, 1])).to.equal(Math.PI / 4);
     expect(getCartesianBearing([0, 0], [0, 0])).to.equal(0);
     expect(getCartesianBearing([0, 0], [0, 1])).to.equal(0);
@@ -32,9 +37,18 @@ describe('getCartesianBearing', () => {
 
 describe('getCartesianPitch', () => {
   it('should return the pitch between two cartesian values', () => {
-    expect(getCartesianPitch([0, 0, 0], [1, 0, 1])).to.be.closeTo(45, CesiumMath.EPSILON5);
-    expect(getCartesianPitch([0, 0, 1], [1, 0, 0])).to.be.closeTo(-45, CesiumMath.EPSILON5);
-    expect(getCartesianPitch([0, 0, 1], [1, 0, 1])).to.be.closeTo(0, CesiumMath.EPSILON5);
+    expect(getCartesianPitch([0, 0, 0], [1, 0, 1])).to.be.closeTo(
+      45,
+      CesiumMath.EPSILON5,
+    );
+    expect(getCartesianPitch([0, 0, 1], [1, 0, 0])).to.be.closeTo(
+      -45,
+      CesiumMath.EPSILON5,
+    );
+    expect(getCartesianPitch([0, 0, 1], [1, 0, 1])).to.be.closeTo(
+      0,
+      CesiumMath.EPSILON5,
+    );
   });
 });
 

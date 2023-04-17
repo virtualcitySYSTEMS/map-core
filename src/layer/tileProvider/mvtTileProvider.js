@@ -25,7 +25,9 @@ class MVTTileProvider extends TileProvider {
    * @readonly
    * @returns {string}
    */
-  static get className() { return 'MVTTileProvider'; }
+  static get className() {
+    return 'MVTTileProvider';
+  }
 
   /**
    * @returns {MVTTileProviderOptions}
@@ -95,9 +97,10 @@ class MVTTileProvider extends TileProvider {
     const extent = rectangleToExtent(rectangle);
     const center = getCenter(extent);
     const data = await requestArrayBuffer(url);
-    const features = /** @type {Array<import("ol").Feature<import("ol/geom/Geometry").default>>} */
+    const features =
+      /** @type {Array<import("ol").Feature<import("ol/geom/Geometry").default>>} */
       (this._MVTFormat.readFeatures(data));
-    const sx = ((extent[2] - extent[0]) / 4096);
+    const sx = (extent[2] - extent[0]) / 4096;
     const sy = -((extent[3] - extent[1]) / 4096);
     features.forEach((feature) => {
       const idToUse = feature.get(this.idProperty);
@@ -138,4 +141,7 @@ class MVTTileProvider extends TileProvider {
 }
 
 export default MVTTileProvider;
-tileProviderClassRegistry.registerClass(MVTTileProvider.className, MVTTileProvider);
+tileProviderClassRegistry.registerClass(
+  MVTTileProvider.className,
+  MVTTileProvider,
+);

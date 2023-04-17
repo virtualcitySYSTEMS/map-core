@@ -3,7 +3,10 @@ import { CesiumTerrainProvider } from '@vcmap-cesium/engine';
 import importJSON from '../importJSON.js';
 import getFileNameFromUrl from '../getFileNameFromUrl.js';
 
-const fileName = getFileNameFromUrl(import.meta.url, '../../../../data/terrain/layer.json');
+const fileName = getFileNameFromUrl(
+  import.meta.url,
+  '../../../../data/terrain/layer.json',
+);
 const layerJson = await importJSON(fileName);
 const terrainFiles = {
   1388006485: './tests/data/terrain/13/8800/6485.terrain',
@@ -24,12 +27,10 @@ export function setTerrainServer(scope) {
     .reply((uri) => {
       const [x, y] = uri.match(/(\d{4})/g);
       const terrainFile = terrainFiles[`13${x}${y}`];
-      const res = terrainFile ? fs.createReadStream(terrainFiles[`13${x}${y}`]) : Buffer.from('');
-      return [
-        200,
-        res,
-        { 'Content-Type': 'application/vnd.quantized-mesh' },
-      ];
+      const res = terrainFile
+        ? fs.createReadStream(terrainFiles[`13${x}${y}`])
+        : Buffer.from('');
+      return [200, res, { 'Content-Type': 'application/vnd.quantized-mesh' }];
     })
     .persist();
 }

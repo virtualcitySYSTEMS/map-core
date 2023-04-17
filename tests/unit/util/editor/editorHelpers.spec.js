@@ -1,6 +1,9 @@
 import { LineString } from 'ol/geom.js';
 import { getCesiumMap } from '../../helpers/cesiumHelpers.js';
-import { drapeGeometryOnTerrain, placeGeometryOnTerrain } from '../../../../src/util/editor/editorHelpers.js';
+import {
+  drapeGeometryOnTerrain,
+  placeGeometryOnTerrain,
+} from '../../../../src/util/editor/editorHelpers.js';
 
 describe('editorHelpers', () => {
   describe('drapeGeometryOnTerrain', () => {
@@ -9,9 +12,12 @@ describe('editorHelpers', () => {
 
     before(() => {
       cesiumMap = getCesiumMap();
-      stub = sinon.stub(cesiumMap, 'getHeightFromTerrain')
+      stub = sinon
+        .stub(cesiumMap, 'getHeightFromTerrain')
         .callsFake(async (coords) => {
-          coords.forEach((c, i) => { c[2] = i; });
+          coords.forEach((c, i) => {
+            c[2] = i;
+          });
           return coords;
         });
     });
@@ -42,9 +48,12 @@ describe('editorHelpers', () => {
 
     before(() => {
       cesiumMap = getCesiumMap();
-      stub = sinon.stub(cesiumMap, 'getHeightFromTerrain')
+      stub = sinon
+        .stub(cesiumMap, 'getHeightFromTerrain')
         .callsFake(async (coords) => {
-          coords.forEach((c, i) => { c[2] = i + 1; });
+          coords.forEach((c, i) => {
+            c[2] = i + 1;
+          });
           return coords;
         });
     });

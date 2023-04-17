@@ -129,7 +129,9 @@ class MapCollection extends Collection {
      * @type {ClippingObjectManager}
      * @api
      */
-    this.clippingObjectManager = new ClippingObjectManager(this._layerCollection);
+    this.clippingObjectManager = new ClippingObjectManager(
+      this._layerCollection,
+    );
 
     /**
      * @type {Array<Function>}
@@ -165,7 +167,9 @@ class MapCollection extends Collection {
    * @api
    * @readonly
    */
-  get activeMap() { return this._activeMap; }
+  get activeMap() {
+    return this._activeMap;
+  }
 
   /**
    * The currently set HTML element in which to render the maps
@@ -244,8 +248,11 @@ class MapCollection extends Collection {
   add(map) {
     const added = super.add(map);
     if (added !== null) {
-      this._mapPointerListeners
-        .push(map.pointerInteractionEvent.addEventListener(this.eventHandler.handleMapEvent.bind(this.eventHandler)));
+      this._mapPointerListeners.push(
+        map.pointerInteractionEvent.addEventListener(
+          this.eventHandler.handleMapEvent.bind(this.eventHandler),
+        ),
+      );
       map.layerCollection = this._layerCollection;
       map.setTarget(this._target);
     }
@@ -293,7 +300,8 @@ class MapCollection extends Collection {
   setTarget(target) {
     checkMaybe(target, [String, HTMLElement]);
 
-    this._target = typeof target === 'string' ? document.getElementById(target) : target;
+    this._target =
+      typeof target === 'string' ? document.getElementById(target) : target;
     this._array.forEach((map) => {
       map.setTarget(this._target);
     });
@@ -313,7 +321,9 @@ class MapCollection extends Collection {
       if (fMap && fMap !== map) {
         return fMap;
       } else {
-        getLogger().warning(`the fallback map with the name: ${fallbackMap} is missconfigured`);
+        getLogger().warning(
+          `the fallback map with the name: ${fallbackMap} is missconfigured`,
+        );
       }
     }
     return null;
@@ -326,9 +336,7 @@ class MapCollection extends Collection {
    */
   _getFallbackMapOrDefault(map) {
     const fallbackMap = this._getFallbackMap(map);
-    return fallbackMap ||
-      this.getByType('OpenlayersMap')[0] ||
-      this._array[0];
+    return fallbackMap || this.getByType('OpenlayersMap')[0] || this._array[0];
   }
 
   /**
@@ -341,7 +349,9 @@ class MapCollection extends Collection {
   async setActiveMap(mapName) {
     const map = this.getByKey(mapName);
     if (!map) {
-      getLogger('MapCollection').warning(`could not find map with name ${mapName}`);
+      getLogger('MapCollection').warning(
+        `could not find map with name ${mapName}`,
+      );
       return Promise.resolve();
     }
 
@@ -358,7 +368,8 @@ class MapCollection extends Collection {
 
     try {
       await map.initialize();
-    } catch (error) { // typically unsupported webGL and cesium map
+    } catch (error) {
+      // typically unsupported webGL and cesium map
       getLogger('MapCollection').error(error);
       this.remove(map);
       const fallbackMap = this._getFallbackMapOrDefault(map);
@@ -379,7 +390,9 @@ class MapCollection extends Collection {
         return map.activate();
       }
 
-      viewpoint = this._activeMap ? await this._activeMap.getViewpoint() : this._cachedViewpoint;
+      viewpoint = this._activeMap
+        ? await this._activeMap.getViewpoint()
+        : this._cachedViewpoint;
 
       const canShow = await map.canShowViewpoint(viewpoint);
       if (!canShow) {
@@ -409,9 +422,11 @@ class MapCollection extends Collection {
 
     this.clippingObjectManager.mapActivated(map);
     this._postRenderListener();
-    this._postRenderListener = this._activeMap.postRender.addEventListener((event) => {
-      this.postRender.raiseEvent(event);
-    });
+    this._postRenderListener = this._activeMap.postRender.addEventListener(
+      (event) => {
+        this.postRender.raiseEvent(event);
+      },
+    );
     this.mapActivated.raiseEvent(map);
     return Promise.resolve();
   }
@@ -423,7 +438,7 @@ class MapCollection extends Collection {
    * @api
    */
   getByType(type) {
-    return this._array.filter(m => m.className === type);
+    return this._array.filter((m) => m.className === type);
   }
 
   /**
@@ -431,7 +446,9 @@ class MapCollection extends Collection {
    */
   destroy() {
     super.destroy();
-    [...this._layerCollection].forEach((l) => { l.destroy(); });
+    [...this._layerCollection].forEach((l) => {
+      l.destroy();
+    });
     this._layerCollection.destroy();
     this.eventHandler.destroy();
     this.mapActivated.destroy();
@@ -441,7 +458,9 @@ class MapCollection extends Collection {
     this.fallbackMapActivated.destroy();
     this.initializeError.destroy();
 
-    this._mapPointerListeners.forEach((cb) => { cb(); });
+    this._mapPointerListeners.forEach((cb) => {
+      cb();
+    });
     this._mapPointerListeners = [];
 
     this._target = null;

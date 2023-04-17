@@ -15,7 +15,9 @@ import { layerClassRegistry } from '../classRegistry.js';
  * @extends {DataSourceLayer}
  */
 class CzmlLayer extends DataSourceLayer {
-  static get className() { return 'CzmlLayer'; }
+  static get className() {
+    return 'CzmlLayer';
+  }
 
   /**
    * @returns {CzmlOptions}
@@ -47,10 +49,10 @@ class CzmlLayer extends DataSourceLayer {
      * @type {Promise<void>}
      * @api stable
      */
-    this.loaded = new Promise(((resolve, reject) => {
+    this.loaded = new Promise((resolve, reject) => {
       this._loadedResolve = resolve;
       this._loadedReject = reject;
-    }));
+    });
   }
 
   /**
@@ -76,8 +78,12 @@ class CzmlLayer extends DataSourceLayer {
    * @private
    */
   async _loadData() {
-    await /** @type {import("@vcmap-cesium/engine").CzmlDataSource} */ (this.dataSource)
-      .load(this.url, this.sourceUri ? { sourceUri: this.sourceUri } : undefined);
+    await /** @type {import("@vcmap-cesium/engine").CzmlDataSource} */ (
+      this.dataSource
+    ).load(
+      this.url,
+      this.sourceUri ? { sourceUri: this.sourceUri } : undefined,
+    );
 
     this.entities.values.forEach((entity) => {
       entity[vcsLayerName] = this.name;

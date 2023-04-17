@@ -9,7 +9,9 @@ import LayerOpenlayersImpl from './layerOpenlayersImpl.js';
  * @implements {VectorTileImplementation}
  */
 class TileDebugOpenlayersImpl extends LayerOpenlayersImpl {
-  static get className() { return 'TileDebugOpenlayersImpl'; }
+  static get className() {
+    return 'TileDebugOpenlayersImpl';
+  }
 
   /**
    * @returns {import("ol/layer/Tile").default}

@@ -127,7 +127,9 @@ export const vectorStyleSymbol = Symbol('VcsVectorStyleItem');
  * @api
  */
 class VectorStyleItem extends StyleItem {
-  static get className() { return 'VectorStyleItem'; }
+  static get className() {
+    return 'VectorStyleItem';
+  }
 
   /**
    * @param {VectorStyleItemOptions} options
@@ -190,9 +192,11 @@ class VectorStyleItem extends StyleItem {
      */
     this._image = undefined;
     if (options.image) {
-      this._image = options.image.radius ?
-        getShapeFromOptions({ ...options.image }) :
-        new Icon(/** @type {import("ol/style/Icon").Options} */ (options.image));
+      this._image = options.image.radius
+        ? getShapeFromOptions({ ...options.image })
+        : new Icon(
+            /** @type {import("ol/style/Icon").Options} */ (options.image),
+          );
     }
 
     /**
@@ -223,7 +227,9 @@ class VectorStyleItem extends StyleItem {
         check(option.color.length, [3, 4]);
       } catch (e) {
         this.getLogger().error(e.message);
-        option.color = /** @type {import("ol/color").Color} */ ([255, 255, 255, 0.4]);
+        option.color = /** @type {import("ol/color").Color} */ ([
+          255, 255, 255, 0.4,
+        ]);
       }
     };
 
@@ -239,8 +245,15 @@ class VectorStyleItem extends StyleItem {
       checkColor(options.fill);
       if (options.fill.pattern) {
         checkStroke(options.fill.pattern);
-        if (!(options.fill.pattern.type && Object.values(PatternType).includes(options.fill.pattern.type))) {
-          this.getLogger().error(`Cannot find pattern ${options.fill.pattern.type}`);
+        if (
+          !(
+            options.fill.pattern.type &&
+            Object.values(PatternType).includes(options.fill.pattern.type)
+          )
+        ) {
+          this.getLogger().error(
+            `Cannot find pattern ${options.fill.pattern.type}`,
+          );
           options.fill.pattern.type = PatternType.NWSE;
         }
       }
@@ -259,7 +272,9 @@ class VectorStyleItem extends StyleItem {
       }
 
       if (!(options.image.src || options.image.radius)) {
-        this.getLogger().error('missing source or label in style, setting default circle');
+        this.getLogger().error(
+          'missing source or label in style, setting default circle',
+        );
         options.image = {
           fill: {
             color: 'rgba(255,255,255,0.4)',
@@ -295,24 +310,9 @@ class VectorStyleItem extends StyleItem {
    * @api
    */
   get fillColor() {
-    return this._fillOptions ? /** @type {import("ol/color").Color} */ (this._fillOptions.color) : null;
-  }
-
-  /**
-   * the current fill color as a cesium color
-   * @readonly
-   * @type {import("@vcmap-cesium/engine").Color}
-   * @api
-   */
-  get cesiumFillColor() {
-    const fillColor = this.fillColor ? this.fillColor.slice() : null;
-    if (fillColor) {
-      fillColor[3] = fillColor[3] || 1;
-      fillColor[3] *= 255; // cesium alpha range between 0 and 255
-      // @ts-ignore
-      return Color.fromBytes(...fillColor, this._cesiumColor);
-    }
-    return Color.RED.clone(this._cesiumColor); // TODO should not be red - transparent?
+    return this._fillOptions
+      ? /** @type {import("ol/color").Color} */ (this._fillOptions.color)
+      : null;
   }
 
   /**
@@ -340,11 +340,30 @@ class VectorStyleItem extends StyleItem {
   }
 
   /**
+   * the current fill color as a cesium color
+   * @readonly
+   * @type {import("@vcmap-cesium/engine").Color}
+   * @api
+   */
+  get cesiumFillColor() {
+    const fillColor = this.fillColor ? this.fillColor.slice() : null;
+    if (fillColor) {
+      fillColor[3] = fillColor[3] || 1;
+      fillColor[3] *= 255; // cesium alpha range between 0 and 255
+      // @ts-ignore
+      return Color.fromBytes(...fillColor, this._cesiumColor);
+    }
+    return Color.RED.clone(this._cesiumColor); // TODO should not be red - transparent?
+  }
+
+  /**
    * @type {VectorStyleItemPattern}
    * @api
    */
   get pattern() {
-    return this._fillOptions && this._fillOptions.pattern ? this._fillOptions.pattern : null;
+    return this._fillOptions && this._fillOptions.pattern
+      ? this._fillOptions.pattern
+      : null;
   }
 
   /**
@@ -356,12 +375,16 @@ class VectorStyleItem extends StyleItem {
       return;
     }
     if (patternOptions) {
-      checkMaybe(patternOptions, {
-        color: [String, [Number]],
-        width: Number,
-        type: Number,
-        size: [Number, undefined, null],
-      }, true);
+      checkMaybe(
+        patternOptions,
+        {
+          color: [String, [Number]],
+          width: Number,
+          type: Number,
+          size: [Number, undefined, null],
+        },
+        true,
+      );
       this._fillOptions.pattern = patternOptions;
     } else {
       this._fillOptions.pattern = undefined;
@@ -373,7 +396,9 @@ class VectorStyleItem extends StyleItem {
    * @type {import("ol/style/Stroke").default}
    * @api
    */
-  get stroke() { return this._stroke; }
+  get stroke() {
+    return this._stroke;
+  }
 
   /**
    * @param {import("ol/style/Stroke").default=} stroke
@@ -394,7 +419,9 @@ class VectorStyleItem extends StyleItem {
    * @type {string}
    * @api
    */
-  get label() { return this._label; }
+  get label() {
+    return this._label;
+  }
 
   /**
    * @param {string} label
@@ -415,7 +442,9 @@ class VectorStyleItem extends StyleItem {
    * @type {import("ol/style/Text").default}
    * @api
    */
-  get text() { return this._text; }
+  get text() {
+    return this._text;
+  }
 
   /**
    * @param {import("ol/style/Text").default=} text
@@ -435,7 +464,9 @@ class VectorStyleItem extends StyleItem {
    * @type {(import("ol/style/Icon").default|import("ol/style/RegularShape").default)}
    * @api
    */
-  get image() { return this._image; }
+  get image() {
+    return this._image;
+  }
 
   /**
    * @param {(import("ol/style/Icon").default|import("ol/style/RegularShape").default)=} image
@@ -456,7 +487,9 @@ class VectorStyleItem extends StyleItem {
    * @type {import("ol/style/Style").default|import("ol/style/Style").StyleFunction}
    * @api
    */
-  get style() { return this._style; }
+  get style() {
+    return this._style;
+  }
 
   /**
    * @param {import("ol/style/Style").default|import("ol/style/Style").StyleFunction} style
@@ -467,7 +500,10 @@ class VectorStyleItem extends StyleItem {
       this._stroke = style.getStroke();
       this._fill = style.getFill();
       this._text = style.getText();
-      this._image = /** @type {import("ol/style/Icon").default|import("ol/style/Circle").default} */ (style.getImage());
+      this._image =
+        /** @type {import("ol/style/Icon").default|import("ol/style/Circle").default} */ (
+          style.getImage()
+        );
     } else {
       this._stroke = undefined;
       this._fill = undefined;
@@ -489,9 +525,9 @@ class VectorStyleItem extends StyleItem {
    */
   _setFill() {
     if (this._style instanceof Style) {
-      const color = this._fillOptions.pattern ?
-        createPattern(this._fillOptions) :
-        this._fillOptions.color;
+      const color = this._fillOptions.pattern
+        ? createPattern(this._fillOptions)
+        : this._fillOptions.color;
       if (this._fill) {
         this._fill.setColor(color);
       } else {
@@ -520,13 +556,16 @@ class VectorStyleItem extends StyleItem {
   updateCesiumStyleColor(silent) {
     const colorConditions = getDefaultCondition('olcs_color', true);
     if (this.stroke && this.stroke.getColor()) {
-      colorConditions.splice(1, 0, [`\${olcs_geometryType}===${OlcsGeometryType.POLYLINE}`, getStringColor(this.stroke.getColor())]);
+      colorConditions.splice(1, 0, [
+        `\${olcs_geometryType}===${OlcsGeometryType.POLYLINE}`,
+        getStringColor(this.stroke.getColor()),
+      ]);
     }
     if (this._image instanceof Circle && this._image.getFill()) {
-      colorConditions.splice(
-        1, 0,
-        [`\${olcs_geometryType}===${OlcsGeometryType.POINT}`, getStringColor(this._image.getFill().getColor())],
-      );
+      colorConditions.splice(1, 0, [
+        `\${olcs_geometryType}===${OlcsGeometryType.POINT}`,
+        getStringColor(this._image.getFill().getColor()),
+      ]);
     }
     if (this.fillColor) {
       colorConditions.splice(-1, 1, ['true', getStringColor(this.fillColor)]);
@@ -547,8 +586,12 @@ class VectorStyleItem extends StyleItem {
       ],
     } */
     const scaleConditions = getDefaultCondition('olcs_scale');
-    const pointOutlineWidthConditions = getDefaultCondition('olcs_outlineWidth');
-    const pointOutlineColorConditions = getDefaultCondition('olcs_outlineColor', true);
+    const pointOutlineWidthConditions =
+      getDefaultCondition('olcs_outlineWidth');
+    const pointOutlineColorConditions = getDefaultCondition(
+      'olcs_outlineColor',
+      true,
+    );
     const pointSizeConditions = getDefaultCondition('olcs_pointSize');
     const imageConditions = getDefaultCondition('olcs_image');
     /* commented out, because we simulate the anchorline via a line in the tileset, TODO Evaluate again
@@ -571,7 +614,10 @@ class VectorStyleItem extends StyleItem {
         let size = this._image.getRadius() * 2;
         if (stroke) {
           if (this._image.getStroke().getColor()) {
-            pointOutlineColorConditions.splice(1, 1, ['true', getStringColor(this._image.getStroke().getColor())]);
+            pointOutlineColorConditions.splice(1, 1, [
+              'true',
+              getStringColor(this._image.getStroke().getColor()),
+            ]);
           }
           const width = this._image.getStroke().getWidth();
           pointOutlineWidthConditions.splice(1, 1, ['true', `${width}`]);
@@ -579,7 +625,9 @@ class VectorStyleItem extends StyleItem {
         }
         pointSizeConditions.splice(1, 1, ['true', `${size}`]);
       } else if (this._image instanceof RegularShape) {
-        const dataUrl = /** @type {HTMLCanvasElement} */ (this._image.getImage(1)).toDataURL();
+        const dataUrl = /** @type {HTMLCanvasElement} */ (
+          this._image.getImage(1)
+        ).toDataURL();
         imageConditions.splice(1, 1, ['true', `"${dataUrl}"`]);
       } else if (this._image instanceof Icon) {
         imageConditions.splice(1, 1, ['true', `"${this._image.getSrc()}"`]);
@@ -592,10 +640,14 @@ class VectorStyleItem extends StyleItem {
     */
     // @ts-ignore
     this.cesiumStyle.scale = { conditions: scaleConditions };
-    // @ts-ignore
-    this.cesiumStyle.pointOutlineWidth = { conditions: pointOutlineWidthConditions };
-    // @ts-ignore
-    this.cesiumStyle.pointOutlineColor = { conditions: pointOutlineColorConditions };
+    this.cesiumStyle.pointOutlineWidth = {
+      // @ts-ignore
+      conditions: pointOutlineWidthConditions,
+    };
+    this.cesiumStyle.pointOutlineColor = {
+      // @ts-ignore
+      conditions: pointOutlineColorConditions,
+    };
     // @ts-ignore
     this.cesiumStyle.pointSize = { conditions: pointSizeConditions };
     // @ts-ignore
@@ -621,8 +673,13 @@ class VectorStyleItem extends StyleItem {
     const fontConditions = getDefaultCondition('olcs_font');
     const labelTextConditions = getDefaultCondition('olcs_labelText');
     const labelColorConditions = getDefaultCondition('olcs_fontColor', true);
-    const labelOutlineWidthConditions = getDefaultCondition('olcs_fontOutlineWidth');
-    const labelOutlineColorConditions = getDefaultCondition('olcs_fontOutlineColor', true);
+    const labelOutlineWidthConditions = getDefaultCondition(
+      'olcs_fontOutlineWidth',
+    );
+    const labelOutlineColorConditions = getDefaultCondition(
+      'olcs_fontOutlineColor',
+      true,
+    );
 
     if (this._text) {
       if (this._text.getFont()) {
@@ -632,12 +689,21 @@ class VectorStyleItem extends StyleItem {
         labelTextConditions.splice(1, 1, ['true', `'${this._text.getText()}'`]);
       }
       if (this._text.getFill() && this._text.getFill().getColor()) {
-        labelColorConditions.splice(1, 1, ['true', getStringColor(this._text.getFill().getColor())]);
+        labelColorConditions.splice(1, 1, [
+          'true',
+          getStringColor(this._text.getFill().getColor()),
+        ]);
       }
 
       if (this._text.getStroke() && this._text.getStroke().getColor()) {
-        labelOutlineColorConditions.splice(1, 1, ['true', getStringColor(this._text.getStroke().getColor())]);
-        labelOutlineWidthConditions.splice(1, 1, ['true', `${this._text.getStroke().getWidth() || 1.25}`]);
+        labelOutlineColorConditions.splice(1, 1, [
+          'true',
+          getStringColor(this._text.getStroke().getColor()),
+        ]);
+        labelOutlineWidthConditions.splice(1, 1, [
+          'true',
+          `${this._text.getStroke().getWidth() || 1.25}`,
+        ]);
       }
     }
 
@@ -648,12 +714,17 @@ class VectorStyleItem extends StyleItem {
     // @ts-ignore
     this.cesiumStyle.labelColor = { conditions: labelColorConditions };
 
+    this.cesiumStyle.labelOutlineWidth = {
+      // @ts-ignore
+      conditions: labelOutlineWidthConditions,
+    };
+    this.cesiumStyle.labelOutlineColor = {
+      // @ts-ignore
+      conditions: labelOutlineColorConditions,
+    };
     // @ts-ignore
-    this.cesiumStyle.labelOutlineWidth = { conditions: labelOutlineWidthConditions };
-    // @ts-ignore
-    this.cesiumStyle.labelOutlineColor = { conditions: labelOutlineColorConditions };
-    // @ts-ignore
-    this.cesiumStyle.labelStyle = 'Boolean(${olcs_fontOutlineWidth}) === true ? 2 : 0';
+    this.cesiumStyle.labelStyle =
+      'Boolean(${olcs_fontOutlineWidth}) === true ? 2 : 0';
     // @ts-ignore
     this.cesiumStyle.labelHorizontalOrigin = '0';
 
@@ -694,9 +765,12 @@ class VectorStyleItem extends StyleItem {
    */
   clone(result) {
     if (result) {
-      result.style = this._style instanceof Style ? this._style.clone() : this._style;
+      result.style =
+        this._style instanceof Style ? this._style.clone() : this._style;
       if (this._fillOptions && this._fillOptions.color) {
-        result.fillColor = /** @type {import("ol/color").Color} */ (this._fillOptions.color).slice();
+        result.fillColor = /** @type {import("ol/color").Color} */ (
+          this._fillOptions.color
+        ).slice();
         if (this._fillOptions.pattern) {
           result.pattern = { ...this._fillOptions.pattern };
         }
@@ -765,7 +839,9 @@ class VectorStyleItem extends StyleItem {
     const options = /** @type {VectorStyleItemOptions} */ (super.toJSON());
     if (this._fillOptions) {
       options.fill = {
-        color: /** @type {import("ol/color").Color} */ (parseColor(this._fillOptions.color).slice()),
+        color: /** @type {import("ol/color").Color} */ (
+          parseColor(this._fillOptions.color).slice()
+        ),
       };
       if (this._fillOptions.pattern) {
         options.fill.pattern = { ...this._fillOptions.pattern };
@@ -799,7 +875,9 @@ class VectorStyleItem extends StyleItem {
         scale: this._image.getScale(),
         fill: getFillOptions(this._image),
         radius: this._image.getRadius(),
-        stroke: this._image.getStroke() ? getStrokeOptions(this._image.getStroke()) : undefined,
+        stroke: this._image.getStroke()
+          ? getStrokeOptions(this._image.getStroke())
+          : undefined,
       };
     } else if (this._image instanceof RegularShape) {
       options.image = {
@@ -808,7 +886,9 @@ class VectorStyleItem extends StyleItem {
         points: this._image.getPoints(),
         angle: this._image.getAngle(),
         radius: this._image.getRadius(),
-        stroke: this._image.getStroke() ? getStrokeOptions(this._image.getStroke()) : undefined,
+        stroke: this._image.getStroke()
+          ? getStrokeOptions(this._image.getStroke())
+          : undefined,
       };
     } else if (this.exclude.image) {
       options.image = false;
@@ -823,7 +903,8 @@ class VectorStyleItem extends StyleItem {
    */
   getOptionsForFeature(feature) {
     const type = feature.getGeometry().getType();
-    const extrusion = feature.get('olcs_extrudedHeight') ||
+    const extrusion =
+      feature.get('olcs_extrudedHeight') ||
       (feature.get('olcs_storeyHeight') && feature.get('olcs_storeyNumber'));
     const sections = new Set();
 
@@ -842,7 +923,11 @@ class VectorStyleItem extends StyleItem {
       if (extrusion) {
         sections.add('fill');
       }
-    } else if (type === 'Polygon' || type === 'MultiPolygon' || type === 'Circle') {
+    } else if (
+      type === 'Polygon' ||
+      type === 'MultiPolygon' ||
+      type === 'Circle'
+    ) {
       sections.add('stroke');
       sections.add('fill');
     } else if (type === 'GeometryCollection') {
@@ -894,7 +979,9 @@ export default VectorStyleItem;
 /**
  * @type {VectorStyleItem}
  */
-export const defaultVectorStyle = new VectorStyleItem(getDefaultVectorStyleItemOptions());
+export const defaultVectorStyle = new VectorStyleItem(
+  getDefaultVectorStyleItemOptions(),
+);
 styleClassRegistry.registerClass(VectorStyleItem.className, VectorStyleItem);
 
 /**
@@ -912,4 +999,3 @@ export function fromCesiumColor(cesiumColor) {
     },
   });
 }
-

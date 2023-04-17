@@ -12,7 +12,11 @@ describe('Module', () => {
 
   before(async () => {
     app = new VcsApp();
-    startingVp = new Viewpoint({ name: 'foo', groundPosition: [13, 52], distance: 200 });
+    startingVp = new Viewpoint({
+      name: 'foo',
+      groundPosition: [13, 52],
+      distance: 200,
+    });
     module = new VcsModule({
       name: 'module',
       description: 'description',
@@ -20,13 +24,8 @@ describe('Module', () => {
         new VectorLayer({ name: 'foo' }).toJSON(),
         new VectorLayer({ name: 'bar', activeOnStartup: true }).toJSON(),
       ],
-      viewpoints: [
-        new Viewpoint({}).toJSON(),
-        startingVp.toJSON(),
-      ],
-      maps: [
-        new OpenlayersMap({ name: 'foo' }).toJSON(),
-      ],
+      viewpoints: [new Viewpoint({}).toJSON(), startingVp.toJSON()],
+      maps: [new OpenlayersMap({ name: 'foo' }).toJSON()],
       startingViewpointName: 'foo',
       startingMapName: 'foo',
     });
@@ -63,7 +62,7 @@ describe('Module', () => {
       module.setConfigFromApp(app);
       const { config } = module;
       expect(config.layers).to.have.lengthOf(2);
-      expect(!!config.layers.find(l => l.name === 'fooBar')).to.be.true;
+      expect(!!config.layers.find((l) => l.name === 'fooBar')).to.be.true;
       expect(config.viewpoints).to.have.lengthOf(1);
       expect(config.maps).to.have.lengthOf(2);
     });

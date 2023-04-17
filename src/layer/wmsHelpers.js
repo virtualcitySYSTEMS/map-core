@@ -22,19 +22,23 @@ import { isSameOrigin } from '../util/urlHelpers.js';
  */
 // eslint-disable-next-line import/prefer-default-export
 export function getWMSSource(options) {
-  const projection = options.tilingSchema === 'geographic' ?
-    wgs84Projection :
-    mercatorProjection;
+  const projection =
+    options.tilingSchema === 'geographic'
+      ? wgs84Projection
+      : mercatorProjection;
 
   const projectionExtent = projection.proj.getExtent();
 
   const width = getWidth(projectionExtent);
-  const size = options.tilingSchema === 'geographic' ? width / (options.tileSize[0] * 2) : width / options.tileSize[0];
+  const size =
+    options.tilingSchema === 'geographic'
+      ? width / (options.tileSize[0] * 2)
+      : width / options.tileSize[0];
   const maxZoom = options.maxLevel + 1;
   const resolutions = [];
   for (let z = 0; z < maxZoom; ++z) {
     // generate resolutions and matrixIds arrays for options WmtsLayer
-    resolutions.push(size / (2 ** z));
+    resolutions.push(size / 2 ** z);
   }
   const tilingOptions = {
     origin: getTopLeft(projectionExtent),
@@ -43,7 +47,8 @@ export function getWMSSource(options) {
     minZoom: options.minLevel,
   };
   if (options.extent && options.extent.isValid()) {
-    tilingOptions.extent = options.extent.getCoordinatesInProjection(projection);
+    tilingOptions.extent =
+      options.extent.getCoordinatesInProjection(projection);
   }
 
   const sourceOptions = {

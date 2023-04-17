@@ -9,19 +9,10 @@
   },
   "source": {
     "includePattern": "\\.js$",
-    "include":[
-      "src"
-    ],
-    "exclude": [
-      "index.js",
-      "src/ol",
-      "src/cesium"
-    ]
+    "include": ["src"],
+    "exclude": ["index.js", "src/ol", "src/cesium"]
   },
-  "plugins": [
-    "jsdoc-plugin-typescript",
-    "build/docs/exported-plugin.js"
-  ],
+  "plugins": ["jsdoc-plugin-typescript", "build/docs/exported-plugin.js"],
   "typescript": {
     "moduleRoot": "src"
   },

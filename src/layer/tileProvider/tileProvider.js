@@ -1,7 +1,12 @@
 import { v4 as uuidv4 } from 'uuid';
 import RBush from 'rbush';
 import { check } from '@vcsuite/check';
-import { Rectangle, Math as CesiumMath, WebMercatorTilingScheme, Cartographic } from '@vcmap-cesium/engine';
+import {
+  Rectangle,
+  Math as CesiumMath,
+  WebMercatorTilingScheme,
+  Cartographic,
+} from '@vcmap-cesium/engine';
 import LRUCache from 'ol/structs/LRUCache.js';
 import { buffer, createOrUpdateFromCoordinate } from 'ol/extent.js';
 import { parseBoolean, parseInteger } from '@vcsuite/parsers';
@@ -70,7 +75,6 @@ export function rectangleToExtent(rectangle) {
  * @api
  */
 
-
 /**
  * TileProvider class
  *
@@ -83,7 +87,9 @@ class TileProvider extends VcsObject {
    * @readonly
    * @returns {string}
    */
-  static get className() { return 'TileProvider'; }
+  static get className() {
+    return 'TileProvider';
+  }
 
   /**
    * @returns {TileProviderOptions}
@@ -116,13 +122,17 @@ class TileProvider extends VcsObject {
      * @type {number}
      * @private
      */
-    this._tileCacheSize = parseInteger(options.tileCacheSize, defaultOptions.tileCacheSize);
+    this._tileCacheSize = parseInteger(
+      options.tileCacheSize,
+      defaultOptions.tileCacheSize,
+    );
 
-
-    const baseLevels = Array.isArray(options.baseLevels) ?
-      options.baseLevels.slice() :
-      defaultOptions.baseLevels.slice();
-    baseLevels.sort((a, b) => { return b - a; });
+    const baseLevels = Array.isArray(options.baseLevels)
+      ? options.baseLevels.slice()
+      : defaultOptions.baseLevels.slice();
+    baseLevels.sort((a, b) => {
+      return b - a;
+    });
 
     /**
      * sorted baseLevels, maximumLevel first example: [18,17,16]
@@ -155,13 +165,19 @@ class TileProvider extends VcsObject {
      * @api
      * @readonly
      */
-    this.trackFeaturesToTiles = parseBoolean(options.trackFeaturesToTiles, defaultOptions.trackFeaturesToTiles);
+    this.trackFeaturesToTiles = parseBoolean(
+      options.trackFeaturesToTiles,
+      defaultOptions.trackFeaturesToTiles,
+    );
 
     /**
      * @type {boolean}
      * @api
      */
-    this.allowTileAggregation = parseBoolean(options.allowTileAggregation, defaultOptions.allowTileAggregation);
+    this.allowTileAggregation = parseBoolean(
+      options.allowTileAggregation,
+      defaultOptions.allowTileAggregation,
+    );
 
     /**
      * set of currently loaded featureIds with the corresponding tileIds
@@ -195,7 +211,6 @@ class TileProvider extends VcsObject {
     return this._tileCacheSize;
   }
 
-
   /**
    * @type {string}
    */
@@ -213,7 +228,6 @@ class TileProvider extends VcsObject {
       this._locale = value;
     }
   }
-
 
   /**
    * @param {number} value
@@ -282,43 +296,52 @@ class TileProvider extends VcsObject {
    * @private
    */
   _addTilePromiseToCache(featuresPromise, baseLevel, tileId) {
-    const rtreePromise = featuresPromise.then((features) => {
-      features.forEach((feature) => {
-        if (!feature.getId()) {
-          feature.setId(uuidv4());
-        }
+    const rtreePromise = featuresPromise
+      .then((features) => {
+        features.forEach((feature) => {
+          if (!feature.getId()) {
+            feature.setId(uuidv4());
+          }
+        });
+        const rtree = new RBush(features.length);
+        rtree.load(
+          features
+            .map((feature) => {
+              const geometry = feature.getGeometry();
+              if (geometry) {
+                const extent = geometry.getExtent();
+                const item = {
+                  minX: extent[0],
+                  minY: extent[1],
+                  maxX: extent[2],
+                  maxY: extent[3],
+                  value: feature,
+                };
+                return item;
+              }
+              return null;
+            })
+            .filter((item) => item),
+        );
+        this.tileLoadedEvent.raiseEvent({ tileId, rtree });
+        this._trackFeatures(features, tileId);
+        this.rtreeCache.set(tileId, rtree);
+        return rtree;
+      })
+      .catch(() => {
+        // Discussion, do we want to go on on tileLoadFailure ?
+        this.getLogger().warning(`Could not load Tile ${tileId}`);
+        const rtree = new RBush();
+        this.rtreeCache.set(tileId, rtree);
+        return rtree;
       });
-      const rtree = new RBush(features.length);
-      rtree.load(features.map((feature) => {
-        const geometry = feature.getGeometry();
-        if (geometry) {
-          const extent = geometry.getExtent();
-          const item = {
-            minX: extent[0],
-            minY: extent[1],
-            maxX: extent[2],
-            maxY: extent[3],
-            value: feature,
-          };
-          return item;
-        }
-        return null;
-      }).filter(item => item));
-      this.tileLoadedEvent.raiseEvent({ tileId, rtree });
-      this._trackFeatures(features, tileId);
-      this.rtreeCache.set(tileId, rtree);
-      return rtree;
-    }).catch(() => {
-      // Discussion, do we want to go on on tileLoadFailure ?
-      this.getLogger().warning(`Could not load Tile ${tileId}`);
-      const rtree = new RBush();
-      this.rtreeCache.set(tileId, rtree);
-      return rtree;
-    });
 
     this.cache.get(baseLevel).set(tileId, rtreePromise);
     if (this.cache.get(baseLevel).canExpireCache()) {
-      return Promise.all([rtreePromise, this._removeLastTileFromCache(baseLevel)]);
+      return Promise.all([
+        rtreePromise,
+        this._removeLastTileFromCache(baseLevel),
+      ]);
     }
     return rtreePromise;
   }
@@ -336,7 +359,10 @@ class TileProvider extends VcsObject {
         if (rtree) {
           this.rtreeCache.delete(tileIdToRemove);
           setTimeout(() => {
-            this._unTrackFeatures(rtree.all().map(item => item.value), tileIdToRemove);
+            this._unTrackFeatures(
+              rtree.all().map((item) => item.value),
+              tileIdToRemove,
+            );
             rtree.clear();
           }, 0);
         }
@@ -362,7 +388,9 @@ class TileProvider extends VcsObject {
       }
     }
     const baseLevel = this.getBaseLevel(currentLevel);
-    return baseLevel === undefined ? this.baseLevels[this.baseLevels.length - 1] : baseLevel;
+    return baseLevel === undefined
+      ? this.baseLevels[this.baseLevels.length - 1]
+      : baseLevel;
   }
 
   /**
@@ -398,11 +426,19 @@ class TileProvider extends VcsObject {
    */
   async _getRtreeForBaseTile(baseLevel, tileCenter) {
     const baseTile = this.tilingScheme.positionToTileXY(tileCenter, baseLevel);
-    const baseTileCacheKey = this.getCacheKey(baseTile.x, baseTile.y, baseLevel);
+    const baseTileCacheKey = this.getCacheKey(
+      baseTile.x,
+      baseTile.y,
+      baseLevel,
+    );
     if (this.cache.has(baseLevel)) {
       if (!this.cache.get(baseLevel).containsKey(baseTileCacheKey)) {
         const featuresPromise = this.loader(baseTile.x, baseTile.y, baseLevel);
-        this._addTilePromiseToCache(featuresPromise, baseLevel, baseTileCacheKey);
+        this._addTilePromiseToCache(
+          featuresPromise,
+          baseLevel,
+          baseTileCacheKey,
+        );
       }
       return this.cache.get(baseLevel).get(baseTileCacheKey);
     }
@@ -421,16 +457,24 @@ class TileProvider extends VcsObject {
     const extent = createOrUpdateFromCoordinate(coordinate);
     buffer(extent, resolution, extent);
     const wgs84Coordinate = mercatorToWgs84Transformer(coordinate);
-    const cartographic = Cartographic.fromDegrees(wgs84Coordinate[0], wgs84Coordinate[1]);
-    const baseLevel = this.getBaseLevelForResolution(resolution, cartographic.latitude);
+    const cartographic = Cartographic.fromDegrees(
+      wgs84Coordinate[0],
+      wgs84Coordinate[1],
+    );
+    const baseLevel = this.getBaseLevelForResolution(
+      resolution,
+      cartographic.latitude,
+    );
     const rtree = await this._getRtreeForBaseTile(baseLevel, cartographic);
     if (rtree) {
-      const features = rtree.search({
-        minX: extent[0],
-        minY: extent[1],
-        maxX: extent[2],
-        maxY: extent[3],
-      }).map(item => item.value);
+      const features = rtree
+        .search({
+          minX: extent[0],
+          minY: extent[1],
+          maxX: extent[2],
+          maxY: extent[3],
+        })
+        .map((item) => item.value);
       return features;
     }
     return [];
@@ -452,28 +496,45 @@ class TileProvider extends VcsObject {
       const rtree = await this._getRtreeForBaseTile(baseLevel, tileCenter);
       if (rtree) {
         if (level === baseLevel) {
-          return rtree.all().map(item => item.value);
+          return rtree.all().map((item) => item.value);
         } else {
           const extent = rectangleToExtent(rectangle);
-          const features = rtree.search({
-            minX: extent[0],
-            minY: extent[1],
-            maxX: extent[2],
-            maxY: extent[3],
-          }).map(item => item.value);
+          const features = rtree
+            .search({
+              minX: extent[0],
+              minY: extent[1],
+              maxX: extent[2],
+              maxY: extent[3],
+            })
+            .map((item) => item.value);
           return features;
         }
       }
-    } else if (this.allowTileAggregation && (this.baseLevels[this.baseLevels.length - 1] - level) <= 2) {
+    } else if (
+      this.allowTileAggregation &&
+      this.baseLevels[this.baseLevels.length - 1] - level <= 2
+    ) {
       // tile aggregation, only allowed for 2 levels
       const childLevel = level + 1;
       const childNorth = x * 2;
       const childWest = y * 2;
       return [
-        ...await this.getFeaturesForTile(childNorth, childWest, childLevel),
-        ...await this.getFeaturesForTile(childNorth + 1, childWest, childLevel),
-        ...await this.getFeaturesForTile(childNorth + 1, childWest + 1, childLevel),
-        ...await this.getFeaturesForTile(childNorth, childWest + 1, childLevel),
+        ...(await this.getFeaturesForTile(childNorth, childWest, childLevel)),
+        ...(await this.getFeaturesForTile(
+          childNorth + 1,
+          childWest,
+          childLevel,
+        )),
+        ...(await this.getFeaturesForTile(
+          childNorth + 1,
+          childWest + 1,
+          childLevel,
+        )),
+        ...(await this.getFeaturesForTile(
+          childNorth,
+          childWest + 1,
+          childLevel,
+        )),
       ];
     }
     return [];
@@ -489,9 +550,16 @@ class TileProvider extends VcsObject {
   async getFeaturesForExtent(extent, level) {
     let usedLevel = level != null ? level : this.baseLevels[0];
     usedLevel = this.getBaseLevel(usedLevel);
-    const [minx, miny, maxx, maxy] = extent.getCoordinatesInProjection(wgs84Projection);
-    const topLeft = this.tilingScheme.positionToTileXY(Cartographic.fromDegrees(minx, maxy), usedLevel);
-    const bottomRight = this.tilingScheme.positionToTileXY(Cartographic.fromDegrees(maxx, miny), usedLevel);
+    const [minx, miny, maxx, maxy] =
+      extent.getCoordinatesInProjection(wgs84Projection);
+    const topLeft = this.tilingScheme.positionToTileXY(
+      Cartographic.fromDegrees(minx, maxy),
+      usedLevel,
+    );
+    const bottomRight = this.tilingScheme.positionToTileXY(
+      Cartographic.fromDegrees(maxx, miny),
+      usedLevel,
+    );
     const tileCoordinates = [];
     for (let { x } = topLeft; x <= bottomRight.x; x++) {
       for (let { y } = topLeft; y <= bottomRight.y; y++) {
@@ -499,14 +567,15 @@ class TileProvider extends VcsObject {
       }
     }
 
-    const features = await Promise.all(tileCoordinates.map(([x, y]) => this.getFeaturesForTile(x, y, usedLevel)));
-    const mercatorExtent = extent.getCoordinatesInProjection(mercatorProjection);
-    return features
-      .flat()
-      .filter((f) => {
-        const geometry = f.getGeometry();
-        return geometry && geometry.intersectsExtent(mercatorExtent);
-      });
+    const features = await Promise.all(
+      tileCoordinates.map(([x, y]) => this.getFeaturesForTile(x, y, usedLevel)),
+    );
+    const mercatorExtent =
+      extent.getCoordinatesInProjection(mercatorProjection);
+    return features.flat().filter((f) => {
+      const geometry = f.getGeometry();
+      return geometry && geometry.intersectsExtent(mercatorExtent);
+    });
   }
 
   /**
@@ -516,7 +585,10 @@ class TileProvider extends VcsObject {
    */
   forEachFeature(callback) {
     this.rtreeCache.forEach((rtree) => {
-      rtree.all().map(item => item.value).forEach(callback);
+      rtree
+        .all()
+        .map((item) => item.value)
+        .forEach(callback);
     });
   }
 
@@ -565,10 +637,14 @@ class TileProvider extends VcsObject {
       config.tileCacheSize = this.tileCacheSize;
     }
 
-    if (!(
-      this.baseLevels.length === defaultOptions.baseLevels.length &&
-      this.baseLevels.every(level => defaultOptions.baseLevels.includes(level))
-    )) {
+    if (
+      !(
+        this.baseLevels.length === defaultOptions.baseLevels.length &&
+        this.baseLevels.every((level) =>
+          defaultOptions.baseLevels.includes(level),
+        )
+      )
+    ) {
       config.baseLevels = this.baseLevels.slice();
     }
 

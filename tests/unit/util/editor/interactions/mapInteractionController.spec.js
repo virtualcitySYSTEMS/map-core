@@ -50,19 +50,40 @@ describe('MapInteractionController', () => {
       screenSpaceCameraController.tiltEventTypes = 'tilt';
       screenSpaceCameraController.rotateEventTypes = 'rotate';
       await interaction.pipe({ ...baseEvent, feature });
-      expect(screenSpaceCameraController).to.have.property('lookEventTypes', 'look');
-      expect(screenSpaceCameraController).to.have.property('tiltEventTypes', 'tilt');
-      expect(screenSpaceCameraController).to.have.property('rotateEventTypes', 'rotate');
+      expect(screenSpaceCameraController).to.have.property(
+        'lookEventTypes',
+        'look',
+      );
+      expect(screenSpaceCameraController).to.have.property(
+        'tiltEventTypes',
+        'tilt',
+      );
+      expect(screenSpaceCameraController).to.have.property(
+        'rotateEventTypes',
+        'rotate',
+      );
       const vertex = new Feature();
       vertex[vertexSymbol] = true;
       await interaction.pipe({ ...baseEvent, feature: vertex });
-      expect(screenSpaceCameraController).to.have.property('lookEventTypes').and.to.be.undefined;
-      expect(screenSpaceCameraController).to.have.property('tiltEventTypes').and.to.be.undefined;
-      expect(screenSpaceCameraController).to.have.property('rotateEventTypes').and.to.be.undefined;
+      expect(screenSpaceCameraController).to.have.property('lookEventTypes').and
+        .to.be.undefined;
+      expect(screenSpaceCameraController).to.have.property('tiltEventTypes').and
+        .to.be.undefined;
+      expect(screenSpaceCameraController).to.have.property('rotateEventTypes')
+        .and.to.be.undefined;
       await interaction.pipe({ ...baseEvent });
-      expect(screenSpaceCameraController).to.have.property('lookEventTypes', 'look');
-      expect(screenSpaceCameraController).to.have.property('tiltEventTypes', 'tilt');
-      expect(screenSpaceCameraController).to.have.property('rotateEventTypes', 'rotate');
+      expect(screenSpaceCameraController).to.have.property(
+        'lookEventTypes',
+        'look',
+      );
+      expect(screenSpaceCameraController).to.have.property(
+        'tiltEventTypes',
+        'tilt',
+      );
+      expect(screenSpaceCameraController).to.have.property(
+        'rotateEventTypes',
+        'rotate',
+      );
     });
 
     describe('dragPanInteraction', () => {
@@ -70,7 +91,10 @@ describe('MapInteractionController', () => {
       let event;
 
       beforeEach(() => {
-        dragPanInteraction = openlayersMap.olMap.getInteractions().getArray().find(i => i instanceof DragPan);
+        dragPanInteraction = openlayersMap.olMap
+          .getInteractions()
+          .getArray()
+          .find((i) => i instanceof DragPan);
         event = { type: EventType.MOVE, feature, map: openlayersMap };
       });
 

@@ -1,5 +1,8 @@
 import OLMap from 'ol/Map.js';
-import { getObliqueCollection, mercatorCoordinates } from '../helpers/obliqueHelpers.js';
+import {
+  getObliqueCollection,
+  mercatorCoordinates,
+} from '../helpers/obliqueHelpers.js';
 import ObliqueMap from '../../../src/map/obliqueMap.js';
 import Viewpoint from '../../../src/util/viewpoint.js';
 import Projection from '../../../src/util/projection.js';
@@ -119,10 +122,12 @@ describe('ObliqueMap', () => {
         await map.activate();
         sandbox.stub(map.olMap.getViewport(), 'offsetHeight').get(() => 1000);
         sandbox.stub(map.olMap.getViewport(), 'offsetWidth').get(() => 1000);
-        await map.gotoViewpoint(new Viewpoint({
-          groundPosition: visiblePoint,
-          distance: 200,
-        }));
+        await map.gotoViewpoint(
+          new Viewpoint({
+            groundPosition: visiblePoint,
+            distance: 200,
+          }),
+        );
         map.olMap.setSize(map.currentImage.meta.size);
       });
 
@@ -193,9 +198,11 @@ describe('ObliqueMap', () => {
         map = new ObliqueMap({});
         await map.setCollection(obliqueCollection1);
         await map.activate();
-        await map.gotoViewpoint(new Viewpoint({
-          groundPosition: Projection.mercatorToWgs84(mercatorCoordinates),
-        }));
+        await map.gotoViewpoint(
+          new Viewpoint({
+            groundPosition: Projection.mercatorToWgs84(mercatorCoordinates),
+          }),
+        );
       });
 
       after(() => {
@@ -243,9 +250,11 @@ describe('ObliqueMap', () => {
     before(async () => {
       map = new ObliqueMap({});
       await map.activate();
-      await map.gotoViewpoint(new Viewpoint({
-        groundPosition: Projection.mercatorToWgs84(mercatorCoordinates),
-      }));
+      await map.gotoViewpoint(
+        new Viewpoint({
+          groundPosition: Projection.mercatorToWgs84(mercatorCoordinates),
+        }),
+      );
     });
 
     after(() => {
@@ -351,7 +360,9 @@ describe('ObliqueMap', () => {
 
     it('should set the image as the currentImage', async () => {
       await map.setImageByName('034_070_110005034');
-      expect(map.currentImage).to.equal(obliqueCollection1.getImageByName('034_070_110005034'));
+      expect(map.currentImage).to.equal(
+        obliqueCollection1.getImageByName('034_070_110005034'),
+      );
     });
 
     describe('with an invalid image name', () => {
@@ -381,7 +392,10 @@ describe('ObliqueMap', () => {
 
     describe('with a view center', () => {
       it('should set the current viewpoint to said view center', async () => {
-        const coordinate = [mercatorCoordinates[0] + 50, mercatorCoordinates[1] + 50];
+        const coordinate = [
+          mercatorCoordinates[0] + 50,
+          mercatorCoordinates[1] + 50,
+        ];
         const groundPosition = Projection.mercatorToWgs84(coordinate);
         await map.setImageByName('036_064_116005331', coordinate);
         const vp = await map.getViewpoint();
@@ -398,7 +412,9 @@ describe('ObliqueMap', () => {
         newMap.initialize();
         await newMap.setImageByName('034_070_110005034');
         expect(newMap.initialized).to.be.true;
-        expect(newMap.currentImage).to.equal(obliqueCollection1.getImageByName('034_070_110005034'));
+        expect(newMap.currentImage).to.equal(
+          obliqueCollection1.getImageByName('034_070_110005034'),
+        );
         newMap.destroy();
       });
     });
@@ -423,11 +439,13 @@ describe('ObliqueMap', () => {
         map = new ObliqueMap({});
         await map.setCollection(obliqueCollection1);
         await map.activate();
-        await map.gotoViewpoint(new Viewpoint({
-          heading: 94,
-          groundPosition,
-          distance: 0.308,
-        }));
+        await map.gotoViewpoint(
+          new Viewpoint({
+            heading: 94,
+            groundPosition,
+            distance: 0.308,
+          }),
+        );
         vp = map.getViewpointSync();
       });
 
@@ -459,11 +477,13 @@ describe('ObliqueMap', () => {
         map = new ObliqueMap({});
         await map.setCollection(obliqueCollection1);
         await map.activate();
-        await map.gotoViewpoint(new Viewpoint({
-          heading: 94,
-          groundPosition: Projection.mercatorToWgs84(mercatorCoordinates),
-          distance: 0.308,
-        }));
+        await map.gotoViewpoint(
+          new Viewpoint({
+            heading: 94,
+            groundPosition: Projection.mercatorToWgs84(mercatorCoordinates),
+            distance: 0.308,
+          }),
+        );
       });
 
       after(() => {
@@ -488,15 +508,19 @@ describe('ObliqueMap', () => {
         const groundPosition = Projection.mercatorToWgs84(mercatorCoordinates);
         const cameraPosition = [groundPosition[0], groundPosition[1], 2];
         await map.activate();
-        await map.gotoViewpoint(new Viewpoint({
-          heading: 0,
-          groundPosition,
-        }));
-        await map.gotoViewpoint(new Viewpoint({
-          heading: 94,
-          groundPosition,
-          cameraPosition,
-        }));
+        await map.gotoViewpoint(
+          new Viewpoint({
+            heading: 0,
+            groundPosition,
+          }),
+        );
+        await map.gotoViewpoint(
+          new Viewpoint({
+            heading: 94,
+            groundPosition,
+            cameraPosition,
+          }),
+        );
       });
 
       after(() => {
@@ -521,9 +545,11 @@ describe('ObliqueMap', () => {
       map = new ObliqueMap({});
       await map.setCollection(obliqueCollection1);
       await map.activate();
-      await map.gotoViewpoint(new Viewpoint({
-        groundPosition: Projection.mercatorToWgs84(mercatorCoordinates),
-      }));
+      await map.gotoViewpoint(
+        new Viewpoint({
+          groundPosition: Projection.mercatorToWgs84(mercatorCoordinates),
+        }),
+      );
       map.disableMovement(true);
       ({ currentImage } = map);
     });
@@ -533,10 +559,12 @@ describe('ObliqueMap', () => {
     });
 
     it('should not set a new viewpoint', async () => {
-      await map.gotoViewpoint(new Viewpoint({
-        heading: 90,
-        groundPosition: Projection.mercatorToWgs84(mercatorCoordinates),
-      }));
+      await map.gotoViewpoint(
+        new Viewpoint({
+          heading: 90,
+          groundPosition: Projection.mercatorToWgs84(mercatorCoordinates),
+        }),
+      );
       expect(map.currentImage).to.equal(currentImage);
     });
 

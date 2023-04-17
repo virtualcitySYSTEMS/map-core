@@ -3,9 +3,19 @@ import { fromCircle } from 'ol/geom/Polygon.js';
 import { getTransform } from 'ol/proj.js';
 import { Cartographic, sampleTerrainMostDetailed } from '@vcmap-cesium/engine';
 import { cartesian2DDistance } from '../../util/math.js';
-import Projection, { mercatorProjection, wgs84Projection } from '../../util/projection.js';
-import { actuallyIsCircle, alreadyTransformedToImage, obliqueGeometry } from '../vectorSymbols.js';
-import { convertGeometryToPolygon, getFlatCoordinatesFromGeometry } from '../../util/geometryHelpers.js';
+import Projection, {
+  mercatorProjection,
+  wgs84Projection,
+} from '../../util/projection.js';
+import {
+  actuallyIsCircle,
+  alreadyTransformedToImage,
+  obliqueGeometry,
+} from '../vectorSymbols.js';
+import {
+  convertGeometryToPolygon,
+  getFlatCoordinatesFromGeometry,
+} from '../../util/geometryHelpers.js';
 import { transformFromImage } from '../../oblique/helpers.js';
 
 /**
@@ -76,7 +86,6 @@ export function getZoom(olMap, image, distance) {
   return olMap.getView().getZoomForResolution(resolution);
 }
 
-
 /**
  * converts a geometry in mercator format to image coordinates
  * @param {import("ol/geom/Geometry").default} inputSourceGeometry
@@ -84,14 +93,25 @@ export function getZoom(olMap, image, distance) {
  * @param {import("@vcmap/core").ObliqueImage} image
  * @returns {Promise<import("ol/geom/Geometry").default>}
  */
-export async function mercatorGeometryToImageGeometry(inputSourceGeometry, destinationGeometry, image) {
-  const sourceGeometry = inputSourceGeometry instanceof Circle ?
-    fromCircle(inputSourceGeometry) :
-    inputSourceGeometry;
+export async function mercatorGeometryToImageGeometry(
+  inputSourceGeometry,
+  destinationGeometry,
+  image,
+) {
+  const sourceGeometry =
+    inputSourceGeometry instanceof Circle
+      ? fromCircle(inputSourceGeometry)
+      : inputSourceGeometry;
   const coordinates = sourceGeometry.getCoordinates();
   /** type {Array.<import("ol/coordinate").Coordinate>} */
-  const flattenCoordinates = getFlatCoordinatesFromGeometry(sourceGeometry, coordinates);
-  let transformer = getTransform(mercatorProjection.proj, image.meta.projection.proj);
+  const flattenCoordinates = getFlatCoordinatesFromGeometry(
+    sourceGeometry,
+    coordinates,
+  );
+  let transformer = getTransform(
+    mercatorProjection.proj,
+    image.meta.projection.proj,
+  );
 
   let updatedPositions = [];
   if (image.meta.terrainProvider) {
@@ -99,14 +119,25 @@ export async function mercatorGeometryToImageGeometry(inputSourceGeometry, desti
       Projection.mercatorToWgs84(coord, true);
       return Cartographic.fromDegrees(coord[0], coord[1]);
     });
-    transformer = getTransform(wgs84Projection.proj, image.meta.projection.proj);
-    updatedPositions = await sampleTerrainMostDetailed(image.meta.terrainProvider, cartographicCoordinates);
+    transformer = getTransform(
+      wgs84Projection.proj,
+      image.meta.projection.proj,
+    );
+    updatedPositions = await sampleTerrainMostDetailed(
+      image.meta.terrainProvider,
+      cartographicCoordinates,
+    );
   }
 
   flattenCoordinates.forEach((coord, index) => {
     transformer(coord, coord, 3);
-    const exactHeight = updatedPositions[index] ? updatedPositions[index].height : null;
-    const imageCoords = image.transformRealWorld2Image(coord, exactHeight || coord[2] || image.averageHeight);
+    const exactHeight = updatedPositions[index]
+      ? updatedPositions[index].height
+      : null;
+    const imageCoords = image.transformRealWorld2Image(
+      coord,
+      exactHeight || coord[2] || image.averageHeight,
+    );
     flattenCoordinates[index][0] = imageCoords[0];
     flattenCoordinates[index][1] = imageCoords[1];
   });
@@ -122,21 +153,28 @@ export async function mercatorGeometryToImageGeometry(inputSourceGeometry, desti
  * @param {import("@vcmap/core").ObliqueImage} image
  * @returns {Promise<import("ol/geom/Geometry").default>}
  */
-export function imageGeometryToMercatorGeometry(sourceGeometry, destinationGeometry, image) {
+export function imageGeometryToMercatorGeometry(
+  sourceGeometry,
+  destinationGeometry,
+  image,
+) {
   const coordinates = sourceGeometry.getCoordinates();
   /** type {Array.<import("ol/coordinate").Coordinate>} */
-  const flattenCoordinates = getFlatCoordinatesFromGeometry(sourceGeometry, coordinates);
-  const promises = flattenCoordinates.map(coord => transformFromImage(image, coord)
-    .then((coords) => {
+  const flattenCoordinates = getFlatCoordinatesFromGeometry(
+    sourceGeometry,
+    coordinates,
+  );
+  const promises = flattenCoordinates.map((coord) =>
+    transformFromImage(image, coord).then((coords) => {
       coord[0] = coords.coords[0];
       coord[1] = coords.coords[1];
       coord[2] = coords.coords[2];
-    }));
-  return Promise.all(promises)
-    .then(() => {
-      destinationGeometry.setCoordinates(coordinates);
-      return destinationGeometry;
-    });
+    }),
+  );
+  return Promise.all(promises).then(() => {
+    destinationGeometry.setCoordinates(coordinates);
+    return destinationGeometry;
+  });
 }
 
 /**
@@ -146,7 +184,9 @@ export function imageGeometryToMercatorGeometry(sourceGeometry, destinationGeome
  */
 export function getPolygonizedGeometry(feature, retainRectangle = false) {
   const geom = feature.getGeometry();
-  const isRectangle = geom.get('_vcsGeomType') === 'bbox' || geom.get('_vcsGeomType') === 'rectangle';
+  const isRectangle =
+    geom.get('_vcsGeomType') === 'bbox' ||
+    geom.get('_vcsGeomType') === 'rectangle';
   if (isRectangle && retainRectangle) {
     return geom;
   }
@@ -165,11 +205,16 @@ export function getPolygonizedGeometry(feature, retainRectangle = false) {
 export function setNewGeometry(originalFeature, obliqueFeature) {
   const originalGeometry = originalFeature.getGeometry();
   const originalGeometryClone = originalFeature.getGeometry().clone();
-  obliqueFeature.setGeometry(!originalGeometry[alreadyTransformedToImage] ?
-    convertGeometryToPolygon(originalGeometryClone) :
-    originalGeometryClone);
-  if (originalGeometry[alreadyTransformedToImage]) { // TODO handle UI for bbox and rectangle
-    obliqueFeature.getGeometry().setProperties(originalFeature.getGeometry().getProperties(), false);
+  obliqueFeature.setGeometry(
+    !originalGeometry[alreadyTransformedToImage]
+      ? convertGeometryToPolygon(originalGeometryClone)
+      : originalGeometryClone,
+  );
+  if (originalGeometry[alreadyTransformedToImage]) {
+    // TODO handle UI for bbox and rectangle
+    obliqueFeature
+      .getGeometry()
+      .setProperties(originalFeature.getGeometry().getProperties(), false);
   }
   originalFeature[obliqueGeometry] = obliqueFeature.getGeometry();
 }

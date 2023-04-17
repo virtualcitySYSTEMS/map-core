@@ -8,7 +8,9 @@ import LayerOpenlayersImpl from './layerOpenlayersImpl.js';
  * @abstract
  */
 class RasterLayerOpenlayersImpl extends LayerOpenlayersImpl {
-  static get className() { return 'RasterLayerOpenlayersImpl'; }
+  static get className() {
+    return 'RasterLayerOpenlayersImpl';
+  }
 
   /**
    * @param {import("@vcmap/core").OpenlayersMap} map

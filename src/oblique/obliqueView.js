@@ -65,19 +65,27 @@ class ObliqueView {
     this.scaleFactor = options.scaleFactor;
     const { tileResolution } = imageMeta;
     /** @type {Array<number>} */
-    this.tileResolution = tileResolution.slice(0, tileResolution.length - options.hideLevels);
+    this.tileResolution = tileResolution.slice(
+      0,
+      tileResolution.length - options.hideLevels,
+    );
     this._createViewAndLayer();
   }
 
   _createViewAndLayer() {
-    const extent = /** @type {import("ol/extent").Extent} */ ([0, 0, ...this.size]);
+    const extent = /** @type {import("ol/extent").Extent} */ ([
+      0,
+      0,
+      ...this.size,
+    ]);
     const zoomifyProjection = new OLProjection({
       code: 'ZOOMIFY',
       units: 'pixels',
       extent,
     });
 
-    const maxZoom = this.maxZoom > 0 ? this.maxZoom : this.tileResolution.length + 4;
+    const maxZoom =
+      this.maxZoom > 0 ? this.maxZoom : this.tileResolution.length + 4;
     const zoomMultiplier = Math.log(2) / Math.log(this.scaleFactor);
 
     /**
@@ -135,10 +143,13 @@ class ObliqueView {
    */
   setImageName(name, isDefaultImage = false) {
     if (isDefaultImage) {
-      this.tileImageSource.setTileLoadFunction(/** @param {import("ol").ImageTile} tile */ (tile) => {
-        /** @type {HTMLImageElement} */ (tile.getImage()).src = getDefaultImage();
-        tile.load();
-      });
+      this.tileImageSource.setTileLoadFunction(
+        /** @param {import("ol").ImageTile} tile */ (tile) => {
+          /** @type {HTMLImageElement} */ (tile.getImage()).src =
+            getDefaultImage();
+          tile.load();
+        },
+      );
     }
     this.tileImageSource.setTileUrlFunction((coords) => {
       const [z, x, yInverted] = coords;

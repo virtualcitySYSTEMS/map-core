@@ -14,24 +14,28 @@ import ts from 'typescript';
  */
 async function rewriteDir(dir, outBase) {
   const entries = await fs.promises.readdir(dir, { withFileTypes: true });
-  const promises = entries
-    .map(async (e) => {
-      const fullName = path.join(dir, e.name);
-      if (e.isDirectory()) {
-        return { dir: fullName };
-      } else if (e.isFile()) {
-        const content = await fs.promises.readFile(fullName);
-        const outFile = path.join(outBase, fullName);
-        await fs.promises.mkdir(path.dirname(outFile), { recursive: true });
-        await fs.promises.writeFile(outFile, content.toString().replace(/\s\*\s(@typedef|@function)([\s\S]*?)\*\//g, (all) => {
-          return all.replace(/(\/\*\*|\s\*)(.*)(\r?\n)/g, '$1$3');
-        }));
-        return { file: outFile };
-      }
-      return null;
-    });
+  const promises = entries.map(async (e) => {
+    const fullName = path.join(dir, e.name);
+    if (e.isDirectory()) {
+      return { dir: fullName };
+    } else if (e.isFile()) {
+      const content = await fs.promises.readFile(fullName);
+      const outFile = path.join(outBase, fullName);
+      await fs.promises.mkdir(path.dirname(outFile), { recursive: true });
+      await fs.promises.writeFile(
+        outFile,
+        content
+          .toString()
+          .replace(/\s\*\s(@typedef|@function)([\s\S]*?)\*\//g, (all) => {
+            return all.replace(/(\/\*\*|\s\*)(.*)(\r?\n)/g, '$1$3');
+          }),
+      );
+      return { file: outFile };
+    }
+    return null;
+  });
   const dirs = await Promise.all(promises);
-  return dirs.filter(d => d);
+  return dirs.filter((d) => d);
 }
 
 /**
@@ -74,9 +78,8 @@ async function cleanUp(outBase = '.types') {
  * @param {number} [depth=1]
  */
 function printMessage(message, depth = 1) {
-  const stringMessage = typeof message === 'string' ?
-    message :
-    message.messageText;
+  const stringMessage =
+    typeof message === 'string' ? message : message.messageText;
   const tabs = new Array(depth).fill('\t').join('');
   console.log(`${tabs}${stringMessage}`);
   if (message.next && message.next.length > 0) {
@@ -121,9 +124,7 @@ async function typeCheck() {
     const { file } = diagnostic;
     if (file) {
       const filename = file.fileName.replace(/.*\/\.types\//, '');
-      const lineAndChar = file.getLineAndCharacterOfPosition(
-        diagnostic.start,
-      );
+      const lineAndChar = file.getLineAndCharacterOfPosition(diagnostic.start);
 
       const line = lineAndChar.line + 1;
       const character = lineAndChar.character + 1;

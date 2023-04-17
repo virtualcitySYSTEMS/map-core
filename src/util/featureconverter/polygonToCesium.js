@@ -20,7 +20,12 @@ import { getFlatCoordinatesFromSimpleGeometry } from '../geometryHelpers.js';
  * @returns {Array<import("@vcmap-cesium/engine").PolygonGeometry>}
  * @private
  */
-export function createSolidGeometries(options, height, perPositionHeight, extrudedHeight) {
+export function createSolidGeometries(
+  options,
+  height,
+  perPositionHeight,
+  extrudedHeight,
+) {
   const polygonOptions = {
     ...options,
     perPositionHeight,
@@ -40,14 +45,21 @@ export function createSolidGeometries(options, height, perPositionHeight, extrud
  * @returns {Array<import("@vcmap-cesium/engine").PolygonOutlineGeometry>}
  * @private
  */
-export function createOutlineGeometries(options, height, perPositionHeight, extrudedHeight) {
-  return [new PolygonOutlineGeometry({
-    ...options,
-    height: perPositionHeight ? undefined : height,
-    extrudedHeight,
-    perPositionHeight,
-    vertexFormat: PerInstanceColorAppearance.FLAT_VERTEX_FORMAT,
-  })];
+export function createOutlineGeometries(
+  options,
+  height,
+  perPositionHeight,
+  extrudedHeight,
+) {
+  return [
+    new PolygonOutlineGeometry({
+      ...options,
+      height: perPositionHeight ? undefined : height,
+      extrudedHeight,
+      perPositionHeight,
+      vertexFormat: PerInstanceColorAppearance.FLAT_VERTEX_FORMAT,
+    }),
+  ];
 }
 
 /**
@@ -107,7 +119,6 @@ export function createLineGeometries(options, style) {
   });
 }
 
-
 /**
  * @param {import("ol/geom/Polygon").default} geometry
  * @param {number} positionHeightAdjustment
@@ -125,7 +136,11 @@ export function getGeometryOptions(geometry, positionHeightAdjustment) {
       if (wgs84Coords[2] != null) {
         wgs84Coords[2] += positionHeightAdjustment;
       }
-      return Cartesian3.fromDegrees(wgs84Coords[0], wgs84Coords[1], wgs84Coords[2]);
+      return Cartesian3.fromDegrees(
+        wgs84Coords[0],
+        wgs84Coords[1],
+        wgs84Coords[2],
+      );
     });
     // make sure the last and first vertex is identical.
     if (!Cartesian3.equals(positions[0], positions[positions.length - 1])) {
@@ -201,8 +216,12 @@ export function validatePolygon(polygon) {
   }
   // should have at least three coordinates for each linearRing and every value should be a number
   const minimumValues = stride * 3 * polygon.getLinearRingCount();
-  if (flatCoordinates && flatCoordinates.length >= minimumValues && polygon.getLinearRingCount()) {
-    return flatCoordinates.every(value => Number.isFinite(value));
+  if (
+    flatCoordinates &&
+    flatCoordinates.length >= minimumValues &&
+    polygon.getLinearRingCount()
+  ) {
+    return flatCoordinates.every((value) => Number.isFinite(value));
   }
   return false;
 }
@@ -216,13 +235,28 @@ export function validatePolygon(polygon) {
  * @param {import("@vcmap-cesium/engine").Scene} scene
  * @param {import("@vcmap/core").VectorContext|import("@vcmap/core").ClusterContext} context
  */
-export default function polygonToCesium(feature, style, geometries, vectorProperties, scene, context) {
+export default function polygonToCesium(
+  feature,
+  style,
+  geometries,
+  vectorProperties,
+  scene,
+  context,
+) {
   if (!style.getFill() && !style.getStroke()) {
     return;
   }
   const polygonGeometryFactory = getGeometryFactory();
-  const validGeometries = geometries.filter(polygon => validatePolygon(polygon));
+  const validGeometries = geometries.filter((polygon) =>
+    validatePolygon(polygon),
+  );
   addPrimitivesToContext(
-    feature, style, validGeometries, vectorProperties, scene, polygonGeometryFactory, context,
+    feature,
+    style,
+    validGeometries,
+    vectorProperties,
+    scene,
+    polygonGeometryFactory,
+    context,
   );
 }

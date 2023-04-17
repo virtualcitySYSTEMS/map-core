@@ -60,7 +60,10 @@ describe('BaseOLMap', () => {
     it('should add a visualization at the correct index based on the index in the layer collection', () => {
       map.addOLLayer(olLayer2);
       map.addOLLayer(olLayer1);
-      expect(map.olMap.getLayers().getArray()).to.have.ordered.members([olLayer1, olLayer2]);
+      expect(map.olMap.getLayers().getArray()).to.have.ordered.members([
+        olLayer1,
+        olLayer2,
+      ]);
     });
 
     it('should not add an olLayer without a vcsLayerName symbol', () => {
@@ -85,7 +88,10 @@ describe('BaseOLMap', () => {
       map.addOLLayer(olLayer2);
       map.addOLLayer(olLayer1);
       layerCollection.raise(layer1);
-      expect(map.olMap.getLayers().getArray()).to.have.ordered.members([olLayer2, olLayer1]);
+      expect(map.olMap.getLayers().getArray()).to.have.ordered.members([
+        olLayer2,
+        olLayer1,
+      ]);
       map.destroy();
       layerCollection.destroy();
     });
@@ -159,7 +165,9 @@ describe('BaseOLMap', () => {
         event = e;
       });
       map.requestRender();
-      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      await new Promise((resolve) => {
+        setTimeout(resolve, 100);
+      });
       expect(event).to.not.be.null;
       expect(event).to.have.property('map', map);
       map.destroy();

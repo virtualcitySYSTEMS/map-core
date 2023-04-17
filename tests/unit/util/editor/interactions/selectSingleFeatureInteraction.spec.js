@@ -1,5 +1,9 @@
 import { Feature } from 'ol';
-import { isTiledFeature, SelectSingleFeatureInteraction, VectorLayer } from '../../../../../index.js';
+import {
+  isTiledFeature,
+  SelectSingleFeatureInteraction,
+  VectorLayer,
+} from '../../../../../index.js';
 
 describe('SelectSingleFeatureInteraction', () => {
   let layer;

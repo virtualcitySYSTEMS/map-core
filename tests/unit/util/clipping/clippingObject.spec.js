@@ -4,7 +4,11 @@ import VcsApp from '../../../../src/vcsApp.js';
 import VectorLayer from '../../../../src/layer/vectorLayer.js';
 import DataSourceLayer from '../../../../src/layer/dataSourceLayer.js';
 import LayerState from '../../../../src/layer/layerState.js';
-import { createEntities, createInitializedTilesetLayer, setCesiumMap } from '../../helpers/cesiumHelpers.js';
+import {
+  createEntities,
+  createInitializedTilesetLayer,
+  setCesiumMap,
+} from '../../helpers/cesiumHelpers.js';
 import FeatureStoreLayer from '../../../../src/layer/featureStoreLayer.js';
 import { setOpenlayersMap } from '../../helpers/openlayersHelpers.js';
 
@@ -112,7 +116,9 @@ describe('util.clipping.ClippingObject', () => {
           CO.handleLayerChanged(tilesetLayer);
           setTimeout(() => {
             expect(CO.targets.has(tilesetLayer.name)).to.be.true;
-            expect(CO.targets.get(tilesetLayer.name)).to.equal(tilesetLayer.getImplementations()[0].cesium3DTileset);
+            expect(CO.targets.get(tilesetLayer.name)).to.equal(
+              tilesetLayer.getImplementations()[0].cesium3DTileset,
+            );
             done();
           }, 0);
         });
@@ -175,7 +181,10 @@ describe('util.clipping.ClippingObject', () => {
 
       describe('layer deactivated', () => {
         beforeEach(() => {
-          CO.targets.set(tilesetLayer.name, tilesetLayer.getImplementations()[0].cesium3DTileset);
+          CO.targets.set(
+            tilesetLayer.name,
+            tilesetLayer.getImplementations()[0].cesium3DTileset,
+          );
         });
 
         it('should remove the target', () => {
@@ -239,8 +248,12 @@ describe('util.clipping.ClippingObject', () => {
         it('should add all entities of said layer to the targets', () => {
           CO.handleLayerChanged(entityLayer);
           expect(CO.targets.size).to.equal(2);
-          expect(CO.targets.get(`${entityLayer.name}-${entity1.id}`)).to.equal(entity1);
-          expect(CO.targets.get(`${entityLayer.name}-${entity2.id}`)).to.equal(entity2);
+          expect(CO.targets.get(`${entityLayer.name}-${entity1.id}`)).to.equal(
+            entity1,
+          );
+          expect(CO.targets.get(`${entityLayer.name}-${entity2.id}`)).to.equal(
+            entity2,
+          );
         });
 
         it('should trigger the targetsChanged event once', () => {
@@ -345,7 +358,9 @@ describe('util.clipping.ClippingObject', () => {
         CO.addLayer(layer.name);
         setTimeout(() => {
           expect(CO.targets.size).to.equal(1);
-          expect(CO.targets.get(layer.name)).to.equal(layer.getImplementations()[0].cesium3DTileset);
+          expect(CO.targets.get(layer.name)).to.equal(
+            layer.getImplementations()[0].cesium3DTileset,
+          );
           done();
         }, 0);
       })();
@@ -401,7 +416,9 @@ describe('util.clipping.ClippingObject', () => {
       app.layers.add(entityLayer);
       CO.addEntity('test', entity.id);
       expect(CO.targets.size).to.equal(1);
-      expect(CO.targets.get(`${entityLayer.name}-${entity.id}`)).to.equal(entity);
+      expect(CO.targets.get(`${entityLayer.name}-${entity.id}`)).to.equal(
+        entity,
+      );
     });
 
     it('should not add the same entity twice', () => {

@@ -1,6 +1,11 @@
 import { createXYZ } from 'ol/tilegrid.js';
 import { cartesian2DDistance } from '../util/math.js';
-import { parseImageData, parseImageMeta, parseLegacyImageData, getVersionFromImageJson } from './parseImageJson.js';
+import {
+  parseImageData,
+  parseImageMeta,
+  parseLegacyImageData,
+  getVersionFromImageJson,
+} from './parseImageJson.js';
 import VcsEvent from '../vcsEvent.js';
 import { getTerrainProviderForUrl } from '../layer/terrainHelpers.js';
 import Projection from '../util/projection.js';
@@ -31,11 +36,11 @@ export const DataState = {
  * @returns {DataState}
  */
 export function getStateFromStatesArray(states) {
-  if (states.some(s => s === DataState.PENDING)) {
+  if (states.some((s) => s === DataState.PENDING)) {
     return DataState.PENDING;
   }
 
-  if (states.some(s => s === DataState.LOADING)) {
+  if (states.some((s) => s === DataState.LOADING)) {
     return DataState.LOADING;
   }
 
@@ -66,19 +71,23 @@ class ObliqueDataSet {
       projectionObject = new Projection(projectionObject);
     }
     /** @type {import("@vcmap/core").Projection} */
-    this.projection = /** @type {import("@vcmap/core").Projection} */ (projectionObject);
+    this.projection = /** @type {import("@vcmap/core").Projection} */ (
+      projectionObject
+    );
     /**
      * @type {TerrainProviderOptions}
      * @private
      */
-    this._terrainProviderOptions = terrainProviderOptions ? { ...terrainProviderOptions } : undefined;
+    this._terrainProviderOptions = terrainProviderOptions
+      ? { ...terrainProviderOptions }
+      : undefined;
     /**
      * @type {import("@vcmap-cesium/engine").CesiumTerrainProvider|undefined}
      * @private
      */
-    this._terrainProvider = this._terrainProviderOptions ?
-      getTerrainProviderForUrl(this._terrainProviderOptions) :
-      undefined;
+    this._terrainProvider = this._terrainProviderOptions
+      ? getTerrainProviderForUrl(this._terrainProviderOptions)
+      : undefined;
     /**
      * @type {Array<import("@vcmap/core").ObliqueImageMeta>}
      * @private
@@ -155,7 +164,7 @@ class ObliqueDataSet {
       this._state = DataState.LOADING;
 
       this._loadingPromise = requestJson(this.url)
-        .then(data => this._initialize(data))
+        .then((data) => this._initialize(data))
         .catch((err) => {
           return Promise.reject(err);
         });
@@ -205,7 +214,12 @@ class ObliqueDataSet {
    * @private
    */
   _parseMetaData(json) {
-    this._imageMetas = parseImageMeta(json, this.baseUrl, this.projection, this.terrainProvider);
+    this._imageMetas = parseImageMeta(
+      json,
+      this.baseUrl,
+      this.projection,
+      this.terrainProvider,
+    );
     const { version, buildNumber } = getVersionFromImageJson(json);
 
     if (json.tileLevel) {
@@ -236,7 +250,10 @@ class ObliqueDataSet {
     if (!this._tileLevel) {
       return null;
     }
-    const actualTile = this._tileGrid.getTileCoordForCoordAndZ(mercatorCoordinate, this._tileLevel);
+    const actualTile = this._tileGrid.getTileCoordForCoordAndZ(
+      mercatorCoordinate,
+      this._tileLevel,
+    );
     if (this._tiles.has(actualTile.join('/'))) {
       return actualTile;
     }
@@ -245,7 +262,10 @@ class ObliqueDataSet {
     let minTile = null;
     [...this._tiles.keys()].forEach((tile) => {
       const tileCoord = tile.split('/').map(Number);
-      const dist = cartesian2DDistance([actualTile[1], actualTile[2]], [tileCoord[1], tileCoord[2]]);
+      const dist = cartesian2DDistance(
+        [actualTile[1], actualTile[2]],
+        [tileCoord[1], tileCoord[2]],
+      );
       if (dist < minDistance) {
         minDistance = dist;
         minTile = tileCoord;
@@ -260,8 +280,14 @@ class ObliqueDataSet {
    * @private
    */
   _getTileCoordinatesForExtent(extent) {
-    const topLeft = this._tileGrid.getTileCoordForCoordAndZ([extent[0], extent[3]], this._tileLevel);
-    const bottomRight = this._tileGrid.getTileCoordForCoordAndZ([extent[2], extent[1]], this._tileLevel);
+    const topLeft = this._tileGrid.getTileCoordForCoordAndZ(
+      [extent[0], extent[3]],
+      this._tileLevel,
+    );
+    const bottomRight = this._tileGrid.getTileCoordForCoordAndZ(
+      [extent[2], extent[1]],
+      this._tileLevel,
+    );
     const tileCoordinates = [];
     for (let x = topLeft[1]; x <= bottomRight[1]; x++) {
       for (let y = topLeft[2]; y <= bottomRight[2]; y++) {
@@ -270,7 +296,7 @@ class ObliqueDataSet {
     }
 
     return tileCoordinates
-      .map(tc => tc.join('/'))
+      .map((tc) => tc.join('/'))
       .filter((tc) => {
         const state = this._tiles.get(tc);
         return state && state !== DataState.READY;
@@ -288,8 +314,11 @@ class ObliqueDataSet {
       return this._state;
     }
 
-    const tileCoordinate = this._getClosestTileCoordinate(mercatorCoordinate).join('/');
-    return this._tiles.has(tileCoordinate) ? this._tiles.get(tileCoordinate) : DataState.READY;
+    const tileCoordinate =
+      this._getClosestTileCoordinate(mercatorCoordinate).join('/');
+    return this._tiles.has(tileCoordinate)
+      ? this._tiles.get(tileCoordinate)
+      : DataState.READY;
   }
 
   /**
@@ -305,8 +334,8 @@ class ObliqueDataSet {
 
     const tileCoordinates = this._getTileCoordinatesForExtent(extent);
     const states = tileCoordinates
-      .map(tc => this._tiles.get(tc))
-      .filter(s => s);
+      .map((tc) => this._tiles.get(tc))
+      .filter((s) => s);
     return getStateFromStatesArray(states);
   }
 
@@ -330,7 +359,10 @@ class ObliqueDataSet {
         const images = parseImageData(data, this._imageMetas);
         if (images.length > 0) {
           this._images = this._images.concat(images);
-          this.imagesLoaded.raiseEvent({ images, tileCoordinate: stringTileCoordinates });
+          this.imagesLoaded.raiseEvent({
+            images,
+            tileCoordinate: stringTileCoordinates,
+          });
         }
       })
       .catch((err) => {
@@ -367,7 +399,7 @@ class ObliqueDataSet {
    */
   async loadDataForExtent(extent) {
     const tileCoordinates = this._getTileCoordinatesForExtent(extent);
-    await Promise.all(tileCoordinates.map(tc => this._loadTile(tc)));
+    await Promise.all(tileCoordinates.map((tc) => this._loadTile(tc)));
   }
 
   destroy() {

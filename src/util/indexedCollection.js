@@ -19,7 +19,9 @@ class IndexedCollection extends Collection {
    * @api
    */
   static from(iterable, uniqueKey) {
-    const collection = /** @type {IndexedCollection<T>} */ (new IndexedCollection(uniqueKey));
+    const collection = /** @type {IndexedCollection<T>} */ (
+      new IndexedCollection(uniqueKey)
+    );
     if (iterable) {
       // eslint-disable-next-line no-restricted-syntax
       for (const i of iterable) {
@@ -55,7 +57,9 @@ class IndexedCollection extends Collection {
    * @type {symbol}
    * @readonly
    */
-  get previousIndexSymbol() { return this._previousIndexSymbol; }
+  get previousIndexSymbol() {
+    return this._previousIndexSymbol;
+  }
 
   /**
    * Returns an item at index.
@@ -181,7 +185,7 @@ class IndexedCollection extends Collection {
     if (!this.uniqueKey) {
       return undefined;
     }
-    return this._array.findIndex(e => e[this.uniqueKey] === value);
+    return this._array.findIndex((e) => e[this.uniqueKey] === value);
   }
 
   /**

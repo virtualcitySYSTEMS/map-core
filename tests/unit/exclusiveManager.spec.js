@@ -37,7 +37,9 @@ describe('ExclusiveManager', () => {
       const handleLayerActivated = sandbox.spy(EM, 'handleLayerActivated');
       layerToRegister._state = LayerState.ACTIVE;
       EM.registerLayer(layerToRegister);
-      expect(handleLayerActivated).to.have.been.calledWithExactly(layerToRegister);
+      expect(handleLayerActivated).to.have.been.calledWithExactly(
+        layerToRegister,
+      );
     });
 
     describe('with a single group', () => {
@@ -164,7 +166,10 @@ describe('ExclusiveManager', () => {
 
       const activeLayers = EM.getActiveLayersForGroup('test');
       expect(activeLayers).to.have.length(2);
-      expect(activeLayers).to.have.members([registeredLayer1, registeredLayer2]);
+      expect(activeLayers).to.have.members([
+        registeredLayer1,
+        registeredLayer2,
+      ]);
     });
   });
 

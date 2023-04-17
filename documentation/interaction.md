@@ -2,12 +2,13 @@
 
 The interactions concept is an abstraction layer handling [pointer events](https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events) of the user interacting with the map and its content.
 The combination of mouse pointer keys, modification keys and event types is called `Interaction`.
-The [EventHandler](#event-handler) handles *ordered* interactions within a chain and the `InteractionEvent` gets passed down from one event to the next in a specific order.
+The [EventHandler](#event-handler) handles _ordered_ interactions within a chain and the `InteractionEvent` gets passed down from one event to the next in a specific order.
 
 ## Interaction types
 
 All interactions are derived from the [AbstractInteraction](../src/interaction/abstractInteraction.js) class.
-An interaction is defined by 
+An interaction is defined by
+
 - an `id` making it unique
 - an event type represented by a bitmask
 - a modification key represented by a bitmask
@@ -16,6 +17,7 @@ An interaction is defined by
 
 The state of the interaction can be changed by changing the active event type, the modification key or pointer key.
 To let an interaction listen to a click event call:
+
 ```js
 myInteraction.setActive(EventType.CLICK);
 ```
@@ -37,6 +39,7 @@ Every time the active event type of the interaction is raised, an `InteractionEv
 
 To define a behaviour of the interaction, the `pipe` method of [AbstractInteraction](../src/interaction/abstractInteraction.js) must be implemented.
 It can react on the InteractionEvent using its properties. Since interactions are chained and the event is passed down a specific order you can stop the event beeing passed on to the next interaction by stop propagation:
+
 ```js
 async pipe(event) {
   // do something defining the behaviour of the interaction, e.g.:
@@ -50,17 +53,20 @@ async pipe(event) {
 ```
 
 To reset the interaction to its default behaviour call without parameters:
+
 ```js
 myInteraction.setActive();
 ```
+
 For the given example your interaction would stop now to listen to the click event.
 
 ## Event handler
 
 All [maps](./maps.md) share a common event handler.
-The event handler chains registered interactions and pipes the corresponding events to the interaction in a specific order. 
+The event handler chains registered interactions and pipes the corresponding events to the interaction in a specific order.
 
 Per default the event handler has base interactions already registered:
+
 - [CoordinateAtPixelInteraction](../src/interaction/coordinateAtPixel.js) providing a click position
 - [FeatureAtPixelInteraction](../src/interaction/featureAtPixelInteraction.js) providing a clicked feature
 - [FeatureProviderInteraction](../src/interaction/featureProviderInteraction.js) providing a clicked feature from a [FeatureProvider](../src/featureProvider/abstractFeatureProvider.js).
@@ -96,9 +102,7 @@ Interactions can also be added permanently to the interaction chain.
 
 ```js
 const { eventHandler } = app.maps;
-const listener = eventHandler.addPersistentInteraction(
-  interaction,
-);
+const listener = eventHandler.addPersistentInteraction(interaction);
 
 // when done, call the returned function to unlisten
 listener();

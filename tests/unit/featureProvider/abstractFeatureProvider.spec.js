@@ -43,7 +43,10 @@ describe('AbstractFeatureProvider', () => {
 
       it('should add the showProvidedFeature symbol', () => {
         const providerFeature = provider.getProviderFeature(feature);
-        expect(providerFeature).to.have.property(showProvidedFeature, provider.showGeometry);
+        expect(providerFeature).to.have.property(
+          showProvidedFeature,
+          provider.showGeometry,
+        );
       });
 
       it('should enforce a uuid', () => {
@@ -142,17 +145,22 @@ describe('AbstractFeatureProvider', () => {
       });
 
       it('should configure the showGeometry', () => {
-        expect(outputConfig).to.have.property('showGeometry', inputConfig.showGeometry);
+        expect(outputConfig).to.have.property(
+          'showGeometry',
+          inputConfig.showGeometry,
+        );
       });
 
       it('should configure the style', () => {
-        expect(outputConfig).to.have.property('style')
+        expect(outputConfig)
+          .to.have.property('style')
           .and.to.have.property('fill')
           .and.to.eql(inputConfig.style.fill);
       });
 
       it('should configure the vectorProperties', () => {
-        expect(outputConfig).to.have.property('vectorProperties')
+        expect(outputConfig)
+          .to.have.property('vectorProperties')
           .and.to.eql(inputConfig.vectorProperties);
       });
     });

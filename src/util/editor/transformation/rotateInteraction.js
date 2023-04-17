@@ -1,14 +1,8 @@
-import {
-  Cartesian2,
-  Plane,
-  Transforms,
-} from '@vcmap-cesium/engine';
+import { Cartesian2, Plane, Transforms } from '@vcmap-cesium/engine';
 import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import { EventType } from '../../../interaction/interactionType.js';
 import { handlerSymbol } from '../editorSymbols.js';
-import {
-  getCartographicFromPlane,
-} from '../editorHelpers.js';
+import { getCartographicFromPlane } from '../editorHelpers.js';
 import VcsEvent from '../../../vcsEvent.js';
 import Projection from '../../projection.js';
 import { cartographicToWgs84, mercatorToCartesian } from '../../math.js';
@@ -28,7 +22,7 @@ import CesiumMap from '../../../map/cesiumMap.js';
  * @returns {number}
  */
 function determineOrientation(start, end, angle) {
-  const orientation = (start.x * end.y) - (start.y * end.x);
+  const orientation = start.x * end.y - start.y * end.x;
   return orientation > 0 ? angle : angle * -1;
 }
 
@@ -39,7 +33,10 @@ function determineOrientation(start, end, angle) {
  * @returns {function(import("ol/coordinate").Coordinate, import("@vcmap-cesium/engine").Cartesian2):RotationEvent}
  */
 function createGetRotationEvent(getPosition, event, axis) {
-  let currentPosition = getPosition(event.positionOrPixel, event.windowPosition);
+  let currentPosition = getPosition(
+    event.positionOrPixel,
+    event.windowPosition,
+  );
 
   return (coordinate, windowPosition) => {
     const newPosition = getPosition(coordinate, windowPosition);
@@ -87,7 +84,9 @@ class RotateInteraction extends AbstractInteraction {
    * @type {VcsEvent<RotationEvent>}
    * @readonly
    */
-  get rotated() { return this._rotated; }
+  get rotated() {
+    return this._rotated;
+  }
 
   /**
    * @param {InteractionEvent} event
@@ -95,7 +94,9 @@ class RotateInteraction extends AbstractInteraction {
    */
   async pipe(event) {
     if (this._getRotationEvent) {
-      this._rotated.raiseEvent(this._getRotationEvent(event.positionOrPixel, event.windowPosition));
+      this._rotated.raiseEvent(
+        this._getRotationEvent(event.positionOrPixel, event.windowPosition),
+      );
       if (event.type === EventType.DRAGEND) {
         this._getRotationEvent = null;
       }
@@ -122,7 +123,9 @@ class RotateInteraction extends AbstractInteraction {
    * @private
    */
   _dragAlongPlane3D(axis, event) {
-    const scene = /** @type {import("@vcmap/core").CesiumMap} */ (event.map).getScene();
+    const scene = /** @type {import("@vcmap/core").CesiumMap} */ (
+      event.map
+    ).getScene();
     const center = mercatorToCartesian(this._transformationHandler.center);
     let plane;
     if (axis === AXIS_AND_PLANES.X) {
@@ -132,12 +135,22 @@ class RotateInteraction extends AbstractInteraction {
     } else {
       plane = Plane.clone(Plane.ORIGIN_XY_PLANE);
     }
-    plane = Plane.transform(plane, Transforms.eastNorthUpToFixedFrame(center), plane);
+    plane = Plane.transform(
+      plane,
+      Transforms.eastNorthUpToFixedFrame(center),
+      plane,
+    );
 
     return createGetRotationEvent(
       (c, windowPosition) => {
-        const cartographic = getCartographicFromPlane(plane, scene.camera, windowPosition);
-        const centeredCoordinates = Projection.wgs84ToMercator(cartographicToWgs84(cartographic));
+        const cartographic = getCartographicFromPlane(
+          plane,
+          scene.camera,
+          windowPosition,
+        );
+        const centeredCoordinates = Projection.wgs84ToMercator(
+          cartographicToWgs84(cartographic),
+        );
         const { center: currentCenter } = this._transformationHandler;
         centeredCoordinates[0] = currentCenter[0] - centeredCoordinates[0];
         centeredCoordinates[1] = currentCenter[1] - centeredCoordinates[1];

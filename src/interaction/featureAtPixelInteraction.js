@@ -9,7 +9,11 @@ import {
 
 import AbstractInteraction from './abstractInteraction.js';
 import Projection from '../util/projection.js';
-import { EventType, ModificationKeyType, PointerKeyType } from './interactionType.js';
+import {
+  EventType,
+  ModificationKeyType,
+  PointerKeyType,
+} from './interactionType.js';
 import { vcsLayerName } from '../layer/layerSymbols.js';
 import { originalFeatureSymbol } from '../layer/vectorSymbols.js';
 
@@ -19,7 +23,11 @@ import { originalFeatureSymbol } from '../layer/vectorSymbols.js';
  */
 class FeatureAtPixelInteraction extends AbstractInteraction {
   constructor() {
-    super(EventType.ALL ^ EventType.MOVE, ModificationKeyType.ALL, PointerKeyType.ALL);
+    super(
+      EventType.ALL ^ EventType.MOVE,
+      ModificationKeyType.ALL,
+      PointerKeyType.ALL,
+    );
     /**
      * @type {EventType|number}
      * @private
@@ -67,7 +75,9 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
    * @type {number}
    * @api
    */
-  get pickPosition() { return this._pickPosition; }
+  get pickPosition() {
+    return this._pickPosition;
+  }
 
   /**
    * @param {number} position
@@ -81,7 +91,9 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
    * @type {number}
    * @api
    */
-  get excludedPickPositionEvents() { return ~this._pickPositionMask; }
+  get excludedPickPositionEvents() {
+    return ~this._pickPositionMask;
+  }
 
   /**
    * @param {number} position
@@ -146,14 +158,26 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
     let found = null;
     /** @type {null|import("ol/layer/Layer").default} */
     let foundLayer = null;
-    /** @type {import("@vcmap/core").OpenlayersMap} */ (event.map).olMap
-      .forEachFeatureAtPixel([event.windowPosition.x, event.windowPosition.y], (feat, layer) => {
-        if (feat && (feat.get('olcs_allowPicking') == null || feat.get('olcs_allowPicking') === true)) {
-          found = /** @type {import("ol").Feature<import("ol/geom/Geometry").default>} */ (feat);
+    /** @type {import("@vcmap/core").OpenlayersMap} */ (
+      event.map
+    ).olMap.forEachFeatureAtPixel(
+      [event.windowPosition.x, event.windowPosition.y],
+      (feat, layer) => {
+        if (
+          feat &&
+          (feat.get('olcs_allowPicking') == null ||
+            feat.get('olcs_allowPicking') === true)
+        ) {
+          found =
+            /** @type {import("ol").Feature<import("ol/geom/Geometry").default>} */ (
+              feat
+            );
           foundLayer = layer;
         }
         return true;
-      }, { hitTolerance: this.hitTolerance });
+      },
+      { hitTolerance: this.hitTolerance },
+    );
     if (found && foundLayer) {
       event.feature = found;
       if (found.get('features')) {
@@ -174,14 +198,19 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
     let found = null;
     /** @type {null|import("ol/layer/Layer").default} */
     let foundLayer = null;
-    /** @type {import("@vcmap/core").ObliqueMap} */ (event.map).olMap
-      .forEachFeatureAtPixel([event.windowPosition.x, event.windowPosition.y], (feat, layer) => {
+    /** @type {import("@vcmap/core").ObliqueMap} */ (
+      event.map
+    ).olMap.forEachFeatureAtPixel(
+      [event.windowPosition.x, event.windowPosition.y],
+      (feat, layer) => {
         if (feat) {
           found = feat[originalFeatureSymbol] || feat;
         }
         foundLayer = layer;
         return true;
-      }, { hitTolerance: this.hitTolerance });
+      },
+      { hitTolerance: this.hitTolerance },
+    );
 
     if (found && foundLayer) {
       event.feature = found;
@@ -199,10 +228,16 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
    * @private
    */
   _cesiumHandler(event) {
-    const cesiumMap = /** @type {import("@vcmap/core").CesiumMap} */ (event.map);
+    const cesiumMap = /** @type {import("@vcmap/core").CesiumMap} */ (
+      event.map
+    );
     const scene = cesiumMap.getScene();
 
-    const object = scene.pick(event.windowPosition, this.hitTolerance, this.hitTolerance);
+    const object = scene.pick(
+      event.windowPosition,
+      this.hitTolerance,
+      this.hitTolerance,
+    );
 
     let scratchCartographic = new Cartographic();
     let scratchCartesian = new Cartesian3();
@@ -215,40 +250,62 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
         return Promise.resolve(event);
       }
       if (this.pullPickedPosition && event.ray) {
-        scratchPullCartesian = Cartesian3
-          .multiplyByScalar(event.ray.direction, this.pullPickedPosition, scratchPullCartesian);
+        scratchPullCartesian = Cartesian3.multiplyByScalar(
+          event.ray.direction,
+          this.pullPickedPosition,
+          scratchPullCartesian,
+        );
 
-        scratchCartesian = Cartesian3.subtract(scratchCartesian, scratchPullCartesian, scratchCartesian);
+        scratchCartesian = Cartesian3.subtract(
+          scratchCartesian,
+          scratchPullCartesian,
+          scratchCartesian,
+        );
       }
-      scratchCartographic = Cartographic
-        .fromCartesian(scratchCartesian, scene.globe.ellipsoid, scratchCartographic);
-      event.position = Projection.wgs84ToMercator([
-        CesiumMath.toDegrees(scratchCartographic.longitude),
-        CesiumMath.toDegrees(scratchCartographic.latitude),
-        scratchCartographic.height,
-      ], true);
+      scratchCartographic = Cartographic.fromCartesian(
+        scratchCartesian,
+        scene.globe.ellipsoid,
+        scratchCartographic,
+      );
+      event.position = Projection.wgs84ToMercator(
+        [
+          CesiumMath.toDegrees(scratchCartographic.longitude),
+          CesiumMath.toDegrees(scratchCartographic.latitude),
+          scratchCartographic.height,
+        ],
+        true,
+      );
       event.positionOrPixel = event.position;
       scene.pickTranslucentDepth = pickTranslucentDepth;
       return Promise.resolve(event);
     };
 
     if (object) {
-      if (object.primitive && object.primitive.olFeature) { // vector & vectorCluster
+      if (object.primitive && object.primitive.olFeature) {
+        // vector & vectorCluster
         event.feature = object.primitive.olFeature;
       } else if (
         object.primitive &&
         object.primitive[vcsLayerName] &&
-        (object instanceof Cesium3DTileFeature || object instanceof Cesium3DTilePointFeature)
-      ) { // building
+        (object instanceof Cesium3DTileFeature ||
+          object instanceof Cesium3DTilePointFeature)
+      ) {
+        // building
         event.feature = object;
         const symbols = Object.getOwnPropertySymbols(object.primitive);
         const symbolLength = symbols.length;
         for (let i = 0; i < symbolLength; i++) {
           event.feature[symbols[i]] = object.primitive[symbols[i]];
         }
-      } else if (object.id && object.id.olFeature) { // cluster size === 1
+      } else if (object.id && object.id.olFeature) {
+        // cluster size === 1
         event.feature = object.id.olFeature;
-      } else if (object.id && object.id[vcsLayerName] && object.id instanceof Entity) { // entity
+      } else if (
+        object.id &&
+        object.id[vcsLayerName] &&
+        object.id instanceof Entity
+      ) {
+        // entity
         event.feature = object.id;
       }
 
@@ -260,13 +317,20 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
         if (
           object.primitive &&
           this.pickTranslucent &&
-          !(object.primitive.pointCloudShading && object.primitive.pointCloudShading.attenuation)
-        ) { // XXX should this always be on, also for non vector?
+          !(
+            object.primitive.pointCloudShading &&
+            object.primitive.pointCloudShading.attenuation
+          )
+        ) {
+          // XXX should this always be on, also for non vector?
           scene.pickTranslucentDepth = true;
           scene.render(cesiumMap.getCesiumWidget().clock.currentTime);
           event.exactPosition = true;
         }
-        scratchCartesian = scene.pickPosition(event.windowPosition, scratchCartesian);
+        scratchCartesian = scene.pickPosition(
+          event.windowPosition,
+          scratchCartesian,
+        );
         return handlePick();
       }
     }

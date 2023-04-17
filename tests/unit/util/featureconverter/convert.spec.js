@@ -44,7 +44,7 @@ describe('util.featureConverter.convert', () => {
       const style2 = new Style({ fill: new Fill({}) });
       const style3 = new Style({ stroke: new Stroke({}) });
       const style4 = new Style({ image: new RegularShape({}) });
-      const styleFunction = () => ([style, style2]);
+      const styleFunction = () => [style, style2];
       const styles = getStylesArray([styleFunction, [style3, style4]], feature);
       expect(styles).to.be.an('array');
       expect(styles).to.have.lengthOf(4);

@@ -30,7 +30,10 @@ describe('EditGeometryMouseOverInteraction', () => {
   describe('single selection mode', () => {
     before(() => {
       selectFeaturesInteraction = new SelectSingleFeatureInteraction(layer);
-      interaction = new SelectFeatureMouseOverInteraction(layer.name, selectFeaturesInteraction);
+      interaction = new SelectFeatureMouseOverInteraction(
+        layer.name,
+        selectFeaturesInteraction,
+      );
       interaction.cursorStyle = cursorStyle;
     });
     it('should change the cursor style, to select, if hovering over a feature', async () => {
@@ -47,7 +50,10 @@ describe('EditGeometryMouseOverInteraction', () => {
   describe('multi selection mode', () => {
     before(() => {
       selectFeaturesInteraction = new SelectMultiFeatureInteraction(layer);
-      interaction = new SelectFeatureMouseOverInteraction(layer.name, selectFeaturesInteraction);
+      interaction = new SelectFeatureMouseOverInteraction(
+        layer.name,
+        selectFeaturesInteraction,
+      );
       interaction.cursorStyle = cursorStyle;
     });
     it('should change the cursor style, to select, if hovering over a feature', async () => {
@@ -99,4 +105,3 @@ describe('EditGeometryMouseOverInteraction', () => {
     });
   });
 });
-

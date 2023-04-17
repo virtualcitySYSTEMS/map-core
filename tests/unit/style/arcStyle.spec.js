@@ -15,7 +15,10 @@ describe('ArcStyle', () => {
 
     before(() => {
       style = new ArcStyle();
-      geometry = new LineString([[0, 0, 0], [1, 0, 0]]);
+      geometry = new LineString([
+        [0, 0, 0],
+        [1, 0, 0],
+      ]);
       feature = new Feature({ geometry });
       arcGeometry = style.getGeometry()(feature);
     });
@@ -25,12 +28,20 @@ describe('ArcStyle', () => {
     });
 
     it('should calculate segments', () => {
-      expect(arcGeometry.getCoordinates()).to.have.lengthOf(style.numberOfSegments + 1);
+      expect(arcGeometry.getCoordinates()).to.have.lengthOf(
+        style.numberOfSegments + 1,
+      );
     });
 
     it('should maintain start and end coordinates', () => {
-      arrayCloseTo(arcGeometry.getFirstCoordinate(), geometry.getFirstCoordinate());
-      arrayCloseTo(arcGeometry.getLastCoordinate(), geometry.getLastCoordinate());
+      arrayCloseTo(
+        arcGeometry.getFirstCoordinate(),
+        geometry.getFirstCoordinate(),
+      );
+      arrayCloseTo(
+        arcGeometry.getLastCoordinate(),
+        geometry.getLastCoordinate(),
+      );
     });
 
     it('should create an arc of height distance * arcFactor', () => {
@@ -42,7 +53,10 @@ describe('ArcStyle', () => {
     });
 
     it('should cache the geometry on the arc struct', () => {
-      expect(feature[featureArcStruct]).to.have.property('geometry', arcGeometry);
+      expect(feature[featureArcStruct]).to.have.property(
+        'geometry',
+        arcGeometry,
+      );
     });
 
     it('should cache the 3D coordinates on the arc struct', () => {
@@ -71,7 +85,12 @@ describe('ArcStyle', () => {
 
     beforeEach(() => {
       style = new ArcStyle({ arcFactor: 0.2, numberOfSegments: 12 });
-      feature = new Feature({ geometry: new LineString([[0, 1, 0], [0, 0, 0]]) });
+      feature = new Feature({
+        geometry: new LineString([
+          [0, 1, 0],
+          [0, 0, 0],
+        ]),
+      });
       style.getGeometry()(feature);
       originalArcStruct = feature[featureArcStruct];
     });
@@ -102,18 +121,31 @@ describe('ArcStyle', () => {
 
     beforeEach(() => {
       style = new ArcStyle({ arcFactor: 0.2, numberOfSegments: 12 });
-      feature = new Feature({ geometry: new LineString([[0, 1, 0], [0, 0, 0]]) });
+      feature = new Feature({
+        geometry: new LineString([
+          [0, 1, 0],
+          [0, 0, 0],
+        ]),
+      });
       style.getGeometry()(feature);
       originalArcStruct = feature[featureArcStruct];
     });
 
     it('should recreate the arc struct, when setting a new feature geometry', () => {
-      feature.setGeometry(new LineString([[1, 1, 0], [0, 1, 0]]));
+      feature.setGeometry(
+        new LineString([
+          [1, 1, 0],
+          [0, 1, 0],
+        ]),
+      );
       expect(feature[featureArcStruct]).to.not.equal(originalArcStruct);
     });
 
     it('should recreate the arc struct, when changing the features geometry', () => {
-      feature.getGeometry().setCoordinates([[1, 1, 0], [0, 1, 0]]);
+      feature.getGeometry().setCoordinates([
+        [1, 1, 0],
+        [0, 1, 0],
+      ]);
       expect(feature[featureArcStruct]).to.not.equal(originalArcStruct);
     });
   });

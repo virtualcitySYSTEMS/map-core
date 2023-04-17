@@ -1,4 +1,5 @@
 # Style
+
 Most of this section is incomplete and shall have more content in future.
 
 - [Using ol.style.Style on ol.Feature](#Using ol.style.Style on ol.Feature)
@@ -6,8 +7,9 @@ Most of this section is incomplete and shall have more content in future.
 - [Arcs](#arcs)
 
 ## Using ol.style.Style on ol.Feature
-To style a single `Feature`, you shall call the `.setStyle()` method with a 
-`StyleLike`. There are certain exceptions: when hiding or highlighting 
+
+To style a single `Feature`, you shall call the `.setStyle()` method with a
+`StyleLike`. There are certain exceptions: when hiding or highlighting
 features. It is required to use the layers `FeatureVisibility` or the `LayerCollection`s
 `.globalHider` to hide and highlight features.
 This ensures the features _style_ remains correct, even though the feature
@@ -26,32 +28,47 @@ const layer = new VectorLayer({});
 collection.add(layer);
 
 const features = [
-  new Feature({ geometry: new LineString([[0, 0], [1, 0]]) }),
-  new Feature({ geometry: new LineString([[0, 0], [0, 1]]) }),
+  new Feature({
+    geometry: new LineString([
+      [0, 0],
+      [1, 0],
+    ]),
+  }),
+  new Feature({
+    geometry: new LineString([
+      [0, 0],
+      [0, 1],
+    ]),
+  }),
 ];
 
-const featureStyle = new Style({ stroke: new Stroke({ color: '#000000', widht: 1 }) });
-features.forEach((f) => { f.setStyle(featureStyle); });
+const featureStyle = new Style({
+  stroke: new Stroke({ color: '#000000', widht: 1 }),
+});
+features.forEach((f) => {
+  f.setStyle(featureStyle);
+});
 
 const [id1, id2] = layer.addFeatures(features);
 // the first feature is red
-layer.featureVisibility.highlight({ 
-  [id1]: new Style({ stroke: new Storke({ color: '#FF0000', width: 4 }) }), 
+layer.featureVisibility.highlight({
+  [id1]: new Style({ stroke: new Storke({ color: '#FF0000', width: 4 }) }),
 });
 
 // the second feature is hidden
-collection.globalHider.hideObjects([id2]); 
+collection.globalHider.hideObjects([id2]);
 
 features.forEach((f) => {
   assert(f.getStyle() === featureStyle);
   assert(!f.getStyleFunction()().includes(featureStyle));
 });
-``` 
+```
 
 ## Arrows
+
 You can create an `ArrowStyle`, which is a specialized `ol.style.Style`. It will
 render an arrow head at the end of a `ol.geom.LineString`. It will not render _any other
-geometry_. You can have arrow heads at the _start_, _end_ or at _both_ ends of your 
+geometry_. You can have arrow heads at the _start_, _end_ or at _both_ ends of your
 line by setting the `end` configuration using the `ArrowEnd` enum.
 
 ```javascript
@@ -66,7 +83,7 @@ const layer = new VectorLayer({});
 layer.setStyle(style);
 ```
 
-To define the shape of the arrow head, you can provide your own definition of the 
+To define the shape of the arrow head, you can provide your own definition of the
 `Primitive` to be rendered in 3D. The `ol.style.Icon` used in 2D can be deduced
 for primitives of type: `SPHERE`, `BOX` & `CYLINDER`. By default, the arrow head
 is a `CYLINDER` with a top radius of 0, resulting in a triangle representation
@@ -77,7 +94,8 @@ import { ArrowStyle, PrimitiveOptionsType } from '@vcmap/core';
 
 const style = new ArrowStyle({
   color: '#FF0000', // sets the color of the arrow head & the line
-  primitiveOptions: { // sets a box, which will result in a square 2D representation
+  primitiveOptions: {
+    // sets a box, which will result in a square 2D representation
     type: PrimitiveOptionsType.BOX,
     geometryOptions: {
       minimum: [0, 0, 0],
@@ -95,7 +113,9 @@ import { ArrowStyle } from '@vcmap/core';
 
 // create a custom white svg icon
 const radius = 10;
-const icon = `<svg height="${radius * 2}" width="${radius * 2}" xmlns="http://www.w3.org/2000/svg">
+const icon = `<svg height="${radius * 2}" width="${
+  radius * 2
+}" xmlns="http://www.w3.org/2000/svg">
   <circle cx="${radius}" cy="${radius}" r="${radius}" style="fill:white;" />
 </svg>`;
 
@@ -109,6 +129,7 @@ const style = new ArrowStyle({
 ```
 
 ### Arcs
+
 The `ArcStyle` is a special kind of `ArrowStyle`. It will render an _arc_ from
 the first point to the last point of LineString geometries. If the geometries have
 3D coordinates, the arcs will be 3D as well (otherwise they are drapped onto the terrain).
@@ -136,8 +157,8 @@ const style = new ArcStyle({
 });
 ```
 
-You can define the `arcFactor`, which states how extreme the arc is. An arcFactor of 
-`0.5` will lead to the arc following a circle path with the center at the mid point 
+You can define the `arcFactor`, which states how extreme the arc is. An arcFactor of
+`0.5` will lead to the arc following a circle path with the center at the mid point
 of start and end.
 
 ```javascript

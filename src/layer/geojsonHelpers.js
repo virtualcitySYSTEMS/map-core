@@ -6,8 +6,14 @@ import Point from 'ol/geom/Point.js';
 import Circle from 'ol/geom/Circle.js';
 
 import { getDistance as haversineDistance } from 'ol/sphere.js';
-import Projection, { mercatorProjection, wgs84Projection } from '../util/projection.js';
-import VectorStyleItem, { defaultVectorStyle, vectorStyleSymbol } from '../style/vectorStyleItem.js';
+import Projection, {
+  mercatorProjection,
+  wgs84Projection,
+} from '../util/projection.js';
+import VectorStyleItem, {
+  defaultVectorStyle,
+  vectorStyleSymbol,
+} from '../style/vectorStyleItem.js';
 import { parseColor } from '../style/styleHelpers.js';
 import VectorLayer from './vectorLayer.js';
 import { featureStoreStateSymbol } from './featureStoreLayerState.js';
@@ -15,7 +21,11 @@ import { embedIconsInStyle } from '../style/writeStyle.js';
 import DeclarativeStyleItem from '../style/declarativeStyleItem.js';
 import { vcsMetaVersion } from './layer.js';
 import Extent3D from '../util/featureconverter/extent3D.js';
-import { circleFromCenterRadius, enforceEndingVertex, removeEndingVertexFromGeometry } from '../util/geometryHelpers.js';
+import {
+  circleFromCenterRadius,
+  enforceEndingVertex,
+  removeEndingVertexFromGeometry,
+} from '../util/geometryHelpers.js';
 
 const featureProjection = 'EPSG:3857';
 
@@ -70,7 +80,6 @@ function getFormat() {
  * @api
  */
 
-
 /**
  * @param {Object} geojson
  * @returns {string|null}
@@ -107,7 +116,11 @@ export function updateLegacyFeature(feature) {
     } else {
       const extent = Extent3D.fromGeometry(feature.getGeometry());
       const minHeight = Number.isFinite(extent.minZ) ? extent.minZ : 0;
-      feature.set('olcs_extrudedHeight', feature.get('extrudedHeight') - minHeight, true);
+      feature.set(
+        'olcs_extrudedHeight',
+        feature.get('extrudedHeight') - minHeight,
+        true,
+      );
     }
     feature.unset('extrudedHeight', true);
   }
@@ -142,11 +155,7 @@ function readGeometry(geometryObj, options) {
  * @todo this could also be done for declarative styles image and conditions could be checked?
  */
 function setEmbeddedIcons(object, options) {
-  if (
-    object.image &&
-    object.image.src &&
-    /^:\d+$/.test(object.image.src)
-  ) {
+  if (object.image && object.image.src && /^:\d+$/.test(object.image.src)) {
     if (options.embeddedIcons) {
       object.image.src = options.embeddedIcons[object.image.src.substring(1)];
     } else {
@@ -217,7 +226,10 @@ function readFeature(featureObj, options) {
     return null;
   }
   const radius = featureObj.geometry.olcs_radius;
-  let geometry = getFormat().readGeometry(featureObj.geometry, options.formatOptions);
+  let geometry = getFormat().readGeometry(
+    featureObj.geometry,
+    options.formatOptions,
+  );
 
   if (featureObj.radius && geometry instanceof Point) {
     const coordinates = geometry.getCoordinates();
@@ -243,7 +255,10 @@ function readFeature(featureObj, options) {
   }
   const { properties } = featureObj;
   if (options.readLegacyStyleOptions && !featureObj.vcsMeta.style) {
-    featureObj.vcsMeta.style = parseLegacyStyleOptions(properties, geometry.getType());
+    featureObj.vcsMeta.style = parseLegacyStyleOptions(
+      properties,
+      geometry.getType(),
+    );
   }
   removeEndingVertexFromGeometry(geometry);
   const feature = new Feature({ ...properties, geometry });
@@ -256,7 +271,10 @@ function readFeature(featureObj, options) {
   }
 
   if (featureObj.vcsMeta.style && !options.dontReadStyle) {
-    featureObj.vcsMeta.style = setEmbeddedIcons(featureObj.vcsMeta.style, options);
+    featureObj.vcsMeta.style = setEmbeddedIcons(
+      featureObj.vcsMeta.style,
+      options,
+    );
     let styleItem;
     if (options.defaultStyle) {
       styleItem = options.defaultStyle
@@ -287,16 +305,18 @@ export function parseGeoJSON(input, readOptions = {}) {
   const geoJSON = typeof input === 'string' ? JSON.parse(input) : input;
 
   const epsgCode = getEPSGCodeFromGeojson(geoJSON);
-  const defaultDataProjection = epsgCode ? { epsg: epsgCode } : readOptions.dataProjection;
+  const defaultDataProjection = epsgCode
+    ? { epsg: epsgCode }
+    : readOptions.dataProjection;
   /** @type {GeoJSONinternalReadOptions} */
   const options = {
     formatOptions: {
-      dataProjection: defaultDataProjection ?
-        defaultDataProjection.epsg :
-        wgs84Projection.epsg,
-      featureProjection: readOptions.targetProjection ?
-        readOptions.targetProjection.epsg :
-        mercatorProjection.epsg,
+      dataProjection: defaultDataProjection
+        ? defaultDataProjection.epsg
+        : wgs84Projection.epsg,
+      featureProjection: readOptions.targetProjection
+        ? readOptions.targetProjection.epsg
+        : mercatorProjection.epsg,
     },
     dontReadStyle: readOptions.dontReadStyle,
     readLegacyStyleOptions: readOptions.readLegacyStyleOptions,
@@ -321,7 +341,10 @@ export function parseGeoJSON(input, readOptions = {}) {
       if (geoJSON.vcsMeta.style.type === DeclarativeStyleItem.className) {
         style = new DeclarativeStyleItem(geoJSON.vcsMeta.style);
       } else {
-        geoJSON.vcsMeta.style = setEmbeddedIcons(geoJSON.vcsMeta.style, options);
+        geoJSON.vcsMeta.style = setEmbeddedIcons(
+          geoJSON.vcsMeta.style,
+          options,
+        );
         options.defaultStyle = options.defaultStyle
           .clone()
           .assign(new VectorStyleItem(geoJSON.vcsMeta.style));
@@ -329,13 +352,18 @@ export function parseGeoJSON(input, readOptions = {}) {
       }
     }
     return {
-      features: geoJSON.features.map(f => readFeature(f, options)).filter(f => f),
+      features: geoJSON.features
+        .map((f) => readFeature(f, options))
+        .filter((f) => f),
       style: geoJSON.vcsMeta.style ? style : undefined,
       vcsMeta: geoJSON.vcsMeta ? geoJSON.vcsMeta : undefined,
     };
   } else if (geoJSON.type === 'Feature') {
     const feature = readFeature(geoJSON, options);
-    return { features: feature ? [feature] : [], vcsMeta: geoJSON.vcsMeta ? geoJSON.vcsMeta : undefined };
+    return {
+      features: feature ? [feature] : [],
+      vcsMeta: geoJSON.vcsMeta ? geoJSON.vcsMeta : undefined,
+    };
   } else if (geoJSON.type != null) {
     return { features: [readGeometry(geoJSON, options)] };
   }
@@ -348,7 +376,11 @@ export function parseGeoJSON(input, readOptions = {}) {
  * @param {Array=} embeddedIcons
  * @returns {Object}
  */
-export function writeGeoJSONFeature(feature, options = {}, embeddedIcons) {
+export function writeGeoJSONFeature(
+  feature,
+  options = {},
+  embeddedIcons = undefined,
+) {
   const featureObject = {
     type: 'Feature',
     properties: feature.getProperties(),
@@ -373,12 +405,16 @@ export function writeGeoJSONFeature(feature, options = {}, embeddedIcons) {
     geometry = new Point(geometry.getCenter());
   } else if (geometry instanceof Polygon) {
     const coordinates = geometry.getCoordinates();
-    coordinates.forEach((ring) => { enforceEndingVertex(ring); });
+    coordinates.forEach((ring) => {
+      enforceEndingVertex(ring);
+    });
     geometry.setCoordinates(coordinates);
   } else if (geometry instanceof MultiPolygon) {
     const coordinates = geometry.getCoordinates();
     coordinates.forEach((poly) => {
-      poly.forEach((ring) => { enforceEndingVertex(ring); });
+      poly.forEach((ring) => {
+        enforceEndingVertex(ring);
+      });
     });
     geometry.setCoordinates(coordinates);
   }
@@ -410,15 +446,20 @@ export function writeGeoJSONFeature(feature, options = {}, embeddedIcons) {
  * @param {GeoJSONwriteOptions=} options
  * @returns {string|Object}
  */
-export function writeGeoJSON(data, options = {}) { // how to handel embedded icons when they are not set on the vcsMeta but options is true?
+export function writeGeoJSON(data, options = {}) {
+  // how to handel embedded icons when they are not set on the vcsMeta but options is true?
   const vcsMeta = data.vcsMeta || {};
   vcsMeta.version = vcsMetaVersion;
-  const featureObjs = data.features.map(feature => writeGeoJSONFeature(feature, options, vcsMeta.embeddedIcons));
+  const featureObjs = data.features.map((feature) =>
+    writeGeoJSONFeature(feature, options, vcsMeta.embeddedIcons),
+  );
   const obj = {
     type: 'FeatureCollection',
     features: featureObjs,
     vcsMeta,
   };
 
-  return options.asObject ? obj : JSON.stringify(obj, null, options.prettyPrint ? 2 : null);
+  return options.asObject
+    ? obj
+    : JSON.stringify(obj, null, options.prettyPrint ? 2 : null);
 }

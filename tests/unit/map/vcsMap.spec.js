@@ -47,7 +47,9 @@ describe('maps.VcmMap', () => {
       });
 
       it('should have mapElement and vcm-map-top classes', () => {
-        expect([...map.mapElement.classList.values()]).to.include.members(['mapElement']);
+        expect([...map.mapElement.classList.values()]).to.include.members([
+          'mapElement',
+        ]);
       });
     });
   });
@@ -346,7 +348,9 @@ describe('maps.VcmMap', () => {
 
       it('should not raise state changed, if the map is deactivated while a layer is handling mapActivated', async () => {
         const layer2 = new Layer({});
-        layer2.mapActivated = async () => { map.deactivate(); };
+        layer2.mapActivated = async () => {
+          map.deactivate();
+        };
         map.layerCollection.add(layer2);
         const spy = sandbox.spy();
         const listener = map.stateChanged.addEventListener(spy);
@@ -447,7 +451,8 @@ describe('maps.VcmMap', () => {
     it('should remove the map from its parent', () => {
       const { mapElement } = map;
       map.destroy();
-      expect(document.getElementById('mapContainer').contains(mapElement)).to.be.false;
+      expect(document.getElementById('mapContainer').contains(mapElement)).to.be
+        .false;
     });
 
     it('should no longer listen to events on the layer collection', () => {

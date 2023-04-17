@@ -7,7 +7,10 @@ import '../src/cesium/cesium3DTileFeature.js';
 import '../src/cesium/cesiumVcsCameraPrimitive.js';
 
 import { setLogLevel } from '@vcsuite/logger';
-import { mercatorProjection, setDefaultProjectionOptions } from '../src/util/projection.js';
+import {
+  mercatorProjection,
+  setDefaultProjectionOptions,
+} from '../src/util/projection.js';
 import { setupCesiumContextLimits } from './unit/helpers/cesiumHelpers.js';
 
 setLogLevel(false);

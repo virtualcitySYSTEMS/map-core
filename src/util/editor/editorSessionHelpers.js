@@ -38,7 +38,8 @@ export const SessionType = {
  * @param {import("@vcmap/core").LayerCollection} layerCollection
  * @returns {VectorLayer}
  */
-export function setupScratchLayer(layerCollection) { // IDEA pass in stopped and cleanup ourselves?
+export function setupScratchLayer(layerCollection) {
+  // IDEA pass in stopped and cleanup ourselves?
   const layer = new VectorLayer({
     projection: mercatorProjection.toJSON(),
     vectorProperties: {
@@ -91,12 +92,16 @@ export function setupInteractionChain(eventHandler, interactionId) {
   const removed = new VcsEvent();
   const listener = eventHandler.addExclusiveInteraction(
     interactionChain,
-    () => { removed.raiseEvent(); },
+    () => {
+      removed.raiseEvent();
+    },
     undefined,
     interactionId,
   );
   const currentFeatureInteractionEvent = eventHandler.featureInteraction.active;
-  eventHandler.featureInteraction.setActive(EventType.CLICKMOVE | EventType.DRAGSTART);
+  eventHandler.featureInteraction.setActive(
+    EventType.CLICKMOVE | EventType.DRAGSTART,
+  );
 
   return {
     interactionChain,

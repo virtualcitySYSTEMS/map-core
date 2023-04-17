@@ -1,4 +1,9 @@
-import { CesiumTerrainProvider, Cartographic, Cartesian2, sampleTerrainMostDetailed } from '@vcmap-cesium/engine';
+import {
+  CesiumTerrainProvider,
+  Cartographic,
+  Cartesian2,
+  sampleTerrainMostDetailed,
+} from '@vcmap-cesium/engine';
 import { getTransform } from 'ol/proj.js';
 import { wgs84Projection } from '../util/projection.js';
 
@@ -25,10 +30,12 @@ export function getTerrainProviderForUrl(options) {
     return terrainProviders[options.url];
   }
   let terrainProvider = terrainProviders[options.url];
-  if ((options.requestVertexNormals !== undefined &&
+  if (
+    (options.requestVertexNormals !== undefined &&
       terrainProvider.requestVertexNormals !== options.requestVertexNormals) ||
     (options.requestWaterMask !== undefined &&
-      terrainProvider.requestWaterMask !== options.requestWaterMask)) {
+      terrainProvider.requestWaterMask !== options.requestWaterMask)
+  ) {
     terrainProviders[options.url] = new CesiumTerrainProvider(options);
     terrainProvider = terrainProviders[options.url];
   }
@@ -43,29 +50,32 @@ export function getTerrainProviderForUrl(options) {
  * @param {Array<import("ol/coordinate").Coordinate>=} result
  * @returns {Promise<Array<import("ol/coordinate").Coordinate>>}
  */
-export function getHeightFromTerrainProvider(terrainProvider, coordinates, optSourceProjection, result) {
-  const sourceTransformer = optSourceProjection ?
-    getTransform(
-      optSourceProjection.proj,
-      wgs84Projection.proj,
-    ) :
-    null;
+export function getHeightFromTerrainProvider(
+  terrainProvider,
+  coordinates,
+  optSourceProjection,
+  result,
+) {
+  const sourceTransformer = optSourceProjection
+    ? getTransform(optSourceProjection.proj, wgs84Projection.proj)
+    : null;
 
   const positions = coordinates.map((coord) => {
-    const wgs84 = sourceTransformer ?
-      sourceTransformer(coord, coord.slice(), coord.length) :
-      coord;
+    const wgs84 = sourceTransformer
+      ? sourceTransformer(coord, coord.slice(), coord.length)
+      : coord;
     return Cartographic.fromDegrees(wgs84[0], wgs84[1]);
   });
 
-  const outArray = result || coordinates.map(c => c.slice());
-  return sampleTerrainMostDetailed(terrainProvider, positions)
-    .then((updatedPositions) => {
+  const outArray = result || coordinates.map((c) => c.slice());
+  return sampleTerrainMostDetailed(terrainProvider, positions).then(
+    (updatedPositions) => {
       updatedPositions.forEach((position, index) => {
         outArray[index][2] = position.height || 0;
       });
       return outArray;
-    });
+    },
+  );
 }
 
 /**
@@ -80,8 +90,9 @@ export function isTerrainTileAvailable(terrainProvider, level, position) {
     return false;
   }
   const tileXY = terrainProvider.tilingScheme.positionToTileXY(
-    position, level, new Cartesian2(),
+    position,
+    level,
+    new Cartesian2(),
   );
   return terrainProvider.getTileDataAvailable(tileXY.x, tileXY.y, level);
 }
-

@@ -32,7 +32,15 @@ class CanvasTileRenderer extends CanvasImmediateRenderer {
     userTransform,
     scaleY = 1,
   ) {
-    super(context, pixelRatio, extent, transform, viewRotation, squaredTolerance, userTransform);
+    super(
+      context,
+      pixelRatio,
+      extent,
+      transform,
+      viewRotation,
+      squaredTolerance,
+      userTransform,
+    );
 
     /**
      * @private
@@ -67,10 +75,7 @@ class CanvasTileRenderer extends CanvasImmediateRenderer {
    */
   set imageScale_(value) {
     const imageScale = value || [1, 1];
-    this.scaledImageScale_ = [
-      imageScale[0],
-      imageScale[1] * this.scaleY,
-    ];
+    this.scaledImageScale_ = [imageScale[0], imageScale[1] * this.scaleY];
   }
 
   /**
@@ -87,10 +92,7 @@ class CanvasTileRenderer extends CanvasImmediateRenderer {
    */
   set textScale_(value) {
     const textScale = value || [1, 1];
-    this.scaledTextScale_ = [
-      textScale[0],
-      textScale[1] * this.scaleY,
-    ];
+    this.scaledTextScale_ = [textScale[0], textScale[1] * this.scaleY];
   }
 
   /**

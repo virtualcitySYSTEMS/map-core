@@ -4,7 +4,6 @@ import LayerOpenlayersImpl from '../../../../src/layer/openlayers/layerOpenlayer
 import VcsApp from '../../../../src/vcsApp.js';
 import { setOpenlayersMap } from '../../helpers/openlayersHelpers.js';
 
-
 describe('LayerOpenlayersImpl', () => {
   let sandbox;
   let app;
@@ -20,7 +19,9 @@ describe('LayerOpenlayersImpl', () => {
   });
 
   beforeEach(() => {
-    impl = new LayerOpenlayersImpl(olMap, { splitDirection: SplitDirection.NONE });
+    impl = new LayerOpenlayersImpl(olMap, {
+      splitDirection: SplitDirection.NONE,
+    });
     olLayer = new Layer({});
     impl.getOLLayer = () => olLayer;
   });

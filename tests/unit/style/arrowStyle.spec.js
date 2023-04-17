@@ -18,7 +18,11 @@ function checkAttributeValue(attributes, key, value) {
  */
 function checkPolygonPositions(svg, coordinates) {
   const { attributes } = svg.querySelector('polygon');
-  checkAttributeValue(attributes, 'points', coordinates.map(c => c.join(',')).join(' '));
+  checkAttributeValue(
+    attributes,
+    'points',
+    coordinates.map((c) => c.join(',')).join(' '),
+  );
 }
 
 /**
@@ -37,7 +41,7 @@ function checkHeightWidth(svg, width, height) {
  * @returns {Document}
  */
 function parseSvg(svg) {
-  return (new DOMParser()).parseFromString(svg, 'application/xml');
+  return new DOMParser().parseFromString(svg, 'application/xml');
 }
 
 const red = '#FF0000';
@@ -50,12 +54,17 @@ describe('ArrowStyle', () => {
       let svg;
 
       before(() => {
-        svg = parseSvg(getDefaultArrowIconSrc({
-          type: PrimitiveOptionsType.SPHERE,
-          geometryOptions: {
-            radius: 10,
-          },
-        }, 1));
+        svg = parseSvg(
+          getDefaultArrowIconSrc(
+            {
+              type: PrimitiveOptionsType.SPHERE,
+              geometryOptions: {
+                radius: 10,
+              },
+            },
+            1,
+          ),
+        );
       });
 
       it('set the height & width to twice the radius', () => {
@@ -75,13 +84,18 @@ describe('ArrowStyle', () => {
       let svg;
 
       before(() => {
-        svg = parseSvg(getDefaultArrowIconSrc({
-          type: PrimitiveOptionsType.BOX,
-          geometryOptions: {
-            minimum: [0, 0, 0],
-            maximum: [10, 6, 10],
-          },
-        }, 1));
+        svg = parseSvg(
+          getDefaultArrowIconSrc(
+            {
+              type: PrimitiveOptionsType.BOX,
+              geometryOptions: {
+                minimum: [0, 0, 0],
+                maximum: [10, 6, 10],
+              },
+            },
+            1,
+          ),
+        );
       });
 
       it('set the height & width to the box extent', () => {
@@ -89,7 +103,12 @@ describe('ArrowStyle', () => {
       });
 
       it('should create a square', () => {
-        checkPolygonPositions(svg, [[0, 0], [10, 0], [10, 6], [0, 6]]);
+        checkPolygonPositions(svg, [
+          [0, 0],
+          [10, 0],
+          [10, 6],
+          [0, 6],
+        ]);
       });
     });
 
@@ -99,14 +118,19 @@ describe('ArrowStyle', () => {
         let svg;
 
         before(() => {
-          svg = parseSvg(getDefaultArrowIconSrc({
-            type: PrimitiveOptionsType.CYLINDER,
-            geometryOptions: {
-              length: 6,
-              bottomRadius: 2,
-              topRadius: 0,
-            },
-          }, 1));
+          svg = parseSvg(
+            getDefaultArrowIconSrc(
+              {
+                type: PrimitiveOptionsType.CYLINDER,
+                geometryOptions: {
+                  length: 6,
+                  bottomRadius: 2,
+                  topRadius: 0,
+                },
+              },
+              1,
+            ),
+          );
         });
 
         it('set the height to its length and width to twice the bottom radius', () => {
@@ -114,7 +138,11 @@ describe('ArrowStyle', () => {
         });
 
         it('should create a triangle', () => {
-          checkPolygonPositions(svg, [[0, 6], [4, 6], [2, 0]]);
+          checkPolygonPositions(svg, [
+            [0, 6],
+            [4, 6],
+            [2, 0],
+          ]);
         });
       });
 
@@ -123,14 +151,19 @@ describe('ArrowStyle', () => {
         let svg;
 
         before(() => {
-          svg = parseSvg(getDefaultArrowIconSrc({
-            type: PrimitiveOptionsType.CYLINDER,
-            geometryOptions: {
-              length: 6,
-              bottomRadius: 0,
-              topRadius: 2,
-            },
-          }, 1));
+          svg = parseSvg(
+            getDefaultArrowIconSrc(
+              {
+                type: PrimitiveOptionsType.CYLINDER,
+                geometryOptions: {
+                  length: 6,
+                  bottomRadius: 0,
+                  topRadius: 2,
+                },
+              },
+              1,
+            ),
+          );
         });
 
         it('set the height to its length and width to twice the top radius', () => {
@@ -138,7 +171,11 @@ describe('ArrowStyle', () => {
         });
 
         it('should create a triangle', () => {
-          checkPolygonPositions(svg, [[2, 6], [4, 0], [0, 0]]);
+          checkPolygonPositions(svg, [
+            [2, 6],
+            [4, 0],
+            [0, 0],
+          ]);
         });
       });
 
@@ -147,14 +184,19 @@ describe('ArrowStyle', () => {
         let svg;
 
         before(() => {
-          svg = parseSvg(getDefaultArrowIconSrc({
-            type: PrimitiveOptionsType.CYLINDER,
-            geometryOptions: {
-              length: 6,
-              bottomRadius: 2,
-              topRadius: 6,
-            },
-          }, 1));
+          svg = parseSvg(
+            getDefaultArrowIconSrc(
+              {
+                type: PrimitiveOptionsType.CYLINDER,
+                geometryOptions: {
+                  length: 6,
+                  bottomRadius: 2,
+                  topRadius: 6,
+                },
+              },
+              1,
+            ),
+          );
         });
 
         it('set the height to its length and width to twice the larger radius', () => {
@@ -162,7 +204,12 @@ describe('ArrowStyle', () => {
         });
 
         it('should create a suare', () => {
-          checkPolygonPositions(svg, [[4, 6], [8, 6], [12, 0], [0, 0]]);
+          checkPolygonPositions(svg, [
+            [4, 6],
+            [8, 6],
+            [12, 0],
+            [0, 0],
+          ]);
         });
       });
     });
@@ -240,7 +287,9 @@ describe('ArrowStyle', () => {
 
   describe('getting the olcs style', () => {
     it('should return a regular shape with the correct color', () => {
-      const imageStyle = new ArrowStyle({ color: red }).getOlcsStyle().getImage();
+      const imageStyle = new ArrowStyle({ color: red })
+        .getOlcsStyle()
+        .getImage();
       expect(imageStyle).to.be.an.instanceof(RegularShape);
       expect(imageStyle.getFill().getColor()).to.equal(red);
     });

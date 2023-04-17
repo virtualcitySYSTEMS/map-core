@@ -46,7 +46,9 @@ class TranslateInteraction extends AbstractInteraction {
    * @type {VcsEvent<Array<number>>}
    * @readonly
    */
-  get translated() { return this._translated; }
+  get translated() {
+    return this._translated;
+  }
 
   /**
    * @param {InteractionEvent} event
@@ -54,7 +56,9 @@ class TranslateInteraction extends AbstractInteraction {
    */
   async pipe(event) {
     if (this._getTranslateEvent) {
-      this._translated.raiseEvent(this._getTranslateEvent(event.positionOrPixel, event.windowPosition));
+      this._translated.raiseEvent(
+        this._getTranslateEvent(event.positionOrPixel, event.windowPosition),
+      );
       if (event.type === EventType.DRAGEND) {
         this._getTranslateEvent = null;
         this._transformationHandler.showAxis = AXIS_AND_PLANES.NONE;
@@ -89,28 +93,58 @@ class TranslateInteraction extends AbstractInteraction {
    * @private
    */
   _dragAlongAxis3D(axis, event) {
-    const scene = /** @type {import("@vcmap/core").CesiumMap} */ (event.map).getScene();
+    const scene = /** @type {import("@vcmap/core").CesiumMap} */ (
+      event.map
+    ).getScene();
     if (axis !== AXIS_AND_PLANES.Z) {
       const center = mercatorToCartesian(this._transformationHandler.center);
       let plane = Plane.clone(Plane.ORIGIN_XY_PLANE);
-      plane = Plane.transform(plane, Transforms.eastNorthUpToFixedFrame(center), plane);
-      let cartographic = getCartographicFromPlane(plane, scene.camera, event.windowPosition);
-      let currentPosition = Projection.wgs84ToMercator(cartographicToWgs84(cartographic));
+      plane = Plane.transform(
+        plane,
+        Transforms.eastNorthUpToFixedFrame(center),
+        plane,
+      );
+      let cartographic = getCartographicFromPlane(
+        plane,
+        scene.camera,
+        event.windowPosition,
+      );
+      let currentPosition = Projection.wgs84ToMercator(
+        cartographicToWgs84(cartographic),
+      );
       return (c, windowPosition) => {
-        cartographic = getCartographicFromPlane(plane, scene.camera, windowPosition);
-        const newPosition = Projection.wgs84ToMercator(cartographicToWgs84(cartographic));
-        const translate = axis === AXIS_AND_PLANES.X ?
-          [newPosition[0] - currentPosition[0], 0, 0] :
-          [0, newPosition[1] - currentPosition[1], 0];
+        cartographic = getCartographicFromPlane(
+          plane,
+          scene.camera,
+          windowPosition,
+        );
+        const newPosition = Projection.wgs84ToMercator(
+          cartographicToWgs84(cartographic),
+        );
+        const translate =
+          axis === AXIS_AND_PLANES.X
+            ? [newPosition[0] - currentPosition[0], 0, 0]
+            : [0, newPosition[1] - currentPosition[1], 0];
 
         currentPosition = newPosition;
         return translate;
       };
     } else {
-      const plane = createCameraVerticalPlane(this._transformationHandler.center.slice(), scene);
-      let currentHeight = getCartographicFromPlane(plane, scene.camera, event.windowPosition).height;
+      const plane = createCameraVerticalPlane(
+        this._transformationHandler.center.slice(),
+        scene,
+      );
+      let currentHeight = getCartographicFromPlane(
+        plane,
+        scene.camera,
+        event.windowPosition,
+      ).height;
       return (c, windowPosition) => {
-        const newHeight = getCartographicFromPlane(plane, scene.camera, windowPosition).height;
+        const newHeight = getCartographicFromPlane(
+          plane,
+          scene.camera,
+          windowPosition,
+        ).height;
         const translate = [0, 0, newHeight - currentHeight];
         currentHeight = newHeight;
         return translate;
@@ -125,7 +159,9 @@ class TranslateInteraction extends AbstractInteraction {
    * @private
    */
   _dragAlongPlane3D(axis, event) {
-    const scene = /** @type {import("@vcmap/core").CesiumMap} */ (event.map).getScene();
+    const scene = /** @type {import("@vcmap/core").CesiumMap} */ (
+      event.map
+    ).getScene();
     const center = mercatorToCartesian(this._transformationHandler.center);
     let plane;
     if (axis === AXIS_AND_PLANES.YZ) {
@@ -135,12 +171,28 @@ class TranslateInteraction extends AbstractInteraction {
     } else {
       plane = Plane.clone(Plane.ORIGIN_XY_PLANE);
     }
-    plane = Plane.transform(plane, Transforms.eastNorthUpToFixedFrame(center), plane);
-    let cartographic = getCartographicFromPlane(plane, scene.camera, event.windowPosition);
-    let currentPosition = Projection.wgs84ToMercator(cartographicToWgs84(cartographic));
+    plane = Plane.transform(
+      plane,
+      Transforms.eastNorthUpToFixedFrame(center),
+      plane,
+    );
+    let cartographic = getCartographicFromPlane(
+      plane,
+      scene.camera,
+      event.windowPosition,
+    );
+    let currentPosition = Projection.wgs84ToMercator(
+      cartographicToWgs84(cartographic),
+    );
     return (c, windowPosition) => {
-      cartographic = getCartographicFromPlane(plane, scene.camera, windowPosition);
-      const newPosition = Projection.wgs84ToMercator(cartographicToWgs84(cartographic));
+      cartographic = getCartographicFromPlane(
+        plane,
+        scene.camera,
+        windowPosition,
+      );
+      const newPosition = Projection.wgs84ToMercator(
+        cartographicToWgs84(cartographic),
+      );
 
       const translate = [
         newPosition[0] - currentPosition[0],
@@ -161,16 +213,22 @@ class TranslateInteraction extends AbstractInteraction {
   _dragAlongAxis2D(axis, event) {
     const center = this._transformationHandler.center.slice();
     const mercatorExtent = mercatorProjection.proj.getExtent();
-    const end = axis === AXIS_AND_PLANES.X ?
-      [mercatorExtent[0], center[1], center[2]] :
-      [center[0], mercatorExtent[1], center[2]];
+    const end =
+      axis === AXIS_AND_PLANES.X
+        ? [mercatorExtent[0], center[1], center[2]]
+        : [center[0], mercatorExtent[1], center[2]];
 
-    let lastPointOnAxis = getClosestPointOn2DLine(center, end, event.positionOrPixel);
+    let lastPointOnAxis = getClosestPointOn2DLine(
+      center,
+      end,
+      event.positionOrPixel,
+    );
     return (coords) => {
       const newPointOnAxis = getClosestPointOn2DLine(center, end, coords);
-      const translate = axis === AXIS_AND_PLANES.X ?
-        [newPointOnAxis[0] - lastPointOnAxis[0], 0, 0] :
-        [0, newPointOnAxis[1] - lastPointOnAxis[1], 0];
+      const translate =
+        axis === AXIS_AND_PLANES.X
+          ? [newPointOnAxis[0] - lastPointOnAxis[0], 0, 0]
+          : [0, newPointOnAxis[1] - lastPointOnAxis[1], 0];
 
       lastPointOnAxis = newPointOnAxis;
       return translate;
@@ -187,11 +245,7 @@ class TranslateInteraction extends AbstractInteraction {
   _dragAlongPlane2D(axis, event) {
     let current = event.positionOrPixel.slice();
     return (coords) => {
-      const translate = [
-        coords[0] - current[0],
-        coords[1] - current[1],
-        0,
-      ];
+      const translate = [coords[0] - current[0], coords[1] - current[1], 0];
       current = coords.slice();
       return translate;
     };

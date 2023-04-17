@@ -100,14 +100,18 @@ export const vcsMetaVersion = '2.1';
  */
 class Layer extends VcsObject {
   /** @type {string} */
-  static get className() { return 'Layer'; }
+  static get className() {
+    return 'Layer';
+  }
 
   /**
    * Symbol to declare a layers name on its visualizations, e.g. ol.layer.Layer, Cesium.Cesium3DTileset
    * @type {symbol}
    * @api
    */
-  static get vcsLayerNameSymbol() { return vcsLayerName; }
+  static get vcsLayerNameSymbol() {
+    return vcsLayerName;
+  }
 
   /** @returns {LayerOptions} */
   static getDefaultOptions() {
@@ -143,12 +147,18 @@ class Layer extends VcsObject {
      * @type {boolean}
      * @api
      */
-    this.activeOnStartup = parseBoolean(options.activeOnStartup, defaultOptions.activeOnStartup);
+    this.activeOnStartup = parseBoolean(
+      options.activeOnStartup,
+      defaultOptions.activeOnStartup,
+    );
     /**
      * @type {boolean}
      * @private
      */
-    this._allowPicking = parseBoolean(options.allowPicking, defaultOptions.allowPicking);
+    this._allowPicking = parseBoolean(
+      options.allowPicking,
+      defaultOptions.allowPicking,
+    );
     /**
      * @type {LayerState}
      * @private
@@ -205,9 +215,9 @@ class Layer extends VcsObject {
      * @private
      * @api
      */
-    this._hiddenObjectIds = Array.isArray(options.hiddenObjectIds) ?
-      options.hiddenObjectIds :
-      defaultOptions.hiddenObjectIds;
+    this._hiddenObjectIds = Array.isArray(options.hiddenObjectIds)
+      ? options.hiddenObjectIds
+      : defaultOptions.hiddenObjectIds;
 
     /**
      * @type {import("@vcmap/core").GlobalHider|null}
@@ -219,9 +229,9 @@ class Layer extends VcsObject {
      * @type {Array<string|symbol>}
      * @private
      */
-    this._exclusiveGroups = Array.isArray(options.exclusiveGroups) ?
-      options.exclusiveGroups.slice() :
-      defaultOptions.exclusiveGroups;
+    this._exclusiveGroups = Array.isArray(options.exclusiveGroups)
+      ? options.exclusiveGroups.slice()
+      : defaultOptions.exclusiveGroups;
 
     /**
      * event raised if the exclusives group of the layer changes. is passed the array of exclusive groups as its only argument
@@ -353,7 +363,9 @@ class Layer extends VcsObject {
   /**
    * @type {Array<string>}
    */
-  get hiddenObjectIds() { return this._hiddenObjectIds; }
+  get hiddenObjectIds() {
+    return this._hiddenObjectIds;
+  }
 
   /**
    * @param {Array<string>} hiddenObjectIds
@@ -367,12 +379,13 @@ class Layer extends VcsObject {
     this._hiddenObjectIds = hiddenObjectIds;
   }
 
-
   /**
    * @type {import("@vcmap/core").GlobalHider|null}
    * @readonly
    */
-  get globalHider() { return this._globalHider; }
+  get globalHider() {
+    return this._globalHider;
+  }
 
   /**
    * @param {import("@vcmap/core").GlobalHider} globalHider
@@ -414,7 +427,7 @@ class Layer extends VcsObject {
 
     if (
       groups.length !== this._exclusiveGroups.length ||
-      !groups.every(g => this._exclusiveGroups.includes(g))
+      !groups.every((g) => this._exclusiveGroups.includes(g))
     ) {
       this._exclusiveGroups = groups.slice();
       this.exclusiveGroupsChanged.raiseEvent(groups);
@@ -425,7 +438,9 @@ class Layer extends VcsObject {
    * @type {number}
    * @api
    */
-  get zIndex() { return this._zIndex; }
+  get zIndex() {
+    return this._zIndex;
+  }
 
   /**
    * @param {number} index
@@ -456,7 +471,11 @@ class Layer extends VcsObject {
 
     if (this._locale !== value) {
       this._locale = value;
-      if (this._url && typeof this._url === 'object' && this._url[this._locale]) {
+      if (
+        this._url &&
+        typeof this._url === 'object' &&
+        this._url[this._locale]
+      ) {
         this.reload();
       }
     }
@@ -573,7 +592,9 @@ class Layer extends VcsObject {
    * @returns {Promise<void>}
    */
   async mapActivated(map) {
-    this.getLogger().debug(`Layer: ${this.name} mapActivated is called from Map: ${map.name}`);
+    this.getLogger().debug(
+      `Layer: ${this.name} mapActivated is called from Map: ${map.name}`,
+    );
     this._activeMaps.add(map);
     if (this.active || (this.loading && this.initialized)) {
       await this._activateImplsForMap(map);
@@ -586,13 +607,14 @@ class Layer extends VcsObject {
    * @param {import("@vcmap/core").VcsMap} map
    */
   mapDeactivated(map) {
-    this.getLogger().debug(`Layer: ${this.name} mapDeactivated is called from Map: ${map.name}`);
+    this.getLogger().debug(
+      `Layer: ${this.name} mapDeactivated is called from Map: ${map.name}`,
+    );
     this._activeMaps.delete(map);
     if (this.active || this.loading) {
-      this.getImplementationsForMap(map)
-        .forEach((impl) => {
-          impl.deactivate();
-        });
+      this.getImplementationsForMap(map).forEach((impl) => {
+        impl.deactivate();
+      });
     }
   }
 
@@ -603,10 +625,9 @@ class Layer extends VcsObject {
    */
   removedFromMap(map) {
     this._activeMaps.delete(map);
-    this.getImplementationsForMap(map)
-      .forEach((impl) => {
-        impl.destroy();
-      });
+    this.getImplementationsForMap(map).forEach((impl) => {
+      impl.destroy();
+    });
     this._implementations.delete(map);
   }
 
@@ -617,9 +638,11 @@ class Layer extends VcsObject {
    * @api stable
    */
   isSupported(map) {
-    return map &&
+    return (
+      map &&
       this._supportedMaps.includes(map.className) &&
-      (this.mapNames.length === 0 || this.mapNames.indexOf(map.name) >= 0);
+      (this.mapNames.length === 0 || this.mapNames.indexOf(map.name) >= 0)
+    );
   }
 
   /**
@@ -630,12 +653,16 @@ class Layer extends VcsObject {
   async _activateImplsForMap(map) {
     const impls = this.getImplementationsForMap(map);
     try {
-      await Promise.all(impls.map(i => i.activate()));
+      await Promise.all(impls.map((i) => i.activate()));
     } catch (err) {
-      this.getLogger().error(`Layer ${this.name} could not activate impl for map ${map.name}`);
+      this.getLogger().error(
+        `Layer ${this.name} could not activate impl for map ${map.name}`,
+      );
       this.getLogger().error(err);
       this._implementations.set(map, []);
-      impls.forEach((i) => { i.destroy(); });
+      impls.forEach((i) => {
+        i.destroy();
+      });
     }
   }
 
@@ -648,14 +675,18 @@ class Layer extends VcsObject {
     try {
       this.stateChanged.raiseEvent(LayerState.LOADING);
     } catch (e) {
-      this.getLogger().debug(`Error on raising LayerState.LOADING event for layer ${this.name} : ${e.message}`);
+      this.getLogger().debug(
+        `Error on raising LayerState.LOADING event for layer ${this.name} : ${e.message}`,
+      );
     }
     await this.initialize();
     if (this._state !== LayerState.LOADING) {
       return;
     }
 
-    await Promise.all([...this._activeMaps].map(m => this._activateImplsForMap(m)));
+    await Promise.all(
+      [...this._activeMaps].map((m) => this._activateImplsForMap(m)),
+    );
     if (this._state !== LayerState.LOADING) {
       return;
     }
@@ -666,7 +697,9 @@ class Layer extends VcsObject {
     try {
       this.stateChanged.raiseEvent(LayerState.ACTIVE);
     } catch (e) {
-      this.getLogger().debug(`Error on raising LayerState.ACTIVE event for layer ${this.name} : ${e.message}`);
+      this.getLogger().debug(
+        `Error on raising LayerState.ACTIVE event for layer ${this.name} : ${e.message}`,
+      );
     }
     this._loadingPromise = null;
   }
@@ -685,11 +718,10 @@ class Layer extends VcsObject {
     }
 
     if (this._state === LayerState.INACTIVE) {
-      this._loadingPromise = this._activate()
-        .catch((err) => {
-          this._state = LayerState.INACTIVE;
-          return Promise.reject(err);
-        });
+      this._loadingPromise = this._activate().catch((err) => {
+        this._state = LayerState.INACTIVE;
+        return Promise.reject(err);
+      });
       return this._loadingPromise;
     }
 
@@ -718,7 +750,9 @@ class Layer extends VcsObject {
       try {
         this.stateChanged.raiseEvent(LayerState.INACTIVE);
       } catch (e) {
-        this.getLogger().debug(`Error on raising LayerState.INACTIVE event for layer ${this.name} : ${e.message}`);
+        this.getLogger().debug(
+          `Error on raising LayerState.INACTIVE event for layer ${this.name} : ${e.message}`,
+        );
       }
     }
   }
@@ -777,10 +811,9 @@ class Layer extends VcsObject {
     }
 
     this._activeMaps.clear();
-    this.getImplementations()
-      .forEach((impl) => {
-        impl.destroy();
-      });
+    this.getImplementations().forEach((impl) => {
+      impl.destroy();
+    });
 
     this._initialized = false;
     this._implementations.clear();

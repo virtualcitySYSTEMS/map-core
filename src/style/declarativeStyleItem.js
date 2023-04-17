@@ -1,4 +1,9 @@
-import { Color, ConditionsExpression, Expression, Cesium3DTileStyle } from '@vcmap-cesium/engine';
+import {
+  Color,
+  ConditionsExpression,
+  Expression,
+  Cesium3DTileStyle,
+} from '@vcmap-cesium/engine';
 import { is } from '@vcsuite/check';
 
 import Style from 'ol/style/Style.js';
@@ -81,10 +86,7 @@ const defaultText = new OLText({
  */
 function addCustomProperty(style, key, options) {
   if (options[key].conditions) {
-    style[key] = new ConditionsExpression(
-      options[key],
-      options.defines,
-    );
+    style[key] = new ConditionsExpression(options[key], options.defines);
   } else {
     style[key] = new Expression(options[key], options.defines);
   }
@@ -97,7 +99,9 @@ function addCustomProperty(style, key, options) {
  * @api stable
  */
 class DeclarativeStyleItem extends StyleItem {
-  static get className() { return 'DeclarativeStyleItem'; }
+  static get className() {
+    return 'DeclarativeStyleItem';
+  }
 
   /**
    * @param {DeclarativeStyleItemOptions} options
@@ -106,7 +110,8 @@ class DeclarativeStyleItem extends StyleItem {
     super(options);
 
     const declarativeStyle = options.declarativeStyle || {};
-    declarativeStyle.show = declarativeStyle.show != null ? declarativeStyle.show : true;
+    declarativeStyle.show =
+      declarativeStyle.show != null ? declarativeStyle.show : true;
 
     /** @type {import("@vcmap-cesium/engine").Cesium3DTileStyle} */
     this.cesiumStyle = new Cesium3DTileStyle(declarativeStyle);
@@ -228,14 +233,18 @@ class DeclarativeStyleItem extends StyleItem {
    */
   _stylePolygon(feature) {
     const style = new Style({});
-    const color = this.cesiumStyle.color ?
-      // @ts-ignore
-      this.cesiumStyle.color.evaluate(feature, scratchColor) :
-      Color.WHITE;
+    const color = this.cesiumStyle.color
+      ? // @ts-ignore
+        this.cesiumStyle.color.evaluate(feature, scratchColor)
+      : Color.WHITE;
     if (color) {
-      style.setFill(new Fill({
-        color: cesiumColorToColor(/** @type {import("@vcmap-cesium/engine").Color} */ (color)),
-      }));
+      style.setFill(
+        new Fill({
+          color: cesiumColorToColor(
+            /** @type {import("@vcmap-cesium/engine").Color} */ (color),
+          ),
+        }),
+      );
     }
 
     this._evaluateStroke(feature, style);
@@ -249,25 +258,34 @@ class DeclarativeStyleItem extends StyleItem {
    */
   _styleLineString(feature) {
     const style = new Style({});
-    const isExtruded = feature.get('olcs_extrudedHeight') ||
+    const isExtruded =
+      feature.get('olcs_extrudedHeight') ||
       (feature.get('olcs_storeyHeight') && feature.get('olcs_storeyNumber'));
-    const color = this.cesiumStyle.color ?
-      // @ts-ignore
-      this.cesiumStyle.color.evaluate(feature, scratchColor) :
-      Color.WHITE;
+    const color = this.cesiumStyle.color
+      ? // @ts-ignore
+        this.cesiumStyle.color.evaluate(feature, scratchColor)
+      : Color.WHITE;
     if (color) {
       if (isExtruded) {
-        style.setFill(new Fill({
-          color: cesiumColorToColor(/** @type {import("@vcmap-cesium/engine").Color} */(color)),
-        }));
+        style.setFill(
+          new Fill({
+            color: cesiumColorToColor(
+              /** @type {import("@vcmap-cesium/engine").Color} */ (color),
+            ),
+          }),
+        );
       } else {
-        const strokeWidth = this.cesiumStyle.strokeWidth ?
-          this.cesiumStyle.strokeWidth.evaluate(feature) :
-          1;
-        style.setStroke(new Stroke({
-          width: Number.isFinite(strokeWidth) ? strokeWidth : 1,
-          color: cesiumColorToColor(/** @type {import("@vcmap-cesium/engine").Color} */ (color)),
-        }));
+        const strokeWidth = this.cesiumStyle.strokeWidth
+          ? this.cesiumStyle.strokeWidth.evaluate(feature)
+          : 1;
+        style.setStroke(
+          new Stroke({
+            width: Number.isFinite(strokeWidth) ? strokeWidth : 1,
+            color: cesiumColorToColor(
+              /** @type {import("@vcmap-cesium/engine").Color} */ (color),
+            ),
+          }),
+        );
       }
     }
 
@@ -300,24 +318,36 @@ class DeclarativeStyleItem extends StyleItem {
           }
         }
         if (this.cesiumStyle.labelColor) {
-          // @ts-ignore
-          const textColor = this.cesiumStyle.labelColor.evaluateColor(feature, scratchColor);
+          const textColor = this.cesiumStyle.labelColor.evaluateColor(
+            // @ts-ignore
+            feature,
+            scratchColor,
+          );
           if (textColor) {
             textStyle.getFill().setColor(cesiumColorToColor(textColor));
           }
         }
         if (this.cesiumStyle.labelOutlineColor) {
-          // @ts-ignore
-          const outlineColor = this.cesiumStyle.labelOutlineColor.evaluate(feature, scratchColor);
+          const outlineColor = this.cesiumStyle.labelOutlineColor.evaluate(
+            // @ts-ignore
+            feature,
+            scratchColor,
+          );
           if (outlineColor) {
-            const outlineWidth = this.cesiumStyle.labelOutlineWidth ?
-              // @ts-ignore
-              this.cesiumStyle.labelOutlineWidth.evaluate(feature) :
-              1;
-            textStyle.setStroke(new Stroke({
-              color: cesiumColorToColor(/** @type {import("@vcmap-cesium/engine").Color} */ (outlineColor)),
-              width: outlineWidth,
-            }));
+            const outlineWidth = this.cesiumStyle.labelOutlineWidth
+              ? // @ts-ignore
+                this.cesiumStyle.labelOutlineWidth.evaluate(feature)
+              : 1;
+            textStyle.setStroke(
+              new Stroke({
+                color: cesiumColorToColor(
+                  /** @type {import("@vcmap-cesium/engine").Color} */ (
+                    outlineColor
+                  ),
+                ),
+                width: outlineWidth,
+              }),
+            );
           }
         }
         style.setText(textStyle);
@@ -331,10 +361,10 @@ class DeclarativeStyleItem extends StyleItem {
         style.setImage(new Icon({ src }));
       }
     } else {
-      const color = this.cesiumStyle.color ?
-        // @ts-ignore
-        this.cesiumStyle.color.evaluate(feature, scratchColor) :
-        Color.WHITE;
+      const color = this.cesiumStyle.color
+        ? // @ts-ignore
+          this.cesiumStyle.color.evaluate(feature, scratchColor)
+        : Color.WHITE;
 
       let radius = 4;
       if (this.cesiumStyle.pointSize) {
@@ -342,16 +372,19 @@ class DeclarativeStyleItem extends StyleItem {
         const size = this.cesiumStyle.pointSize.evaluate(feature);
         radius = size / 2;
       }
-      const width = this.cesiumStyle.pointOutlineWidth ?
-        // @ts-ignore
-        this.cesiumStyle.pointOutlineWidth.evaluate(feature) :
-        0;
+      const width = this.cesiumStyle.pointOutlineWidth
+        ? // @ts-ignore
+          this.cesiumStyle.pointOutlineWidth.evaluate(feature)
+        : 0;
 
       let pointOutlineColor = Color.BLACK;
       if (width) {
         if (this.cesiumStyle.pointOutlineColor) {
-          // @ts-ignore
-          pointOutlineColor = this.cesiumStyle.pointOutlineColor.evaluateColor(feature, scratchColor);
+          pointOutlineColor = this.cesiumStyle.pointOutlineColor.evaluateColor(
+            // @ts-ignore
+            feature,
+            scratchColor,
+          );
         }
         radius += width / 2;
       }
@@ -360,7 +393,11 @@ class DeclarativeStyleItem extends StyleItem {
       if (!this._circleCache.has(circleCacheKey)) {
         const circleOptions = {
           radius,
-          fill: new Fill({ color: cesiumColorToColor(/** @type {import("@vcmap-cesium/engine").Color} */ (color)) }),
+          fill: new Fill({
+            color: cesiumColorToColor(
+              /** @type {import("@vcmap-cesium/engine").Color} */ (color),
+            ),
+          }),
         };
         if (width) {
           circleOptions.stroke = new Stroke({
@@ -391,16 +428,21 @@ class DeclarativeStyleItem extends StyleItem {
    */
   _evaluateStroke(feature, style) {
     if (this.cesiumStyle.strokeColor) {
-      // @ts-ignore
-      const strokeColor = this.cesiumStyle.strokeColor.evaluateColor(feature, scratchColor);
+      const strokeColor = this.cesiumStyle.strokeColor.evaluateColor(
+        // @ts-ignore
+        feature,
+        scratchColor,
+      );
       if (strokeColor) {
-        const strokeWidth = this.cesiumStyle.strokeWidth ?
-          this.cesiumStyle.strokeWidth.evaluate(feature) :
-          1;
-        style.setStroke(new Stroke({
-          width: Number.isFinite(strokeWidth) ? strokeWidth : 1,
-          color: cesiumColorToColor(strokeColor),
-        }));
+        const strokeWidth = this.cesiumStyle.strokeWidth
+          ? this.cesiumStyle.strokeWidth.evaluate(feature)
+          : 1;
+        style.setStroke(
+          new Stroke({
+            width: Number.isFinite(strokeWidth) ? strokeWidth : 1,
+            color: cesiumColorToColor(strokeColor),
+          }),
+        );
       }
     }
   }
@@ -577,7 +619,10 @@ class DeclarativeStyleItem extends StyleItem {
 }
 
 export default DeclarativeStyleItem;
-styleClassRegistry.registerClass(DeclarativeStyleItem.className, DeclarativeStyleItem);
+styleClassRegistry.registerClass(
+  DeclarativeStyleItem.className,
+  DeclarativeStyleItem,
+);
 
 /**
  * @type {DeclarativeStyleItem}

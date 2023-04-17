@@ -1,8 +1,6 @@
 import { LineString } from 'ol/geom.js';
 import CreateLineStringInteraction from '../../../../../src/util/editor/interactions/createLineStringInteraction.js';
-import {
-  alreadyTransformedToImage,
-} from '../../../../../src/layer/vectorSymbols.js';
+import { alreadyTransformedToImage } from '../../../../../src/layer/vectorSymbols.js';
 import { EventType } from '../../../../../src/interaction/interactionType.js';
 import OpenlayersMap from '../../../../../src/map/openlayersMap.js';
 import ObliqueMap from '../../../../../src/map/obliqueMap.js';
@@ -52,7 +50,9 @@ describe('CreateLineStringInteraction', () => {
       });
 
       it('should set the geometry to be a linestring with starting coordinates at positionOrPixel', () => {
-        expect(geometry.getCoordinates()).to.have.deep.ordered.members([[1, 2, 3]]);
+        expect(geometry.getCoordinates()).to.have.deep.ordered.members([
+          [1, 2, 3],
+        ]);
       });
     });
 
@@ -87,7 +87,9 @@ describe('CreateLineStringInteraction', () => {
 
       it('should set the geometry to be a linestring with starting coordinates at positionOrPixel', () => {
         expect(geometry).to.be.an.instanceOf(LineString);
-        expect(geometry.getCoordinates()).to.have.deep.ordered.members([[1, 2, 3]]);
+        expect(geometry.getCoordinates()).to.have.deep.ordered.members([
+          [1, 2, 3],
+        ]);
       });
     });
   });
@@ -121,7 +123,10 @@ describe('CreateLineStringInteraction', () => {
 
     it('should update the geometries coordinates', () => {
       expect(geometry).to.be.an.instanceOf(LineString);
-      expect(geometry.getCoordinates()).to.have.deep.ordered.members([[1, 2, 3], [2, 2, 3]]);
+      expect(geometry.getCoordinates()).to.have.deep.ordered.members([
+        [1, 2, 3],
+        [2, 2, 3],
+      ]);
     });
   });
 
@@ -154,7 +159,10 @@ describe('CreateLineStringInteraction', () => {
 
     it('should update the geometries coordinates', () => {
       expect(geometry).to.be.an.instanceOf(LineString);
-      expect(geometry.getCoordinates()).to.have.deep.ordered.members([[1, 2, 3], [2, 2, 3]]);
+      expect(geometry.getCoordinates()).to.have.deep.ordered.members([
+        [1, 2, 3],
+        [2, 2, 3],
+      ]);
     });
   });
 
@@ -196,7 +204,10 @@ describe('CreateLineStringInteraction', () => {
 
     it('should update the geometries coordinates', () => {
       expect(geometry).to.be.an.instanceOf(LineString);
-      expect(geometry.getCoordinates()).to.have.deep.ordered.members([[1, 2, 3], [2, 2, 3]]);
+      expect(geometry.getCoordinates()).to.have.deep.ordered.members([
+        [1, 2, 3],
+        [2, 2, 3],
+      ]);
     });
 
     it('should call finished with geometry', () => {

@@ -2,9 +2,13 @@ import LRUCache from 'ol/structs/LRUCache.js';
 import { Math as CesiumMath } from '@vcmap-cesium/engine';
 import Point from 'ol/geom/Point.js';
 import Feature from 'ol/Feature.js';
-import TileProvider, { mercatorResolutionsToLevel } from '../../../../src/layer/tileProvider/tileProvider.js';
+import TileProvider, {
+  mercatorResolutionsToLevel,
+} from '../../../../src/layer/tileProvider/tileProvider.js';
 import Extent from '../../../../src/util/extent.js';
-import Projection, { wgs84Projection } from '../../../../src/util/projection.js';
+import Projection, {
+  wgs84Projection,
+} from '../../../../src/util/projection.js';
 
 describe('TileProvider', () => {
   let sandbox;
@@ -97,20 +101,62 @@ describe('TileProvider', () => {
 
   describe('getBaseLevelForResolution', () => {
     it('should return the best fitting resolution for latitude 0 without correction', () => {
-      expect(tileProvider.getBaseLevelForResolution(mercatorResolutionsToLevel[0], 0)).to.be.equal(10);
-      expect(tileProvider.getBaseLevelForResolution(mercatorResolutionsToLevel[10], 0)).to.be.equal(10);
-      expect(tileProvider.getBaseLevelForResolution(mercatorResolutionsToLevel[11], 0)).to.be.equal(10);
-      expect(tileProvider.getBaseLevelForResolution(mercatorResolutionsToLevel[13], 0)).to.be.equal(10);
-      expect(tileProvider.getBaseLevelForResolution(mercatorResolutionsToLevel[13] - 0.1, 0)).to.be.equal(14);
-      expect(tileProvider.getBaseLevelForResolution(mercatorResolutionsToLevel[20], 0)).to.be.equal(17);
+      expect(
+        tileProvider.getBaseLevelForResolution(
+          mercatorResolutionsToLevel[0],
+          0,
+        ),
+      ).to.be.equal(10);
+      expect(
+        tileProvider.getBaseLevelForResolution(
+          mercatorResolutionsToLevel[10],
+          0,
+        ),
+      ).to.be.equal(10);
+      expect(
+        tileProvider.getBaseLevelForResolution(
+          mercatorResolutionsToLevel[11],
+          0,
+        ),
+      ).to.be.equal(10);
+      expect(
+        tileProvider.getBaseLevelForResolution(
+          mercatorResolutionsToLevel[13],
+          0,
+        ),
+      ).to.be.equal(10);
+      expect(
+        tileProvider.getBaseLevelForResolution(
+          mercatorResolutionsToLevel[13] - 0.1,
+          0,
+        ),
+      ).to.be.equal(14);
+      expect(
+        tileProvider.getBaseLevelForResolution(
+          mercatorResolutionsToLevel[20],
+          0,
+        ),
+      ).to.be.equal(17);
     });
     it('should do a correction for the mercator latitude scale Factor ', () => {
-      expect(tileProvider.getBaseLevelForResolution(mercatorResolutionsToLevel[13], CesiumMath.toRadians(45)))
-        .to.be.equal(10);
-      expect(tileProvider.getBaseLevelForResolution(mercatorResolutionsToLevel[13] - 0.1, CesiumMath.toRadians(45)))
-        .to.be.equal(10);
-      expect(tileProvider.getBaseLevelForResolution(mercatorResolutionsToLevel[13] - 3, CesiumMath.toRadians(45)))
-        .to.be.equal(14);
+      expect(
+        tileProvider.getBaseLevelForResolution(
+          mercatorResolutionsToLevel[13],
+          CesiumMath.toRadians(45),
+        ),
+      ).to.be.equal(10);
+      expect(
+        tileProvider.getBaseLevelForResolution(
+          mercatorResolutionsToLevel[13] - 0.1,
+          CesiumMath.toRadians(45),
+        ),
+      ).to.be.equal(10);
+      expect(
+        tileProvider.getBaseLevelForResolution(
+          mercatorResolutionsToLevel[13] - 3,
+          CesiumMath.toRadians(45),
+        ),
+      ).to.be.equal(14);
     });
   });
 
@@ -187,14 +233,17 @@ describe('TileProvider', () => {
 
     it('should fill the sourceCache', async () => {
       await tileProvider.getFeaturesForTile(1, 1, 10);
-      expect(tileProvider.rtreeCache.has(tileProvider.getCacheKey(1, 1, 10))).to.be.true;
+      expect(tileProvider.rtreeCache.has(tileProvider.getCacheKey(1, 1, 10))).to
+        .be.true;
     });
 
     it('should clear unloaded Tiles from the sourceCache', async () => {
       await tileProvider.getFeaturesForTile(1, 1, 10);
-      expect(tileProvider.rtreeCache.has(tileProvider.getCacheKey(1, 1, 10))).to.be.true;
+      expect(tileProvider.rtreeCache.has(tileProvider.getCacheKey(1, 1, 10))).to
+        .be.true;
       await tileProvider.getFeaturesForTile(1, 2, 10);
-      expect(tileProvider.rtreeCache.has(tileProvider.getCacheKey(1, 1, 10))).to.be.false;
+      expect(tileProvider.rtreeCache.has(tileProvider.getCacheKey(1, 1, 10))).to
+        .be.false;
     });
   });
 
@@ -252,7 +301,10 @@ describe('TileProvider', () => {
   describe('feature Handling', () => {
     let featuresTile1;
     let featuresTile2;
-    let f1; let f2; let f3; let f4;
+    let f1;
+    let f2;
+    let f3;
+    let f4;
 
     before(() => {
       f1 = new Feature({ geometry: new Point([1, 1]) });
@@ -285,21 +337,29 @@ describe('TileProvider', () => {
 
     describe('getFeaturesForTile features', () => {
       it('should return the features', async () => {
-        const requestedFeatures = await tileProvider.getFeaturesForTile(1, 1, 10);
+        const requestedFeatures = await tileProvider.getFeaturesForTile(
+          1,
+          1,
+          10,
+        );
         expect(requestedFeatures).to.have.members(featuresTile1);
       });
 
       it('should track the featureId to the TileId', async () => {
         await tileProvider.getFeaturesForTile(1, 1, 10);
         expect(tileProvider.featureIdToTileIds.has('id1')).to.be.true;
-        expect([...tileProvider.featureIdToTileIds.get('id1')]).to.have.members([tileProvider.getCacheKey(1, 1, 10)]);
+        expect([...tileProvider.featureIdToTileIds.get('id1')]).to.have.members(
+          [tileProvider.getCacheKey(1, 1, 10)],
+        );
       });
 
       it('should remove featureId from the featureTracking if the tile is unloaded', async () => {
         await tileProvider.getFeaturesForTile(1, 1, 10);
         expect(tileProvider.featureIdToTileIds.has('id1')).to.be.true;
         await tileProvider.getFeaturesForTile(2, 1, 10);
-        await new Promise(res => setTimeout(res, 0)); // cleanup is not synchronous.
+        await new Promise((res) => {
+          setTimeout(res, 0);
+        }); // cleanup is not synchronous.
         expect(tileProvider.featureIdToTileIds.has('id1')).to.be.false;
       });
     });
@@ -317,17 +377,26 @@ describe('TileProvider', () => {
 
     describe('getFeaturesAtCoordinate', () => {
       it('should return intersecting features', async () => {
-        const features = await tileProvider.getFeaturesByCoordinate([1, 1, 0], 0.001);
+        const features = await tileProvider.getFeaturesByCoordinate(
+          [1, 1, 0],
+          0.001,
+        );
         expect(features).to.have.members([f3]);
       });
 
       it('should return intersecting features, with a buffer depending on the resolution', async () => {
-        const features = await tileProvider.getFeaturesByCoordinate([1, 1, 0], 2);
+        const features = await tileProvider.getFeaturesByCoordinate(
+          [1, 1, 0],
+          2,
+        );
         expect(features).to.have.members(featuresTile2);
       });
 
       it('should return empty array if no intersecting features are found', async () => {
-        const features = await tileProvider.getFeaturesByCoordinate([1, 4, 0], 1);
+        const features = await tileProvider.getFeaturesByCoordinate(
+          [1, 4, 0],
+          1,
+        );
         expect(features).to.be.empty;
       });
     });
@@ -336,9 +405,12 @@ describe('TileProvider', () => {
       let tileProviderLargeCache;
 
       before(() => {
-        tileProviderLargeCache = new TileProvider({ tileCacheSize: 10, baseLevels: [10, 17, 17, 14] });
+        tileProviderLargeCache = new TileProvider({
+          tileCacheSize: 10,
+          baseLevels: [10, 17, 17, 14],
+        });
         // eslint-disable-next-line no-unused-vars
-        sandbox.stub(tileProviderLargeCache, 'loader').callsFake((x, y, level) => {
+        sandbox.stub(tileProviderLargeCache, 'loader').callsFake((x) => {
           if (x === 1) {
             return Promise.resolve(featuresTile1);
           } else {
@@ -365,7 +437,9 @@ describe('TileProvider', () => {
           tileProviderLargeCache.getCacheKey(1, 1, 10),
           tileProviderLargeCache.getCacheKey(2, 1, 10),
         ];
-        expect([...tileProviderLargeCache.featureIdToTileIds.get('id2')]).to.have.members(tileIds);
+        expect([
+          ...tileProviderLargeCache.featureIdToTileIds.get('id2'),
+        ]).to.have.members(tileIds);
       });
     });
 
@@ -379,7 +453,7 @@ describe('TileProvider', () => {
           trackFeaturesToTiles: false,
         });
         // eslint-disable-next-line no-unused-vars
-        sandbox.stub(tileProviderWithoutTracking, 'loader').callsFake((x, y, level) => {
+        sandbox.stub(tileProviderWithoutTracking, 'loader').callsFake((x) => {
           if (x === 1) {
             return Promise.resolve(featuresTile1);
           } else {
@@ -398,8 +472,10 @@ describe('TileProvider', () => {
 
       it('should not collect FeatureIds, if trackFeaturesToTiles is deactivated', async () => {
         await tileProviderWithoutTracking.getFeaturesForTile(1, 1, 10);
-        expect(tileProviderWithoutTracking.featureIdToTileIds.has('id1')).to.be.false;
-        expect(tileProviderWithoutTracking.featureIdToTileIds.has('id2')).to.be.false;
+        expect(tileProviderWithoutTracking.featureIdToTileIds.has('id1')).to.be
+          .false;
+        expect(tileProviderWithoutTracking.featureIdToTileIds.has('id2')).to.be
+          .false;
       });
     });
   });
@@ -427,19 +503,29 @@ describe('TileProvider', () => {
       });
 
       it('should configure tileCacheSize', () => {
-        expect(outputConfig).to.have.property('tileCacheSize', inputConfig.tileCacheSize);
+        expect(outputConfig).to.have.property(
+          'tileCacheSize',
+          inputConfig.tileCacheSize,
+        );
       });
 
       it('should configure trackFeaturesToTiles', () => {
-        expect(outputConfig).to.have.property('trackFeaturesToTiles', inputConfig.trackFeaturesToTiles);
+        expect(outputConfig).to.have.property(
+          'trackFeaturesToTiles',
+          inputConfig.trackFeaturesToTiles,
+        );
       });
 
       it('should configure allowTileAggregation', () => {
-        expect(outputConfig).to.have.property('allowTileAggregation', inputConfig.allowTileAggregation);
+        expect(outputConfig).to.have.property(
+          'allowTileAggregation',
+          inputConfig.allowTileAggregation,
+        );
       });
 
       it('should configure baseLevels', () => {
-        expect(outputConfig).to.have.property('baseLevels')
+        expect(outputConfig)
+          .to.have.property('baseLevels')
           .and.to.have.members(inputConfig.baseLevels);
         expect(outputConfig.baseLevels).to.not.equal(inputConfig.baseLevels);
       });

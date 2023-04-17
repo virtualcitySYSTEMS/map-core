@@ -127,16 +127,34 @@ class ObliqueImage {
     if (!this.meta.principalPoint) {
       return this._transformNoCamera(distortedCoordinate, true, optAvgHeight);
     } else if (this.meta.hasRadial) {
-      distortedCoordinate = this.meta.radialDistortionCoordinate(distortedCoordinate, true);
+      distortedCoordinate = this.meta.radialDistortionCoordinate(
+        distortedCoordinate,
+        true,
+      );
     }
 
-    const x = new Cartesian3(distortedCoordinate[0], this.meta.size[1] - distortedCoordinate[1], 1);
-    const rayWorld = Matrix3.multiplyByVector(this.pToRealworld, x, new Cartesian3());
+    const x = new Cartesian3(
+      distortedCoordinate[0],
+      this.meta.size[1] - distortedCoordinate[1],
+      1,
+    );
+    const rayWorld = Matrix3.multiplyByVector(
+      this.pToRealworld,
+      x,
+      new Cartesian3(),
+    );
     const avgHeight = optAvgHeight || this.averageHeight;
-    const centerPointOnGround =
-      new Cartesian3(this.centerPointOnGround[0], this.centerPointOnGround[1], avgHeight);
-    const w0 = Cartesian3.subtract(this.projectionCenter, centerPointOnGround, new Cartesian3());
-    const a = Cartesian3.dot(Cartesian3.UNIT_Z, w0) * (-1);
+    const centerPointOnGround = new Cartesian3(
+      this.centerPointOnGround[0],
+      this.centerPointOnGround[1],
+      avgHeight,
+    );
+    const w0 = Cartesian3.subtract(
+      this.projectionCenter,
+      centerPointOnGround,
+      new Cartesian3(),
+    );
+    const a = Cartesian3.dot(Cartesian3.UNIT_Z, w0) * -1;
     const b = Cartesian3.dot(Cartesian3.UNIT_Z, rayWorld);
 
     const r = a / b;
@@ -165,16 +183,23 @@ class ObliqueImage {
     // the averaged height is used for projection so far
     const avgHeight = optAvgHeight || this.averageHeight;
 
-    const P = new Cartesian4(worldCoordinate[0], worldCoordinate[1], avgHeight, 1);
+    const P = new Cartesian4(
+      worldCoordinate[0],
+      worldCoordinate[1],
+      avgHeight,
+      1,
+    );
 
     const camSys = Matrix4.multiplyByVector(this.pToImage, P, new Cartesian4());
     const respectiveImageCoords = [camSys.x / camSys.z, camSys.y / camSys.z];
     // adjust to ol image coordinates
-    const imCoords = [respectiveImageCoords[0], this.meta.size[1] - respectiveImageCoords[1]];
+    const imCoords = [
+      respectiveImageCoords[0],
+      this.meta.size[1] - respectiveImageCoords[1],
+    ];
 
     return this.meta.radialDistortionCoordinate(imCoords, false);
   }
-
 
   /**
    * @param {import("ol/coordinate").Coordinate} coord
@@ -184,7 +209,12 @@ class ObliqueImage {
    * @returns {import("ol/coordinate").Coordinate}
    */
   _transformNoCamera(coord, isImage, optAvgHeight) {
-    const imageCoords = [[0, 0], [this.meta.size[0], 0], this.meta.size, [0, this.meta.size[1]]];
+    const imageCoords = [
+      [0, 0],
+      [this.meta.size[0], 0],
+      this.meta.size,
+      [0, this.meta.size[1]],
+    ];
     const intrCross = transformCWIFC(
       isImage ? imageCoords : this.groundCoordinates,
       isImage ? this.groundCoordinates : imageCoords,
@@ -196,7 +226,9 @@ class ObliqueImage {
     // if intersection could not be determined write error and return center
     if (intrCross === null || intrCross.x == null || intrCross.y == null) {
       // eslint-disable-next-line no-console
-      console.error('Real world coordinate could not be determined from footprint data, center will be returned');
+      console.error(
+        'Real world coordinate could not be determined from footprint data, center will be returned',
+      );
       const coords = [this.centerPointOnGround[0], this.centerPointOnGround[1]];
       if (isImage) {
         coords.push(height);
@@ -217,11 +249,12 @@ class ObliqueImage {
    */
   calculateImageAverageHeight() {
     if (this._averageHeight === null) {
-      const averageHeight = (
-        this.groundCoordinates[0][2] +
-        this.groundCoordinates[1][2] +
-        this.groundCoordinates[2][2] +
-        this.groundCoordinates[3][2]) / 4;
+      const averageHeight =
+        (this.groundCoordinates[0][2] +
+          this.groundCoordinates[1][2] +
+          this.groundCoordinates[2][2] +
+          this.groundCoordinates[3][2]) /
+        4;
       if (averageHeight === 0 && this.meta.terrainProvider) {
         return getHeightFromTerrainProvider(
           this.meta.terrainProvider,

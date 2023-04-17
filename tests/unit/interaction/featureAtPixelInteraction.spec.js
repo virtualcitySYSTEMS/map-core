@@ -1,12 +1,24 @@
-import { Cartesian3, Cartesian2, Clock, JulianDate, Entity } from '@vcmap-cesium/engine';
+import {
+  Cartesian3,
+  Cartesian2,
+  Clock,
+  JulianDate,
+  Entity,
+} from '@vcmap-cesium/engine';
 import Feature from 'ol/Feature.js';
 import FeatureAtPixel from '../../../src/interaction/featureAtPixelInteraction.js';
 import OpenlayersMap from '../../../src/map/openlayersMap.js';
 import Layer from '../../../src/layer/layer.js';
-import { EventType, ModificationKeyType } from '../../../src/interaction/interactionType.js';
+import {
+  EventType,
+  ModificationKeyType,
+} from '../../../src/interaction/interactionType.js';
 import Projection from '../../../src/util/projection.js';
 import VectorLayer from '../../../src/layer/vectorLayer.js';
-import { setCesiumMap, createDummyCesium3DTileFeature } from '../helpers/cesiumHelpers.js';
+import {
+  setCesiumMap,
+  createDummyCesium3DTileFeature,
+} from '../helpers/cesiumHelpers.js';
 import VcsApp from '../../../src/vcsApp.js';
 import { vcsLayerName } from '../../../src/layer/layerSymbols.js';
 
@@ -27,7 +39,9 @@ describe('FeatureAtPixelInteraction', () => {
     sandbox = sinon.createSandbox();
     app = new VcsApp();
     mercatorPosition = [5845000, 1505147, 0];
-    cartesianPosition = Cartesian3.fromDegrees(...Projection.mercatorToWgs84(mercatorPosition));
+    cartesianPosition = Cartesian3.fromDegrees(
+      ...Projection.mercatorToWgs84(mercatorPosition),
+    );
     cesiumMap = await setCesiumMap(app);
   });
 
@@ -37,7 +51,8 @@ describe('FeatureAtPixelInteraction', () => {
     sceneStub.pickTranslucentDepth = false;
     render = sandbox.spy(sceneStub, 'render');
     pick = sandbox.stub(sceneStub, 'pick');
-    positionSpy = sandbox.stub(sceneStub, 'pickPosition')
+    positionSpy = sandbox
+      .stub(sceneStub, 'pickPosition')
       .returns(cartesianPosition.clone());
     fap = new FeatureAtPixel();
   });
@@ -58,12 +73,10 @@ describe('FeatureAtPixelInteraction', () => {
       key: ModificationKeyType.NONE,
     };
 
-    return fap
-      .pipe(event)
-      .then((returnedEvent) => {
-        expect(positionSpy).to.not.have.been.called;
-        return returnedEvent;
-      });
+    return fap.pipe(event).then((returnedEvent) => {
+      expect(positionSpy).to.not.have.been.called;
+      return returnedEvent;
+    });
   }
 
   describe('dragging features', () => {
@@ -101,7 +114,10 @@ describe('FeatureAtPixelInteraction', () => {
     });
 
     it('should pick the position when dragging a feature, if the pickPositon entails the DRAG event type', () => {
-      const dummy = createDummyCesium3DTileFeature({}, { [Layer.vcsLayerNameSymbol]: 'test' });
+      const dummy = createDummyCesium3DTileFeature(
+        {},
+        { [Layer.vcsLayerNameSymbol]: 'test' },
+      );
       return setup3DTest(dummy)
         .then(() => {
           fap.pickPosition = EventType.DRAGEVENTS;
@@ -143,13 +159,15 @@ describe('FeatureAtPixelInteraction', () => {
       return fap
         .pipe(event)
         .then(() => {
-          expect(event).to.have.property('feature')
+          expect(event)
+            .to.have.property('feature')
             .and.to.not.have.property(vcsLayerName);
           windowPosition.x = 1;
           return fap.pipe(event);
         })
         .then(() => {
-          expect(event).to.have.property('feature')
+          expect(event)
+            .to.have.property('feature')
             .and.to.have.property(vcsLayerName, 'dummy');
         });
     });
@@ -174,29 +192,29 @@ describe('FeatureAtPixelInteraction', () => {
         windowPosition,
       };
 
-      return fap
-        .pipe(event)
-        .then(() => {
-          expect(event.feature).to.equal(normalFeature);
-          normalFeature.set('olcs_allowPicking', false, false);
-          event.feature = undefined;
-          return fap.pipe(event)
-            .then(() => {
-              expect(event.feature).to.equal(undefined);
-            });
+      return fap.pipe(event).then(() => {
+        expect(event.feature).to.equal(normalFeature);
+        normalFeature.set('olcs_allowPicking', false, false);
+        event.feature = undefined;
+        return fap.pipe(event).then(() => {
+          expect(event.feature).to.equal(undefined);
         });
+      });
     });
   });
 
   describe('Cesium', () => {
     it('should add all picked symbols from a TilesetLayer to the feature', () => {
       const test = Symbol('testSymobl');
-      const dummy = createDummyCesium3DTileFeature({}, { [Layer.vcsLayerNameSymbol]: 'test', [test]: true });
-      return setup3DTest(dummy)
-        .then((event) => {
-          expect(event).to.have.property('feature')
-            .and.to.have.property(test, true);
-        });
+      const dummy = createDummyCesium3DTileFeature(
+        {},
+        { [Layer.vcsLayerNameSymbol]: 'test', [test]: true },
+      );
+      return setup3DTest(dummy).then((event) => {
+        expect(event)
+          .to.have.property('feature')
+          .and.to.have.property(test, true);
+      });
     });
 
     describe('feature detections', () => {
@@ -205,20 +223,21 @@ describe('FeatureAtPixelInteraction', () => {
         const dummy = {
           primitive: { olFeature },
         };
-        return setup3DTest(dummy)
-          .then((event) => {
-            expect(event).to.have.property('feature', 'test');
-          });
+        return setup3DTest(dummy).then((event) => {
+          expect(event).to.have.property('feature', 'test');
+        });
       });
 
       it('should detect 3DTileFeatures, aka buildings -> obj.primitive with layerName', () => {
-        const dummy = createDummyCesium3DTileFeature({}, { [Layer.vcsLayerNameSymbol]: 'test' });
-        return setup3DTest(dummy)
-          .then((event) => {
-            expect(event)
-              .to.have.property('feature')
-              .to.have.property(Layer.vcsLayerNameSymbol, 'test');
-          });
+        const dummy = createDummyCesium3DTileFeature(
+          {},
+          { [Layer.vcsLayerNameSymbol]: 'test' },
+        );
+        return setup3DTest(dummy).then((event) => {
+          expect(event)
+            .to.have.property('feature')
+            .to.have.property(Layer.vcsLayerNameSymbol, 'test');
+        });
       });
 
       it('should detect vector entity features in 3D -> obj.id.olFeature', () => {
@@ -226,10 +245,9 @@ describe('FeatureAtPixelInteraction', () => {
         const dummy = {
           id: { olFeature },
         };
-        return setup3DTest(dummy)
-          .then((event) => {
-            expect(event).to.have.property('feature', 'test');
-          });
+        return setup3DTest(dummy).then((event) => {
+          expect(event).to.have.property('feature', 'test');
+        });
       });
 
       it('should detect 3D Entities in 3D -> obj.id with layerName', () => {
@@ -237,12 +255,11 @@ describe('FeatureAtPixelInteraction', () => {
           id: new Entity(),
         };
         dummy.id[Layer.vcsLayerNameSymbol] = 'test';
-        return setup3DTest(dummy)
-          .then((event) => {
-            expect(event)
-              .to.have.property('feature')
-              .to.have.property(Layer.vcsLayerNameSymbol, 'test');
-          });
+        return setup3DTest(dummy).then((event) => {
+          expect(event)
+            .to.have.property('feature')
+            .to.have.property(Layer.vcsLayerNameSymbol, 'test');
+        });
       });
     });
 
@@ -332,7 +349,9 @@ describe('FeatureAtPixelInteraction', () => {
       });
 
       it('should not pick translucent on pointcloud feature with attenuation', () => {
-        pick.returns({ primitive: { pointCloudShading: { attenuation: true } } });
+        pick.returns({
+          primitive: { pointCloudShading: { attenuation: true } },
+        });
         const event = {
           map: cesiumMap,
           type: EventType.CLICK,
@@ -343,13 +362,11 @@ describe('FeatureAtPixelInteraction', () => {
         });
         fap.pickTranslucent = true;
 
-        return fap
-          .pipe(event)
-          .then(() => {
-            expect(positionSpy).to.have.been.called;
-            expect(render).to.not.have.been.called;
-            expect(sceneStub).to.have.property('pickTranslucentDepth', false);
-          });
+        return fap.pipe(event).then(() => {
+          expect(positionSpy).to.have.been.called;
+          expect(render).to.not.have.been.called;
+          expect(sceneStub).to.have.property('pickTranslucentDepth', false);
+        });
       });
     });
   });

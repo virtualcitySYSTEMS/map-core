@@ -1,4 +1,9 @@
-import { Rectangle, GeographicTilingScheme, TileMapServiceImageryProvider, ImageryLayer as CesiumImageryLayer } from '@vcmap-cesium/engine';
+import {
+  Rectangle,
+  GeographicTilingScheme,
+  TileMapServiceImageryProvider,
+  ImageryLayer as CesiumImageryLayer,
+} from '@vcmap-cesium/engine';
 import RasterLayerCesiumImpl from './rasterLayerCesiumImpl.js';
 import { wgs84Projection } from '../../util/projection.js';
 import { TilingScheme } from '../rasterLayer.js';
@@ -9,7 +14,9 @@ import { TilingScheme } from '../rasterLayer.js';
  * @extends {RasterLayerCesiumImpl}
  */
 class TmsCesiumImpl extends RasterLayerCesiumImpl {
-  static get className() { return 'TmsCesiumImpl'; }
+  static get className() {
+    return 'TmsCesiumImpl';
+  }
 
   /**
    * @param {import("@vcmap/core").CesiumMap} map
@@ -35,7 +42,12 @@ class TmsCesiumImpl extends RasterLayerCesiumImpl {
 
     if (this.extent && this.extent.isValid()) {
       const extent = this.extent.getCoordinatesInProjection(wgs84Projection);
-      options.rectangle = Rectangle.fromDegrees(extent[0], extent[1], extent[2], extent[3]);
+      options.rectangle = Rectangle.fromDegrees(
+        extent[0],
+        extent[1],
+        extent[2],
+        extent[3],
+      );
     }
     if (this.tilingSchema === TilingScheme.GEOGRAPHIC) {
       options.tilingScheme = new GeographicTilingScheme();

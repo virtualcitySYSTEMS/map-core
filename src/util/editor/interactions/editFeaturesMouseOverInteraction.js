@@ -1,6 +1,9 @@
 import { handlerSymbol, mouseOverSymbol } from '../editorSymbols.js';
 import AbstractInteraction from '../../../interaction/abstractInteraction.js';
-import { ModificationKeyType, EventType } from '../../../interaction/interactionType.js';
+import {
+  ModificationKeyType,
+  EventType,
+} from '../../../interaction/interactionType.js';
 import { cursorMap } from './editGeometryMouseOverInteraction.js';
 
 /**
@@ -30,10 +33,9 @@ class EditFeaturesMouseOverInteraction extends AbstractInteraction {
    * @returns {Promise<InteractionEvent>}
    */
   async pipe(event) {
-    if (
-      event.feature && event.feature[handlerSymbol]
-    ) {
-      this._currentHandler = /** @type {import("ol").Feature|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature} */
+    if (event.feature && event.feature[handlerSymbol]) {
+      this._currentHandler =
+        /** @type {import("ol").Feature|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature} */
         (event.feature);
     } else {
       this._currentHandler = null;

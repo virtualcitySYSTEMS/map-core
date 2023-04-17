@@ -3,7 +3,10 @@ import Feature from 'ol/Feature.js';
 import Point from 'ol/geom/Point.js';
 import FeatureStoreLayer from '../../../src/layer/featureStoreLayer.js';
 import { createCommitActions } from '../../../src/layer/featureStoreLayerChanges.js';
-import { FeatureStoreLayerState, featureStoreStateSymbol } from '../../../src/layer/featureStoreLayerState.js';
+import {
+  FeatureStoreLayerState,
+  featureStoreStateSymbol,
+} from '../../../src/layer/featureStoreLayerState.js';
 
 function createDummyOlFeature(index) {
   return [...new Array(index).keys()].map((k) => {
@@ -33,13 +36,14 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
     FSC.track();
     feature = new Feature();
     feature.setId('test');
-    FSL.injectedFetchDynamicFeatureFunc = () => Promise.resolve({
-      state: 'static',
-      geometry: { type: 'Point', coordinates: [0, 0, 1] },
-      properties: {},
-      id: 'test',
-      type: 'Feature',
-    });
+    FSL.injectedFetchDynamicFeatureFunc = () =>
+      Promise.resolve({
+        state: 'static',
+        geometry: { type: 'Point', coordinates: [0, 0, 1] },
+        properties: {},
+        id: 'test',
+        type: 'Feature',
+      });
   });
 
   afterEach(() => {
@@ -52,7 +56,7 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
       FSC.unTrack();
     });
 
-    it(('adds 3 listeners to the layers source'), () => {
+    it('adds 3 listeners to the layers source', () => {
       const on = sandbox.spy(FSL.source, 'on');
       FSC.track();
       expect(on).to.have.been.calledThrice;
@@ -89,7 +93,11 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
 
     it('should set the _changesListeners object to null', () => {
       FSC.unTrack();
-      expect(Object.values(FSC._changesListeners)).to.have.members([null, null, null]);
+      expect(Object.values(FSC._changesListeners)).to.have.members([
+        null,
+        null,
+        null,
+      ]);
     });
 
     it('should reset the values', () => {
@@ -143,17 +151,15 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
     });
 
     it('should not add an existing server feature', () => {
-      return FSL.switchStaticFeatureToDynamic('test')
-        .then((f) => {
-          expect(FSC._addedFeatures.has(f)).to.be.false;
-        });
+      return FSL.switchStaticFeatureToDynamic('test').then((f) => {
+        expect(FSC._addedFeatures.has(f)).to.be.false;
+      });
     });
 
     it('should place existing server features into the converted set', () => {
-      return FSL.switchStaticFeatureToDynamic('test')
-        .then((f) => {
-          expect(FSC._convertedFeatures.has(f)).to.be.true;
-        });
+      return FSL.switchStaticFeatureToDynamic('test').then((f) => {
+        expect(FSC._convertedFeatures.has(f)).to.be.true;
+      });
     });
   });
 
@@ -165,21 +171,19 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
     });
 
     it('should track changes to switched features', () => {
-      return FSL.switchStaticFeatureToDynamic('test')
-        .then((f) => {
-          f.set('test', true);
-          expect(FSC._editedFeatures.has(f)).to.be.true;
-        });
+      return FSL.switchStaticFeatureToDynamic('test').then((f) => {
+        f.set('test', true);
+        expect(FSC._editedFeatures.has(f)).to.be.true;
+      });
     });
 
     it('should remove a previously converted feature from the converted set', () => {
-      return FSL.switchStaticFeatureToDynamic('test')
-        .then((f) => {
-          expect(FSC._convertedFeatures.has(f)).to.be.true;
-          f.set('test', true);
-          expect(FSC._editedFeatures.has(f)).to.be.true;
-          expect(FSC._convertedFeatures.has(f)).to.be.false;
-        });
+      return FSL.switchStaticFeatureToDynamic('test').then((f) => {
+        expect(FSC._convertedFeatures.has(f)).to.be.true;
+        f.set('test', true);
+        expect(FSC._editedFeatures.has(f)).to.be.true;
+        expect(FSC._convertedFeatures.has(f)).to.be.false;
+      });
     });
   });
 
@@ -197,40 +201,37 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
     });
 
     it('should add removed static features to the _removedFeatures Set', () => {
-      return FSL.switchStaticFeatureToDynamic('test')
-        .then((f) => {
-          FSL.removeFeaturesById([f.getId()]);
-          expect(FSC._removedFeatures.has(f)).to.be.true;
-        });
+      return FSL.switchStaticFeatureToDynamic('test').then((f) => {
+        FSL.removeFeaturesById([f.getId()]);
+        expect(FSC._removedFeatures.has(f)).to.be.true;
+      });
     });
 
-    it('should remove the feature from the converted features set', () => FSL.switchStaticFeatureToDynamic('test')
-      .then((f) => {
+    it('should remove the feature from the converted features set', () =>
+      FSL.switchStaticFeatureToDynamic('test').then((f) => {
         expect(FSC._convertedFeatures.has(f)).to.be.true;
         FSL.removeFeaturesById([f.getId()]);
         expect(FSC._convertedFeatures.has(f)).to.be.false;
       }));
 
     it('should remove a static feature from the edited set', () => {
-      return FSL.switchStaticFeatureToDynamic('test')
-        .then((f) => {
-          FSL.removeFeaturesById([f.getId()]);
-          expect(FSC._editedFeatures.has(f)).to.be.false;
-        });
+      return FSL.switchStaticFeatureToDynamic('test').then((f) => {
+        FSL.removeFeaturesById([f.getId()]);
+        expect(FSC._editedFeatures.has(f)).to.be.false;
+      });
     });
   });
 
   describe('removeStaticFeature', () => {
     it('should add a proxy feature to the _removedSet _if_ the feature is hiddenStatically', () => {
-      return FSL.switchStaticFeatureToDynamic('test')
-        .then((f) => {
-          FSL.removeStaticFeature(f.getId());
-          expect(FSC._removedFeatures.has(f)).to.be.false;
-          expect(FSC._removedFeatures.size).to.equal(1);
-          const proxy = FSC._removedFeatures.values().next().value;
-          expect(proxy).to.be.an.instanceOf(Feature);
-          expect(proxy.getId()).to.equal('test');
-        });
+      return FSL.switchStaticFeatureToDynamic('test').then((f) => {
+        FSL.removeStaticFeature(f.getId());
+        expect(FSC._removedFeatures.has(f)).to.be.false;
+        expect(FSC._removedFeatures.size).to.equal(1);
+        const proxy = FSC._removedFeatures.values().next().value;
+        expect(proxy).to.be.an.instanceOf(Feature);
+        expect(proxy.getId()).to.equal('test');
+      });
     });
 
     it('should not remove a _random_ generated feature', () => {
@@ -245,7 +246,8 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
     let features;
     let changes;
 
-    afterEach(() => { // it should always clear the values;
+    afterEach(() => {
+      // it should always clear the values;
       changes = FSC.getChanges();
       Object.values(changes).forEach((array) => {
         expect(array).to.be.empty;
@@ -280,7 +282,11 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
         features = createDummyOlFeature(2);
         FSC._addedFeatures.add(features[0]);
         FSC._addedFeatures.add(features[1]);
-        actions = createCommitActions(FSC._addedFeatures, FSC._editedFeatures, FSC._removedFeatures);
+        actions = createCommitActions(
+          FSC._addedFeatures,
+          FSC._editedFeatures,
+          FSC._removedFeatures,
+        );
         await FSC.commitChanges('http://myFeatureStore/commitChanges');
       });
 
@@ -302,7 +308,10 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
 
       it('should set the features type to dynamic', () => {
         features.forEach((f) => {
-          expect(f).to.have.property(featureStoreStateSymbol, FeatureStoreLayerState.DYNAMIC);
+          expect(f).to.have.property(
+            featureStoreStateSymbol,
+            FeatureStoreLayerState.DYNAMIC,
+          );
         });
       });
     });
@@ -319,21 +328,31 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
         FSC._editedFeatures.add(features[0]);
         FSC._editedFeatures.add(features[1]);
         features[0][featureStoreStateSymbol] = FeatureStoreLayerState.STATIC;
-        actions = createCommitActions(FSC._addedFeatures, FSC._editedFeatures, FSC._removedFeatures);
+        actions = createCommitActions(
+          FSC._addedFeatures,
+          FSC._editedFeatures,
+          FSC._removedFeatures,
+        );
         await FSC.commitChanges('http://myFeatureStore/commitChanges');
       });
 
       after(() => scope.done());
 
       it('should set the state symbol for static features to edited', () => {
-        expect(features[0]).to.have.property(featureStoreStateSymbol, FeatureStoreLayerState.EDITED);
+        expect(features[0]).to.have.property(
+          featureStoreStateSymbol,
+          FeatureStoreLayerState.EDITED,
+        );
       });
 
       it('should append the feature id as _id', () => {
         expect(actions).to.have.length(2);
         actions.forEach((action, index) => {
           expect(action).to.have.property('action', 'edit');
-          expect(action).to.have.property('feature').and.to.be.an('object').and.to.have.property('_id', `id${index}`);
+          expect(action)
+            .to.have.property('feature')
+            .and.to.be.an('object')
+            .and.to.have.property('_id', `id${index}`);
         });
       });
     });
@@ -349,7 +368,11 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
         features = createDummyOlFeature(2);
         FSC._removedFeatures.add(features[0]);
         FSC._removedFeatures.add(features[1]);
-        actions = createCommitActions(FSC._addedFeatures, FSC._editedFeatures, FSC._removedFeatures);
+        actions = createCommitActions(
+          FSC._addedFeatures,
+          FSC._editedFeatures,
+          FSC._removedFeatures,
+        );
         await FSC.commitChanges('http://myFeatureStore/commitChanges');
       });
 
@@ -359,7 +382,10 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
         expect(actions).to.have.length(2);
         actions.forEach((action, index) => {
           expect(action).to.have.property('action', 'remove');
-          expect(action).to.have.property('feature').and.to.be.an('object').and.to.have.property('_id', `id${index}`);
+          expect(action)
+            .to.have.property('feature')
+            .and.to.be.an('object')
+            .and.to.have.property('_id', `id${index}`);
         });
       });
     });
@@ -373,7 +399,11 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
           .post('/commitChanges')
           .reply(200, {
             insertedIds: [{ _id: 'test1' }],
-            failedActions: [{ index: 0, error: 'error' }, { index: 2, error: 'error' }, { index: 4, error: 'error' }],
+            failedActions: [
+              { index: 0, error: 'error' },
+              { index: 2, error: 'error' },
+              { index: 4, error: 'error' },
+            ],
           });
         features = createDummyOlFeature(6);
         features[2][featureStoreStateSymbol] = FeatureStoreLayerState.STATIC;
@@ -390,8 +420,14 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
       it('should only succeed non-failed features', () => {
         expect(features[0].getId()).to.equal('id0');
         expect(features[1].getId()).to.equal('test1');
-        expect(features[2]).to.have.property(featureStoreStateSymbol, FeatureStoreLayerState.STATIC);
-        expect(features[3]).to.have.property(featureStoreStateSymbol, FeatureStoreLayerState.EDITED);
+        expect(features[2]).to.have.property(
+          featureStoreStateSymbol,
+          FeatureStoreLayerState.STATIC,
+        );
+        expect(features[3]).to.have.property(
+          featureStoreStateSymbol,
+          FeatureStoreLayerState.EDITED,
+        );
       });
 
       it('should reset failed features', () => {
@@ -416,23 +452,23 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
 
     it('should reset every changes features', () => {
       const resetFeature = sandbox.spy(FSC, '_resetFeature');
-      return FSC.reset()
-        .then(() => {
-          expect(resetFeature.getCalls()).to.have.length(4);
-          features.forEach((f) => {
-            expect(resetFeature).to.have.been.calledWith(f);
-          });
+      return FSC.reset().then(() => {
+        expect(resetFeature.getCalls()).to.have.length(4);
+        features.forEach((f) => {
+          expect(resetFeature).to.have.been.calledWith(f);
         });
+      });
     });
 
     it('should reset the values', () => {
       FSC.values.changed = true;
-      return FSC.reset()
-        .then(() => {
-          const changes = FSC.getChanges();
-          Object.values(changes).forEach((array) => { expect(array).to.be.empty; });
-          expect(FSC.values.changed).to.be.false;
+      return FSC.reset().then(() => {
+        const changes = FSC.getChanges();
+        Object.values(changes).forEach((array) => {
+          expect(array).to.be.empty;
         });
+        expect(FSC.values.changed).to.be.false;
+      });
     });
   });
 
@@ -442,8 +478,8 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
     });
 
     describe('feature without state symbol - aka freshly added', () => {
-      it('should remove the feature from the layer', () => FSC._resetFeature(feature)
-        .then(() => {
+      it('should remove the feature from the layer', () =>
+        FSC._resetFeature(feature).then(() => {
           expect(FSC.layer.getFeatures()).to.be.empty;
         }));
     });
@@ -454,8 +490,8 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
         FSC.layer.hiddenStaticFeatureIds.add(feature.getId());
       });
 
-      it('should remove the feature from the layer', () => FSC._resetFeature(feature)
-        .then(() => {
+      it('should remove the feature from the layer', () =>
+        FSC._resetFeature(feature).then(() => {
           expect(FSC.layer.getFeatures()).to.be.empty;
         }));
 
@@ -471,8 +507,8 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
         feature[featureStoreStateSymbol] = FeatureStoreLayerState.EDITED;
       });
 
-      it('should reset the feature on the layer', () => FSC._resetFeature(feature)
-        .then(() => {
+      it('should reset the feature on the layer', () =>
+        FSC._resetFeature(feature).then(() => {
           const returned = FSC.layer.getFeatureById(feature.getId());
           expect(returned).to.be.an.instanceof(Feature);
           expect(returned).to.not.equal(feature);

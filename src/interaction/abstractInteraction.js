@@ -1,5 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
-import { EventType, ModificationKeyType, PointerKeyType } from './interactionType.js';
+import {
+  EventType,
+  ModificationKeyType,
+  PointerKeyType,
+} from './interactionType.js';
 
 /**
  * @typedef {Object} ObliqueParameters

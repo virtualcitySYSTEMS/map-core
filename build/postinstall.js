@@ -15,7 +15,13 @@ async function fixCesiumTypes() {
   ) {
     console.log('Moving cesium engine index.d.ts');
     await fs.promises.cp(
-      path.join(process.cwd(), 'node_modules', '@vcmap-cesium', 'engine', 'index.d.ts'),
+      path.join(
+        process.cwd(),
+        'node_modules',
+        '@vcmap-cesium',
+        'engine',
+        'index.d.ts',
+      ),
       path.join(process.cwd(), 'build', 'types', 'Cesium_module.d.ts'),
       { force: true },
     );
@@ -27,7 +33,12 @@ async function fixCesiumTypes() {
  * @returns {Promise<void>}
  */
 async function fixTinyQueue() {
-  const fileName = path.join(process.cwd(), 'node_modules', 'tinyqueue', 'package.json');
+  const fileName = path.join(
+    process.cwd(),
+    'node_modules',
+    'tinyqueue',
+    'package.json',
+  );
   if (fs.existsSync(fileName)) {
     const content = await fs.promises.readFile(fileName);
     const jsonContent = JSON.parse(content);

@@ -52,7 +52,9 @@ const geojsonFormats = [
  */
 export function getFormat(responseType, options = {}) {
   if (responseType === 'text/xml') {
-    options.gmlFormat = options.gmlFormat ? new gmlFormats[options.gmlFormat]() : new GML2();
+    options.gmlFormat = options.gmlFormat
+      ? new gmlFormats[options.gmlFormat]()
+      : new GML2();
     return new WFS(options);
   }
   if (geojsonFormats.includes(responseType)) {
@@ -61,7 +63,10 @@ export function getFormat(responseType, options = {}) {
   if (responseType === 'application/vnd.ogc.gml') {
     return new GML2(options);
   }
-  if (responseType === 'application/vnd.ogc.gml/3.1.1' || responseType === 'text/xml; subtype=gml/3.1.1') {
+  if (
+    responseType === 'application/vnd.ogc.gml/3.1.1' ||
+    responseType === 'text/xml; subtype=gml/3.1.1'
+  ) {
     return new GML3(options);
   }
   return null;
@@ -72,7 +77,9 @@ export function getFormat(responseType, options = {}) {
  * @extends {AbstractFeatureProvider}
  */
 class WMSFeatureProvider extends AbstractFeatureProvider {
-  static get className() { return 'WMSFeatureProvider'; }
+  static get className() {
+    return 'WMSFeatureProvider';
+  }
 
   /**
    * @returns {WMSFeatureProviderOptions}
@@ -135,7 +142,8 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
      * @type {string}
      * @api
      */
-    this.featureInfoResponseType = options.responseType || defaultOptions.responseType;
+    this.featureInfoResponseType =
+      options.responseType || defaultOptions.responseType;
     /**
      * @type {Object}
      * @private
@@ -146,13 +154,18 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
      * @type {import("ol/format/Feature").default}
      * @api
      */
-    this.featureFormat = getFormat(this.featureInfoResponseType, options.formatOptions);
+    this.featureFormat = getFormat(
+      this.featureInfoResponseType,
+      options.formatOptions,
+    );
     /**
      * The feature response projection, if not present in the response format.
      * @type {Projection}
      * @api
      */
-    this.projection = options.projection ? new Projection(options.projection) : undefined;
+    this.projection = options.projection
+      ? new Projection(options.projection)
+      : undefined;
   }
 
   /**
@@ -165,13 +178,18 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
     let features;
 
     try {
-      features = /** @type {Array<import("ol").Feature<import("ol/geom/Geometry").default>>} */
-      (this.featureFormat.readFeatures(data, {
-        dataProjection: this.projection ? this.projection.proj : undefined,
-        featureProjection: mercatorProjection.proj,
-      }));
+      features =
+        /** @type {Array<import("ol").Feature<import("ol/geom/Geometry").default>>} */
+        (
+          this.featureFormat.readFeatures(data, {
+            dataProjection: this.projection ? this.projection.proj : undefined,
+            featureProjection: mercatorProjection.proj,
+          })
+        );
     } catch (ex) {
-      this.getLogger().warning('Features could not be read, please verify the featureInfoResponseType with the capabilities from the server');
+      this.getLogger().warning(
+        'Features could not be read, please verify the featureInfoResponseType with the capabilities from the server',
+      );
       return [];
     }
 
@@ -219,8 +237,9 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
         this.getLogger().error(`Failed fetching WMS FeatureInfo ${url}`);
         return [];
       }
-      return this.featureResponseCallback(data, coordinate)
-        .map(f => this.getProviderFeature(f));
+      return this.featureResponseCallback(data, coordinate).map((f) =>
+        this.getProviderFeature(f),
+      );
     }
     return [];
   }
@@ -285,4 +304,7 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
 }
 
 export default WMSFeatureProvider;
-featureProviderClassRegistry.registerClass(WMSFeatureProvider.className, WMSFeatureProvider);
+featureProviderClassRegistry.registerClass(
+  WMSFeatureProvider.className,
+  WMSFeatureProvider,
+);

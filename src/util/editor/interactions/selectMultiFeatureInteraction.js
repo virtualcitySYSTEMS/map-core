@@ -1,5 +1,8 @@
 import AbstractInteraction from '../../../interaction/abstractInteraction.js';
-import { EventType, ModificationKeyType } from '../../../interaction/interactionType.js';
+import {
+  EventType,
+  ModificationKeyType,
+} from '../../../interaction/interactionType.js';
 import VcsEvent from '../../../vcsEvent.js';
 import { vcsLayerName } from '../../../layer/layerSymbols.js';
 import { isTiledFeature } from '../../../layer/featureStoreLayer.js';
@@ -43,7 +46,9 @@ class SelectMultiFeatureInteraction extends AbstractInteraction {
    * @type {VcsEvent<Array<import("ol").Feature>>}
    * @readonly
    */
-  get featuresChanged() { return this._featuresChanged; }
+  get featuresChanged() {
+    return this._featuresChanged;
+  }
 
   /**
    * @returns {Array<import("ol").Feature>}
@@ -67,16 +72,14 @@ class SelectMultiFeatureInteraction extends AbstractInteraction {
    * @returns {Promise<InteractionEvent>}
    */
   async pipe(event) {
-    if (
-      event.feature &&
-      event.feature[vcsLayerName] === this._layer.name
-    ) {
+    if (event.feature && event.feature[vcsLayerName] === this._layer.name) {
       if (event.key & ModificationKeyType.CTRL) {
         event.stopPropagation = true;
         await this._modifySelectionSet(event.feature);
       } else if (
         !this._selectedFeatures.has(event.feature.getId()) ||
-        (this._selectedFeatures.has(event.feature.getId()) && this._selectedFeatures.size > 1)
+        (this._selectedFeatures.has(event.feature.getId()) &&
+          this._selectedFeatures.size > 1)
       ) {
         event.stopPropagation = true;
         await this.setSelected([event.feature]);
@@ -94,16 +97,21 @@ class SelectMultiFeatureInteraction extends AbstractInteraction {
   async setSelected(features) {
     this._selectedFeatures.clear();
     const featureArray = Array.isArray(features) ? features : [features];
-    const olFeatures = await Promise.all(featureArray.map((f) => {
-      if (f[isTiledFeature]) {
-        return /** @type {import("@vcmap/core").FeatureStoreLayer} */ (this._layer)
-          .switchStaticFeatureToDynamic(f.getId());
-      }
-      return f;
-    }));
-    olFeatures.forEach(/** @param {import("ol").Feature} f */ (f) => {
-      this._selectedFeatures.set(f.getId(), f);
-    });
+    const olFeatures = await Promise.all(
+      featureArray.map((f) => {
+        if (f[isTiledFeature]) {
+          return /** @type {import("@vcmap/core").FeatureStoreLayer} */ (
+            this._layer
+          ).switchStaticFeatureToDynamic(f.getId());
+        }
+        return f;
+      }),
+    );
+    olFeatures.forEach(
+      /** @param {import("ol").Feature} f */ (f) => {
+        this._selectedFeatures.set(f.getId(), f);
+      },
+    );
 
     this._featuresChanged.raiseEvent(this.selected);
   }
@@ -120,10 +128,15 @@ class SelectMultiFeatureInteraction extends AbstractInteraction {
     } else {
       let olFeature = feature;
       if (feature[isTiledFeature]) {
-        olFeature = await /** @type {import("@vcmap/core").FeatureStoreLayer} */ (this._layer)
-          .switchStaticFeatureToDynamic(id);
+        olFeature =
+          await /** @type {import("@vcmap/core").FeatureStoreLayer} */ (
+            this._layer
+          ).switchStaticFeatureToDynamic(id);
       }
-      this._selectedFeatures.set(id, /** @type {import("ol").Feature} */ (olFeature));
+      this._selectedFeatures.set(
+        id,
+        /** @type {import("ol").Feature} */ (olFeature),
+      );
     }
 
     this._featuresChanged.raiseEvent(this.selected);

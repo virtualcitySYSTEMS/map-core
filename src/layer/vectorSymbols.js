@@ -3,7 +3,9 @@
  * @type {symbol}
  * @const
  */
-export const alreadyTransformedToMercator = Symbol('alreadyTransformedToMercator');
+export const alreadyTransformedToMercator = Symbol(
+  'alreadyTransformedToMercator',
+);
 
 /**
  * Attached to a geometry to indicate, it is already in oblique image coordiantes and not mercator

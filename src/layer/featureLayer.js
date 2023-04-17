@@ -22,7 +22,7 @@ import { layerClassRegistry } from '../classRegistry.js';
 
 /**
  * @typedef {LayerImplementationOptions} FeatureLayerImplementationOptions
- * @property {GlobalHider} globalHider
+ * @property {import("@vcmap/core").GlobalHider} globalHider
  * @property {import("@vcmap-cesium/engine").SplitDirection} splitDirection
  * @property {FeatureVisibility} featureVisibility
  * @property {import("@vcmap/core").StyleItem} style
@@ -53,7 +53,9 @@ import { layerClassRegistry } from '../classRegistry.js';
  */
 class FeatureLayer extends Layer {
   /** @type {string} */
-  static get className() { return 'FeatureLayer'; }
+  static get className() {
+    return 'FeatureLayer';
+  }
 
   /**
    * @returns {FeatureLayerOptions}
@@ -95,14 +97,18 @@ class FeatureLayer extends Layer {
      * @type {number}
      * @api
      */
-    this.balloonHeightOffset = parseInteger(options.balloonHeightOffset, defaultOptions.balloonHeightOffset);
+    this.balloonHeightOffset = parseInteger(
+      options.balloonHeightOffset,
+      defaultOptions.balloonHeightOffset,
+    );
     /** @type {import("@vcmap-cesium/engine").SplitDirection} */
     this._splitDirection = SplitDirection.NONE;
 
     if (options.splitDirection) {
-      this._splitDirection = options.splitDirection === 'left' ?
-        SplitDirection.LEFT :
-        SplitDirection.RIGHT;
+      this._splitDirection =
+        options.splitDirection === 'left'
+          ? SplitDirection.LEFT
+          : SplitDirection.RIGHT;
     }
 
     /**
@@ -115,7 +121,8 @@ class FeatureLayer extends Layer {
      * FeatureVisibility tracks the highlighting and hiding of features on this layer
      * @type {FeatureVisibility}
      */
-    this.featureVisibility = options.featureVisibility || new FeatureVisibility();
+    this.featureVisibility =
+      options.featureVisibility || new FeatureVisibility();
   }
 
   /**
@@ -143,7 +150,9 @@ class FeatureLayer extends Layer {
    * The splitDirection to be applied - for 3D vector features currently only working on points with a Model
    * @type {import("@vcmap-cesium/engine").SplitDirection}
    */
-  get splitDirection() { return this._splitDirection; }
+  get splitDirection() {
+    return this._splitDirection;
+  }
 
   /**
    * @param {import("@vcmap-cesium/engine").SplitDirection} direction
@@ -151,7 +160,9 @@ class FeatureLayer extends Layer {
   set splitDirection(direction) {
     if (direction !== this._splitDirection) {
       this.getImplementations().forEach((impl) => {
-        /** @type {FeatureLayerImplementation} */ (impl).updateSplitDirection(direction);
+        /** @type {FeatureLayerImplementation} */ (impl).updateSplitDirection(
+          direction,
+        );
       });
       this._splitDirection = direction;
       this.splitDirectionChanged.raiseEvent(this._splitDirection);
@@ -184,7 +195,8 @@ class FeatureLayer extends Layer {
    * @returns {?Object}
    */
   // eslint-disable-next-line no-unused-vars,class-methods-use-this
-  objectClickedHandler(object) { // XXX remove after event implementation
+  objectClickedHandler(object) {
+    // XXX remove after event implementation
     return null;
   }
 
@@ -211,12 +223,16 @@ class FeatureLayer extends Layer {
       this._style = style;
     } else {
       this._style = new VectorStyleItem({});
-      this._style.style = /** @type {import("ol/style/Style").default} */ (style);
+      this._style.style = /** @type {import("ol/style/Style").default} */ (
+        style
+      );
     }
-    this.getImplementations()
-      .forEach((impl) => {
-        /** @type {FeatureLayerImplementation} */ (impl).updateStyle(this._style, silent);
-      });
+    this.getImplementations().forEach((impl) => {
+      /** @type {FeatureLayerImplementation} */ (impl).updateStyle(
+        this._style,
+        silent,
+      );
+    });
     this.styleChanged.raiseEvent(this._style);
   }
 
@@ -237,9 +253,8 @@ class FeatureLayer extends Layer {
       config.style = this.style.toJSON();
     }
     if (this._splitDirection !== SplitDirection.NONE) {
-      config.splitDirection = this._splitDirection === SplitDirection.RIGHT ?
-        'right' :
-        'left';
+      config.splitDirection =
+        this._splitDirection === SplitDirection.RIGHT ? 'right' : 'left';
     }
     return config;
   }

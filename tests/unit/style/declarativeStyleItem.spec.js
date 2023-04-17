@@ -21,8 +21,7 @@ describe('DeclarativeStyleItem', () => {
     it('should always add a show property to the cesiumStyle', async () => {
       DSI = new DeclarativeStyleItem({});
       await DSI.cesiumStyle.readyPromise;
-      expect(DSI).to.have.property('cesiumStyle')
-        .and.to.have.property('show');
+      expect(DSI).to.have.property('cesiumStyle').and.to.have.property('show');
 
       expect(DSI.cesiumStyle.show.evaluate(new Feature())).to.be.true;
       DSI.destroy();
@@ -39,9 +38,18 @@ describe('DeclarativeStyleItem', () => {
           color: {
             conditions: [
               ['Boolean(${noFill})===true', 'false'],
-              ['${class} === "up"', 'color("#FF0000") * vec4(1, 1, 1, ${hasExtrusion} ? 0.5 : 1.0)'],
-              ['${class} === "middle"', 'color("#00FF00") * vec4(1, 1, 1, ${hasExtrusion} ? 0.5 : 1.0)'],
-              ['${class} === "down"', 'color("#0000FF") * vec4(1, 1, 1, ${hasExtrusion} ? 0.5 : 1.0)'],
+              [
+                '${class} === "up"',
+                'color("#FF0000") * vec4(1, 1, 1, ${hasExtrusion} ? 0.5 : 1.0)',
+              ],
+              [
+                '${class} === "middle"',
+                'color("#00FF00") * vec4(1, 1, 1, ${hasExtrusion} ? 0.5 : 1.0)',
+              ],
+              [
+                '${class} === "down"',
+                'color("#0000FF") * vec4(1, 1, 1, ${hasExtrusion} ? 0.5 : 1.0)',
+              ],
               ['${image} === "sensor"', 'color("#FF00FF")'],
               ['${image} === "marker"', 'color("#00FFFF")'],
               ['true', 'color("#FFFFFF")'],
@@ -70,9 +78,7 @@ describe('DeclarativeStyleItem', () => {
             ],
           },
           pointOutlineColor: {
-            conditions: [
-              ['Boolean(${image})===true', 'color("#00FF00")'],
-            ],
+            conditions: [['Boolean(${image})===true', 'color("#00FF00")']],
           },
           pointOutlineWidth: {
             conditions: [
@@ -123,14 +129,38 @@ describe('DeclarativeStyleItem', () => {
         });
       });
     }
-    polygonTests('Polygon', () => new Feature({
-      geometry: new Polygon([[[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]]]),
-      class: 'up',
-    }));
-    polygonTests('MultiPolygon', () => new Feature({
-      geometry: new MultiPolygon([[[[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]]]]),
-      class: 'up',
-    }));
+    polygonTests(
+      'Polygon',
+      () =>
+        new Feature({
+          geometry: new Polygon([
+            [
+              [0, 0, 0],
+              [1, 0, 0],
+              [1, 1, 0],
+              [0, 1, 0],
+            ],
+          ]),
+          class: 'up',
+        }),
+    );
+    polygonTests(
+      'MultiPolygon',
+      () =>
+        new Feature({
+          geometry: new MultiPolygon([
+            [
+              [
+                [0, 0, 0],
+                [1, 0, 0],
+                [1, 1, 0],
+                [0, 1, 0],
+              ],
+            ],
+          ]),
+          class: 'up',
+        }),
+    );
 
     function lineTests(description, getFeature) {
       describe(description, () => {
@@ -164,14 +194,34 @@ describe('DeclarativeStyleItem', () => {
         });
       });
     }
-    lineTests('LineString', () => new Feature({
-      geometry: new LineString([[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]]),
-      class: 'down',
-    }));
-    lineTests('MultiLineString', () => new Feature({
-      geometry: new MultiLineString([[[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]]]),
-      class: 'down',
-    }));
+    lineTests(
+      'LineString',
+      () =>
+        new Feature({
+          geometry: new LineString([
+            [0, 0, 0],
+            [1, 0, 0],
+            [1, 1, 0],
+            [0, 1, 0],
+          ]),
+          class: 'down',
+        }),
+    );
+    lineTests(
+      'MultiLineString',
+      () =>
+        new Feature({
+          geometry: new MultiLineString([
+            [
+              [0, 0, 0],
+              [1, 0, 0],
+              [1, 1, 0],
+              [0, 1, 0],
+            ],
+          ]),
+          class: 'down',
+        }),
+    );
 
     function pointTestShape(description, getFeature) {
       describe(description, () => {
@@ -184,13 +234,17 @@ describe('DeclarativeStyleItem', () => {
           const style = DSI.style(feature, 1);
           expect(style.getFill()).to.be.null;
           expect(style.getImage()).to.be.an.instanceOf(Circle);
-          expect(style.getImage().getFill().getColor()).to.have.members([0, 255, 255, 1]);
+          expect(style.getImage().getFill().getColor()).to.have.members([
+            0, 255, 255, 1,
+          ]);
         });
 
         it('should set the stroke as stroke', () => {
           const style = DSI.style(feature, 1);
           expect(style.getStroke()).to.be.an.instanceOf(Stroke);
-          expect(style.getStroke().getColor()).to.have.members([0, 255, 255, 1]);
+          expect(style.getStroke().getColor()).to.have.members([
+            0, 255, 255, 1,
+          ]);
           expect(style.getStroke().getWidth()).to.equal(2);
         });
 
@@ -198,7 +252,9 @@ describe('DeclarativeStyleItem', () => {
           feature.set('pointWidth', 2);
           const style = DSI.style(feature, 1);
           expect(style.getImage()).to.be.an.instanceOf(Circle);
-          expect(style.getImage().getStroke().getColor()).to.have.members([0, 255, 0, 1]);
+          expect(style.getImage().getStroke().getColor()).to.have.members([
+            0, 255, 0, 1,
+          ]);
           expect(style.getImage().getStroke().getWidth()).to.equal(2);
         });
 
@@ -207,7 +263,9 @@ describe('DeclarativeStyleItem', () => {
           newFeature.setGeometry(feature.getGeometry());
           const style = DSI.style(newFeature, 1);
           expect(style.getImage()).to.be.instanceOf(Circle);
-          expect(style.getImage().getFill().getColor()).to.be.have.members([255, 255, 255, 1]);
+          expect(style.getImage().getFill().getColor()).to.be.have.members([
+            255, 255, 255, 1,
+          ]);
           expect(style.getImage().getStroke()).to.be.null;
         });
 
@@ -222,7 +280,9 @@ describe('DeclarativeStyleItem', () => {
           feature.set('pegel', 2);
           const style = DSI.style(feature, 1);
           expect(style.getText()).to.be.an.instanceOf(OpenlayersText);
-          expect(style.getText().getFill().getColor()).to.have.members([255, 0, 0, 1]);
+          expect(style.getText().getFill().getColor()).to.have.members([
+            255, 0, 0, 1,
+          ]);
         });
 
         it('should set the radius based on a point size & outlineWidth', () => {
@@ -261,14 +321,16 @@ describe('DeclarativeStyleItem', () => {
         });
       });
     }
-    const getPoint = () => new Feature({
-      geometry: new Point([0, 0, 1], 'XYZ'),
-      image: 'marker',
-    });
-    const getMultiPoint = () => new Feature({
-      geometry: new Point([0, 0, 1], 'XYZ'),
-      image: 'marker',
-    });
+    const getPoint = () =>
+      new Feature({
+        geometry: new Point([0, 0, 1], 'XYZ'),
+        image: 'marker',
+      });
+    const getMultiPoint = () =>
+      new Feature({
+        geometry: new Point([0, 0, 1], 'XYZ'),
+        image: 'marker',
+      });
     pointTestShape('Point - Circle', getPoint);
     pointTestShape('MultiPoint - Circle', getMultiPoint);
 
@@ -320,7 +382,14 @@ describe('DeclarativeStyleItem', () => {
       let feature;
       beforeEach(() => {
         const actualFeature = new Feature({
-          geometry: new Polygon([[[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]]]),
+          geometry: new Polygon([
+            [
+              [0, 0, 0],
+              [1, 0, 0],
+              [1, 1, 0],
+              [0, 1, 0],
+            ],
+          ]),
           class: 'up',
         });
         feature = new Feature({});
@@ -349,7 +418,9 @@ describe('DeclarativeStyleItem', () => {
 
     it('should add the declarative style to the options', () => {
       const options = DSI.toJSON();
-      expect(options).to.have.property('declarativeStyle').and.to.have.property('show', 'true');
+      expect(options)
+        .to.have.property('declarativeStyle')
+        .and.to.have.property('show', 'true');
     });
   });
 

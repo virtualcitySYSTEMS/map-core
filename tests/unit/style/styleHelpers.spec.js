@@ -86,15 +86,24 @@ describe('styleHelpers', () => {
     it('should correctly return a Cesium Color from a given input color', () => {
       const testColor = [1, 1, 1, 1];
       const testPsColor = parseColor(testColor);
-      const testCesiumColor = Color.fromBytes(testPsColor[0], testPsColor[1], testPsColor[2], testPsColor[3] * 255);
+      const testCesiumColor = Color.fromBytes(
+        testPsColor[0],
+        testPsColor[1],
+        testPsColor[2],
+        testPsColor[3] * 255,
+      );
       const test = getCesiumColor(testColor, defaultColor);
       expect(test).to.deep.equal(testCesiumColor);
     });
 
     it('should correctly return a Cesium Color from the preset default color', () => {
       const defaultPsColor = parseColor(defaultColor);
-      const defaultCesiumColor = Color.fromBytes(defaultPsColor[0], defaultPsColor[1],
-        defaultPsColor[2], defaultPsColor[3] * 255);
+      const defaultCesiumColor = Color.fromBytes(
+        defaultPsColor[0],
+        defaultPsColor[1],
+        defaultPsColor[2],
+        defaultPsColor[3] * 255,
+      );
       const test = getCesiumColor(undefined, defaultColor);
       expect(test).to.deep.equal(defaultCesiumColor);
     });

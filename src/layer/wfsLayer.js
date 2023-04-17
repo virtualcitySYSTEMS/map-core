@@ -20,7 +20,9 @@ import { requestJson } from '../util/fetch.js';
  * @api
  */
 class WFSLayer extends VectorLayer {
-  static get className() { return 'WFSLayer'; }
+  static get className() {
+    return 'WFSLayer';
+  }
 
   /**
    * @returns {WFSOptions}
@@ -40,12 +42,18 @@ class WFSLayer extends VectorLayer {
    */
   constructor(options) {
     const proj = new Projection(options.projection).toJSON();
-    proj.alias = [`http://www.opengis.net/gml/srs/epsg.xml#${/** @type {string} */ (proj.epsg).match(/\d+/)[0]}`];
+    proj.alias = [
+      `http://www.opengis.net/gml/srs/epsg.xml#${
+        /** @type {string} */ (proj.epsg).match(/\d+/)[0]
+      }`,
+    ];
     options.projection = proj;
     super(options);
 
     /** @type {Array<string>} */
-    this.featureType = Array.isArray(options.featureType) ? options.featureType : [options.featureType];
+    this.featureType = Array.isArray(options.featureType)
+      ? options.featureType
+      : [options.featureType];
 
     /**
      * @type {string}
@@ -106,14 +114,15 @@ class WFSLayer extends VectorLayer {
       return this._dataFetchedPromise;
     }
     if (this.url != null) {
-      const requestDocument = this.wfsFormat
-        .writeGetFeature(/** @type {import("ol/format/WFS").WriteGetFeatureOptions} */ ({
+      const requestDocument = this.wfsFormat.writeGetFeature(
+        /** @type {import("ol/format/WFS").WriteGetFeatureOptions} */ ({
           featureNS: this.featureNS,
           featurePrefix: this.featurePrefix,
           featureTypes: this.featureType,
           srsName: this.projection.epsg,
           ...this.getFeaturesOptions,
-        }));
+        }),
+      );
       const postData = new XMLSerializer().serializeToString(requestDocument);
       this._dataFetchedPromise = requestJson(this.url, {
         method: 'POST',
@@ -122,9 +131,11 @@ class WFSLayer extends VectorLayer {
         },
         body: JSON.stringify(postData),
       })
-        .then(data => this._parseWFSData(data))
+        .then((data) => this._parseWFSData(data))
         .catch((err) => {
-          this.getLogger().info(`Could not send request for loading layer content (${err.message})`);
+          this.getLogger().info(
+            `Could not send request for loading layer content (${err.message})`,
+          );
           return Promise.reject(err);
         });
 

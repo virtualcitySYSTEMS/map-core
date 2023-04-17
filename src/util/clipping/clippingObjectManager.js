@@ -1,5 +1,8 @@
 import { check } from '@vcsuite/check';
-import { clearClippingPlanes, setClippingPlanes } from './clippingPlaneHelper.js';
+import {
+  clearClippingPlanes,
+  setClippingPlanes,
+} from './clippingPlaneHelper.js';
 import ClippingObject from './clippingObject.js';
 import CesiumMap from '../../map/cesiumMap.js';
 
@@ -67,9 +70,10 @@ class ClippingObjectManager {
      * @type {Function}
      * @private
      */
-    this._layerChangedListener = this._layerCollection.stateChanged.addEventListener((layer) => {
-      this._layerChanged(layer);
-    });
+    this._layerChangedListener =
+      this._layerCollection.stateChanged.addEventListener((layer) => {
+        this._layerChanged(layer);
+      });
   }
 
   /**
@@ -100,9 +104,13 @@ class ClippingObjectManager {
    */
   _layerChanged(layer) {
     this.suspendUpdate = true;
-    this._defaultClippingObjects.forEach((co) => { co.handleLayerChanged(layer); });
+    this._defaultClippingObjects.forEach((co) => {
+      co.handleLayerChanged(layer);
+    });
     if (this._exclusiveClippingObjects) {
-      this._exclusiveClippingObjects.forEach((co) => { co.handleLayerChanged(layer); });
+      this._exclusiveClippingObjects.forEach((co) => {
+        co.handleLayerChanged(layer);
+      });
     }
     this.suspendUpdate = false;
   }
@@ -112,9 +120,13 @@ class ClippingObjectManager {
    */
   mapActivated(map) {
     this.suspendUpdate = true;
-    this._defaultClippingObjects.forEach((co) => { co.handleMapChanged(map); });
+    this._defaultClippingObjects.forEach((co) => {
+      co.handleMapChanged(map);
+    });
     if (this._exclusiveClippingObjects) {
-      this._exclusiveClippingObjects.forEach((co) => { co.handleMapChanged(map); });
+      this._exclusiveClippingObjects.forEach((co) => {
+        co.handleMapChanged(map);
+      });
     }
     this.suspendUpdate = false;
     this._activeMap = map;
@@ -144,7 +156,9 @@ class ClippingObjectManager {
 
     this._listenersMap.set(clippingObject, [
       clippingObject.targetsUpdated.addEventListener(this._update.bind(this)),
-      clippingObject.clippingPlaneUpdated.addEventListener(this._clippingPlaneUpdated.bind(this, clippingObject)),
+      clippingObject.clippingPlaneUpdated.addEventListener(
+        this._clippingPlaneUpdated.bind(this, clippingObject),
+      ),
     ]);
     this._update();
   }
@@ -159,7 +173,9 @@ class ClippingObjectManager {
 
     if (this._defaultClippingObjects.has(clippingObject)) {
       this._defaultClippingObjects.delete(clippingObject);
-      this._listenersMap.get(clippingObject).forEach((cb) => { cb(); });
+      this._listenersMap.get(clippingObject).forEach((cb) => {
+        cb();
+      });
       this._listenersMap.delete(clippingObject);
       this._update();
     }
@@ -174,8 +190,13 @@ class ClippingObjectManager {
   hasClippingObject(clippingObject) {
     check(clippingObject, ClippingObject);
 
-    return this._defaultClippingObjects.has(clippingObject) ||
-      !!(this._exclusiveClippingObjects && this._exclusiveClippingObjects.includes(clippingObject));
+    return (
+      this._defaultClippingObjects.has(clippingObject) ||
+      !!(
+        this._exclusiveClippingObjects &&
+        this._exclusiveClippingObjects.includes(clippingObject)
+      )
+    );
   }
 
   /**
@@ -193,8 +214,10 @@ class ClippingObjectManager {
     check(clippingObjects, [ClippingObject]);
     check(removedCb, Function);
 
-    if (clippingObjects.find(co => this._defaultClippingObjects.has(co))) {
-      throw new Error('Some ClippingObjects are already managed, remove them first');
+    if (clippingObjects.find((co) => this._defaultClippingObjects.has(co))) {
+      throw new Error(
+        'Some ClippingObjects are already managed, remove them first',
+      );
     }
 
     this._clearExclusiveClippingObjects();
@@ -208,7 +231,9 @@ class ClippingObjectManager {
       }
       this._listenersMap.set(clippingObject, [
         clippingObject.targetsUpdated.addEventListener(this._update.bind(this)),
-        clippingObject.clippingPlaneUpdated.addEventListener(this._clippingPlaneUpdated.bind(this, clippingObject)),
+        clippingObject.clippingPlaneUpdated.addEventListener(
+          this._clippingPlaneUpdated.bind(this, clippingObject),
+        ),
       ]);
     });
     this._update();
@@ -221,7 +246,9 @@ class ClippingObjectManager {
   _clearExclusiveClippingObjects(silent) {
     if (this._exclusiveClippingObjects) {
       this._exclusiveClippingObjects.forEach((cp) => {
-        this._listenersMap.get(cp).forEach((cb) => { cb(); });
+        this._listenersMap.get(cp).forEach((cb) => {
+          cb();
+        });
         this._listenersMap.delete(cp);
       });
       this._exclusiveClippingObjects = null;
@@ -269,7 +296,9 @@ class ClippingObjectManager {
       this._exclusiveClippingObjects.forEach(setTargets);
     }
 
-    currentTargets.forEach((t) => { clearClippingPlanes(t); });
+    currentTargets.forEach((t) => {
+      clearClippingPlanes(t);
+    });
     this._targetsMap.forEach((clippingObject, target) => {
       if (clippingObject.clippingPlaneCollection) {
         setClippingPlanes(
@@ -287,7 +316,10 @@ class ClippingObjectManager {
    */
   _clippingPlaneUpdated(clippingObject) {
     this._targetsMap.forEach((setClippingObject, target) => {
-      if (setClippingObject === clippingObject && clippingObject.clippingPlaneCollection) {
+      if (
+        setClippingObject === clippingObject &&
+        clippingObject.clippingPlaneCollection
+      ) {
         setClippingPlanes(target, clippingObject.clippingPlaneCollection);
       }
     });
@@ -298,7 +330,9 @@ class ClippingObjectManager {
    */
   destroy() {
     this._listenersMap.forEach((listeners) => {
-      listeners.forEach((cb) => { cb(); });
+      listeners.forEach((cb) => {
+        cb();
+      });
     });
     this._layerChangedListener();
     this._listenersMap.clear();

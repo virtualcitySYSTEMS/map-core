@@ -10,7 +10,14 @@ describe('Extent3D', () => {
   describe('createEmpty', () => {
     it('should create an empty extent', () => {
       const extent = new Extent3D();
-      expect(extent.toArray()).to.have.members([Infinity, Infinity, Infinity, -Infinity, -Infinity, -Infinity]);
+      expect(extent.toArray()).to.have.members([
+        Infinity,
+        Infinity,
+        Infinity,
+        -Infinity,
+        -Infinity,
+        -Infinity,
+      ]);
     });
 
     it('should be an empty extent', () => {
@@ -121,7 +128,10 @@ describe('Extent3D', () => {
     });
 
     it('should extent min/max values from multi geometries', () => {
-      const geom = new MultiPolygon([[[point1, point2, point1]], [[point1, point2, point1]]]);
+      const geom = new MultiPolygon([
+        [[point1, point2, point1]],
+        [[point1, point2, point1]],
+      ]);
       const extent = Extent3D.fromArray([1, 2, 3, 4, 5, 6]);
       extent.extendWithGeometry(geom);
       expect(extent.toArray()).to.have.members([-10, -11, -12, 10, 11, 12]);

@@ -1,16 +1,15 @@
-import {
-  Plane,
-  Transforms,
-} from '@vcmap-cesium/engine';
+import { Plane, Transforms } from '@vcmap-cesium/engine';
 import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import { EventType } from '../../../interaction/interactionType.js';
 import { handlerSymbol } from '../editorSymbols.js';
-import {
-  getCartographicFromPlane,
-} from '../editorHelpers.js';
+import { getCartographicFromPlane } from '../editorHelpers.js';
 import VcsEvent from '../../../vcsEvent.js';
 import Projection from '../../projection.js';
-import { cartesian2DDistance, cartographicToWgs84, mercatorToCartesian } from '../../math.js';
+import {
+  cartesian2DDistance,
+  cartographicToWgs84,
+  mercatorToCartesian,
+} from '../../math.js';
 import { AXIS_AND_PLANES } from './transformationTypes.js';
 import CesiumMap from '../../../map/cesiumMap.js';
 
@@ -41,7 +40,10 @@ function createGetScaledEvent(getPosition, event, transformationHandler, axis) {
     return { distance, dx, dy };
   };
 
-  const { distance: initialDistance } = getDistance(event.positionOrPixel, event.windowPosition);
+  const { distance: initialDistance } = getDistance(
+    event.positionOrPixel,
+    event.windowPosition,
+  );
   let currentDistance = initialDistance;
   return (coordinate, windowPosition) => {
     const { distance, dx, dy } = getDistance(coordinate, windowPosition);
@@ -105,7 +107,9 @@ class ScaleInteraction extends AbstractInteraction {
    * @type {VcsEvent<Array<number>>}
    * @readonly
    */
-  get scaled() { return this._scaled; }
+  get scaled() {
+    return this._scaled;
+  }
 
   /**
    * @param {InteractionEvent} event
@@ -113,7 +117,9 @@ class ScaleInteraction extends AbstractInteraction {
    */
   async pipe(event) {
     if (this._getScaleEvent) {
-      this._scaled.raiseEvent(this._getScaleEvent(event.positionOrPixel, event.windowPosition));
+      this._scaled.raiseEvent(
+        this._getScaleEvent(event.positionOrPixel, event.windowPosition),
+      );
       if (event.type === EventType.DRAGEND) {
         this._getScaleEvent = null;
         this._transformationHandler.showAxis = AXIS_AND_PLANES.NONE;
@@ -142,14 +148,24 @@ class ScaleInteraction extends AbstractInteraction {
    * @private
    */
   _dragAlongPlane3D(axis, event) {
-    const scene = /** @type {import("@vcmap/core").CesiumMap} */ (event.map).getScene();
+    const scene = /** @type {import("@vcmap/core").CesiumMap} */ (
+      event.map
+    ).getScene();
     const center = mercatorToCartesian(this._transformationHandler.center);
     let plane = Plane.clone(Plane.ORIGIN_XY_PLANE);
-    plane = Plane.transform(plane, Transforms.eastNorthUpToFixedFrame(center), plane);
+    plane = Plane.transform(
+      plane,
+      Transforms.eastNorthUpToFixedFrame(center),
+      plane,
+    );
 
     return createGetScaledEvent(
       (c, windowPosition) => {
-        const cartographic = getCartographicFromPlane(plane, scene.camera, windowPosition);
+        const cartographic = getCartographicFromPlane(
+          plane,
+          scene.camera,
+          windowPosition,
+        );
         return Projection.wgs84ToMercator(cartographicToWgs84(cartographic));
       },
       event,
@@ -166,7 +182,7 @@ class ScaleInteraction extends AbstractInteraction {
    */
   _dragAlongPlane2D(axis, event) {
     return createGetScaledEvent(
-      c => c.slice(),
+      (c) => c.slice(),
       event,
       this._transformationHandler,
       axis,

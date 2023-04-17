@@ -59,7 +59,9 @@ class LayerObliqueImpl extends LayerImplementation {
    * @returns {import("ol/layer").Layer<import("ol/source/Source").default>}
    */
   // eslint-disable-next-line class-methods-use-this
-  getOLLayer() { throw new Error(); }
+  getOLLayer() {
+    throw new Error();
+  }
 
   /**
    * @inheritDoc

@@ -5,7 +5,10 @@ import VcsObject from '../vcsObject.js';
 import { getStyleOrDefaultStyle } from '../style/styleFactory.js';
 import { defaultVectorStyle } from '../style/vectorStyleItem.js';
 import VectorProperties from '../layer/vectorProperties.js';
-import { isProvidedFeature, showProvidedFeature } from './featureProviderSymbols.js';
+import {
+  isProvidedFeature,
+  showProvidedFeature,
+} from './featureProviderSymbols.js';
 
 /**
  * @namespace featureProvider
@@ -27,7 +30,9 @@ import { isProvidedFeature, showProvidedFeature } from './featureProviderSymbols
  * @api
  */
 class AbstractFeatureProvider extends VcsObject {
-  static get className() { return 'AbstractFeatureProvider'; }
+  static get className() {
+    return 'AbstractFeatureProvider';
+  }
 
   /**
    * @returns {AbstractFeatureProviderOptions}
@@ -60,29 +65,38 @@ class AbstractFeatureProvider extends VcsObject {
      * @type {import("@vcmap/core").StyleItem|undefined}
      * @api
      */
-    this.style = options.style ?
-      getStyleOrDefaultStyle(options.style, defaultVectorStyle.clone()) :
-      undefined;
+    this.style = options.style
+      ? getStyleOrDefaultStyle(options.style, defaultVectorStyle.clone())
+      : undefined;
     /**
      * Whether to show the geometry on selection.
      * @type {boolean}
      * @api
      */
-    this.showGeometry = parseBoolean(options.showGeometry, defaultOptions.showGeometry);
+    this.showGeometry = parseBoolean(
+      options.showGeometry,
+      defaultOptions.showGeometry,
+    );
     /**
      * The vector properties assigned to features created by this provider
      * @type {import("@vcmap/core").VectorProperties}
      * @api
      */
-    this.vectorProperties = options.vectorProperties instanceof VectorProperties ?
-      options.vectorProperties :
-      new VectorProperties({ ...defaultOptions.vectorProperties, ...options.vectorProperties });
+    this.vectorProperties =
+      options.vectorProperties instanceof VectorProperties
+        ? options.vectorProperties
+        : new VectorProperties({
+            ...defaultOptions.vectorProperties,
+            ...options.vectorProperties,
+          });
     /**
      * Map ClassNames Can be used to only apply this featureProvider to the specified maps
      * @type {Array<string>}
      * @api
      */
-    this.mapTypes = Array.isArray(options.mapTypes) ? options.mapTypes : defaultOptions.mapTypes;
+    this.mapTypes = Array.isArray(options.mapTypes)
+      ? options.mapTypes
+      : defaultOptions.mapTypes;
   }
 
   /**
@@ -92,8 +106,10 @@ class AbstractFeatureProvider extends VcsObject {
    * @api stable
    */
   isSupported(map) {
-    return map &&
-      (this.mapTypes.length === 0 || this.mapTypes.includes(map.className));
+    return (
+      map &&
+      (this.mapTypes.length === 0 || this.mapTypes.includes(map.className))
+    );
   }
 
   /**
@@ -113,12 +129,14 @@ class AbstractFeatureProvider extends VcsObject {
     feature[vcsLayerName] = this.layerName;
     feature[isProvidedFeature] = true;
     feature[showProvidedFeature] = this.showGeometry;
-    Object.entries(this.vectorProperties.getValues()).forEach(([key, value]) => {
-      const olcsKey = `olcs_${key}`;
-      if (feature.get(olcsKey) === undefined && value !== undefined) {
-        feature.set(olcsKey, value);
-      }
-    });
+    Object.entries(this.vectorProperties.getValues()).forEach(
+      ([key, value]) => {
+        const olcsKey = `olcs_${key}`;
+        if (feature.get(olcsKey) === undefined && value !== undefined) {
+          feature.set(olcsKey, value);
+        }
+      },
+    );
     return feature;
   }
 
@@ -142,8 +160,9 @@ class AbstractFeatureProvider extends VcsObject {
    * @api
    */
   toJSON() {
-    const config =
-      /** @type {AbstractFeatureProviderOptions} */ (super.toJSON());
+    const config = /** @type {AbstractFeatureProviderOptions} */ (
+      super.toJSON()
+    );
 
     const defaultOptions = AbstractFeatureProvider.getDefaultOptions();
     delete config.name; // the name is irrelevant, since its the layers name
@@ -156,8 +175,10 @@ class AbstractFeatureProvider extends VcsObject {
       config.style = this.style.toJSON();
     }
 
-    const vectorPropertiesConfig = this.vectorProperties
-      .getVcsMeta({ ...VectorProperties.getDefaultOptions(), ...defaultOptions.vectorProperties });
+    const vectorPropertiesConfig = this.vectorProperties.getVcsMeta({
+      ...VectorProperties.getDefaultOptions(),
+      ...defaultOptions.vectorProperties,
+    });
     if (Object.keys(vectorPropertiesConfig).length > 0) {
       config.vectorProperties = vectorPropertiesConfig;
     }

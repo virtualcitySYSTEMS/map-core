@@ -1,11 +1,11 @@
 {
-  "extends": [
-    "@vcsuite/eslint-config/mocha"
-  ],
+  "extends": ["@vcsuite/eslint-config/mocha"],
   "rules": {
-    "import/extensions": [
-      "error",
-      "always"
-    ]
+    "import/extensions": ["error", "always"]
+  },
+  "globals": {
+    "expect": "readonly",
+    "sinon": "readonly",
+    "createCanvas": "readonly"
   }
 }

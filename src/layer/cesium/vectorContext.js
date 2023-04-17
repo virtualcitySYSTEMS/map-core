@@ -43,7 +43,11 @@ export function removeArrayFromCollection(collection, array) {
  * @param {import("@vcmap-cesium/engine").PrimitiveCollection|import("@vcmap-cesium/engine").BillboardCollection|import("@vcmap-cesium/engine").LabelCollection|import("@vcmap-cesium/engine").EntityCollection} primitiveCollection
  * @returns {boolean} - if a feature was removed from the map
  */
-export function removeFeatureFromMap(feature, featuresMap, primitiveCollection) {
+export function removeFeatureFromMap(
+  feature,
+  featuresMap,
+  primitiveCollection,
+) {
   removeArrayFromCollection(primitiveCollection, featuresMap.get(feature));
   return featuresMap.delete(feature);
 }
@@ -117,7 +121,11 @@ const scratchCenter = new Cartesian3();
  * @param {{value: boolean}}dirtyRef
  * @returns {function():void}
  */
-export function setupScalingPrimitiveCollection(map, primitiveCollection, dirtyRef) {
+export function setupScalingPrimitiveCollection(
+  map,
+  primitiveCollection,
+  dirtyRef,
+) {
   let cachedVP = new Viewpoint({});
   return map.getScene().postRender.addEventListener(() => {
     const { length } = primitiveCollection;
@@ -137,7 +145,11 @@ export function setupScalingPrimitiveCollection(map, primitiveCollection, dirtyR
         const center = Matrix4.getTranslation(modelMatrix, scratchCenter);
         const res = map.getCurrentResolutionFromCartesian(center);
         if (primitive[scaleSymbol] !== res) {
-          primitive.modelMatrix = Matrix4.setScale(modelMatrix, new Cartesian3(res, res, res), new Matrix4());
+          primitive.modelMatrix = Matrix4.setScale(
+            modelMatrix,
+            new Cartesian3(res, res, res),
+            new Matrix4(),
+          );
           primitive[scaleSymbol] = res;
         }
       }
@@ -188,7 +200,11 @@ class VectorContext {
     this._rootCollection.add(this.labels);
 
     this._scaledDirty = { value: true };
-    this._postRenderListener = setupScalingPrimitiveCollection(map, this.scaledPrimitives, this._scaledDirty);
+    this._postRenderListener = setupScalingPrimitiveCollection(
+      map,
+      this.scaledPrimitives,
+      this._scaledDirty,
+    );
   }
 
   /**
@@ -261,7 +277,11 @@ class VectorContext {
    */
   removeFeature(feature) {
     removeFeatureFromMap(feature, this.featureToPrimitiveMap, this.primitives);
-    this._scaledDirty.value = removeFeatureFromMap(feature, this.featureToScaledPrimitiveMap, this.scaledPrimitives);
+    this._scaledDirty.value = removeFeatureFromMap(
+      feature,
+      this.featureToScaledPrimitiveMap,
+      this.scaledPrimitives,
+    );
     removeFeatureFromMap(feature, this.featureToBillboardMap, this.billboards);
     removeFeatureFromMap(feature, this.featureToLabelMap, this.labels);
   }

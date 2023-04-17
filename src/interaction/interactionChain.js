@@ -1,5 +1,9 @@
 import AbstractInteraction from './abstractInteraction.js';
-import { EventType, ModificationKeyType, PointerKeyType } from './interactionType.js';
+import {
+  EventType,
+  ModificationKeyType,
+  PointerKeyType,
+} from './interactionType.js';
 
 /**
  * @class
@@ -41,7 +45,9 @@ class InteractionChain extends AbstractInteraction {
    * @api
    */
   removeInteraction(interaction) {
-    const index = this.chain.findIndex(candidate => candidate.id === interaction.id);
+    const index = this.chain.findIndex(
+      (candidate) => candidate.id === interaction.id,
+    );
     if (index > -1) {
       this.chain.splice(index, 1);
     }
@@ -60,9 +66,9 @@ class InteractionChain extends AbstractInteraction {
     for (let i = 0; i < chainLength; i++) {
       const interaction = chain[i];
       if (
-        (interaction.active & event.type) &&
-        (interaction.modificationKey & event.key) &&
-        (interaction.pointerKey & event.pointer)
+        interaction.active & event.type &&
+        interaction.modificationKey & event.key &&
+        interaction.pointerKey & event.pointer
       ) {
         // eslint-disable-next-line no-await-in-loop
         pipedEvent = await interaction.pipe(pipedEvent);
@@ -79,8 +85,11 @@ class InteractionChain extends AbstractInteraction {
    * @param {ModificationKeyType} modifier
    */
   modifierChanged(modifier) {
-    this.chain.filter(i => i.active !== EventType.NONE)
-      .forEach((i) => { i.modifierChanged(modifier); });
+    this.chain
+      .filter((i) => i.active !== EventType.NONE)
+      .forEach((i) => {
+        i.modifierChanged(modifier);
+      });
   }
 
   /**
@@ -103,11 +112,12 @@ class InteractionChain extends AbstractInteraction {
    * @inheritDoc
    */
   destroy() {
-    this.chain.forEach((i) => { i.destroy(); });
+    this.chain.forEach((i) => {
+      i.destroy();
+    });
     this.chain = [];
     super.destroy();
   }
 }
 
 export default InteractionChain;
-

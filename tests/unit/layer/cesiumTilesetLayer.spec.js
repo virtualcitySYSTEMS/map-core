@@ -12,7 +12,11 @@ import VcsApp from '../../../src/vcsApp.js';
 import getDummyCesium3DTileset from './cesium/getDummyCesium3DTileset.js';
 import Projection, { wgs84Projection } from '../../../src/util/projection.js';
 import Extent from '../../../src/util/extent.js';
-import { createTilesetServer, setCesiumMap, createDummyCesium3DTileFeature } from '../helpers/cesiumHelpers.js';
+import {
+  createTilesetServer,
+  setCesiumMap,
+  createDummyCesium3DTileFeature,
+} from '../helpers/cesiumHelpers.js';
 import { VectorStyleItem } from '../../../index.js';
 
 describe('CesiumTilesetLayer', () => {
@@ -31,7 +35,9 @@ describe('CesiumTilesetLayer', () => {
 
   beforeEach(() => {
     createTilesetServer(sandbox);
-    cesiumTileset = new CesiumTilesetLayer({ url: 'http://test.com/tileset.json' });
+    cesiumTileset = new CesiumTilesetLayer({
+      url: 'http://test.com/tileset.json',
+    });
   });
 
   afterEach(() => {
@@ -51,7 +57,9 @@ describe('CesiumTilesetLayer', () => {
     });
 
     it('should not tileset.json to an url ending on .json', () => {
-      const cesiumTileset1 = new CesiumTilesetLayer({ url: 'test/tileset2.json' });
+      const cesiumTileset1 = new CesiumTilesetLayer({
+        url: 'test/tileset2.json',
+      });
       expect(cesiumTileset1).to.have.property('url', 'test/tileset2.json');
       cesiumTileset1.destroy();
     });
@@ -97,7 +105,10 @@ describe('CesiumTilesetLayer', () => {
 
   describe('objectClickHandler', () => {
     it('should return an object with id and feature if allowPicking', () => {
-      const feature = createDummyCesium3DTileFeature({ id: 'test', test: true });
+      const feature = createDummyCesium3DTileFeature({
+        id: 'test',
+        test: true,
+      });
       const object = cesiumTileset.objectClickedHandler(feature);
 
       expect(object).to.deep.equal({
@@ -109,7 +120,9 @@ describe('CesiumTilesetLayer', () => {
     it('should not raise feature event and return false if not allowPicking', () => {
       cesiumTileset.allowPicking = false;
 
-      const object = cesiumTileset.objectClickedHandler(new Cesium3DTileFeature());
+      const object = cesiumTileset.objectClickedHandler(
+        new Cesium3DTileFeature(),
+      );
       expect(object).to.be.null;
     });
   });
@@ -137,18 +150,25 @@ describe('CesiumTilesetLayer', () => {
       ];
 
       const featureExtent = cesiumTileset.getZoomToExtent();
-      expect(featureExtent.extent.map(c => Math.round(c)))
-        .to.have.ordered.members(mercatorExtent.map(c => Math.round(c)));
+      expect(
+        featureExtent.extent.map((c) => Math.round(c)),
+      ).to.have.ordered.members(mercatorExtent.map((c) => Math.round(c)));
     });
 
     it('should calculate the extent based on a bounding sphere', () => {
       impl.cesium3DTileset = getDummyCesium3DTileset();
-      impl.cesium3DTileset.boundingSphere = new BoundingSphere(Cartesian3.fromDegrees(1, 1), 10);
+      impl.cesium3DTileset.boundingSphere = new BoundingSphere(
+        Cartesian3.fromDegrees(1, 1),
+        10,
+      );
 
       const mercatorCircle = new Circle(Projection.wgs84ToMercator([1, 1]), 10);
       const featureExtent = cesiumTileset.getZoomToExtent();
-      expect(featureExtent.extent.map(c => Math.floor(c)))
-        .to.have.ordered.members(mercatorCircle.getExtent().map(c => Math.floor(c)));
+      expect(
+        featureExtent.extent.map((c) => Math.floor(c)),
+      ).to.have.ordered.members(
+        mercatorCircle.getExtent().map((c) => Math.floor(c)),
+      );
     });
 
     it('should return a configured extent before calculating any other extents', () => {
@@ -210,29 +230,41 @@ describe('CesiumTilesetLayer', () => {
       });
 
       it('should configure maximumMemoryUsage', () => {
-        expect(outputConfig).to.have.property('maximumMemoryUsage', inputConfig.maximumMemoryUsage);
+        expect(outputConfig).to.have.property(
+          'maximumMemoryUsage',
+          inputConfig.maximumMemoryUsage,
+        );
       });
 
       it('should configure screenSpaceError', () => {
-        expect(outputConfig).to.have.property('screenSpaceError', inputConfig.screenSpaceError);
+        expect(outputConfig).to.have.property(
+          'screenSpaceError',
+          inputConfig.screenSpaceError,
+        );
       });
 
       it('should configure screenSpaceErrorMobile', () => {
-        expect(outputConfig).to.have.property('screenSpaceErrorMobile', inputConfig.screenSpaceErrorMobile);
+        expect(outputConfig).to.have.property(
+          'screenSpaceErrorMobile',
+          inputConfig.screenSpaceErrorMobile,
+        );
       });
 
       it('should configure tilesetOptions', () => {
-        expect(outputConfig).to.have.property('tilesetOptions')
+        expect(outputConfig)
+          .to.have.property('tilesetOptions')
           .and.to.eql(inputConfig.tilesetOptions);
       });
 
       it('should configure highlightStyle', () => {
-        expect(outputConfig).to.have.property('highlightStyle')
+        expect(outputConfig)
+          .to.have.property('highlightStyle')
           .and.to.eql(inputConfig.highlightStyle);
       });
 
       it('should configure offset', () => {
-        expect(outputConfig).to.have.property('offset')
+        expect(outputConfig)
+          .to.have.property('offset')
           .and.to.eql(inputConfig.offset);
       });
     });

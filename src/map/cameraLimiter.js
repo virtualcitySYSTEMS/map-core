@@ -1,7 +1,16 @@
-import { Cartographic, Ellipsoid, Math as CesiumMath, sampleTerrain, sampleTerrainMostDetailed } from '@vcmap-cesium/engine';
+import {
+  Cartographic,
+  Ellipsoid,
+  Math as CesiumMath,
+  sampleTerrain,
+  sampleTerrainMostDetailed,
+} from '@vcmap-cesium/engine';
 import { checkMaybe } from '@vcsuite/check';
 import { parseInteger, parseNumber, parseEnumValue } from '@vcsuite/parsers';
-import { getTerrainProviderForUrl, isTerrainTileAvailable } from '../layer/terrainHelpers.js';
+import {
+  getTerrainProviderForUrl,
+  isTerrainTileAvailable,
+} from '../layer/terrainHelpers.js';
 
 /**
  * @typedef {Object} CameraLimiterOptions
@@ -29,7 +38,9 @@ export const CameraLimiterMode = {
  * @api
  */
 class CameraLimiter {
-  static get className() { return 'CameraLimiter'; }
+  static get className() {
+    return 'CameraLimiter';
+  }
 
   /**
    * @returns {CameraLimiterOptions}
@@ -53,7 +64,11 @@ class CameraLimiter {
      * @type {CameraLimiterMode}
      * @api
      */
-    this.mode = parseEnumValue(options.mode, CameraLimiterMode, defaultOptions.mode);
+    this.mode = parseEnumValue(
+      options.mode,
+      CameraLimiterMode,
+      defaultOptions.mode,
+    );
     /**
      * @type {string|null}
      * @private
@@ -63,7 +78,9 @@ class CameraLimiter {
      * @type {import("@vcmap-cesium/engine").CesiumTerrainProvider|null}
      * @private
      */
-    this._terrainProvider = this._terrainUrl ? getTerrainProviderForUrl({ url: this._terrainUrl }) : null;
+    this._terrainProvider = this._terrainUrl
+      ? getTerrainProviderForUrl({ url: this._terrainUrl })
+      : null;
     /**
      * The minimum height/distance to the terrain the camera must maintain
      * @type {number}
@@ -75,7 +92,10 @@ class CameraLimiter {
      * @type {number|null}
      * @api
      */
-    this.level = options.level === null ? null : parseInteger(options.level, defaultOptions.level);
+    this.level =
+      options.level === null
+        ? null
+        : parseInteger(options.level, defaultOptions.level);
     /**
      * last checked camera position
      * @type {import("@vcmap-cesium/engine").Cartographic}
@@ -111,7 +131,9 @@ class CameraLimiter {
 
     if (this._terrainUrl !== url) {
       this._terrainUrl = url;
-      this._terrainProvider = this._terrainUrl ? getTerrainProviderForUrl({ url: this._terrainUrl }) : null;
+      this._terrainProvider = this._terrainUrl
+        ? getTerrainProviderForUrl({ url: this._terrainUrl })
+        : null;
     }
   }
 
@@ -121,8 +143,16 @@ class CameraLimiter {
    * @private
    */
   _limitWithLevel(cameraCartographic) {
-    if (isTerrainTileAvailable(this._terrainProvider, this.level, cameraCartographic)) {
-      return sampleTerrain(this._terrainProvider, this.level, [cameraCartographic]);
+    if (
+      isTerrainTileAvailable(
+        this._terrainProvider,
+        this.level,
+        cameraCartographic,
+      )
+    ) {
+      return sampleTerrain(this._terrainProvider, this.level, [
+        cameraCartographic,
+      ]);
     }
     return this._limitMostDetailed(cameraCartographic);
   }
@@ -133,7 +163,9 @@ class CameraLimiter {
    * @private
    */
   _limitMostDetailed(cameraCartographic) {
-    return sampleTerrainMostDetailed(this._terrainProvider, [cameraCartographic]);
+    return sampleTerrainMostDetailed(this._terrainProvider, [
+      cameraCartographic,
+    ]);
   }
 
   /**
@@ -142,12 +174,18 @@ class CameraLimiter {
    * @private
    */
   async _updateTerrainHeight(cameraCartographic) {
-    if (!this._updatingTerrainHeight &&
-      !cameraCartographic.equalsEpsilon(this.lastCheckedPosition, CesiumMath.EPSILON5)) {
+    if (
+      !this._updatingTerrainHeight &&
+      !cameraCartographic.equalsEpsilon(
+        this.lastCheckedPosition,
+        CesiumMath.EPSILON5,
+      )
+    ) {
       this._updatingTerrainHeight = true;
-      const [updatedPosition] = this.level != null ?
-        await this._limitWithLevel(cameraCartographic.clone()) :
-        await this._limitMostDetailed(cameraCartographic.clone());
+      const [updatedPosition] =
+        this.level != null
+          ? await this._limitWithLevel(cameraCartographic.clone())
+          : await this._limitMostDetailed(cameraCartographic.clone());
       this._terrainHeight = updatedPosition.height;
       this.lastCheckedPosition = cameraCartographic;
       this._updatingTerrainHeight = false;
@@ -166,17 +204,28 @@ class CameraLimiter {
     if (cameraCartographic) {
       if (this.mode === CameraLimiterMode.DISTANCE && this._terrainProvider) {
         promise = this._updateTerrainHeight(cameraCartographic);
-        if (this._terrainHeight && (cameraCartographic.height - this._terrainHeight) < this.limit) {
+        if (
+          this._terrainHeight &&
+          cameraCartographic.height - this._terrainHeight < this.limit
+        ) {
           const newHeight = this._terrainHeight + this.limit;
           Cartographic.toCartesian(
-            new Cartographic(cameraCartographic.longitude, cameraCartographic.latitude, newHeight),
+            new Cartographic(
+              cameraCartographic.longitude,
+              cameraCartographic.latitude,
+              newHeight,
+            ),
             Ellipsoid.WGS84,
             camera.position,
           );
         }
       } else if (cameraCartographic.height < this.limit) {
         Cartographic.toCartesian(
-          new Cartographic(cameraCartographic.longitude, cameraCartographic.latitude, this.limit),
+          new Cartographic(
+            cameraCartographic.longitude,
+            cameraCartographic.latitude,
+            this.limit,
+          ),
           Ellipsoid.WGS84,
           camera.position,
         );

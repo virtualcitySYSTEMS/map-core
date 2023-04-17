@@ -29,14 +29,7 @@ export const tilesetJSON = {
   geometricError: 48.828125,
   root: {
     boundingVolume: {
-      region: [
-        0.233260953,
-        0.916361773,
-        0.233644448,
-        0.91655352,
-        0.0,
-        140.3,
-      ],
+      region: [0.233260953, 0.916361773, 0.233644448, 0.91655352, 0.0, 140.3],
     },
     geometricError: 24.4140625,
     refine: 'ADD',
@@ -55,10 +48,11 @@ export function createTilesetServer(sandbox, url) {
   const server = sandbox ? sandbox.useFakeServer() : sinon.createFakeServer();
   server.autoRespond = true;
   server.respondImmediately = true;
-  server.respondWith(
-    url || 'http://test.com/tileset.json',
-    [200, { 'Content-Type': 'application/json' }, JSON.stringify(tilesetJSON)],
-  );
+  server.respondWith(url || 'http://test.com/tileset.json', [
+    200,
+    { 'Content-Type': 'application/json' },
+    JSON.stringify(tilesetJSON),
+  ]);
   server.respond();
   return server;
 }
@@ -80,14 +74,16 @@ export async function createInitializedTilesetLayer(sandbox, cesiumMap, name) {
   if (cesiumMap) {
     cesiumMap.layerCollection.add(tilesetLayer);
     const impls = tilesetLayer.getImplementationsForMap(cesiumMap);
-    await Promise.all(impls.map(async (impl) => {
-      await impl.initialize();
-      Object.defineProperty(impl.cesium3DTileset, 'boundingSphere', {
-        get() {
-          return new BoundingSphere();
-        },
-      });
-    }));
+    await Promise.all(
+      impls.map(async (impl) => {
+        await impl.initialize();
+        Object.defineProperty(impl.cesium3DTileset, 'boundingSphere', {
+          get() {
+            return new BoundingSphere();
+          },
+        });
+      }),
+    );
   }
 
   return tilesetLayer;
@@ -163,7 +159,9 @@ export function getMockScene() {
     },
     pick() {},
     pickPosition() {},
-    drillPick() { return []; },
+    drillPick() {
+      return [];
+    },
     destroy() {
       this.primitives.destroy();
       this.groundPrimitives.destroy();
@@ -201,7 +199,9 @@ export function getCesiumMap(mapOptions) {
     resize() {},
   };
 
-  map.screenSpaceEventHandler = new ScreenSpaceEventHandler(map._cesiumWidget.scene.canvas);
+  map.screenSpaceEventHandler = new ScreenSpaceEventHandler(
+    map._cesiumWidget.scene.canvas,
+  );
   map.dataSourceDisplay = {
     dataSources: new DataSourceCollection(),
     isDestroyed() {
@@ -229,7 +229,10 @@ export function getCesiumMap(mapOptions) {
  * @returns {Promise<CesiumMap>}
  */
 export async function setCesiumMap(app) {
-  const map = getCesiumMap({ layerCollection: app.layers, target: app.maps.target });
+  const map = getCesiumMap({
+    layerCollection: app.layers,
+    target: app.maps.target,
+  });
   app.maps.add(map);
   await app.maps.setActiveMap(map.name);
   return map;
@@ -270,29 +273,51 @@ class BatchTable {
     this.destroyed = false;
   }
 
-  getPropertyIds() { return Object.keys(this.properties); }
+  getPropertyIds() {
+    return Object.keys(this.properties);
+  }
 
-  getProperty(id, prop) { return this.properties[prop]; }
+  getProperty(id, prop) {
+    return this.properties[prop];
+  }
 
-  getColor() { return this.color; }
+  getColor() {
+    return this.color;
+  }
 
-  setColor(id, color) { this.color = color; }
+  setColor(id, color) {
+    this.color = color;
+  }
 
-  getShow() { return this.show; }
+  getShow() {
+    return this.show;
+  }
 
-  setShow(id, show) { this.show = show; }
+  setShow(id, show) {
+    this.show = show;
+  }
 
-  isDestroyed() { return this.destroyed; }
+  isDestroyed() {
+    return this.destroyed;
+  }
 }
 
 /**
- * @param {Object} properties
+ * @param {Object} [properties={}]
  * @param {Object=} tileset
  * @returns {Cesium.Cesium3DTileFeature}
  */
-export function createDummyCesium3DTileFeature(properties = {}, tileset) {
+export function createDummyCesium3DTileFeature(
+  properties = {},
+  tileset = undefined,
+) {
   const dummy = new Cesium3DTileFeature();
-  const content = { batchTable: new BatchTable(properties), isDestroyed() { return false; } };
+  const content = {
+    batchTable: new BatchTable(properties),
+    isDestroyed() {
+      return false;
+    },
+  };
   if (tileset) {
     content.tileset = tileset;
   }

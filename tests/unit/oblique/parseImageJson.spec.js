@@ -1,15 +1,27 @@
 import proj4 from 'proj4';
 import { get as getProjection } from 'ol/proj.js';
 import { Cartesian3, Matrix4, Matrix3 } from '@vcmap-cesium/engine';
-import { parseImageData, parseImageMeta, parseLegacyImageData } from '../../../src/oblique/parseImageJson.js';
+import {
+  parseImageData,
+  parseImageMeta,
+  parseLegacyImageData,
+} from '../../../src/oblique/parseImageJson.js';
 import { ObliqueViewDirection } from '../../../src/oblique/obliqueViewDirection.js';
 import Projection from '../../../src/util/projection.js';
 import importJSON from '../helpers/importJSON.js';
 
-const imageJson = await importJSON('./tests/data/oblique/imageData/imagev35.json');
-const legacyImageJson = await importJSON('./tests/data/oblique/imageData/imagev34.json');
-const imageJsonPerImageSize = await importJSON('./tests/data/oblique/imageData/imagev35PerImageSize.json');
-const tiledImageData = await importJSON('./tests/data/oblique/tiledImageData/image.json');
+const imageJson = await importJSON(
+  './tests/data/oblique/imageData/imagev35.json',
+);
+const legacyImageJson = await importJSON(
+  './tests/data/oblique/imageData/imagev34.json',
+);
+const imageJsonPerImageSize = await importJSON(
+  './tests/data/oblique/imageData/imagev35PerImageSize.json',
+);
+const tiledImageData = await importJSON(
+  './tests/data/oblique/tiledImageData/image.json',
+);
 
 describe('parsers', () => {
   let sandbox;
@@ -27,7 +39,11 @@ describe('parsers', () => {
       let imageMetas;
 
       before(() => {
-        imageMetas = parseImageMeta(legacyImageJson, 'http://localhost', new Projection({ epsg: 'EPSG:25833' }));
+        imageMetas = parseImageMeta(
+          legacyImageJson,
+          'http://localhost',
+          new Projection({ epsg: 'EPSG:25833' }),
+        );
       });
 
       it('should parse each cameras info', () => {
@@ -35,25 +51,35 @@ describe('parsers', () => {
       });
 
       it('should name image metas after the cameras they are based on', () => {
-        const names = imageMetas.map(m => m.name);
-        expect(names).to.have.members(Object.keys(legacyImageJson.generalImageInfo.cameraParameter));
+        const names = imageMetas.map((m) => m.name);
+        expect(names).to.have.members(
+          Object.keys(legacyImageJson.generalImageInfo.cameraParameter),
+        );
       });
 
       it('should set size, tileSize, tileResolution from the json', () => {
         imageMetas.forEach((meta) => {
           expect(meta.size).to.have.ordered.members([11608, 8708]);
           expect(meta.tileSize).to.have.ordered.members([512, 512]);
-          expect(meta.tileResolution).to.have.ordered.members(legacyImageJson.generalImageInfo['tile-resolution']);
+          expect(meta.tileResolution).to.have.ordered.members(
+            legacyImageJson.generalImageInfo['tile-resolution'],
+          );
         });
       });
 
       it('should set the cameras principalPoint, pixelSize, radialE2F, radialF2E', () => {
-        Object.entries(legacyImageJson.generalImageInfo.cameraParameter).forEach(([cameraName, options]) => {
-          const meta = imageMetas.find(m => m.name === cameraName);
+        Object.entries(
+          legacyImageJson.generalImageInfo.cameraParameter,
+        ).forEach(([cameraName, options]) => {
+          const meta = imageMetas.find((m) => m.name === cameraName);
           expect(meta.principalPoint).to.equal(options['principal-point']);
           expect(meta.pixelSize).to.equal(options['pixel-size']);
-          expect(meta.radialE2F).to.equal(options['radial-distorsion-expected-2-found']);
-          expect(meta.radialF2E).to.equal(options['radial-distorsion-found-2-expected']);
+          expect(meta.radialE2F).to.equal(
+            options['radial-distorsion-expected-2-found'],
+          );
+          expect(meta.radialF2E).to.equal(
+            options['radial-distorsion-found-2-expected'],
+          );
         });
       });
     });
@@ -62,7 +88,11 @@ describe('parsers', () => {
       let imageMetas;
 
       before(() => {
-        imageMetas = parseImageMeta(tiledImageData, new Projection({ epsg: 'EPSG:25833' }), 'http://localhost');
+        imageMetas = parseImageMeta(
+          tiledImageData,
+          new Projection({ epsg: 'EPSG:25833' }),
+          'http://localhost',
+        );
       });
 
       it('should parse each cameras info', () => {
@@ -70,25 +100,33 @@ describe('parsers', () => {
       });
 
       it('should name image metas after the cameras they are based on', () => {
-        const names = imageMetas.map(m => m.name);
-        expect(names).to.have.members(tiledImageData.generalImageInfo.cameraParameter.map(c => c.name));
+        const names = imageMetas.map((m) => m.name);
+        expect(names).to.have.members(
+          tiledImageData.generalImageInfo.cameraParameter.map((c) => c.name),
+        );
       });
 
       it('should set size, tileSize, tileResolution from the json', () => {
         imageMetas.forEach((meta) => {
           expect(meta.size).to.have.ordered.members([11608, 8708]);
           expect(meta.tileSize).to.have.ordered.members([512, 512]);
-          expect(meta.tileResolution).to.have.ordered.members(tiledImageData.generalImageInfo['tile-resolution']);
+          expect(meta.tileResolution).to.have.ordered.members(
+            tiledImageData.generalImageInfo['tile-resolution'],
+          );
         });
       });
 
       it('should set the cameras principalPoint, pixelSize, radialE2F, radialF2E', () => {
         tiledImageData.generalImageInfo.cameraParameter.forEach((options) => {
-          const meta = imageMetas.find(m => m.name === options.name);
+          const meta = imageMetas.find((m) => m.name === options.name);
           expect(meta.principalPoint).to.equal(options['principal-point']);
           expect(meta.pixelSize).to.equal(options['pixel-size']);
-          expect(meta.radialE2F).to.equal(options['radial-distorsion-expected-2-found']);
-          expect(meta.radialF2E).to.equal(options['radial-distorsion-found-2-expected']);
+          expect(meta.radialE2F).to.equal(
+            options['radial-distorsion-expected-2-found'],
+          );
+          expect(meta.radialF2E).to.equal(
+            options['radial-distorsion-found-2-expected'],
+          );
         });
       });
     });
@@ -96,9 +134,9 @@ describe('parsers', () => {
     describe('CRS handling', () => {
       it('should add a the projection with a random identifier, if not passed a default projection', () => {
         const imageMetas = parseImageMeta(tiledImageData, 'http://localhost');
-        const count = Object.keys(proj4.defs)
-          .filter(key => key.startsWith('OBLIQUE:'))
-          .length;
+        const count = Object.keys(proj4.defs).filter((key) =>
+          key.startsWith('OBLIQUE:'),
+        ).length;
         const projection = getProjection(`OBLIQUE:${count}`);
         imageMetas.forEach((meta) => {
           expect(meta.projection.proj).to.equal(projection);
@@ -106,13 +144,17 @@ describe('parsers', () => {
       });
 
       it('should ignore the image json crs, if passed a projection', () => {
-        const preCount = Object.keys(proj4.defs)
-          .filter(key => key.startsWith('OBLIQUE:'))
-          .length;
-        parseImageMeta(tiledImageData, 'http://localhost', new Projection({ epsg: 'EPSG:25833' }));
-        const postCount = Object.keys(proj4.defs)
-          .filter(key => key.startsWith('OBLIQUE:'))
-          .length;
+        const preCount = Object.keys(proj4.defs).filter((key) =>
+          key.startsWith('OBLIQUE:'),
+        ).length;
+        parseImageMeta(
+          tiledImageData,
+          'http://localhost',
+          new Projection({ epsg: 'EPSG:25833' }),
+        );
+        const postCount = Object.keys(proj4.defs).filter((key) =>
+          key.startsWith('OBLIQUE:'),
+        ).length;
         expect(preCount).to.equal(postCount);
       });
     });
@@ -127,7 +169,11 @@ describe('parsers', () => {
           availableTiles: tiledImageData.availableTiles,
         };
         delete noCamera.generalImageInfo.cameraParameter;
-        imageMetas = parseImageMeta(noCamera, new Projection({ epsg: 'EPSG:25833' }), 'http://localhost');
+        imageMetas = parseImageMeta(
+          noCamera,
+          new Projection({ epsg: 'EPSG:25833' }),
+          'http://localhost',
+        );
       });
 
       it('should create a default meta, if no cameras are present', () => {
@@ -139,7 +185,9 @@ describe('parsers', () => {
         imageMetas.forEach((meta) => {
           expect(meta.size).to.have.ordered.members([11608, 8708]);
           expect(meta.tileSize).to.have.ordered.members([512, 512]);
-          expect(meta.tileResolution).to.have.ordered.members(tiledImageData.generalImageInfo['tile-resolution']);
+          expect(meta.tileResolution).to.have.ordered.members(
+            tiledImageData.generalImageInfo['tile-resolution'],
+          );
         });
       });
     });
@@ -150,7 +198,11 @@ describe('parsers', () => {
     let images;
 
     before(() => {
-      imageMetas = parseImageMeta(imageJson, 'http://localhost', new Projection({ epsg: 'EPSG:25833' }));
+      imageMetas = parseImageMeta(
+        imageJson,
+        'http://localhost',
+        new Projection({ epsg: 'EPSG:25833' }),
+      );
       images = parseImageData(imageJson, imageMetas);
     });
 
@@ -209,7 +261,11 @@ describe('parsers', () => {
     let images;
 
     before(() => {
-      imageMetas = parseImageMeta(legacyImageJson, 'http://localhost', new Projection({ epsg: 'EPSG:25833' }));
+      imageMetas = parseImageMeta(
+        legacyImageJson,
+        'http://localhost',
+        new Projection({ epsg: 'EPSG:25833' }),
+      );
       images = parseLegacyImageData(legacyImageJson, imageMetas);
     });
 
@@ -218,7 +274,9 @@ describe('parsers', () => {
     });
 
     it('should assign the image meta based on the cameraName', () => {
-      const meta = imageMetas.find(m => m.name === legacyImageJson.images[0]['camera-name']);
+      const meta = imageMetas.find(
+        (m) => m.name === legacyImageJson.images[0]['camera-name'],
+      );
       expect(images[0].meta).to.equal(meta);
     });
 
@@ -242,8 +300,12 @@ describe('parsers', () => {
       const image = images[0];
       expect(image.viewDirection).to.equal(ObliqueViewDirection.NORTH);
       expect(image.name).to.equal(legacyImageJson.images[0].name);
-      expect(image.groundCoordinates).to.equal(legacyImageJson.images[0].groundCoordinates);
-      expect(image.centerPointOnGround).to.equal(legacyImageJson.images[0].centerPointOnGround);
+      expect(image.groundCoordinates).to.equal(
+        legacyImageJson.images[0].groundCoordinates,
+      );
+      expect(image.centerPointOnGround).to.equal(
+        legacyImageJson.images[0].centerPointOnGround,
+      );
     });
 
     it('should create a Cartesian3 projectionCenter', () => {
@@ -251,7 +313,9 @@ describe('parsers', () => {
       expect(image.projectionCenter).to.be.an.instanceOf(Cartesian3);
       const packed = [];
       Cartesian3.pack(image.projectionCenter, packed);
-      expect(packed).to.have.members(legacyImageJson.images[0]['projection-center']);
+      expect(packed).to.have.members(
+        legacyImageJson.images[0]['projection-center'],
+      );
     });
 
     it('should creat a Matrix3 for pToRealworld', () => {
@@ -281,7 +345,11 @@ describe('parsers', () => {
     let images;
 
     before(() => {
-      imageMetas = parseImageMeta(imageJsonPerImageSize, 'http://localhost', new Projection({ epsg: 'EPSG:25833' }));
+      imageMetas = parseImageMeta(
+        imageJsonPerImageSize,
+        'http://localhost',
+        new Projection({ epsg: 'EPSG:25833' }),
+      );
       images = parseImageData(imageJsonPerImageSize, imageMetas);
     });
 
@@ -298,7 +366,9 @@ describe('parsers', () => {
     });
 
     it('should extend the metas tile resolution, if missing', () => {
-      expect(imageMetas[0].tileResolution).to.be.an('array').with.members([32, 16, 8, 4, 2, 1]);
+      expect(imageMetas[0].tileResolution)
+        .to.be.an('array')
+        .with.members([32, 16, 8, 4, 2, 1]);
     });
 
     it('should not overwrite existing size', () => {
@@ -306,8 +376,9 @@ describe('parsers', () => {
     });
 
     it('should not overwrite existing tile resolution', () => {
-      expect(imageMetas[1].tileResolution).to.be.an('array').with.members([16, 8, 4, 2, 1]);
+      expect(imageMetas[1].tileResolution)
+        .to.be.an('array')
+        .with.members([16, 8, 4, 2, 1]);
     });
   });
 });
-

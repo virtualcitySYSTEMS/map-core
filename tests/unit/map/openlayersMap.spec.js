@@ -74,13 +74,15 @@ describe('OpenlayersMap', () => {
 
       describe('with a regular viewpoint', () => {
         before(async () => {
-          await map.gotoViewpoint(new Viewpoint({
-            groundPosition: [0, 0, 0],
-            cameraPosition: [0, 0, 100],
-            distance: 100,
-            animate: false,
-            heading: 45,
-          }));
+          await map.gotoViewpoint(
+            new Viewpoint({
+              groundPosition: [0, 0, 0],
+              cameraPosition: [0, 0, 100],
+              distance: 100,
+              animate: false,
+              heading: 45,
+            }),
+          );
         });
 
         it('should set the view center to the groundPosition', () => {
@@ -95,7 +97,10 @@ describe('OpenlayersMap', () => {
         });
 
         it('should set the resolution based on the distance', () => {
-          expect(map.olMap.getView().getResolution()).to.be.closeTo(115.47, 0.0001);
+          expect(map.olMap.getView().getResolution()).to.be.closeTo(
+            115.47,
+            0.0001,
+          );
         });
       });
 
@@ -117,14 +122,18 @@ describe('OpenlayersMap', () => {
 
       describe('without a groundPosition', () => {
         it('should set the cameraPosition as the views center', async () => {
-          await map.gotoViewpoint(new Viewpoint({
-            cameraPosition: [1, 1, 100],
-            distance: 100,
-            animate: false,
-            heading: 45,
-          }));
+          await map.gotoViewpoint(
+            new Viewpoint({
+              cameraPosition: [1, 1, 100],
+              distance: 100,
+              animate: false,
+              heading: 45,
+            }),
+          );
           const center = map.olMap.getView().getCenter();
-          const mercatorGroundPosition = Projection.wgs84ToMercator([1, 1, 100]);
+          const mercatorGroundPosition = Projection.wgs84ToMercator([
+            1, 1, 100,
+          ]);
           expect(center[0]).to.be.closeTo(mercatorGroundPosition[0], 0.000001);
           expect(center[1]).to.be.closeTo(mercatorGroundPosition[1], 0.000001);
         });
@@ -132,14 +141,16 @@ describe('OpenlayersMap', () => {
 
       describe('which is animated', () => {
         it('should animate for the given duration before setting the vp', async () => {
-          const promise = map.gotoViewpoint(new Viewpoint({
-            groundPosition: [0, 0, 0],
-            cameraPosition: [1, 1, 100],
-            distance: 100,
-            animate: true,
-            duration: 0.01,
-            heading: 45,
-          }));
+          const promise = map.gotoViewpoint(
+            new Viewpoint({
+              groundPosition: [0, 0, 0],
+              cameraPosition: [1, 1, 100],
+              distance: 100,
+              animate: true,
+              duration: 0.01,
+              heading: 45,
+            }),
+          );
           expect(map.olMap.getView().getAnimating()).to.be.true;
           await promise;
           expect(map.olMap.getView().getAnimating()).to.be.false;
@@ -155,13 +166,15 @@ describe('OpenlayersMap', () => {
       it('should rotate the map counter clockwise, based on the heading', async () => {
         const map = new OpenlayersMap({ fixedNorthOrientation: false });
         await map.initialize();
-        await map.gotoViewpoint(new Viewpoint({
-          groundPosition: [0, 0, 0],
-          cameraPosition: [0, 0, 100],
-          distance: 100,
-          animate: false,
-          heading: 45,
-        }));
+        await map.gotoViewpoint(
+          new Viewpoint({
+            groundPosition: [0, 0, 0],
+            cameraPosition: [0, 0, 100],
+            distance: 100,
+            animate: false,
+            heading: 45,
+          }),
+        );
         expect(map.olMap.getView().getRotation()).to.equal(-Math.PI / 4);
         map.destroy();
       });
@@ -175,12 +188,14 @@ describe('OpenlayersMap', () => {
       map = new OpenlayersMap({ fixedNorthOrientation: false });
       await map.initialize();
       map.olMap.setSize([100, 100]);
-      await map.gotoViewpoint(new Viewpoint({
-        groundPosition: [0, 0, 0],
-        cameraPosition: [0, 0, 100],
-        distance: 100,
-        animate: false,
-      }));
+      await map.gotoViewpoint(
+        new Viewpoint({
+          groundPosition: [0, 0, 0],
+          cameraPosition: [0, 0, 100],
+          distance: 100,
+          animate: false,
+        }),
+      );
     });
 
     after(() => {

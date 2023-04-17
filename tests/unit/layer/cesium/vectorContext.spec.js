@@ -1,6 +1,11 @@
 import Feature from 'ol/Feature.js';
 import {
-  Primitive, PrimitiveCollection, Cartesian3, Matrix4, Model, SplitDirection,
+  Primitive,
+  PrimitiveCollection,
+  Cartesian3,
+  Matrix4,
+  Model,
+  SplitDirection,
 } from '@vcmap-cesium/engine';
 import VectorContext, {
   addPrimitiveToContext,
@@ -84,7 +89,13 @@ describe('VectorContext', () => {
 
     it('should not set the picking reference if not allowPicking', () => {
       const primitive = new Primitive({});
-      addPrimitiveToContext([primitive], feature, false, collection, featureMap);
+      addPrimitiveToContext(
+        [primitive],
+        feature,
+        false,
+        collection,
+        featureMap,
+      );
       expect(primitive.olFeature).to.be.undefined;
     });
   });
@@ -110,7 +121,9 @@ describe('VectorContext', () => {
 
     it('should add the feature to the primitives & the featureToPrimitiveMap', () => {
       vectorContext.addPrimitives([primitive], feature, true);
-      expect(vectorContext.featureToPrimitiveMap.get(feature)).to.have.members([primitive]);
+      expect(vectorContext.featureToPrimitiveMap.get(feature)).to.have.members([
+        primitive,
+      ]);
       expect(vectorContext.primitives.contains(primitive)).to.be.true;
     });
 
@@ -144,7 +157,9 @@ describe('VectorContext', () => {
 
     it('should add the feature to the primitives & the featureToPrimitiveMap', () => {
       vectorContext.addScaledPrimitives([primitive], feature, true);
-      expect(vectorContext.featureToScaledPrimitiveMap.get(feature)).to.have.members([primitive]);
+      expect(
+        vectorContext.featureToScaledPrimitiveMap.get(feature),
+      ).to.have.members([primitive]);
       expect(vectorContext.scaledPrimitives.contains(primitive)).to.be.true;
     });
 
@@ -275,11 +290,15 @@ describe('VectorContext', () => {
       });
 
       it('should cache all primitives', () => {
-        expect(cache).to.have.property('primitives').and.to.have.members([primitive]);
+        expect(cache)
+          .to.have.property('primitives')
+          .and.to.have.members([primitive]);
       });
 
       it('should cache all scaled primitives', () => {
-        expect(cache).to.have.property('scaledPrimitives').and.to.have.members([scaled]);
+        expect(cache)
+          .to.have.property('scaledPrimitives')
+          .and.to.have.members([scaled]);
       });
 
       it('should cache all billboards', () => {
@@ -404,8 +423,13 @@ describe('VectorContext', () => {
         primitiveCollection.add(primitive);
         return primitive;
       };
-      scaledListener = setupScalingPrimitiveCollection(map, primitiveCollection, dirtyRef);
-      getCurrentResolutionFromCartesian = sinon.stub(map, 'getCurrentResolutionFromCartesian')
+      scaledListener = setupScalingPrimitiveCollection(
+        map,
+        primitiveCollection,
+        dirtyRef,
+      );
+      getCurrentResolutionFromCartesian = sinon
+        .stub(map, 'getCurrentResolutionFromCartesian')
         .returns(2);
     });
 

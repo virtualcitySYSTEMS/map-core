@@ -24,12 +24,14 @@ The following diagram gives an overview over all available layer types and their
 ## SplitLayer
 
 The SplitLayer interface is implemented by split-able layers, namely (and their childs):
+
 - CesiumTilesetLayer
 - VectorLayer
 - RasterLayer
 - OpenStreetMapLayer
 
 The interface is defined as:
+
 ```js
 /**
  * @typedef {import("@vcmap/core").Layer} SplitLayer
@@ -42,6 +44,7 @@ The interface is defined as:
 
 When instancing a [Layer](../src/layer/layer.js) options can be provided. The options vary depending on the layer type.
 The base options of a layer are defined as:
+
 ```js
 /**
  * @typedef {VcsObjectOptions} LayerOptions
@@ -58,4 +61,5 @@ The base options of a layer are defined as:
  * @api
  */
 ```
+
 For specific layer options please refer to the API docs or class definition.

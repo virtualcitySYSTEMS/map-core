@@ -51,7 +51,9 @@ describe('CreateBBoxInteraction', () => {
       });
 
       it('should set the geometry to be a polygon at positionOrPixel', () => {
-        expect(geometry.getCoordinates()).to.have.deep.ordered.members([[[1, 2, 3]]]);
+        expect(geometry.getCoordinates()).to.have.deep.ordered.members([
+          [[1, 2, 3]],
+        ]);
       });
 
       it('should set the geometry vcsGeometryType', () => {
@@ -89,7 +91,9 @@ describe('CreateBBoxInteraction', () => {
       });
 
       it('should set the geometry to be a polygon at positionOrPixel', () => {
-        expect(geometry.getCoordinates()).to.have.deep.ordered.members([[[1, 2, 3]]]);
+        expect(geometry.getCoordinates()).to.have.deep.ordered.members([
+          [[1, 2, 3]],
+        ]);
       });
     });
   });
@@ -128,7 +132,12 @@ describe('CreateBBoxInteraction', () => {
       it('should update the geometry to be a bbox', () => {
         expect(geometry).to.be.an.instanceOf(Polygon);
         expect(geometry.getCoordinates()).to.have.deep.ordered.members([
-          [[1, 2, 3], [1, 1, 3], [2, 1, 3], [2, 2, 3]],
+          [
+            [1, 2, 3],
+            [1, 1, 3],
+            [2, 1, 3],
+            [2, 2, 3],
+          ],
         ]);
       });
     });
@@ -146,7 +155,12 @@ describe('CreateBBoxInteraction', () => {
       it('should update the geometry to be a bbox', () => {
         expect(geometry).to.be.an.instanceOf(Polygon);
         expect(geometry.getCoordinates()).to.have.deep.ordered.members([
-          [[1, 2, 3], [2, 2, 3], [2, 3, 3], [1, 3, 3]],
+          [
+            [1, 2, 3],
+            [2, 2, 3],
+            [2, 3, 3],
+            [1, 3, 3],
+          ],
         ]);
       });
     });
@@ -164,7 +178,12 @@ describe('CreateBBoxInteraction', () => {
       it('should update the geometry to be a bbox', () => {
         expect(geometry).to.be.an.instanceOf(Polygon);
         expect(geometry.getCoordinates()).to.have.deep.ordered.members([
-          [[1, 2, 3], [1, 3, 3], [0, 3, 3], [0, 2, 3]],
+          [
+            [1, 2, 3],
+            [1, 3, 3],
+            [0, 3, 3],
+            [0, 2, 3],
+          ],
         ]);
       });
     });
@@ -182,7 +201,12 @@ describe('CreateBBoxInteraction', () => {
       it('should update the geometry to be a bbox', () => {
         expect(geometry).to.be.an.instanceOf(Polygon);
         expect(geometry.getCoordinates()).to.have.deep.ordered.members([
-          [[1, 2, 3], [0, 2, 3], [0, 1, 3], [1, 1, 3]],
+          [
+            [1, 2, 3],
+            [0, 2, 3],
+            [0, 1, 3],
+            [1, 1, 3],
+          ],
         ]);
       });
     });
@@ -200,7 +224,12 @@ describe('CreateBBoxInteraction', () => {
       it('should update the geometry to be a bbox, preventing collapse', () => {
         expect(geometry).to.be.an.instanceOf(Polygon);
         expect(geometry.getCoordinates()).to.have.deep.ordered.members([
-          [[1, 2, 3], [1.000001, 2, 3], [1.000001, 2.000001, 3], [1, 2.000001, 3]],
+          [
+            [1, 2, 3],
+            [1.000001, 2, 3],
+            [1.000001, 2.000001, 3],
+            [1, 2.000001, 3],
+          ],
         ]);
       });
     });
@@ -218,7 +247,12 @@ describe('CreateBBoxInteraction', () => {
       it('should update the geometry to be a bbox, preventing collapse', () => {
         expect(geometry).to.be.an.instanceOf(Polygon);
         expect(geometry.getCoordinates()).to.have.deep.ordered.members([
-          [[1, 2, 3], [1, 3, 3], [1.000001, 3, 3], [1.000001, 2, 3]],
+          [
+            [1, 2, 3],
+            [1, 3, 3],
+            [1.000001, 3, 3],
+            [1.000001, 2, 3],
+          ],
         ]);
       });
     });
@@ -236,7 +270,12 @@ describe('CreateBBoxInteraction', () => {
       it('should update the geometry to be a bbox, preventing collapse', () => {
         expect(geometry).to.be.an.instanceOf(Polygon);
         expect(geometry.getCoordinates()).to.have.deep.ordered.members([
-          [[1, 2, 3], [1, 2.000001, 3], [2, 2.000001, 3], [2, 2, 3]],
+          [
+            [1, 2, 3],
+            [1, 2.000001, 3],
+            [2, 2.000001, 3],
+            [2, 2, 3],
+          ],
         ]);
       });
     });
@@ -275,7 +314,12 @@ describe('CreateBBoxInteraction', () => {
     it('should update the geometry to be a bbox', () => {
       expect(geometry).to.be.an.instanceOf(Polygon);
       expect(geometry.getCoordinates()).to.have.deep.ordered.members([
-        [[1, 2, 3], [2, 2, 3], [2, 3, 3], [1, 3, 3]],
+        [
+          [1, 2, 3],
+          [2, 2, 3],
+          [2, 3, 3],
+          [1, 3, 3],
+        ],
       ]);
     });
 

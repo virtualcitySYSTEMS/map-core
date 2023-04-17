@@ -16,9 +16,17 @@ import LineString from 'ol/geom/LineString.js';
 import { offset } from 'ol/sphere.js';
 import Polygon from 'ol/geom/Polygon.js';
 import { check, checkMaybe } from '@vcsuite/check';
-import Projection, { mercatorProjection, wgs84Projection } from '../projection.js';
+import Projection, {
+  mercatorProjection,
+  wgs84Projection,
+} from '../projection.js';
 import Extent3D from '../featureconverter/extent3D.js';
-import { enforceEndingVertex, enforceRightHand, getFlatCoordinatesFromGeometry } from '../geometryHelpers.js';
+import {
+  enforceEndingVertex,
+  enforceRightHand,
+  getFlatCoordinatesFromGeometry,
+} from '../geometryHelpers.js';
+import { mercatorToCartesian } from '../math.js';
 
 /**
  * Options to the define how Cesium.ClippingPlanes are created from a ol.Feature.
@@ -50,8 +58,7 @@ function createPlane(p1, p2) {
  */
 function createVerticalPlanes(coords) {
   const clippingPlanes = [];
-  // @ts-ignore
-  const cartesiansCoords = coords.map(c => Cartesian3.fromDegrees(...Projection.mercatorToWgs84(c)));
+  const cartesiansCoords = coords.map((c) => mercatorToCartesian(c));
   for (let i = 0; i < cartesiansCoords.length - 1; i++) {
     const nextIndex = i + 1;
     const normal = new Cartesian3();
@@ -84,7 +91,6 @@ function createHorizontalPlanes(feature, coords, options) {
     }
   }
 
-
   if (min === max) {
     max += 1;
   }
@@ -110,7 +116,7 @@ function createHorizontalPlanes(feature, coords, options) {
 function createEndingPlanes(coords) {
   const clippingPlanes = [];
   // @ts-ignore
-  const cartesiansCoords = coords.map(c => Cartesian3.fromDegrees(...Projection.mercatorToWgs84(c)));
+  const cartesiansCoords = coords.map((c) => mercatorToCartesian(c));
   const normal = new Cartesian3();
   Cartesian3.cross(cartesiansCoords[0], cartesiansCoords[1], normal);
   Cartesian3.normalize(normal, normal);
@@ -138,7 +144,11 @@ function createEndingPlanes(coords) {
  * @returns {import("@vcmap-cesium/engine").ClippingPlaneCollection|null}
  * @api stable
  */
-export function createClippingPlaneCollection(feature, options = {}, transformMatrix) {
+export function createClippingPlaneCollection(
+  feature,
+  options = {},
+  transformMatrix = undefined,
+) {
   check(feature, Feature);
   check(options, Object);
   checkMaybe(transformMatrix, Matrix4);
@@ -148,17 +158,26 @@ export function createClippingPlaneCollection(feature, options = {}, transformMa
   const geometryType = geometry.getType();
 
   if (geometryType === 'Point') {
-    clippingPlanes.push(...createHorizontalPlanes(feature, [geometry.getCoordinates()], options));
+    clippingPlanes.push(
+      ...createHorizontalPlanes(feature, [geometry.getCoordinates()], options),
+    );
   } else {
     const coords = getFlatCoordinatesFromGeometry(geometry);
-    if (coords.length < 2 || (coords[0][0] === coords[1][0] && coords[0][1] === coords[1][1])) {
+    if (
+      coords.length < 2 ||
+      (coords[0][0] === coords[1][0] && coords[0][1] === coords[1][1])
+    ) {
       return null;
     }
 
     if (geometryType === 'Polygon') {
       enforceEndingVertex(coords);
       enforceRightHand(coords);
-    } else if (geometryType === 'LineString' && coords.length === 2 && options.createEndingPlanes) {
+    } else if (
+      geometryType === 'LineString' &&
+      coords.length === 2 &&
+      options.createEndingPlanes
+    ) {
       clippingPlanes.push(...createEndingPlanes(coords));
     }
 
@@ -166,24 +185,31 @@ export function createClippingPlaneCollection(feature, options = {}, transformMa
       clippingPlanes.push(...createVerticalPlanes(coords));
     }
 
-    if (feature.get('olcs_altitudeMode') === 'absolute' && (options.createBottomPlane || options.createTopPlane)) {
+    if (
+      feature.get('olcs_altitudeMode') === 'absolute' &&
+      (options.createBottomPlane || options.createTopPlane)
+    ) {
       clippingPlanes.push(...createHorizontalPlanes(feature, coords, options));
     }
   }
 
   if (transformMatrix) {
-    clippingPlanes.forEach((/** @type {import("@vcmap-cesium/engine").ClippingPlane} */ plane) => {
-      const result = Plane.transform(plane, transformMatrix);
-      plane.normal = result.normal;
-      plane.distance = result.distance;
-    });
+    clippingPlanes.forEach(
+      (/** @type {import("@vcmap-cesium/engine").ClippingPlane} */ plane) => {
+        const result = Plane.transform(plane, transformMatrix);
+        plane.normal = result.normal;
+        plane.distance = result.distance;
+      },
+    );
   }
 
   if (options.reverse) {
-    clippingPlanes.forEach((/** @type {import("@vcmap-cesium/engine").ClippingPlane} */ plane) => {
-      Cartesian3.negate(plane.normal, plane.normal);
-      plane.distance *= -1;
-    });
+    clippingPlanes.forEach(
+      (/** @type {import("@vcmap-cesium/engine").ClippingPlane} */ plane) => {
+        Cartesian3.negate(plane.normal, plane.normal);
+        plane.distance *= -1;
+      },
+    );
   }
 
   return new ClippingPlaneCollection({
@@ -201,7 +227,12 @@ export function createClippingPlaneCollection(feature, options = {}, transformMa
  * @returns {import("@vcmap-cesium/engine").ClippingPlaneCollection}
  * @api stable
  */
-export function copyClippingPlanesToCollection(source, result, transformMatrix, originPoint) {
+export function copyClippingPlanesToCollection(
+  source,
+  result,
+  transformMatrix,
+  originPoint,
+) {
   check(source, ClippingPlaneCollection);
   check(result, ClippingPlaneCollection);
 
@@ -234,10 +265,14 @@ export function clearClippingPlanes(target) {
     if (target.model) {
       if (target.model.clippingPlanes) {
         const entityClippingPlanes =
-          (/** @type {import("@vcmap-cesium/engine").ConstantProperty} */ (target.model.clippingPlanes)).getValue();
+          /** @type {import("@vcmap-cesium/engine").ConstantProperty} */ (
+            target.model.clippingPlanes
+          ).getValue();
         entityClippingPlanes.removeAll();
       } else {
-        target.model.clippingPlanes = new ConstantProperty(new ClippingPlaneCollection());
+        target.model.clippingPlanes = new ConstantProperty(
+          new ClippingPlaneCollection(),
+        );
       }
     }
   } else if (target.clippingPlanes) {
@@ -252,12 +287,19 @@ export function clearClippingPlanes(target) {
  * @param {import("@vcmap-cesium/engine").ClippingPlaneCollection} clippingPlaneCollection
  * @param {boolean=} local
  */
-function setTilesetClippingPlane(cesium3DTileset, clippingPlaneCollection, local) {
+function setTilesetClippingPlane(
+  cesium3DTileset,
+  clippingPlaneCollection,
+  local,
+) {
   clearClippingPlanes(cesium3DTileset);
   // copyClippingPlanesToCollection(clippingPlaneCollection, cesium3DTileset.clippingPlanes); XXX this is in release-4.0 but i think its an oversight
   if (!local) {
     if (!clippingPlaneCollection.modelMatrix.equals(Matrix4.IDENTITY)) {
-      copyClippingPlanesToCollection(clippingPlaneCollection, cesium3DTileset.clippingPlanes);
+      copyClippingPlanesToCollection(
+        clippingPlaneCollection,
+        cesium3DTileset.clippingPlanes,
+      );
       cesium3DTileset.clippingPlanes.modelMatrix = Matrix4.multiply(
         Matrix4.inverse(
           cesium3DTileset.clippingPlanesOriginMatrix,
@@ -268,10 +310,16 @@ function setTilesetClippingPlane(cesium3DTileset, clippingPlaneCollection, local
       );
     } else {
       const rotation = Matrix4.getMatrix3(
-        Matrix4.inverse(cesium3DTileset.clippingPlanesOriginMatrix, new Matrix4()),
+        Matrix4.inverse(
+          cesium3DTileset.clippingPlanesOriginMatrix,
+          new Matrix4(),
+        ),
         new Matrix3(),
       );
-      const transformationMatrix = Matrix4.fromRotationTranslation(rotation, new Cartesian3());
+      const transformationMatrix = Matrix4.fromRotationTranslation(
+        rotation,
+        new Cartesian3(),
+      );
       copyClippingPlanesToCollection(
         clippingPlaneCollection,
         cesium3DTileset.clippingPlanes,
@@ -280,7 +328,10 @@ function setTilesetClippingPlane(cesium3DTileset, clippingPlaneCollection, local
       );
     }
   } else {
-    copyClippingPlanesToCollection(clippingPlaneCollection, cesium3DTileset.clippingPlanes);
+    copyClippingPlanesToCollection(
+      clippingPlaneCollection,
+      cesium3DTileset.clippingPlanes,
+    );
   }
 }
 
@@ -303,11 +354,19 @@ function setEntityClippingPlanes(entity, clippingPlaneCollection, local) {
   if (entity.model) {
     clearClippingPlanes(entity);
     const entityClippingPlanes =
-      (/** @type {import("@vcmap-cesium/engine").ConstantProperty} */ (entity.model.clippingPlanes)).getValue();
-    copyClippingPlanesToCollection(clippingPlaneCollection, entityClippingPlanes);
+      /** @type {import("@vcmap-cesium/engine").ConstantProperty} */ (
+        entity.model.clippingPlanes
+      ).getValue();
+    copyClippingPlanesToCollection(
+      clippingPlaneCollection,
+      entityClippingPlanes,
+    );
     if (!local) {
       const localToFixedFrame = entity.computeModelMatrix(JulianDate.now());
-      Matrix4.inverseTransformation(localToFixedFrame, entityClippingPlanes.modelMatrix);
+      Matrix4.inverseTransformation(
+        localToFixedFrame,
+        entityClippingPlanes.modelMatrix,
+      );
       if (!clippingPlaneCollection.modelMatrix.equals(Matrix4.IDENTITY)) {
         Matrix4.multiply(
           entityClippingPlanes.modelMatrix,
@@ -343,7 +402,12 @@ export function setClippingPlanes(target, clippingPlaneCollection, local) {
  * @returns {import("ol").Feature<import("ol/geom/Geometry").default>} - the features geometry is in web mercator
  * @api
  */
-export function createClippingFeature(coordinate, camera, vertical = false, offsetDistance = 25) {
+export function createClippingFeature(
+  coordinate,
+  camera,
+  vertical = false,
+  offsetDistance = 25,
+) {
   check(coordinate, [Number]);
   check(vertical, Boolean);
   check(offsetDistance, Number);
@@ -352,17 +416,20 @@ export function createClippingFeature(coordinate, camera, vertical = false, offs
   if (vertical) {
     const p1 = offset(coordinate, -offsetDistance, camera.heading);
     const p2 = offset(coordinate, offsetDistance, camera.heading);
-    geometry = new LineString([
-      [p1[0], p1[1], coordinate[2]],
-      [p2[0], p2[1], coordinate[2]],
-      // @ts-ignore
-    ], 'XYZ');
+    geometry = new LineString(
+      [
+        [p1[0], p1[1], coordinate[2]],
+        [p2[0], p2[1], coordinate[2]],
+        // @ts-ignore
+      ],
+      'XYZ',
+    );
   } else {
     geometry = new Polygon([[]], 'XYZ');
-    let bearing = (2 * Math.PI) - (Math.PI / 4); // Bearing NW
+    let bearing = 2 * Math.PI - Math.PI / 4; // Bearing NW
     const coordinates = [...new Array(4)].map(() => {
       const newPoint = offset(coordinate, offsetDistance, bearing);
-      bearing -= (Math.PI / 2);
+      bearing -= Math.PI / 2;
       return [newPoint[0], newPoint[1], coordinate[2]];
     });
     geometry.setCoordinates([coordinates]);
@@ -389,19 +456,19 @@ export function getClippingOptions(feature, infinite = false) {
   checkMaybe(feature, Feature);
   check(infinite, Boolean);
 
-  const vertical = feature ?
-    feature.getGeometry().getType() === 'LineString' :
-    false;
+  const vertical = feature
+    ? feature.getGeometry().getType() === 'LineString'
+    : false;
 
-  return vertical ?
-    {
-      createBottomPlane: !infinite,
-      createTopPlane: !infinite,
-      createEndingPlanes: !infinite,
-      createVerticalPlanes: true,
-    } :
-    {
-      createVerticalPlanes: !infinite,
-      createBottomPlane: true,
-    };
+  return vertical
+    ? {
+        createBottomPlane: !infinite,
+        createTopPlane: !infinite,
+        createEndingPlanes: !infinite,
+        createVerticalPlanes: true,
+      }
+    : {
+        createVerticalPlanes: !infinite,
+        createBottomPlane: true,
+      };
 }

@@ -5,7 +5,8 @@ import {
   EventType,
   ModificationKeyType,
   ObliqueMap,
-  OpenlayersMap, PointerKeyType,
+  OpenlayersMap,
+  PointerKeyType,
   createSync,
   startEditGeometrySession,
 } from '../../../../index.js';
@@ -47,7 +48,9 @@ describe('EditGeometrySession', () => {
     });
 
     it('should add a an exclusive listener to the event handler', () => {
-      expect(app.maps.eventHandler.interactions[3]).to.be.an.instanceof(InteractionChain);
+      expect(app.maps.eventHandler.interactions[3]).to.be.an.instanceof(
+        InteractionChain,
+      );
     });
 
     describe('setting a feature', () => {
@@ -82,7 +85,12 @@ describe('EditGeometrySession', () => {
       let vertices;
 
       beforeEach(async () => {
-        feature = new Feature({ geometry: new LineString([[0, 0, 0], [1, 1, 0]]) });
+        feature = new Feature({
+          geometry: new LineString([
+            [0, 0, 0],
+            [1, 1, 0],
+          ]),
+        });
         layer.addFeatures([feature]);
         await session.setFeature(feature);
         vertices = [...app.layers].pop().getFeatures();
@@ -118,7 +126,12 @@ describe('EditGeometrySession', () => {
           feature: vertex,
           positionOrPixel: [1, 0, 0],
         });
-        expect(feature.getGeometry().getCoordinates()).to.have.ordered.deep.members([[1, 0, 0], [1, 1, 0]]);
+        expect(
+          feature.getGeometry().getCoordinates(),
+        ).to.have.ordered.deep.members([
+          [1, 0, 0],
+          [1, 1, 0],
+        ]);
       });
 
       it('should update the geometry, if removing a vertex', async () => {
@@ -131,7 +144,9 @@ describe('EditGeometrySession', () => {
           feature: vertex,
           positionOrPixel: [0, 0, 0],
         });
-        expect(feature.getGeometry().getCoordinates()).to.have.ordered.deep.members([[1, 1, 0]]);
+        expect(
+          feature.getGeometry().getCoordinates(),
+        ).to.have.ordered.deep.members([[1, 1, 0]]);
       });
 
       it('should update the feature, on insert of a vertex', async () => {
@@ -143,8 +158,13 @@ describe('EditGeometrySession', () => {
           feature,
           positionOrPixel: [0.5, 0.5, 0],
         });
-        expect(feature.getGeometry().getCoordinates())
-          .to.have.ordered.deep.members([[0, 0, 0], [0.5, 0.5, 0], [1, 1, 0]]);
+        expect(
+          feature.getGeometry().getCoordinates(),
+        ).to.have.ordered.deep.members([
+          [0, 0, 0],
+          [0.5, 0.5, 0],
+          [1, 1, 0],
+        ]);
       });
     });
 
@@ -153,7 +173,15 @@ describe('EditGeometrySession', () => {
       let vertices;
 
       beforeEach(async () => {
-        feature = new Feature({ geometry: new Polygon([[[0, 0, 0], [1, 1, 0], [0, 1, 0]]]) });
+        feature = new Feature({
+          geometry: new Polygon([
+            [
+              [0, 0, 0],
+              [1, 1, 0],
+              [0, 1, 0],
+            ],
+          ]),
+        });
         layer.addFeatures([feature]);
         await session.setFeature(feature);
         vertices = [...app.layers].pop().getFeatures();
@@ -189,8 +217,15 @@ describe('EditGeometrySession', () => {
           feature: vertex,
           positionOrPixel: [1, 0, 0],
         });
-        expect(feature.getGeometry().getCoordinates())
-          .to.have.ordered.deep.members([[[1, 0, 0], [1, 1, 0], [0, 1, 0]]]);
+        expect(
+          feature.getGeometry().getCoordinates(),
+        ).to.have.ordered.deep.members([
+          [
+            [1, 0, 0],
+            [1, 1, 0],
+            [0, 1, 0],
+          ],
+        ]);
       });
 
       it('should update the geometry, if removing a vertex', async () => {
@@ -203,7 +238,14 @@ describe('EditGeometrySession', () => {
           feature: vertex,
           positionOrPixel: [0, 0, 0],
         });
-        expect(feature.getGeometry().getCoordinates()).to.have.ordered.deep.members([[[1, 1, 0], [0, 1, 0]]]);
+        expect(
+          feature.getGeometry().getCoordinates(),
+        ).to.have.ordered.deep.members([
+          [
+            [1, 1, 0],
+            [0, 1, 0],
+          ],
+        ]);
       });
 
       it('should update the feature, on insert of a vertex', async () => {
@@ -215,8 +257,16 @@ describe('EditGeometrySession', () => {
           feature,
           positionOrPixel: [0.5, 0.5, 0],
         });
-        expect(feature.getGeometry().getCoordinates())
-          .to.have.ordered.deep.members([[[0, 0, 0], [0.5, 0.5, 0], [1, 1, 0], [0, 1, 0]]]);
+        expect(
+          feature.getGeometry().getCoordinates(),
+        ).to.have.ordered.deep.members([
+          [
+            [0, 0, 0],
+            [0.5, 0.5, 0],
+            [1, 1, 0],
+            [0, 1, 0],
+          ],
+        ]);
       });
     });
 
@@ -261,7 +311,9 @@ describe('EditGeometrySession', () => {
           feature: vertex,
           positionOrPixel: [1, 0, 0],
         });
-        expect(feature.getGeometry().getCoordinates()).to.have.ordered.members([1, 0, 0]);
+        expect(feature.getGeometry().getCoordinates()).to.have.ordered.members([
+          1, 0, 0,
+        ]);
       });
     });
 
@@ -306,7 +358,9 @@ describe('EditGeometrySession', () => {
           feature: vertex,
           positionOrPixel: [1, 0, 0],
         });
-        expect(feature.getGeometry().getCenter()).to.have.ordered.members([1, 0, 0]);
+        expect(feature.getGeometry().getCenter()).to.have.ordered.members([
+          1, 0, 0,
+        ]);
         expect(feature.getGeometry().getRadius()).to.equal(1);
       });
 
@@ -336,7 +390,9 @@ describe('EditGeometrySession', () => {
           feature: vertex,
           positionOrPixel: [2, 0, 0],
         });
-        expect(feature.getGeometry().getCenter()).to.have.ordered.members([0, 0, 0]);
+        expect(feature.getGeometry().getCenter()).to.have.ordered.members([
+          0, 0, 0,
+        ]);
         expect(feature.getGeometry().getRadius()).to.equal(2);
       });
     });
@@ -346,7 +402,14 @@ describe('EditGeometrySession', () => {
       let vertices;
 
       beforeEach(async () => {
-        const geometry = new Polygon([[[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]]]);
+        const geometry = new Polygon([
+          [
+            [0, 0, 0],
+            [1, 0, 0],
+            [1, 1, 0],
+            [0, 1, 0],
+          ],
+        ]);
         geometry.set('_vcsGeomType', 'BBox');
         feature = new Feature({ geometry });
         layer.addFeatures([feature]);
@@ -384,8 +447,16 @@ describe('EditGeometrySession', () => {
           feature: vertex,
           positionOrPixel: [-1, -1, 0],
         });
-        expect(feature.getGeometry().getCoordinates())
-          .to.have.ordered.deep.members([[[-1, -1, 0], [1, -1, 0], [1, 1, 0], [-1, 1, 0]]]);
+        expect(
+          feature.getGeometry().getCoordinates(),
+        ).to.have.ordered.deep.members([
+          [
+            [-1, -1, 0],
+            [1, -1, 0],
+            [1, 1, 0],
+            [-1, 1, 0],
+          ],
+        ]);
       });
 
       it('should ensure bbox, if moving bottom right vertex', async () => {
@@ -414,8 +485,16 @@ describe('EditGeometrySession', () => {
           feature: vertex,
           positionOrPixel: [2, -1, 0],
         });
-        expect(feature.getGeometry().getCoordinates())
-          .to.have.ordered.deep.members([[[0, -1, 0], [2, -1, 0], [2, 1, 0], [0, 1, 0]]]);
+        expect(
+          feature.getGeometry().getCoordinates(),
+        ).to.have.ordered.deep.members([
+          [
+            [0, -1, 0],
+            [2, -1, 0],
+            [2, 1, 0],
+            [0, 1, 0],
+          ],
+        ]);
       });
 
       it('should ensure bbox, if moving top right vertex', async () => {
@@ -444,8 +523,16 @@ describe('EditGeometrySession', () => {
           feature: vertex,
           positionOrPixel: [2, 2, 0],
         });
-        expect(feature.getGeometry().getCoordinates())
-          .to.have.ordered.deep.members([[[0, 0, 0], [2, 0, 0], [2, 2, 0], [0, 2, 0]]]);
+        expect(
+          feature.getGeometry().getCoordinates(),
+        ).to.have.ordered.deep.members([
+          [
+            [0, 0, 0],
+            [2, 0, 0],
+            [2, 2, 0],
+            [0, 2, 0],
+          ],
+        ]);
       });
 
       it('should ensure bbox, if moving top left vertex', async () => {
@@ -474,8 +561,16 @@ describe('EditGeometrySession', () => {
           feature: vertex,
           positionOrPixel: [-1, 2, 0],
         });
-        expect(feature.getGeometry().getCoordinates())
-          .to.have.ordered.deep.members([[[-1, 0, 0], [1, 0, 0], [1, 2, 0], [-1, 2, 0]]]);
+        expect(
+          feature.getGeometry().getCoordinates(),
+        ).to.have.ordered.deep.members([
+          [
+            [-1, 0, 0],
+            [1, 0, 0],
+            [1, 2, 0],
+            [-1, 2, 0],
+          ],
+        ]);
       });
 
       it('should prevent collapsing of the bbox', async () => {
@@ -506,13 +601,17 @@ describe('EditGeometrySession', () => {
         });
         const newVertexCoordinates = vertex.getGeometry().getCoordinates();
         expect(newVertexCoordinates).to.not.have.ordered.members([1, 1, 0]);
-        expect(newVertexCoordinates.map(c => Math.round(c))).to.have.ordered.members([1, 1, 0]);
+        expect(
+          newVertexCoordinates.map((c) => Math.round(c)),
+        ).to.have.ordered.members([1, 1, 0]);
       });
     });
 
     describe('unsupported geometries', () => {
       it('should not accept unsupported geometries', () => {
-        const complexFeature = new Feature({ geometry: new MultiPoint([[1, 1, 0]]) });
+        const complexFeature = new Feature({
+          geometry: new MultiPoint([[1, 1, 0]]),
+        });
         session.setFeature(complexFeature);
         expect(session.feature).to.be.null;
       });
@@ -520,7 +619,9 @@ describe('EditGeometrySession', () => {
 
     describe('unsetting invalid geometries', () => {
       it('should remove invalid geometries from layer', () => {
-        const invalidFeature = new Feature({ geometry: new LineString([[0, 0, 0]]) });
+        const invalidFeature = new Feature({
+          geometry: new LineString([[0, 0, 0]]),
+        });
         const otherFeature = new Feature({ geometry: new Point([0, 0, 0]) });
         layer.addFeatures([invalidFeature]);
         session.setFeature(invalidFeature);

@@ -1,5 +1,7 @@
 import proj4 from 'proj4';
-import Projection, { setDefaultProjectionOptions } from '../../../src/util/projection.js';
+import Projection, {
+  setDefaultProjectionOptions,
+} from '../../../src/util/projection.js';
 
 describe('Projection', () => {
   let sandbox;
@@ -8,7 +10,9 @@ describe('Projection', () => {
     sandbox = sinon.createSandbox();
   });
 
-  afterEach(() => { sandbox.restore(); });
+  afterEach(() => {
+    sandbox.restore();
+  });
   describe('constructor', () => {
     describe('should parse EPSG Code', () => {
       it('should handle epsg numbers', () => {
@@ -59,10 +63,7 @@ describe('Projection', () => {
       before(() => {
         epsg = 25832;
         proj4Option = '+proj=utm +zone=33 +ellps=GRS80 +units=m +no_defs';
-        alias = [
-          'testAlias',
-          'test2Alias',
-        ];
+        alias = ['testAlias', 'test2Alias'];
       });
 
       it('should add aliase to proj definitions', () => {
@@ -119,7 +120,8 @@ describe('Projection', () => {
     it('should return true on unknown projections which proj4 definitions', () => {
       const validate = Projection.validateOptions({
         epsg: 43857,
-        proj4: '+proj=utm +zone=32 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
+        proj4:
+          '+proj=utm +zone=32 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
       });
       expect(validate).to.be.true;
     });
@@ -193,7 +195,9 @@ describe('Projection', () => {
       });
 
       it('should configure alias', () => {
-        expect(outputConfig).to.have.property('alias').and.to.have.members(inputConfig.alias);
+        expect(outputConfig)
+          .to.have.property('alias')
+          .and.to.have.members(inputConfig.alias);
       });
     });
   });

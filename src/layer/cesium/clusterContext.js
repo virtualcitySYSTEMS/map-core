@@ -1,4 +1,8 @@
-import { removeFeatureFromMap, addPrimitiveToContext, removeArrayFromCollection } from './vectorContext.js';
+import {
+  removeFeatureFromMap,
+  addPrimitiveToContext,
+  removeArrayFromCollection,
+} from './vectorContext.js';
 
 /**
  * @class
@@ -39,7 +43,10 @@ class ClusterContext {
    */
   addBillboards(billboardOptions, feature, allowPicking) {
     addPrimitiveToContext(
-      billboardOptions.map(billboard => ({ billboard, position: billboard.position })),
+      billboardOptions.map((billboard) => ({
+        billboard,
+        position: billboard.position,
+      })),
       feature,
       allowPicking,
       this.entities,
@@ -54,7 +61,7 @@ class ClusterContext {
    */
   addLabels(labelOptions, feature, allowPicking) {
     addPrimitiveToContext(
-      labelOptions.map(label => ({ label, position: label.position })),
+      labelOptions.map((label) => ({ label, position: label.position })),
       feature,
       allowPicking,
       this.entities,

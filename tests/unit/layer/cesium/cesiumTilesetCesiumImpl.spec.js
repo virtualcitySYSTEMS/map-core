@@ -14,7 +14,11 @@ import CesiumTilesetLayer from '../../../../src/layer/cesiumTilesetLayer.js';
 import DeclarativeStyleItem from '../../../../src/style/declarativeStyleItem.js';
 import VcsApp from '../../../../src/vcsApp.js';
 import getDummyCesium3DTileset from './getDummyCesium3DTileset.js';
-import { createTilesetServer, setCesiumMap, createDummyCesium3DTileFeature } from '../../helpers/cesiumHelpers.js';
+import {
+  createTilesetServer,
+  setCesiumMap,
+  createDummyCesium3DTileFeature,
+} from '../../helpers/cesiumHelpers.js';
 import VectorStyleItem from '../../../../src/style/vectorStyleItem.js';
 import { cesiumTilesetLastUpdated } from '../../../../src/layer/cesium/cesiumTilesetCesiumImpl.js';
 import { vcsLayerName } from '../../../../src/layer/layerSymbols.js';
@@ -40,7 +44,9 @@ describe('CesiumTilesetCesiumImpl', () => {
 
   beforeEach(() => {
     createTilesetServer(sandbox);
-    cesiumTileset = new CesiumTilesetLayer({ url: 'http://test.com/tileset.json' });
+    cesiumTileset = new CesiumTilesetLayer({
+      url: 'http://test.com/tileset.json',
+    });
     cesiumTileset.setGlobalHider(new GlobalHider());
     [cesiumTilesetCesium] = cesiumTileset.getImplementationsForMap(cesiumMap);
   });
@@ -58,15 +64,23 @@ describe('CesiumTilesetCesiumImpl', () => {
     it('should set the split direction on the cesium3DTileset', async () => {
       await cesiumTilesetCesium.activate();
       cesiumTilesetCesium.updateSplitDirection(SplitDirection.LEFT);
-      expect(cesiumTilesetCesium.cesium3DTileset).to.have.property('splitDirection', SplitDirection.LEFT);
+      expect(cesiumTilesetCesium.cesium3DTileset).to.have.property(
+        'splitDirection',
+        SplitDirection.LEFT,
+      );
     });
   });
 
   describe('initialize', () => {
     it('creates a new cesium 3DTileset, adding vcsLayerName', async () => {
       await cesiumTilesetCesium.initialize();
-      expect(cesiumTilesetCesium).to.have.property('cesium3DTileset').and.to.be.an.instanceof(Cesium3DTileset);
-      expect(cesiumTilesetCesium.cesium3DTileset).to.have.property(vcsLayerName, cesiumTilesetCesium.name);
+      expect(cesiumTilesetCesium)
+        .to.have.property('cesium3DTileset')
+        .and.to.be.an.instanceof(Cesium3DTileset);
+      expect(cesiumTilesetCesium.cesium3DTileset).to.have.property(
+        vcsLayerName,
+        cesiumTilesetCesium.name,
+      );
     });
 
     it('adds an unload event listener, which removed the lastUpdated symbol', async () => {
@@ -82,13 +96,20 @@ describe('CesiumTilesetCesiumImpl', () => {
         colorBlendMode: Cesium3DTileColorBlendMode.REPLACE,
       });
       await cesiumTilesetCesium.initialize();
-      expect(cesiumTilesetCesium.cesium3DTileset.style).to.equal(cesiumTilesetCesium.style.cesiumStyle);
-      expect(cesiumTilesetCesium.cesium3DTileset.colorBlendMode).to.equal(Cesium3DTileColorBlendMode.REPLACE);
+      expect(cesiumTilesetCesium.cesium3DTileset.style).to.equal(
+        cesiumTilesetCesium.style.cesiumStyle,
+      );
+      expect(cesiumTilesetCesium.cesium3DTileset.colorBlendMode).to.equal(
+        Cesium3DTileColorBlendMode.REPLACE,
+      );
     });
 
     it('should add an changed handler to the style', async () => {
       await cesiumTilesetCesium.initialize();
-      const makeStyleDirty = sandbox.spy(cesiumTilesetCesium.cesium3DTileset, 'makeStyleDirty');
+      const makeStyleDirty = sandbox.spy(
+        cesiumTilesetCesium.cesium3DTileset,
+        'makeStyleDirty',
+      );
       cesiumTileset.style.styleChanged.raiseEvent();
       expect(makeStyleDirty).to.have.been.called;
     });
@@ -96,7 +117,9 @@ describe('CesiumTilesetCesiumImpl', () => {
     it('should update the split direction on initialize', async () => {
       cesiumTilesetCesium.splitDirection = SplitDirection.LEFT;
       await cesiumTilesetCesium.initialize();
-      expect(cesiumTilesetCesium.cesium3DTileset.splitDirection).to.equal(cesiumTilesetCesium.splitDirection);
+      expect(cesiumTilesetCesium.cesium3DTileset.splitDirection).to.equal(
+        cesiumTilesetCesium.splitDirection,
+      );
     });
 
     describe('setting of model matrix', () => {
@@ -109,16 +132,29 @@ describe('CesiumTilesetCesiumImpl', () => {
       it('should set a model matrix', async () => {
         cesiumTilesetCesium.modelMatrix = matrix;
         await cesiumTilesetCesium.initialize();
-        expect(Matrix4.equals(cesiumTilesetCesium.cesium3DTileset.modelMatrix, matrix)).to.be.true;
+        expect(
+          Matrix4.equals(
+            cesiumTilesetCesium.cesium3DTileset.modelMatrix,
+            matrix,
+          ),
+        ).to.be.true;
       });
 
       it('should calculate an offset', async () => {
         cesiumTilesetCesium.offset = [0, 0, 20];
         await cesiumTilesetCesium.initialize();
-        const expectedTransformation = Matrix4
-          .fromTranslation(new Cartesian3(11.842489861883223, 2.8160056717460975, 15.869012127630413));
-        const isEqual = Matrix4
-          .equalsEpsilon(cesiumTilesetCesium.cesium3DTileset.modelMatrix, expectedTransformation, CesiumMath.EPSILON6);
+        const expectedTransformation = Matrix4.fromTranslation(
+          new Cartesian3(
+            11.842489861883223,
+            2.8160056717460975,
+            15.869012127630413,
+          ),
+        );
+        const isEqual = Matrix4.equalsEpsilon(
+          cesiumTilesetCesium.cesium3DTileset.modelMatrix,
+          expectedTransformation,
+          CesiumMath.EPSILON6,
+        );
         expect(isEqual).to.be.true;
       });
 
@@ -126,7 +162,12 @@ describe('CesiumTilesetCesiumImpl', () => {
         cesiumTilesetCesium.offset = [0, 0, 20];
         cesiumTilesetCesium.modelMatrix = matrix;
         await cesiumTilesetCesium.initialize();
-        expect(Matrix4.equals(cesiumTilesetCesium.cesium3DTileset.modelMatrix, matrix)).to.be.true;
+        expect(
+          Matrix4.equals(
+            cesiumTilesetCesium.cesium3DTileset.modelMatrix,
+            matrix,
+          ),
+        ).to.be.true;
       });
     });
   });
@@ -154,7 +195,9 @@ describe('CesiumTilesetCesiumImpl', () => {
     let styleItem;
 
     before(() => {
-      styleItem = new DeclarativeStyleItem({ declarativeStyle: { show: false } });
+      styleItem = new DeclarativeStyleItem({
+        declarativeStyle: { show: false },
+      });
     });
 
     beforeEach(async () => {
@@ -163,7 +206,8 @@ describe('CesiumTilesetCesiumImpl', () => {
 
     it('should set style on the cesium tileset', () => {
       cesiumTilesetCesium.updateStyle(styleItem);
-      expect(cesiumTilesetCesium).to.have.property('cesium3DTileset')
+      expect(cesiumTilesetCesium)
+        .to.have.property('cesium3DTileset')
         .and.to.have.property('style')
         .and.to.have.property('style')
         .and.to.have.property('show', 'false');
@@ -173,7 +217,10 @@ describe('CesiumTilesetCesiumImpl', () => {
       const now = Date.now();
       sandbox.useFakeTimers(now);
       cesiumTilesetCesium.updateStyle(styleItem);
-      const makeStyleDirty = sandbox.spy(cesiumTilesetCesium.cesium3DTileset, 'makeStyleDirty');
+      const makeStyleDirty = sandbox.spy(
+        cesiumTilesetCesium.cesium3DTileset,
+        'makeStyleDirty',
+      );
       styleItem.styleChanged.raiseEvent();
 
       expect(cesiumTilesetCesium).to.have.property('_styleLastUpdated', now);
@@ -188,7 +235,9 @@ describe('CesiumTilesetCesiumImpl', () => {
     });
 
     it('should set style.colorBlendMode to the cesium 3DTileset.colorBlendMode', () => {
-      sandbox.stub(Cesium3DTileset.prototype, 'readyPromise').returns(Promise.resolve());
+      sandbox
+        .stub(Cesium3DTileset.prototype, 'readyPromise')
+        .returns(Promise.resolve());
       cesiumTilesetCesium.cesium3DTileset = getDummyCesium3DTileset();
       cesiumTilesetCesium.cesium3DTileset.extras._3DTILESDIFFUSE = true;
       const colorBlendStyle = new DeclarativeStyleItem({
@@ -197,12 +246,16 @@ describe('CesiumTilesetCesiumImpl', () => {
       });
       cesiumTilesetCesium.updateStyle(colorBlendStyle);
       return cesiumTilesetCesium.cesium3DTileset.readyPromise.then(() => {
-        expect(cesiumTilesetCesium.cesium3DTileset.colorBlendMode).to.equal(Cesium3DTileColorBlendMode.REPLACE);
+        expect(cesiumTilesetCesium.cesium3DTileset.colorBlendMode).to.equal(
+          Cesium3DTileColorBlendMode.REPLACE,
+        );
       });
     });
 
     it('should not set style.colorBlendMode to the cesium 3DTileset.colorBlendMode if the _3DTILESDIFFUSE is set', () => {
-      sandbox.stub(Cesium3DTileset.prototype, 'readyPromise').returns(Promise.resolve());
+      sandbox
+        .stub(Cesium3DTileset.prototype, 'readyPromise')
+        .returns(Promise.resolve());
       cesiumTilesetCesium.cesium3DTileset = getDummyCesium3DTileset();
       cesiumTilesetCesium.cesium3DTileset.extras._3DTILESDIFFUSE = false;
       const colorBlendStyle = new DeclarativeStyleItem({
@@ -211,7 +264,9 @@ describe('CesiumTilesetCesiumImpl', () => {
       });
       cesiumTilesetCesium.updateStyle(colorBlendStyle);
       return cesiumTilesetCesium.cesium3DTileset.readyPromise.then(() => {
-        expect(cesiumTilesetCesium.cesium3DTileset.colorBlendMode).to.equal(Cesium3DTileColorBlendMode.HIGHLIGHT);
+        expect(cesiumTilesetCesium.cesium3DTileset.colorBlendMode).to.equal(
+          Cesium3DTileColorBlendMode.HIGHLIGHT,
+        );
       });
     });
   });
@@ -234,7 +289,9 @@ describe('CesiumTilesetCesiumImpl', () => {
 
     it('should set the model matrix on the cesium3DTileset', () => {
       cesiumTilesetCesium.updateModelMatrix(matrix);
-      expect(Matrix4.equals(cesiumTilesetCesium.cesium3DTileset.modelMatrix, matrix)).to.be.true;
+      expect(
+        Matrix4.equals(cesiumTilesetCesium.cesium3DTileset.modelMatrix, matrix),
+      ).to.be.true;
     });
 
     describe('with undefined', () => {
@@ -249,16 +306,29 @@ describe('CesiumTilesetCesiumImpl', () => {
 
       it('should set the identity model matrix on the cesium3DTileset', () => {
         cesiumTilesetCesium.updateModelMatrix();
-        expect(Matrix4.equals(cesiumTilesetCesium.cesium3DTileset.modelMatrix, Matrix4.IDENTITY)).to.be.true;
+        expect(
+          Matrix4.equals(
+            cesiumTilesetCesium.cesium3DTileset.modelMatrix,
+            Matrix4.IDENTITY,
+          ),
+        ).to.be.true;
       });
 
       it('should set an offset, if one is defined', () => {
         cesiumTilesetCesium.offset = [0, 0, 20];
         cesiumTilesetCesium.updateModelMatrix();
-        const expectedTransformation = Matrix4
-          .fromTranslation(new Cartesian3(11.842489861883223, 2.8160056717460975, 15.869012127630413));
-        const isEqual = Matrix4
-          .equalsEpsilon(cesiumTilesetCesium.cesium3DTileset.modelMatrix, expectedTransformation, CesiumMath.EPSILON6);
+        const expectedTransformation = Matrix4.fromTranslation(
+          new Cartesian3(
+            11.842489861883223,
+            2.8160056717460975,
+            15.869012127630413,
+          ),
+        );
+        const isEqual = Matrix4.equalsEpsilon(
+          cesiumTilesetCesium.cesium3DTileset.modelMatrix,
+          expectedTransformation,
+          CesiumMath.EPSILON6,
+        );
         expect(isEqual).to.be.true;
       });
     });
@@ -281,11 +351,19 @@ describe('CesiumTilesetCesiumImpl', () => {
     });
 
     it('should set the model matrix on the cesium3DTileset', () => {
-      const expectedTransformation = Matrix4
-        .fromTranslation(new Cartesian3(11.842489861883223, 2.8160056717460975, 15.869012127630413));
+      const expectedTransformation = Matrix4.fromTranslation(
+        new Cartesian3(
+          11.842489861883223,
+          2.8160056717460975,
+          15.869012127630413,
+        ),
+      );
       cesiumTilesetCesium.updateOffset(offset);
-      const isEqual = Matrix4
-        .equalsEpsilon(cesiumTilesetCesium.cesium3DTileset.modelMatrix, expectedTransformation, CesiumMath.EPSILON6);
+      const isEqual = Matrix4.equalsEpsilon(
+        cesiumTilesetCesium.cesium3DTileset.modelMatrix,
+        expectedTransformation,
+        CesiumMath.EPSILON6,
+      );
       expect(isEqual).to.be.true;
     });
 
@@ -293,7 +371,9 @@ describe('CesiumTilesetCesiumImpl', () => {
       const matrix = Matrix4.fromUniformScale(3);
       cesiumTilesetCesium.updateModelMatrix(matrix);
       cesiumTilesetCesium.updateOffset(offset);
-      expect(Matrix4.equals(cesiumTilesetCesium.cesium3DTileset.modelMatrix, matrix)).to.be.true;
+      expect(
+        Matrix4.equals(cesiumTilesetCesium.cesium3DTileset.modelMatrix, matrix),
+      ).to.be.true;
     });
 
     describe('with undefined', () => {
@@ -308,7 +388,12 @@ describe('CesiumTilesetCesiumImpl', () => {
 
       it('should set the identity model matrix on the cesium3DTileset', () => {
         cesiumTilesetCesium.updateOffset();
-        expect(Matrix4.equals(cesiumTilesetCesium.cesium3DTileset.modelMatrix, Matrix4.IDENTITY)).to.be.true;
+        expect(
+          Matrix4.equals(
+            cesiumTilesetCesium.cesium3DTileset.modelMatrix,
+            Matrix4.IDENTITY,
+          ),
+        ).to.be.true;
       });
     });
   });
@@ -317,7 +402,10 @@ describe('CesiumTilesetCesiumImpl', () => {
     let header;
     let styleContent;
     before(() => {
-      header = { boundingVolume: { sphere: new BoundingSphere() }, geometricError: 24.4140625 };
+      header = {
+        boundingVolume: { sphere: new BoundingSphere() },
+        geometricError: 24.4140625,
+      };
     });
 
     beforeEach(async () => {
@@ -326,7 +414,11 @@ describe('CesiumTilesetCesiumImpl', () => {
     });
 
     it('should call styleContent for cesium3DTile', () => {
-      const tile = new Cesium3DTile(cesiumTilesetCesium.cesium3DTileset, null, header);
+      const tile = new Cesium3DTile(
+        cesiumTilesetCesium.cesium3DTileset,
+        null,
+        header,
+      );
       cesiumTilesetCesium.applyStyle(tile);
       expect(styleContent).to.have.been.calledWithExactly(tile.content);
     });
@@ -337,7 +429,10 @@ describe('CesiumTilesetCesiumImpl', () => {
       view.setUint32(Uint32Array.BYTES_PER_ELEMENT, 1, true);
 
       const content = new Composite3DTileContent(
-        cesiumTilesetCesium.cesium3DTileset, null, new Resource('http://localhost/test'), arrayBuffer,
+        cesiumTilesetCesium.cesium3DTileset,
+        null,
+        new Resource('http://localhost/test'),
+        arrayBuffer,
       );
       const innerContent = [{}, {}];
       content._contents = innerContent;
@@ -361,7 +456,9 @@ describe('CesiumTilesetCesiumImpl', () => {
 
       content = {
         featuresLength: 1,
-        getFeature() { return feature; },
+        getFeature() {
+          return feature;
+        },
       };
     });
 
@@ -426,21 +523,29 @@ describe('CesiumTilesetCesiumImpl', () => {
 
       it('should add the feature to the set', () => {
         cesiumTilesetCesium.styleContent(content);
-        expect(cesiumTileset.globalHider.hasFeature('test', feature)).to.be.true;
+        expect(cesiumTileset.globalHider.hasFeature('test', feature)).to.be
+          .true;
       });
     });
 
     describe('highlight objects', () => {
       it('sets the features color to the highlighted styles color', () => {
-        cesiumTilesetCesium.featureVisibility.highlight({ test: highlightStyle });
+        cesiumTilesetCesium.featureVisibility.highlight({
+          test: highlightStyle,
+        });
         cesiumTilesetCesium.styleContent(content);
         expect(feature.color).to.equal(highlightStyle.cesiumFillColor);
       });
 
       it('should add the feature to the set', () => {
-        cesiumTilesetCesium.featureVisibility.highlight({ test: highlightStyle });
+        cesiumTilesetCesium.featureVisibility.highlight({
+          test: highlightStyle,
+        });
         cesiumTilesetCesium.styleContent(content);
-        cesiumTilesetCesium.featureVisibility.hasHighlightFeature('test', feature);
+        cesiumTilesetCesium.featureVisibility.hasHighlightFeature(
+          'test',
+          feature,
+        );
       });
     });
 
@@ -449,7 +554,9 @@ describe('CesiumTilesetCesiumImpl', () => {
       feature.getProperty = () => false;
       content.url = 'test';
       cesiumTilesetCesium.styleContent(content);
-      expect(cesiumTilesetCesium.featureVisibility.hiddenObjects.test0).to.have.property('size', 1);
+      expect(
+        cesiumTilesetCesium.featureVisibility.hiddenObjects.test0,
+      ).to.have.property('size', 1);
     });
   });
 });

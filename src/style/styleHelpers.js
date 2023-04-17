@@ -108,7 +108,7 @@ export function parseColor(color, defaultColor) {
         .replace(/^rgba?\(([\s\S]+?)\)/, '$1')
         .replace(/\s/, '')
         .split(',')
-        .map(n => Number(n));
+        .map((n) => Number(n));
 
       if (output.length === 3) {
         output.push(1.0);
@@ -311,7 +311,7 @@ export function combineFont(fontObject) {
   ];
   let font = null;
   Object.entries(fontObject)
-    .filter(e => e[1] !== 'normal' && e[0] !== 'lineWeight')
+    .filter((e) => e[1] !== 'normal' && e[0] !== 'lineWeight')
     .sort((a, b) => {
       const indexA = order.indexOf(a[0]);
       const indexB = order.indexOf(b[0]);
@@ -344,7 +344,12 @@ export function combineFont(fontObject) {
  */
 export function colorInCanvas(canvasContext, color, size, optOrigin) {
   const origin = optOrigin || [0, 0];
-  const imgData = canvasContext.getImageData(origin[0], origin[1], size[0], size[1]);
+  const imgData = canvasContext.getImageData(
+    origin[0],
+    origin[1],
+    size[0],
+    size[1],
+  );
   const { data } = imgData;
   const [r, g, b] = color;
   const ii = data.length;
@@ -366,7 +371,9 @@ export function getFillOptions(item) {
   if (item.getFill()) {
     let color = item.getFill().getColor();
     try {
-      color = /** @type {import("ol/color").Color} */ (parseColor(color).slice());
+      color = /** @type {import("ol/color").Color} */ (
+        parseColor(color).slice()
+      );
     } catch (e) {
       getLogger().warning(e.message);
     }
@@ -383,7 +390,9 @@ export function getStrokeOptions(stroke) {
   let color = stroke.getColor();
   if (color) {
     try {
-      color = /** @type {import("ol/color").Color} */ (parseColor(color).slice());
+      color = /** @type {import("ol/color").Color} */ (
+        parseColor(color).slice()
+      );
     } catch (e) {
       getLogger().warning(e.message);
     }
@@ -425,7 +434,9 @@ export function getTextFromOptions(options) {
   if (textOptions.font && typeof textOptions.font !== 'string') {
     textOptions.font = combineFont(textOptions.font);
   }
-  return new OLText(/** @type {import("ol/style/Text").Options} */ (textOptions));
+  return new OLText(
+    /** @type {import("ol/style/Text").Options} */ (textOptions),
+  );
 }
 
 /**
@@ -499,7 +510,6 @@ export function getDefaultVectorStyleItemOptions() {
   };
 }
 
-
 /**
  * default Values @see https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/3d-tiles-next/Styling
  * @type {Object<string,string>}
@@ -518,7 +528,6 @@ const default3DTileStyleValues = {
   olcs_labelText: null,
   olcs_anchorLineColor: getStringColor(whiteColor),
 };
-
 
 /**
  * returns the cesium3DTilesetStyle Condition with the value as the given Attribute

@@ -46,7 +46,9 @@ export function getMaterialAppearance(scene, fill, feature) {
       image: canvas,
       anchor: SceneTransforms.wgs84ToDrawingBufferCoordinates(
         scene,
-        Cartesian3.fromDegreesArray(getBottomLeft(feature.getGeometry().getExtent()))[0],
+        Cartesian3.fromDegreesArray(
+          getBottomLeft(feature.getGeometry().getExtent()),
+        )[0],
       ),
     });
   } else {
@@ -67,13 +69,21 @@ export function getMaterialAppearance(scene, fill, feature) {
  * @param {import("@vcmap-cesium/engine").ClassificationType} classificationType
  * @returns {import("@vcmap-cesium/engine").ClassificationPrimitive}
  */
-export function createClassificationPrimitive(options, geometries, color, classificationType) {
-  const instances = geometries.map(geometry => new GeometryInstance({
-    geometry,
-    attributes: {
-      color: ColorGeometryInstanceAttribute.fromColor(color),
-    },
-  }));
+export function createClassificationPrimitive(
+  options,
+  geometries,
+  color,
+  classificationType,
+) {
+  const instances = geometries.map(
+    (geometry) =>
+      new GeometryInstance({
+        geometry,
+        attributes: {
+          color: ColorGeometryInstanceAttribute.fromColor(color),
+        },
+      }),
+  );
 
   const appearance = new PerInstanceColorAppearance({
     flat: false,
@@ -107,7 +117,15 @@ export function createClassificationPrimitive(options, geometries, color, classi
  * @param {boolean} groundPrimitive
  * @returns {import("@vcmap-cesium/engine").Primitive|import("@vcmap-cesium/engine").GroundPrimitive|import("@vcmap-cesium/engine").ClassificationPrimitive|null}
  */
-export function createPrimitive(scene, vectorProperties, allowPicking, feature, geometries, style, groundPrimitive) {
+export function createPrimitive(
+  scene,
+  vectorProperties,
+  allowPicking,
+  feature,
+  geometries,
+  style,
+  groundPrimitive,
+) {
   const classificationType = vectorProperties.getClassificationType(feature);
   const options = {
     shadows: ShadowMode.ENABLED,
@@ -120,11 +138,19 @@ export function createPrimitive(scene, vectorProperties, allowPicking, feature, 
       return null;
     }
     const color = getCesiumColor(style.getFill().getColor(), [0, 0, 0, 1]);
-    primitive = createClassificationPrimitive(options, geometries, color, classificationType);
+    primitive = createClassificationPrimitive(
+      options,
+      geometries,
+      color,
+      classificationType,
+    );
   } else {
-    const instances = geometries.map(geometry => new GeometryInstance({
-      geometry,
-    }));
+    const instances = geometries.map(
+      (geometry) =>
+        new GeometryInstance({
+          geometry,
+        }),
+    );
     options.geometryInstances = instances;
     const appearance = getMaterialAppearance(scene, style.getFill(), feature);
     options.appearance = appearance;
@@ -132,7 +158,8 @@ export function createPrimitive(scene, vectorProperties, allowPicking, feature, 
       if (!GroundPrimitive.isSupported(scene)) {
         return null;
       }
-      options.classificationType = classificationType || ClassificationType.TERRAIN;
+      options.classificationType =
+        classificationType || ClassificationType.TERRAIN;
       primitive = new GroundPrimitive(options);
     } else {
       primitive = new Primitive(options);
@@ -151,14 +178,24 @@ export function createPrimitive(scene, vectorProperties, allowPicking, feature, 
  * @param {import("ol/style/Style").default} style
  * @returns {import("@vcmap-cesium/engine").Primitive}
  */
-export function createOutlinePrimitive(scene, vectorProperties, allowPicking, feature, geometries, style) {
+export function createOutlinePrimitive(
+  scene,
+  vectorProperties,
+  allowPicking,
+  feature,
+  geometries,
+  style,
+) {
   const color = getCesiumColor(style.getStroke().getColor(), [0, 0, 0, 1]);
-  const instances = geometries.map(geometry => new GeometryInstance({
-    geometry,
-    attributes: {
-      color: ColorGeometryInstanceAttribute.fromColor(color),
-    },
-  }));
+  const instances = geometries.map(
+    (geometry) =>
+      new GeometryInstance({
+        geometry,
+        attributes: {
+          color: ColorGeometryInstanceAttribute.fromColor(color),
+        },
+      }),
+  );
   const appearance = new PerInstanceColorAppearance({
     flat: true,
     renderState: {
@@ -192,12 +229,21 @@ export function createOutlinePrimitive(scene, vectorProperties, allowPicking, fe
  * @returns {import("@vcmap-cesium/engine").Primitive|import("@vcmap-cesium/engine").GroundPolylinePrimitive|null}
  */
 export function createLinePrimitive(
-  scene, vectorProperties, allowPicking, feature, geometries, style, groundPrimitive,
+  scene,
+  vectorProperties,
+  allowPicking,
+  feature,
+  geometries,
+  style,
+  groundPrimitive,
 ) {
   const classificationType = vectorProperties.getClassificationType(feature);
-  const instances = geometries.map(geometry => new GeometryInstance({
-    geometry,
-  }));
+  const instances = geometries.map(
+    (geometry) =>
+      new GeometryInstance({
+        geometry,
+      }),
+  );
 
   const color = getCesiumColor(style.getStroke().getColor(), [0, 0, 0, 1]);
   let material;
@@ -235,7 +281,8 @@ export function createLinePrimitive(
     if (!GroundPolylinePrimitive.isSupported(scene)) {
       return null;
     }
-    options.classificationType = classificationType || ClassificationType.TERRAIN;
+    options.classificationType =
+      classificationType || ClassificationType.TERRAIN;
     primitive = new GroundPolylinePrimitive(options);
   } else {
     primitive = new Primitive(options);
@@ -256,7 +303,8 @@ export function getMinHeightOrGroundLevel(groundLevel, coordinates) {
   if (coordinates) {
     let minimumHeight = Infinity;
     for (let i = 0; i < coordinates.length; i++) {
-      minimumHeight = coordinates[i][2] < minimumHeight ? coordinates[i][2] : minimumHeight;
+      minimumHeight =
+        coordinates[i][2] < minimumHeight ? coordinates[i][2] : minimumHeight;
     }
     if (Number.isFinite(minimumHeight)) {
       return minimumHeight;
@@ -264,7 +312,6 @@ export function getMinHeightOrGroundLevel(groundLevel, coordinates) {
   }
   return 0;
 }
-
 
 /**
  * @param {number} extrudedHeight should be a number > 0
@@ -282,7 +329,9 @@ export function getStoreyHeights(extrudedHeight, storeyHeights, storeyNumber) {
       if (height < positiveExtrudedHeight) {
         fittedStoreyHeights.push(storeyHeights[i]);
       } else {
-        fittedStoreyHeights.push(storeyHeights[i] - (height - positiveExtrudedHeight));
+        fittedStoreyHeights.push(
+          storeyHeights[i] - (height - positiveExtrudedHeight),
+        );
         return fittedStoreyHeights;
       }
     }
@@ -292,7 +341,9 @@ export function getStoreyHeights(extrudedHeight, storeyHeights, storeyNumber) {
       if (height < positiveExtrudedHeight) {
         fittedStoreyHeights.push(lastStoreyHeight);
       } else {
-        fittedStoreyHeights.push(lastStoreyHeight - (height - positiveExtrudedHeight));
+        fittedStoreyHeights.push(
+          lastStoreyHeight - (height - positiveExtrudedHeight),
+        );
         return fittedStoreyHeights;
       }
     }
@@ -303,7 +354,6 @@ export function getStoreyHeights(extrudedHeight, storeyHeights, storeyNumber) {
   return [positiveExtrudedHeight];
 }
 
-
 /**
  * @param {number} storeys
  * @param {Array<number>} storeyHeights
@@ -313,7 +363,9 @@ export function validateStoreys(storeys, storeyHeights) {
     const missingStoreyHeights = storeys - storeyHeights.length;
     if (missingStoreyHeights > 0) {
       storeyHeights.push(
-        ...new Array(missingStoreyHeights).fill(storeyHeights[storeyHeights.length - 1]),
+        ...new Array(missingStoreyHeights).fill(
+          storeyHeights[storeyHeights.length - 1],
+        ),
       );
     } else if (missingStoreyHeights < 0) {
       storeyHeights.splice(storeyHeights.length + missingStoreyHeights);
@@ -332,7 +384,11 @@ export function validateStoreys(storeys, storeyHeights) {
  * @param {import("@vcmap/core").VectorProperties} vectorProperties
  * @returns {number}
  */
-export function getHeightAboveGround(feature, heightReference, vectorProperties) {
+export function getHeightAboveGround(
+  feature,
+  heightReference,
+  vectorProperties,
+) {
   if (heightReference === HeightReference.RELATIVE_TO_GROUND) {
     return vectorProperties.getHeightAboveGround(feature);
   }
@@ -347,8 +403,12 @@ export function getHeightAboveGround(feature, heightReference, vectorProperties)
  */
 export function getHeightInfo(feature, vectorProperties, coordinates) {
   const extrudedHeight = vectorProperties.getExtrudedHeight(feature);
-  const storeyNumber = Math.abs(parseInteger(feature.get('olcs_storeyNumber'), 0)); // legacy
-  const storeyHeight = Math.abs(parseNumber(feature.get('olcs_storeyHeight'), 0)); // legacy
+  const storeyNumber = Math.abs(
+    parseInteger(feature.get('olcs_storeyNumber'), 0),
+  ); // legacy
+  const storeyHeight = Math.abs(
+    parseNumber(feature.get('olcs_storeyHeight'), 0),
+  ); // legacy
   let storeysAboveGround = 0;
   let storeysBelowGround = 0;
   let storeyHeightsAboveGround = [];
@@ -358,44 +418,71 @@ export function getHeightInfo(feature, vectorProperties, coordinates) {
   if (storeyHeight || storeyNumber) {
     if (extrudedHeight && extrudedHeight > 0 && storeyHeight) {
       storeysAboveGround = Math.ceil(extrudedHeight / storeyHeight);
-      storeyHeightsAboveGround = new Array(storeysAboveGround - 1).fill(storeyHeight);
-      storeyHeightsAboveGround.push(extrudedHeight - (storeysAboveGround - 1) * storeyHeight);
+      storeyHeightsAboveGround = new Array(storeysAboveGround - 1).fill(
+        storeyHeight,
+      );
+      storeyHeightsAboveGround.push(
+        extrudedHeight - (storeysAboveGround - 1) * storeyHeight,
+      );
     } else if (extrudedHeight && extrudedHeight < 0 && storeyHeight) {
       storeysBelowGround = Math.ceil(Math.abs(extrudedHeight / storeyHeight));
-      storeyHeightsBelowGround = new Array(storeysBelowGround - 1).fill(storeyHeight);
-      storeyHeightsBelowGround.push(Math.abs(extrudedHeight) - (storeysBelowGround - 1) * storeyHeight);
+      storeyHeightsBelowGround = new Array(storeysBelowGround - 1).fill(
+        storeyHeight,
+      );
+      storeyHeightsBelowGround.push(
+        Math.abs(extrudedHeight) - (storeysBelowGround - 1) * storeyHeight,
+      );
     } else if (extrudedHeight && extrudedHeight > 0 && storeyNumber) {
       storeysAboveGround = storeyNumber;
       const currentStoreyHeight = Math.abs(extrudedHeight / storeyNumber);
-      storeyHeightsAboveGround = new Array(storeyNumber).fill(currentStoreyHeight);
+      storeyHeightsAboveGround = new Array(storeyNumber).fill(
+        currentStoreyHeight,
+      );
     } else if (extrudedHeight && extrudedHeight < 0 && storeyNumber) {
       storeysBelowGround = storeyNumber;
       const currentStoreyHeight = Math.abs(extrudedHeight / storeyNumber);
-      storeyHeightsBelowGround = new Array(storeyNumber).fill(currentStoreyHeight);
+      storeyHeightsBelowGround = new Array(storeyNumber).fill(
+        currentStoreyHeight,
+      );
     } else if (storeyNumber && storeyHeight) {
       storeysAboveGround = storeyNumber;
       storeyHeightsAboveGround = new Array(storeyNumber).fill(storeyHeight);
     } else if (storeyNumber && vectorProperties.storeyHeight) {
       storeysAboveGround = storeyNumber;
-      storeyHeightsAboveGround = new Array(storeyNumber).fill(vectorProperties.storeyHeight);
+      storeyHeightsAboveGround = new Array(storeyNumber).fill(
+        vectorProperties.storeyHeight,
+      );
     }
   }
 
   // no legacy case // can also be an invalid legacy case
-  if (!(storeysAboveGround && storeyHeightsAboveGround.length) &&
-    !(storeysBelowGround && storeyHeightsBelowGround.length)) {
+  if (
+    !(storeysAboveGround && storeyHeightsAboveGround.length) &&
+    !(storeysBelowGround && storeyHeightsBelowGround.length)
+  ) {
     storeysAboveGround = vectorProperties.getStoreysAboveGround(feature);
     storeysBelowGround = vectorProperties.getStoreysBelowGround(feature);
-    storeyHeightsAboveGround = vectorProperties.getStoreyHeightsAboveGround(feature);
-    storeyHeightsBelowGround = vectorProperties.getStoreyHeightsBelowGround(feature);
-    if (extrudedHeight) { // current Case only extrudedHeight
+    storeyHeightsAboveGround =
+      vectorProperties.getStoreyHeightsAboveGround(feature);
+    storeyHeightsBelowGround =
+      vectorProperties.getStoreyHeightsBelowGround(feature);
+    if (extrudedHeight) {
+      // current Case only extrudedHeight
       if (extrudedHeight > 0) {
-        storeyHeightsAboveGround = getStoreyHeights(extrudedHeight, storeyHeightsAboveGround, storeysAboveGround);
+        storeyHeightsAboveGround = getStoreyHeights(
+          extrudedHeight,
+          storeyHeightsAboveGround,
+          storeysAboveGround,
+        );
         storeysAboveGround = storeyHeightsAboveGround.length;
         storeyHeightsBelowGround = [];
         storeysBelowGround = 0;
       } else if (extrudedHeight < 0) {
-        storeyHeightsBelowGround = getStoreyHeights(extrudedHeight, storeyHeightsBelowGround, storeysBelowGround);
+        storeyHeightsBelowGround = getStoreyHeights(
+          extrudedHeight,
+          storeyHeightsBelowGround,
+          storeysBelowGround,
+        );
         storeysBelowGround = storeyHeightsBelowGround.length;
         storeyHeightsAboveGround = [];
         storeysAboveGround = 0;
@@ -410,18 +497,29 @@ export function getHeightInfo(feature, vectorProperties, coordinates) {
   const olcsGroundLevel = vectorProperties.getGroundLevel(feature);
 
   const heightReference = vectorProperties.getAltitudeMode(feature);
-  const heightAboveGroundAdjustment = getHeightAboveGround(feature, heightReference, vectorProperties);
+  const heightAboveGroundAdjustment = getHeightAboveGround(
+    feature,
+    heightReference,
+    vectorProperties,
+  );
 
-  const groundLevel = getMinHeightOrGroundLevel(olcsGroundLevel, coordinates) + heightAboveGroundAdjustment;
-  const hasZCoordinate = !!coordinates.find(value => value[2]);
+  const groundLevel =
+    getMinHeightOrGroundLevel(olcsGroundLevel, coordinates) +
+    heightAboveGroundAdjustment;
+  const hasZCoordinate = !!coordinates.find((value) => value[2]);
 
-  const extruded = !!(storeyHeightsAboveGround.length || storeyHeightsBelowGround.length || skirt);
-  const perPositionHeight = hasZCoordinate &&
+  const extruded = !!(
+    storeyHeightsAboveGround.length ||
+    storeyHeightsBelowGround.length ||
+    skirt
+  );
+  const perPositionHeight =
+    hasZCoordinate &&
     olcsGroundLevel == null &&
-    (
-      !extruded ||
-      (extruded && ((storeyHeightsAboveGround.length + storeyHeightsBelowGround.length) === 1))
-    );
+    (!extruded ||
+      (extruded &&
+        storeyHeightsAboveGround.length + storeyHeightsBelowGround.length ===
+          1));
 
   return {
     extruded,
@@ -474,7 +572,13 @@ export function getStoreyOptions(storeyHeights, initialHeight, down, result) {
  * @param {import("@vcmap/core").VectorContext|import("@vcmap/core").ClusterContext} context
  */
 export function addPrimitivesToContext(
-  feature, style, geometries, vectorProperties, scene, geometryFactory, context,
+  feature,
+  style,
+  geometries,
+  vectorProperties,
+  scene,
+  geometryFactory,
+  context,
 ) {
   // no geometries, so early escape
   if (!geometries.length) {
@@ -485,18 +589,32 @@ export function addPrimitivesToContext(
   const outlineGeometries = [];
   const lineGeometries = [];
 
-  const heightInfo = getHeightInfo(feature, vectorProperties, geometryFactory.getCoordinates(geometries));
+  const heightInfo = getHeightInfo(
+    feature,
+    vectorProperties,
+    geometryFactory.getCoordinates(geometries),
+  );
 
   const hasFill = !!style.getFill();
   const hasStroke = !!style.getStroke();
 
   let groundPrimitive = false;
 
-
   geometries.forEach((geometry) => {
-    const geometryOptions = geometryFactory.getGeometryOptions(geometry, heightInfo.heightAboveGroundAdjustment);
-    const storeyOptions = getStoreyOptions(heightInfo.storeyHeightsAboveGround, heightInfo.groundLevel);
-    getStoreyOptions(heightInfo.storeyHeightsBelowGround, heightInfo.groundLevel, true, storeyOptions);
+    const geometryOptions = geometryFactory.getGeometryOptions(
+      geometry,
+      heightInfo.heightAboveGroundAdjustment,
+    );
+    const storeyOptions = getStoreyOptions(
+      heightInfo.storeyHeightsAboveGround,
+      heightInfo.groundLevel,
+    );
+    getStoreyOptions(
+      heightInfo.storeyHeightsBelowGround,
+      heightInfo.groundLevel,
+      true,
+      storeyOptions,
+    );
 
     if (hasFill) {
       storeyOptions.forEach((options) => {
@@ -523,9 +641,13 @@ export function addPrimitivesToContext(
       });
     }
     if (heightInfo.skirt) {
-      const currentHeight = heightInfo.groundLevel - heightInfo.storeyHeightsBelowGround.reduce((a, b) => a + b, 0);
+      const currentHeight =
+        heightInfo.groundLevel -
+        heightInfo.storeyHeightsBelowGround.reduce((a, b) => a + b, 0);
       const extrudedHeight = currentHeight - heightInfo.skirt;
-      const skirtPositionHeight = heightInfo.storeyHeightsBelowGround.length ? false : heightInfo.perPositionHeight;
+      const skirtPositionHeight = heightInfo.storeyHeightsBelowGround.length
+        ? false
+        : heightInfo.perPositionHeight;
       if (hasFill) {
         fillGeometries.push(
           ...geometryFactory.createSolidGeometries(
@@ -553,15 +675,26 @@ export function addPrimitivesToContext(
         groundPrimitive = true;
       }
       if (hasFill) {
-        fillGeometries.push(...geometryFactory.createFillGeometries(
-          geometryOptions, heightInfo.groundLevel, heightInfo.perPositionHeight,
-        ));
+        fillGeometries.push(
+          ...geometryFactory.createFillGeometries(
+            geometryOptions,
+            heightInfo.groundLevel,
+            heightInfo.perPositionHeight,
+          ),
+        );
       }
       if (hasStroke) {
         if (heightInfo.heightReference === HeightReference.CLAMP_TO_GROUND) {
-          lineGeometries.push(...geometryFactory.createGroundLineGeometries(geometryOptions, style));
+          lineGeometries.push(
+            ...geometryFactory.createGroundLineGeometries(
+              geometryOptions,
+              style,
+            ),
+          );
         } else {
-          lineGeometries.push(...geometryFactory.createLineGeometries(geometryOptions, style));
+          lineGeometries.push(
+            ...geometryFactory.createLineGeometries(geometryOptions, style),
+          );
         }
       }
     }
@@ -570,24 +703,44 @@ export function addPrimitivesToContext(
   const allowPicking = vectorProperties.getAllowPicking(feature);
   const primitives = [];
   if (lineGeometries.length) {
-    const linePrimitive =
-      createLinePrimitive(scene, vectorProperties, allowPicking, feature, lineGeometries, style, groundPrimitive);
+    const linePrimitive = createLinePrimitive(
+      scene,
+      vectorProperties,
+      allowPicking,
+      feature,
+      lineGeometries,
+      style,
+      groundPrimitive,
+    );
     if (linePrimitive) {
       primitives.push(linePrimitive);
     }
   }
 
   if (fillGeometries.length) {
-    const fillPrimitive =
-      createPrimitive(scene, vectorProperties, allowPicking, feature, fillGeometries, style, groundPrimitive);
+    const fillPrimitive = createPrimitive(
+      scene,
+      vectorProperties,
+      allowPicking,
+      feature,
+      fillGeometries,
+      style,
+      groundPrimitive,
+    );
     if (fillPrimitive) {
       primitives.push(fillPrimitive);
     }
   }
 
   if (outlineGeometries.length) {
-    const outlinePrimitive =
-      createOutlinePrimitive(scene, vectorProperties, allowPicking, feature, outlineGeometries, style);
+    const outlinePrimitive = createOutlinePrimitive(
+      scene,
+      vectorProperties,
+      allowPicking,
+      feature,
+      outlineGeometries,
+      style,
+    );
     if (outlinePrimitive) {
       primitives.push(outlinePrimitive);
     }

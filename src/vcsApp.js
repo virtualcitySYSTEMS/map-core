@@ -27,7 +27,8 @@ import ObliqueMap from './map/obliqueMap.js';
 import OverrideClassRegistry from './overrideClassRegistry.js';
 import ClassRegistry, {
   categoryClassRegistry,
-  featureProviderClassRegistry, getObjectFromClassRegistry,
+  featureProviderClassRegistry,
+  getObjectFromClassRegistry,
   layerClassRegistry,
   mapClassRegistry,
   styleClassRegistry,
@@ -140,7 +141,7 @@ class VcsApp {
       new Collection(),
       getDynamicModuleId,
       null,
-      config => new ObliqueCollection(config),
+      (config) => new ObliqueCollection(config),
       ObliqueCollection,
     );
     /**
@@ -181,7 +182,9 @@ class VcsApp {
      * @type {OverrideClassRegistry<import("@vcmap/core").Category<Object|import("@vcmap/core").VcsObject>>}
      * @private
      */
-    this._categoryClassRegisty = new OverrideClassRegistry(categoryClassRegistry);
+    this._categoryClassRegisty = new OverrideClassRegistry(
+      categoryClassRegistry,
+    );
     /**
      * @type {CategoryCollection}
      * @private
@@ -201,17 +204,23 @@ class VcsApp {
      * @type {OverrideClassRegistry<*>}
      * @private
      */
-    this._categoryItemClassRegistry = new OverrideClassRegistry(new ClassRegistry());
+    this._categoryItemClassRegistry = new OverrideClassRegistry(
+      new ClassRegistry(),
+    );
     /**
      * @type {OverrideClassRegistry<import("@vcmap/core").TileProvider>}
      * @private
      */
-    this._tileProviderClassRegsitry = new OverrideClassRegistry(tileProviderClassRegistry);
+    this._tileProviderClassRegsitry = new OverrideClassRegistry(
+      tileProviderClassRegistry,
+    );
     /**
      * @type {OverrideClassRegistry<import("@vcmap/core").AbstractFeatureProvider>}
      * @private
      */
-    this._featureProviderClassRegsitry = new OverrideClassRegistry(featureProviderClassRegistry);
+    this._featureProviderClassRegsitry = new OverrideClassRegistry(
+      featureProviderClassRegistry,
+    );
 
     vcsApps.set(this._id, this);
   }
@@ -220,7 +229,9 @@ class VcsApp {
    * @type {string}
    * @readonly
    */
-  get id() { return this._id; }
+  get id() {
+    return this._id;
+  }
 
   /**
    * @returns {string}
@@ -238,7 +249,9 @@ class VcsApp {
     check(value, String);
 
     if (value.length !== 2) {
-      getLogger().warning('Provide a valid locale, for example "en", "de" with max. 2 letters');
+      getLogger().warning(
+        'Provide a valid locale, for example "en", "de" with max. 2 letters',
+      );
       return;
     }
     if (this._locale !== value) {
@@ -260,43 +273,57 @@ class VcsApp {
    * @type {OverrideMapCollection}
    * @readonly
    */
-  get maps() { return this._maps; }
+  get maps() {
+    return this._maps;
+  }
 
   /**
    * @type {OverrideLayerCollection}
    * @readonly
    */
-  get layers() { return this._layers; }
+  get layers() {
+    return this._layers;
+  }
 
   /**
    * @type {OverrideCollection<import("@vcmap/core").ObliqueCollection>}
    * @readonly
    */
-  get obliqueCollections() { return this._obliqueCollections; }
+  get obliqueCollections() {
+    return this._obliqueCollections;
+  }
 
   /**
    * @type {OverrideCollection<import("@vcmap/core").Viewpoint>}
    * @readonly
    */
-  get viewpoints() { return this._viewpoints; }
+  get viewpoints() {
+    return this._viewpoints;
+  }
 
   /**
    * @type {OverrideCollection<import("@vcmap/core").StyleItem>}
    * @readonly
    */
-  get styles() { return this._styles; }
+  get styles() {
+    return this._styles;
+  }
 
   /**
    * @type {CategoryCollection}
    * @readonly
    */
-  get categories() { return this._categories; }
+  get categories() {
+    return this._categories;
+  }
 
   /**
    * @type {VcsEvent<void>}
    * @readonly
    */
-  get destroyed() { return this._destroyed; }
+  get destroyed() {
+    return this._destroyed;
+  }
 
   /**
    * @type {Array<VcsModule>}
@@ -310,67 +337,89 @@ class VcsApp {
    * @returns {VcsEvent<VcsModule>}
    * @readonly
    */
-  get moduleAdded() { return this._modules.added; }
+  get moduleAdded() {
+    return this._modules.added;
+  }
 
   /**
    * @returns {VcsEvent<VcsModule>}
    * @readonly
    */
-  get moduleRemoved() { return this._modules.removed; }
+  get moduleRemoved() {
+    return this._modules.removed;
+  }
 
   /**
    * @type {string}
    * @readonly
    */
-  get dynamicModuleId() { return this._dynamicModule._id; }
+  get dynamicModuleId() {
+    return this._dynamicModule._id;
+  }
 
   /**
    * @type {VcsEvent<string>}
    * @readonly
    */
-  get dynamicModuleIdChanged() { return this._dynamicModuleIdChanged; }
+  get dynamicModuleIdChanged() {
+    return this._dynamicModuleIdChanged;
+  }
 
   /**
    * @type {OverrideClassRegistry<VcsMap>}
    * @readonly
    */
-  get mapClassRegistry() { return this._mapClassRegistry; }
+  get mapClassRegistry() {
+    return this._mapClassRegistry;
+  }
 
   /**
    * @type {OverrideClassRegistry<Layer>}
    * @readonly
    */
-  get layerClassRegistry() { return this._layerClassRegistry; }
+  get layerClassRegistry() {
+    return this._layerClassRegistry;
+  }
 
   /**
    * @type {OverrideClassRegistry<StyleItem>}
    * @readonly
    */
-  get styleClassRegistry() { return this._styleClassRegistry; }
+  get styleClassRegistry() {
+    return this._styleClassRegistry;
+  }
 
   /**
    * @type {OverrideClassRegistry<import("@vcmap/core").Category<Object|import("@vcmap/core").VcsObject>>}
    * @readonly
    */
-  get categoryClassRegistry() { return this._categoryClassRegisty; }
+  get categoryClassRegistry() {
+    return this._categoryClassRegisty;
+  }
 
   /**
    * @type {OverrideClassRegistry<*>}
    * @readonly
    */
-  get categoryItemClassRegistry() { return this._categoryItemClassRegistry; }
+  get categoryItemClassRegistry() {
+    return this._categoryItemClassRegistry;
+  }
 
   /**
    * @type {OverrideClassRegistry<import("@vcmap/core").TileProvider>}
    * @readonly
    */
-  get tileProviderClassRegistry() { return this._tileProviderClassRegsitry; }
+  get tileProviderClassRegistry() {
+    return this._tileProviderClassRegsitry;
+  }
 
   /**
    * @type {OverrideClassRegistry<import("@vcmap/core").AbstractFeatureProvider>}
    * @readonly
    */
-  get featureProviderClassRegistry() { return this._featureProviderClassRegsitry; }
+  get featureProviderClassRegistry() {
+    return this._featureProviderClassRegsitry;
+  }
 
   /**
    * @param {string} id
@@ -387,7 +436,8 @@ class VcsApp {
    */
   async _parseModule(module) {
     const { config } = module;
-    if (config.projection) { // XXX this needs fixing. this should be _projections_ and there should be a `defaultProjection`
+    if (config.projection) {
+      // XXX this needs fixing. this should be _projections_ and there should be a `defaultProjection`
       setDefaultProjectionOptions(config.projection);
     }
 
@@ -395,14 +445,19 @@ class VcsApp {
     await this._layers.parseItems(config.layers, module._id);
     // TODO add flights & ade here
 
-    await this._obliqueCollections.parseItems(config.obliqueCollections, module._id);
+    await this._obliqueCollections.parseItems(
+      config.obliqueCollections,
+      module._id,
+    );
     await this._viewpoints.parseItems(config.viewpoints, module._id);
     await this._maps.parseItems(config.maps, module._id);
 
     if (Array.isArray(config.categories)) {
-      await Promise.all((config.categories).map(async ({ name, items }) => {
-        await this._categories.parseCategoryItems(name, items, module._id);
-      }));
+      await Promise.all(
+        config.categories.map(async ({ name, items }) => {
+          await this._categories.parseCategoryItems(name, items, module._id);
+        }),
+      );
     }
   }
 
@@ -414,26 +469,30 @@ class VcsApp {
   async _setModuleState(module) {
     const { config } = module;
     [...this._layers]
-      .filter(l => l[moduleIdSymbol] === module._id)
+      .filter((l) => l[moduleIdSymbol] === module._id)
       .forEach((l) => {
         if (l.activeOnStartup) {
-          l.activate()
-            .catch((err) => {
-              getLogger().error(`Failed to activate active on startup layer ${l.name}`);
-              getLogger().error(err);
-              this._layers.remove(l);
-              l.destroy();
-            });
+          l.activate().catch((err) => {
+            getLogger().error(
+              `Failed to activate active on startup layer ${l.name}`,
+            );
+            getLogger().error(err);
+            this._layers.remove(l);
+            l.destroy();
+          });
         }
       });
 
-    const activeObliqueCollection = [...this._obliqueCollections]
-      .find(c => c[moduleIdSymbol] === module._id && c.activeOnStartup);
+    const activeObliqueCollection = [...this._obliqueCollections].find(
+      (c) => c[moduleIdSymbol] === module._id && c.activeOnStartup,
+    );
 
     if (activeObliqueCollection) {
       [...this._maps]
-        .filter(m => m instanceof ObliqueMap)
-        .forEach((m) => { /** @type {ObliqueMap} */ (m).setCollection(activeObliqueCollection); });
+        .filter((m) => m instanceof ObliqueMap)
+        .forEach((m) => {
+          /** @type {ObliqueMap} */ (m).setCollection(activeObliqueCollection);
+        });
     }
 
     if (config.startingMapName) {
@@ -443,7 +502,9 @@ class VcsApp {
     }
 
     if (config.startingViewpointName && this._maps.activeMap) {
-      const startViewpoint = this._viewpoints.getByKey(config.startingViewpointName);
+      const startViewpoint = this._viewpoints.getByKey(
+        config.startingViewpointName,
+      );
       if (startViewpoint) {
         await this._maps.activeMap.gotoViewpoint(startViewpoint);
       }
@@ -457,17 +518,16 @@ class VcsApp {
   addModule(module) {
     check(module, VcsModule);
 
-    this._moduleMutationPromise = this._moduleMutationPromise
-      .then(async () => {
-        if (this._modules.has(module)) {
-          getLogger().info(`module with id ${module._id} already loaded`);
-          return;
-        }
+    this._moduleMutationPromise = this._moduleMutationPromise.then(async () => {
+      if (this._modules.has(module)) {
+        getLogger().info(`module with id ${module._id} already loaded`);
+        return;
+      }
 
-        await this._parseModule(module);
-        await this._setModuleState(module);
-        this._modules.add(module);
-      });
+      await this._parseModule(module);
+      await this._setModuleState(module);
+      this._modules.add(module);
+    });
     return this._moduleMutationPromise;
   }
 
@@ -478,17 +538,20 @@ class VcsApp {
   serializeModule(moduleId) {
     check(moduleId, String);
     if (!this._modules.hasKey(moduleId)) {
-      throw new Error('VcsModule is not managed by this app, call add(module) before');
+      throw new Error(
+        'VcsModule is not managed by this app, call add(module) before',
+      );
     }
     const config = this._modules.getByKey(moduleId).toJSON();
     config.maps = this._maps.serializeModule(moduleId);
     config.layers = this._layers.serializeModule(moduleId);
-    config.obliqueCollections = this._obliqueCollections.serializeModule(moduleId);
+    config.obliqueCollections =
+      this._obliqueCollections.serializeModule(moduleId);
     config.viewpoints = this._viewpoints.serializeModule(moduleId);
     config.styles = this._styles.serializeModule(moduleId);
     config.categories = [...this._categories]
-      .map(c => c.serializeModule(moduleId))
-      .filter(c => !!c);
+      .map((c) => c.serializeModule(moduleId))
+      .filter((c) => !!c);
 
     return config;
   }
@@ -499,7 +562,9 @@ class VcsApp {
    */
   setDynamicModule(module) {
     if (!this._modules.has(module)) {
-      throw new Error('VcsModule is not managed by this app, call add(module) before');
+      throw new Error(
+        'VcsModule is not managed by this app, call add(module) before',
+      );
     }
     if (this._dynamicModule !== module) {
       this._dynamicModule = module;
@@ -534,16 +599,15 @@ class VcsApp {
    * @returns {Promise<void>}
    */
   removeModule(moduleId) {
-    this._moduleMutationPromise = this._moduleMutationPromise
-      .then(async () => {
-        const module = this._modules.getByKey(moduleId);
-        if (!module) {
-          getLogger().info(`module with id ${moduleId} has already been removed`);
-          return;
-        }
-        await this._removeModule(moduleId);
-        this._modules.remove(module);
-      });
+    this._moduleMutationPromise = this._moduleMutationPromise.then(async () => {
+      const module = this._modules.getByKey(moduleId);
+      if (!module) {
+        getLogger().info(`module with id ${moduleId} has already been removed`);
+        return;
+      }
+      await this._removeModule(moduleId);
+      this._modules.remove(module);
+    });
 
     return this._moduleMutationPromise;
   }

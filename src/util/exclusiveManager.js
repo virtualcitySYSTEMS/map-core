@@ -66,15 +66,18 @@ class ExclusiveManager {
   handleLayerActivated(layer) {
     const { exclusiveGroups } = layer;
     if (exclusiveGroups.length > 0) {
-      const splitDirection = /** @type {SplitLayer} */ (layer).splitDirection || 0;
+      const splitDirection =
+        /** @type {SplitLayer} */ (layer).splitDirection || 0;
       exclusiveGroups.forEach((group) => {
         if (this.layers.has(group)) {
           this.layers.get(group).forEach((groupLayer) => {
             if (
-              groupLayer !== layer && !(
+              groupLayer !== layer &&
+              !(
                 splitDirection &&
                 /** @type {SplitLayer} */ (groupLayer).splitDirection &&
-                /** @type {SplitLayer} */ (groupLayer).splitDirection !== splitDirection
+                /** @type {SplitLayer} */ (groupLayer).splitDirection !==
+                  splitDirection
               )
             ) {
               groupLayer.deactivate();

@@ -3,7 +3,10 @@ const exportedNames = new Set();
 const defaultExportModules = new Map();
 
 function setupDefaultExport(doclet) {
-  const { longname, meta: { filename, path } } = doclet;
+  const {
+    longname,
+    meta: { filename, path },
+  } = doclet;
   let modulePath = path.split(/[/\\]/);
   modulePath = modulePath.slice(modulePath.indexOf('src') + 1).join('/');
   modulePath = `${modulePath}/${filename.replace(/\.js$/, '')}`;
@@ -16,7 +19,8 @@ function rewriteModule(name) {
       if (
         importee.startsWith('ol') ||
         (importee.startsWith('@') && !importee.startsWith('@vcmap/core'))
-      ) { // XXX think of a better solution for this. maybe always use import... for this
+      ) {
+        // XXX think of a better solution for this. maybe always use import... for this
         return all;
       }
       return newName;
@@ -52,7 +56,9 @@ exports.handlers = {
   newDoclet(event) {
     const { doclet } = event;
     if (doclet.longname === 'module.exports') {
-      doclet.longname = doclet.meta.code.node.id ? doclet.meta.code.node.id.name : doclet.meta.code.node.name;
+      doclet.longname = doclet.meta.code.node.id
+        ? doclet.meta.code.node.id.name
+        : doclet.meta.code.node.name;
       exportedNames.add(doclet.longname);
     }
 
@@ -72,7 +78,7 @@ exports.handlers = {
   },
   parseComplete({ doclets }) {
     doclets
-      .filter(d => d.implicitPrivate)
+      .filter((d) => d.implicitPrivate)
       .forEach((d) => {
         if (
           exportedNames.has(d.longname.split(/[#~]/)[0]) ||
@@ -84,24 +90,27 @@ exports.handlers = {
         }
       });
 
-    const nonPrivate = doclets.filter(d => d.access !== 'private');
+    const nonPrivate = doclets.filter((d) => d.access !== 'private');
 
-    nonPrivate
-      .forEach((d) => {
-        if (d.augments) { // class
-          d.augments = d.augments.map(checkName);
-        }
-        if (d.params) { // function
-          d.params.forEach(checkParam);
-        }
-        if (d.returns) { // function
-          d.returns.forEach(checkParam);
-        }
-        if (d.properties) { // typedef
-          d.properties.forEach(checkParam);
-        }
+    nonPrivate.forEach((d) => {
+      if (d.augments) {
+        // class
+        d.augments = d.augments.map(checkName);
+      }
+      if (d.params) {
+        // function
+        d.params.forEach(checkParam);
+      }
+      if (d.returns) {
+        // function
+        d.returns.forEach(checkParam);
+      }
+      if (d.properties) {
+        // typedef
+        d.properties.forEach(checkParam);
+      }
 
-        checkParam(d); // constant & typedef & member
-      });
+      checkParam(d); // constant & typedef & member
+    });
   },
 };

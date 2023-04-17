@@ -1,6 +1,9 @@
 import { Circle } from 'ol/geom.js';
 import CreateCircleInteraction from '../../../../../src/util/editor/interactions/createCircleInteraction.js';
-import { alreadyTransformedToImage, actuallyIsCircle } from '../../../../../src/layer/vectorSymbols.js';
+import {
+  alreadyTransformedToImage,
+  actuallyIsCircle,
+} from '../../../../../src/layer/vectorSymbols.js';
 import { EventType } from '../../../../../src/interaction/interactionType.js';
 import OpenlayersMap from '../../../../../src/map/openlayersMap.js';
 import ObliqueMap from '../../../../../src/map/obliqueMap.js';

@@ -17,7 +17,8 @@ const typedefs = {};
 function rewriteModule(property) {
   return property
     .replace(/module:([^~]*)~([\w\d]+)/g, (all, importee, name) => {
-      if (importee.startsWith('ol') || importee.startsWith('@')) { // XXX think of a better solution for this. maybe always use import... for this
+      if (importee.startsWith('ol') || importee.startsWith('@')) {
+        // XXX think of a better solution for this. maybe always use import... for this
         return all;
       }
       if (typedefs[name]) {
@@ -47,9 +48,14 @@ function checkPropertyName(input) {
   if (/\b(Array|Object|Promise|Set|Map)/.test(property)) {
     property = property
       .replace(/(Array|Object|Promise|Set|Map)\.</g, '$1<')
-      .replace(/Object<(.*?),\s?([\w.]+|\{.*\}|\([\s\S]*?\)|\*|\w+<[\s\S]*?>)>/, (all, key, val) => {
-        return `{ [s: ${checkPropertyName(key)}]: ${checkPropertyName(val)}; }`;
-      })
+      .replace(
+        /Object<(.*?),\s?([\w.]+|\{.*\}|\([\s\S]*?\)|\*|\w+<[\s\S]*?>)>/,
+        (all, key, val) => {
+          return `{ [s: ${checkPropertyName(key)}]: ${checkPropertyName(
+            val,
+          )}; }`;
+        },
+      )
       .replace(/(vcs[.\w]+)(>|\||\)|,)/g, (all, match, ending) => {
         return `${checkPropertyName(match)}${ending}`;
       });
@@ -74,7 +80,9 @@ function getParamType(def) {
     case 'NameExpression':
       return checkPropertyName(def.name);
     case 'TypeApplication':
-      return `${def.expression.name}<${def.applications.map(getParamType).join('|')}>`;
+      return `${def.expression.name}<${def.applications
+        .map(getParamType)
+        .join('|')}>`;
     case 'TypeUnion':
       return `(${def.elements.map(getParamType).join('|')})`;
     default:
@@ -91,9 +99,11 @@ function getFunctionFromProperty(name, parsedType) {
   const params = parsedType.params
     .map((def, index) => {
       const paramType = getParamType(def);
-      return `p${index}${def.optional ? '?' : ''}: ${checkPropertyName(paramType)}`;
+      return `p${index}${def.optional ? '?' : ''}: ${checkPropertyName(
+        paramType,
+      )}`;
     })
-    .filter(p => p);
+    .filter((p) => p);
 
   let resultValue = 'void';
   if (parsedType.result) {
@@ -124,13 +134,9 @@ function writeTypeDefs() {
           name = `'${name}'`;
         }
         if (
-          (
-            prop.nullable !== false &&
-            (
-              (prop.type.names && prop.type.names.includes('undefined')) ||
-              prop.nullable
-            )
-          ) ||
+          (prop.nullable !== false &&
+            ((prop.type.names && prop.type.names.includes('undefined')) ||
+              prop.nullable)) ||
           prop.optional
         ) {
           name = `${name}?`;
@@ -139,7 +145,9 @@ function writeTypeDefs() {
         if (prop.type.names.length === 1 && prop.type.names[0] === 'function') {
           decleration += getFunctionFromProperty(name, prop.type.parsedType);
         } else {
-          decleration += `\t${name}: ${prop.type.names.map(checkPropertyName).join('|')}\n`;
+          decleration += `\t${name}: ${prop.type.names
+            .map(checkPropertyName)
+            .join('|')}\n`;
         }
       });
     }
@@ -195,19 +203,31 @@ exports.handlers = {
       .replace(/import\("ol"\)\.Feature/g, 'olFeature')
       .replace(/import\("ol\/Feature"\)\.default/g, 'olFeature');
 
-    const overrideCollectionContent = fs.readFileSync('./build/types/overrideCollection.d.ts');
-    const overrideCollectionTypes = overrideCollectionContent.toString()
-      .replace(/import.*;/, '')
-      .replace(/\b(Collection|VcsEvent|LayerCollection|Layer|MapCollection|VcsMap)\b/g, 'core.$1')
+    const overrideCollectionContent = fs.readFileSync(
+      './build/types/overrideCollection.d.ts',
+    );
+    const overrideCollectionTypes = overrideCollectionContent
+      .toString()
+      .replace(/import[^;]*;/, '')
+      .replace(
+        /\b(Collection|VcsEvent|LayerCollection|Layer|MapCollection|VcsMap)\b/g,
+        'core.$1',
+      )
       .replace(/export/g, '');
 
     const editorContent = fs.readFileSync('./build/types/editor.d.ts');
-    const editorTypes = editorContent.toString()
-      .replace(/import.*;/, '')
-      .replace(/\b(Collection|VcsEvent|LayerCollection|Layer|MapCollection|VcsMap)\b/g, 'core.$1')
+    const editorTypes = editorContent
+      .toString()
+      .replace(/import[^;]*;/, '')
+      .replace(
+        /\b(Collection|VcsEvent|LayerCollection|Layer|MapCollection|VcsMap|AbstractInteraction)\b/g,
+        'core.$1',
+      )
       .replace(/export/g, '');
 
-    fs.writeFileSync('./build/types/vcs.d.ts', `/**
+    fs.writeFileSync(
+      './build/types/vcs.d.ts',
+      `/**
  * This file is auto generated and to be used for typechecking only.
  * It allows for the use of global _typedefs_ from jsdocs.
  * Example: 
@@ -226,6 +246,7 @@ ${joinedTypeDefs}
 ${overrideCollectionTypes}
 ${editorTypes}
 }
-`);
+`,
+    );
   },
 };

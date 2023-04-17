@@ -20,7 +20,11 @@ describe('InsertVertexInteraction', () => {
 
     before(() => {
       feature = new Feature();
-      const geometry = new LineString([[0, 0, 0], [1, 1, 0], [2, 2, 0]]);
+      const geometry = new LineString([
+        [0, 0, 0],
+        [1, 1, 0],
+        [2, 2, 0],
+      ]);
       interaction = new InsertVertexInteraction(feature, geometry);
     });
 
@@ -34,7 +38,11 @@ describe('InsertVertexInteraction', () => {
       before(async () => {
         vertexInsertedListener = sinon.spy();
         interaction.vertexInserted.addEventListener(vertexInsertedListener);
-        await interaction.pipe({ feature, positionOrPixel: [0.5, 0.5, 0], map });
+        await interaction.pipe({
+          feature,
+          positionOrPixel: [0.5, 0.5, 0],
+          map,
+        });
       });
 
       after(() => {
@@ -47,8 +55,12 @@ describe('InsertVertexInteraction', () => {
 
       it('should create a vertex at the clicked location', () => {
         const [event] = vertexInsertedListener.getCall(0).args;
-        expect(event).to.have.property('vertex').and.to.be.an.instanceOf(Feature);
-        expect(event.vertex.getGeometry().getCoordinates()).to.have.ordered.members([0.5, 0.5, 0]);
+        expect(event)
+          .to.have.property('vertex')
+          .and.to.be.an.instanceOf(Feature);
+        expect(
+          event.vertex.getGeometry().getCoordinates(),
+        ).to.have.ordered.members([0.5, 0.5, 0]);
       });
 
       it('should return the index at which to insert the new index', () => {
@@ -76,8 +88,12 @@ describe('InsertVertexInteraction', () => {
 
       it('should create a vertex at the clicked location', () => {
         const [event] = vertexInsertedListener.getCall(0).args;
-        expect(event).to.have.property('vertex').and.to.be.an.instanceOf(Feature);
-        expect(event.vertex.getGeometry().getCoordinates()).to.have.ordered.members([1.25, 1.25, 0]);
+        expect(event)
+          .to.have.property('vertex')
+          .and.to.be.an.instanceOf(Feature);
+        expect(
+          event.vertex.getGeometry().getCoordinates(),
+        ).to.have.ordered.members([1.25, 1.25, 0]);
       });
 
       it('should return the index at which to insert the new index', () => {
@@ -111,7 +127,11 @@ describe('InsertVertexInteraction', () => {
 
     before(() => {
       feature = new Feature();
-      const geometry = new LinearRing([[0, 0, 0], [0, 1, 0], [1, 1, 0]]);
+      const geometry = new LinearRing([
+        [0, 0, 0],
+        [0, 1, 0],
+        [1, 1, 0],
+      ]);
       interaction = new InsertVertexInteraction(feature, geometry);
     });
 
@@ -138,8 +158,12 @@ describe('InsertVertexInteraction', () => {
 
       it('should create a vertex at the clicked location', () => {
         const [event] = vertexInsertedListener.getCall(0).args;
-        expect(event).to.have.property('vertex').and.to.be.an.instanceOf(Feature);
-        expect(event.vertex.getGeometry().getCoordinates()).to.have.ordered.members([0, 0.5, 0]);
+        expect(event)
+          .to.have.property('vertex')
+          .and.to.be.an.instanceOf(Feature);
+        expect(
+          event.vertex.getGeometry().getCoordinates(),
+        ).to.have.ordered.members([0, 0.5, 0]);
       });
 
       it('should return the index at which to insert the new index', () => {
@@ -167,8 +191,12 @@ describe('InsertVertexInteraction', () => {
 
       it('should create a vertex at the clicked location', () => {
         const [event] = vertexInsertedListener.getCall(0).args;
-        expect(event).to.have.property('vertex').and.to.be.an.instanceOf(Feature);
-        expect(event.vertex.getGeometry().getCoordinates()).to.have.ordered.members([1, 1, 0]);
+        expect(event)
+          .to.have.property('vertex')
+          .and.to.be.an.instanceOf(Feature);
+        expect(
+          event.vertex.getGeometry().getCoordinates(),
+        ).to.have.ordered.members([1, 1, 0]);
       });
 
       it('should return the index at which to insert the new index', () => {
@@ -201,7 +229,11 @@ describe('InsertVertexInteraction', () => {
       before(async () => {
         vertexInsertedListener = sinon.spy();
         interaction.vertexInserted.addEventListener(vertexInsertedListener);
-        await interaction.pipe({ feature, positionOrPixel: [0.5, 0.5, 0], map });
+        await interaction.pipe({
+          feature,
+          positionOrPixel: [0.5, 0.5, 0],
+          map,
+        });
       });
 
       after(() => {
@@ -214,8 +246,12 @@ describe('InsertVertexInteraction', () => {
 
       it('should create a vertex at the clicked location', () => {
         const [event] = vertexInsertedListener.getCall(0).args;
-        expect(event).to.have.property('vertex').and.to.be.an.instanceOf(Feature);
-        expect(event.vertex.getGeometry().getCoordinates()).to.have.ordered.members([0.5, 0.5, 0]);
+        expect(event)
+          .to.have.property('vertex')
+          .and.to.be.an.instanceOf(Feature);
+        expect(
+          event.vertex.getGeometry().getCoordinates(),
+        ).to.have.ordered.members([0.5, 0.5, 0]);
       });
 
       it('should return the index at which to insert the new index', () => {

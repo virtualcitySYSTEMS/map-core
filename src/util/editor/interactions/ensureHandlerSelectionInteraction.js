@@ -1,6 +1,6 @@
 import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import { EventType } from '../../../interaction/interactionType.js';
-import { handlerSymbol } from '../../../../index.js';
+import { handlerSymbol } from '../editorSymbols.js';
 import CesiumMap from '../../../map/cesiumMap.js';
 
 /**
@@ -33,7 +33,9 @@ class EnsureHandlerSelectionInteraction extends AbstractInteraction {
       !event.feature[handlerSymbol] &&
       event.map instanceof CesiumMap
     ) {
-      const handler = event.map.getScene().drillPick(event.windowPosition, undefined, 10, 10)
+      const handler = event.map
+        .getScene()
+        .drillPick(event.windowPosition, undefined, 10, 10)
         .find((p) => {
           return p?.primitive?.olFeature?.[handlerSymbol];
         });

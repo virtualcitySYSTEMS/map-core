@@ -3,11 +3,14 @@
 > Part of the [VC Map Project](https://github.com/virtualcitySYSTEMS/map-ui)
 
 ## Getting Started
+
 - clone Repo
 - npm install
 
 # Coding Conventions
+
 ### Exporting from a module
+
 - You should export all variables, functions, class etc. from a module
   which are required to use the API.
 - Make sure the names of exports have _meaning outside of their module_. E.g. a
@@ -19,14 +22,16 @@
    * Resets the foo. Exported for testing
    * @private
    */
-  export function resetFooInstance() {} 
+  export function resetFooInstance() {}
   ```
 
 ### TS & Typesafety
+
 - You should use the imported name in your doclets, e.g.:
+
   ```javascript
   import Vector from 'ol/source/Vector.js';
-  
+
   /**
    * @param {Vector} source
    * @returns {Array<import("ol").Feature<import("ol/geom/Geometry").default>>}
@@ -38,7 +43,8 @@
     return [];
   }
   ```
-- You should use dump file imports where possible (WebStorm cannot generate 
+
+- You should use dump file imports where possible (WebStorm cannot generate
   Intelisensse from default imports). Thus `@param {import("ol/Feature").default}`
   would become: `@param {import("ol").Feature}`.
 - You will need to import library own classes use `@param {import("@vcmap/core").CesiumMap}`.

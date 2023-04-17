@@ -102,8 +102,11 @@ class ObliqueProvider {
       if (this._postRenderListener) {
         unByKey(this._postRenderListener);
       }
-      // @ts-ignore
-      this._postRenderListener = this._olMap.on(this._mapChangeEvent, this._postRenderHandler.bind(this));
+      this._postRenderListener = this._olMap.on(
+        // @ts-ignore
+        this._mapChangeEvent,
+        this._postRenderHandler.bind(this),
+      );
     }
   }
 
@@ -128,14 +131,18 @@ class ObliqueProvider {
    * @type {import("@vcmap/core").ObliqueImage|null}
    * @api
    */
-  get currentImage() { return this._currentImage; }
+  get currentImage() {
+    return this._currentImage;
+  }
 
   /**
    * @readonly
    * @type {import("@vcmap/core").ObliqueCollection|null}
    * @api
    */
-  get collection() { return this._collection; }
+  get collection() {
+    return this._collection;
+  }
 
   /**
    * Set a new collection. The collection must be loaded.
@@ -162,14 +169,19 @@ class ObliqueProvider {
    */
   activate() {
     if (!this._collection) {
-      throw new Error('cannot activate provider without an oblique collection.');
+      throw new Error(
+        'cannot activate provider without an oblique collection.',
+      );
     }
     if (!this._active) {
       this._active = true;
       this._setCurrentView();
       if (!this._postRenderListener) {
-        // @ts-ignore
-        this._postRenderListener = this._olMap.on(this._mapChangeEvent, this._postRenderHandler.bind(this));
+        this._postRenderListener = this._olMap.on(
+          // @ts-ignore
+          this._mapChangeEvent,
+          this._postRenderHandler.bind(this),
+        );
       }
     }
   }
@@ -198,7 +210,10 @@ class ObliqueProvider {
    */
   _pullCoordinateToImageCenter(coord) {
     if (this.currentImage) {
-      const center = [this.currentImage.meta.size[0] / 2, this.currentImage.meta.size[1] / 2];
+      const center = [
+        this.currentImage.meta.size[0] / 2,
+        this.currentImage.meta.size[1] / 2,
+      ];
       if (coord[0] < center[0]) {
         coord[0] += 50;
       } else {
@@ -216,33 +231,46 @@ class ObliqueProvider {
 
   _postRenderHandler() {
     if (this._active && !this.loading && this.switchEnabled) {
-      const currentSize = this._currentImage ? this._currentImage.meta.size : null;
+      const currentSize = this._currentImage
+        ? this._currentImage.meta.size
+        : null;
       const imageCoordinates = this._olMap.getView().getCenter();
       const ratioLower = this.switchThreshold; // XXX this.switchThreshold;
       const ratioUpper = 1 - ratioLower;
       if (
-        !this._currentImage || (
-          imageCoordinates[0] / currentSize[0] > ratioLower &&
+        !this._currentImage ||
+        (imageCoordinates[0] / currentSize[0] > ratioLower &&
           imageCoordinates[0] / currentSize[0] < ratioUpper &&
           imageCoordinates[1] / currentSize[1] > ratioLower &&
-          imageCoordinates[1] / currentSize[1] < ratioUpper
-        )
+          imageCoordinates[1] / currentSize[1] < ratioUpper)
       ) {
         return;
       }
-      const pulledCenter = this._pullCoordinateToImageCenter(imageCoordinates.slice());
-      const worldCoords = this._currentImage.transformImage2RealWorld(pulledCenter).slice(0, 2);
-      const transform = getTransform(this._currentImage.meta.projection.proj, mercatorProjection.proj);
+      const pulledCenter = this._pullCoordinateToImageCenter(
+        imageCoordinates.slice(),
+      );
+      const worldCoords = this._currentImage
+        .transformImage2RealWorld(pulledCenter)
+        .slice(0, 2);
+      const transform = getTransform(
+        this._currentImage.meta.projection.proj,
+        mercatorProjection.proj,
+      );
       // error in TransformFunction type definition, remove undefined after openlayer fixed the type
       const mercatorCoords = transform(worldCoords, undefined, undefined);
       const buffer = 200; // XXX make configurable?
       const extent = [
-        mercatorCoords[0] - buffer, mercatorCoords[1] - buffer,
-        mercatorCoords[0] + buffer, mercatorCoords[1] + buffer,
+        mercatorCoords[0] - buffer,
+        mercatorCoords[1] - buffer,
+        mercatorCoords[0] + buffer,
+        mercatorCoords[1] + buffer,
       ];
       const dataState = this._collection.getDataStateForExtent(extent);
       if (dataState === DataState.READY) {
-        const image = this._collection.getImageForCoordinate(mercatorCoords, this._currentImage.viewDirection);
+        const image = this._collection.getImageForCoordinate(
+          mercatorCoords,
+          this._currentImage.viewDirection,
+        );
         if (image && image.name !== this._currentImage.name) {
           this._changeImage(image, imageCoordinates);
         }
@@ -254,7 +282,10 @@ class ObliqueProvider {
 
   async _changeImage(image, imageCoordinates) {
     this._loadingImage = image;
-    const { coords } = await transformFromImage(this._currentImage, imageCoordinates);
+    const { coords } = await transformFromImage(
+      this._currentImage,
+      imageCoordinates,
+    );
     if (this._loadingImage !== image) {
       return;
     }
@@ -273,7 +304,8 @@ class ObliqueProvider {
       throw new Error('cannot set an image without an oblique collection.');
     }
     this._loadingImage = image;
-    const isNewImage = !this._currentImage || this._currentImage.name !== image.name;
+    const isNewImage =
+      !this._currentImage || this._currentImage.name !== image.name;
     this._currentImage = image;
     if (isNewImage) {
       await image.calculateImageAverageHeight();
@@ -294,7 +326,10 @@ class ObliqueProvider {
     const previousView = this._currentView;
     this._currentView = olView;
     if (isNewImage) {
-      this._currentView.setImageName(this._currentImage.name, this._currentImage[isDefaultImageSymbol]);
+      this._currentView.setImageName(
+        this._currentImage.name,
+        this._currentImage[isDefaultImageSymbol],
+      );
     }
 
     const [width, height] = this._currentImage.meta.size;
@@ -305,7 +340,10 @@ class ObliqueProvider {
         mercatorProjection.proj,
         this._currentImage.meta.projection.proj,
       )(optCenter.slice(0, 2), undefined, undefined);
-      const imageCenter = this._currentImage.transformRealWorld2Image(worldCenter, optCenter[2]);
+      const imageCenter = this._currentImage.transformRealWorld2Image(
+        worldCenter,
+        optCenter[2],
+      );
       imageCenter[0] = withinBounds(imageCenter[0], width);
       imageCenter[1] = withinBounds(imageCenter[1], height);
       center = imageCenter;
@@ -336,7 +374,9 @@ class ObliqueProvider {
         }
 
         if (this._olMap.getView() && this._olMap.getView().getResolution()) {
-          this._currentView.view.setResolution(this._olMap.getView().getResolution());
+          this._currentView.view.setResolution(
+            this._olMap.getView().getResolution(),
+          );
         }
 
         this._olMap.setView(this._currentView.view);
@@ -370,7 +410,10 @@ class ObliqueProvider {
     const usedCoordinate = coordinate.slice();
     const coordinateHash = `${coordinate.join('')}${direction}${zoom}`;
     this._loadingImage = coordinateHash;
-    const image = await this._collection.loadImageForCoordinate(coordinate, direction);
+    const image = await this._collection.loadImageForCoordinate(
+      coordinate,
+      direction,
+    );
     if (image) {
       if (this._loadingImage !== coordinateHash) {
         return;
@@ -405,7 +448,10 @@ class ObliqueProvider {
   async getView() {
     if (this._currentView && this._currentImage) {
       const imageCoord = this._currentView.view.getCenter();
-      const { coords: center } = await transformFromImage(this._currentImage, imageCoord);
+      const { coords: center } = await transformFromImage(
+        this._currentImage,
+        imageCoord,
+      );
       return {
         center,
         direction: this._currentImage.viewDirection,
@@ -421,7 +467,9 @@ class ObliqueProvider {
    */
   destroy() {
     this._removeCurrentView();
-    [...this._viewCache.values()].forEach((ov) => { ov.destroy(); });
+    [...this._viewCache.values()].forEach((ov) => {
+      ov.destroy();
+    });
     this._viewCache.clear();
     this._loadingImage = null;
     if (this._postRenderListener) {

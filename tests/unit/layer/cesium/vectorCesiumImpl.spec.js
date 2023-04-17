@@ -27,20 +27,27 @@ describe('VectorCesiumImpl', () => {
 
   before(() => {
     sandbox = sinon.createSandbox();
-    feature = new Feature({ geometry: new LineString([[1, 1], [2, 2]]) });
+    feature = new Feature({
+      geometry: new LineString([
+        [1, 1],
+        [2, 2],
+      ]),
+    });
     pointFeature = new Feature({
       geometry: new Point([1, 1, 1]),
     });
 
-    pointFeature.setStyle(new Style({
-      image: new CircleStyle({
-        fill: new Fill({ color: '#000000' }),
-        radius: 1,
+    pointFeature.setStyle(
+      new Style({
+        image: new CircleStyle({
+          fill: new Fill({ color: '#000000' }),
+          radius: 1,
+        }),
+        text: new OLText({
+          text: 'test',
+        }),
       }),
-      text: new OLText({
-        text: 'test',
-      }),
-    }));
+    );
   });
 
   beforeEach(async () => {
@@ -66,7 +73,9 @@ describe('VectorCesiumImpl', () => {
 
     it('should add the _rootCollection to the scenes primitives', async () => {
       await vectorLayer.initialize();
-      expect(cesiumMap.getScene().primitives.contains(vectorLayer._rootCollection)).to.be.true;
+      expect(
+        cesiumMap.getScene().primitives.contains(vectorLayer._rootCollection),
+      ).to.be.true;
     });
 
     it('should add a listener to features added to the source, calling _addFeature', async () => {
@@ -95,7 +104,8 @@ describe('VectorCesiumImpl', () => {
     it('should add a listener to vector properties, calling refresh', async () => {
       const refresh = sandbox.spy(vectorLayer, 'refresh');
       await vectorLayer.initialize();
-      commonLayer.vectorProperties.allowPicking = !commonLayer.vectorProperties.allowPicking;
+      commonLayer.vectorProperties.allowPicking =
+        !commonLayer.vectorProperties.allowPicking;
       expect(refresh).to.have.been.called;
     });
 
@@ -108,7 +118,10 @@ describe('VectorCesiumImpl', () => {
     });
 
     it('should update the split direction on initialize', async () => {
-      const updateSplitDirection = sandbox.spy(vectorLayer, 'updateSplitDirection');
+      const updateSplitDirection = sandbox.spy(
+        vectorLayer,
+        'updateSplitDirection',
+      );
       vectorLayer.splitDirection = SplitDirection.LEFT;
       await vectorLayer.initialize();
       expect(updateSplitDirection).to.have.been.calledWith(SplitDirection.LEFT);
@@ -132,7 +145,8 @@ describe('VectorCesiumImpl', () => {
 
       it('should add a feature to the primitive map', () => {
         vectorLayer._addFeature(feature);
-        const primitiveArray = vectorLayer._context.featureToPrimitiveMap.get(feature);
+        const primitiveArray =
+          vectorLayer._context.featureToPrimitiveMap.get(feature);
         expect(primitiveArray).to.be.an('array').and.have.lengthOf(1);
       });
 
@@ -143,7 +157,8 @@ describe('VectorCesiumImpl', () => {
 
       it('should add a point feature to the billboards map', () => {
         vectorLayer._addFeature(pointFeature);
-        const billboardArray = vectorLayer._context.featureToBillboardMap.get(pointFeature);
+        const billboardArray =
+          vectorLayer._context.featureToBillboardMap.get(pointFeature);
         expect(billboardArray).to.be.an('array').and.have.lengthOf(1);
       });
 
@@ -154,7 +169,8 @@ describe('VectorCesiumImpl', () => {
 
       it('should add a labeled point feature to the labels map', () => {
         vectorLayer._addFeature(pointFeature);
-        const labelArray = vectorLayer._context.featureToLabelMap.get(pointFeature);
+        const labelArray =
+          vectorLayer._context.featureToLabelMap.get(pointFeature);
         expect(labelArray).to.be.an('array').and.have.lengthOf(1);
       });
     });
@@ -195,11 +211,14 @@ describe('VectorCesiumImpl', () => {
     });
 
     it('should add features which are part of the vectorLayer', () => {
-      const newFeature = new Feature({ geometry: feature.getGeometry().clone() });
+      const newFeature = new Feature({
+        geometry: feature.getGeometry().clone(),
+      });
       commonLayer.addFeatures([newFeature]);
       vectorLayer.refresh();
       expect(vectorLayer._context.primitives.length).to.equal(1);
-      expect(vectorLayer._context.featureToPrimitiveMap.has(newFeature)).to.be.true;
+      expect(vectorLayer._context.featureToPrimitiveMap.has(newFeature)).to.be
+        .true;
     });
   });
 
@@ -214,19 +233,22 @@ describe('VectorCesiumImpl', () => {
     it('should remove a feature from the primitives', () => {
       vectorLayer._removeFeature(feature);
       expect(vectorLayer._context.primitives.length).to.equal(0);
-      expect(vectorLayer._context.featureToPrimitiveMap.has(feature)).to.be.false;
+      expect(vectorLayer._context.featureToPrimitiveMap.has(feature)).to.be
+        .false;
     });
 
     it('should remove a point feature from the billboards', () => {
       vectorLayer._removeFeature(pointFeature);
       expect(vectorLayer._context.billboards.length).to.equal(0);
-      expect(vectorLayer._context.featureToBillboardMap.has(pointFeature)).to.be.false;
+      expect(vectorLayer._context.featureToBillboardMap.has(pointFeature)).to.be
+        .false;
     });
 
     it('should remove a labeled feature from the labels', () => {
       vectorLayer._removeFeature(pointFeature);
       expect(vectorLayer._context.labels.length).to.equal(0);
-      expect(vectorLayer._context.featureToLabelMap.has(pointFeature)).to.be.false;
+      expect(vectorLayer._context.featureToLabelMap.has(pointFeature)).to.be
+        .false;
     });
 
     it('should remove a feature from the cache', async () => {
@@ -247,8 +269,14 @@ describe('VectorCesiumImpl', () => {
     });
 
     it('should cache the features cesium resources, add the feature and clear the cache', () => {
-      const createFeatureCache = sandbox.spy(vectorLayer._context, 'createFeatureCache');
-      const clearFeatureCache = sandbox.spy(vectorLayer._context, 'clearFeatureCache');
+      const createFeatureCache = sandbox.spy(
+        vectorLayer._context,
+        'createFeatureCache',
+      );
+      const clearFeatureCache = sandbox.spy(
+        vectorLayer._context,
+        'clearFeatureCache',
+      );
       vectorLayer._featureChanged(feature);
       expect(createFeatureCache).to.have.been.calledWith(feature);
       expect(clearFeatureCache).to.have.been.called;
@@ -274,7 +302,8 @@ describe('VectorCesiumImpl', () => {
       vectorLayer._addFeature(feature);
       await vectorLayer.activate();
       expect(vectorLayer._context.primitives.length).to.equal(1);
-      expect(vectorLayer._context.featureToPrimitiveMap.has(feature)).to.be.true;
+      expect(vectorLayer._context.featureToPrimitiveMap.has(feature)).to.be
+        .true;
     });
   });
 
@@ -314,7 +343,9 @@ describe('VectorCesiumImpl', () => {
 
     it('should remove the _rootCollection from the scene', () => {
       vectorLayer.destroy();
-      expect(cesiumMap.getScene().primitives.contains(vectorLayer._rootCollection)).to.be.false;
+      expect(
+        cesiumMap.getScene().primitives.contains(vectorLayer._rootCollection),
+      ).to.be.false;
     });
 
     it('should destroy the _rootCollection', () => {
@@ -361,7 +392,8 @@ describe('VectorCesiumImpl', () => {
     it('should remove vectorPropertiesChanged listeners', () => {
       const refresh = sandbox.spy(vectorLayer, 'refresh');
       vectorLayer.destroy();
-      commonLayer.vectorProperties.allowPicking = !commonLayer.vectorProperties.allowPicking;
+      commonLayer.vectorProperties.allowPicking =
+        !commonLayer.vectorProperties.allowPicking;
       expect(refresh).to.not.have.been.called;
     });
   });

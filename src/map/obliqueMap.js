@@ -4,7 +4,10 @@ import { check } from '@vcsuite/check';
 import { parseBoolean, parseNumber } from '@vcsuite/parsers';
 import Extent from '../util/extent.js';
 import { mercatorProjection, wgs84Projection } from '../util/projection.js';
-import { getResolutionOptions, getZoom } from '../layer/oblique/obliqueHelpers.js';
+import {
+  getResolutionOptions,
+  getZoom,
+} from '../layer/oblique/obliqueHelpers.js';
 import Viewpoint from '../util/viewpoint.js';
 import BaseOLMap from './baseOLMap.js';
 import VcsMap from './vcsMap.js';
@@ -65,11 +68,7 @@ export function getViewDirectionFromViewpoint(viewpoint) {
  */
 export function getMercatorViewpointCenter(viewpoint) {
   const gpWGS84 = viewpoint.groundPosition || viewpoint.cameraPosition;
-  return transform(
-    gpWGS84,
-    wgs84Projection.proj,
-    mercatorProjection.proj,
-  );
+  return transform(gpWGS84, wgs84Projection.proj, mercatorProjection.proj);
 }
 
 /**
@@ -80,7 +79,9 @@ export function getMercatorViewpointCenter(viewpoint) {
  * @api stable
  */
 class ObliqueMap extends BaseOLMap {
-  static get className() { return 'ObliqueMap'; }
+  static get className() {
+    return 'ObliqueMap';
+  }
 
   /**
    * @returns {ObliqueOptions}
@@ -110,7 +111,10 @@ class ObliqueMap extends BaseOLMap {
     this._mapChangeEvent = options.changeOnMoveEnd ? 'moveend' : 'postrender';
 
     /** @type {number} */
-    this._switchThreshold = parseNumber(options.switchThreshold, defaultOptions.switchThreshold);
+    this._switchThreshold = parseNumber(
+      options.switchThreshold,
+      defaultOptions.switchThreshold,
+    );
     if (this._switchThreshold > 1) {
       this._switchThreshold = 0.2;
     } else if (this._switchThreshold < 0) {
@@ -121,7 +125,10 @@ class ObliqueMap extends BaseOLMap {
      * @type {boolean}
      * @private
      */
-    this._switchEnabled = parseBoolean(options.switchOnEdge, defaultOptions.switchOnEdge);
+    this._switchEnabled = parseBoolean(
+      options.switchOnEdge,
+      defaultOptions.switchOnEdge,
+    );
 
     /**
      * An event raise, when the collection changes. Is passed the collection as its only argument.
@@ -185,18 +192,12 @@ class ObliqueMap extends BaseOLMap {
   }
 
   /**
-   * @type {string}
-   */
-  get mapChangeEvent() {
-    return this._mapChangeEvent;
-  }
-
-  /**
    * @returns {Promise<void>}
    */
   async initialize() {
     if (!this.initializedPromise) {
-      this.initializedPromise = super.initialize()
+      this.initializedPromise = super
+        .initialize()
         .then(async () => {
           this._obliqueProvider = new ObliqueProvider(this.olMap);
           this.mapChangeEvent = this._mapChangeEvent;
@@ -222,6 +223,7 @@ class ObliqueMap extends BaseOLMap {
    */
   set mapChangeEvent(eventType) {
     check(eventType, String);
+
     this._mapChangeEvent = eventType;
     if (this._obliqueProvider) {
       this._obliqueProvider.mapChangeEvent = eventType;
@@ -229,11 +231,20 @@ class ObliqueMap extends BaseOLMap {
   }
 
   /**
+   * @type {string}
+   */
+  get mapChangeEvent() {
+    return this._mapChangeEvent;
+  }
+
+  /**
    * @type {ObliqueCollection}
    * @readonly
    * @api
    */
-  get collection() { return this._obliqueProvider.collection; }
+  get collection() {
+    return this._obliqueProvider.collection;
+  }
 
   /**
    * @type {import("@vcmap/core").VcsEvent<import("@vcmap/core").ObliqueImage>}
@@ -263,7 +274,10 @@ class ObliqueMap extends BaseOLMap {
     if (this.collection) {
       const viewDirection = getViewDirectionFromViewpoint(viewpoint);
       const mercatorCoordinates = getMercatorViewpointCenter(viewpoint);
-      return this.collection.hasImageAtCoordinate(mercatorCoordinates, viewDirection);
+      return this.collection.hasImageAtCoordinate(
+        mercatorCoordinates,
+        viewDirection,
+      );
     }
     return false;
   }
@@ -287,12 +301,18 @@ class ObliqueMap extends BaseOLMap {
     if (image) {
       const coords = boundingExtent(image.groundCoordinates);
       return new Extent({
-        coordinates: transformExtent(coords, image.meta.projection.proj, mercatorProjection.proj),
+        coordinates: transformExtent(
+          coords,
+          image.meta.projection.proj,
+          mercatorProjection.proj,
+        ),
         projection: mercatorProjection.toJSON(),
       });
     }
     return new Extent({
-      coordinates: [-18924313.4349, -15538711.0963, 18924313.4349, 15538711.0963],
+      coordinates: [
+        -18924313.4349, -15538711.0963, 18924313.4349, 15538711.0963,
+      ],
       projection: mercatorProjection.toJSON(),
     });
   }
@@ -338,11 +358,12 @@ class ObliqueMap extends BaseOLMap {
   async _setCollection(obliqueCollection, viewpoint) {
     this._loadingCollection = obliqueCollection;
     this._activeCollectionDestroyedListener();
-    this._activeCollectionDestroyedListener = obliqueCollection.destroyed.addEventListener(() => {
-      this._setCollection(defaultCollection);
-    });
+    this._activeCollectionDestroyedListener =
+      obliqueCollection.destroyed.addEventListener(() => {
+        this._setCollection(defaultCollection);
+      });
     await obliqueCollection.load();
-    const vp = viewpoint || await this.getViewpoint();
+    const vp = viewpoint || (await this.getViewpoint());
     if (this._loadingCollection !== obliqueCollection) {
       return;
     }
@@ -387,7 +408,11 @@ class ObliqueMap extends BaseOLMap {
     }
 
     const transformationOptions = { dataProjection: wgs84Projection };
-    const { coords } = await transformFromImage(image, viewCenter, transformationOptions);
+    const { coords } = await transformFromImage(
+      image,
+      viewCenter,
+      transformationOptions,
+    );
     return this._computeViewpointInternal(coords);
   }
 
@@ -406,11 +431,21 @@ class ObliqueMap extends BaseOLMap {
       return null;
     }
 
-    const gpInternalProjection = image.transformImage2RealWorld(gpImageCoordinates, image.averageHeight);
+    const gpInternalProjection = image.transformImage2RealWorld(
+      gpImageCoordinates,
+      image.averageHeight,
+    );
 
-    const transfrom = getTransform(image.meta.projection.proj, wgs84Projection.proj);
+    const transfrom = getTransform(
+      image.meta.projection.proj,
+      wgs84Projection.proj,
+    );
     // getText can return a rich Text Array<string> We do not support this at the moment.
-    const gpWGS84 = transfrom(gpInternalProjection.slice(0, 2), undefined, undefined);
+    const gpWGS84 = transfrom(
+      gpInternalProjection.slice(0, 2),
+      undefined,
+      undefined,
+    );
     return this._computeViewpointInternal(gpWGS84);
   }
 
@@ -421,13 +456,16 @@ class ObliqueMap extends BaseOLMap {
    */
   _computeViewpointInternal(groundPosition) {
     const image = this.currentImage;
-    const { size, fovy, metersPerUnit } = getResolutionOptions(this.olMap, image);
+    const { size, fovy, metersPerUnit } = getResolutionOptions(
+      this.olMap,
+      image,
+    );
 
     const view = this.olMap.getView();
     const resolution = view.getResolution() || 1;
     const visibleMapUnits = resolution * size.height;
     const visibleMeters = visibleMapUnits * metersPerUnit;
-    const height = Math.abs((visibleMeters / 2) / Math.tan(fovy / 2));
+    const height = Math.abs(visibleMeters / 2 / Math.tan(fovy / 2));
 
     const avgHeight = groundPosition[2] || image.averageHeight;
     const cameraHeight = height + avgHeight;
@@ -448,7 +486,11 @@ class ObliqueMap extends BaseOLMap {
    * @inheritDoc
    */
   async gotoViewpoint(viewpoint) {
-    if (this.movementDisabled || !this._obliqueProvider || !viewpoint.isValid()) {
+    if (
+      this.movementDisabled ||
+      !this._obliqueProvider ||
+      !viewpoint.isValid()
+    ) {
       return;
     }
 
@@ -457,7 +499,11 @@ class ObliqueMap extends BaseOLMap {
     const { distance } = viewpoint;
     await this._obliqueProvider.setView(mercatorCoordinates, viewDirection);
     if (this._obliqueProvider.currentImage) {
-      const zoom = getZoom(this.olMap, this._obliqueProvider.currentImage, distance);
+      const zoom = getZoom(
+        this.olMap,
+        this._obliqueProvider.currentImage,
+        distance,
+      );
       this.olMap.getView().setZoom(zoom);
     }
   }
@@ -477,7 +523,11 @@ class ObliqueMap extends BaseOLMap {
     const bl = image.transformImage2RealWorld([extent[0], extent[1]]);
     const ur = image.transformImage2RealWorld([extent[2], extent[3]]);
     const bbox = [bl[0], bl[1], ur[0], ur[1]];
-    const transformedBbox = transformExtent(bbox, image.meta.projection.proj, wgs84Projection.proj);
+    const transformedBbox = transformExtent(
+      bbox,
+      image.meta.projection.proj,
+      wgs84Projection.proj,
+    );
     return containsXY(transformedBbox, coords[0], coords[1]);
   }
 

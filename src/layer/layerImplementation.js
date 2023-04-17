@@ -10,7 +10,9 @@ import LayerState from './layerState.js';
  * @template {import("@vcmap/core").VcsMap} T
  */
 class LayerImplementation extends VcsObject {
-  static get className() { return 'LayerImplementation'; }
+  static get className() {
+    return 'LayerImplementation';
+  }
 
   /**
    * @param {T} map
@@ -42,19 +44,25 @@ class LayerImplementation extends VcsObject {
    * @type {boolean}
    * @readonly
    */
-  get initialized() { return this._initialized; }
+  get initialized() {
+    return this._initialized;
+  }
 
   /**
    * @type {boolean}
    * @api
    */
-  get active() { return this._state === LayerState.ACTIVE; }
+  get active() {
+    return this._state === LayerState.ACTIVE;
+  }
 
   /**
    * @type {boolean}
    * @api
    */
-  get loading() { return this._state === LayerState.LOADING; }
+  get loading() {
+    return this._state === LayerState.LOADING;
+  }
 
   /**
    * interface to initialize this implementation, is used to setup elements which have to be created only once.

@@ -1,5 +1,9 @@
 import AbstractInteraction from './abstractInteraction.js';
-import { EventType, ModificationKeyType, PointerKeyType } from './interactionType.js';
+import {
+  EventType,
+  ModificationKeyType,
+  PointerKeyType,
+} from './interactionType.js';
 
 /**
  * @class
@@ -20,16 +24,27 @@ class FeatureProviderInteraction extends AbstractInteraction {
   // eslint-disable-next-line class-methods-use-this
   async pipe(event) {
     if (!event.feature) {
-      const layersWithProvider = [...event.map.layerCollection]
-        .filter((l) => {
-          return l.featureProvider && l.active && l.isSupported(event.map) && l.featureProvider.isSupported(event.map);
-        });
+      const layersWithProvider = [...event.map.layerCollection].filter((l) => {
+        return (
+          l.featureProvider &&
+          l.active &&
+          l.isSupported(event.map) &&
+          l.featureProvider.isSupported(event.map)
+        );
+      });
 
       if (layersWithProvider.length > 0) {
         const resolution = event.map.getCurrentResolution(event.position);
-        const features = (await Promise
-          .all(layersWithProvider.map(l => l.featureProvider.getFeaturesByCoordinate(event.position, resolution))))
-          .flat();
+        const features = (
+          await Promise.all(
+            layersWithProvider.map((l) =>
+              l.featureProvider.getFeaturesByCoordinate(
+                event.position,
+                resolution,
+              ),
+            ),
+          )
+        ).flat();
 
         if (features.length > 0) {
           event.feature = features[0];

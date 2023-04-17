@@ -1,7 +1,21 @@
-import { SplitDirection, WebMercatorTilingScheme, GeographicTilingScheme, Cartographic } from '@vcmap-cesium/engine';
-import { getBottomLeft, getBottomRight, getTopLeft, getTopRight } from 'ol/extent.js';
+import {
+  SplitDirection,
+  WebMercatorTilingScheme,
+  GeographicTilingScheme,
+  Cartographic,
+} from '@vcmap-cesium/engine';
+import {
+  getBottomLeft,
+  getBottomRight,
+  getTopLeft,
+  getTopRight,
+} from 'ol/extent.js';
 
-import { parseInteger, parseNumberRange, parseEnumValue } from '@vcsuite/parsers';
+import {
+  parseInteger,
+  parseNumberRange,
+  parseEnumValue,
+} from '@vcsuite/parsers';
 import { wgs84Projection } from '../util/projection.js';
 import Layer from './layer.js';
 import VcsEvent from '../vcsEvent.js';
@@ -54,11 +68,19 @@ export const TilingScheme = {
  */
 export function getTilingScheme(layerOptions) {
   const tilingSchemeOptions = {};
-  if (layerOptions.numberOfLevelZeroTilesX && layerOptions.numberOfLevelZeroTilesX > 1) {
-    tilingSchemeOptions.numberOfLevelZeroTilesX = layerOptions.numberOfLevelZeroTilesX;
+  if (
+    layerOptions.numberOfLevelZeroTilesX &&
+    layerOptions.numberOfLevelZeroTilesX > 1
+  ) {
+    tilingSchemeOptions.numberOfLevelZeroTilesX =
+      layerOptions.numberOfLevelZeroTilesX;
   }
-  if (layerOptions.numberOfLevelZeroTilesY && layerOptions.numberOfLevelZeroTilesY > 1) {
-    tilingSchemeOptions.numberOfLevelZeroTilesY = layerOptions.numberOfLevelZeroTilesY;
+  if (
+    layerOptions.numberOfLevelZeroTilesY &&
+    layerOptions.numberOfLevelZeroTilesY > 1
+  ) {
+    tilingSchemeOptions.numberOfLevelZeroTilesY =
+      layerOptions.numberOfLevelZeroTilesY;
   }
   if (layerOptions.tilingSchema === TilingScheme.MERCATOR) {
     return new WebMercatorTilingScheme(tilingSchemeOptions);
@@ -73,7 +95,12 @@ export function getTilingScheme(layerOptions) {
  * @param {number} [minLevel=0]
  * @returns {number}
  */
-export function calculateMinLevel(extent, tilingScheme, maxLevel, minLevel = 0) {
+export function calculateMinLevel(
+  extent,
+  tilingScheme,
+  maxLevel,
+  minLevel = 0,
+) {
   if (!extent.isValid()) {
     return minLevel;
   }
@@ -90,11 +117,15 @@ export function calculateMinLevel(extent, tilingScheme, maxLevel, minLevel = 0) 
     getTopRight(wgs84Extent),
     getTopLeft(wgs84Extent),
   ];
-  const extentCoords = olCoords.map(coord => Cartographic.fromDegrees(coord[0], coord[1]));
+  const extentCoords = olCoords.map((coord) =>
+    Cartographic.fromDegrees(coord[0], coord[1]),
+  );
   let usedMinLevel = minLevel;
   while (usedMinLevel < maxLevel) {
     // eslint-disable-next-line no-loop-func
-    const tileCoords = extentCoords.map(position => tilingScheme.positionToTileXY(position, usedMinLevel));
+    const tileCoords = extentCoords.map((position) =>
+      tilingScheme.positionToTileXY(position, usedMinLevel),
+    );
     const distances = [];
     distances.push(Math.abs(tileCoords[0].x - tileCoords[1].x));
     distances.push(Math.abs(tileCoords[0].y - tileCoords[3].y));
@@ -116,7 +147,9 @@ export function calculateMinLevel(extent, tilingScheme, maxLevel, minLevel = 0) 
  * @abstract
  */
 class RasterLayer extends Layer {
-  static get className() { return 'RasterLayer'; }
+  static get className() {
+    return 'RasterLayer';
+  }
 
   /**
    * @returns {RasterLayerOptions}
@@ -145,7 +178,11 @@ class RasterLayer extends Layer {
      * @type {string}
      * @api
      */
-    this.tilingSchema = parseEnumValue(options.tilingSchema, TilingScheme, defaultOptions.tilingSchema);
+    this.tilingSchema = parseEnumValue(
+      options.tilingSchema,
+      TilingScheme,
+      defaultOptions.tilingSchema,
+    );
     /** @type {number} */
     this.maxLevel = parseInteger(options.maxLevel, defaultOptions.maxLevel);
     /**
@@ -156,21 +193,32 @@ class RasterLayer extends Layer {
 
     const cesiumTilingScheme = getTilingScheme(options);
     /** @type {number} */
-    this.minLevel = calculateMinLevel(this.extent, cesiumTilingScheme, this.maxLevel, this._minLevel);
+    this.minLevel = calculateMinLevel(
+      this.extent,
+      cesiumTilingScheme,
+      this.maxLevel,
+      this._minLevel,
+    );
 
     /**
      * @type {number}
      * @private
      */
-    this._opacity = parseNumberRange(options.opacity, defaultOptions.opacity, 0.0, 1.0);
+    this._opacity = parseNumberRange(
+      options.opacity,
+      defaultOptions.opacity,
+      0.0,
+      1.0,
+    );
 
     /** @type {import("@vcmap-cesium/engine").SplitDirection} */
     this._splitDirection = SplitDirection.NONE;
 
     if (options.splitDirection) {
-      this._splitDirection = options.splitDirection === 'left' ?
-        SplitDirection.LEFT :
-        SplitDirection.RIGHT;
+      this._splitDirection =
+        options.splitDirection === 'left'
+          ? SplitDirection.LEFT
+          : SplitDirection.RIGHT;
     }
 
     /**
@@ -186,7 +234,9 @@ class RasterLayer extends Layer {
    * @api
    * @type {import("@vcmap-cesium/engine").SplitDirection}
    */
-  get splitDirection() { return this._splitDirection; }
+  get splitDirection() {
+    return this._splitDirection;
+  }
 
   /**
    * @param {import("@vcmap-cesium/engine").SplitDirection} direction
@@ -207,7 +257,9 @@ class RasterLayer extends Layer {
    * @api
    * @type {number}
    */
-  get opacity() { return this._opacity; }
+  get opacity() {
+    return this._opacity;
+  }
 
   /**
    * @param {number} opacity
@@ -271,9 +323,8 @@ class RasterLayer extends Layer {
     }
 
     if (this._splitDirection !== SplitDirection.NONE) {
-      config.splitDirection = this._splitDirection === SplitDirection.RIGHT ?
-        'right' :
-        'left';
+      config.splitDirection =
+        this._splitDirection === SplitDirection.RIGHT ? 'right' : 'left';
     }
 
     return config;

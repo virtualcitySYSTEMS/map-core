@@ -22,6 +22,8 @@ Entity.prototype.getProperty = function getProperty(property) {
  * @param {string} property
  * @returns {*}
  */
-Entity.prototype.getPropertyInherited = function getPropertyInherited(property) {
+Entity.prototype.getPropertyInherited = function getPropertyInherited(
+  property,
+) {
   return this.getProperty(property);
 };

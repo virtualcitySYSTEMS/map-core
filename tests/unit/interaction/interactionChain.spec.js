@@ -1,16 +1,18 @@
 import sinon from 'sinon';
 import InteractionChain from '../../../src/interaction/interactionChain.js';
 import AbstractInteraction from '../../../src/interaction/abstractInteraction.js';
-import { EventType, ModificationKeyType, PointerKeyType } from '../../../src/interaction/interactionType.js';
+import {
+  EventType,
+  ModificationKeyType,
+  PointerKeyType,
+} from '../../../src/interaction/interactionType.js';
 
 describe('InteractionChain', () => {
   it('should add an interaction', () => {
     const ic = new InteractionChain();
-    const dummies = [...new Array(3).keys()].map(id => ({ id }));
+    const dummies = [...new Array(3).keys()].map((id) => ({ id }));
     ic.addInteraction(dummies[0]);
-    expect(ic)
-      .to.have.property('chain')
-      .to.have.members([dummies[0]]);
+    expect(ic).to.have.property('chain').to.have.members([dummies[0]]);
 
     ic.addInteraction(dummies[1]);
     expect(ic)
@@ -25,8 +27,10 @@ describe('InteractionChain', () => {
 
   it('should remove an interaction', () => {
     const ic = new InteractionChain();
-    const dummies = [...new Array(3).keys()].map(id => ({ id }));
-    dummies.forEach((dummy) => { ic.addInteraction(dummy); });
+    const dummies = [...new Array(3).keys()].map((id) => ({ id }));
+    dummies.forEach((dummy) => {
+      ic.addInteraction(dummy);
+    });
     expect(ic.chain).to.have.members(dummies);
     ic.removeInteraction(dummies[1]);
     expect(ic.chain).to.have.members([dummies[0], dummies[2]]);
@@ -34,8 +38,10 @@ describe('InteractionChain', () => {
 
   it('should only remove an interaction, if it is part of the chain', () => {
     const ic = new InteractionChain();
-    const dummies = [...new Array(3).keys()].map(id => ({ id }));
-    dummies.forEach((dummy) => { ic.addInteraction(dummy); });
+    const dummies = [...new Array(3).keys()].map((id) => ({ id }));
+    dummies.forEach((dummy) => {
+      ic.addInteraction(dummy);
+    });
     expect(ic.chain).to.have.members(dummies);
     ic.removeInteraction(dummies[1]);
     ic.removeInteraction(new AbstractInteraction());
@@ -45,11 +51,23 @@ describe('InteractionChain', () => {
   it('should only pipe active interactions', (done) => {
     const modeMap = {
       child: [
-        { active: EventType.CLICK, mod: ModificationKeyType.ALL, pointer: PointerKeyType.LEFT },
-        { active: EventType.DRAGEVENTS | EventType.CLICK, mod: ModificationKeyType.NONE, pointer: PointerKeyType.ALL },
+        {
+          active: EventType.CLICK,
+          mod: ModificationKeyType.ALL,
+          pointer: PointerKeyType.LEFT,
+        },
+        {
+          active: EventType.DRAGEVENTS | EventType.CLICK,
+          mod: ModificationKeyType.NONE,
+          pointer: PointerKeyType.ALL,
+        },
       ],
       parent: [
-        { active: EventType.ALL, mod: ModificationKeyType.CTRL, pointer: PointerKeyType.LEFT },
+        {
+          active: EventType.ALL,
+          mod: ModificationKeyType.CTRL,
+          pointer: PointerKeyType.LEFT,
+        },
         {
           active: EventType.MOVE | EventType.CLICK,
           mod: ModificationKeyType.SHIFT | ModificationKeyType.ALT,
@@ -68,10 +86,14 @@ describe('InteractionChain', () => {
       });
     }
 
-    const childInteractions = [...new Array(2)].map(() => new AbstractInteraction());
+    const childInteractions = [...new Array(2)].map(
+      () => new AbstractInteraction(),
+    );
     const child = new InteractionChain(childInteractions);
     createSpies('child', childInteractions);
-    const parentInteractions = [...new Array(2)].map(() => new AbstractInteraction());
+    const parentInteractions = [...new Array(2)].map(
+      () => new AbstractInteraction(),
+    );
     const parent = new InteractionChain([...parentInteractions, child]);
     createSpies('parent', parentInteractions);
 
@@ -121,11 +143,11 @@ describe('InteractionChain', () => {
 
     let promise = Promise.resolve();
     events.forEach((event, index) => {
-      promise = promise
-        .then(() => parent.pipe(event)
-          .then(() => {
-            expectations[index]();
-          }));
+      promise = promise.then(() =>
+        parent.pipe(event).then(() => {
+          expectations[index]();
+        }),
+      );
     });
 
     promise.then(() => {
@@ -157,28 +179,26 @@ describe('InteractionChain', () => {
       const iStub = sinon.stub(i, 'pipe');
       if (index === 1) {
         iStub
-          .onFirstCall().returns(Promise.resolve(event))
-          .onSecondCall().returns(Promise.resolve(stopEvent));
+          .onFirstCall()
+          .returns(Promise.resolve(event))
+          .onSecondCall()
+          .returns(Promise.resolve(stopEvent));
       } else {
         iStub.returns(Promise.resolve(event));
       }
       stubs.push(iStub);
     });
     const ic = new InteractionChain(interactions);
-    return ic
-      .pipe(event)
-      .then(() => {
-        stubs.forEach((s) => {
-          expect(s).to.have.been.calledOnce;
-        });
-        return ic
-          .pipe(event)
-          .then(() => {
-            expect(stubs[0]).to.have.been.calledTwice;
-            expect(stubs[1]).to.have.been.calledTwice;
-            expect(stubs[2]).to.have.been.calledOnce;
-          });
+    return ic.pipe(event).then(() => {
+      stubs.forEach((s) => {
+        expect(s).to.have.been.calledOnce;
       });
+      return ic.pipe(event).then(() => {
+        expect(stubs[0]).to.have.been.calledTwice;
+        expect(stubs[1]).to.have.been.calledTwice;
+        expect(stubs[2]).to.have.been.calledOnce;
+      });
+    });
   });
 
   it('should call modifier cahnged on active interactions', () => {

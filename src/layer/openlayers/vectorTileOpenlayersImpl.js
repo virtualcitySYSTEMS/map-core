@@ -11,7 +11,9 @@ import { mercatorProjection } from '../../util/projection.js';
  * @extends {LayerOpenlayersImpl}
  */
 class VectorTileOpenlayersImpl extends LayerOpenlayersImpl {
-  static get className() { return 'VectorTileOpenlayersImpl'; }
+  static get className() {
+    return 'VectorTileOpenlayersImpl';
+  }
 
   /**
    * @param {import("@vcmap/core").OpenlayersMap} map
@@ -74,8 +76,11 @@ class VectorTileOpenlayersImpl extends LayerOpenlayersImpl {
        * @returns {Promise<void>}
        */
       tileLoadFunction: async (tile) => {
-        const features =
-          await this.tileProvider.getFeaturesForTile(tile.tileCoord[1], tile.tileCoord[2], tile.tileCoord[0]);
+        const features = await this.tileProvider.getFeaturesForTile(
+          tile.tileCoord[1],
+          tile.tileCoord[2],
+          tile.tileCoord[0],
+        );
         if (features.length > 0) {
           tile.setFeatures(features);
         } else {
@@ -86,8 +91,10 @@ class VectorTileOpenlayersImpl extends LayerOpenlayersImpl {
       // url needs to be set for the tileLoadFunction to work.
       url: '/{z}/{x}/{y}',
     });
-    const extent = this.extent && this.extent.isValid() ?
-      this.extent.getCoordinatesInProjection(mercatorProjection) : undefined;
+    const extent =
+      this.extent && this.extent.isValid()
+        ? this.extent.getCoordinatesInProjection(mercatorProjection)
+        : undefined;
     // make it so that openlayers and cesium zoom level fit together
     const minZoom = this.minLevel ? this.minLevel : undefined;
     const maxZoom = this.maxLevel ? this.maxLevel + 1 : undefined;

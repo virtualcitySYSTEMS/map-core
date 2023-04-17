@@ -167,7 +167,10 @@ describe('SelectMultiFeatureInteraction', () => {
       });
 
       it('should raise the featuresChanged event with the selected features', () => {
-        expect(featuresChangedListener).to.have.been.calledWith([featureA, featureB]);
+        expect(featuresChangedListener).to.have.been.calledWith([
+          featureA,
+          featureB,
+        ]);
       });
 
       it('should set stop propagation on the event to true', () => {

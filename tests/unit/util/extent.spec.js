@@ -1,5 +1,8 @@
 import { createEmpty } from 'ol/extent.js';
-import Projection, { mercatorProjection, wgs84Projection } from '../../../src/util/projection.js';
+import Projection, {
+  mercatorProjection,
+  wgs84Projection,
+} from '../../../src/util/projection.js';
 import Extent from '../../../src/util/extent.js';
 
 describe('Extent', () => {
@@ -9,8 +12,13 @@ describe('Extent', () => {
     sandbox = sinon.createSandbox();
   });
 
-  afterEach(() => { sandbox.restore(); });
-  const mercatorWorldCoords = [-20037508.342789244, -238107693.26496765, 20037508.342789244, 238107693.26496765];
+  afterEach(() => {
+    sandbox.restore();
+  });
+  const mercatorWorldCoords = [
+    -20037508.342789244, -238107693.26496765, 20037508.342789244,
+    238107693.26496765,
+  ];
   describe('constructor', () => {
     it('should create an extent based on an epsg code and coordiantes', () => {
       const EX = new Extent({
@@ -18,12 +26,16 @@ describe('Extent', () => {
         coordinates: [0, 0, 1, 1],
       });
       expect(EX).to.have.property('extent').and.to.have.members([0, 0, 1, 1]);
-      expect(EX).to.have.property('projection').and.to.have.property('epsg', 'EPSG:4326');
+      expect(EX)
+        .to.have.property('projection')
+        .and.to.have.property('epsg', 'EPSG:4326');
     });
 
     it('it should assign the projections validity extent to the extent, if there are no input coordinates', () => {
       const EX = new Extent({ projection: wgs84Projection.toJSON() });
-      expect(EX).to.have.property('extent').and.to.have.members([-180, -90, 180, 90]);
+      expect(EX)
+        .to.have.property('extent')
+        .and.to.have.members([-180, -90, 180, 90]);
     });
   });
 
@@ -32,8 +44,7 @@ describe('Extent', () => {
       const EX = new Extent({ projection: wgs84Projection.toJSON() });
       const mercatorProj = mercatorProjection;
       const mercatorWorld = EX.getCoordinatesInProjection(mercatorProj);
-      expect(mercatorWorld)
-        .to.have.members(mercatorWorldCoords);
+      expect(mercatorWorld).to.have.members(mercatorWorldCoords);
     });
 
     it('should mutate a result', () => {
@@ -41,8 +52,7 @@ describe('Extent', () => {
       const mercatorProj = mercatorProjection;
       const mercatorWorld = [];
       EX.getCoordinatesInProjection(mercatorProj, mercatorWorld);
-      expect(mercatorWorld)
-        .to.have.members(mercatorWorldCoords);
+      expect(mercatorWorld).to.have.members(mercatorWorldCoords);
     });
 
     it('should return a copy of the extent, if the extents are the same', () => {
@@ -142,7 +152,8 @@ describe('Extent', () => {
       const options = {
         projection: {
           epsg: '25833',
-          proj4: '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs ',
+          proj4:
+            '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs ',
         },
         coordinates: [0, 0, 1, 1],
       };

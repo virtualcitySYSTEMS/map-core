@@ -41,11 +41,19 @@ export const ArrowEnd = {
 export function getDefaultArrowIconSrc(primitiveOptions, twoDFactor = 1.5) {
   let height = 13;
   let width = 13;
-  let points = [[0, 13], [13, 13], [6, 0]];
+  let points = [
+    [0, 13],
+    [13, 13],
+    [6, 0],
+  ];
 
   if (primitiveOptions.type === PrimitiveOptionsType.SPHERE) {
-    const radius = Math.floor((primitiveOptions.geometryOptions?.radius ?? 1) * twoDFactor);
-    return `<svg height="${radius * 2}" width="${radius * 2}" xmlns="http://www.w3.org/2000/svg">
+    const radius = Math.floor(
+      (primitiveOptions.geometryOptions?.radius ?? 1) * twoDFactor,
+    );
+    return `<svg height="${radius * 2}" width="${
+      radius * 2
+    }" xmlns="http://www.w3.org/2000/svg">
   <circle cx="${radius}" cy="${radius}" r="${radius}" style="fill:white;" />
 </svg>`;
   }
@@ -55,13 +63,13 @@ export function getDefaultArrowIconSrc(primitiveOptions, twoDFactor = 1.5) {
     primitiveOptions.geometryOptions.minimum &&
     primitiveOptions.geometryOptions.maximum
   ) {
-    const min = Array.isArray(primitiveOptions.geometryOptions.minimum) ?
-      primitiveOptions.geometryOptions.minimum :
-      Cartesian3.pack(primitiveOptions.geometryOptions.minimum, []);
+    const min = Array.isArray(primitiveOptions.geometryOptions.minimum)
+      ? primitiveOptions.geometryOptions.minimum
+      : Cartesian3.pack(primitiveOptions.geometryOptions.minimum, []);
 
-    const max = Array.isArray(primitiveOptions.geometryOptions.maximum) ?
-      primitiveOptions.geometryOptions.maximum :
-      Cartesian3.pack(primitiveOptions.geometryOptions.maximum, []);
+    const max = Array.isArray(primitiveOptions.geometryOptions.maximum)
+      ? primitiveOptions.geometryOptions.maximum
+      : Cartesian3.pack(primitiveOptions.geometryOptions.maximum, []);
 
     width = Math.floor((max[0] - min[0]) * twoDFactor);
     height = Math.floor((max[1] - min[1]) * twoDFactor);
@@ -76,18 +84,22 @@ export function getDefaultArrowIconSrc(primitiveOptions, twoDFactor = 1.5) {
     primitiveOptions.type === PrimitiveOptionsType.CYLINDER &&
     primitiveOptions.geometryOptions.length
   ) {
-    const topRadius = Math.floor(primitiveOptions.geometryOptions.topRadius * twoDFactor);
-    const bottomRadius = Math.floor(primitiveOptions.geometryOptions.bottomRadius * twoDFactor);
+    const topRadius = Math.floor(
+      primitiveOptions.geometryOptions.topRadius * twoDFactor,
+    );
+    const bottomRadius = Math.floor(
+      primitiveOptions.geometryOptions.bottomRadius * twoDFactor,
+    );
     const maxRadius = Math.max(topRadius, bottomRadius);
 
     height = Math.floor(primitiveOptions.geometryOptions.length * twoDFactor);
     width = maxRadius * 2;
 
     points = [
-      [(width / 2) - bottomRadius, height],
-      [(width / 2) + bottomRadius, height],
-      [(width / 2) + topRadius, 0],
-      [(width / 2) - topRadius, 0],
+      [width / 2 - bottomRadius, height],
+      [width / 2 + bottomRadius, height],
+      [width / 2 + topRadius, 0],
+      [width / 2 - topRadius, 0],
     ];
     if (bottomRadius === 0) {
       points.splice(1, 1);
@@ -95,7 +107,9 @@ export function getDefaultArrowIconSrc(primitiveOptions, twoDFactor = 1.5) {
       points.splice(2, 1);
     }
   }
-  return `<svg height="${height}" width="${width}" xmlns="http://www.w3.org/2000/svg"><polygon points="${points.map(p => p.join(',')).join(' ')}" style="fill:white;" /></svg>`;
+  return `<svg height="${height}" width="${width}" xmlns="http://www.w3.org/2000/svg"><polygon points="${points
+    .map((p) => p.join(','))
+    .join(' ')}" style="fill:white;" /></svg>`;
 }
 
 /**
@@ -133,12 +147,16 @@ class ArrowStyle extends Style {
       zIndex: options.zIndex,
     };
 
-    const primitiveOptions = options.primitiveOptions ?? getDefaultArrowPrimitive();
+    const primitiveOptions =
+      options.primitiveOptions ?? getDefaultArrowPrimitive();
     const iconOptions = options.arrowIcon ?? {
-      src: `data:image/svg+xml,${encodeURIComponent(getDefaultArrowIconSrc(primitiveOptions))}`,
+      src: `data:image/svg+xml,${encodeURIComponent(
+        getDefaultArrowIconSrc(primitiveOptions),
+      )}`,
       color: parseColor(color),
     };
-    styleOptions.image = iconOptions instanceof OlImage ? iconOptions : new Icon(iconOptions);
+    styleOptions.image =
+      iconOptions instanceof OlImage ? iconOptions : new Icon(iconOptions);
     super(styleOptions);
 
     /**
@@ -193,7 +211,14 @@ class ArrowStyle extends Style {
     ctx.save();
     let scale = this.getImage().getScale();
     scale = Array.isArray(scale) ? scale : [scale, scale];
-    ctx.setTransform(scale[0], 0, 0, scale[1], imagePosition[0], imagePosition[1]);
+    ctx.setTransform(
+      scale[0],
+      0,
+      0,
+      scale[1],
+      imagePosition[0],
+      imagePosition[1],
+    );
     ctx.rotate(Math.PI - rotation);
     const image = this.getImage().getImage(pixelRatio);
     ctx.translate(0, Math.floor(image.height / 2));
@@ -211,11 +236,21 @@ class ArrowStyle extends Style {
       const ctx = e.context;
       if (this.end !== ArrowEnd.NONE) {
         if (this.end === ArrowEnd.START || this.end === ArrowEnd.BOTH) {
-          this._drawArrow(ctx, geom[0], getCartesianBearing(geom[1], geom[0]), e.pixelRatio);
+          this._drawArrow(
+            ctx,
+            geom[0],
+            getCartesianBearing(geom[1], geom[0]),
+            e.pixelRatio,
+          );
         }
 
         if (this.end === ArrowEnd.END || this.end === ArrowEnd.BOTH) {
-          this._drawArrow(ctx, geom.at(-1), getCartesianBearing(geom.at(-2), geom.at(-1)), e.pixelRatio);
+          this._drawArrow(
+            ctx,
+            geom.at(-1),
+            getCartesianBearing(geom.at(-2), geom.at(-1)),
+            e.pixelRatio,
+          );
         }
       }
       ctx.save();

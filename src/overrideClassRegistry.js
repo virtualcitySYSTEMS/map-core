@@ -45,7 +45,12 @@ class OverrideClassRegistry {
    * @returns {Array<string>}
    */
   getClassNames() {
-    return [...new Set([...this._classMap.keys(), ...this._coreClassRegistry.getClassNames()])];
+    return [
+      ...new Set([
+        ...this._classMap.keys(),
+        ...this._coreClassRegistry.getClassNames(),
+      ]),
+    ];
   }
 
   /**
@@ -92,7 +97,9 @@ class OverrideClassRegistry {
 
     if (this._classShadows.has(className)) {
       const shadowsArray = this._classShadows.get(className);
-      const newShadowsArray = shadowsArray.filter(e => e.moduleId !== moduleId);
+      const newShadowsArray = shadowsArray.filter(
+        (e) => e.moduleId !== moduleId,
+      );
       if (newShadowsArray.length === 0) {
         this._classShadows.delete(className);
       } else if (newShadowsArray.length !== shadowsArray.length) {
@@ -141,7 +148,10 @@ class OverrideClassRegistry {
   hasClass(className) {
     check(className, String);
 
-    return this._classMap.has(className) || this._coreClassRegistry.hasClass(className);
+    return (
+      this._classMap.has(className) ||
+      this._coreClassRegistry.hasClass(className)
+    );
   }
 
   /**

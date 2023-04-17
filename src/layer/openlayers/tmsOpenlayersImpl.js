@@ -11,7 +11,9 @@ import { isSameOrigin } from '../../util/urlHelpers.js';
  * @extends {RasterLayerOpenlayersImpl}
  */
 class TmsOpenlayersImpl extends RasterLayerOpenlayersImpl {
-  static get className() { return 'TmsOpenlayersImpl'; }
+  static get className() {
+    return 'TmsOpenlayersImpl';
+  }
 
   /**
    * @param {import("@vcmap/core").OpenlayersMap} map
@@ -32,7 +34,7 @@ class TmsOpenlayersImpl extends RasterLayerOpenlayersImpl {
     const sourceOptions = {
       tileUrlFunction: (tileCoord) => {
         const baseUrl = this.url.replace(/\/$/, '');
-        const y = (1 << tileCoord[0]) - (tileCoord[2]) - 1;
+        const y = (1 << tileCoord[0]) - tileCoord[2] - 1;
         return `${baseUrl}/${tileCoord[0]}/${tileCoord[1]}/${y}.${this.format}`;
       },
       tileSize: this.tileSize,
@@ -52,7 +54,8 @@ class TmsOpenlayersImpl extends RasterLayerOpenlayersImpl {
       opacity: this.opacity,
     };
     if (this.extent && this.extent.isValid()) {
-      tileOptions.extent = this.extent.getCoordinatesInProjection(mercatorProjection);
+      tileOptions.extent =
+        this.extent.getCoordinatesInProjection(mercatorProjection);
     }
     return new Tile(tileOptions);
   }

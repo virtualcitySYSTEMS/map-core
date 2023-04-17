@@ -1,7 +1,6 @@
 import AbstractFeatureProvider from './abstractFeatureProvider.js';
 import { featureProviderClassRegistry } from '../classRegistry.js';
 
-
 /**
  * @typedef {AbstractFeatureProviderOptions} TileProviderFeatureProviderOptions
  * @property {import("@vcmap/core").TileProvider} tileProvider
@@ -13,7 +12,9 @@ import { featureProviderClassRegistry } from '../classRegistry.js';
  * @extends {AbstractFeatureProvider}
  */
 class TileProviderFeatureProvider extends AbstractFeatureProvider {
-  static get className() { return 'TileProviderFeatureProvider'; }
+  static get className() {
+    return 'TileProviderFeatureProvider';
+  }
 
   /**
    * @param {string} layerName
@@ -37,7 +38,6 @@ class TileProviderFeatureProvider extends AbstractFeatureProvider {
     this.tileProvider = options.tileProvider;
   }
 
-
   /**
    * @inheritDoc
    * @param {import("ol/coordinate").Coordinate} coordinate
@@ -45,7 +45,10 @@ class TileProviderFeatureProvider extends AbstractFeatureProvider {
    * @returns {Promise<Array<import("ol").Feature<import("ol/geom/Geometry").default>>>}
    */
   async getFeaturesByCoordinate(coordinate, resolution) {
-    const features = await this.tileProvider.getFeaturesByCoordinate(coordinate, resolution);
+    const features = await this.tileProvider.getFeaturesByCoordinate(
+      coordinate,
+      resolution,
+    );
     return features.filter((feature) => {
       return this.vectorProperties.getAllowPicking(feature);
     });
@@ -61,4 +64,7 @@ class TileProviderFeatureProvider extends AbstractFeatureProvider {
 }
 
 export default TileProviderFeatureProvider;
-featureProviderClassRegistry.registerClass(TileProviderFeatureProvider.className, TileProviderFeatureProvider);
+featureProviderClassRegistry.registerClass(
+  TileProviderFeatureProvider.className,
+  TileProviderFeatureProvider,
+);

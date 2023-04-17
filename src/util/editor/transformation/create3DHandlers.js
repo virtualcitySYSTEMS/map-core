@@ -1,16 +1,34 @@
 import { Feature } from 'ol';
 import {
-  ArcType, BoxGeometry,
+  ArcType,
+  BoxGeometry,
   Cartesian3,
-  Color, CoplanarPolygonGeometry, CylinderGeometry, EllipsoidGeometry,
-  GeometryInstance, HeadingPitchRoll,
+  Color,
+  CoplanarPolygonGeometry,
+  CylinderGeometry,
+  EllipsoidGeometry,
+  GeometryInstance,
+  HeadingPitchRoll,
   Material,
-  MaterialAppearance, Math as CesiumMath, Matrix3, Matrix4, PolygonHierarchy, PolylineGeometry,
+  MaterialAppearance,
+  Math as CesiumMath,
+  Matrix3,
+  Matrix4,
+  PolygonHierarchy,
+  PolylineGeometry,
   PolylineMaterialAppearance,
-  Primitive, PrimitiveCollection, Transforms,
+  Primitive,
+  PrimitiveCollection,
+  Transforms,
 } from '@vcmap-cesium/engine';
 import { handlerSymbol } from '../editorSymbols.js';
-import { AXIS_AND_PLANES, greyedOutColor, is1DAxis, is2DAxis, TransformationMode } from './transformationTypes.js';
+import {
+  AXIS_AND_PLANES,
+  greyedOutColor,
+  is1DAxis,
+  is2DAxis,
+  TransformationMode,
+} from './transformationTypes.js';
 import Projection from '../../projection.js';
 import { mercatorToCartesian } from '../../math.js';
 
@@ -80,7 +98,11 @@ function createRingPrimitive(axis, modelMatrix, greyOut = false) {
     rotation = Matrix3.IDENTITY.clone();
   } else if (axis === AXIS_AND_PLANES.X) {
     color = Color.RED;
-    rotation = Matrix3.multiply(Matrix3.fromRotationY(Math.PI / 2), Matrix3.fromRotationX(Math.PI / 2), new Matrix3());
+    rotation = Matrix3.multiply(
+      Matrix3.fromRotationY(Math.PI / 2),
+      Matrix3.fromRotationX(Math.PI / 2),
+      new Matrix3(),
+    );
   } else {
     color = Color.GREEN;
     rotation = Matrix3.fromRotationY(Math.PI / 2);
@@ -102,11 +124,20 @@ function createRingPrimitive(axis, modelMatrix, greyOut = false) {
     ...getPolygonAppearance(color),
   });
 
-  let primitiveModelMatrix = Matrix4.multiplyByMatrix3(modelMatrix, rotation, new Matrix4());
+  let primitiveModelMatrix = Matrix4.multiplyByMatrix3(
+    modelMatrix,
+    rotation,
+    new Matrix4(),
+  );
   Object.defineProperty(primitive, 'modelMatrix', {
-    set(newModelMatrix) { // updating requires recalculation using the geometry model matrix.
+    set(newModelMatrix) {
+      // updating requires recalculation using the geometry model matrix.
       if (!Matrix4.equals(newModelMatrix, primitiveModelMatrix)) {
-        primitiveModelMatrix = Matrix4.multiplyByMatrix3(newModelMatrix, rotation, primitiveModelMatrix);
+        primitiveModelMatrix = Matrix4.multiplyByMatrix3(
+          newModelMatrix,
+          rotation,
+          primitiveModelMatrix,
+        );
       }
     },
     get() {
@@ -174,55 +205,81 @@ function createRhumbLinePositions(centerWgs84, direction) {
 function createAxisPrimitive(axis, center) {
   const primitives = [];
   const centerWgs84 = Projection.mercatorToWgs84(center);
-  if (axis === AXIS_AND_PLANES.X || axis === AXIS_AND_PLANES.XY || axis === AXIS_AND_PLANES.XZ) {
-    primitives.push(new Primitive({
-      asynchronous: false,
-      geometryInstances: [
-        new GeometryInstance({
-          geometry: new PolylineGeometry({
-            positions: Cartesian3
-              .fromDegreesArrayHeights(createRhumbLinePositions(centerWgs84, AXIS_AND_PLANES.X).flat()),
-            width: 1,
-            arcType: ArcType.RHUMB,
+  if (
+    axis === AXIS_AND_PLANES.X ||
+    axis === AXIS_AND_PLANES.XY ||
+    axis === AXIS_AND_PLANES.XZ
+  ) {
+    primitives.push(
+      new Primitive({
+        asynchronous: false,
+        geometryInstances: [
+          new GeometryInstance({
+            geometry: new PolylineGeometry({
+              positions: Cartesian3.fromDegreesArrayHeights(
+                createRhumbLinePositions(centerWgs84, AXIS_AND_PLANES.X).flat(),
+              ),
+              width: 1,
+              arcType: ArcType.RHUMB,
+            }),
           }),
-        }),
-      ],
-      ...createPolylineAppearances(Color.RED.withAlpha(0.5)),
-    }));
+        ],
+        ...createPolylineAppearances(Color.RED.withAlpha(0.5)),
+      }),
+    );
   }
-  if (axis === AXIS_AND_PLANES.Y || axis === AXIS_AND_PLANES.XY || axis === AXIS_AND_PLANES.YZ) {
-    primitives.push(new Primitive({
-      asynchronous: false,
-      geometryInstances: [
-        new GeometryInstance({
-          geometry: new PolylineGeometry({
-            positions: Cartesian3
-              .fromDegreesArrayHeights(createRhumbLinePositions(centerWgs84, AXIS_AND_PLANES.Y).flat()),
-            width: 1,
-            arcType: ArcType.RHUMB,
+  if (
+    axis === AXIS_AND_PLANES.Y ||
+    axis === AXIS_AND_PLANES.XY ||
+    axis === AXIS_AND_PLANES.YZ
+  ) {
+    primitives.push(
+      new Primitive({
+        asynchronous: false,
+        geometryInstances: [
+          new GeometryInstance({
+            geometry: new PolylineGeometry({
+              positions: Cartesian3.fromDegreesArrayHeights(
+                createRhumbLinePositions(centerWgs84, AXIS_AND_PLANES.Y).flat(),
+              ),
+              width: 1,
+              arcType: ArcType.RHUMB,
+            }),
           }),
-        }),
-      ],
-      ...createPolylineAppearances(Color.GREEN.withAlpha(0.5)),
-    }));
+        ],
+        ...createPolylineAppearances(Color.GREEN.withAlpha(0.5)),
+      }),
+    );
   }
-  if (axis === AXIS_AND_PLANES.Z || axis === AXIS_AND_PLANES.XZ || axis === AXIS_AND_PLANES.YZ) {
-    primitives.push(new Primitive({
-      asynchronous: false,
-      geometryInstances: [
-        new GeometryInstance({
-          geometry: new PolylineGeometry({
-            positions: Cartesian3.fromDegreesArrayHeights([
-              centerWgs84[0], centerWgs84[1], center[2] - 500000,
-              centerWgs84[0], centerWgs84[1], center[2],
-              centerWgs84[0], centerWgs84[1], center[2] + 500000,
-            ]),
-            width: 1,
+  if (
+    axis === AXIS_AND_PLANES.Z ||
+    axis === AXIS_AND_PLANES.XZ ||
+    axis === AXIS_AND_PLANES.YZ
+  ) {
+    primitives.push(
+      new Primitive({
+        asynchronous: false,
+        geometryInstances: [
+          new GeometryInstance({
+            geometry: new PolylineGeometry({
+              positions: Cartesian3.fromDegreesArrayHeights([
+                centerWgs84[0],
+                centerWgs84[1],
+                center[2] - 500000,
+                centerWgs84[0],
+                centerWgs84[1],
+                center[2],
+                centerWgs84[0],
+                centerWgs84[1],
+                center[2] + 500000,
+              ]),
+              width: 1,
+            }),
           }),
-        }),
-      ],
-      ...createPolylineAppearances(Color.BLUE.withAlpha(0.5)),
-    }));
+        ],
+        ...createPolylineAppearances(Color.BLUE.withAlpha(0.5)),
+      }),
+    );
   }
   const primitiveCollection = new PrimitiveCollection();
   primitives.forEach((p) => {
@@ -257,7 +314,13 @@ function createShowAxisPrimitive(primitiveCollection) {
  * @param {boolean} allowPicking
  * @returns {import("@vcmap-cesium/engine").Primitive}
  */
-function createAxisEndingPrimitive(geometry, color, modelMatrix, geometryModelMatrix, allowPicking) {
+function createAxisEndingPrimitive(
+  geometry,
+  color,
+  modelMatrix,
+  geometryModelMatrix,
+  allowPicking,
+) {
   const primitive = new Primitive({
     allowPicking,
     asynchronous: false,
@@ -269,11 +332,20 @@ function createAxisEndingPrimitive(geometry, color, modelMatrix, geometryModelMa
     ...getPolygonAppearance(color),
   });
 
-  let primitiveModelMatrix = Matrix4.multiply(modelMatrix, geometryModelMatrix, new Matrix4());
+  let primitiveModelMatrix = Matrix4.multiply(
+    modelMatrix,
+    geometryModelMatrix,
+    new Matrix4(),
+  );
   Object.defineProperty(primitive, 'modelMatrix', {
-    set(newModelMatrix) { // updating requires recalculation using the geometry model matrix.
+    set(newModelMatrix) {
+      // updating requires recalculation using the geometry model matrix.
       if (!Matrix4.equals(newModelMatrix, primitiveModelMatrix)) {
-        primitiveModelMatrix = Matrix4.multiply(newModelMatrix, geometryModelMatrix, primitiveModelMatrix);
+        primitiveModelMatrix = Matrix4.multiply(
+          newModelMatrix,
+          geometryModelMatrix,
+          primitiveModelMatrix,
+        );
       }
     },
     get() {
@@ -305,7 +377,11 @@ function createLineAxisPrimitives(axis, modelMatrix, mode, greyOut = false) {
     to = new Cartesian3(CesiumMath.EPSILON8, 1, 0);
     color = Color.GREEN;
     arrowTransformation = Matrix4.fromRotationTranslation(
-      Matrix3.multiply(Matrix3.fromRotationY(Math.PI / 2), Matrix3.fromRotationX(-(Math.PI / 2)), new Matrix3()),
+      Matrix3.multiply(
+        Matrix3.fromRotationY(Math.PI / 2),
+        Matrix3.fromRotationX(-(Math.PI / 2)),
+        new Matrix3(),
+      ),
       new Cartesian3(0, 1, 0),
     );
   } else {
@@ -318,16 +394,17 @@ function createLineAxisPrimitives(axis, modelMatrix, mode, greyOut = false) {
   }
   color = greyOut ? greyedOutColor : color;
 
-  const arrowGeometry = mode === TransformationMode.SCALE ?
-    new BoxGeometry({
-      minimum: new Cartesian3(-0.1, -0.1, -0.1),
-      maximum: new Cartesian3(0.1, 0.1, 0.1),
-    }) :
-    new CylinderGeometry({
-      length: 0.2,
-      topRadius: 0,
-      bottomRadius: 0.06,
-    });
+  const arrowGeometry =
+    mode === TransformationMode.SCALE
+      ? new BoxGeometry({
+          minimum: new Cartesian3(-0.1, -0.1, -0.1),
+          maximum: new Cartesian3(0.1, 0.1, 0.1),
+        })
+      : new CylinderGeometry({
+          length: 0.2,
+          topRadius: 0,
+          bottomRadius: 0.06,
+        });
 
   const primitives = [
     new Primitive({
@@ -348,7 +425,13 @@ function createLineAxisPrimitives(axis, modelMatrix, mode, greyOut = false) {
       ...createPolylineAppearances(color),
       modelMatrix,
     }),
-    createAxisEndingPrimitive(arrowGeometry, color, modelMatrix, arrowTransformation, !greyOut),
+    createAxisEndingPrimitive(
+      arrowGeometry,
+      color,
+      modelMatrix,
+      arrowTransformation,
+      !greyOut,
+    ),
   ];
 
   if (!greyOut) {
@@ -429,10 +512,9 @@ function createShowShadowPrimitive(primitiveCollection) {
     if (axis !== AXIS_AND_PLANES.NONE) {
       primitive = new PrimitiveCollection();
       if (is1DAxis(axis)) {
-        createLineAxisPrimitives(axis, modelMatrix, mode, true)
-          .forEach((p) => {
-            primitive.add(p);
-          });
+        createLineAxisPrimitives(axis, modelMatrix, mode, true).forEach((p) => {
+          primitive.add(p);
+        });
       } else if (is2DAxis(axis)) {
         primitive.add(createPlanePrimitive(axis, modelMatrix, true));
       }
@@ -454,7 +536,10 @@ export default function create3DHandlers(map, mode) {
   const modelMatrix = Matrix4.fromTranslation(Cartesian3.fromDegrees(0, 0, 0));
   const zPrimitives = [];
 
-  if (mode === TransformationMode.TRANSLATE || mode === TransformationMode.SCALE) {
+  if (
+    mode === TransformationMode.TRANSLATE ||
+    mode === TransformationMode.SCALE
+  ) {
     const primitives = [
       ...createLineAxisPrimitives(AXIS_AND_PLANES.X, modelMatrix, mode),
       ...createLineAxisPrimitives(AXIS_AND_PLANES.Y, modelMatrix, mode),
@@ -474,15 +559,22 @@ export default function create3DHandlers(map, mode) {
       primitiveCollection.add(p);
     });
   } else if (mode === TransformationMode.ROTATE) {
-    primitiveCollection.add(createRingPrimitive(AXIS_AND_PLANES.X, modelMatrix, true));
-    primitiveCollection.add(createRingPrimitive(AXIS_AND_PLANES.Y, modelMatrix, true));
-    primitiveCollection.add(createRingPrimitive(AXIS_AND_PLANES.Z, modelMatrix));
+    primitiveCollection.add(
+      createRingPrimitive(AXIS_AND_PLANES.X, modelMatrix, true),
+    );
+    primitiveCollection.add(
+      createRingPrimitive(AXIS_AND_PLANES.Y, modelMatrix, true),
+    );
+    primitiveCollection.add(
+      createRingPrimitive(AXIS_AND_PLANES.Z, modelMatrix),
+    );
   } else if (mode === TransformationMode.EXTRUDE) {
-    createLineAxisPrimitives(AXIS_AND_PLANES.Z, modelMatrix, mode)
-      .forEach((p) => {
+    createLineAxisPrimitives(AXIS_AND_PLANES.Z, modelMatrix, mode).forEach(
+      (p) => {
         setFeatureOnPrimitive(p);
         primitiveCollection.add(p);
-      });
+      },
+    );
   }
 
   const scene = map.getScene();
@@ -493,7 +585,11 @@ export default function create3DHandlers(map, mode) {
     if (!(center[0] === 0 && center[1] === 0 && center[2] === 0)) {
       const res = map.getCurrentResolution(center) * 60;
       if (res !== scale) {
-        Matrix4.setScale(modelMatrix, new Cartesian3(res, res, res), modelMatrix);
+        Matrix4.setScale(
+          modelMatrix,
+          new Cartesian3(res, res, res),
+          modelMatrix,
+        );
         for (let i = 0; i < primitiveCollection.length; i++) {
           primitiveCollection.get(i).modelMatrix = modelMatrix;
         }
@@ -526,7 +622,9 @@ export default function create3DHandlers(map, mode) {
       showAxisPrimitives(axis, center.slice());
       showShadowPrimitive(axis, modelMatrix.clone(), mode);
     },
-    get greyOutZ() { return greyOutZ; },
+    get greyOutZ() {
+      return greyOutZ;
+    },
     set greyOutZ(greyOut) {
       if (greyOut !== greyOutZ) {
         greyOutZ = greyOut;
@@ -536,7 +634,12 @@ export default function create3DHandlers(map, mode) {
         zPrimitives.splice(0);
         if (mode === TransformationMode.TRANSLATE) {
           zPrimitives.push(
-            ...createLineAxisPrimitives(AXIS_AND_PLANES.Z, modelMatrix, mode, greyOut),
+            ...createLineAxisPrimitives(
+              AXIS_AND_PLANES.Z,
+              modelMatrix,
+              mode,
+              greyOut,
+            ),
             createPlanePrimitive(AXIS_AND_PLANES.XZ, modelMatrix, greyOut),
             createPlanePrimitive(AXIS_AND_PLANES.YZ, modelMatrix, greyOut),
           );

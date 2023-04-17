@@ -1,6 +1,11 @@
 /* eslint-disable no-self-assign */
 import Feature from 'ol/Feature.js';
-import { ClassificationType, HeightReference, NearFarScalar, Cartesian3 } from '@vcmap-cesium/engine';
+import {
+  ClassificationType,
+  HeightReference,
+  NearFarScalar,
+  Cartesian3,
+} from '@vcmap-cesium/engine';
 import VectorProperties, {
   parseCartesian3,
   parseNearFarScalar,
@@ -27,7 +32,10 @@ describe('VectorProperties', () => {
     });
 
     it('should return the default value if values are not parsable', () => {
-      const nearFarScalar = parseNearFarScalar(['212', 'a12', 12, 23], defaultValue);
+      const nearFarScalar = parseNearFarScalar(
+        ['212', 'a12', 12, 23],
+        defaultValue,
+      );
       expect(nearFarScalar).to.be.equal(defaultValue);
     });
 
@@ -42,7 +50,10 @@ describe('VectorProperties', () => {
     });
 
     it('should return a valid NearFarScalar value on parsable Strings', () => {
-      const nearFarScalar = parseNearFarScalar(['1', '2', '3', '4'], defaultValue);
+      const nearFarScalar = parseNearFarScalar(
+        ['1', '2', '3', '4'],
+        defaultValue,
+      );
       expect(nearFarScalar).to.not.be.equal(defaultValue);
       expect(nearFarScalar).to.be.a.instanceOf(NearFarScalar);
       expect(nearFarScalar.near).to.be.equal(1);
@@ -70,7 +81,10 @@ describe('VectorProperties', () => {
     });
 
     it('return the default value if array values ar not parsable', () => {
-      const cartesian = parseNearFarScalar(['212', 'a12', 12, 23], defaultValue);
+      const cartesian = parseNearFarScalar(
+        ['212', 'a12', 12, 23],
+        defaultValue,
+      );
       expect(cartesian).to.be.equal(defaultValue);
     });
 
@@ -181,19 +195,27 @@ describe('VectorProperties', () => {
 
       it('should set altitudeMode and raiseEvent, if value changed', () => {
         vectorProperties.altitudeMode = HeightReference.RELATIVE_TO_GROUND;
-        expect(vectorProperties.altitudeMode).to.be.equal(HeightReference.RELATIVE_TO_GROUND);
+        expect(vectorProperties.altitudeMode).to.be.equal(
+          HeightReference.RELATIVE_TO_GROUND,
+        );
         expect(eventListener).to.have.been.calledOnce;
         expect(eventListener).to.have.been.calledWith(['altitudeMode']);
       });
 
       it('should get vectorProperties altitudeMode if not set on the feature', () => {
-        const altitudeModeDefault = vectorProperties.getAltitudeMode(new Feature({}));
+        const altitudeModeDefault = vectorProperties.getAltitudeMode(
+          new Feature({}),
+        );
         expect(altitudeModeDefault).to.be.equal(vectorProperties.altitudeMode);
       });
 
       it('should extract altitudeMode from feature if set', () => {
-        const altitudeModeFeature = vectorProperties.getAltitudeMode(new Feature({ olcs_altitudeMode: 'relativeToGround' }));
-        expect(altitudeModeFeature).to.be.equal(HeightReference.RELATIVE_TO_GROUND);
+        const altitudeModeFeature = vectorProperties.getAltitudeMode(
+          new Feature({ olcs_altitudeMode: 'relativeToGround' }),
+        );
+        expect(altitudeModeFeature).to.be.equal(
+          HeightReference.RELATIVE_TO_GROUND,
+        );
       });
     });
 
@@ -215,50 +237,72 @@ describe('VectorProperties', () => {
       });
 
       it('should get the default allowPicking if not set on the feature', () => {
-        const allowPickingDefault = vectorProperties.getAllowPicking(new Feature({}));
+        const allowPickingDefault = vectorProperties.getAllowPicking(
+          new Feature({}),
+        );
         expect(allowPickingDefault).to.be.equal(vectorProperties.allowPicking);
       });
 
       it('should get the allowPicking from the feature', () => {
-        const allowPickingFeature = vectorProperties.getAllowPicking(new Feature({ olcs_allowPicking: true }));
+        const allowPickingFeature = vectorProperties.getAllowPicking(
+          new Feature({ olcs_allowPicking: true }),
+        );
         expect(allowPickingFeature).to.be.equal(true);
       });
     });
 
     describe('classificationType', () => {
       it('should parse value classificationType', () => {
-        expect(vectorProperties.classificationType).to.be.equal(ClassificationType.BOTH);
+        expect(vectorProperties.classificationType).to.be.equal(
+          ClassificationType.BOTH,
+        );
       });
 
       it('should not set classificationType and not raiseEvent, if value does not change', () => {
-        vectorProperties.classificationType = vectorProperties.classificationType;
+        vectorProperties.classificationType =
+          vectorProperties.classificationType;
         expect(eventListener).to.have.not.been.called;
       });
 
       it('should set classificationType and raiseEvent, if value changed', () => {
         vectorProperties.classificationType = ClassificationType.TERRAIN;
-        expect(vectorProperties.classificationType).to.be.equal(ClassificationType.TERRAIN);
+        expect(vectorProperties.classificationType).to.be.equal(
+          ClassificationType.TERRAIN,
+        );
         expect(eventListener).to.have.been.calledOnce;
         expect(eventListener).to.have.been.calledWith(['classificationType']);
       });
 
       it('should get default classificationType if not set on the feature', () => {
-        const classificationTypeDefault = vectorProperties.getClassificationType(new Feature({}));
-        expect(classificationTypeDefault).to.be.equal(vectorProperties.classificationType);
+        const classificationTypeDefault =
+          vectorProperties.getClassificationType(new Feature({}));
+        expect(classificationTypeDefault).to.be.equal(
+          vectorProperties.classificationType,
+        );
       });
 
       it('should get the classificationType from the feature', () => {
-        const classificationTypeFeature = vectorProperties.getClassificationType(new Feature({
-          olcs_classificationType: 'cesium3DTile',
-        }));
-        expect(classificationTypeFeature).to.be.equal(ClassificationType.CESIUM_3D_TILE);
+        const classificationTypeFeature =
+          vectorProperties.getClassificationType(
+            new Feature({
+              olcs_classificationType: 'cesium3DTile',
+            }),
+          );
+        expect(classificationTypeFeature).to.be.equal(
+          ClassificationType.CESIUM_3D_TILE,
+        );
       });
     });
 
     describe('scaleByDistance', () => {
       it('should parse value scaleByDistance', () => {
         const scaleByDistance = new NearFarScalar(1, 1, 2, 1);
-        expect(NearFarScalar.equals(scaleByDistance, vectorProperties.scaleByDistance)).to.be.true;
+        expect(
+          NearFarScalar.equals(
+            scaleByDistance,
+            vectorProperties.scaleByDistance,
+          ),
+        ).to.be.true;
       });
 
       it('should not set scaleByDistance and not raiseEvent, if value does not change', () => {
@@ -275,23 +319,31 @@ describe('VectorProperties', () => {
       });
 
       it('should get the default scaleByDistance if not set on the feature', () => {
-        const scaleByDistanceDefault = vectorProperties.getScaleByDistance(new Feature({}));
-        expect(scaleByDistanceDefault).to.be.equal(vectorProperties.scaleByDistance);
+        const scaleByDistanceDefault = vectorProperties.getScaleByDistance(
+          new Feature({}),
+        );
+        expect(scaleByDistanceDefault).to.be.equal(
+          vectorProperties.scaleByDistance,
+        );
       });
 
       it('should get the scaleByDistance from the feature', () => {
         const scaleByDistance = new NearFarScalar(2, 2, 3, 2);
-        const scaleByDistanceFeature = vectorProperties.getScaleByDistance(new Feature({
-          olcs_scaleByDistance: [2, 2, 3, 2],
-        }));
-        expect(NearFarScalar.equals(scaleByDistanceFeature, scaleByDistance)).to.be.true;
+        const scaleByDistanceFeature = vectorProperties.getScaleByDistance(
+          new Feature({
+            olcs_scaleByDistance: [2, 2, 3, 2],
+          }),
+        );
+        expect(NearFarScalar.equals(scaleByDistanceFeature, scaleByDistance)).to
+          .be.true;
       });
     });
 
     describe('eyeOffset', () => {
       it('should parse value eyeOffset', () => {
         const eyeOffset = new Cartesian3(2, 3, 4);
-        expect(Cartesian3.equals(eyeOffset, vectorProperties.eyeOffset)).to.be.true;
+        expect(Cartesian3.equals(eyeOffset, vectorProperties.eyeOffset)).to.be
+          .true;
       });
 
       it('should not set eyeOffset and not raiseEvent, if value does not change', () => {
@@ -314,17 +366,21 @@ describe('VectorProperties', () => {
 
       it('should get the eyeOffset from the feature', () => {
         const eyeOffset = new Cartesian3(2, 2, 3);
-        const eyeOffsetFeature = vectorProperties.getEyeOffset(new Feature({
-          olcs_eyeOffset: [2, 2, 3],
-        }));
+        const eyeOffsetFeature = vectorProperties.getEyeOffset(
+          new Feature({
+            olcs_eyeOffset: [2, 2, 3],
+          }),
+        );
         expect(Cartesian3.equals(eyeOffsetFeature, eyeOffset)).to.be.true;
       });
 
       it('should get the eyeOffset from from legacy zCoordinateEyeOffset', () => {
         const eyeOffset = new Cartesian3(0, 0, 3);
-        const eyeOffsetFeature = vectorProperties.getEyeOffset(new Feature({
-          olcs_zCoordinateEyeOffset: 3,
-        }));
+        const eyeOffsetFeature = vectorProperties.getEyeOffset(
+          new Feature({
+            olcs_zCoordinateEyeOffset: 3,
+          }),
+        );
         expect(Cartesian3.equals(eyeOffsetFeature, eyeOffset)).to.be.true;
       });
     });
@@ -347,14 +403,20 @@ describe('VectorProperties', () => {
       });
 
       it('should get default heightAboveGround if not set on the feature', () => {
-        const heightAboveGroundDefault = vectorProperties.getHeightAboveGround(new Feature({}));
-        expect(heightAboveGroundDefault).to.be.equal(vectorProperties.heightAboveGround);
+        const heightAboveGroundDefault = vectorProperties.getHeightAboveGround(
+          new Feature({}),
+        );
+        expect(heightAboveGroundDefault).to.be.equal(
+          vectorProperties.heightAboveGround,
+        );
       });
 
       it('should get the heightAboveGround from the feature', () => {
-        const heightAboveGroundFeature = vectorProperties.getHeightAboveGround(new Feature({
-          olcs_heightAboveGround: 15,
-        }));
+        const heightAboveGroundFeature = vectorProperties.getHeightAboveGround(
+          new Feature({
+            olcs_heightAboveGround: 15,
+          }),
+        );
         expect(heightAboveGroundFeature).to.be.equal(15);
       });
     });
@@ -382,9 +444,11 @@ describe('VectorProperties', () => {
       });
 
       it('should get the skirt from the feature', () => {
-        const skirtFeature = vectorProperties.getSkirt(new Feature({
-          olcs_skirt: 15,
-        }));
+        const skirtFeature = vectorProperties.getSkirt(
+          new Feature({
+            olcs_skirt: 15,
+          }),
+        );
         expect(skirtFeature).to.be.equal(15);
       });
     });
@@ -407,14 +471,18 @@ describe('VectorProperties', () => {
       });
 
       it('should get default groundLevel if not set on the feature', () => {
-        const groundLevelDefault = vectorProperties.getGroundLevel(new Feature({}));
+        const groundLevelDefault = vectorProperties.getGroundLevel(
+          new Feature({}),
+        );
         expect(groundLevelDefault).to.be.equal(vectorProperties.groundLevel);
       });
 
       it('should get the groundLevel from the feature', () => {
-        const groundLevelFeature = vectorProperties.getGroundLevel(new Feature({
-          olcs_groundLevel: 15,
-        }));
+        const groundLevelFeature = vectorProperties.getGroundLevel(
+          new Feature({
+            olcs_groundLevel: 15,
+          }),
+        );
         expect(groundLevelFeature).to.be.equal(15);
       });
     });
@@ -437,14 +505,20 @@ describe('VectorProperties', () => {
       });
 
       it('should get default extrudedHeight if not set on the feature', () => {
-        const extrudedHeightDefault = vectorProperties.getExtrudedHeight(new Feature({}));
-        expect(extrudedHeightDefault).to.be.equal(vectorProperties.extrudedHeight);
+        const extrudedHeightDefault = vectorProperties.getExtrudedHeight(
+          new Feature({}),
+        );
+        expect(extrudedHeightDefault).to.be.equal(
+          vectorProperties.extrudedHeight,
+        );
       });
 
       it('should get the extrudedHeight from the feature', () => {
-        const extrudedHeightFeature = vectorProperties.getExtrudedHeight(new Feature({
-          olcs_extrudedHeight: 15,
-        }));
+        const extrudedHeightFeature = vectorProperties.getExtrudedHeight(
+          new Feature({
+            olcs_extrudedHeight: 15,
+          }),
+        );
         expect(extrudedHeightFeature).to.be.equal(15);
       });
     });
@@ -455,7 +529,8 @@ describe('VectorProperties', () => {
       });
 
       it('should not set storeysAboveGround and not raiseEvent, if value does not change', () => {
-        vectorProperties.storeysAboveGround = vectorProperties.storeysAboveGround;
+        vectorProperties.storeysAboveGround =
+          vectorProperties.storeysAboveGround;
         expect(eventListener).to.have.not.been.called;
       });
 
@@ -467,14 +542,20 @@ describe('VectorProperties', () => {
       });
 
       it('should get default storeysAboveGround if not set on the feature', () => {
-        const storeysAboveGroundDefault = vectorProperties.getStoreysAboveGround(new Feature({}));
-        expect(storeysAboveGroundDefault).to.be.equal(vectorProperties.storeysAboveGround);
+        const storeysAboveGroundDefault =
+          vectorProperties.getStoreysAboveGround(new Feature({}));
+        expect(storeysAboveGroundDefault).to.be.equal(
+          vectorProperties.storeysAboveGround,
+        );
       });
 
       it('should get the storeysAboveGround from the feature', () => {
-        const storeysAboveGroundFeature = vectorProperties.getStoreysAboveGround(new Feature({
-          olcs_storeysAboveGround: 15,
-        }));
+        const storeysAboveGroundFeature =
+          vectorProperties.getStoreysAboveGround(
+            new Feature({
+              olcs_storeysAboveGround: 15,
+            }),
+          );
         expect(storeysAboveGroundFeature).to.be.equal(15);
       });
     });
@@ -485,7 +566,8 @@ describe('VectorProperties', () => {
       });
 
       it('should not set storeysBelowGround and not raiseEvent, if value does not change', () => {
-        vectorProperties.storeysBelowGround = vectorProperties.storeysBelowGround;
+        vectorProperties.storeysBelowGround =
+          vectorProperties.storeysBelowGround;
         expect(eventListener).to.have.not.been.called;
       });
 
@@ -497,47 +579,69 @@ describe('VectorProperties', () => {
       });
 
       it('should get default storeysBelowGround if not set on the feature', () => {
-        const storeysBelowGroundDefault = vectorProperties.getStoreysBelowGround(new Feature({}));
-        expect(storeysBelowGroundDefault).to.be.equal(vectorProperties.storeysBelowGround);
+        const storeysBelowGroundDefault =
+          vectorProperties.getStoreysBelowGround(new Feature({}));
+        expect(storeysBelowGroundDefault).to.be.equal(
+          vectorProperties.storeysBelowGround,
+        );
       });
 
       it('should get the storeysBelowGround from the feature', () => {
-        const storeysBelowGroundDefault = vectorProperties.getStoreysBelowGround(new Feature({}));
+        const storeysBelowGroundDefault =
+          vectorProperties.getStoreysBelowGround(new Feature({}));
         expect(storeysBelowGroundDefault).to.be.equal(3);
-        const storeysBelowGroundFeature = vectorProperties.getStoreysBelowGround(new Feature({
-          olcs_storeysBelowGround: 15,
-        }));
+        const storeysBelowGroundFeature =
+          vectorProperties.getStoreysBelowGround(
+            new Feature({
+              olcs_storeysBelowGround: 15,
+            }),
+          );
         expect(storeysBelowGroundFeature).to.be.equal(15);
       });
     });
 
     describe('storeyHeightsAboveGround', () => {
       it('should parse value storeyHeightsAboveGround', () => {
-        expect(vectorProperties.storeyHeightsAboveGround).to.have.ordered.members([1, 2, 3]);
+        expect(
+          vectorProperties.storeyHeightsAboveGround,
+        ).to.have.ordered.members([1, 2, 3]);
       });
 
       it('should not set storeyHeightsAboveGround and not raiseEvent, if value does not change', () => {
-        vectorProperties.storeyHeightsAboveGround = vectorProperties.storeyHeightsAboveGround;
+        vectorProperties.storeyHeightsAboveGround =
+          vectorProperties.storeyHeightsAboveGround;
         expect(eventListener).to.have.not.been.called;
       });
 
       it('should set storeyHeightsAboveGround and raiseEvent, if value changed', () => {
         vectorProperties.storeyHeightsAboveGround = [2, 3, 4];
-        expect(vectorProperties.storeyHeightsAboveGround).to.have.ordered.members([2, 3, 4]);
+        expect(
+          vectorProperties.storeyHeightsAboveGround,
+        ).to.have.ordered.members([2, 3, 4]);
         expect(eventListener).to.have.been.calledOnce;
-        expect(eventListener).to.have.been.calledWith(['storeyHeightsAboveGround']);
+        expect(eventListener).to.have.been.calledWith([
+          'storeyHeightsAboveGround',
+        ]);
       });
 
       it('should get default storeyHeightsAboveGround if not set on the feature', () => {
-        const storeyHeightsAboveGroundDefault = vectorProperties.getStoreyHeightsAboveGround(new Feature({}));
-        expect(storeyHeightsAboveGroundDefault).to.have.ordered.members(vectorProperties.storeyHeightsAboveGround);
+        const storeyHeightsAboveGroundDefault =
+          vectorProperties.getStoreyHeightsAboveGround(new Feature({}));
+        expect(storeyHeightsAboveGroundDefault).to.have.ordered.members(
+          vectorProperties.storeyHeightsAboveGround,
+        );
       });
 
       it('should get the storeyHeightsAboveGround from the feature', () => {
-        const storeyHeightsAboveGroundFeature = vectorProperties.getStoreyHeightsAboveGround(new Feature({
-          olcs_storeyHeightsAboveGround: [2, 3, 4],
-        }));
-        expect(storeyHeightsAboveGroundFeature).to.have.ordered.members([2, 3, 4]);
+        const storeyHeightsAboveGroundFeature =
+          vectorProperties.getStoreyHeightsAboveGround(
+            new Feature({
+              olcs_storeyHeightsAboveGround: [2, 3, 4],
+            }),
+          );
+        expect(storeyHeightsAboveGroundFeature).to.have.ordered.members([
+          2, 3, 4,
+        ]);
       });
 
       it('should have immutable storeyHeightsAboveGround', () => {
@@ -549,30 +653,43 @@ describe('VectorProperties', () => {
 
     describe('storeyHeightsBelowGround', () => {
       it('should parse value storeyHeightsBelowGround', () => {
-        expect(vectorProperties.storeyHeightsBelowGround).to.have.ordered.members([2, 3]);
+        expect(
+          vectorProperties.storeyHeightsBelowGround,
+        ).to.have.ordered.members([2, 3]);
       });
 
       it('should not set storeyHeightsBelowGround and not raiseEvent, if value does not change', () => {
-        vectorProperties.storeyHeightsBelowGround = vectorProperties.storeyHeightsBelowGround;
+        vectorProperties.storeyHeightsBelowGround =
+          vectorProperties.storeyHeightsBelowGround;
         expect(eventListener).to.have.not.been.called;
       });
 
       it('should set storeyHeightsBelowGround and raiseEvent, if value changed', () => {
         vectorProperties.storeyHeightsBelowGround = [3, 4];
-        expect(vectorProperties.storeyHeightsBelowGround).to.have.ordered.members([3, 4]);
+        expect(
+          vectorProperties.storeyHeightsBelowGround,
+        ).to.have.ordered.members([3, 4]);
         expect(eventListener).to.have.been.calledOnce;
-        expect(eventListener).to.have.been.calledWith(['storeyHeightsBelowGround']);
+        expect(eventListener).to.have.been.calledWith([
+          'storeyHeightsBelowGround',
+        ]);
       });
 
       it('should get default storeyHeightsBelowGround if not set on the feature', () => {
-        const storeyHeightsBelowGroundDefault = vectorProperties.getStoreyHeightsBelowGround(new Feature({}));
-        expect(storeyHeightsBelowGroundDefault).to.have.ordered.members(vectorProperties.storeyHeightsBelowGround);
+        const storeyHeightsBelowGroundDefault =
+          vectorProperties.getStoreyHeightsBelowGround(new Feature({}));
+        expect(storeyHeightsBelowGroundDefault).to.have.ordered.members(
+          vectorProperties.storeyHeightsBelowGround,
+        );
       });
 
       it('should get the storeyHeightsBelowGround from the feature', () => {
-        const storeyHeightsBelowGroundFeature = vectorProperties.getStoreyHeightsBelowGround(new Feature({
-          olcs_storeyHeightsBelowGround: [3, 4],
-        }));
+        const storeyHeightsBelowGroundFeature =
+          vectorProperties.getStoreyHeightsBelowGround(
+            new Feature({
+              olcs_storeyHeightsBelowGround: [3, 4],
+            }),
+          );
         expect(storeyHeightsBelowGroundFeature).to.have.ordered.members([3, 4]);
       });
 
@@ -603,7 +720,9 @@ describe('VectorProperties', () => {
 
     describe('modelUrl', () => {
       it('should parse value modelUrl', () => {
-        expect(vectorProperties.modelUrl).to.be.equal('http://localhost/test.glb');
+        expect(vectorProperties.modelUrl).to.be.equal(
+          'http://localhost/test.glb',
+        );
       });
 
       it('should not set modelUrl and not raiseEvent, if value does not change', () => {
@@ -613,7 +732,9 @@ describe('VectorProperties', () => {
 
       it('should set modelUrl and raiseEvent, if value changed', () => {
         vectorProperties.modelUrl = 'http://localhost/test2.glb';
-        expect(vectorProperties.modelUrl).to.be.equal('http://localhost/test2.glb');
+        expect(vectorProperties.modelUrl).to.be.equal(
+          'http://localhost/test2.glb',
+        );
         expect(eventListener).to.have.been.calledOnce;
         expect(eventListener).to.have.been.calledWith(['modelUrl']);
       });
@@ -729,7 +850,8 @@ describe('VectorProperties', () => {
 
     describe('modelOptions', () => {
       it('should set modelOptions', () => {
-        expect(vectorProperties.modelOptions).to.be.an('object').and.to.be.empty;
+        expect(vectorProperties.modelOptions).to.be.an('object').and.to.be
+          .empty;
       });
 
       it('should not set modelOptions and not raiseEvent, if the value does not change', () => {
@@ -824,7 +946,8 @@ describe('VectorProperties', () => {
         vectorProperties.modelScaleY = 4;
         vectorProperties.modelScaleZ = 8;
         const modelOptions = vectorProperties.getModel(feature);
-        expect(modelOptions).to.be.an('object')
+        expect(modelOptions)
+          .to.be.an('object')
           .and.to.have.property('scale')
           .and.to.have.ordered.members([2, 4, 8]);
       });
@@ -832,8 +955,7 @@ describe('VectorProperties', () => {
       it('should make relatives URL resolve to a baseUrl', () => {
         feature.set('olcs_modelUrl', 'test.glb');
         const modelOptions = vectorProperties.getModel(feature);
-        expect(modelOptions)
-          .to.have.property('url', 'http://other/test.glb');
+        expect(modelOptions).to.have.property('url', 'http://other/test.glb');
       });
 
       it('should return modelOptions for a feature', () => {
@@ -879,13 +1001,16 @@ describe('VectorProperties', () => {
         vectorProperties.modelScaleY = 4;
         vectorProperties.modelScaleZ = 8;
         const primitiveOptions = vectorProperties.getPrimitive(feature);
-        expect(primitiveOptions).to.be.an('object')
+        expect(primitiveOptions)
+          .to.be.an('object')
           .and.to.have.property('scale')
           .and.to.have.ordered.members([2, 4, 8]);
       });
 
       it('should not return a primitive if geometryOptions is missing', () => {
-        vectorProperties.primitiveOptions = { type: PrimitiveOptionsType.SPHERE };
+        vectorProperties.primitiveOptions = {
+          type: PrimitiveOptionsType.SPHERE,
+        };
         const primitiveOptions = vectorProperties.getPrimitive(feature);
         expect(primitiveOptions).to.be.null;
       });

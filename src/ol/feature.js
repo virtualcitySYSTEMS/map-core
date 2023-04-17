@@ -1,6 +1,10 @@
 import Feature from 'ol/Feature.js';
 import { Style } from 'ol/style.js';
-import { globalHidden, hidden, highlighted } from '../layer/featureVisibility.js';
+import {
+  globalHidden,
+  hidden,
+  highlighted,
+} from '../layer/featureVisibility.js';
 
 /**
  * To be used for cesium 3D style functions
@@ -41,7 +45,9 @@ Feature.prototype.getProperty = function getProperty(property) {
  * @param {string} property
  * @returns {*}
  */
-Feature.prototype.getPropertyInherited = function getPropertyInherited(property) {
+Feature.prototype.getPropertyInherited = function getPropertyInherited(
+  property,
+) {
   return this.getProperty(property);
 };
 
@@ -72,4 +78,3 @@ Feature.prototype.getStyle = function getStyle() {
 
 // TODO implement getExactClassName, isClass & isExactClass
 // TODO implement feature.content.tileset.timeSinceLoad
-

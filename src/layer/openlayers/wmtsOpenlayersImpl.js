@@ -13,7 +13,9 @@ import { isSameOrigin } from '../../util/urlHelpers.js';
  * @extends {RasterLayerOpenlayersImpl}
  */
 class WmtsOpenlayersImpl extends RasterLayerOpenlayersImpl {
-  static get className() { return 'WmtsOpenlayersImpl'; }
+  static get className() {
+    return 'WmtsOpenlayersImpl';
+  }
 
   /**
    * @param {import("@vcmap/core").OpenlayersMap} map
@@ -72,7 +74,10 @@ class WmtsOpenlayersImpl extends RasterLayerOpenlayersImpl {
    * @returns {import("ol/layer/Tile").default}
    */
   getOLLayer() {
-    const projection = this.tilingSchema === TilingScheme.GEOGRAPHIC ? wgs84Projection : mercatorProjection;
+    const projection =
+      this.tilingSchema === TilingScheme.GEOGRAPHIC
+        ? wgs84Projection
+        : mercatorProjection;
     const projectionExtent = projection.proj.getExtent();
     let size = getWidth(projectionExtent) / this.tileSize[0];
     if (this.numberOfLevelZeroTilesX > 1) {
@@ -83,9 +88,11 @@ class WmtsOpenlayersImpl extends RasterLayerOpenlayersImpl {
     }
 
     const maxZoom = this.maxLevel + 1;
-    const resolutions = new Array(maxZoom).fill(undefined).map((value, index) => {
-      return size / (2 ** index);
-    });
+    const resolutions = new Array(maxZoom)
+      .fill(undefined)
+      .map((value, index) => {
+        return size / 2 ** index;
+      });
 
     const extent = this.extent.getCoordinatesInProjection(projection);
     const tileGridOptions = {

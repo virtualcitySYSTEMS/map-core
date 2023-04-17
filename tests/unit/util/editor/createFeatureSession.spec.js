@@ -4,8 +4,15 @@ import { GeometryType } from '../../../../src/util/editor/editorSessionHelpers.j
 import VcsApp from '../../../../src/vcsApp.js';
 import VectorLayer from '../../../../src/layer/vectorLayer.js';
 import InteractionChain from '../../../../src/interaction/interactionChain.js';
-import { EventType, ModificationKeyType, PointerKeyType } from '../../../../src/interaction/interactionType.js';
-import { createSync } from '../../../../src/layer/vectorSymbols.js';
+import {
+  EventType,
+  ModificationKeyType,
+  PointerKeyType,
+} from '../../../../src/interaction/interactionType.js';
+import {
+  createSync,
+  alreadyTransformedToMercator,
+} from '../../../../src/layer/vectorSymbols.js';
 import { ObliqueMap, OpenlayersMap } from '../../../../index.js';
 
 describe('create feature session', () => {
@@ -38,7 +45,9 @@ describe('create feature session', () => {
     });
 
     it('should add a an exclusive listener to the event handler', () => {
-      expect(app.maps.eventHandler.interactions[3]).to.be.an.instanceof(InteractionChain);
+      expect(app.maps.eventHandler.interactions[3]).to.be.an.instanceof(
+        InteractionChain,
+      );
     });
 
     it('should trigger feature created, if a feature is created', async () => {
@@ -56,7 +65,9 @@ describe('create feature session', () => {
 
     it('should add created features to the layer', async () => {
       let feature;
-      session.featureCreated.addEventListener((f) => { feature = f; });
+      session.featureCreated.addEventListener((f) => {
+        feature = f;
+      });
       await app.maps.eventHandler.interactions[3].pipe({
         type: EventType.CLICK,
         pointer: PointerKeyType.LEFT,
@@ -69,7 +80,9 @@ describe('create feature session', () => {
 
     it('should set a created feature to createSync', async () => {
       let feature;
-      session.featureCreated.addEventListener((f) => { feature = f; });
+      session.featureCreated.addEventListener((f) => {
+        feature = f;
+      });
       await app.maps.eventHandler.interactions[3].pipe({
         type: EventType.CLICK,
         pointer: PointerKeyType.LEFT,
@@ -80,9 +93,26 @@ describe('create feature session', () => {
       expect(feature).to.have.property(createSync, true);
     });
 
+    it('should set a created feature to alreadyTransformedToMercator', async () => {
+      let feature;
+      session.featureCreated.addEventListener((f) => {
+        feature = f;
+      });
+      await app.maps.eventHandler.interactions[3].pipe({
+        type: EventType.CLICK,
+        pointer: PointerKeyType.LEFT,
+        key: ModificationKeyType.NONE,
+        position: [1, 2, 0],
+        positionOrPixel: [1, 2, 3],
+      });
+      expect(feature).to.have.property(alreadyTransformedToMercator, true);
+    });
+
     it('should remove createSync, once the feature is finished', async () => {
       let feature;
-      session.featureCreated.addEventListener((f) => { feature = f; });
+      session.featureCreated.addEventListener((f) => {
+        feature = f;
+      });
       await app.maps.eventHandler.interactions[3].pipe({
         type: EventType.CLICK,
         pointer: PointerKeyType.LEFT,
@@ -103,7 +133,9 @@ describe('create feature session', () => {
 
     it('should remove features, if they are not valid after finishing', async () => {
       let feature;
-      session.featureCreated.addEventListener((f) => { feature = f; });
+      session.featureCreated.addEventListener((f) => {
+        feature = f;
+      });
       await app.maps.eventHandler.interactions[3].pipe({
         type: EventType.CLICK,
         pointer: PointerKeyType.LEFT,

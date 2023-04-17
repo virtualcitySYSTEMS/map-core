@@ -1,4 +1,9 @@
-import { Color, Cesium3DTileFeature, Cesium3DTilePointFeature, Entity as CesiumEntity } from '@vcmap-cesium/engine';
+import {
+  Color,
+  Cesium3DTileFeature,
+  Cesium3DTilePointFeature,
+  Entity as CesiumEntity,
+} from '@vcmap-cesium/engine';
 import Feature from 'ol/Feature.js';
 import Style from 'ol/style/Style.js';
 
@@ -51,10 +56,12 @@ export const globalHidden = Symbol('globalHidden');
  * @returns {boolean}
  */
 export function featureExists(feature) {
-  return feature &&
+  return (
+    feature &&
     feature.content &&
     !feature.content.isDestroyed() &&
-    !feature.content.batchTable.isDestroyed();
+    !feature.content.batchTable.isDestroyed()
+  );
 }
 
 /**
@@ -63,10 +70,10 @@ export function featureExists(feature) {
  */
 export function hideFeature(feature) {
   if (
-    (
-      (feature instanceof Cesium3DTileFeature || feature instanceof Cesium3DTilePointFeature) &&
-      featureExists(feature)
-    ) || feature instanceof CesiumEntity
+    ((feature instanceof Cesium3DTileFeature ||
+      feature instanceof Cesium3DTilePointFeature) &&
+      featureExists(feature)) ||
+    feature instanceof CesiumEntity
   ) {
     feature.show = false;
   } else if (feature instanceof Feature) {
@@ -82,7 +89,8 @@ export function hideFeature(feature) {
 export function cacheOriginalStyle(feature) {
   if (!Reflect.has(feature, originalStyle)) {
     if (
-      (feature instanceof Cesium3DTileFeature || feature instanceof Cesium3DTilePointFeature) &&
+      (feature instanceof Cesium3DTileFeature ||
+        feature instanceof Cesium3DTilePointFeature) &&
       featureExists(feature)
     ) {
       feature[originalStyle] = feature.color.clone();
@@ -100,7 +108,8 @@ export function resetOriginalStyle(feature) {
   if (!(feature[globalHidden] || feature[hidden] || feature[highlighted])) {
     const style = feature[originalStyle];
     if (
-      (feature instanceof Cesium3DTileFeature || feature instanceof Cesium3DTilePointFeature) &&
+      (feature instanceof Cesium3DTileFeature ||
+        feature instanceof Cesium3DTilePointFeature) &&
       featureExists(feature)
     ) {
       feature.color = style;
@@ -119,7 +128,8 @@ export function highlightFeature(feature) {
   if (!(feature[globalHidden] || feature[hidden])) {
     const style = feature[highlighted];
     if (
-      (feature instanceof Cesium3DTileFeature || feature instanceof Cesium3DTilePointFeature) &&
+      (feature instanceof Cesium3DTileFeature ||
+        feature instanceof Cesium3DTilePointFeature) &&
       featureExists(feature)
     ) {
       feature.color = style.cesiumFillColor;
@@ -162,10 +172,10 @@ export function showFeature(feature, symbol) {
 
   if (!(feature[hidden] || feature[globalHidden])) {
     if (
-      (
-        (feature instanceof Cesium3DTileFeature || feature instanceof Cesium3DTilePointFeature) &&
-        featureExists(feature)
-      ) || feature instanceof CesiumEntity
+      ((feature instanceof Cesium3DTileFeature ||
+        feature instanceof Cesium3DTilePointFeature) &&
+        featureExists(feature)) ||
+      feature instanceof CesiumEntity
     ) {
       feature.show = true;
     }
@@ -258,41 +268,47 @@ class FeatureVisibility {
    */
   highlight(toHighlight) {
     const updatedIds = [];
-    Object.entries(toHighlight)
-      .forEach(([id, style]) => {
-        let usedStyle = style;
-        if (style instanceof Color) {
-          usedStyle = fromCesiumColor(style);
-        } else if (style instanceof Style) {
-          usedStyle = new VectorStyleItem({});
-          if (style.getText() && style.getText().getText() && !Array.isArray(style.getText().getText())) {
-            // getText can return a rich Text Array<string> We do not support this at the moment.
-            usedStyle.label = String(style.getText().getText());
-          }
-          usedStyle.style = style;
+    Object.entries(toHighlight).forEach(([id, style]) => {
+      let usedStyle = style;
+      if (style instanceof Color) {
+        usedStyle = fromCesiumColor(style);
+      } else if (style instanceof Style) {
+        usedStyle = new VectorStyleItem({});
+        if (
+          style.getText() &&
+          style.getText().getText() &&
+          !Array.isArray(style.getText().getText())
+        ) {
+          // getText can return a rich Text Array<string> We do not support this at the moment.
+          usedStyle.label = String(style.getText().getText());
         }
-        // eslint-disable-next-line no-self-assign
-        usedStyle = /** @type {VectorStyleItem} */ (usedStyle);
+        usedStyle.style = style;
+      }
+      // eslint-disable-next-line no-self-assign
+      usedStyle = /** @type {VectorStyleItem} */ (usedStyle);
 
-        if (!this.highlightedObjects[id]) {
-          this.highlightedObjects[id] = {
-            style: usedStyle,
-            features: new Set(),
-          };
-          updatedIds.push(id);
-          // @ts-ignore
-        } else if (this.highlightedObjects[id].style !== usedStyle) {
-          this.highlightedObjects[id].style = usedStyle;
-          this.highlightedObjects[id].features.forEach((s, feature) => {
-            feature[highlighted] = usedStyle;
-            highlightFeature(feature);
-          });
-        }
-      });
+      if (!this.highlightedObjects[id]) {
+        this.highlightedObjects[id] = {
+          style: usedStyle,
+          features: new Set(),
+        };
+        updatedIds.push(id);
+        // @ts-ignore
+      } else if (this.highlightedObjects[id].style !== usedStyle) {
+        this.highlightedObjects[id].style = usedStyle;
+        this.highlightedObjects[id].features.forEach((s, feature) => {
+          feature[highlighted] = usedStyle;
+          highlightFeature(feature);
+        });
+      }
+    });
 
     if (updatedIds.length > 0) {
       this.lastUpdated = Date.now();
-      this.changed.raiseEvent({ action: FeatureVisibilityAction.HIGHLIGHT, ids: updatedIds });
+      this.changed.raiseEvent({
+        action: FeatureVisibilityAction.HIGHLIGHT,
+        ids: updatedIds,
+      });
     }
   }
 
@@ -305,17 +321,19 @@ class FeatureVisibility {
     const updatedIds = [];
     toUnHighlight.forEach((id) => {
       if (this.highlightedObjects[id]) {
-        this.highlightedObjects[id].features
-          .forEach((f) => {
-            unhighlightFeature(f);
-          });
+        this.highlightedObjects[id].features.forEach((f) => {
+          unhighlightFeature(f);
+        });
         delete this.highlightedObjects[id];
         updatedIds.push(id);
       }
     });
 
     if (updatedIds.length > 0) {
-      this.changed.raiseEvent({ action: FeatureVisibilityAction.UNHIGHLIGHT, ids: updatedIds });
+      this.changed.raiseEvent({
+        action: FeatureVisibilityAction.UNHIGHLIGHT,
+        ids: updatedIds,
+      });
     }
   }
 
@@ -333,7 +351,10 @@ class FeatureVisibility {
    * @returns {boolean}
    */
   hasHighlightFeature(id, feature) {
-    return this.highlightedObjects[id] && this.highlightedObjects[id].features.has(feature);
+    return (
+      this.highlightedObjects[id] &&
+      this.highlightedObjects[id].features.has(feature)
+    );
   }
 
   /**
@@ -365,7 +386,10 @@ class FeatureVisibility {
 
     if (updatedIds.length > 0) {
       this.lastUpdated = Date.now();
-      this.changed.raiseEvent({ action: FeatureVisibilityAction.HIDE, ids: updatedIds });
+      this.changed.raiseEvent({
+        action: FeatureVisibilityAction.HIDE,
+        ids: updatedIds,
+      });
     }
   }
 
@@ -378,17 +402,19 @@ class FeatureVisibility {
     const updatedIds = [];
     unHide.forEach((id) => {
       if (this.hiddenObjects[id]) {
-        this.hiddenObjects[id]
-          .forEach((f) => {
-            showFeature(f, hidden);
-          });
+        this.hiddenObjects[id].forEach((f) => {
+          showFeature(f, hidden);
+        });
         delete this.hiddenObjects[id];
         updatedIds.push(id);
       }
     });
 
     if (updatedIds.length > 0) {
-      this.changed.raiseEvent({ action: FeatureVisibilityAction.SHOW, ids: updatedIds });
+      this.changed.raiseEvent({
+        action: FeatureVisibilityAction.SHOW,
+        ids: updatedIds,
+      });
     }
   }
 
@@ -426,9 +452,13 @@ class FeatureVisibility {
    * Clears all caches and removes cesium events.
    */
   destroy() {
-    Object.values(this.hiddenObjects).forEach((s) => { s.clear(); });
+    Object.values(this.hiddenObjects).forEach((s) => {
+      s.clear();
+    });
     this.hiddenObjects = {};
-    Object.values(this.highlightedObjects).forEach(({ features }) => { features.clear(); });
+    Object.values(this.highlightedObjects).forEach(({ features }) => {
+      features.clear();
+    });
     this.highlightedObjects = {};
     this.changed.destroy();
   }

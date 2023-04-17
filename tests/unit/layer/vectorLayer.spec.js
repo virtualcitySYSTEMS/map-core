@@ -6,10 +6,15 @@ import VectorLayer from '../../../src/layer/vectorLayer.js';
 import { wgs84Projection } from '../../../src/util/projection.js';
 import DeclarativeStyleItem from '../../../src/style/declarativeStyleItem.js';
 import VcsApp from '../../../src/vcsApp.js';
-import VectorStyleItem, { vectorStyleSymbol } from '../../../src/style/vectorStyleItem.js';
+import VectorStyleItem, {
+  vectorStyleSymbol,
+} from '../../../src/style/vectorStyleItem.js';
 import { vcsMetaVersion } from '../../../src/layer/layer.js';
 import { originalStyle } from '../../../src/layer/featureVisibility.js';
-import { AltitudeModeCesium, ClassificationTypeCesium } from '../../../src/layer/vectorProperties.js';
+import {
+  AltitudeModeCesium,
+  ClassificationTypeCesium,
+} from '../../../src/layer/vectorProperties.js';
 import { setOpenlayersMap } from '../helpers/openlayersHelpers.js';
 import Extent from '../../../src/util/extent.js';
 
@@ -34,7 +39,9 @@ describe('VectorLayer', () => {
   describe('getZoomToExtent', () => {
     it('should return the extent of the source', () => {
       const polygonExtent = [0, 0, 1, 1];
-      VL.source.addFeature(new Feature({ geometry: fromExtent(polygonExtent) }));
+      VL.source.addFeature(
+        new Feature({ geometry: fromExtent(polygonExtent) }),
+      );
       const extent = VL.getZoomToExtent();
       expect(extent.extent).to.have.ordered.members(polygonExtent);
     });
@@ -46,7 +53,9 @@ describe('VectorLayer', () => {
 
     it('should return the configured extent', () => {
       const polygonExtent = [0, 0, 1, 1];
-      VL.source.addFeature(new Feature({ geometry: fromExtent(polygonExtent) }));
+      VL.source.addFeature(
+        new Feature({ geometry: fromExtent(polygonExtent) }),
+      );
       VL.extent = new Extent({
         projection: wgs84Projection.toJSON(),
         coordinates: [2, 2, 5, 5],
@@ -65,7 +74,9 @@ describe('VectorLayer', () => {
       VL.addFeatures([feature]);
       style.color = 'rgb(1, 1, 1)';
       expect(changed).to.have.been.called;
-      expect(VL).to.have.property('_onStyleChangeRemover').and.to.be.a('function');
+      expect(VL)
+        .to.have.property('_onStyleChangeRemover')
+        .and.to.be.a('function');
     });
 
     it('should always remove the previous styleChanged handler', () => {
@@ -120,11 +131,14 @@ describe('VectorLayer', () => {
 
       it('should set the features dedicated style, if the layer style is not declarative and the feature has no set style', () => {
         VL.setStyle(new VectorStyleItem({}));
-        expect(dedicatedFeature.getStyle()).to.equal(dedicatedFeature[vectorStyleSymbol].style);
+        expect(dedicatedFeature.getStyle()).to.equal(
+          dedicatedFeature[vectorStyleSymbol].style,
+        );
       });
 
       it('should update the originalStyle of the feature to undefined, it the layer style is dedicated', () => {
-        dedicatedFeature[originalStyle] = dedicatedFeature[vectorStyleSymbol].style;
+        dedicatedFeature[originalStyle] =
+          dedicatedFeature[vectorStyleSymbol].style;
         VL.setStyle(new DeclarativeStyleItem({}));
         expect(dedicatedFeature[originalStyle]).to.be.undefined;
       });
@@ -132,7 +146,9 @@ describe('VectorLayer', () => {
       it('should set the original style of the feature to the features style, it the layer style is vector', () => {
         dedicatedFeature[originalStyle] = undefined;
         VL.setStyle(new VectorStyleItem({}));
-        expect(dedicatedFeature[originalStyle]).to.equal(dedicatedFeature[vectorStyleSymbol].style);
+        expect(dedicatedFeature[originalStyle]).to.equal(
+          dedicatedFeature[vectorStyleSymbol].style,
+        );
       });
     });
   });
@@ -156,7 +172,9 @@ describe('VectorLayer', () => {
 
       const meta = VL.getVcsMeta();
       expect(meta).to.have.property('skirt', 5);
-      expect(meta).to.have.property('storeyHeightsAboveGround').and.to.have.members([3]);
+      expect(meta)
+        .to.have.property('storeyHeightsAboveGround')
+        .and.to.have.members([3]);
       expect(meta).to.have.property('classificationType', 'both');
       expect(meta).to.have.property('altitudeMode', 'absolute');
     });
@@ -171,7 +189,8 @@ describe('VectorLayer', () => {
       VL.style.fillColor = '#FF00FF';
       const meta = VL.getVcsMeta({ writeStyle: true });
       expect(meta).to.have.property('style');
-      expect(meta.style).to.have.property('fill')
+      expect(meta.style)
+        .to.have.property('fill')
         .and.to.have.property('color')
         .and.to.have.ordered.members([255, 0, 255, 1]);
     });
@@ -189,21 +208,32 @@ describe('VectorLayer', () => {
       VL.setVcsMeta({ storeyHeight: 5 });
       expect(VL.vectorProperties).to.have.property('storeyHeight', 5);
       VL.setVcsMeta({});
-      expect(VL.vectorProperties).to.have.property('storeyHeight').and.be.undefined;
+      expect(VL.vectorProperties).to.have.property('storeyHeight').and.be
+        .undefined;
     });
 
     it('should set/remove the classificationType', () => {
       VL.setVcsMeta({ classificationType: 'both' });
-      expect(VL.vectorProperties).to.have.property('classificationType', ClassificationTypeCesium.both);
+      expect(VL.vectorProperties).to.have.property(
+        'classificationType',
+        ClassificationTypeCesium.both,
+      );
       VL.setVcsMeta({});
-      expect(VL.vectorProperties).to.have.property('classificationType').and.to.be.undefined;
+      expect(VL.vectorProperties).to.have.property('classificationType').and.to
+        .be.undefined;
     });
 
     it('should set but not remove the altitudeMode', () => {
       VL.setVcsMeta({ altitudeMode: 'absolute' });
-      expect(VL.vectorProperties).to.have.property('altitudeMode', AltitudeModeCesium.absolute);
+      expect(VL.vectorProperties).to.have.property(
+        'altitudeMode',
+        AltitudeModeCesium.absolute,
+      );
       VL.setVcsMeta({});
-      expect(VL.vectorProperties).to.have.property('altitudeMode', AltitudeModeCesium.absolute);
+      expect(VL.vectorProperties).to.have.property(
+        'altitudeMode',
+        AltitudeModeCesium.absolute,
+      );
     });
   });
 
@@ -222,7 +252,9 @@ describe('VectorLayer', () => {
   describe('destroy', () => {
     it('should clear all features from the source', () => {
       const polygonExtent = [0, 0, 1, 1];
-      VL.source.addFeature(new Feature({ geometry: fromExtent(polygonExtent) }));
+      VL.source.addFeature(
+        new Feature({ geometry: fromExtent(polygonExtent) }),
+      );
       const { source } = VL;
       expect(source.isEmpty()).to.be.false;
       VL.destroy();

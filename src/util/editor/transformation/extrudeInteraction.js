@@ -53,7 +53,9 @@ class ExtrudeInteraction extends AbstractInteraction {
    */
   async pipe(event) {
     if (this._getExtrudeEvent) {
-      this._extruded.raiseEvent(this._getExtrudeEvent(event.positionOrPixel, event.windowPosition));
+      this._extruded.raiseEvent(
+        this._getExtrudeEvent(event.positionOrPixel, event.windowPosition),
+      );
       if (event.type === EventType.DRAGEND) {
         this._getExtrudeEvent = null;
         this._transformationHandler.showAxis = AXIS_AND_PLANES.NONE;
@@ -64,12 +66,25 @@ class ExtrudeInteraction extends AbstractInteraction {
     ) {
       const axis = event.feature[handlerSymbol];
       if (axis === AXIS_AND_PLANES.Z) {
-        const scene = /** @type {import("@vcmap/core").CesiumMap} */ (event.map).getScene();
+        const scene = /** @type {import("@vcmap/core").CesiumMap} */ (
+          event.map
+        ).getScene();
         this._transformationHandler.showAxis = axis;
-        const plane = createCameraVerticalPlane(this._transformationHandler.center.slice(), scene);
-        let currentHeight = getCartographicFromPlane(plane, scene.camera, event.windowPosition).height;
+        const plane = createCameraVerticalPlane(
+          this._transformationHandler.center.slice(),
+          scene,
+        );
+        let currentHeight = getCartographicFromPlane(
+          plane,
+          scene.camera,
+          event.windowPosition,
+        ).height;
         this._getExtrudeEvent = (c, windowPosition) => {
-          const newHeight = getCartographicFromPlane(plane, scene.camera, windowPosition).height;
+          const newHeight = getCartographicFromPlane(
+            plane,
+            scene.camera,
+            windowPosition,
+          ).height;
           const extrude = newHeight - currentHeight;
           currentHeight = newHeight;
           return extrude;

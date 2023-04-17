@@ -1,5 +1,13 @@
-import { Event as CesiumEvent, Rectangle, Math as CesiumMath } from '@vcmap-cesium/engine';
-import { compose, create as createTransform, scale as scaleTransform } from 'ol/transform.js';
+import {
+  Event as CesiumEvent,
+  Rectangle,
+  Math as CesiumMath,
+} from '@vcmap-cesium/engine';
+import {
+  compose,
+  create as createTransform,
+  scale as scaleTransform,
+} from 'ol/transform.js';
 import { rectangleToExtent } from '../tileProvider/tileProvider.js';
 import { wgs84ToMercatorTransformer } from '../../util/projection.js';
 import CanvasTileRenderer from '../../ol/render/canvas/canvasTileRenderer.js';
@@ -15,17 +23,34 @@ export function toContext(extent, center, context, tileSize) {
   const { canvas } = context;
   canvas.width = tileSize[0];
   canvas.height = tileSize[1];
-  canvas.style.width = `${tileSize[0] }px`;
-  canvas.style.height = `${tileSize[1] }px`;
+  canvas.style.width = `${tileSize[0]}px`;
+  canvas.style.height = `${tileSize[1]}px`;
   const scaleY = (extent[2] - extent[0]) / (extent[3] - extent[1]);
   const sx = 1 / ((extent[2] - extent[0]) / 256);
   const sy = -1 / ((extent[3] - extent[1]) / 256);
   const transform = scaleTransform(createTransform(), 1, 1);
-  const newTransform = compose(transform, 128, 128, sx, sy, 0, -center[0], -center[1]);
+  const newTransform = compose(
+    transform,
+    128,
+    128,
+    sx,
+    sy,
+    0,
+    -center[0],
+    -center[1],
+  );
   // @ts-ignore
-  return new CanvasTileRenderer(context, 1, extent, newTransform, 0, null, null, scaleY);
+  return new CanvasTileRenderer(
+    context,
+    1,
+    extent,
+    newTransform,
+    0,
+    null,
+    null,
+    scaleY,
+  );
 }
-
 
 /**
  * creates a canvas and draws the features on the canvas;
@@ -39,13 +64,23 @@ export function getCanvasFromFeatures(features, extent, center, tileSize) {
   const canvas = document.createElement('canvas');
   canvas.width = tileSize[0];
   canvas.height = tileSize[0];
-  const centerMercator =
-    wgs84ToMercatorTransformer([CesiumMath.toDegrees(center.longitude), CesiumMath.toDegrees(center.latitude)]);
-  const vectorContext = toContext(extent, centerMercator, canvas.getContext('2d'), tileSize);
+  const centerMercator = wgs84ToMercatorTransformer([
+    CesiumMath.toDegrees(center.longitude),
+    CesiumMath.toDegrees(center.latitude),
+  ]);
+  const vectorContext = toContext(
+    extent,
+    centerMercator,
+    canvas.getContext('2d'),
+    tileSize,
+  );
 
   features.forEach((feature) => {
     const styleFunction = feature.getStyleFunction();
-    const featureStyles = /** @type {Array<import("ol/style/Style").default>} */(styleFunction(feature, 1));
+    const featureStyles =
+      /** @type {Array<import("ol/style/Style").default>} */ (
+        styleFunction(feature, 1)
+      );
     featureStyles.forEach((styleToUse) => {
       // @ts-ignore
       vectorContext.drawFeature(feature, styleToUse);
@@ -105,7 +140,6 @@ class VectorTileImageryProvider {
     this.emptyCanvas = document.createElement('canvas');
     this.emptyCanvas.width = this.tileWidth;
     this.emptyCanvas.height = this.tileHeight;
-
 
     /**
      * @type {number}
@@ -235,7 +269,11 @@ class VectorTileImageryProvider {
     if (features.length === 0) {
       return this.emptyCanvas;
     }
-    const rectangle = this.tileProvider.tilingScheme.tileXYToRectangle(x, y, level);
+    const rectangle = this.tileProvider.tilingScheme.tileXYToRectangle(
+      x,
+      y,
+      level,
+    );
     const extent = rectangleToExtent(rectangle);
     const center = Rectangle.center(rectangle);
     return getCanvasFromFeatures(features, extent, center, this._tileSize);

@@ -38,14 +38,20 @@ describe('OpenStreetMapLayer', () => {
     });
 
     it('should call the SPLIT_DIRECTION_CHANGED events', () => {
-      const spy = getVcsEventSpy(openStreetMapLayer.splitDirectionChanged, sandbox);
+      const spy = getVcsEventSpy(
+        openStreetMapLayer.splitDirectionChanged,
+        sandbox,
+      );
       openStreetMapLayer.splitDirection = SplitDirection.LEFT;
       expect(spy).to.have.been.calledWith(SplitDirection.LEFT);
     });
 
     it('should not publish the SPLIT_DIRECTION_CHANGED event, if it does not changed', () => {
       openStreetMapLayer.splitDirection = SplitDirection.LEFT;
-      const spy = getVcsEventSpy(openStreetMapLayer.splitDirectionChanged, sandbox);
+      const spy = getVcsEventSpy(
+        openStreetMapLayer.splitDirectionChanged,
+        sandbox,
+      );
       openStreetMapLayer.splitDirection = SplitDirection.LEFT;
       expect(spy).to.not.have.been.called;
     });
@@ -54,7 +60,9 @@ describe('OpenStreetMapLayer', () => {
       const [impl] = openStreetMapLayer.getImplementationsForMap(map);
       const updateSplitDirection = sandbox.spy(impl, 'updateSplitDirection');
       openStreetMapLayer.splitDirection = SplitDirection.LEFT;
-      expect(updateSplitDirection).to.have.been.calledWithExactly(SplitDirection.LEFT);
+      expect(updateSplitDirection).to.have.been.calledWithExactly(
+        SplitDirection.LEFT,
+      );
     });
   });
 
@@ -94,7 +102,10 @@ describe('OpenStreetMapLayer', () => {
       });
 
       it('should configure splitDirection', () => {
-        expect(outputConfig).to.have.property('splitDirection', inputConfig.splitDirection);
+        expect(outputConfig).to.have.property(
+          'splitDirection',
+          inputConfig.splitDirection,
+        );
       });
     });
   });

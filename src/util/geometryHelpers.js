@@ -48,11 +48,15 @@ export function getFlatCoordinatesFromGeometry(geometry, inputCoordinates) {
   } else if (geometry instanceof LineString) {
     flattenCoordinates = coordinates;
   } else if (geometry instanceof Polygon) {
-    flattenCoordinates = coordinates.reduce((current, next) => current.concat(next));
+    flattenCoordinates = coordinates.reduce((current, next) =>
+      current.concat(next),
+    );
   } else if (geometry instanceof MultiPoint) {
     flattenCoordinates = coordinates;
   } else if (geometry instanceof MultiLineString) {
-    flattenCoordinates = coordinates.reduce((current, next) => current.concat(next));
+    flattenCoordinates = coordinates.reduce((current, next) =>
+      current.concat(next),
+    );
   } else if (geometry instanceof MultiPolygon) {
     flattenCoordinates = coordinates
       .reduce((current, next) => current.concat(next))
@@ -60,7 +64,8 @@ export function getFlatCoordinatesFromGeometry(geometry, inputCoordinates) {
   } else if (geometry instanceof Circle) {
     flattenCoordinates = coordinates;
   } else if (geometry instanceof GeometryCollection) {
-    flattenCoordinates = geometry.getGeometries()
+    flattenCoordinates = geometry
+      .getGeometries()
       .map((g, i) => getFlatCoordinatesFromGeometry(g, coordinates?.[i]))
       .reduce((current, next) => current.concat(next));
   }
@@ -73,18 +78,18 @@ export function getFlatCoordinatesFromGeometry(geometry, inputCoordinates) {
  * @returns {import("ol/geom/Circle").default}
  */
 export function circleFromCenterRadius(center, radius) {
-  const offsetWGS84 = offsetSphere(Projection.mercatorToWgs84(center), radius, Math.PI / 2);
+  const offsetWGS84 = offsetSphere(
+    Projection.mercatorToWgs84(center),
+    radius,
+    Math.PI / 2,
+  );
   const of = Projection.wgs84ToMercator(offsetWGS84);
   const dx = center[0] - of[0];
   const dy = center[1] - of[1];
   const dx2 = dx * dx;
   const dy2 = dy * dy;
   const radiusProjected = Math.sqrt(dx2 + dy2);
-  return new Circle(
-    center,
-    radiusProjected,
-    'XYZ',
-  );
+  return new Circle(center, radiusProjected, 'XYZ');
 }
 
 /**
@@ -153,7 +158,7 @@ function ringArea(ring) {
   for (let i = 0; i <= positions - 2; i++) {
     const p1 = ring[i];
     const p2 = ring[i + 1];
-    area += ((p1[0] * p2[1]) - (p1[1] * p2[0]));
+    area += p1[0] * p2[1] - p1[1] * p2[0];
   }
 
   area /= 2;

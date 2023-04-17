@@ -1,7 +1,9 @@
 import nock from 'nock';
 import Feature from 'ol/Feature.js';
 import { ClassificationType } from '@vcmap-cesium/engine';
-import GeoJSONLayer, { featureFromOptions } from '../../../src/layer/geojsonLayer.js';
+import GeoJSONLayer, {
+  featureFromOptions,
+} from '../../../src/layer/geojsonLayer.js';
 import { setOpenlayersMap } from '../helpers/openlayersHelpers.js';
 import VcsApp from '../../../src/vcsApp.js';
 import importJSON from '../helpers/importJSON.js';
@@ -45,8 +47,8 @@ describe('GeoJSONLayer', () => {
 
     it('should load data from the url', () => {
       const features = geojsonLayer.getFeatures();
-      const foo = features.find(f => f.get('name') === 'foo');
-      const bar = features.find(f => f.get('name') === 'bar');
+      const foo = features.find((f) => f.get('name') === 'foo');
+      const bar = features.find((f) => f.get('name') === 'bar');
       expect(foo).to.be.an.instanceof(Feature);
       expect(bar).to.be.an.instanceof(Feature);
     });
@@ -68,17 +70,20 @@ describe('GeoJSONLayer', () => {
     before(async () => {
       scope = nock('http://myGeoJsonProvider')
         .get('/test.json')
-        .reply(200, JSON.stringify({
-          type: 'FeatureCollection',
-          vcsMeta: {
-            classificationType: 'terrain',
-            storeysAboveGround: 1,
-            storeyHeightsAboveGround: [1],
-            storeysBelowGround: 1,
-            storeyHeightsBelowGround: [1],
-          },
-          features: [],
-        }));
+        .reply(
+          200,
+          JSON.stringify({
+            type: 'FeatureCollection',
+            vcsMeta: {
+              classificationType: 'terrain',
+              storeysAboveGround: 1,
+              storeyHeightsAboveGround: [1],
+              storeysBelowGround: 1,
+              storeyHeightsBelowGround: [1],
+            },
+            features: [],
+          }),
+        );
 
       geojsonLayer = new GeoJSONLayer({
         url: 'http://myGeoJsonProvider/test.json',
@@ -98,13 +103,19 @@ describe('GeoJSONLayer', () => {
 
     it('data vectorProperties should be evaluated', () => {
       expect(geojsonLayer.vectorProperties.storeysAboveGround).to.be.equal(1);
-      expect(geojsonLayer.vectorProperties.storeyHeightsAboveGround).to.have.members([1]);
+      expect(
+        geojsonLayer.vectorProperties.storeyHeightsAboveGround,
+      ).to.have.members([1]);
     });
 
     it('layer vectorProperties should have priority over data vectorProperties', () => {
       expect(geojsonLayer.vectorProperties.storeysBelowGround).to.be.equal(2);
-      expect(geojsonLayer.vectorProperties.storeyHeightsBelowGround).to.have.members([2]);
-      expect(geojsonLayer.vectorProperties.classificationType).to.be.equal(ClassificationType.BOTH);
+      expect(
+        geojsonLayer.vectorProperties.storeyHeightsBelowGround,
+      ).to.have.members([2]);
+      expect(geojsonLayer.vectorProperties.classificationType).to.be.equal(
+        ClassificationType.BOTH,
+      );
     });
   });
 
@@ -125,7 +136,9 @@ describe('GeoJSONLayer', () => {
       });
 
       await geojsonLayer.fetchData();
-      originalFoo = geojsonLayer.getFeatures().find(f => f.get('name') === 'foo');
+      originalFoo = geojsonLayer
+        .getFeatures()
+        .find((f) => f.get('name') === 'foo');
       [originalConfig] = geojsonLayer.getFeaturesById(['test']);
       await geojsonLayer.reload();
     });
@@ -137,7 +150,7 @@ describe('GeoJSONLayer', () => {
 
     it('should reload data from the url', () => {
       const features = geojsonLayer.getFeatures();
-      const foo = features.find(f => f.get('name') === 'foo');
+      const foo = features.find((f) => f.get('name') === 'foo');
       expect(foo).to.be.an.instanceof(Feature);
       expect(foo).to.not.equal(originalFoo);
     });
@@ -180,21 +193,23 @@ describe('GeoJSONLayer', () => {
       });
 
       it('should configure feature', () => {
-        expect(outputConfig).to.have.property('features')
+        expect(outputConfig)
+          .to.have.property('features')
           .and.to.have.members(inputConfig.features);
       });
     });
 
     describe('after initializing features from the config', () => {
       it('should recreate the configured feature', async () => {
-        const feature = JSON.parse(JSON.stringify(testGeoJSON.featureWithStyle));
+        const feature = JSON.parse(
+          JSON.stringify(testGeoJSON.featureWithStyle),
+        );
         const layer = new GeoJSONLayer({
           features: [feature],
         });
         await layer.initialize();
         const config = layer.toJSON();
-        expect(config).to.have.property('features')
-          .and.to.have.lengthOf(1);
+        expect(config).to.have.property('features').and.to.have.lengthOf(1);
 
         expect(config.features[0]).to.have.property('id', 'test');
       });

@@ -15,9 +15,11 @@ export function getShapeFromOptions(options) {
   if (options.stroke && !(options.stroke instanceof Stroke)) {
     options.stroke = new Stroke(options.stroke);
   }
-  return options.points ?
-    new RegularShape(/** @type {import("ol/style/RegularShape").Options} */ (options)) :
-    new Circle(/** @type {import("ol/style/Circle").Options} */ (options));
+  return options.points
+    ? new RegularShape(
+        /** @type {import("ol/style/RegularShape").Options} */ (options),
+      )
+    : new Circle(/** @type {import("ol/style/Circle").Options} */ (options));
 }
 
 /**
@@ -57,9 +59,9 @@ const defaultShapeOptions = {
   { points: 4, angle: Math.PI / 4 },
   { points: 6 },
 ].forEach((additionalOptions) => {
-  const shapeOptions = additionalOptions ?
-    Object.assign(additionalOptions, defaultShapeOptions) :
-    defaultShapeOptions;
+  const shapeOptions = additionalOptions
+    ? Object.assign(additionalOptions, defaultShapeOptions)
+    : defaultShapeOptions;
 
   shapeCategory.addImage(shapeOptions);
 });

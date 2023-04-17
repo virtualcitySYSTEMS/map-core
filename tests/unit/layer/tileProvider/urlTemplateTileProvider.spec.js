@@ -1,6 +1,8 @@
 import nock from 'nock';
 import Feature from 'ol/Feature.js';
-import URLTemplateTileProvider, { getURL } from '../../../../src/layer/tileProvider/urlTemplateTileProvider.js';
+import URLTemplateTileProvider, {
+  getURL,
+} from '../../../../src/layer/tileProvider/urlTemplateTileProvider.js';
 import Projection from '../../../../src/util/projection.js';
 
 describe('URLTemplateTileProvider', () => {
@@ -67,22 +69,39 @@ describe('URLTemplateTileProvider', () => {
     let url;
 
     it('should request data with url', async () => {
-      url = getURL('myUrl', ...xyz, tileProvider.tilingScheme.tileXYToRectangle(...xyz));
+      url = getURL(
+        'myUrl',
+        ...xyz,
+        tileProvider.tilingScheme.tileXYToRectangle(...xyz),
+      );
       expect(url).to.contain('myUrl');
     });
 
     it('should replace tile coordinates placeholder in requested url', async () => {
-      url = getURL('{x},{y},{z}', ...xyz, tileProvider.tilingScheme.tileXYToRectangle(...xyz));
+      url = getURL(
+        '{x},{y},{z}',
+        ...xyz,
+        tileProvider.tilingScheme.tileXYToRectangle(...xyz),
+      );
       expect(url).to.contain('1,2,3');
     });
 
     it('should replace locale placeholder in requested url', async () => {
-      url = getURL('{locale}', ...xyz, tileProvider.tilingScheme.tileXYToRectangle(...xyz), 'nl');
+      url = getURL(
+        '{locale}',
+        ...xyz,
+        tileProvider.tilingScheme.tileXYToRectangle(...xyz),
+        'nl',
+      );
       expect(url).to.contain('nl');
     });
 
     it('should replace extent placeholder in requested url', async () => {
-      url = getURL('{minx},{miny},{maxx},{maxy}', ...xyz, tileProvider.tilingScheme.tileXYToRectangle(...xyz));
+      url = getURL(
+        '{minx},{miny},{maxx},{maxy}',
+        ...xyz,
+        tileProvider.tilingScheme.tileXYToRectangle(...xyz),
+      );
       expect(url).to.contain('-135,40.979898069620134,-90,66.51326044311185');
     });
   });

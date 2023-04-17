@@ -57,14 +57,17 @@ function makeOverrideCollection(
 
   const overrideCollection = /** @type {OverrideCollection<T>} */ (collection);
   if (overrideCollection[isOverrideCollection]) {
-    throw new Error('Cannot transform collection, collection already is an OverrideCollection');
+    throw new Error(
+      'Cannot transform collection, collection already is an OverrideCollection',
+    );
   }
   overrideCollection[isOverrideCollection] = true;
 
-  const deserialize = deserializeItem || (i => i);
+  const deserialize = deserializeItem || ((i) => i);
   // @ts-ignore
-  const serialize = serializeItem || (i => (i.toJSON ? i.toJSON() : i));
-  const getShadowIndex = determineShadowIndex || ((item, shadow, currentIndex) => currentIndex);
+  const serialize = serializeItem || ((i) => (i.toJSON ? i.toJSON() : i));
+  const getShadowIndex =
+    determineShadowIndex || ((item, shadow, currentIndex) => currentIndex);
 
   /**
    * @type {Map<string, Array<Object>>}
@@ -117,20 +120,31 @@ function makeOverrideCollection(
    * @param {string} moduleId
    * @returns {Promise<void>}
    */
-  overrideCollection.parseItems = async function parseItems(configArray, moduleId) {
+  overrideCollection.parseItems = async function parseItems(
+    configArray,
+    moduleId,
+  ) {
     if (Array.isArray(configArray)) {
-      const instanceArray = await Promise.all(configArray.map(async (config) => {
-        const item = await deserialize(config);
-        if (!item || (ctor && !(item instanceof ctor))) {
-          getLogger().warning(`Could not load item ${config[overrideCollection.uniqueKey]} of type ${config.type}`);
-          return null;
-        }
-        item[moduleIdSymbol] = moduleId;
-        return item;
-      }));
+      const instanceArray = await Promise.all(
+        configArray.map(async (config) => {
+          const item = await deserialize(config);
+          if (!item || (ctor && !(item instanceof ctor))) {
+            getLogger().warning(
+              `Could not load item ${
+                config[overrideCollection.uniqueKey]
+              } of type ${config.type}`,
+            );
+            return null;
+          }
+          item[moduleIdSymbol] = moduleId;
+          return item;
+        }),
+      );
       instanceArray
-        .filter(i => i)
-        .forEach((i) => { overrideCollection.override(i); });
+        .filter((i) => i)
+        .forEach((i) => {
+          overrideCollection.override(i);
+        });
     }
   };
 
@@ -154,8 +168,12 @@ function makeOverrideCollection(
       if (serializedShadow) {
         const reincarnation = await deserialize(serializedShadow);
         reincarnation[moduleIdSymbol] = serializedShadow[moduleIdSymbol];
-        // @ts-ignore
-        const index = getShadowIndex(reincarnation, item, item[overrideCollection.previousIndexSymbol]);
+        const index = getShadowIndex(
+          reincarnation,
+          item,
+          // @ts-ignore
+          item[overrideCollection.previousIndexSymbol],
+        );
         // @ts-ignore
         overrideCollection.add(reincarnation, index);
       }
@@ -178,7 +196,9 @@ function makeOverrideCollection(
    */
   overrideCollection.removeModule = async function removeModule(moduleId) {
     overrideCollection.shadowMap.forEach((shadowsArray, name) => {
-      const newShadowsArray = shadowsArray.filter(c => c[moduleIdSymbol] !== moduleId);
+      const newShadowsArray = shadowsArray.filter(
+        (c) => c[moduleIdSymbol] !== moduleId,
+      );
       if (newShadowsArray.length === 0) {
         overrideCollection.shadowMap.delete(name);
       } else if (newShadowsArray.length !== shadowsArray.length) {
@@ -186,16 +206,18 @@ function makeOverrideCollection(
       }
     });
 
-    await Promise.all([...overrideCollection]
-      .filter(item => item[moduleIdSymbol] === moduleId)
-      .map(async (item) => {
-        overrideCollection.remove(item);
-        // @ts-ignore
-        if (item.destroy) {
+    await Promise.all(
+      [...overrideCollection]
+        .filter((item) => item[moduleIdSymbol] === moduleId)
+        .map(async (item) => {
+          overrideCollection.remove(item);
           // @ts-ignore
-          item.destroy();
-        }
-      }));
+          if (item.destroy) {
+            // @ts-ignore
+            item.destroy();
+          }
+        }),
+    );
   };
 
   /**
@@ -213,13 +235,16 @@ function makeOverrideCollection(
         if (item[moduleIdSymbol] === moduleId) {
           return serialize(item);
         }
-        if (overrideCollection.shadowMap.has(item[overrideCollection.uniqueKey])) {
-          return overrideCollection.shadowMap.get(item[overrideCollection.uniqueKey])
-            .find(i => i[moduleIdSymbol] === moduleId);
+        if (
+          overrideCollection.shadowMap.has(item[overrideCollection.uniqueKey])
+        ) {
+          return overrideCollection.shadowMap
+            .get(item[overrideCollection.uniqueKey])
+            .find((i) => i[moduleIdSymbol] === moduleId);
         }
         return null;
       })
-      .filter(i => i);
+      .filter((i) => i);
   };
 
   const originalDestroy = overrideCollection.destroy.bind(overrideCollection);

@@ -41,7 +41,9 @@ class ClassRegistry {
     check(ctor, Function);
 
     if (this._classMap.has(className)) {
-      throw new Error('a constructor with this className has already been registered');
+      throw new Error(
+        'a constructor with this className has already been registered',
+      );
     }
 
     this._classMap.set(className, ctor);
@@ -137,14 +139,19 @@ export const categoryClassRegistry = new ClassRegistry();
  * @param {...*} args
  * @returns {T|null}
  */
-export function getObjectFromClassRegistry(classRegistry, options, ...args) { // move to classReg
+export function getObjectFromClassRegistry(classRegistry, options, ...args) {
+  // move to classReg
   if (!is(classRegistry, [ClassRegistry, OverrideClassRegistry])) {
-    logger().error(`ObjectCreation failed: no class registry provided for ${options}`);
+    logger().error(
+      `ObjectCreation failed: no class registry provided for ${options}`,
+    );
     return null;
   }
 
   if (!options?.type) {
-    logger().warning(`ObjectCreation failed: could not find type in options ${options}`);
+    logger().warning(
+      `ObjectCreation failed: could not find type in options ${options}`,
+    );
     return null;
   }
   let object;

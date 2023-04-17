@@ -14,7 +14,9 @@ import LayerImplementation from '../layerImplementation.js';
  * @extends {LayerImplementation<import("@vcmap/core").OpenlayersMap>}}
  */
 class LayerOpenlayersImpl extends LayerImplementation {
-  static get className() { return 'LayerOpenlayersImpl'; }
+  static get className() {
+    return 'LayerOpenlayersImpl';
+  }
 
   /**
    * @param {import("@vcmap/core").OpenlayersMap} map
@@ -76,7 +78,9 @@ class LayerOpenlayersImpl extends LayerImplementation {
    * @returns {import("ol/layer").Layer<import("ol/source/Source").default>}
    */
   // eslint-disable-next-line class-methods-use-this
-  getOLLayer() { throw new Error(); }
+  getOLLayer() {
+    throw new Error();
+  }
 
   /**
    * @param {import("@vcmap-cesium/engine").SplitDirection} splitDirection
@@ -84,22 +88,35 @@ class LayerOpenlayersImpl extends LayerImplementation {
   updateSplitDirection(splitDirection) {
     this.splitDirection = splitDirection;
     if (this.initialized) {
-      if (this.splitDirection === SplitDirection.NONE && this._splitDirectionRenderListeners) {
+      if (
+        this.splitDirection === SplitDirection.NONE &&
+        this._splitDirectionRenderListeners
+      ) {
         unByKey(this._splitDirectionRenderListeners);
         this._splitDirectionRenderListeners = null;
         this.olLayer.changed();
-      } else if (splitDirection !== SplitDirection.NONE && !this._splitDirectionRenderListeners) {
+      } else if (
+        splitDirection !== SplitDirection.NONE &&
+        !this._splitDirectionRenderListeners
+      ) {
         this._splitDirectionRenderListeners = [];
-        this._splitDirectionRenderListeners
-          .push(/** @type {import("ol/events").EventsKey} */
-            (this.olLayer.on('prerender', this._splitPreRender.bind(this))),
-          );
-        this._splitDirectionRenderListeners
-          .push(/** @type {import("ol/events").EventsKey} */
-            (this.olLayer.on('postrender', (/** @type {import("ol/render/Event").default} */ event) => {
-              /** @type {CanvasRenderingContext2D} */ (event.context).restore();
-            })),
-          );
+        this._splitDirectionRenderListeners.push(
+          /** @type {import("ol/events").EventsKey} */
+          (this.olLayer.on('prerender', this._splitPreRender.bind(this))),
+        );
+        this._splitDirectionRenderListeners.push(
+          /** @type {import("ol/events").EventsKey} */
+          (
+            this.olLayer.on(
+              'postrender',
+              (/** @type {import("ol/render/Event").default} */ event) => {
+                /** @type {CanvasRenderingContext2D} */ (
+                  event.context
+                ).restore();
+              },
+            )
+          ),
+        );
         this.olLayer.changed();
       }
     }
@@ -119,7 +136,12 @@ class LayerOpenlayersImpl extends LayerImplementation {
     if (this.splitDirection === SplitDirection.LEFT) {
       context.rect(0, 0, width, context.canvas.height);
     } else {
-      context.rect(width, 0, context.canvas.width - width, context.canvas.height);
+      context.rect(
+        width,
+        0,
+        context.canvas.width - width,
+        context.canvas.height,
+      );
     }
     context.clip();
   }

@@ -47,10 +47,16 @@ export function getVersionFromImageJson(json) {
 export function parseImageMeta(json, url, projection, terrainProvider) {
   let size;
   if (json.generalImageInfo.width && json.generalImageInfo.height) {
-    size = /** @type {import("ol/size").Size} */ ([json.generalImageInfo.width, json.generalImageInfo.height]);
+    size = /** @type {import("ol/size").Size} */ ([
+      json.generalImageInfo.width,
+      json.generalImageInfo.height,
+    ]);
   }
   const tileResolution = json.generalImageInfo['tile-resolution'];
-  const tileSize = /** @type {import("ol/size").Size} */ ([json.generalImageInfo['tile-width'], json.generalImageInfo['tile-height']]);
+  const tileSize = /** @type {import("ol/size").Size} */ ([
+    json.generalImageInfo['tile-width'],
+    json.generalImageInfo['tile-height'],
+  ]);
   let imageProjection = projection;
   const imageMetas = [];
   if (!imageProjection && json.generalImageInfo.crs) {
@@ -76,9 +82,13 @@ export function parseImageMeta(json, url, projection, terrainProvider) {
         imageMetas.push(new ImageMeta({ ...defaultOptions, ...cameraOption }));
       });
     } else if (typeof json.generalImageInfo.cameraParameter === 'object') {
-      Object.entries(json.generalImageInfo.cameraParameter).forEach(([name, cameraOption]) => {
-        imageMetas.push(new ImageMeta({ name, ...defaultOptions, ...cameraOption }));
-      });
+      Object.entries(json.generalImageInfo.cameraParameter).forEach(
+        ([name, cameraOption]) => {
+          imageMetas.push(
+            new ImageMeta({ name, ...defaultOptions, ...cameraOption }),
+          );
+        },
+      );
     }
   }
 
@@ -112,7 +122,8 @@ export function parseImageData(json, imageMetas) {
 
   const images = new Array(json.images.length - 1);
   json.images.forEach((img, index) => {
-    if (index === 0) { // skip header image
+    if (index === 0) {
+      // skip header image
       return;
     }
     const coordsArrayPToRealworld = [];
@@ -121,7 +132,9 @@ export function parseImageData(json, imageMetas) {
         coordsArrayPToRealworld.push(...value);
       });
     }
-    const pToRealworld = img[indices.pToRealworld] ? new Matrix3(...coordsArrayPToRealworld) : null;
+    const pToRealworld = img[indices.pToRealworld]
+      ? new Matrix3(...coordsArrayPToRealworld)
+      : null;
 
     const coordsArrayPToImage = [];
     if (img[indices.pToImage]) {
@@ -130,10 +143,12 @@ export function parseImageData(json, imageMetas) {
       });
       coordsArrayPToImage.push(0, 0, 0, 1);
     }
-    const projectionCenter = img[indices.projectionCenter] ?
-      Cartesian3.fromArray(img[indices.projectionCenter]) :
-      null;
-    const pToImage = img[indices.pToImage] ? new Matrix4(...coordsArrayPToImage) : null;
+    const projectionCenter = img[indices.projectionCenter]
+      ? Cartesian3.fromArray(img[indices.projectionCenter])
+      : null;
+    const pToImage = img[indices.pToImage]
+      ? new Matrix4(...coordsArrayPToImage)
+      : null;
 
     const meta = imageMetas[img[indices.cameraIndex] || 0];
     if (!meta.size) {
@@ -180,14 +195,15 @@ export function parseLegacyImageData(json, imageMetas) {
   const { version, buildNumber } = getVersionFromImageJson(json);
   return /** @type {Array<*>} */ (json.images).map((img) => {
     const viewDirection = obliqueViewDirectionNames[img['view-direction']];
-    const viewDirectionAngle = version >= 3.4 && buildNumber >= 18 ?
-      img['view-directionAngle'] :
-      undefined;
+    const viewDirectionAngle =
+      version >= 3.4 && buildNumber >= 18
+        ? img['view-directionAngle']
+        : undefined;
     const projectionCenter = img['projection-center'];
     const { name, groundCoordinates, centerPointOnGround } = img;
 
     const cameraName = img['camera-name'];
-    const imageMeta = imageMetas.find(value => value.name === cameraName);
+    const imageMeta = imageMetas.find((value) => value.name === cameraName);
     const meta = imageMeta || imageMetas[0];
     if (!meta.size) {
       if (img.height && img.width) {
@@ -218,13 +234,28 @@ export function parseLegacyImageData(json, imageMetas) {
 
     if (imageMeta && cameraName) {
       const cameraOptions = cameraParameter[cameraName];
-      const cameraMatrix = Matrix3.fromRowMajorArray([].concat(...cameraOptions['camera-matrix']));
+      const cameraMatrix = Matrix3.fromRowMajorArray(
+        [].concat(...cameraOptions['camera-matrix']),
+      );
       const cameraMatrixInverse = Matrix3.inverse(cameraMatrix, new Matrix3());
-      const rotationMatrix = Matrix3.fromRowMajorArray([].concat(...img['rotation-matrix']));
-      const rotationMatrixTransposed = Matrix3.transpose(rotationMatrix, new Matrix3());
-      const focalLength = cameraOptions['focal-length'] * (-1);
-      Matrix3.multiplyByScalar(cameraMatrixInverse, focalLength, cameraMatrixInverse);
-      const pToRealworld = Matrix3.multiply(rotationMatrixTransposed, cameraMatrixInverse, new Matrix3());
+      const rotationMatrix = Matrix3.fromRowMajorArray(
+        [].concat(...img['rotation-matrix']),
+      );
+      const rotationMatrixTransposed = Matrix3.transpose(
+        rotationMatrix,
+        new Matrix3(),
+      );
+      const focalLength = cameraOptions['focal-length'] * -1;
+      Matrix3.multiplyByScalar(
+        cameraMatrixInverse,
+        focalLength,
+        cameraMatrixInverse,
+      );
+      const pToRealworld = Matrix3.multiply(
+        rotationMatrixTransposed,
+        cameraMatrixInverse,
+        new Matrix3(),
+      );
 
       const cameraMatrix4 = Matrix4.fromRotationTranslation(
         cameraMatrix,
@@ -233,7 +264,11 @@ export function parseLegacyImageData(json, imageMetas) {
       );
       const projectionCenterCartesian = Cartesian3.fromArray(projectionCenter);
       const e = Matrix4.fromTranslation(
-        Cartesian3.multiplyByScalar(projectionCenterCartesian, -1, new Cartesian3()),
+        Cartesian3.multiplyByScalar(
+          projectionCenterCartesian,
+          -1,
+          new Cartesian3(),
+        ),
         new Matrix4(),
       );
       const rotationMatrix4 = Matrix4.fromRotationTranslation(
@@ -253,4 +288,3 @@ export function parseLegacyImageData(json, imageMetas) {
     return new ObliqueImage(imageOptions);
   });
 }
-

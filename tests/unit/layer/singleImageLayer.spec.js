@@ -5,7 +5,9 @@ import { wgs84Projection } from '../../../src/util/projection.js';
 describe('SingleImageLayer', () => {
   describe('constructing a single image layer', () => {
     it('should create a global extent, if the extent is invalid', () => {
-      const layer = new SingleImageLayer({ extent: { coordinates: [1, 2, 3], projection: { epsg: 3123 } } });
+      const layer = new SingleImageLayer({
+        extent: { coordinates: [1, 2, 3], projection: { epsg: 3123 } },
+      });
       expect(layer.extent.extent).to.have.ordered.members([-180, -90, 180, 90]);
       expect(layer.extent.projection).to.have.property('epsg', 'EPSG:4326');
       layer.destroy();

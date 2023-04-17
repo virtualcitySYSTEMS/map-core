@@ -23,7 +23,9 @@ import {
 } from '@vcmap-cesium/engine';
 import Fill from 'ol/style/Fill.js';
 import Stroke from 'ol/style/Stroke.js';
-import VectorProperties, { PrimitiveOptionsType } from '../../../../src/layer/vectorProperties.js';
+import VectorProperties, {
+  PrimitiveOptionsType,
+} from '../../../../src/layer/vectorProperties.js';
 import pointToCesium, {
   getCoordinates,
   validatePoint,
@@ -45,7 +47,10 @@ describe('util.featureConverter.pointToCesium', () => {
       const point2 = new Point([54, 54, 3]);
       const coordinates = getCoordinates([point, point2]);
       expect(coordinates.length).to.be.equal(2);
-      expect(coordinates).to.have.deep.members([[50, 50, 3], [54, 54, 3]]);
+      expect(coordinates).to.have.deep.members([
+        [50, 50, 3],
+        [54, 54, 3],
+      ]);
     });
   });
 
@@ -76,7 +81,13 @@ describe('util.featureConverter.pointToCesium', () => {
     });
 
     it('should invalidate a non point geometry', () => {
-      const point = new Polygon([[[1, 2, 3], [2, 4, 3], [3, 2, 3]]]);
+      const point = new Polygon([
+        [
+          [1, 2, 3],
+          [2, 4, 3],
+          [3, 2, 3],
+        ],
+      ]);
       expect(validatePoint(point)).to.be.false;
     });
   });
@@ -101,7 +112,12 @@ describe('util.featureConverter.pointToCesium', () => {
     });
 
     it('should not create billboardOptions if the style is not an ImageStyle', () => {
-      billboardOptions = getBillboardOptions(feature, new Style({}), heightReference, vectorProperties);
+      billboardOptions = getBillboardOptions(
+        feature,
+        new Style({}),
+        heightReference,
+        vectorProperties,
+      );
       expect(billboardOptions).to.be.null;
     });
 
@@ -115,11 +131,18 @@ describe('util.featureConverter.pointToCesium', () => {
             opacity: 0.5,
           }),
         });
-        billboardOptions = getBillboardOptions(feature, regularShapeStyle, heightReference, vectorProperties);
+        billboardOptions = getBillboardOptions(
+          feature,
+          regularShapeStyle,
+          heightReference,
+          vectorProperties,
+        );
       });
 
       it('should extract the scale from the style and set on the return Object', () => {
-        expect(billboardOptions.scale).to.be.equal(regularShapeStyle.getImage().getScale());
+        expect(billboardOptions.scale).to.be.equal(
+          regularShapeStyle.getImage().getScale(),
+        );
       });
 
       it('should set the given heightReference on the return Object', () => {
@@ -127,7 +150,9 @@ describe('util.featureConverter.pointToCesium', () => {
       });
 
       it('should set the verticalOrigin to the default value VerticalOrigin.Bottom', () => {
-        expect(billboardOptions.verticalOrigin).to.be.equal(VerticalOrigin.BOTTOM);
+        expect(billboardOptions.verticalOrigin).to.be.equal(
+          VerticalOrigin.BOTTOM,
+        );
       });
 
       it('should set the id to the id of the feature', () => {
@@ -135,20 +160,44 @@ describe('util.featureConverter.pointToCesium', () => {
       });
 
       it('should set the eyeOffset', () => {
-        expect(billboardOptions.eyeOffset).to.be.equal(vectorProperties.eyeOffset);
+        expect(billboardOptions.eyeOffset).to.be.equal(
+          vectorProperties.eyeOffset,
+        );
       });
 
       it('should set scaleByDistance', () => {
-        expect(billboardOptions.scaleByDistance).to.be.equal(vectorProperties.scaleByDistance);
+        expect(billboardOptions.scaleByDistance).to.be.equal(
+          vectorProperties.scaleByDistance,
+        );
       });
 
       it('should set the image', () => {
-        expect(billboardOptions.image).to.be.equal(regularShapeStyle.getImage().getImage(1));
+        expect(billboardOptions.image).to.be.equal(
+          regularShapeStyle.getImage().getImage(1),
+        );
       });
 
       it('should set the opacity value of the style to the color alpha value', () => {
         expect(billboardOptions.color).to.be.instanceOf(Color);
-        expect(billboardOptions.color.alpha).to.be.equal(regularShapeStyle.getImage().getOpacity());
+        expect(billboardOptions.color.alpha).to.be.equal(
+          regularShapeStyle.getImage().getOpacity(),
+        );
+      });
+
+      it('should set scale to x scale when scale is an array', () => {
+        billboardOptions = getBillboardOptions(
+          feature,
+          new Style({
+            image: new RegularShape({
+              textBaseline: 'top',
+              text: 'test',
+              scale: [2, 3],
+            }),
+          }),
+          heightReference,
+          vectorProperties,
+        );
+        expect(billboardOptions.scale).to.be.equal(2);
       });
     });
 
@@ -167,7 +216,12 @@ describe('util.featureConverter.pointToCesium', () => {
             opacity: 0.5,
           }),
         });
-        billboardOptions = getBillboardOptions(feature, iconStyle, heightReference, vectorProperties);
+        billboardOptions = getBillboardOptions(
+          feature,
+          iconStyle,
+          heightReference,
+          vectorProperties,
+        );
       });
 
       it('should set image to a Promise if the icon has not been loaded ', () => {
@@ -196,106 +250,162 @@ describe('util.featureConverter.pointToCesium', () => {
     });
 
     it('should not create labelOptions if the style has no Text Style', () => {
-      labelOptions = getLabelOptions(feature, new Style({}), heightReference, vectorProperties);
+      labelOptions = getLabelOptions(
+        feature,
+        new Style({}),
+        heightReference,
+        vectorProperties,
+      );
       expect(labelOptions).to.be.null;
     });
 
     it('should not create labelOptions if the style has no text', () => {
-      labelOptions = getLabelOptions(feature, new Style({
-        text: new TextStyle({}),
-      }), heightReference, vectorProperties);
+      labelOptions = getLabelOptions(
+        feature,
+        new Style({
+          text: new TextStyle({}),
+        }),
+        heightReference,
+        vectorProperties,
+      );
       expect(labelOptions).to.be.null;
     });
 
     it('should create labelOptions if the style has a text set', () => {
-      labelOptions = getLabelOptions(feature, new Style({
-        text: new TextStyle({
-          text: 'test',
+      labelOptions = getLabelOptions(
+        feature,
+        new Style({
+          text: new TextStyle({
+            text: 'test',
+          }),
         }),
-      }), heightReference, vectorProperties);
+        heightReference,
+        vectorProperties,
+      );
       expect(labelOptions).to.be.an('object');
       expect(labelOptions.text).to.be.equal('test');
     });
 
     it('should set font the font to undefined if not provided', () => {
-      labelOptions = getLabelOptions(feature, new Style({
-        text: new TextStyle({
-          text: 'test',
+      labelOptions = getLabelOptions(
+        feature,
+        new Style({
+          text: new TextStyle({
+            text: 'test',
+          }),
         }),
-      }), heightReference, vectorProperties);
+        heightReference,
+        vectorProperties,
+      );
       expect(labelOptions.font).to.be.undefined;
     });
 
     it('should set font', () => {
-      labelOptions = getLabelOptions(feature, new Style({
-        text: new TextStyle({
-          font: 'arial',
-          text: 'test',
+      labelOptions = getLabelOptions(
+        feature,
+        new Style({
+          text: new TextStyle({
+            font: 'arial',
+            text: 'test',
+          }),
         }),
-      }), heightReference, vectorProperties);
+        heightReference,
+        vectorProperties,
+      );
       expect(labelOptions.font).to.be.equal('arial');
     });
 
     it('should set default horizontalOrigin if not set on the style', () => {
-      labelOptions = getLabelOptions(feature, new Style({
-        text: new TextStyle({
-          text: 'test',
+      labelOptions = getLabelOptions(
+        feature,
+        new Style({
+          text: new TextStyle({
+            text: 'test',
+          }),
         }),
-      }), heightReference, vectorProperties);
-      expect(labelOptions.horizontalOrigin).to.be.equal(HorizontalOrigin.CENTER);
+        heightReference,
+        vectorProperties,
+      );
+      expect(labelOptions.horizontalOrigin).to.be.equal(
+        HorizontalOrigin.CENTER,
+      );
     });
 
     it('should set horizontalOrigin', () => {
-      labelOptions = getLabelOptions(feature, new Style({
-        text: new TextStyle({
-          textAlign: 'left',
-          text: 'test',
+      labelOptions = getLabelOptions(
+        feature,
+        new Style({
+          text: new TextStyle({
+            textAlign: 'left',
+            text: 'test',
+          }),
         }),
-      }), heightReference, vectorProperties);
+        heightReference,
+        vectorProperties,
+      );
       expect(labelOptions.horizontalOrigin).to.be.equal(HorizontalOrigin.LEFT);
     });
 
     it('should set default verticalOrigin if not set on the style', () => {
-      labelOptions = getLabelOptions(feature, new Style({
-        text: new TextStyle({
-          text: 'test',
+      labelOptions = getLabelOptions(
+        feature,
+        new Style({
+          text: new TextStyle({
+            text: 'test',
+          }),
         }),
-      }), heightReference, vectorProperties);
+        heightReference,
+        vectorProperties,
+      );
       expect(labelOptions.verticalOrigin).to.be.equal(VerticalOrigin.BASELINE);
     });
 
     it('should set verticalOrigin', () => {
-      labelOptions = getLabelOptions(feature, new Style({
-        text: new TextStyle({
-          textBaseline: 'top',
-          text: 'test',
+      labelOptions = getLabelOptions(
+        feature,
+        new Style({
+          text: new TextStyle({
+            textBaseline: 'top',
+            text: 'test',
+          }),
         }),
-      }), heightReference, vectorProperties);
+        heightReference,
+        vectorProperties,
+      );
       expect(labelOptions.verticalOrigin).to.be.equal(VerticalOrigin.TOP);
     });
 
     it('should set scale', () => {
-      labelOptions = getLabelOptions(feature, new Style({
-        text: new TextStyle({
-          textBaseline: 'top',
-          text: 'test',
-          scale: 2,
+      labelOptions = getLabelOptions(
+        feature,
+        new Style({
+          text: new TextStyle({
+            textBaseline: 'top',
+            text: 'test',
+            scale: 2,
+          }),
         }),
-      }), heightReference, vectorProperties);
+        heightReference,
+        vectorProperties,
+      );
       expect(labelOptions.scale).to.be.equal(2);
     });
 
     it('should set scale to x scale when scale is an array', () => {
-      labelOptions = getLabelOptions(feature, new Style({
-        text: new TextStyle({
-          textBaseline: 'top',
-          text: 'test',
-          scale: [2, 3],
+      labelOptions = getLabelOptions(
+        feature,
+        new Style({
+          text: new TextStyle({
+            textBaseline: 'top',
+            text: 'test',
+            scale: [2, 3],
+          }),
         }),
-      }), heightReference, vectorProperties);
+        heightReference,
+        vectorProperties,
+      );
       expect(labelOptions.scale).to.be.equal(2);
     });
-
 
     describe('fill and stroke settings', () => {
       let fillStyle;
@@ -315,12 +425,17 @@ describe('util.featureConverter.pointToCesium', () => {
       });
 
       it('should set the fill labelStyle ', () => {
-        labelOptions = getLabelOptions(feature, new Style({
-          text: new TextStyle({
-            text: 'test',
-            fill: fillStyle,
+        labelOptions = getLabelOptions(
+          feature,
+          new Style({
+            text: new TextStyle({
+              text: 'test',
+              fill: fillStyle,
+            }),
           }),
-        }), heightReference, vectorProperties);
+          heightReference,
+          vectorProperties,
+        );
         expect(labelOptions.style).to.be.equal(LabelStyle.FILL);
         expect(Color.equals(labelOptions.fillColor, color)).to.be.true;
         expect(labelOptions.outlineWidth).to.be.undefined;
@@ -335,20 +450,30 @@ describe('util.featureConverter.pointToCesium', () => {
           }),
         });
         style.getText().setFill(); // has to be set to undefined, otherwise a default fill will be there
-        labelOptions = getLabelOptions(feature, style, heightReference, vectorProperties);
+        labelOptions = getLabelOptions(
+          feature,
+          style,
+          heightReference,
+          vectorProperties,
+        );
         expect(labelOptions.style).to.be.equal(LabelStyle.OUTLINE);
         expect(Color.equals(labelOptions.outlineColor, color)).to.be.true;
         expect(labelOptions.outlineWidth).to.be.equal(3);
       });
 
       it('should set the stroke and fill labelstyle ', () => {
-        labelOptions = getLabelOptions(feature, new Style({
-          text: new TextStyle({
-            text: 'test',
-            stroke: strokeStyle,
-            fill: fillStyle,
+        labelOptions = getLabelOptions(
+          feature,
+          new Style({
+            text: new TextStyle({
+              text: 'test',
+              stroke: strokeStyle,
+              fill: fillStyle,
+            }),
           }),
-        }), heightReference, vectorProperties);
+          heightReference,
+          vectorProperties,
+        );
         expect(labelOptions.style).to.be.equal(LabelStyle.FILL_AND_OUTLINE);
         expect(Color.equals(labelOptions.outlineColor, color)).to.be.true;
         expect(labelOptions.outlineWidth).to.be.equal(3);
@@ -358,11 +483,16 @@ describe('util.featureConverter.pointToCesium', () => {
 
     describe('additional options', () => {
       before(() => {
-        labelOptions = getLabelOptions(feature, new Style({
-          text: new TextStyle({
-            text: 'test',
+        labelOptions = getLabelOptions(
+          feature,
+          new Style({
+            text: new TextStyle({
+              text: 'test',
+            }),
           }),
-        }), heightReference, vectorProperties);
+          heightReference,
+          vectorProperties,
+        );
       });
 
       it('should set the eyeOffset', () => {
@@ -370,7 +500,9 @@ describe('util.featureConverter.pointToCesium', () => {
       });
 
       it('should set scaleByDistance', () => {
-        expect(labelOptions.scaleByDistance).to.be.equal(vectorProperties.scaleByDistance);
+        expect(labelOptions.scaleByDistance).to.be.equal(
+          vectorProperties.scaleByDistance,
+        );
       });
 
       it('should set heightReference', () => {
@@ -380,7 +512,8 @@ describe('util.featureConverter.pointToCesium', () => {
       it('should set the default pixelOffset', () => {
         const pixelOffset = new Cartesian2(0, 0);
         expect(labelOptions.pixelOffset).to.be.instanceOf(Cartesian2);
-        expect(Cartesian2.equals(labelOptions.pixelOffset, pixelOffset)).to.be.true;
+        expect(Cartesian2.equals(labelOptions.pixelOffset, pixelOffset)).to.be
+          .true;
       });
     });
   });
@@ -395,9 +528,16 @@ describe('util.featureConverter.pointToCesium', () => {
 
     describe('relativeToGround HeightReference', () => {
       before(() => {
-        coordinates = [[0, 1, 0], [0, 2, 0]];
-        coordinatesWGS84 = coordinates.map(coord => Projection.mercatorToWgs84(coord));
-        coordinatesCartesian3 = coordinatesWGS84.map(coord => Cartesian3.fromDegrees(coord[0], coord[1], 10));
+        coordinates = [
+          [0, 1, 0],
+          [0, 2, 0],
+        ];
+        coordinatesWGS84 = coordinates.map((coord) =>
+          Projection.mercatorToWgs84(coord),
+        );
+        coordinatesCartesian3 = coordinatesWGS84.map((coord) =>
+          Cartesian3.fromDegrees(coord[0], coord[1], 10),
+        );
         heightInfo = {
           extruded: false,
           storeysAboveGround: 2,
@@ -410,7 +550,10 @@ describe('util.featureConverter.pointToCesium', () => {
           heightReference: HeightReference.RELATIVE_TO_GROUND,
           heightAboveGroundAdjustment: 10,
         };
-        ({ wgs84Positions, positions } = getCartesian3AndWGS84FromCoordinates(coordinates.slice(), heightInfo));
+        ({ wgs84Positions, positions } = getCartesian3AndWGS84FromCoordinates(
+          coordinates.slice(),
+          heightInfo,
+        ));
       });
 
       it('should return wgs84Positions and Positions array of length 2', () => {
@@ -421,7 +564,8 @@ describe('util.featureConverter.pointToCesium', () => {
       it('should return correct cartesian3 positions with the heightAboveGround adjustment', () => {
         positions.forEach((pos, index) => {
           expect(pos).to.be.instanceOf(Cartesian3);
-          expect(Cartesian3.equals(pos, coordinatesCartesian3[index])).to.be.true;
+          expect(Cartesian3.equals(pos, coordinatesCartesian3[index])).to.be
+            .true;
         });
       });
 
@@ -432,10 +576,17 @@ describe('util.featureConverter.pointToCesium', () => {
 
     describe('other HeightReference', () => {
       before(() => {
-        coordinates = [[0, 1, 0], [0, 2, 0]];
-        coordinatesWGS84 = coordinates.map(coord => Projection.mercatorToWgs84(coord));
+        coordinates = [
+          [0, 1, 0],
+          [0, 2, 0],
+        ];
+        coordinatesWGS84 = coordinates.map((coord) =>
+          Projection.mercatorToWgs84(coord),
+        );
         // height adjusted by groundlevel + sum(storeyHeightsAboveGround)
-        coordinatesCartesian3 = coordinatesWGS84.map(coord => Cartesian3.fromDegrees(coord[0], coord[1], 4));
+        coordinatesCartesian3 = coordinatesWGS84.map((coord) =>
+          Cartesian3.fromDegrees(coord[0], coord[1], 4),
+        );
         heightInfo = {
           extruded: false,
           storeysAboveGround: 2,
@@ -447,7 +598,10 @@ describe('util.featureConverter.pointToCesium', () => {
           perPositionHeight: false,
           heightReference: HeightReference.NONE,
         };
-        ({ wgs84Positions, positions } = getCartesian3AndWGS84FromCoordinates(coordinates.slice(), heightInfo));
+        ({ wgs84Positions, positions } = getCartesian3AndWGS84FromCoordinates(
+          coordinates.slice(),
+          heightInfo,
+        ));
       });
 
       it('should return wgs84Positions and Positions array of length 2', () => {
@@ -458,7 +612,8 @@ describe('util.featureConverter.pointToCesium', () => {
       it('should return correct cartesian3 positions', () => {
         positions.forEach((pos, index) => {
           expect(pos).to.be.instanceOf(Cartesian3);
-          expect(Cartesian3.equals(pos, coordinatesCartesian3[index])).to.be.true;
+          expect(Cartesian3.equals(pos, coordinatesCartesian3[index])).to.be
+            .true;
         });
       });
 
@@ -476,7 +631,10 @@ describe('util.featureConverter.pointToCesium', () => {
     let lineGeometries;
 
     before(() => {
-      wgs84Positions = [[1, 1, 0], [1, 2, 0]];
+      wgs84Positions = [
+        [1, 1, 0],
+        [1, 2, 0],
+      ];
       heightInfo = {
         extruded: true,
         storeysAboveGround: 2,
@@ -487,13 +645,18 @@ describe('util.featureConverter.pointToCesium', () => {
         skirt: 1,
         perPositionHeight: false,
       };
-      positions = wgs84Positions.map(pos => Cartesian3.fromDegrees(...pos));
+      positions = wgs84Positions.map((pos) => Cartesian3.fromDegrees(...pos));
       style = new Style({
         stroke: new Stroke({
           width: 0,
         }),
       });
-      lineGeometries = getLineGeometries(wgs84Positions, heightInfo, positions, style);
+      lineGeometries = getLineGeometries(
+        wgs84Positions,
+        heightInfo,
+        positions,
+        style,
+      );
     });
 
     it('should return an array of PolylineGeometries ', () => {
@@ -509,9 +672,13 @@ describe('util.featureConverter.pointToCesium', () => {
         expect(lineGeometry._positions[0]).to.be.equal(positions[index]);
         // height corrected by skirt, and sum storeyHeightsBelowGround
         const correctedCartesian = Cartesian3.fromDegrees(
-          wgs84Positions[index][0], wgs84Positions[index][1], wgs84Positions[index][2] - 4,
+          wgs84Positions[index][0],
+          wgs84Positions[index][1],
+          wgs84Positions[index][2] - 4,
         );
-        expect(Cartesian3.equals(lineGeometry._positions[1], correctedCartesian)).to.be.true;
+        expect(
+          Cartesian3.equals(lineGeometry._positions[1], correctedCartesian),
+        ).to.be.true;
       });
     });
   });
@@ -560,14 +727,28 @@ describe('util.featureConverter.pointToCesium', () => {
     });
 
     it('should return if no image, or text style is given ', () => {
-      pointToCesium(feature, emptyStyle, geometries, vectorProperties, scene, context);
+      pointToCesium(
+        feature,
+        emptyStyle,
+        geometries,
+        vectorProperties,
+        scene,
+        context,
+      );
       expect(context.featureToPrimitiveMap.size).to.be.equal(0);
       expect(context.featureToBillboardMap.size).to.be.equal(0);
       expect(context.featureToLabelMap.size).to.be.equal(0);
     });
 
     it('should create a billboard if an image style is provided', () => {
-      pointToCesium(feature, new Style({ image: regularShapeStyle }), geometries, vectorProperties, scene, context);
+      pointToCesium(
+        feature,
+        new Style({ image: regularShapeStyle }),
+        geometries,
+        vectorProperties,
+        scene,
+        context,
+      );
       expect(context.billboards.length).to.equal(1);
       expect(context.featureToBillboardMap.size).to.be.equal(1);
       expect(context.billboards.get(0)).to.be.instanceOf(Billboard);
@@ -576,7 +757,12 @@ describe('util.featureConverter.pointToCesium', () => {
 
     it('should create a label if an text style is provided', () => {
       pointToCesium(
-        feature, new Style({ text: new TextStyle({ text: 'test' }) }), geometries, vectorProperties, scene, context,
+        feature,
+        new Style({ text: new TextStyle({ text: 'test' }) }),
+        geometries,
+        vectorProperties,
+        scene,
+        context,
       );
       expect(context.featureToLabelMap.size).to.be.equal(1);
       expect(context.labels.length).to.equal(1);
@@ -585,13 +771,23 @@ describe('util.featureConverter.pointToCesium', () => {
     });
 
     it('should create a linePrimitive if an extrusion and stroke style exists', () => {
-      const style = new Style({ image: regularShapeStyle, stroke: new Stroke({ width: 1, color: [1, 1, 1] }) });
+      const style = new Style({
+        image: regularShapeStyle,
+        stroke: new Stroke({ width: 1, color: [1, 1, 1] }),
+      });
       const vectorPropertiesWithExtrusion = new VectorProperties({
         altitudeMode: 'absolute',
         eyeOffset: [1, 1, 1],
         extrudedHeight: 10,
       });
-      pointToCesium(feature, style, geometries, vectorPropertiesWithExtrusion, scene, context);
+      pointToCesium(
+        feature,
+        style,
+        geometries,
+        vectorPropertiesWithExtrusion,
+        scene,
+        context,
+      );
       expect(context.billboards.length).to.equal(1);
       expect(context.featureToBillboardMap.size).to.be.equal(1);
       expect(context.billboards.get(0)).to.be.instanceOf(Billboard);
@@ -608,7 +804,14 @@ describe('util.featureConverter.pointToCesium', () => {
         eyeOffset: [1, 1, 1],
         extrudedHeight: 10,
       });
-      pointToCesium(feature, style, geometries, vectorPropertiesWithExtrusion, scene, context);
+      pointToCesium(
+        feature,
+        style,
+        geometries,
+        vectorPropertiesWithExtrusion,
+        scene,
+        context,
+      );
       expect(context.billboards.length).to.equal(1);
       expect(context.featureToBillboardMap.size).to.be.equal(1);
       expect(context.billboards.get(0)).to.be.instanceOf(Billboard);
@@ -621,7 +824,9 @@ describe('util.featureConverter.pointToCesium', () => {
         let modelVectorProperties;
 
         before(() => {
-          modelVectorProperties = new VectorProperties({ modelUrl: 'http://localhost/test.glb' });
+          modelVectorProperties = new VectorProperties({
+            modelUrl: 'http://localhost/test.glb',
+          });
         });
 
         after(() => {
@@ -630,7 +835,12 @@ describe('util.featureConverter.pointToCesium', () => {
 
         it('should create a model, if a model is parameterized', () => {
           pointToCesium(
-            feature, new Style({ image: regularShapeStyle }), geometries, modelVectorProperties, scene, context,
+            feature,
+            new Style({ image: regularShapeStyle }),
+            geometries,
+            modelVectorProperties,
+            scene,
+            context,
           );
           expect(context.featureToPrimitiveMap.size).to.be.equal(1);
           expect(context.primitives.get(0)).to.be.an.instanceOf(Model);
@@ -638,7 +848,12 @@ describe('util.featureConverter.pointToCesium', () => {
 
         it('should not create a billboard, if creating a model', () => {
           pointToCesium(
-            feature, new Style({ image: regularShapeStyle }), geometries, modelVectorProperties, scene, context,
+            feature,
+            new Style({ image: regularShapeStyle }),
+            geometries,
+            modelVectorProperties,
+            scene,
+            context,
           );
           expect(context.billboards.length).to.equal(0);
           expect(context.featureToBillboardMap.size).to.be.equal(0);
@@ -646,7 +861,12 @@ describe('util.featureConverter.pointToCesium', () => {
 
         it('should not create a label, if creating a model', () => {
           pointToCesium(
-            feature, new Style({ text: new TextStyle({ text: 'test' }) }), geometries, modelVectorProperties, scene, context,
+            feature,
+            new Style({ text: new TextStyle({ text: 'test' }) }),
+            geometries,
+            modelVectorProperties,
+            scene,
+            context,
           );
           expect(context.featureToLabelMap.size).to.be.equal(0);
           expect(context.labels.length).to.equal(0);
@@ -658,8 +878,14 @@ describe('util.featureConverter.pointToCesium', () => {
         let style;
 
         before(() => {
-          modelVectorProperties = new VectorProperties({ modelUrl: 'http://localhost/test.glb', extrudedHeight: 10 });
-          style = new Style({ image: regularShapeStyle, stroke: new Stroke({ width: 1, color: [1, 1, 1] }) });
+          modelVectorProperties = new VectorProperties({
+            modelUrl: 'http://localhost/test.glb',
+            extrudedHeight: 10,
+          });
+          style = new Style({
+            image: regularShapeStyle,
+            stroke: new Stroke({ width: 1, color: [1, 1, 1] }),
+          });
         });
 
         after(() => {
@@ -668,14 +894,24 @@ describe('util.featureConverter.pointToCesium', () => {
 
         it('should create two primitives', () => {
           pointToCesium(
-            feature, style, geometries, modelVectorProperties, scene, context,
+            feature,
+            style,
+            geometries,
+            modelVectorProperties,
+            scene,
+            context,
           );
           expect(context.primitives.length).to.be.equal(2);
         });
 
         it('should create a model', () => {
           pointToCesium(
-            feature, style, geometries, modelVectorProperties, scene, context,
+            feature,
+            style,
+            geometries,
+            modelVectorProperties,
+            scene,
+            context,
           );
           expect(context.featureToPrimitiveMap.size).to.be.equal(1);
           expect(context.primitives.get(1)).to.be.an.instanceOf(Model);
@@ -683,7 +919,12 @@ describe('util.featureConverter.pointToCesium', () => {
 
         it('should create a linePrimitive', () => {
           pointToCesium(
-            feature, style, geometries, modelVectorProperties, scene, context,
+            feature,
+            style,
+            geometries,
+            modelVectorProperties,
+            scene,
+            context,
           );
           expect(context.featureToPrimitiveMap.size).to.be.equal(1);
           expect(context.primitives.get(0)).to.be.instanceOf(Primitive);
@@ -691,7 +932,12 @@ describe('util.featureConverter.pointToCesium', () => {
 
         it('should not create a billboard, if creating a model', () => {
           pointToCesium(
-            feature, new Style({ image: regularShapeStyle }), geometries, modelVectorProperties, scene, context,
+            feature,
+            new Style({ image: regularShapeStyle }),
+            geometries,
+            modelVectorProperties,
+            scene,
+            context,
           );
           expect(context.billboards.length).to.equal(0);
           expect(context.featureToBillboardMap.size).to.be.equal(0);
@@ -699,7 +945,12 @@ describe('util.featureConverter.pointToCesium', () => {
 
         it('should not create a label, if creating a model', () => {
           pointToCesium(
-            feature, new Style({ text: new TextStyle({ text: 'test' }) }), geometries, modelVectorProperties, scene, context,
+            feature,
+            new Style({ text: new TextStyle({ text: 'test' }) }),
+            geometries,
+            modelVectorProperties,
+            scene,
+            context,
           );
           expect(context.featureToLabelMap.size).to.be.equal(0);
           expect(context.labels.length).to.equal(0);
@@ -710,7 +961,10 @@ describe('util.featureConverter.pointToCesium', () => {
         let modelVectorProperties;
 
         before(() => {
-          modelVectorProperties = new VectorProperties({ modelUrl: 'http://localhost/test.glb', modelAutoScale: true });
+          modelVectorProperties = new VectorProperties({
+            modelUrl: 'http://localhost/test.glb',
+            modelAutoScale: true,
+          });
         });
 
         after(() => {
@@ -719,7 +973,12 @@ describe('util.featureConverter.pointToCesium', () => {
 
         it('should create a scaled model', () => {
           pointToCesium(
-            feature, new Style({ image: regularShapeStyle }), geometries, modelVectorProperties, scene, context,
+            feature,
+            new Style({ image: regularShapeStyle }),
+            geometries,
+            modelVectorProperties,
+            scene,
+            context,
           );
           expect(context.featureToScaledPrimitiveMap.size).to.be.equal(1);
           expect(context.scaledPrimitives.get(0)).to.be.an.instanceOf(Model);
@@ -727,7 +986,12 @@ describe('util.featureConverter.pointToCesium', () => {
 
         it('should not create a billboard, if creating a model', () => {
           pointToCesium(
-            feature, new Style({ image: regularShapeStyle }), geometries, modelVectorProperties, scene, context,
+            feature,
+            new Style({ image: regularShapeStyle }),
+            geometries,
+            modelVectorProperties,
+            scene,
+            context,
           );
           expect(context.billboards.length).to.equal(0);
           expect(context.featureToBillboardMap.size).to.be.equal(0);
@@ -735,7 +999,12 @@ describe('util.featureConverter.pointToCesium', () => {
 
         it('should not create a label, if creating a model', () => {
           pointToCesium(
-            feature, new Style({ text: new TextStyle({ text: 'test' }) }), geometries, modelVectorProperties, scene, context,
+            feature,
+            new Style({ text: new TextStyle({ text: 'test' }) }),
+            geometries,
+            modelVectorProperties,
+            scene,
+            context,
           );
           expect(context.featureToLabelMap.size).to.be.equal(0);
           expect(context.labels.length).to.equal(0);
@@ -752,7 +1021,10 @@ describe('util.featureConverter.pointToCesium', () => {
             modelAutoScale: true,
             extrudedHeight: 10,
           });
-          style = new Style({ image: regularShapeStyle, stroke: new Stroke({ width: 1, color: [1, 1, 1] }) });
+          style = new Style({
+            image: regularShapeStyle,
+            stroke: new Stroke({ width: 1, color: [1, 1, 1] }),
+          });
         });
 
         after(() => {
@@ -761,7 +1033,12 @@ describe('util.featureConverter.pointToCesium', () => {
 
         it('should create a scaled model', () => {
           pointToCesium(
-            feature, style, geometries, modelVectorProperties, scene, context,
+            feature,
+            style,
+            geometries,
+            modelVectorProperties,
+            scene,
+            context,
           );
           expect(context.featureToScaledPrimitiveMap.size).to.be.equal(1);
           expect(context.scaledPrimitives.get(0)).to.be.an.instanceOf(Model);
@@ -769,7 +1046,12 @@ describe('util.featureConverter.pointToCesium', () => {
 
         it('should create a linePrimitive', () => {
           pointToCesium(
-            feature, style, geometries, modelVectorProperties, scene, context,
+            feature,
+            style,
+            geometries,
+            modelVectorProperties,
+            scene,
+            context,
           );
           expect(context.featureToPrimitiveMap.size).to.be.equal(1);
           expect(context.primitives.get(0)).to.be.instanceOf(Primitive);
@@ -777,7 +1059,12 @@ describe('util.featureConverter.pointToCesium', () => {
 
         it('should not create a billboard, if creating a model', () => {
           pointToCesium(
-            feature, style, geometries, modelVectorProperties, scene, context,
+            feature,
+            style,
+            geometries,
+            modelVectorProperties,
+            scene,
+            context,
           );
           expect(context.billboards.length).to.equal(0);
           expect(context.featureToBillboardMap.size).to.be.equal(0);
@@ -785,7 +1072,12 @@ describe('util.featureConverter.pointToCesium', () => {
 
         it('should not create a label, if creating a model', () => {
           pointToCesium(
-            feature, new Style({ text: new TextStyle({ text: 'test' }) }), geometries, modelVectorProperties, scene, context,
+            feature,
+            new Style({ text: new TextStyle({ text: 'test' }) }),
+            geometries,
+            modelVectorProperties,
+            scene,
+            context,
           );
           expect(context.featureToLabelMap.size).to.be.equal(0);
           expect(context.labels.length).to.equal(0);
@@ -799,7 +1091,10 @@ describe('util.featureConverter.pointToCesium', () => {
 
         before(() => {
           primitiveVectorProperties = new VectorProperties({
-            primitiveOptions: { type: PrimitiveOptionsType.SPHERE, geometryOptions: {} },
+            primitiveOptions: {
+              type: PrimitiveOptionsType.SPHERE,
+              geometryOptions: {},
+            },
           });
         });
 
@@ -809,7 +1104,12 @@ describe('util.featureConverter.pointToCesium', () => {
 
         it('should create a primitive, if a primitive is parameterized', () => {
           pointToCesium(
-            feature, new Style({ image: regularShapeStyle }), geometries, primitiveVectorProperties, scene, context,
+            feature,
+            new Style({ image: regularShapeStyle }),
+            geometries,
+            primitiveVectorProperties,
+            scene,
+            context,
           );
           expect(context.featureToPrimitiveMap.size).to.be.equal(1);
           expect(context.primitives.get(0)).to.be.an.instanceOf(Primitive);
@@ -817,7 +1117,12 @@ describe('util.featureConverter.pointToCesium', () => {
 
         it('should not create a billboard, if creating a primitive', () => {
           pointToCesium(
-            feature, new Style({ image: regularShapeStyle }), geometries, primitiveVectorProperties, scene, context,
+            feature,
+            new Style({ image: regularShapeStyle }),
+            geometries,
+            primitiveVectorProperties,
+            scene,
+            context,
           );
           expect(context.billboards.length).to.equal(0);
           expect(context.featureToBillboardMap.size).to.be.equal(0);
@@ -825,7 +1130,15 @@ describe('util.featureConverter.pointToCesium', () => {
 
         it('should not create a label, if creating a primitive', () => {
           pointToCesium(
-            feature, new Style({ image: regularShapeStyle, text: new TextStyle({ text: 'test' }) }), geometries, primitiveVectorProperties, scene, context,
+            feature,
+            new Style({
+              image: regularShapeStyle,
+              text: new TextStyle({ text: 'test' }),
+            }),
+            geometries,
+            primitiveVectorProperties,
+            scene,
+            context,
           );
           expect(context.featureToLabelMap.size).to.be.equal(0);
           expect(context.labels.length).to.equal(0);
@@ -838,7 +1151,10 @@ describe('util.featureConverter.pointToCesium', () => {
 
         before(() => {
           primitiveVectorProperties = new VectorProperties({
-            primitiveOptions: { type: PrimitiveOptionsType.SPHERE, geometryOptions: {} },
+            primitiveOptions: {
+              type: PrimitiveOptionsType.SPHERE,
+              geometryOptions: {},
+            },
             extrudedHeight: 10,
           });
           style = new Style({
@@ -853,23 +1169,40 @@ describe('util.featureConverter.pointToCesium', () => {
 
         it('should create two primitives', () => {
           pointToCesium(
-            feature, style, geometries, primitiveVectorProperties, scene, context,
+            feature,
+            style,
+            geometries,
+            primitiveVectorProperties,
+            scene,
+            context,
           );
           expect(context.primitives.length).to.be.equal(2);
         });
 
         it('should create the primitive', () => {
           pointToCesium(
-            feature, style, geometries, primitiveVectorProperties, scene, context,
+            feature,
+            style,
+            geometries,
+            primitiveVectorProperties,
+            scene,
+            context,
           );
           expect(context.featureToPrimitiveMap.size).to.be.equal(1);
           expect(context.primitives.get(1)).to.be.an.instanceOf(Primitive);
-          expect(context.primitives.get(1).geometryInstances[0].geometry).to.be.an.instanceOf(SphereGeometry);
+          expect(
+            context.primitives.get(1).geometryInstances[0].geometry,
+          ).to.be.an.instanceOf(SphereGeometry);
         });
 
         it('should create a linePrimitive', () => {
           pointToCesium(
-            feature, style, geometries, primitiveVectorProperties, scene, context,
+            feature,
+            style,
+            geometries,
+            primitiveVectorProperties,
+            scene,
+            context,
           );
           expect(context.featureToPrimitiveMap.size).to.be.equal(1);
           expect(context.primitives.get(0)).to.be.instanceOf(Primitive);
@@ -877,7 +1210,12 @@ describe('util.featureConverter.pointToCesium', () => {
 
         it('should not create a billboard, if creating a primitive', () => {
           pointToCesium(
-            feature, new Style({ image: regularShapeStyle }), geometries, primitiveVectorProperties, scene, context,
+            feature,
+            new Style({ image: regularShapeStyle }),
+            geometries,
+            primitiveVectorProperties,
+            scene,
+            context,
           );
           expect(context.billboards.length).to.equal(0);
           expect(context.featureToBillboardMap.size).to.be.equal(0);
@@ -886,7 +1224,10 @@ describe('util.featureConverter.pointToCesium', () => {
         it('should not create a label, if creating a primitive', () => {
           pointToCesium(
             feature,
-            new Style({ image: regularShapeStyle, text: new TextStyle({ text: 'test' }) }),
+            new Style({
+              image: regularShapeStyle,
+              text: new TextStyle({ text: 'test' }),
+            }),
             geometries,
             primitiveVectorProperties,
             scene,
@@ -902,7 +1243,10 @@ describe('util.featureConverter.pointToCesium', () => {
 
         before(() => {
           primitiveVectorProperties = new VectorProperties({
-            primitiveOptions: { type: PrimitiveOptionsType.SPHERE, geometryOptions: {} },
+            primitiveOptions: {
+              type: PrimitiveOptionsType.SPHERE,
+              geometryOptions: {},
+            },
             modelAutoScale: true,
           });
         });
@@ -913,15 +1257,27 @@ describe('util.featureConverter.pointToCesium', () => {
 
         it('should create a scaled primitive', () => {
           pointToCesium(
-            feature, new Style({ image: regularShapeStyle }), geometries, primitiveVectorProperties, scene, context,
+            feature,
+            new Style({ image: regularShapeStyle }),
+            geometries,
+            primitiveVectorProperties,
+            scene,
+            context,
           );
           expect(context.featureToScaledPrimitiveMap.size).to.be.equal(1);
-          expect(context.scaledPrimitives.get(0)).to.be.an.instanceOf(Primitive);
+          expect(context.scaledPrimitives.get(0)).to.be.an.instanceOf(
+            Primitive,
+          );
         });
 
         it('should not create a billboard, if creating a primitive', () => {
           pointToCesium(
-            feature, new Style({ image: regularShapeStyle }), geometries, primitiveVectorProperties, scene, context,
+            feature,
+            new Style({ image: regularShapeStyle }),
+            geometries,
+            primitiveVectorProperties,
+            scene,
+            context,
           );
           expect(context.billboards.length).to.equal(0);
           expect(context.featureToBillboardMap.size).to.be.equal(0);
@@ -930,7 +1286,10 @@ describe('util.featureConverter.pointToCesium', () => {
         it('should not create a label, if creating a primitive', () => {
           pointToCesium(
             feature,
-            new Style({ image: regularShapeStyle, text: new TextStyle({ text: 'test' }) }),
+            new Style({
+              image: regularShapeStyle,
+              text: new TextStyle({ text: 'test' }),
+            }),
             geometries,
             primitiveVectorProperties,
             scene,
@@ -947,11 +1306,17 @@ describe('util.featureConverter.pointToCesium', () => {
 
         before(() => {
           primitiveVectorProperties = new VectorProperties({
-            primitiveOptions: { type: PrimitiveOptionsType.SPHERE, geometryOptions: {} },
+            primitiveOptions: {
+              type: PrimitiveOptionsType.SPHERE,
+              geometryOptions: {},
+            },
             modelAutoScale: true,
             extrudedHeight: 10,
           });
-          style = new Style({ image: regularShapeStyle, stroke: new Stroke({ width: 1, color: [1, 1, 1] }) });
+          style = new Style({
+            image: regularShapeStyle,
+            stroke: new Stroke({ width: 1, color: [1, 1, 1] }),
+          });
         });
 
         after(() => {
@@ -960,15 +1325,27 @@ describe('util.featureConverter.pointToCesium', () => {
 
         it('should create a scaled primitive', () => {
           pointToCesium(
-            feature, style, geometries, primitiveVectorProperties, scene, context,
+            feature,
+            style,
+            geometries,
+            primitiveVectorProperties,
+            scene,
+            context,
           );
           expect(context.featureToScaledPrimitiveMap.size).to.be.equal(1);
-          expect(context.scaledPrimitives.get(0)).to.be.an.instanceOf(Primitive);
+          expect(context.scaledPrimitives.get(0)).to.be.an.instanceOf(
+            Primitive,
+          );
         });
 
         it('should create a linePrimitive', () => {
           pointToCesium(
-            feature, style, geometries, primitiveVectorProperties, scene, context,
+            feature,
+            style,
+            geometries,
+            primitiveVectorProperties,
+            scene,
+            context,
           );
           expect(context.featureToPrimitiveMap.size).to.be.equal(1);
           expect(context.primitives.get(0)).to.be.instanceOf(Primitive);
@@ -976,7 +1353,12 @@ describe('util.featureConverter.pointToCesium', () => {
 
         it('should not create a billboard, if creating a primitive', () => {
           pointToCesium(
-            feature, style, geometries, primitiveVectorProperties, scene, context,
+            feature,
+            style,
+            geometries,
+            primitiveVectorProperties,
+            scene,
+            context,
           );
           expect(context.billboards.length).to.equal(0);
           expect(context.featureToBillboardMap.size).to.be.equal(0);
@@ -985,7 +1367,10 @@ describe('util.featureConverter.pointToCesium', () => {
         it('should not create a label, if creating a primitive', () => {
           pointToCesium(
             feature,
-            new Style({ image: regularShapeStyle, text: new TextStyle({ text: 'test' }) }),
+            new Style({
+              image: regularShapeStyle,
+              text: new TextStyle({ text: 'test' }),
+            }),
             geometries,
             primitiveVectorProperties,
             scene,
@@ -999,12 +1384,23 @@ describe('util.featureConverter.pointToCesium', () => {
 
     describe('priority of model vs. primitive', () => {
       it('should create a model, if the model is defined on the feature, even if a primitive is defined on the vector properties', () => {
-        const modelFeature = new Feature({ id: 'foo', olcs_modelUrl: 'http://localhost/test.glb' });
+        const modelFeature = new Feature({
+          id: 'foo',
+          olcs_modelUrl: 'http://localhost/test.glb',
+        });
         const primitiveVectorProperties = new VectorProperties({
-          primitiveOptions: { type: PrimitiveOptionsType.SPHERE, geometryOptions: {} },
+          primitiveOptions: {
+            type: PrimitiveOptionsType.SPHERE,
+            geometryOptions: {},
+          },
         });
         pointToCesium(
-          modelFeature, new Style({ image: regularShapeStyle }), geometries, primitiveVectorProperties, scene, context,
+          modelFeature,
+          new Style({ image: regularShapeStyle }),
+          geometries,
+          primitiveVectorProperties,
+          scene,
+          context,
         );
         primitiveVectorProperties.destroy();
         expect(context.featureToPrimitiveMap.size).to.be.equal(1);
@@ -1014,13 +1410,21 @@ describe('util.featureConverter.pointToCesium', () => {
       it('should create a primitive, if the primitive is defined on the feature, even if a model is defined on the vector properties', () => {
         const primitiveFeature = new Feature({
           id: 'foo',
-          olcs_primitiveOptions: { type: PrimitiveOptionsType.SPHERE, geometryOptions: {} },
+          olcs_primitiveOptions: {
+            type: PrimitiveOptionsType.SPHERE,
+            geometryOptions: {},
+          },
         });
         const modelVectorProperties = new VectorProperties({
           modelUrl: 'http://localhost/test.glb',
         });
         pointToCesium(
-          primitiveFeature, new Style({ image: regularShapeStyle }), geometries, modelVectorProperties, scene, context,
+          primitiveFeature,
+          new Style({ image: regularShapeStyle }),
+          geometries,
+          modelVectorProperties,
+          scene,
+          context,
         );
         modelVectorProperties.destroy();
         expect(context.featureToPrimitiveMap.size).to.be.equal(1);
@@ -1030,7 +1434,10 @@ describe('util.featureConverter.pointToCesium', () => {
       it('should create a model, if both model and primitive are defined on the vector properties', () => {
         const primitiveAndModelVectorProperties = new VectorProperties({
           modelUrl: 'http://localhost/test.glb',
-          primitiveOptions: { type: PrimitiveOptionsType.SPHERE, geometryOptions: {} },
+          primitiveOptions: {
+            type: PrimitiveOptionsType.SPHERE,
+            geometryOptions: {},
+          },
         });
         pointToCesium(
           feature,

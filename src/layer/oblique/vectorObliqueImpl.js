@@ -4,7 +4,12 @@ import { unByKey } from 'ol/Observable.js';
 import Feature from 'ol/Feature.js';
 
 import { mercatorProjection } from '../../util/projection.js';
-import { mercatorGeometryToImageGeometry, imageGeometryToMercatorGeometry, getPolygonizedGeometry, setNewGeometry } from './obliqueHelpers.js';
+import {
+  mercatorGeometryToImageGeometry,
+  imageGeometryToMercatorGeometry,
+  getPolygonizedGeometry,
+  setNewGeometry,
+} from './obliqueHelpers.js';
 import {
   actuallyIsCircle,
   alreadyTransformedToImage,
@@ -22,7 +27,9 @@ import { synchronizeFeatureVisibilityWithSource } from '../vectorHelpers.js';
  * @implements {FeatureLayerImplementation}
  */
 class VectorObliqueImpl extends LayerObliqueImpl {
-  static get className() { return 'VectorObliqueImpl'; }
+  static get className() {
+    return 'VectorObliqueImpl';
+  }
 
   /**
    * @param {import("@vcmap/core").ObliqueMap} map
@@ -140,8 +147,10 @@ class VectorObliqueImpl extends LayerObliqueImpl {
     if (this.currentExtent) {
       const geometry = feature.getGeometry();
       if (geometry) {
-        return geometry[alreadyTransformedToImage] ||
-          geometry.intersectsExtent(this.currentExtent);
+        return (
+          geometry[alreadyTransformedToImage] ||
+          geometry.intersectsExtent(this.currentExtent)
+        );
       }
     }
     return false;
@@ -151,24 +160,54 @@ class VectorObliqueImpl extends LayerObliqueImpl {
    * @protected
    */
   _addSourceListeners() {
-    this._sourceListener.push(/** @type {import("ol/events").EventsKey} */ (this.source.on('addfeature', /** @param {import("ol/source/Vector").VectorSourceEvent} event */ (event) => {
-      const { feature } = event;
-      if (this._featureInExtent(feature)) {
-        this.addFeature(event.feature);
-      }
-    })));
+    this._sourceListener.push(
+      /** @type {import("ol/events").EventsKey} */ (
+        this.source.on(
+          'addfeature',
+          /** @param {import("ol/source/Vector").VectorSourceEvent} event */ (
+            event,
+          ) => {
+            const { feature } = event;
+            if (this._featureInExtent(feature)) {
+              this.addFeature(event.feature);
+            }
+          },
+        )
+      ),
+    );
 
-    this._sourceListener.push(/** @type {import("ol/events").EventsKey} */ (this.source.on('removefeature', /** @param {import("ol/source/Vector").VectorSourceEvent} event */ (event) => {
-      this.removeFeature(event.feature);
-    })));
+    this._sourceListener.push(
+      /** @type {import("ol/events").EventsKey} */ (
+        this.source.on(
+          'removefeature',
+          /** @param {import("ol/source/Vector").VectorSourceEvent} event */ (
+            event,
+          ) => {
+            this.removeFeature(event.feature);
+          },
+        )
+      ),
+    );
 
-    this._sourceListener.push(/** @type {import("ol/events").EventsKey} */ (this.source.on('changefeature', /** @param {import("ol/source/Vector").VectorSourceEvent} event */ (event) => {
-      const { feature } = event;
-      const newFeatureId = feature.getId();
-      if (!this._featureListeners[newFeatureId] && this._featureInExtent(feature)) {
-        this.addFeature(feature);
-      }
-    })));
+    this._sourceListener.push(
+      /** @type {import("ol/events").EventsKey} */ (
+        this.source.on(
+          'changefeature',
+          /** @param {import("ol/source/Vector").VectorSourceEvent} event */ (
+            event,
+          ) => {
+            const { feature } = event;
+            const newFeatureId = feature.getId();
+            if (
+              !this._featureListeners[newFeatureId] &&
+              this._featureInExtent(feature)
+            ) {
+              this.addFeature(feature);
+            }
+          },
+        )
+      ),
+    );
   }
 
   /**
@@ -182,10 +221,16 @@ class VectorObliqueImpl extends LayerObliqueImpl {
         this.olLayer.setVisible(true);
         if (this._featureVisibilityListeners.length === 0) {
           this._featureVisibilityListeners =
-            synchronizeFeatureVisibilityWithSource(this.featureVisibility, this.source, this.globalHider);
+            synchronizeFeatureVisibilityWithSource(
+              this.featureVisibility,
+              this.source,
+              this.globalHider,
+            );
         }
         this._addSourceListeners();
-        this._imageChangedListener = this.map.imageChanged.addEventListener(this._onObliqueImageChanged.bind(this));
+        this._imageChangedListener = this.map.imageChanged.addEventListener(
+          this._onObliqueImageChanged.bind(this),
+        );
         await this._fetchFeaturesInView();
       }
     }
@@ -200,17 +245,11 @@ class VectorObliqueImpl extends LayerObliqueImpl {
     if (!this.active) {
       this.fetchedFeaturesForImageName = null;
     }
-    if (
-      this.active &&
-      this.currentExtent
-    ) {
+    if (this.active && this.currentExtent) {
       const id = originalFeature.getId();
       const originalGeometry = originalFeature.getGeometry();
       if (originalFeature[doNotTransform]) {
-        if (
-          originalGeometry &&
-          !this.obliqueSource.getFeatureById(id)
-        ) {
+        if (originalGeometry && !this.obliqueSource.getFeatureById(id)) {
           this.obliqueSource.addFeature(originalFeature);
         }
         return Promise.resolve();
@@ -227,10 +266,11 @@ class VectorObliqueImpl extends LayerObliqueImpl {
 
       this._setFeatureListeners(originalFeature, obliqueFeature);
 
-      return this._convertToOblique(originalFeature, obliqueFeature)
-        .then(() => {
+      return this._convertToOblique(originalFeature, obliqueFeature).then(
+        () => {
           this.obliqueSource.addFeature(obliqueFeature);
-        });
+        },
+      );
     }
     return Promise.resolve();
   }
@@ -246,10 +286,32 @@ class VectorObliqueImpl extends LayerObliqueImpl {
     unByKey(listeners.obliqueGeometryChanged);
     setNewGeometry(originalFeature, obliqueFeature);
     this.updateObliqueGeometry(originalFeature, obliqueFeature);
-    listeners.originalGeometryChanged = /** @type {import("ol/events").EventsKey} */ (originalFeature
-      .getGeometry().on('change', this.updateObliqueGeometry.bind(this, originalFeature, obliqueFeature)));
-    listeners.obliqueGeometryChanged = /** @type {import("ol/events").EventsKey} */ (obliqueFeature
-      .getGeometry().on('change', this.updateMercatorGeometry.bind(this, originalFeature, obliqueFeature)));
+    listeners.originalGeometryChanged =
+      /** @type {import("ol/events").EventsKey} */ (
+        originalFeature
+          .getGeometry()
+          .on(
+            'change',
+            this.updateObliqueGeometry.bind(
+              this,
+              originalFeature,
+              obliqueFeature,
+            ),
+          )
+      );
+    listeners.obliqueGeometryChanged =
+      /** @type {import("ol/events").EventsKey} */ (
+        obliqueFeature
+          .getGeometry()
+          .on(
+            'change',
+            this.updateMercatorGeometry.bind(
+              this,
+              originalFeature,
+              obliqueFeature,
+            ),
+          )
+      );
   }
 
   /**
@@ -260,28 +322,64 @@ class VectorObliqueImpl extends LayerObliqueImpl {
   _setFeatureListeners(originalFeature, obliqueFeature) {
     const featureId = obliqueFeature.getId();
     const listeners = {
-      originalFeatureGeometryChanged: /** @type {import("ol/events").EventsKey} */ (originalFeature.on('change:geometry', () => {
-        const originalGeometry = originalFeature.getGeometry();
-        if (originalGeometry[actuallyIsCircle]) {
-          unByKey(listeners.originalGeometryChanged);
-          listeners.originalGeometryChanged = /** @type {import("ol/events").EventsKey} */ (originalFeature
-            .getGeometry().on('change', () => {
-              if (this._updatingMercator[featureId]) {
-                return;
-              }
-              delete originalGeometry[actuallyIsCircle];
-              this._originalGeometryChanged(listeners, originalFeature, obliqueFeature);
-            }));
-          return;
-        }
-        this._originalGeometryChanged(listeners, originalFeature, obliqueFeature);
-      })),
-      originalFeatureChanged: /** @type {import("ol/events").EventsKey} */ (originalFeature
-        .on('change', () => { obliqueFeature.setStyle(originalFeature.getStyle()); })),
-      originalGeometryChanged: /** @type {import("ol/events").EventsKey} */ (originalFeature
-        .getGeometry().on('change', this.updateObliqueGeometry.bind(this, originalFeature, obliqueFeature))),
-      obliqueGeometryChanged: /** @type {import("ol/events").EventsKey} */ (obliqueFeature
-        .getGeometry().on('change', this.updateMercatorGeometry.bind(this, originalFeature, obliqueFeature))),
+      originalFeatureGeometryChanged:
+        /** @type {import("ol/events").EventsKey} */ (
+          originalFeature.on('change:geometry', () => {
+            const originalGeometry = originalFeature.getGeometry();
+            if (originalGeometry[actuallyIsCircle]) {
+              unByKey(listeners.originalGeometryChanged);
+              listeners.originalGeometryChanged =
+                /** @type {import("ol/events").EventsKey} */ (
+                  originalFeature.getGeometry().on('change', () => {
+                    if (this._updatingMercator[featureId]) {
+                      return;
+                    }
+                    delete originalGeometry[actuallyIsCircle];
+                    this._originalGeometryChanged(
+                      listeners,
+                      originalFeature,
+                      obliqueFeature,
+                    );
+                  })
+                );
+              return;
+            }
+            this._originalGeometryChanged(
+              listeners,
+              originalFeature,
+              obliqueFeature,
+            );
+          })
+        ),
+      originalFeatureChanged: /** @type {import("ol/events").EventsKey} */ (
+        originalFeature.on('change', () => {
+          obliqueFeature.setStyle(originalFeature.getStyle());
+        })
+      ),
+      originalGeometryChanged: /** @type {import("ol/events").EventsKey} */ (
+        originalFeature
+          .getGeometry()
+          .on(
+            'change',
+            this.updateObliqueGeometry.bind(
+              this,
+              originalFeature,
+              obliqueFeature,
+            ),
+          )
+      ),
+      obliqueGeometryChanged: /** @type {import("ol/events").EventsKey} */ (
+        obliqueFeature
+          .getGeometry()
+          .on(
+            'change',
+            this.updateMercatorGeometry.bind(
+              this,
+              originalFeature,
+              obliqueFeature,
+            ),
+          )
+      ),
     };
     this._featureListeners[featureId] = listeners;
   }
@@ -298,9 +396,15 @@ class VectorObliqueImpl extends LayerObliqueImpl {
     const imageGeometry = obliqueFeature.getGeometry();
     this._updatingOblique[id] = true;
     if (!vectorGeometry[alreadyTransformedToImage]) {
-      await mercatorGeometryToImageGeometry(vectorGeometry, imageGeometry, this.map.currentImage);
+      await mercatorGeometryToImageGeometry(
+        vectorGeometry,
+        imageGeometry,
+        this.map.currentImage,
+      );
     } else {
-      obliqueFeature.getGeometry().setCoordinates(vectorGeometry.getCoordinates());
+      obliqueFeature
+        .getGeometry()
+        .setCoordinates(vectorGeometry.getCoordinates());
     }
     this._updatingOblique[id] = null;
   }
@@ -360,10 +464,9 @@ class VectorObliqueImpl extends LayerObliqueImpl {
    * also clears source and featureListeners
    */
   _clearCurrentImage() {
-    Object.values(this._featureListeners)
-      .forEach((listeners) => {
-        unByKey(Object.values(listeners));
-      });
+    Object.values(this._featureListeners).forEach((listeners) => {
+      unByKey(Object.values(listeners));
+    });
     this._featureListeners = {};
     this._updatingOblique = {};
     this._updatingMercator = {};
@@ -392,7 +495,8 @@ class VectorObliqueImpl extends LayerObliqueImpl {
       this.map.currentImage &&
       this.fetchedFeaturesForImageName !== this.map.currentImage.name
     ) {
-      this.currentExtent = this.map.getExtentOfCurrentImage()
+      this.currentExtent = this.map
+        .getExtentOfCurrentImage()
         .getCoordinatesInProjection(mercatorProjection);
       this.source.forEachFeatureInExtent(this.currentExtent, (feature) => {
         this.addFeature(feature);
@@ -432,7 +536,9 @@ class VectorObliqueImpl extends LayerObliqueImpl {
       this.olLayer.setVisible(false);
     }
 
-    this._featureVisibilityListeners.forEach((cb) => { cb(); });
+    this._featureVisibilityListeners.forEach((cb) => {
+      cb();
+    });
     this._featureVisibilityListeners = [];
 
     unByKey(this._sourceListener);

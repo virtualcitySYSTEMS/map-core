@@ -18,8 +18,12 @@ function synchronizeEntityCollections(source, destination) {
     destination.add(entity);
   });
   return source.collectionChanged.addEventListener((c, added, removed) => {
-    added.forEach((e) => { destination.add(e); });
-    removed.forEach((e) => { destination.remove(e); });
+    added.forEach((e) => {
+      destination.add(e);
+    });
+    removed.forEach((e) => {
+      destination.remove(e);
+    });
   });
 }
 
@@ -29,7 +33,9 @@ function synchronizeEntityCollections(source, destination) {
  */
 class DataSourceCesiumImpl extends LayerImplementation {
   /** @type {string} */
-  static get className() { return 'DataSourceCesiumImpl'; }
+  static get className() {
+    return 'DataSourceCesiumImpl';
+  }
 
   /**
    * @param {import("@vcmap/core").CesiumMap} map
@@ -64,7 +70,10 @@ class DataSourceCesiumImpl extends LayerImplementation {
    */
   async initialize() {
     if (!this.initialized) {
-      this._collectionListener = synchronizeEntityCollections(this.entities, this.dataSource.entities);
+      this._collectionListener = synchronizeEntityCollections(
+        this.entities,
+        this.dataSource.entities,
+      );
       await this.map.addDataSource(this.dataSource);
     }
     await super.initialize();

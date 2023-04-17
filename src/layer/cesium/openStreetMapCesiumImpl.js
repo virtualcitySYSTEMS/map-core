@@ -1,4 +1,7 @@
-import { OpenStreetMapImageryProvider, ImageryLayer as CesiumImageryLayer } from '@vcmap-cesium/engine';
+import {
+  OpenStreetMapImageryProvider,
+  ImageryLayer as CesiumImageryLayer,
+} from '@vcmap-cesium/engine';
 import RasterLayerCesiumImpl from './rasterLayerCesiumImpl.js';
 
 /**
@@ -7,7 +10,9 @@ import RasterLayerCesiumImpl from './rasterLayerCesiumImpl.js';
  * @extends {RasterLayerCesiumImpl}
  */
 class OpenStreetMapCesiumImpl extends RasterLayerCesiumImpl {
-  static get className() { return 'OpenStreetMapCesiumImpl'; }
+  static get className() {
+    return 'OpenStreetMapCesiumImpl';
+  }
 
   /**
    * @inheritDoc
@@ -23,6 +28,5 @@ class OpenStreetMapCesiumImpl extends RasterLayerCesiumImpl {
     );
   }
 }
-
 
 export default OpenStreetMapCesiumImpl;

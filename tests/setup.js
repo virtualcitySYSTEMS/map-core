@@ -26,7 +26,9 @@ Object.assign(canvas, {
   CanvasGradient: canvasBindings.CanvasGradient,
   CanvasPattern: canvasBindings.CanvasPattern,
 });
-['CanvasRenderingContext2D', 'CanvasPattern', 'CanvasGradient'].forEach((obj) => {
-  global[obj] = canvas[obj];
-});
+['CanvasRenderingContext2D', 'CanvasPattern', 'CanvasGradient'].forEach(
+  (obj) => {
+    global[obj] = canvas[obj];
+  },
+);
 global.createCanvas = canvas.createCanvas;

@@ -5,7 +5,9 @@ import GML2 from 'ol/format/GML2.js';
 import GML3 from 'ol/format/GML3.js';
 import Point from 'ol/geom/Point.js';
 import nock from 'nock';
-import WMSFeatureProvider, { getFormat } from '../../../src/featureProvider/wmsFeatureProvider.js';
+import WMSFeatureProvider, {
+  getFormat,
+} from '../../../src/featureProvider/wmsFeatureProvider.js';
 import { mercatorProjection } from '../../../src/util/projection.js';
 import Extent from '../../../src/util/extent.js';
 
@@ -49,17 +51,14 @@ describe('WMSFeatureProvider', () => {
           return [200, testGeojson, { 'Content-Type': 'application/json' }];
         });
 
-      provider = new WMSFeatureProvider(
-        'test',
-        {
-          url: 'http://myWmsFeatureProvider/wms',
-          parameters: {
-            LAYERS: 'one',
-          },
-          responseType: 'application/json',
-          projection: mercatorProjection.toJSON(),
+      provider = new WMSFeatureProvider('test', {
+        url: 'http://myWmsFeatureProvider/wms',
+        parameters: {
+          LAYERS: 'one',
         },
-      );
+        responseType: 'application/json',
+        projection: mercatorProjection.toJSON(),
+      });
       features = await provider.getFeaturesByCoordinate([0, 0, 0], 2);
     });
 
@@ -175,11 +174,17 @@ describe('WMSFeatureProvider', () => {
       });
 
       it('should configure the responseType', () => {
-        expect(outputConfig).to.have.property('responseType', inputConfig.responseType);
+        expect(outputConfig).to.have.property(
+          'responseType',
+          inputConfig.responseType,
+        );
       });
 
       it('should configure the tilingSchema', () => {
-        expect(outputConfig).to.have.property('tilingSchema', inputConfig.tilingSchema);
+        expect(outputConfig).to.have.property(
+          'tilingSchema',
+          inputConfig.tilingSchema,
+        );
       });
 
       it('should configure the minLevel', () => {
@@ -199,22 +204,26 @@ describe('WMSFeatureProvider', () => {
       });
 
       it('should configure the format options', () => {
-        expect(outputConfig).to.have.property('formatOptions')
+        expect(outputConfig)
+          .to.have.property('formatOptions')
           .and.to.eql(inputConfig.formatOptions);
       });
 
       it('should configure the projection', () => {
-        expect(outputConfig).to.have.property('projection')
+        expect(outputConfig)
+          .to.have.property('projection')
           .and.to.eql(inputConfig.projection);
       });
 
       it('should configure the tileSize', () => {
-        expect(outputConfig).to.have.property('tileSize')
+        expect(outputConfig)
+          .to.have.property('tileSize')
           .and.to.eql(inputConfig.tileSize);
       });
 
       it('should configure the extent', () => {
-        expect(outputConfig).to.have.property('extent')
+        expect(outputConfig)
+          .to.have.property('extent')
           .and.to.eql(inputConfig.extent);
       });
     });

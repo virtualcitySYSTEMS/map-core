@@ -126,7 +126,9 @@ class ClippingObject {
    * @api
    * @type {import("@vcmap-cesium/engine").ClippingPlaneCollection|null}
    */
-  get clippingPlaneCollection() { return this._clippingPlaneCollection; }
+  get clippingPlaneCollection() {
+    return this._clippingPlaneCollection;
+  }
 
   /**
    * @param {import("@vcmap-cesium/engine").ClippingPlaneCollection} clippingPlaneCollection
@@ -141,7 +143,9 @@ class ClippingObject {
    * @api
    * @type {boolean}
    */
-  get terrain() { return this._terrain; }
+  get terrain() {
+    return this._terrain;
+  }
 
   /**
    * @param {boolean} terrain
@@ -162,7 +166,9 @@ class ClippingObject {
    * @api
    * @type {boolean}
    */
-  get local() { return this._local; }
+  get local() {
+    return this._local;
+  }
 
   /**
    * @param {boolean} local
@@ -200,56 +206,65 @@ class ClippingObject {
       if (this.layerNames.includes(layer.name)) {
         if (layer.active) {
           const visualisations = map.getVisualizationsForLayer(layer);
-          const tilesets = visualisations ?
-            [...visualisations]
-              .filter(v => v instanceof Cesium3DTileset) :
-            [];
+          const tilesets = visualisations
+            ? [...visualisations].filter((v) => v instanceof Cesium3DTileset)
+            : [];
 
           if (tilesets.length > 0) {
-            tilesets.forEach(/** @param {import("@vcmap-cesium/engine").Cesium3DTileset} tileset */ (tileset) => {
-              tileset.readyPromise.then((cesium3DTileset) => {
-                if (this.layerNames.includes(layer.name) && layer.active) {
-                  this.targets.set(layer.name, cesium3DTileset);
-                  this.targetsUpdated.raiseEvent();
-                }
-              });
-            });
+            tilesets.forEach(
+              /** @param {import("@vcmap-cesium/engine").Cesium3DTileset} tileset */ (
+                tileset,
+              ) => {
+                tileset.readyPromise.then((cesium3DTileset) => {
+                  if (this.layerNames.includes(layer.name) && layer.active) {
+                    this.targets.set(layer.name, cesium3DTileset);
+                    this.targetsUpdated.raiseEvent();
+                  }
+                });
+              },
+            );
           } else {
             const index = this.layerNames.indexOf(layer.name);
-            getLogger().warning(`layer ${layer.name} cannot have a ClippingObject applied`);
+            getLogger().warning(
+              `layer ${layer.name} cannot have a ClippingObject applied`,
+            );
             this.layerNames.splice(index, 1);
           }
         } else if (this.targets.has(layer.name)) {
           this.targets.delete(layer.name);
           this.targetsUpdated.raiseEvent();
         }
-      } else if (this.entities.find(eo => eo.layerName === layer.name)) {
+      } else if (this.entities.find((eo) => eo.layerName === layer.name)) {
         let raise = false;
         const visualisations = map.getVisualizationsForLayer(layer);
-        const dataSource = visualisations ?
-          [...visualisations][0] :
-          null;
+        const dataSource = visualisations ? [...visualisations][0] : null;
 
         if (!dataSource) {
           const index = this.layerNames.indexOf(layer.name);
-          getLogger().warning(`layer ${layer.name} cannot have a ClippingObject applied`);
+          getLogger().warning(
+            `layer ${layer.name} cannot have a ClippingObject applied`,
+          );
           this.layerNames.splice(index, 1);
           return;
         }
 
         this.entities
-          .filter(eo => eo.layerName === layer.name)
+          .filter((eo) => eo.layerName === layer.name)
           .forEach((eo) => {
             const key = `${eo.layerName}-${eo.entityId}`;
             if (layer.active) {
-              const entity = /** @type {import("@vcmap-cesium/engine").CustomDataSource} */ (dataSource)
-                .entities.getById(eo.entityId);
+              const entity =
+                /** @type {import("@vcmap-cesium/engine").CustomDataSource} */ (
+                  dataSource
+                ).entities.getById(eo.entityId);
               if (entity) {
                 this.targets.set(key, entity);
                 raise = true;
               } else {
                 const index = this.entities.indexOf(eo);
-                getLogger().warning(`could not find entity with id ${eo.entityId} in layer ${eo.layerName}`);
+                getLogger().warning(
+                  `could not find entity with id ${eo.entityId} in layer ${eo.layerName}`,
+                );
                 this.entities.splice(index, 1);
               }
             } else if (this.targets.has(key)) {
@@ -262,11 +277,22 @@ class ClippingObject {
           this.targetsUpdated.raiseEvent();
         }
       }
-    } else if (this.layerNames.includes(layer.name) && layer.className === 'FeatureStoreLayer') {
+    } else if (
+      this.layerNames.includes(layer.name) &&
+      layer.className === 'FeatureStoreLayer'
+    ) {
       if (layer.active) {
-        this._cachedFeatureStoreLayers.add(/** @type {import("@vcmap/core").FeatureStoreLayer} */ (layer));
-      } else if (this._cachedFeatureStoreLayers.has(/** @type {import("@vcmap/core").FeatureStoreLayer} */ (layer))) {
-        this._cachedFeatureStoreLayers.delete(/** @type {import("@vcmap/core").FeatureStoreLayer} */ (layer));
+        this._cachedFeatureStoreLayers.add(
+          /** @type {import("@vcmap/core").FeatureStoreLayer} */ (layer),
+        );
+      } else if (
+        this._cachedFeatureStoreLayers.has(
+          /** @type {import("@vcmap/core").FeatureStoreLayer} */ (layer),
+        )
+      ) {
+        this._cachedFeatureStoreLayers.delete(
+          /** @type {import("@vcmap/core").FeatureStoreLayer} */ (layer),
+        );
       }
     }
   }
@@ -291,7 +317,9 @@ class ClippingObject {
       }
 
       if (this._cachedFeatureStoreLayers.size > 0) {
-        this._cachedFeatureStoreLayers.forEach((layer) => { this.handleLayerChanged(layer); });
+        this._cachedFeatureStoreLayers.forEach((layer) => {
+          this.handleLayerChanged(layer);
+        });
         this._cachedFeatureStoreLayers.clear();
       }
     }
@@ -308,9 +336,9 @@ class ClippingObject {
 
     if (!this.layerNames.includes(layerName)) {
       this.layerNames.push(layerName);
-      const layer = this._layerCollection ?
-        this._layerCollection.getByKey(layerName) :
-        null;
+      const layer = this._layerCollection
+        ? this._layerCollection.getByKey(layerName)
+        : null;
       // XXX active state is not part of this yet
       if (layer && layer.active) {
         this.handleLayerChanged(layer);
@@ -347,11 +375,15 @@ class ClippingObject {
     check(layerName, String);
     check(entityId, String);
 
-    if (!this.entities.find(eo => eo.layerName === layerName && eo.entityId === entityId)) {
+    if (
+      !this.entities.find(
+        (eo) => eo.layerName === layerName && eo.entityId === entityId,
+      )
+    ) {
       this.entities.push({ layerName, entityId });
-      const layer = this._layerCollection ?
-        this._layerCollection.getByKey(layerName) :
-        null;
+      const layer = this._layerCollection
+        ? this._layerCollection.getByKey(layerName)
+        : null;
       if (layer && layer.active) {
         this.handleLayerChanged(layer);
       }
@@ -368,7 +400,9 @@ class ClippingObject {
     check(layerName, String);
     check(entityId, String);
 
-    const index = this.entities.findIndex(c => c.layerName === layerName && c.entityId === entityId);
+    const index = this.entities.findIndex(
+      (c) => c.layerName === layerName && c.entityId === entityId,
+    );
     if (index > -1) {
       this.entities.splice(index, 1);
     }

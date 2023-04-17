@@ -20,13 +20,20 @@ import Projection from '../projection.js';
  * @returns {Array<import("@vcmap-cesium/engine").CircleGeometry>}
  * @private
  */
-export function createSolidGeometries(options, height, perPositionHeight, extrudedHeight) {
-  return [new CircleGeometry({
-    ...options,
-    height,
-    granularity: 0.02,
-    extrudedHeight,
-  })];
+export function createSolidGeometries(
+  options,
+  height,
+  perPositionHeight,
+  extrudedHeight,
+) {
+  return [
+    new CircleGeometry({
+      ...options,
+      height,
+      granularity: 0.02,
+      extrudedHeight,
+    }),
+  ];
 }
 
 /**
@@ -37,13 +44,20 @@ export function createSolidGeometries(options, height, perPositionHeight, extrud
  * @returns {Array<import("@vcmap-cesium/engine").CircleOutlineGeometry>}
  * @private
  */
-export function createOutlineGeometries(options, height, perPositionHeight, extrudedHeight) {
-  return [new CircleOutlineGeometry({
-    ...options,
-    height,
-    extrudedHeight,
-    granularity: 0.02,
-  })];
+export function createOutlineGeometries(
+  options,
+  height,
+  perPositionHeight,
+  extrudedHeight,
+) {
+  return [
+    new CircleOutlineGeometry({
+      ...options,
+      height,
+      extrudedHeight,
+      granularity: 0.02,
+    }),
+  ];
 }
 
 /**
@@ -73,11 +87,7 @@ export function getLineGeometryOptions(options, style) {
   ];
 
   // circular returns polygon with GeometryLayout.XY
-  const circlePolygon = circular(
-    wgs84Center,
-    radius,
-    40,
-  );
+  const circlePolygon = circular(wgs84Center, radius, 40);
   const pos = circlePolygon.getLinearRing(0).getCoordinates();
   const positions = pos.map((coord) => {
     return Cartesian3.fromDegrees(coord[0], coord[1], cartographic.height);
@@ -130,8 +140,16 @@ export function getGeometryOptions(geometry, positionHeightAdjustment) {
   const wgs84Point = Projection.mercatorToWgs84(olPoint, true);
 
   // Cesium coordinates of center and radius
-  const center = Cartesian3.fromDegrees(wgs84Center[0], wgs84Center[1], wgs84Center[2]);
-  const point = Cartesian3.fromDegrees(wgs84Point[0], wgs84Point[1], wgs84Center[2]);
+  const center = Cartesian3.fromDegrees(
+    wgs84Center[0],
+    wgs84Center[1],
+    wgs84Center[2],
+  );
+  const point = Cartesian3.fromDegrees(
+    wgs84Point[0],
+    wgs84Point[1],
+    wgs84Center[2],
+  );
 
   // Computation of radius in Cesium 3D
   const radius = Cartesian3.distance(center, point);
@@ -187,12 +205,15 @@ export function validateCircle(circle) {
   const flatCoordinates = circle.getFlatCoordinates();
   const stride = circle.getStride();
   // needs at least one full coordinate + a radius value and a non 0 radius
-  if (flatCoordinates && flatCoordinates.length >= stride + 1 && flatCoordinates[stride] !== flatCoordinates[0]) {
-    return flatCoordinates.every(value => Number.isFinite(value));
+  if (
+    flatCoordinates &&
+    flatCoordinates.length >= stride + 1 &&
+    flatCoordinates[stride] !== flatCoordinates[0]
+  ) {
+    return flatCoordinates.every((value) => Number.isFinite(value));
   }
   return false;
 }
-
 
 /**
  * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
@@ -202,13 +223,26 @@ export function validateCircle(circle) {
  * @param {import("@vcmap-cesium/engine").Scene} scene
  * @param {import("@vcmap/core").VectorContext|import("@vcmap/core").ClusterContext} context
  */
-export default function circleToCesium(feature, style, geometries, vectorProperties, scene, context) {
+export default function circleToCesium(
+  feature,
+  style,
+  geometries,
+  vectorProperties,
+  scene,
+  context,
+) {
   if (!style.getFill() && !style.getStroke()) {
     return;
   }
   const circleGeometryFactory = getGeometryFactory();
-  const validGeometries = geometries.filter(circle => validateCircle(circle));
+  const validGeometries = geometries.filter((circle) => validateCircle(circle));
   addPrimitivesToContext(
-    feature, style, validGeometries, vectorProperties, scene, circleGeometryFactory, context,
+    feature,
+    style,
+    validGeometries,
+    vectorProperties,
+    scene,
+    circleGeometryFactory,
+    context,
   );
 }

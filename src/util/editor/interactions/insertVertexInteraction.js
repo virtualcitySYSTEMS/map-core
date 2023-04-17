@@ -1,8 +1,15 @@
 import { LinearRing } from 'ol/geom.js';
 import AbstractInteraction from '../../../interaction/abstractInteraction.js';
-import { EventType, ModificationKeyType } from '../../../interaction/interactionType.js';
+import {
+  EventType,
+  ModificationKeyType,
+} from '../../../interaction/interactionType.js';
 import { cartesian2DDistance } from '../../math.js';
-import { createVertex, pointOnLine2D, pointOnLine3D } from '../editorHelpers.js';
+import {
+  createVertex,
+  pointOnLine2D,
+  pointOnLine3D,
+} from '../editorHelpers.js';
 import VcsEvent from '../../../vcsEvent.js';
 
 /**
@@ -65,9 +72,10 @@ class InsertVertexInteraction extends AbstractInteraction {
         const length = lineCoords.length - 1;
         let i = 0;
         for (i; i < length; i++) {
-          const onLine = this._feature.get('olcs_altitudeMode') === 'clampToGround' ? // todo altitude mode
-            pointOnLine2D(lineCoords[i], lineCoords[i + 1], closestCoord) :
-            pointOnLine3D(lineCoords[i], lineCoords[i + 1], closestCoord);
+          const onLine =
+            this._feature.get('olcs_altitudeMode') === 'clampToGround' // todo altitude mode
+              ? pointOnLine2D(lineCoords[i], lineCoords[i + 1], closestCoord)
+              : pointOnLine3D(lineCoords[i], lineCoords[i + 1], closestCoord);
           if (onLine) {
             break;
           }
@@ -77,7 +85,10 @@ class InsertVertexInteraction extends AbstractInteraction {
         if (this._isLinearRing && index === lineCoords.length) {
           index = 0;
         }
-        this.vertexInserted.raiseEvent({ vertex: createVertex(closestCoord), index });
+        this.vertexInserted.raiseEvent({
+          vertex: createVertex(closestCoord),
+          index,
+        });
       }
     }
     return event;

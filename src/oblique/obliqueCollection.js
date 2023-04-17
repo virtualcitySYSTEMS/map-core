@@ -6,9 +6,17 @@ import { createXYZ } from 'ol/tilegrid.js';
 import Feature from 'ol/Feature.js';
 import Polygon, { fromExtent } from 'ol/geom/Polygon.js';
 import Vector from 'ol/source/Vector.js';
-import { boundingExtent, buffer, containsCoordinate, getCenter } from 'ol/extent.js';
+import {
+  boundingExtent,
+  buffer,
+  containsCoordinate,
+  getCenter,
+} from 'ol/extent.js';
 import VcsEvent from '../vcsEvent.js';
-import ObliqueDataSet, { DataState, getStateFromStatesArray } from './obliqueDataSet.js';
+import ObliqueDataSet, {
+  DataState,
+  getStateFromStatesArray,
+} from './obliqueDataSet.js';
 import { ObliqueViewDirection } from './obliqueViewDirection.js';
 import { mercatorProjection } from '../util/projection.js';
 import VcsObject from '../vcsObject.js';
@@ -77,10 +85,17 @@ import VcsObject from '../vcsObject.js';
  */
 function getImageFeatures(images) {
   return images.map((image) => {
-    const transform = getTransform(image.meta.projection.proj, mercatorProjection.proj);
+    const transform = getTransform(
+      image.meta.projection.proj,
+      mercatorProjection.proj,
+    );
     const feature = new Feature({
       // error in TransformFunction type definition, remove undefined after openlayer fixed the type
-      geometry: new Polygon([image.groundCoordinates.map(c => transform(c.slice(0, 2), undefined, undefined))]),
+      geometry: new Polygon([
+        image.groundCoordinates.map((c) =>
+          transform(c.slice(0, 2), undefined, undefined),
+        ),
+      ]),
       viewDirection: image.viewDirection,
     });
     feature.setId(image.name);
@@ -94,19 +109,19 @@ function getImageFeatures(images) {
  */
 function getTileFeatures(tiles) {
   const tileGrid = createXYZ();
-  return Object.entries(tiles)
-    .map(([stringTileCoord, state]) => {
-      const tileCoord = stringTileCoord.split('/')
-        .map(tc => Number.parseInt(tc, 10));
+  return Object.entries(tiles).map(([stringTileCoord, state]) => {
+    const tileCoord = stringTileCoord
+      .split('/')
+      .map((tc) => Number.parseInt(tc, 10));
 
-      const extent = tileGrid.getTileCoordExtent(tileCoord);
-      const feature = new Feature({
-        geometry: fromExtent(extent),
-        state,
-      });
-      feature.setId(stringTileCoord);
-      return feature;
+    const extent = tileGrid.getTileCoordExtent(tileCoord);
+    const feature = new Feature({
+      geometry: fromExtent(extent),
+      state,
     });
+    feature.setId(stringTileCoord);
+    return feature;
+  });
 }
 
 /**
@@ -114,7 +129,9 @@ function getTileFeatures(tiles) {
  * @extends {VcsObject}
  */
 class ObliqueCollection extends VcsObject {
-  static get className() { return 'ObliqueCollection'; }
+  static get className() {
+    return 'ObliqueCollection';
+  }
 
   /**
    * @returns {ObliqueCollectionOptions}
@@ -199,7 +216,10 @@ class ObliqueCollection extends VcsObject {
      * Whether to activate this collection after loading its defining context.
      * @type {boolean}
      */
-    this.activeOnStartup = parseBoolean(options.activeOnStartup, defaultOptions.activeOnStartup);
+    this.activeOnStartup = parseBoolean(
+      options.activeOnStartup,
+      defaultOptions.activeOnStartup,
+    );
   }
 
   /**
@@ -311,7 +331,11 @@ class ObliqueCollection extends VcsObject {
     if (dataSetOptions instanceof ObliqueDataSet) {
       dataSet = dataSetOptions;
     } else {
-      dataSet = new ObliqueDataSet(dataSetOptions.url, dataSetOptions.projection, dataSetOptions.terrainProvider);
+      dataSet = new ObliqueDataSet(
+        dataSetOptions.url,
+        dataSetOptions.projection,
+        dataSetOptions.terrainProvider,
+      );
     }
     dataSet.imagesLoaded.addEventListener(({ images, tileCoordinate }) => {
       this._loadImages(images, tileCoordinate);
@@ -326,7 +350,8 @@ class ObliqueCollection extends VcsObject {
    * @returns {Promise<void>}
    * @api
    */
-  async addDataSet(dataSet) { // XXX check for dataset here?
+  async addDataSet(dataSet) {
+    // XXX check for dataset here?
     if (this._loadingPromise) {
       await this._loadingPromise;
       await this._loadDataSet(dataSet);
@@ -341,7 +366,9 @@ class ObliqueCollection extends VcsObject {
    */
   async load() {
     if (!this._loadingPromise) {
-      this._loadingPromise = Promise.all(this._dataSets.map(i => this._loadDataSet(i)));
+      this._loadingPromise = Promise.all(
+        this._dataSets.map((i) => this._loadDataSet(i)),
+      );
       await this._loadingPromise;
       this._loaded = true;
     }
@@ -356,7 +383,8 @@ class ObliqueCollection extends VcsObject {
    */
   _loadImages(images, tileCoordinate) {
     if (tileCoordinate && this._tileFeatureSource) {
-      const tileFeature = this._tileFeatureSource.getFeatureById(tileCoordinate);
+      const tileFeature =
+        this._tileFeatureSource.getFeatureById(tileCoordinate);
       if (tileFeature) {
         tileFeature.set('state', DataState.READY);
       }
@@ -369,7 +397,10 @@ class ObliqueCollection extends VcsObject {
         directions.set(image.viewDirection, []);
       }
 
-      const transform = getTransform(image.meta.projection.proj, mercatorProjection.proj);
+      const transform = getTransform(
+        image.meta.projection.proj,
+        mercatorProjection.proj,
+      );
       const coord = image.centerPointOnGround.slice(0, 2);
       // error in TransformFunction type definition, remove undefined after openlayer fixed the type
       transform(coord, coord, undefined);
@@ -406,14 +437,13 @@ class ObliqueCollection extends VcsObject {
     /** @type {Object<string, DataState>} */
     const tiles = {};
     this._dataSets.forEach((dataSet) => {
-      Object.entries(dataSet.getTiles())
-        .forEach(([tileCoord, state]) => {
-          if (tiles[tileCoord]) {
-            tiles[tileCoord] = getStateFromStatesArray([state, tiles[tileCoord]]);
-          } else {
-            tiles[tileCoord] = state;
-          }
-        });
+      Object.entries(dataSet.getTiles()).forEach(([tileCoord, state]) => {
+        if (tiles[tileCoord]) {
+          tiles[tileCoord] = getStateFromStatesArray([state, tiles[tileCoord]]);
+        } else {
+          tiles[tileCoord] = state;
+        }
+      });
     });
 
     return tiles;
@@ -445,7 +475,9 @@ class ObliqueCollection extends VcsObject {
    * @api
    */
   getDataStateForCoordinate(mercatorCoordinate) {
-    const states = this._dataSets.map(i => i.getDataStateForCoordinate(mercatorCoordinate));
+    const states = this._dataSets.map((i) =>
+      i.getDataStateForCoordinate(mercatorCoordinate),
+    );
     return getStateFromStatesArray(states);
   }
 
@@ -456,7 +488,7 @@ class ObliqueCollection extends VcsObject {
    * @api
    */
   getDataStateForExtent(extent) {
-    const states = this._dataSets.map(i => i.getDataStateForExtent(extent));
+    const states = this._dataSets.map((i) => i.getDataStateForExtent(extent));
     return getStateFromStatesArray(states);
   }
 
@@ -467,7 +499,9 @@ class ObliqueCollection extends VcsObject {
    * @api
    */
   async loadDataForCoordinate(mercatorCoordinate) {
-    await Promise.all(this._dataSets.map(i => i.loadDataForCoordinate(mercatorCoordinate)));
+    await Promise.all(
+      this._dataSets.map((i) => i.loadDataForCoordinate(mercatorCoordinate)),
+    );
   }
 
   /**
@@ -477,7 +511,7 @@ class ObliqueCollection extends VcsObject {
    * @api
    */
   async loadDataForExtent(extent) {
-    await Promise.all(this._dataSets.map(i => i.loadDataForExtent(extent)));
+    await Promise.all(this._dataSets.map((i) => i.loadDataForExtent(extent)));
   }
 
   /**
@@ -489,7 +523,12 @@ class ObliqueCollection extends VcsObject {
   _getNextImageForCoordinate(mercatorCoordinate, direction) {
     const tree = this._directionTrees.get(direction);
     if (tree) {
-      const candidates = knn(tree, mercatorCoordinate[0], mercatorCoordinate[1], 1);
+      const candidates = knn(
+        tree,
+        mercatorCoordinate[0],
+        mercatorCoordinate[1],
+        1,
+      );
       if (candidates.length === 1 && candidates[0].name) {
         return this.getImageByName(candidates[0].name);
       }
@@ -506,9 +545,15 @@ class ObliqueCollection extends VcsObject {
    * @api
    */
   getImageForCoordinate(mercatorCoordinate, direction) {
-    const directions = [direction, ...Object.values(ObliqueViewDirection).filter(d => d !== direction)];
+    const directions = [
+      direction,
+      ...Object.values(ObliqueViewDirection).filter((d) => d !== direction),
+    ];
     for (let i = 0; i < directions.length; i++) {
-      const image = this._getNextImageForCoordinate(mercatorCoordinate, directions[i]);
+      const image = this._getNextImageForCoordinate(
+        mercatorCoordinate,
+        directions[i],
+      );
       if (image) {
         return image;
       }
@@ -537,9 +582,15 @@ class ObliqueCollection extends VcsObject {
    * @api
    */
   async hasImageAtCoordinate(mercatorCoordinate, direction) {
-    const image = await this.loadImageForCoordinate(mercatorCoordinate, direction);
+    const image = await this.loadImageForCoordinate(
+      mercatorCoordinate,
+      direction,
+    );
     if (image) {
-      const transform = getTransform(mercatorProjection.proj, image.meta.projection.proj);
+      const transform = getTransform(
+        mercatorProjection.proj,
+        image.meta.projection.proj,
+      );
       const internalCoordinates = mercatorCoordinate.slice(0, 2);
       // error in TransformFunction type definition, remove undefined after openlayer fixed the type
       transform(internalCoordinates, internalCoordinates, undefined);
@@ -562,24 +613,32 @@ class ObliqueCollection extends VcsObject {
   async loadAdjacentImage(image, heading, deviation = Math.PI / 4) {
     const tree = this._directionTrees.get(image.viewDirection);
     if (tree) {
-      const transform = getTransform(image.meta.projection.proj, mercatorProjection.proj);
+      const transform = getTransform(
+        image.meta.projection.proj,
+        mercatorProjection.proj,
+      );
       // error in TransformFunction type definition, remove undefined after openlayer fixed the type
-      const coords = image.groundCoordinates.map(c => transform(c.slice(0, 2), undefined, undefined));
+      const coords = image.groundCoordinates.map((c) =>
+        transform(c.slice(0, 2), undefined, undefined),
+      );
       const extent = boundingExtent(coords);
       await this.loadDataForExtent(buffer(extent, 200));
       const center = getCenter(extent);
       const neighbors = knn(tree, center[0], center[1], 20);
       const found = neighbors.find((neighbour) => {
         if (neighbour.name !== image.name) {
-          let angle = Math.atan2(neighbour.minY - center[1], neighbour.minX - center[0]);
+          let angle = Math.atan2(
+            neighbour.minY - center[1],
+            neighbour.minX - center[0],
+          );
           if (angle <= 0) {
             angle += Math.PI * 2;
           }
           let differenceAngle = angle - heading;
           if (differenceAngle > Math.PI) {
-            differenceAngle -= (Math.PI * 2);
+            differenceAngle -= Math.PI * 2;
           } else if (differenceAngle < -Math.PI) {
-            differenceAngle += (Math.PI * 2);
+            differenceAngle += Math.PI * 2;
           }
           if (differenceAngle <= deviation && differenceAngle >= -deviation) {
             return neighbour;
@@ -599,10 +658,14 @@ class ObliqueCollection extends VcsObject {
    * @api
    */
   destroy() {
-    this._dataSets.forEach((ds) => { ds.destroy(); });
+    this._dataSets.forEach((ds) => {
+      ds.destroy();
+    });
     this._dataSets = [];
 
-    [...this._directionTrees.values()].forEach((tree) => { tree.clear(); });
+    [...this._directionTrees.values()].forEach((tree) => {
+      tree.clear();
+    });
     this._directionTrees.clear();
 
     this._images.clear();
@@ -643,7 +706,7 @@ class ObliqueCollection extends VcsObject {
     }
 
     if (this.dataSets.length > 0) {
-      config.dataSets = this.dataSets.map(d => d.toJSON());
+      config.dataSets = this.dataSets.map((d) => d.toJSON());
     }
     return config;
   }

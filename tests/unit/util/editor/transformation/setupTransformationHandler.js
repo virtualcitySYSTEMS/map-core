@@ -40,7 +40,12 @@ export async function setupTransformationHandler(map, mode) {
   await layer.activate();
   await scratchLayer.activate();
 
-  const transformationHandler = createTransformationHandler(map, layer, scratchLayer, mode);
+  const transformationHandler = createTransformationHandler(
+    map,
+    layer,
+    scratchLayer,
+    mode,
+  );
   return {
     transformationHandler,
     app,

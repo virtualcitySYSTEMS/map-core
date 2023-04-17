@@ -25,7 +25,9 @@ class OpenlayersMap extends BaseOLMap {
   /**
    * @type {string}
    */
-  static get className() { return 'OpenlayersMap'; }
+  static get className() {
+    return 'OpenlayersMap';
+  }
 
   /**
    * @returns {OpenlayersOptions}
@@ -46,7 +48,10 @@ class OpenlayersMap extends BaseOLMap {
     const defaultOptions = OpenlayersMap.getDefaultOptions();
 
     /** @type {boolean} */
-    this.fixedNorthOrientation = parseBoolean(options.fixedNorthOrientation, defaultOptions.fixedNorthOrientation);
+    this.fixedNorthOrientation = parseBoolean(
+      options.fixedNorthOrientation,
+      defaultOptions.fixedNorthOrientation,
+    );
   }
 
   /**
@@ -55,10 +60,12 @@ class OpenlayersMap extends BaseOLMap {
   async initialize() {
     if (!this.initialized) {
       await super.initialize();
-      this.olMap.setView(new View({
-        center: [1230922.6203948376, 6350766.117974091],
-        zoom: 13,
-      }));
+      this.olMap.setView(
+        new View({
+          center: [1230922.6203948376, 6350766.117974091],
+          zoom: 13,
+        }),
+      );
       this.initialized = true;
     }
   }
@@ -92,9 +99,12 @@ class OpenlayersMap extends BaseOLMap {
 
     const resolution = view.getResolution();
     const visibleMapUnits = resolution * size.height;
-    const relativeCircumference = Math.cos(Math.abs(CesiumMath.toRadians(latlon[1])));
-    const visibleMeters = visibleMapUnits * metersPerUnit * relativeCircumference;
-    const height = Math.abs((visibleMeters / 2) / Math.tan(fovy / 2));
+    const relativeCircumference = Math.cos(
+      Math.abs(CesiumMath.toRadians(latlon[1])),
+    );
+    const visibleMeters =
+      visibleMapUnits * metersPerUnit * relativeCircumference;
+    const height = Math.abs(visibleMeters / 2 / Math.tan(fovy / 2));
 
     const heading = -CesiumMath.toDegrees(view.getRotation());
     // don't add 0;
@@ -142,8 +152,11 @@ class OpenlayersMap extends BaseOLMap {
     const fovy = Math.atan(Math.tan(fov * 0.5) / aspectRatio) * 2.0;
     const visibleMeters = 2 * distance * Math.tan(fovy / 2);
     const metersPerUnit = view.getProjection().getMetersPerUnit();
-    const relativeCircumference = Math.cos(Math.abs(CesiumMath.toRadians(coords[1])));
-    const visibleMapUnits = visibleMeters / metersPerUnit / relativeCircumference;
+    const relativeCircumference = Math.cos(
+      Math.abs(CesiumMath.toRadians(coords[1])),
+    );
+    const visibleMapUnits =
+      visibleMeters / metersPerUnit / relativeCircumference;
 
     const resolution = visibleMapUnits / size.height;
 
@@ -153,13 +166,18 @@ class OpenlayersMap extends BaseOLMap {
         rotation = -CesiumMath.toRadians(heading);
       }
       return new Promise((resolve) => {
-        view.animate({
-          duration: viewpoint.duration ? viewpoint.duration * 1000 : 100,
-          center,
-          easing: inAndOut, // XXX map to viewpoint easingFunctionName?
-          resolution,
-          rotation,
-        }, () => { resolve(); });
+        view.animate(
+          {
+            duration: viewpoint.duration ? viewpoint.duration * 1000 : 100,
+            center,
+            easing: inAndOut, // XXX map to viewpoint easingFunctionName?
+            resolution,
+            rotation,
+          },
+          () => {
+            resolve();
+          },
+        );
       });
     } else {
       view.setCenter(center);
@@ -183,7 +201,10 @@ class OpenlayersMap extends BaseOLMap {
     const topLeft = [extent[0], extent[3]];
     const bottomRight = [extent[2], extent[1]];
     // error in TransformFunction type definition, remove undefined after openlayer fixed the type
-    const bbox = [toLatLon(topLeft, undefined, undefined), toLatLon(bottomRight, undefined, undefined)];
+    const bbox = [
+      toLatLon(topLeft, undefined, undefined),
+      toLatLon(bottomRight, undefined, undefined),
+    ];
 
     return containsXY(boundingExtent(bbox), coords[0], coords[1]);
   }

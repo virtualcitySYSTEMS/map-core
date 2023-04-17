@@ -33,7 +33,9 @@ describe('VectorObliqueImpl', () => {
     map = await setObliqueMap(app);
     VL = new VectorLayer({});
     app.layers.add(VL);
-    [OVL] = /** @type {Array<VectorObliqueImpl>} */ (VL.getImplementationsForMap(map));
+    [OVL] = /** @type {Array<VectorObliqueImpl>} */ (
+      VL.getImplementationsForMap(map)
+    );
     debounceTimeout = 200;
   });
 
@@ -44,15 +46,13 @@ describe('VectorObliqueImpl', () => {
   describe('activating the implementation', () => {
     it('should fetch features withing the current image', async () => {
       const addedFeature = new Feature({
-        geometry: new Point([
-          1489084,
-          6892790,
-          0,
-        ]),
+        geometry: new Point([1489084, 6892790, 0]),
       });
       VL.addFeatures([addedFeature]);
       await OVL.activate();
-      expect(OVL.obliqueSource.getFeatureById(addedFeature.getId())).to.be.an.instanceof(Feature);
+      expect(
+        OVL.obliqueSource.getFeatureById(addedFeature.getId()),
+      ).to.be.an.instanceof(Feature);
     });
 
     describe('setting up of source listeners', () => {
@@ -67,9 +67,12 @@ describe('VectorObliqueImpl', () => {
       });
 
       it('should remove a feature, if removed from the original source', () => {
-        expect(OVL.obliqueSource.getFeatureById(addedFeature.getId())).to.be.an.instanceof(Feature);
+        expect(
+          OVL.obliqueSource.getFeatureById(addedFeature.getId()),
+        ).to.be.an.instanceof(Feature);
         VL.removeFeaturesById([addedFeature.getId()]);
-        expect(OVL.obliqueSource.getFeatureById(addedFeature.getId())).to.be.null;
+        expect(OVL.obliqueSource.getFeatureById(addedFeature.getId())).to.be
+          .null;
       });
 
       describe('adding of features', () => {
@@ -78,7 +81,8 @@ describe('VectorObliqueImpl', () => {
             geometry: new Point([1489084, 6892790, 0]),
           });
           VL.addFeatures([newFeature]);
-          expect(newFeature).to.have.property(obliqueGeometry)
+          expect(newFeature)
+            .to.have.property(obliqueGeometry)
             .and.to.be.an.instanceof(Point);
         });
 
@@ -95,7 +99,8 @@ describe('VectorObliqueImpl', () => {
           geometry[alreadyTransformedToImage] = true;
           const newFeature = new Feature({ geometry });
           VL.addFeatures([newFeature]);
-          expect(newFeature).to.have.property(obliqueGeometry)
+          expect(newFeature)
+            .to.have.property(obliqueGeometry)
             .and.to.be.an.instanceof(Point);
         });
 
@@ -104,7 +109,8 @@ describe('VectorObliqueImpl', () => {
           VL.addFeatures([newFeature]);
           expect(newFeature).to.not.have.property(obliqueGeometry);
           newFeature.setGeometry(new Point([1489084, 6892790, 0]));
-          expect(newFeature).to.have.property(obliqueGeometry)
+          expect(newFeature)
+            .to.have.property(obliqueGeometry)
             .and.to.be.an.instanceof(Point);
         });
       });
@@ -149,26 +155,28 @@ describe('VectorObliqueImpl', () => {
 
       before(async () => {
         originalFeature = new Feature({
-          geometry: new Point([
-            1489084,
-            6892790,
-            0,
-          ]),
+          geometry: new Point([1489084, 6892790, 0]),
         });
         VL.addFeatures([originalFeature]);
         await OVL.activate();
-        obliqueFeature = OVL.obliqueSource.getFeatureById(originalFeature.getId());
+        obliqueFeature = OVL.obliqueSource.getFeatureById(
+          originalFeature.getId(),
+        );
         OVL.deactivate();
       });
 
       it('should no longer update on changes to the mercator geometry', () => {
         originalFeature.getGeometry().translate(1, 1);
-        expect(OVL._updatingOblique).to.not.have.property(originalFeature.getId()); // XXX not too happy with this
+        expect(OVL._updatingOblique).to.not.have.property(
+          originalFeature.getId(),
+        ); // XXX not too happy with this
       });
 
       it('should not longer update on changes to the oblique geometry', () => {
         obliqueFeature.getGeometry().translate(1, 1);
-        expect(OVL._updatingMercator).to.not.have.property(originalFeature.getId());
+        expect(OVL._updatingMercator).to.not.have.property(
+          originalFeature.getId(),
+        );
       });
 
       it('should not reset oblique geometry on changes to the geometry', () => {
@@ -191,11 +199,7 @@ describe('VectorObliqueImpl', () => {
     before(async () => {
       await VL.activate();
       originalFeature = new Feature({
-        geometry: new Point([
-          1489084,
-          6892790,
-          0,
-        ]),
+        geometry: new Point([1489084, 6892790, 0]),
       });
       const id = uuidv4();
       originalFeature.setId(id);
@@ -217,21 +221,21 @@ describe('VectorObliqueImpl', () => {
       const clone = originalFeature.clone();
       clone.setId(originalFeature.getId());
       await OVL.addFeature(clone);
-      expect(OVL.obliqueSource.getFeatureById(clone.getId())).to.equal(obliqueFeature);
+      expect(OVL.obliqueSource.getFeatureById(clone.getId())).to.equal(
+        obliqueFeature,
+      );
     });
 
     it('should add the actual feature to the oblique source, if it is do not transform', async () => {
       const doNotTransformFeature = new Feature({
-        geometry: new Point([
-          1489084,
-          6892790,
-          0,
-        ]),
+        geometry: new Point([1489084, 6892790, 0]),
       });
       doNotTransformFeature[VectorLayer.doNotTransform] = true;
       const id = uuidv4();
       doNotTransformFeature.setId(id);
-      doNotTransformFeature.getGeometry()[VectorLayer.alreadyTransformedToImage] = true;
+      doNotTransformFeature.getGeometry()[
+        VectorLayer.alreadyTransformedToImage
+      ] = true;
       await OVL.addFeature(doNotTransformFeature);
       const shadowFeature = OVL.obliqueSource.getFeatureById(id);
       expect(shadowFeature).to.equal(doNotTransformFeature);
@@ -247,11 +251,7 @@ describe('VectorObliqueImpl', () => {
     before(async () => {
       await VL.activate();
       originalFeature = new Feature({
-        geometry: new Point([
-          1489084,
-          6892790,
-          0,
-        ]),
+        geometry: new Point([1489084, 6892790, 0]),
       });
       id = uuidv4();
       originalFeature.setId(id);
@@ -297,11 +297,7 @@ describe('VectorObliqueImpl', () => {
 
     beforeEach(async () => {
       originalFeature = new Feature({
-        geometry: new Point([
-          1489084,
-          6892790,
-          0,
-        ]),
+        geometry: new Point([1489084, 6892790, 0]),
       });
       id = uuidv4();
       originalFeature.setId(id);
@@ -321,20 +317,26 @@ describe('VectorObliqueImpl', () => {
     });
 
     it('should add a change listener to the original geometry, updating the oblique geometry when called', (done) => {
-      obliqueFeature.getGeometry().on('change', () => { done(); });
+      obliqueFeature.getGeometry().on('change', () => {
+        done();
+      });
       originalFeature.getGeometry().translate(1, 1);
       clock.tick(debounceTimeout);
     });
 
     it('should add a change listener to the oblique geometry, updating the original geometry when called', (done) => {
-      originalFeature.getGeometry().on('change', () => { done(); });
+      originalFeature.getGeometry().on('change', () => {
+        done();
+      });
       obliqueFeature.getGeometry().translate(1, 1);
       clock.tick(debounceTimeout);
     });
 
     describe('original geometry change listener', () => {
       it('should update the geometry', (done) => {
-        obliqueFeature.on('change:geometry', () => { done(); });
+        obliqueFeature.on('change:geometry', () => {
+          done();
+        });
         originalFeature.setGeometry(new Point([1489084, 6892790, 0]));
         clock.tick(debounceTimeout);
       });
@@ -356,7 +358,9 @@ describe('VectorObliqueImpl', () => {
       it('should add a geometry change listener to the new geometry', (done) => {
         const newGeometry = new Point([1489084, 6892790, 0]);
         obliqueFeature.on('change:geometry', () => {
-          obliqueFeature.getGeometry().on('change', () => { done(); });
+          obliqueFeature.getGeometry().on('change', () => {
+            done();
+          });
           newGeometry.translate(1, 1);
           clock.tick(debounceTimeout);
         });
@@ -368,7 +372,13 @@ describe('VectorObliqueImpl', () => {
         let actuallyCircle;
 
         beforeEach(() => {
-          actuallyCircle = new Polygon([[[1, 1, 0], [0, 1, 0], [0, 0, 0]]]);
+          actuallyCircle = new Polygon([
+            [
+              [1, 1, 0],
+              [0, 1, 0],
+              [0, 0, 0],
+            ],
+          ]);
           actuallyCircle[actuallyIsCircle] = true;
         });
 
@@ -436,8 +446,9 @@ describe('VectorObliqueImpl', () => {
       originalFeature.getGeometry().translate(1, 1);
       OVL.updateObliqueGeometry(originalFeature, obliqueFeature);
       clock.tick(debounceTimeout);
-      expect(obliqueFeature.getGeometry().getCoordinates())
-        .to.have.members([2676.7210834316597, 6483.7722926452625, 0]);
+      expect(obliqueFeature.getGeometry().getCoordinates()).to.have.members([
+        2676.7210834316597, 6483.7722926452625, 0,
+      ]);
     });
 
     it('should clear a previously updating geometry call, resetting the debounce timer, if called again', () => {
@@ -449,7 +460,9 @@ describe('VectorObliqueImpl', () => {
       originalFeature.getGeometry().translate(1, 1);
       OVL.updateObliqueGeometry(originalFeature, obliqueFeature);
       clock.tick(debounceTimeout);
-      expect(obliqueFeature.getGeometry().getCoordinates()).to.have.members([2682.558409466228, 6487.261329634799, 0]);
+      expect(obliqueFeature.getGeometry().getCoordinates()).to.have.members([
+        2682.558409466228, 6487.261329634799, 0,
+      ]);
       expect(spy).to.have.been.calledOnce;
     });
 
@@ -467,7 +480,9 @@ describe('VectorObliqueImpl', () => {
       originalFeature.getGeometry()[alreadyTransformedToImage] = true;
       originalFeature.getGeometry().setCoordinates([1, 1, 0]);
       OVL.updateObliqueGeometry(originalFeature, obliqueFeature);
-      expect(obliqueFeature.getGeometry().getCoordinates()).to.have.members([1, 1, 0]);
+      expect(obliqueFeature.getGeometry().getCoordinates()).to.have.members([
+        1, 1, 0,
+      ]);
     });
   });
 
@@ -483,11 +498,7 @@ describe('VectorObliqueImpl', () => {
 
     beforeEach(async () => {
       originalFeature = new Feature({
-        geometry: new Point([
-          1489084,
-          6892790,
-          0,
-        ]),
+        geometry: new Point([1489084, 6892790, 0]),
       });
       id = uuidv4();
       originalFeature.setId(id);
@@ -546,7 +557,15 @@ describe('VectorObliqueImpl', () => {
 
     it('should reset the original geometry, if its actually a circle', (done) => {
       originalFeature.setGeometry(new Circle([1489084, 6892790, 0], 20));
-      obliqueFeature.setGeometry(new Polygon([[[1, 1, 0], [1, 0, 0], [0, 0, 0]]]));
+      obliqueFeature.setGeometry(
+        new Polygon([
+          [
+            [1, 1, 0],
+            [1, 0, 0],
+            [0, 0, 0],
+          ],
+        ]),
+      );
       OVL.updateMercatorGeometry(originalFeature, obliqueFeature);
       clock.tick(debounceTimeout);
       clock.restore();
@@ -585,7 +604,8 @@ describe('VectorObliqueImpl', () => {
       });
 
       it('should remove previous features', () => {
-        expect(OVL.obliqueSource.getFeatureById(startingFeature.getId())).to.be.null;
+        expect(OVL.obliqueSource.getFeatureById(startingFeature.getId())).to.be
+          .null;
       });
 
       it('should remove the oblique geometry symbol from previous features', () => {
@@ -594,11 +614,15 @@ describe('VectorObliqueImpl', () => {
 
       it('should no longer update on changes to the mercator geometry', () => {
         startingFeature.getGeometry().translate(1, 1);
-        expect(OVL._updatingOblique).to.not.have.property(startingFeature.getId()); // XXX not too happy with this
+        expect(OVL._updatingOblique).to.not.have.property(
+          startingFeature.getId(),
+        ); // XXX not too happy with this
       });
 
       it('should add the features within the new image', () => {
-        expect(OVL.obliqueSource.getFeatureById(targetFeature.getId())).to.be.an.instanceof(Feature);
+        expect(
+          OVL.obliqueSource.getFeatureById(targetFeature.getId()),
+        ).to.be.an.instanceof(Feature);
       });
     });
 

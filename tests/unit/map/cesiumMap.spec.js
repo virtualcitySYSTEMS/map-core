@@ -43,7 +43,8 @@ describe('CesiumMap', () => {
       layer2 = new Layer({});
     });
 
-    beforeEach(() => { // destroyed on map destroy or removal
+    beforeEach(() => {
+      // destroyed on map destroy or removal
       primitiveCollection1 = new PrimitiveCollection();
       primitiveCollection1[vcsLayerName] = layer1.name;
       primitiveCollection2 = new PrimitiveCollection();
@@ -78,7 +79,8 @@ describe('CesiumMap', () => {
 
       it('should add a primitive collection to the scene', () => {
         map.addPrimitiveCollection(primitiveCollection1);
-        expect(map.getScene().primitives.contains(primitiveCollection1)).to.be.true;
+        expect(map.getScene().primitives.contains(primitiveCollection1)).to.be
+          .true;
       });
 
       it('should not add a visualization twice', () => {
@@ -152,13 +154,15 @@ describe('CesiumMap', () => {
 
       it('should remove the primitive collection from the map', () => {
         map.removePrimitiveCollection(primitiveCollection1);
-        expect(map.getScene().primitives.contains(primitiveCollection1)).to.be.false;
+        expect(map.getScene().primitives.contains(primitiveCollection1)).to.be
+          .false;
       });
 
       it('should no longer place the primitive collection at an index, if it has been removed after the removal of its visualization', () => {
         map.removePrimitiveCollection(primitiveCollection1);
         layerCollection.raise(layer1);
-        expect(map.getScene().primitives.contains(primitiveCollection1)).to.be.false;
+        expect(map.getScene().primitives.contains(primitiveCollection1)).to.be
+          .false;
       });
     });
   });
@@ -175,7 +179,8 @@ describe('CesiumMap', () => {
       layer2 = new Layer({});
     });
 
-    beforeEach(() => { // destroyed on map destroy
+    beforeEach(() => {
+      // destroyed on map destroy
       imageryProvider = new SingleTileImageryProvider({ url: blackPixelURI });
       imageryLayer1 = new ImageryLayer(imageryProvider);
       imageryLayer1[vcsLayerName] = layer1.name;
@@ -285,13 +290,15 @@ describe('CesiumMap', () => {
 
       it('should remove the layer from the map', () => {
         map.removeImageryLayer(imageryLayer1);
-        expect(map.getScene().imageryLayers.contains(imageryLayer1)).to.be.false;
+        expect(map.getScene().imageryLayers.contains(imageryLayer1)).to.be
+          .false;
       });
 
       it('should no longer place the layer at an index, if it has been removed after the removal of its visualization', () => {
         map.removeImageryLayer(imageryLayer1);
         layerCollection.raise(layer1);
-        expect(map.getScene().imageryLayers.contains(imageryLayer1)).to.be.false;
+        expect(map.getScene().imageryLayers.contains(imageryLayer1)).to.be
+          .false;
       });
     });
   });
@@ -307,7 +314,8 @@ describe('CesiumMap', () => {
       layer2 = new Layer({});
     });
 
-    beforeEach(() => { // destroyed on map destroy
+    beforeEach(() => {
+      // destroyed on map destroy
       dataSource1 = new CustomDataSource();
       dataSource1[vcsLayerName] = layer1.name;
       dataSource2 = new CustomDataSource();
@@ -442,7 +450,9 @@ describe('CesiumMap', () => {
 
       map = getCesiumMap({ target: document.getElementById('mapContainer') });
       await map.gotoViewpoint(inputViewpoint);
-      sandbox.stub(map.getScene().globe, 'pick').returns(Cartesian3.fromDegrees(0, 0, 10)); // there are not globe tiles rendered
+      sandbox
+        .stub(map.getScene().globe, 'pick')
+        .returns(Cartesian3.fromDegrees(0, 0, 10)); // there are not globe tiles rendered
       outputViewpoint = map.getViewpointSync();
     });
 
@@ -451,7 +461,9 @@ describe('CesiumMap', () => {
     });
 
     it('should get the current viewpoints ground position in 3D', () => {
-      expect(outputViewpoint.groundPosition).to.have.ordered.members([0, 0, 10]);
+      expect(outputViewpoint.groundPosition).to.have.ordered.members([
+        0, 0, 10,
+      ]);
     });
 
     it('should get the current camera position in 3D', () => {
@@ -487,21 +499,29 @@ describe('CesiumMap', () => {
 
     describe('with a regular viewpoint', () => {
       before(async () => {
-        await map.gotoViewpoint(new Viewpoint({
-          groundPosition: [0, 0, 10],
-          cameraPosition: [1, 1, 100],
-          distance: 100,
-          animate: false,
-          heading: 45,
-          pitch: -45,
-          roll: 45,
-        }));
+        await map.gotoViewpoint(
+          new Viewpoint({
+            groundPosition: [0, 0, 10],
+            cameraPosition: [1, 1, 100],
+            distance: 100,
+            animate: false,
+            heading: 45,
+            pitch: -45,
+            roll: 45,
+          }),
+        );
       });
 
       it('should set the camera position', () => {
         const cartographic = map.getScene().camera.positionCartographic;
-        expect(cartographic.longitude).to.be.closeTo(CesiumMath.toRadians(1), 0.00001);
-        expect(cartographic.latitude).to.be.closeTo(CesiumMath.toRadians(1), 0.00001);
+        expect(cartographic.longitude).to.be.closeTo(
+          CesiumMath.toRadians(1),
+          0.00001,
+        );
+        expect(cartographic.latitude).to.be.closeTo(
+          CesiumMath.toRadians(1),
+          0.00001,
+        );
         expect(cartographic.height).to.be.closeTo(100, 0.00001);
       });
 
@@ -515,12 +535,14 @@ describe('CesiumMap', () => {
 
     describe('without a camera position', () => {
       it('should determine the camera position based on the ground coordinate and the distance', async () => {
-        await map.gotoViewpoint(new Viewpoint({
-          groundPosition: [0, 0, 10],
-          distance: 100,
-          animate: false,
-          pitch: -90,
-        }));
+        await map.gotoViewpoint(
+          new Viewpoint({
+            groundPosition: [0, 0, 10],
+            distance: 100,
+            animate: false,
+            pitch: -90,
+          }),
+        );
         const cartographic = map.getScene().camera.positionCartographic;
         expect(cartographic.longitude).to.be.closeTo(0, 0.001);
         expect(cartographic.latitude).to.be.closeTo(0, 0.001);
@@ -530,40 +552,58 @@ describe('CesiumMap', () => {
 
     describe('which is animated', () => {
       it('should create a flight path if animated', async () => {
-        await map.gotoViewpoint(new Viewpoint({
-          groundPosition: [0, 0, 0],
-          cameraPosition: [1, 1, 100],
-          distance: 100,
-          animate: true,
-          duration: 0.01,
-          heading: 45,
-        }));
+        await map.gotoViewpoint(
+          new Viewpoint({
+            groundPosition: [0, 0, 0],
+            cameraPosition: [1, 1, 100],
+            distance: 100,
+            animate: true,
+            duration: 0.01,
+            heading: 45,
+          }),
+        );
         const cartographic = map.getScene().camera.positionCartographic;
-        expect(cartographic.longitude).to.be.closeTo(CesiumMath.toRadians(1), 0.00001);
-        expect(cartographic.latitude).to.be.closeTo(CesiumMath.toRadians(1), 0.00001);
+        expect(cartographic.longitude).to.be.closeTo(
+          CesiumMath.toRadians(1),
+          0.00001,
+        );
+        expect(cartographic.latitude).to.be.closeTo(
+          CesiumMath.toRadians(1),
+          0.00001,
+        );
         expect(cartographic.height).to.be.closeTo(100, 0.00001);
       });
 
       it('should cancel a running animated viewpoint on the next function call', async () => {
-        map.gotoViewpoint(new Viewpoint({
-          groundPosition: [0, 0, 0],
-          cameraPosition: [1, 1, 100],
-          distance: 100,
-          animate: true,
-          duration: 0.01,
-          heading: 45,
-        }));
-        await map.gotoViewpoint(new Viewpoint({
-          groundPosition: [0, 0, 0],
-          cameraPosition: [2, 2, 100],
-          distance: 100,
-          animate: false,
-          duration: 0.01,
-          heading: 45,
-        }));
+        map.gotoViewpoint(
+          new Viewpoint({
+            groundPosition: [0, 0, 0],
+            cameraPosition: [1, 1, 100],
+            distance: 100,
+            animate: true,
+            duration: 0.01,
+            heading: 45,
+          }),
+        );
+        await map.gotoViewpoint(
+          new Viewpoint({
+            groundPosition: [0, 0, 0],
+            cameraPosition: [2, 2, 100],
+            distance: 100,
+            animate: false,
+            duration: 0.01,
+            heading: 45,
+          }),
+        );
         const cartographic = map.getScene().camera.positionCartographic;
-        expect(cartographic.longitude).to.be.closeTo(CesiumMath.toRadians(2), 0.00001);
-        expect(cartographic.latitude).to.be.closeTo(CesiumMath.toRadians(2), 0.00001);
+        expect(cartographic.longitude).to.be.closeTo(
+          CesiumMath.toRadians(2),
+          0.00001,
+        );
+        expect(cartographic.latitude).to.be.closeTo(
+          CesiumMath.toRadians(2),
+          0.00001,
+        );
         expect(cartographic.height).to.be.closeTo(100, 0.00001);
       });
     });
@@ -572,18 +612,22 @@ describe('CesiumMap', () => {
   describe('getting current resolution', () => {
     it('should return the resolution (snapshot test)', async () => {
       const map = getCesiumMap();
-      await map.gotoViewpoint(new Viewpoint({
-        groundPosition: [0, 0, 0],
-        cameraPosition: [0, 0, 100],
-        distance: 100,
-        pitch: -90,
-        animate: false,
-      }));
+      await map.gotoViewpoint(
+        new Viewpoint({
+          groundPosition: [0, 0, 0],
+          cameraPosition: [0, 0, 100],
+          distance: 100,
+          pitch: -90,
+          animate: false,
+        }),
+      );
 
       sandbox.stub(map.mapElement, 'offsetHeight').get(() => 100);
       sandbox.stub(map.mapElement, 'offsetWidth').get(() => 100);
 
-      const resolution = map.getCurrentResolution(Projection.wgs84ToMercator([0, 0, 0]));
+      const resolution = map.getCurrentResolution(
+        Projection.wgs84ToMercator([0, 0, 0]),
+      );
       expect(resolution).to.be.closeTo(1.15470053, CesiumMath.EPSILON8);
       map.destroy();
     });
@@ -594,12 +638,14 @@ describe('CesiumMap', () => {
 
     before(async () => {
       map = getCesiumMap();
-      await map.gotoViewpoint(new Viewpoint({
-        groundPosition: [0, 0, 0],
-        cameraPosition: [0, 0, 100],
-        distance: 100,
-        animate: false,
-      }));
+      await map.gotoViewpoint(
+        new Viewpoint({
+          groundPosition: [0, 0, 0],
+          cameraPosition: [0, 0, 100],
+          distance: 100,
+          animate: false,
+        }),
+      );
     });
 
     after(() => {
@@ -628,7 +674,10 @@ describe('CesiumMap', () => {
 
     it('should set the cesium widgets use of the default rendering loop to true', async () => {
       await map.activate();
-      expect(map.getCesiumWidget()).to.have.property('useDefaultRenderLoop', true);
+      expect(map.getCesiumWidget()).to.have.property(
+        'useDefaultRenderLoop',
+        true,
+      );
     });
 
     it('should force a resize of the cesium widget', async () => {
@@ -652,7 +701,10 @@ describe('CesiumMap', () => {
 
     it('should set the cesium widgets use of the default rendering loop to false', () => {
       map.deactivate();
-      expect(map.getCesiumWidget()).to.have.property('useDefaultRenderLoop', false);
+      expect(map.getCesiumWidget()).to.have.property(
+        'useDefaultRenderLoop',
+        false,
+      );
     });
   });
 
@@ -670,8 +722,14 @@ describe('CesiumMap', () => {
       it('should update the clock', () => {
         clock.startTime = JulianDate.fromIso8601('2020-12-31T11:59:59Z');
         clock.currentTime = JulianDate.fromIso8601('2021-01-01T00:00:00Z');
-        expect(dataSourceDisplayClock).to.have.property('startTime', clock.startTime);
-        expect(dataSourceDisplayClock).to.have.property('currentTime', clock.currentTime);
+        expect(dataSourceDisplayClock).to.have.property(
+          'startTime',
+          clock.startTime,
+        );
+        expect(dataSourceDisplayClock).to.have.property(
+          'currentTime',
+          clock.currentTime,
+        );
       });
     });
   });
@@ -683,13 +741,25 @@ describe('CesiumMap', () => {
 
     before(() => {
       dataSourceClock1 = new DataSourceClock();
-      dataSourceClock1.currentTime = JulianDate.fromIso8601('2021-01-01T01:01:01Z');
-      dataSourceClock1.startTime = JulianDate.fromIso8601('2021-01-01T01:01:01Z');
-      dataSourceClock1.stopTime = JulianDate.fromIso8601('2021-01-01T11:11:11Z');
+      dataSourceClock1.currentTime = JulianDate.fromIso8601(
+        '2021-01-01T01:01:01Z',
+      );
+      dataSourceClock1.startTime = JulianDate.fromIso8601(
+        '2021-01-01T01:01:01Z',
+      );
+      dataSourceClock1.stopTime = JulianDate.fromIso8601(
+        '2021-01-01T11:11:11Z',
+      );
       dataSourceClock2 = new DataSourceClock();
-      dataSourceClock2.currentTime = JulianDate.fromIso8601('2020-02-02T02:02:02Z');
-      dataSourceClock2.startTime = JulianDate.fromIso8601('2020-02-02T02:02:02Z');
-      dataSourceClock2.stopTime = JulianDate.fromIso8601('2020-02-02T22:22:22Z');
+      dataSourceClock2.currentTime = JulianDate.fromIso8601(
+        '2020-02-02T02:02:02Z',
+      );
+      dataSourceClock2.startTime = JulianDate.fromIso8601(
+        '2020-02-02T02:02:02Z',
+      );
+      dataSourceClock2.stopTime = JulianDate.fromIso8601(
+        '2020-02-02T22:22:22Z',
+      );
     });
 
     describe('set dataSourceClock to cesium map', () => {
@@ -707,9 +777,13 @@ describe('CesiumMap', () => {
       });
 
       it('should add dataSourceClock to clocks', () => {
-        expect(map._dataSourceClocks).to.have.ordered.members(
-          [dataSourceClock1, dataSourceClock2, dataSourceClock1, dataSourceClock1, dataSourceClock2],
-        );
+        expect(map._dataSourceClocks).to.have.ordered.members([
+          dataSourceClock1,
+          dataSourceClock2,
+          dataSourceClock1,
+          dataSourceClock1,
+          dataSourceClock2,
+        ]);
       });
       it('should synchronize active dataSourceClock and dataSourceDisplayClock', () => {
         const {
@@ -731,11 +805,19 @@ describe('CesiumMap', () => {
       });
       it('should NOT synchronize currentTime, startTime & endTime, if start and end time are equal', () => {
         const dataSourceClock3 = dataSourceClock2.clone();
-        JulianDate.addHours(dataSourceClock3.currentTime, 1, dataSourceClock3.currentTime);
+        JulianDate.addHours(
+          dataSourceClock3.currentTime,
+          1,
+          dataSourceClock3.currentTime,
+        );
         dataSourceClock3.multiplier = 2;
         map.setDataSourceDisplayClock(dataSourceClock3);
-        expect(map.dataSourceDisplayClock.currentTime).to.equal(dataSourceClock2.currentTime);
-        expect(map.dataSourceDisplayClock.multiplier).to.equal(dataSourceClock3.multiplier);
+        expect(map.dataSourceDisplayClock.currentTime).to.equal(
+          dataSourceClock2.currentTime,
+        );
+        expect(map.dataSourceDisplayClock.multiplier).to.equal(
+          dataSourceClock3.multiplier,
+        );
       });
     });
 
@@ -755,12 +837,18 @@ describe('CesiumMap', () => {
       });
 
       it('should remove dataSourceClock from clocks', () => {
-        expect(map._dataSourceClocks).to.have.ordered.members(
-          [dataSourceClock1, dataSourceClock2, dataSourceClock1, dataSourceClock1],
-        );
+        expect(map._dataSourceClocks).to.have.ordered.members([
+          dataSourceClock1,
+          dataSourceClock2,
+          dataSourceClock1,
+          dataSourceClock1,
+        ]);
       });
       it('should synchronize the last active clock', () => {
-        expect(map.dataSourceDisplayClock).to.have.property('currentTime', dataSourceClock1.currentTime);
+        expect(map.dataSourceDisplayClock).to.have.property(
+          'currentTime',
+          dataSourceClock1.currentTime,
+        );
       });
     });
 
@@ -780,12 +868,18 @@ describe('CesiumMap', () => {
       });
 
       it('should remove dataSourceClock from clocks', () => {
-        expect(map._dataSourceClocks).to.have.ordered.members(
-          [dataSourceClock1, dataSourceClock2, dataSourceClock1, dataSourceClock2],
-        );
+        expect(map._dataSourceClocks).to.have.ordered.members([
+          dataSourceClock1,
+          dataSourceClock2,
+          dataSourceClock1,
+          dataSourceClock2,
+        ]);
       });
       it('should NOT resynchronize clocks', () => {
-        expect(map.dataSourceDisplayClock).to.have.property('currentTime', dataSourceClock2.currentTime);
+        expect(map.dataSourceDisplayClock).to.have.property(
+          'currentTime',
+          dataSourceClock2.currentTime,
+        );
       });
     });
 
@@ -802,7 +896,10 @@ describe('CesiumMap', () => {
 
       it('should restore default clock', () => {
         expect(map._dataSourceClocks).to.have.length(0);
-        expect(map.dataSourceDisplayClock).to.have.property('currentTime', map._defaultClock.currentTime);
+        expect(map.dataSourceDisplayClock).to.have.property(
+          'currentTime',
+          map._defaultClock.currentTime,
+        );
       });
     });
   });
@@ -833,7 +930,11 @@ describe('CesiumMap', () => {
     });
 
     it('should add the camera limiter to the preUpdate event', (done) => {
-      Cartographic.toCartesian(new Cartographic(0, 0, 100), null, map.getScene().camera.position);
+      Cartographic.toCartesian(
+        new Cartographic(0, 0, 100),
+        null,
+        map.getScene().camera.position,
+      );
       map.cameraLimiter = new CameraLimiter({ limit: 200 });
       map.getScene().preUpdate.raiseEvent();
       setTimeout(() => {
@@ -843,23 +944,37 @@ describe('CesiumMap', () => {
     });
 
     it('should remove a previously set camera limiter', (done) => {
-      Cartographic.toCartesian(new Cartographic(0, 0, 100), null, map.getScene().camera.position);
+      Cartographic.toCartesian(
+        new Cartographic(0, 0, 100),
+        null,
+        map.getScene().camera.position,
+      );
       map.cameraLimiter = new CameraLimiter({ limit: 200 });
       map.cameraLimiter = null;
       map.getScene().preUpdate.raiseEvent();
       setTimeout(() => {
-        expect(map.getScene().camera.positionCartographic.height).to.be.closeTo(100, 0.00001);
+        expect(map.getScene().camera.positionCartographic.height).to.be.closeTo(
+          100,
+          0.00001,
+        );
         done();
       }, 100);
     });
 
     it('should replace a previously set camera limiter', (done) => {
-      Cartographic.toCartesian(new Cartographic(0, 0, 100), null, map.getScene().camera.position);
+      Cartographic.toCartesian(
+        new Cartographic(0, 0, 100),
+        null,
+        map.getScene().camera.position,
+      );
       map.cameraLimiter = new CameraLimiter({ limit: 500 });
       map.cameraLimiter = new CameraLimiter({ limit: 200 });
       map.getScene().preUpdate.raiseEvent();
       setTimeout(() => {
-        expect(map.getScene().camera.positionCartographic.height).to.be.closeTo(200, 0.00001);
+        expect(map.getScene().camera.positionCartographic.height).to.be.closeTo(
+          200,
+          0.00001,
+        );
         done();
       }, 100);
     });
@@ -910,11 +1025,17 @@ describe('CesiumMap', () => {
       });
 
       it('should configure enableLighting', () => {
-        expect(outputConfig).to.have.property('enableLightning', inputConfig.enableLightning);
+        expect(outputConfig).to.have.property(
+          'enableLightning',
+          inputConfig.enableLightning,
+        );
       });
 
       it('should configure tileCacheSize', () => {
-        expect(outputConfig).to.have.property('tileCacheSize', inputConfig.tileCacheSize);
+        expect(outputConfig).to.have.property(
+          'tileCacheSize',
+          inputConfig.tileCacheSize,
+        );
       });
 
       it('should configure webGLaa', () => {
@@ -922,11 +1043,15 @@ describe('CesiumMap', () => {
       });
 
       it('should configure globeColor', () => {
-        expect(outputConfig).to.have.property('globeColor', inputConfig.globeColor);
+        expect(outputConfig).to.have.property(
+          'globeColor',
+          inputConfig.globeColor,
+        );
       });
 
       it('should configure cameraLimiter', () => {
-        expect(outputConfig).to.have.property('cameraLimiter')
+        expect(outputConfig)
+          .to.have.property('cameraLimiter')
           .and.to.eql(inputConfig.cameraLimiter);
       });
     });

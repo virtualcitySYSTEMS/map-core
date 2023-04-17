@@ -1,11 +1,19 @@
 import CanvasTileRenderer from '../../../../../src/ol/render/canvas/canvasTileRenderer.js';
 
-
 describe('CanvasTileRenderer', () => {
   let canvasTileRenderer;
 
   beforeEach(() => {
-    canvasTileRenderer = new CanvasTileRenderer({}, 1, [0, 0, 1, 1], [1, 0, 0, 1, 0, 0], 0, undefined, undefined, 10);
+    canvasTileRenderer = new CanvasTileRenderer(
+      {},
+      1,
+      [0, 0, 1, 1],
+      [1, 0, 0, 1, 0, 0],
+      0,
+      undefined,
+      undefined,
+      10,
+    );
   });
 
   describe('imageScale_', () => {

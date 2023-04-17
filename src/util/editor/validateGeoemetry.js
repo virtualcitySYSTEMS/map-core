@@ -10,7 +10,9 @@ import { validateCircle } from '../featureconverter/circleToCesium.js';
 export default function geometryIsValid(geometry) {
   const type = geometry.getType();
   if (type === 'LineString') {
-    return validateLineString(/** @type {import("ol/geom").LineString} */ (geometry));
+    return validateLineString(
+      /** @type {import("ol/geom").LineString} */ (geometry),
+    );
   } else if (type === 'Polygon') {
     return validatePolygon(/** @type {import("ol/geom").Polygon} */ (geometry));
   } else if (type === 'Point') {

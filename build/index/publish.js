@@ -12,7 +12,9 @@ const fs = require('fs');
  * @returns {string}
  */
 function resolvePath(nsPath) {
-  return `./${path.relative(path.join(__dirname, '..', '..'), nsPath).replace(/\\/g, '/')}`;
+  return `./${path
+    .relative(path.join(__dirname, '..', '..'), nsPath)
+    .replace(/\\/g, '/')}`;
 }
 
 /**
@@ -34,21 +36,25 @@ function createIndex(fileNames) {
       }
       return `export { ${es.join(', ')} } from '${filePath}';`;
     })
-    .filter(f => f);
+    .filter((f) => f);
 
   imports.push(
-    'import \'./src/ol/geom/circle.js\';',
-    'import \'./src/ol/geom/geometryCollection.js\';',
-    'import \'./src/ol/feature.js\';',
-    'import \'./src/cesium/wallpaperMaterial.js\';',
-    'import \'./src/cesium/cesium3DTilePointFeature.js\';',
-    'import \'./src/cesium/cesium3DTileFeature.js\';',
-    'import \'./src/cesium/cesiumVcsCameraPrimitive.js\';',
-    'import \'./src/cesium/entity.js\';',
+    "import './src/ol/geom/circle.js';",
+    "import './src/ol/geom/geometryCollection.js';",
+    "import './src/ol/feature.js';",
+    "import './src/cesium/wallpaperMaterial.js';",
+    "import './src/cesium/cesium3DTilePointFeature.js';",
+    "import './src/cesium/cesium3DTileFeature.js';",
+    "import './src/cesium/cesiumVcsCameraPrimitive.js';",
+    "import './src/cesium/entity.js';",
   );
   imports.push('');
   exports.push('');
-  fs.writeFileSync('./index.js', `${imports.join('\n')}\n${exports.join('\n')}`, 'utf8');
+  fs.writeFileSync(
+    './index.js',
+    `${imports.join('\n')}\n${exports.join('\n')}`,
+    'utf8',
+  );
 }
 
 exports.publish = function publish(data) {
@@ -56,7 +62,9 @@ exports.publish = function publish(data) {
     { define: { isObject: true } },
     function dataCb() {
       if (this.longname === 'module.exports') {
-        this.longname = this.meta.code.node.id ? this.meta.code.node.id.name : this.meta.code.node.name;
+        this.longname = this.meta.code.node.id
+          ? this.meta.code.node.id.name
+          : this.meta.code.node.name;
       }
 
       if (typeof this?.meta?.code?.name === 'string') {

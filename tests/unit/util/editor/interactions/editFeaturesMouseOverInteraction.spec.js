@@ -5,7 +5,9 @@ import {
   mouseOverSymbol,
   cursorMap,
   AXIS_AND_PLANES,
-  EditFeaturesMouseOverInteraction, SelectMultiFeatureInteraction, VectorLayer,
+  EditFeaturesMouseOverInteraction,
+  SelectMultiFeatureInteraction,
+  VectorLayer,
 } from '../../../../../index.js';
 
 describe('EditFeaturesMouseOverInteraction', () => {

@@ -6,7 +6,9 @@
 export async function requestUrl(url, init) {
   const response = await fetch(url, init);
   if (!response.ok) {
-    throw new Error(`Failed fetching url ${url} with status: ${response.status}`);
+    throw new Error(
+      `Failed fetching url ${url} with status: ${response.status}`,
+    );
   }
   return response;
 }

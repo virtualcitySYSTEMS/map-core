@@ -6,13 +6,19 @@ import Feature from 'ol/Feature.js';
 import { expect } from 'chai';
 import FeatureVisibility, {
   FeatureVisibilityAction,
-  globalHidden, hidden,
+  globalHidden,
+  hidden,
   highlighted,
   originalStyle,
   synchronizeFeatureVisibility,
 } from '../../../src/layer/featureVisibility.js';
-import VectorStyleItem, { vectorStyleSymbol } from '../../../src/style/vectorStyleItem.js';
-import { getVcsEventSpy, createDummyCesium3DTileFeature } from '../helpers/cesiumHelpers.js';
+import VectorStyleItem, {
+  vectorStyleSymbol,
+} from '../../../src/style/vectorStyleItem.js';
+import {
+  getVcsEventSpy,
+  createDummyCesium3DTileFeature,
+} from '../helpers/cesiumHelpers.js';
 
 describe('FeatureVisibility', () => {
   /** @type {import("@vcmap/core").FeatureVisibility} */
@@ -110,15 +116,21 @@ describe('FeatureVisibility', () => {
       expect(featureVisibility.highlightedObjects)
         .to.have.property('test')
         .and.to.have.property('style');
-      expect(featureVisibility.highlightedObjects.test.style.fillColor).to.have.members([255, 0, 255, 1]);
+      expect(
+        featureVisibility.highlightedObjects.test.style.fillColor,
+      ).to.have.members([255, 0, 255, 1]);
     });
 
     it('should convert a ol.style.Style to a style object', () => {
-      featureVisibility.highlight({ test: new Style({ fill: new Fill({ color: '#FF00FF' }) }) });
+      featureVisibility.highlight({
+        test: new Style({ fill: new Fill({ color: '#FF00FF' }) }),
+      });
       expect(featureVisibility.highlightedObjects)
         .to.have.property('test')
         .and.to.have.property('style');
-      expect(featureVisibility.highlightedObjects.test.style.fillColor).to.have.members([255, 0, 255, 1]);
+      expect(
+        featureVisibility.highlightedObjects.test.style.fillColor,
+      ).to.have.members([255, 0, 255, 1]);
     });
 
     it('should convert an ol.style.Style to a style object with text', () => {
@@ -141,12 +153,16 @@ describe('FeatureVisibility', () => {
       });
 
       it('should update a color', () => {
-        featureVisibility.highlight({ test: Color.fromBytes(255, 0, 255, 255) });
+        featureVisibility.highlight({
+          test: Color.fromBytes(255, 0, 255, 255),
+        });
         expect(featureVisibility.highlightedObjects)
           .to.have.property('test')
           .and.to.have.property('style');
 
-        expect(featureVisibility.highlightedObjects.test.style.fillColor).to.have.members([255, 0, 255, 1]);
+        expect(
+          featureVisibility.highlightedObjects.test.style.fillColor,
+        ).to.have.members([255, 0, 255, 1]);
       });
 
       it('should update the color on any features already highlighted', () => {
@@ -178,14 +194,18 @@ describe('FeatureVisibility', () => {
       it('should not set last updated, if id is highlighted again', () => {
         featureVisibility.highlight({ test: highlightStyle });
         clock.tick(1);
-        featureVisibility.highlight({ test: Color.fromBytes(255, 0, 255, 255) });
+        featureVisibility.highlight({
+          test: Color.fromBytes(255, 0, 255, 255),
+        });
         expect(featureVisibility).to.have.property('lastUpdated', now);
       });
     });
 
     describe('raising the changed event', () => {
       it('should not raise the changed if the id is already highlighted', () => {
-        featureVisibility.highlight({ test: Color.fromBytes(255, 0, 255, 255) });
+        featureVisibility.highlight({
+          test: Color.fromBytes(255, 0, 255, 255),
+        });
         const spy = getVcsEventSpy(featureVisibility.changed, sandbox);
         featureVisibility.highlight({ test: highlightStyle });
         expect(spy).to.not.have.been.called;
@@ -194,14 +214,22 @@ describe('FeatureVisibility', () => {
       it('should raise the changed event', () => {
         const spy = getVcsEventSpy(featureVisibility.changed, sandbox);
         featureVisibility.highlight({ test: highlightStyle });
-        expect(spy).to.have.been.calledWith({ action: FeatureVisibilityAction.HIGHLIGHT, ids: ['test'] });
+        expect(spy).to.have.been.calledWith({
+          action: FeatureVisibilityAction.HIGHLIGHT,
+          ids: ['test'],
+        });
       });
 
       it('should raise the changed only for new features', () => {
-        featureVisibility.highlight({ test: Color.fromBytes(255, 0, 255, 255) });
+        featureVisibility.highlight({
+          test: Color.fromBytes(255, 0, 255, 255),
+        });
         const spy = getVcsEventSpy(featureVisibility.changed, sandbox);
         featureVisibility.highlight({ test1: highlightStyle });
-        expect(spy).to.have.been.calledWith({ action: FeatureVisibilityAction.HIGHLIGHT, ids: ['test1'] });
+        expect(spy).to.have.been.calledWith({
+          action: FeatureVisibilityAction.HIGHLIGHT,
+          ids: ['test1'],
+        });
       });
     });
   });
@@ -291,10 +319,15 @@ describe('FeatureVisibility', () => {
       });
 
       it('should raise the changed event, if the id was highlighted', () => {
-        featureVisibility.highlight({ test: Color.fromBytes(255, 0, 255, 255) });
+        featureVisibility.highlight({
+          test: Color.fromBytes(255, 0, 255, 255),
+        });
         const spy = getVcsEventSpy(featureVisibility.changed, sandbox);
         featureVisibility.unHighlight(['test']);
-        expect(spy).to.have.been.calledWith({ action: FeatureVisibilityAction.UNHIGHLIGHT, ids: ['test'] });
+        expect(spy).to.have.been.calledWith({
+          action: FeatureVisibilityAction.UNHIGHLIGHT,
+          ids: ['test'],
+        });
       });
     });
   });
@@ -320,7 +353,8 @@ describe('FeatureVisibility', () => {
 
       it('should add the feature to the highlight features', () => {
         featureVisibility.addHighlightFeature('test', feature);
-        expect(featureVisibility.hasHighlightFeature('test', feature)).to.be.true;
+        expect(featureVisibility.hasHighlightFeature('test', feature)).to.be
+          .true;
       });
 
       it('should set the highlight style on the feature', () => {
@@ -365,7 +399,8 @@ describe('FeatureVisibility', () => {
       });
 
       it('should add the feature to the highlight features', () => {
-        expect(featureVisibility.hasHighlightFeature('test', feature)).to.be.true;
+        expect(featureVisibility.hasHighlightFeature('test', feature)).to.be
+          .true;
       });
 
       it('should set the highlight color on the feature', () => {
@@ -377,7 +412,8 @@ describe('FeatureVisibility', () => {
       });
 
       it('should set the originalStyle symbol', () => {
-        expect(feature).to.have.property(originalStyle)
+        expect(feature)
+          .to.have.property(originalStyle)
           .and.to.be.an.instanceOf(Color);
       });
 
@@ -433,7 +469,10 @@ describe('FeatureVisibility', () => {
       it('should raise change, if a feature was added', () => {
         const spy = getVcsEventSpy(featureVisibility.changed, sandbox);
         featureVisibility.hideObjects(['test']);
-        expect(spy).to.have.been.calledWith({ action: FeatureVisibilityAction.HIDE, ids: ['test'] });
+        expect(spy).to.have.been.calledWith({
+          action: FeatureVisibilityAction.HIDE,
+          ids: ['test'],
+        });
       });
 
       it('should not raise hideIdRequested, if the feature is already hidden', () => {
@@ -447,7 +486,10 @@ describe('FeatureVisibility', () => {
         featureVisibility.hideObjects(['test']);
         const spy = getVcsEventSpy(featureVisibility.changed, sandbox);
         featureVisibility.hideObjects(['test', 'test1']);
-        expect(spy).to.have.been.calledWith({ action: FeatureVisibilityAction.HIDE, ids: ['test1'] });
+        expect(spy).to.have.been.calledWith({
+          action: FeatureVisibilityAction.HIDE,
+          ids: ['test1'],
+        });
       });
     });
   });
@@ -463,8 +505,13 @@ describe('FeatureVisibility', () => {
     });
 
     it('should set the Cesium3DTileFeature features show to true, if it exists', () => {
-      const features = [createDummyCesium3DTileFeature(), createDummyCesium3DTileFeature()];
-      features.forEach((f) => { featureVisibility.addHiddenFeature('test', f); });
+      const features = [
+        createDummyCesium3DTileFeature(),
+        createDummyCesium3DTileFeature(),
+      ];
+      features.forEach((f) => {
+        featureVisibility.addHiddenFeature('test', f);
+      });
       featureVisibility.showObjects(['test']);
       features.forEach((f) => {
         expect(f).to.have.property('show', true);
@@ -473,7 +520,9 @@ describe('FeatureVisibility', () => {
 
     it('should set the style to null for ol.Features without a vector style', () => {
       const features = [new Feature(), new Feature()];
-      features.forEach((f) => { featureVisibility.addHiddenFeature('test', f); });
+      features.forEach((f) => {
+        featureVisibility.addHiddenFeature('test', f);
+      });
       featureVisibility.showObjects(['test']);
       features.forEach((feat) => {
         expect(feat.getStyle()).to.be.null;
@@ -514,7 +563,10 @@ describe('FeatureVisibility', () => {
       it('should raise the changed event, if the id was hidden', () => {
         const spy = getVcsEventSpy(featureVisibility.changed, sandbox);
         featureVisibility.showObjects(['test']);
-        expect(spy).to.have.been.calledWith({ action: FeatureVisibilityAction.SHOW, ids: ['test'] });
+        expect(spy).to.have.been.calledWith({
+          action: FeatureVisibilityAction.SHOW,
+          ids: ['test'],
+        });
       });
     });
 
@@ -570,7 +622,10 @@ describe('FeatureVisibility', () => {
 
       it('should have style function which returns empty array', () => {
         const styleFunctionResult = feature.getStyleFunction()();
-        expect(Array.isArray(styleFunctionResult) && styleFunctionResult.length === 0).to.be.true;
+        expect(
+          Array.isArray(styleFunctionResult) &&
+            styleFunctionResult.length === 0,
+        ).to.be.true;
       });
 
       it('should set the hidden symbol', () => {
@@ -610,7 +665,9 @@ describe('FeatureVisibility', () => {
       });
 
       it('should set the originalStyle symbol', () => {
-        expect(feature).to.have.property(originalStyle).and.to.be.an.instanceOf(Color);
+        expect(feature)
+          .to.have.property(originalStyle)
+          .and.to.be.an.instanceOf(Color);
       });
 
       it('should not reset the originalStyle symbol', () => {

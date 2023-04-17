@@ -28,7 +28,9 @@ describe('PointCloudLayer', () => {
   });
 
   describe('clearStyle', () => {
-    beforeEach(async () => { await PCL.initialize(); });
+    beforeEach(async () => {
+      await PCL.initialize();
+    });
 
     it('should set no pointSize, if no default was specified', () => {
       PCL.pointSize = 3;
@@ -70,7 +72,10 @@ describe('PointCloudLayer', () => {
       });
 
       it('should configure pointSize', () => {
-        expect(outputConfig).to.have.property('pointSize', inputConfig.pointSize);
+        expect(outputConfig).to.have.property(
+          'pointSize',
+          inputConfig.pointSize,
+        );
       });
     });
   });

@@ -1,4 +1,7 @@
-import { ImageryLayer as CesiumImageryLayer, Rectangle } from '@vcmap-cesium/engine';
+import {
+  ImageryLayer as CesiumImageryLayer,
+  Rectangle,
+} from '@vcmap-cesium/engine';
 import VectorTileImageryProvider from './vectorTileImageryProvider.js';
 import RasterLayerCesiumImpl from './rasterLayerCesiumImpl.js';
 import { wgs84Projection } from '../../util/projection.js';
@@ -63,13 +66,20 @@ class VectorRasterTileCesiumImpl extends RasterLayerCesiumImpl {
     };
     if (this.extent && this.extent.isValid()) {
       const extent = this.extent.getCoordinatesInProjection(wgs84Projection);
-      layerOptions.rectangle = Rectangle.fromDegrees(extent[0], extent[1], extent[2], extent[3]);
+      layerOptions.rectangle = Rectangle.fromDegrees(
+        extent[0],
+        extent[1],
+        extent[2],
+        extent[3],
+      );
     }
-    // @ts-ignore
-    const imageryLayer = new CesiumImageryLayer(this.imageryProvider, layerOptions);
+    const imageryLayer = new CesiumImageryLayer(
+      // @ts-ignore
+      this.imageryProvider,
+      layerOptions,
+    );
     return imageryLayer;
   }
-
 
   /**
    * reloads the tiles

@@ -58,24 +58,35 @@ export function deserializeLayer(vcsApp, layerConfig) {
     if (typeof layerConfig.style === 'string') {
       style = vcsApp.styles.getByKey(layerConfig.style);
     } else {
-      style = getObjectFromClassRegistry(vcsApp.styleClassRegistry, layerConfig.style);
+      style = getObjectFromClassRegistry(
+        vcsApp.styleClassRegistry,
+        layerConfig.style,
+      );
     }
   } // TODO highlightStyle
 
   let tileProvider;
   if (layerConfig.tileProvider) {
-    tileProvider = getObjectFromClassRegistry(vcsApp.tileProviderClassRegistry, layerConfig.tileProvider);
+    tileProvider = getObjectFromClassRegistry(
+      vcsApp.tileProviderClassRegistry,
+      layerConfig.tileProvider,
+    );
   }
 
   let featureProvider;
   if (layerConfig.featureProvider) {
-    featureProvider = getObjectFromClassRegistry(vcsApp.featureProviderClassRegistry, layerConfig.featureProvider);
+    featureProvider = getObjectFromClassRegistry(
+      vcsApp.featureProviderClassRegistry,
+      layerConfig.featureProvider,
+    );
   }
 
-  return getObjectFromClassRegistry(
-    vcsApp.layerClassRegistry,
-    { ...layerConfig, style, tileProvider, featureProvider },
-  );
+  return getObjectFromClassRegistry(vcsApp.layerClassRegistry, {
+    ...layerConfig,
+    style,
+    tileProvider,
+    featureProvider,
+  });
 }
 
 /**
@@ -88,9 +99,13 @@ export function serializeLayer(vcsApp, layer) {
   serializedLayer.zIndex = layer[vcsApp.layers.zIndexSymbol];
   if (
     /** @type {StyleItemOptions} */ (serializedLayer?.style)?.name &&
-    vcsApp.styles.hasKey(/** @type {StyleItemOptions} */ (serializedLayer.style).name)
+    vcsApp.styles.hasKey(
+      /** @type {StyleItemOptions} */ (serializedLayer.style).name,
+    )
   ) {
-    serializedLayer.style = /** @type {StyleItemOptions} */ (serializedLayer.style).name;
+    serializedLayer.style = /** @type {StyleItemOptions} */ (
+      serializedLayer.style
+    ).name;
   } // TODO highlightStyle
   return serializedLayer;
 }

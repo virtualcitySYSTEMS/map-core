@@ -93,21 +93,27 @@ describe('WMSLayer', () => {
       });
 
       it('should configure highResolution', () => {
-        expect(outputConfig).to.have.property('highResolution', inputConfig.highResolution);
+        expect(outputConfig).to.have.property(
+          'highResolution',
+          inputConfig.highResolution,
+        );
       });
 
       it('should configure parameters', () => {
-        expect(outputConfig).to.have.property('parameters')
+        expect(outputConfig)
+          .to.have.property('parameters')
           .and.to.have.property('TEST', true);
       });
 
       it('should configure tileSize', () => {
-        expect(outputConfig).to.have.property('tileSize')
+        expect(outputConfig)
+          .to.have.property('tileSize')
           .and.to.have.members(inputConfig.tileSize);
       });
 
       it('should configure feature info', () => {
-        expect(outputConfig).to.have.property('featureInfo')
+        expect(outputConfig)
+          .to.have.property('featureInfo')
           .and.to.eql(inputConfig.featureInfo);
       });
     });
@@ -137,7 +143,8 @@ describe('WMSLayer', () => {
       });
 
       it('should configure feature info', () => {
-        expect(outputConfig).to.have.property('featureInfo')
+        expect(outputConfig)
+          .to.have.property('featureInfo')
           .and.to.eql(inputConfig.featureInfo);
       });
     });

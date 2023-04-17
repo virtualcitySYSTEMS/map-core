@@ -1,5 +1,8 @@
 import DragPan from 'ol/interaction/DragPan.js';
-import { EventType, ModificationKeyType } from '../../../interaction/interactionType.js';
+import {
+  EventType,
+  ModificationKeyType,
+} from '../../../interaction/interactionType.js';
 import { handlerSymbol, vertexSymbol } from '../editorSymbols.js';
 import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 
@@ -8,8 +11,12 @@ import AbstractInteraction from '../../../interaction/abstractInteraction.js';
  * @returns {function():void}
  */
 function suspendOpenlayerMap(map) {
-  const dragPan = /** @type {import("ol/interaction").DragPan} */ (map.olMap.getInteractions().getArray()
-    .find(i => i instanceof DragPan));
+  const dragPan = /** @type {import("ol/interaction").DragPan} */ (
+    map.olMap
+      .getInteractions()
+      .getArray()
+      .find((i) => i instanceof DragPan)
+  );
 
   if (dragPan) {
     dragPan.setActive(false);
@@ -36,20 +43,26 @@ function suspendCesiumMap(map) {
 
   const originalScreenSpaceEvents = {};
   const { screenSpaceCameraController } = map.getScene();
-  ['lookEventTypes', 'tiltEventTypes', 'rotateEventTypes'].forEach((eventTypes) => {
-    if (screenSpaceCameraController != null) {
-      originalScreenSpaceEvents[eventTypes] =
-        getOriginalEventTypes(screenSpaceCameraController[eventTypes]);
-    }
-  });
+  ['lookEventTypes', 'tiltEventTypes', 'rotateEventTypes'].forEach(
+    (eventTypes) => {
+      if (screenSpaceCameraController != null) {
+        originalScreenSpaceEvents[eventTypes] = getOriginalEventTypes(
+          screenSpaceCameraController[eventTypes],
+        );
+      }
+    },
+  );
   screenSpaceCameraController.lookEventTypes = undefined;
   screenSpaceCameraController.tiltEventTypes = undefined;
   screenSpaceCameraController.rotateEventTypes = undefined;
 
   return () => {
-    screenSpaceCameraController.lookEventTypes = originalScreenSpaceEvents.lookEventTypes;
-    screenSpaceCameraController.tiltEventTypes = originalScreenSpaceEvents.tiltEventTypes;
-    screenSpaceCameraController.rotateEventTypes = originalScreenSpaceEvents.rotateEventTypes;
+    screenSpaceCameraController.lookEventTypes =
+      originalScreenSpaceEvents.lookEventTypes;
+    screenSpaceCameraController.tiltEventTypes =
+      originalScreenSpaceEvents.tiltEventTypes;
+    screenSpaceCameraController.rotateEventTypes =
+      originalScreenSpaceEvents.rotateEventTypes;
   };
 }
 
@@ -80,10 +93,14 @@ class MapInteractionController extends AbstractInteraction {
       (event.feature[vertexSymbol] || event.feature[handlerSymbol])
     ) {
       if (event.map.className === 'CesiumMap') {
-        this._clear = suspendCesiumMap(/** @type {import("@vcmap/core").CesiumMap} */ (event.map));
+        this._clear = suspendCesiumMap(
+          /** @type {import("@vcmap/core").CesiumMap} */ (event.map),
+        );
       } else {
         this._clear = suspendOpenlayerMap(
-          /** @type {import("@vcmap/core").OpenlayersMap|import("@vcmap/core").ObliqueMap} */ (event.map),
+          /** @type {import("@vcmap/core").OpenlayersMap|import("@vcmap/core").ObliqueMap} */ (
+            event.map
+          ),
         );
       }
     }

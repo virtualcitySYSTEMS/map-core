@@ -9,7 +9,9 @@ import { synchronizeFeatureVisibilityWithSource } from '../vectorHelpers.js';
  * @extends {LayerOpenlayersImpl}
  */
 class VectorOpenlayersImpl extends LayerOpenlayersImpl {
-  static get className() { return 'VectorOpenlayersImpl'; }
+  static get className() {
+    return 'VectorOpenlayersImpl';
+  }
 
   /**
    * @param {import("@vcmap/core").OpenlayersMap} map
@@ -80,7 +82,11 @@ class VectorOpenlayersImpl extends LayerOpenlayersImpl {
       if (this.active) {
         if (this._featureVisibilityListeners.length === 0) {
           this._featureVisibilityListeners =
-            synchronizeFeatureVisibilityWithSource(this.featureVisibility, this.source, this.globalHider);
+            synchronizeFeatureVisibilityWithSource(
+              this.featureVisibility,
+              this.source,
+              this.globalHider,
+            );
         }
       }
     }
@@ -91,7 +97,9 @@ class VectorOpenlayersImpl extends LayerOpenlayersImpl {
    */
   deactivate() {
     super.deactivate();
-    this._featureVisibilityListeners.forEach((cb) => { cb(); });
+    this._featureVisibilityListeners.forEach((cb) => {
+      cb();
+    });
     this._featureVisibilityListeners = [];
   }
 
@@ -108,7 +116,9 @@ class VectorOpenlayersImpl extends LayerOpenlayersImpl {
    * @inheritDoc
    */
   destroy() {
-    this._featureVisibilityListeners.forEach((cb) => { cb(); });
+    this._featureVisibilityListeners.forEach((cb) => {
+      cb();
+    });
     this._featureVisibilityListeners = [];
     super.destroy();
   }

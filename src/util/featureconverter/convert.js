@@ -22,28 +22,84 @@ import ArcStyle, { featureArcStruct } from '../../style/arcStyle.js';
  * @param {import("@vcmap-cesium/engine").Scene} scene
  * @param {import("@vcmap/core").VectorContext|import("@vcmap/core").ClusterContext} context
  */
-function convertGeometry(feature, geometry, style, vectorProperties, scene, context) {
+function convertGeometry(
+  feature,
+  geometry,
+  style,
+  vectorProperties,
+  scene,
+  context,
+) {
   if (geometry instanceof Point) {
     pointToCesium(feature, style, [geometry], vectorProperties, scene, context);
   } else if (geometry instanceof Polygon) {
-    polygonToCesium(feature, style, [geometry], vectorProperties, scene, context);
+    polygonToCesium(
+      feature,
+      style,
+      [geometry],
+      vectorProperties,
+      scene,
+      context,
+    );
   } else if (geometry instanceof LineString) {
     if (style instanceof ArcStyle && feature[featureArcStruct].coordinates) {
       arcToCesium(feature, style, [geometry], vectorProperties, scene, context);
     } else {
-      lineStringToCesium(feature, style, [geometry], vectorProperties, scene, context);
+      lineStringToCesium(
+        feature,
+        style,
+        [geometry],
+        vectorProperties,
+        scene,
+        context,
+      );
     }
   } else if (geometry instanceof Circle) {
-    circleToCesium(feature, style, [geometry], vectorProperties, scene, context);
+    circleToCesium(
+      feature,
+      style,
+      [geometry],
+      vectorProperties,
+      scene,
+      context,
+    );
   } else if (geometry instanceof MultiPoint) {
-    pointToCesium(feature, style, geometry.getPoints(), vectorProperties, scene, context);
+    pointToCesium(
+      feature,
+      style,
+      geometry.getPoints(),
+      vectorProperties,
+      scene,
+      context,
+    );
   } else if (geometry instanceof MultiPolygon) {
-    polygonToCesium(feature, style, geometry.getPolygons(), vectorProperties, scene, context);
+    polygonToCesium(
+      feature,
+      style,
+      geometry.getPolygons(),
+      vectorProperties,
+      scene,
+      context,
+    );
   } else if (geometry instanceof MultiLineString) {
-    lineStringToCesium(feature, style, geometry.getLineStrings(), vectorProperties, scene, context);
+    lineStringToCesium(
+      feature,
+      style,
+      geometry.getLineStrings(),
+      vectorProperties,
+      scene,
+      context,
+    );
   } else if (geometry instanceof GeometryCollection) {
     geometry.getGeometries().forEach((currentGeometry) => {
-      convertGeometry(feature, currentGeometry, style, vectorProperties, scene, context);
+      convertGeometry(
+        feature,
+        currentGeometry,
+        style,
+        vectorProperties,
+        scene,
+        context,
+      );
     });
   }
 }
@@ -57,7 +113,9 @@ function convertGeometry(feature, geometry, style, vectorProperties, scene, cont
 export function getStylesArray(style, feature, resolution = 1) {
   const styles = [];
   if (typeof style === 'function') {
-    styles.push(...getStylesArray(style(feature, resolution), feature, resolution));
+    styles.push(
+      ...getStylesArray(style(feature, resolution), feature, resolution),
+    );
   } else if (Array.isArray(style)) {
     style.forEach((currentStyle) => {
       styles.push(...getStylesArray(currentStyle, feature, resolution));
@@ -68,7 +126,6 @@ export function getStylesArray(style, feature, resolution = 1) {
   return styles;
 }
 
-
 /**
  * function to convert a feature to an array of Cesium.Primitives given a style and default properties. the resulting primitives
  * must be added to the modules collections here
@@ -78,12 +135,27 @@ export function getStylesArray(style, feature, resolution = 1) {
  * @param {import("@vcmap/core").VectorContext|import("@vcmap/core").ClusterContext} context
  * @param {import("@vcmap-cesium/engine").Scene} scene
  */
-export default function convert(feature, style, vectorProperties, context, scene) {
+export default function convert(
+  feature,
+  style,
+  vectorProperties,
+  context,
+  scene,
+) {
   const styles = getStylesArray(feature.getStyle() || style, feature, 0);
   styles.forEach((currentStyle) => {
-    const geometry = /** @type {import("ol/geom/Geometry").default} */(currentStyle.getGeometryFunction()(feature));
+    const geometry = /** @type {import("ol/geom/Geometry").default} */ (
+      currentStyle.getGeometryFunction()(feature)
+    );
     if (geometry) {
-      convertGeometry(feature, geometry, currentStyle, vectorProperties, scene, context);
+      convertGeometry(
+        feature,
+        geometry,
+        currentStyle,
+        vectorProperties,
+        scene,
+        context,
+      );
     }
   });
 }

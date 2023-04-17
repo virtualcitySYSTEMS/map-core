@@ -71,7 +71,9 @@ describe('VCSObject', () => {
 
     describe('classWithClassName', () => {
       class ClassWithClassName extends VcsObject {
-        static get className() { return 'testClass'; }
+        static get className() {
+          return 'testClass';
+        }
       }
 
       it('should return the default className on an Instance', () => {

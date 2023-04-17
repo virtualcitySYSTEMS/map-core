@@ -57,14 +57,19 @@ class CreateLineStringInteraction extends AbstractInteraction {
    */
   async pipe(event) {
     if (event.type & EventType.CLICKMOVE && this._geometry) {
-      this._lastCoordinate.splice(0, event.positionOrPixel.length, ...event.positionOrPixel);
+      this._lastCoordinate.splice(
+        0,
+        event.positionOrPixel.length,
+        ...event.positionOrPixel,
+      );
       this._setCoordinates();
     }
 
     if (event.type & EventType.CLICK) {
       if (!this._geometry) {
         this._geometry = new LineString([event.positionOrPixel], 'XYZ');
-        this._geometry[alreadyTransformedToImage] = event.map instanceof ObliqueMap;
+        this._geometry[alreadyTransformedToImage] =
+          event.map instanceof ObliqueMap;
         this.created.raiseEvent(this._geometry);
         this._coordinates = [event.positionOrPixel.slice()];
         this._lastCoordinate = this._coordinates[0].slice();

@@ -4,14 +4,26 @@ import { fromExtent } from 'ol/geom/Polygon.js';
 import Style from 'ol/style/Style.js';
 
 import nock from 'nock';
-import FeatureStoreLayer, { isTiledFeature } from '../../../src/layer/featureStoreLayer.js';
+import FeatureStoreLayer, {
+  isTiledFeature,
+} from '../../../src/layer/featureStoreLayer.js';
 import VcsApp from '../../../src/vcsApp.js';
 import VectorLayer from '../../../src/layer/vectorLayer.js';
-import VectorStyleItem, { vectorStyleSymbol, defaultVectorStyle } from '../../../src/style/vectorStyleItem.js';
-import { FeatureStoreLayerState, featureStoreStateSymbol } from '../../../src/layer/featureStoreLayerState.js';
+import VectorStyleItem, {
+  vectorStyleSymbol,
+  defaultVectorStyle,
+} from '../../../src/style/vectorStyleItem.js';
+import {
+  FeatureStoreLayerState,
+  featureStoreStateSymbol,
+} from '../../../src/layer/featureStoreLayerState.js';
 import DeclarativeStyleItem from '../../../src/style/declarativeStyleItem.js';
 import '../../../src/layer/cesium/cesiumTilesetCesiumImpl.js';
-import { createTilesetServer, setCesiumMap, createDummyCesium3DTileFeature } from '../helpers/cesiumHelpers.js';
+import {
+  createTilesetServer,
+  setCesiumMap,
+  createDummyCesium3DTileFeature,
+} from '../helpers/cesiumHelpers.js';
 import { setOpenlayersMap } from '../helpers/openlayersHelpers.js';
 import CesiumTilesetLayer from '../../../src/layer/cesiumTilesetLayer.js';
 import { vcsLayerName } from '../../../src/layer/layerSymbols.js';
@@ -31,9 +43,7 @@ describe('FeatureStoreLayer', () => {
   let featureStyle;
 
   function setupStaticTwoDim() {
-    const features = [
-      new Feature(),
-    ];
+    const features = [new Feature()];
 
     const withStyle = new Feature();
     withStyle[vectorStyleSymbol] = featureStyle;
@@ -71,17 +81,30 @@ describe('FeatureStoreLayer', () => {
   describe('constructor', () => {
     it('should add dynamic features if present', () => {
       FS = new FeatureStoreLayer(testGeoJSON.featureCollection);
-      expect(FS.getFeatures()).to.have.length(testGeoJSON.featureCollection.features.length);
+      expect(FS.getFeatures()).to.have.length(
+        testGeoJSON.featureCollection.features.length,
+      );
     });
 
     it('should set the vcsMeta options', () => {
       FS = new FeatureStoreLayer({
-        vcsMeta: { skirt: 5, storeyHeight: 5, classificationType: 'both', altitudeMode: 'absolute' },
+        vcsMeta: {
+          skirt: 5,
+          storeyHeight: 5,
+          classificationType: 'both',
+          altitudeMode: 'absolute',
+        },
       });
       expect(FS.vectorProperties).to.have.property('skirt', 5);
       expect(FS.vectorProperties).to.have.property('storeyHeight', 5);
-      expect(FS.vectorProperties).to.have.property('classificationType', ClassificationType.BOTH);
-      expect(FS.vectorProperties).to.have.property('altitudeMode', HeightReference.NONE);
+      expect(FS.vectorProperties).to.have.property(
+        'classificationType',
+        ClassificationType.BOTH,
+      );
+      expect(FS.vectorProperties).to.have.property(
+        'altitudeMode',
+        HeightReference.NONE,
+      );
     });
 
     it('should set the defaultStyle based on vcsMeta', () => {
@@ -107,7 +130,10 @@ describe('FeatureStoreLayer', () => {
     });
 
     it('should only hide dynamic features, if the layer has not bee initialized before', async () => {
-      const hideObjects = sandbox.spy(FS._staticFeatureVisibility, 'hideObjects');
+      const hideObjects = sandbox.spy(
+        FS._staticFeatureVisibility,
+        'hideObjects',
+      );
       await FS.initialize();
       await FS.initialize();
       expect(hideObjects).to.have.been.calledOnce;
@@ -133,17 +159,18 @@ describe('FeatureStoreLayer', () => {
     it('should call setEditing, if an editing symbol has been cached for the cesium impl', () => {
       FS._setEditing = { symbol: 'test', featureType: 'test' };
       const setEditing = sandbox.spy(FS, 'setEditing');
-      return FS.activate()
-        .then(() => {
-          expect(setEditing).to.have.been.calledWith('test', 'test');
-        });
+      return FS.activate().then(() => {
+        expect(setEditing).to.have.been.calledWith('test', 'test');
+      });
     });
 
     describe('layer cancelled', () => {
       let promise;
       let resolve;
       beforeEach(() => {
-        promise = new Promise((res) => { resolve = res; });
+        promise = new Promise((res) => {
+          resolve = res;
+        });
         sandbox.stub(FS, 'initialize').returns(promise);
       });
 
@@ -179,7 +206,9 @@ describe('FeatureStoreLayer', () => {
       const features = setupStaticTwoDim();
       FS.setStyle(new VectorStyleItem({}));
       expect(features[1].getStyle()).to.be.an.instanceof(Style);
-      expect(features[1].getStyle()).to.equal(features[1][vectorStyleSymbol].style);
+      expect(features[1].getStyle()).to.equal(
+        features[1][vectorStyleSymbol].style,
+      );
     });
 
     it('should track style changes on two dim features', (done) => {
@@ -220,7 +249,9 @@ describe('FeatureStoreLayer', () => {
       const [, impl] = FS.getImplementationsForMap(cesiumMap);
       await impl.initialize();
       const vcsExtent = FS.getZoomToExtent();
-      expect(vcsExtent.extent).to.have.members([0, 0, 1490216.2986333761, 6893720.808671028]);
+      expect(vcsExtent.extent).to.have.members([
+        0, 0, 1490216.2986333761, 6893720.808671028,
+      ]);
     });
 
     it('should return the configured extent', () => {
@@ -330,8 +361,12 @@ describe('FeatureStoreLayer', () => {
         FS.hiddenStaticFeatureIds.add('test2');
         FS.featureVisibility.showObjects(['test2']);
 
-        expect(FS.featureVisibility.hiddenObjects).to.not.have.property('test2');
-        expect(FS._staticFeatureVisibility.hiddenObjects).to.have.property('test2');
+        expect(FS.featureVisibility.hiddenObjects).to.not.have.property(
+          'test2',
+        );
+        expect(FS._staticFeatureVisibility.hiddenObjects).to.have.property(
+          'test2',
+        );
       });
     });
 
@@ -346,7 +381,9 @@ describe('FeatureStoreLayer', () => {
         FS.hiddenStaticFeatureIds.add('test2');
         FS.featureVisibility.clearHiddenObjects();
         expect(FS.featureVisibility.hiddenObjects).to.be.empty;
-        expect(FS._staticFeatureVisibility.hiddenObjects).to.have.property('test2');
+        expect(FS._staticFeatureVisibility.hiddenObjects).to.have.property(
+          'test2',
+        );
       });
     });
   });
@@ -355,7 +392,10 @@ describe('FeatureStoreLayer', () => {
     it('should call super object clickedhandler, if feature is an ol.Feature', () => {
       const feature = new Feature();
       FS.addFeatures([feature]);
-      const objectClickedHandler = sandbox.spy(VectorLayer.prototype, 'objectClickedHandler');
+      const objectClickedHandler = sandbox.spy(
+        VectorLayer.prototype,
+        'objectClickedHandler',
+      );
       FS.objectClickedHandler(feature);
       expect(objectClickedHandler).to.have.been.calledWithExactly(feature);
     });
@@ -364,7 +404,10 @@ describe('FeatureStoreLayer', () => {
       await app.maps.setActiveMap(cesiumMap.name);
       const feature = createDummyCesium3DTileFeature();
       feature[isTiledFeature] = true;
-      const objectClickedHandler = sandbox.spy(CesiumTilesetLayer.prototype, 'objectClickedHandler');
+      const objectClickedHandler = sandbox.spy(
+        CesiumTilesetLayer.prototype,
+        'objectClickedHandler',
+      );
       FS.objectClickedHandler(feature);
       expect(objectClickedHandler).to.have.been.calledWithExactly(feature);
       await app.maps.setActiveMap(openlayer.name);
@@ -384,46 +427,50 @@ describe('FeatureStoreLayer', () => {
       FS.injectedFetchDynamicFeatureFunc = () => Promise.resolve(feature);
     });
 
-    it('should return the parsed feature', () => FS.switchStaticFeatureToDynamic('test')
-      .then((f) => {
+    it('should return the parsed feature', () =>
+      FS.switchStaticFeatureToDynamic('test').then((f) => {
         expect(f).to.be.an.instanceOf(Feature);
         expect(f.getId()).to.equal('test');
       }));
 
-    it('should add the feature to the source', () => FS.switchStaticFeatureToDynamic('test')
-      .then((f) => {
+    it('should add the feature to the source', () =>
+      FS.switchStaticFeatureToDynamic('test').then((f) => {
         expect(FS.getFeatureById('test')).to.equal(f);
       }));
 
     it('should extend a feature style with the layer defaultStyle', () => {
       feature.vcsMeta = { style: { stroke: { width: 5, fill: '#FF00FF' } } };
       FS.defaultStyle.fillColor = '#00FF00';
-      return FS.switchStaticFeatureToDynamic('test')
-        .then((f) => {
-          expect(f).to.have.property(vectorStyleSymbol);
-          expect(f[vectorStyleSymbol]).to.have.property('fillColor').and.to.have.members(FS.defaultStyle.fillColor);
-        });
+      return FS.switchStaticFeatureToDynamic('test').then((f) => {
+        expect(f).to.have.property(vectorStyleSymbol);
+        expect(f[vectorStyleSymbol])
+          .to.have.property('fillColor')
+          .and.to.have.members(FS.defaultStyle.fillColor);
+      });
     });
 
     it('should extend the feature style with the default style, if the defaultLayer style is no a VectorStyleItem', () => {
       feature.vcsMeta = { style: { stroke: { width: 5, fill: '#FF00FF' } } };
       FS._defaultStyle = new DeclarativeStyleItem({});
-      return FS.switchStaticFeatureToDynamic('test')
-        .then((f) => {
-          expect(f).to.have.property(vectorStyleSymbol);
-          expect(f[vectorStyleSymbol]).to.have.property('fillColor').and.to.have.members(defaultVectorStyle.fillColor);
-        });
+      return FS.switchStaticFeatureToDynamic('test').then((f) => {
+        expect(f).to.have.property(vectorStyleSymbol);
+        expect(f[vectorStyleSymbol])
+          .to.have.property('fillColor')
+          .and.to.have.members(defaultVectorStyle.fillColor);
+      });
     });
 
-    it('should not add a style symbol by default', () => FS.switchStaticFeatureToDynamic('test')
-      .then((f) => {
+    it('should not add a style symbol by default', () =>
+      FS.switchStaticFeatureToDynamic('test').then((f) => {
         expect(f).to.not.have.property(vectorStyleSymbol);
       }));
 
-    it('should add the features id to the hiddenStaticFeatures and hide it on the static layer', () => FS.switchStaticFeatureToDynamic('test')
-      .then(() => {
+    it('should add the features id to the hiddenStaticFeatures and hide it on the static layer', () =>
+      FS.switchStaticFeatureToDynamic('test').then(() => {
         expect(FS.hiddenStaticFeatureIds.has('test')).to.be.true;
-        expect(FS._staticFeatureVisibility.hiddenObjects).to.have.property('test');
+        expect(FS._staticFeatureVisibility.hiddenObjects).to.have.property(
+          'test',
+        );
       }));
 
     it('should return an already hiddenStaticFeature from source', () => {
@@ -432,11 +479,10 @@ describe('FeatureStoreLayer', () => {
       FS.addFeatures([existingFeature]);
       FS.hiddenStaticFeatureIds.add('test');
       const getById = sandbox.spy(FS, 'injectedFetchDynamicFeatureFunc');
-      return FS.switchStaticFeatureToDynamic('test')
-        .then((f) => {
-          expect(f).to.equal(existingFeature);
-          expect(getById).to.not.have.been.called;
-        });
+      return FS.switchStaticFeatureToDynamic('test').then((f) => {
+        expect(f).to.equal(existingFeature);
+        expect(getById).to.not.have.been.called;
+      });
     });
   });
 
@@ -444,7 +490,9 @@ describe('FeatureStoreLayer', () => {
     it('should hide the static feature and add the id to the hiddenStaticFeatures', () => {
       FS.removeStaticFeature('test');
       expect(FS.hiddenStaticFeatureIds.has('test')).to.be.true;
-      expect(FS._staticFeatureVisibility.hiddenObjects).to.have.property('test');
+      expect(FS._staticFeatureVisibility.hiddenObjects).to.have.property(
+        'test',
+      );
     });
 
     it('should add a feature to the changeTracker as removed', () => {
@@ -457,7 +505,10 @@ describe('FeatureStoreLayer', () => {
       const feature = FS.changeTracker._removedFeatures.values().next().value;
       expect(feature).to.be.an.instanceOf(Feature);
       expect(feature.getId()).to.equal('test');
-      expect(feature).to.have.property(featureStoreStateSymbol, FeatureStoreLayerState.STATIC);
+      expect(feature).to.have.property(
+        featureStoreStateSymbol,
+        FeatureStoreLayerState.STATIC,
+      );
     });
   });
 
@@ -473,13 +524,17 @@ describe('FeatureStoreLayer', () => {
 
     it('should show the static feature', () => {
       FS.resetStaticFeature('test');
-      expect(FS._staticFeatureVisibility.hiddenObjects).to.not.have.property('test');
+      expect(FS._staticFeatureVisibility.hiddenObjects).to.not.have.property(
+        'test',
+      );
     });
 
     it('should not show the static feature, if it is hidden by the layers featureVisibility', () => {
       FS.featureVisibility.hideObjects(['test']);
       FS.resetStaticFeature('test');
-      expect(FS._staticFeatureVisibility.hiddenObjects).to.have.property('test');
+      expect(FS._staticFeatureVisibility.hiddenObjects).to.have.property(
+        'test',
+      );
     });
 
     it('should remove an associated feature', () => {
@@ -532,17 +587,20 @@ describe('FeatureStoreLayer', () => {
       });
 
       it('should configure vcsMeta', () => {
-        expect(outputConfig).to.have.property('vcsMeta')
+        expect(outputConfig)
+          .to.have.property('vcsMeta')
           .and.to.eql(inputConfig.vcsMeta);
       });
 
       it('should configure staticRepresentation', () => {
-        expect(outputConfig).to.have.property('staticRepresentation')
+        expect(outputConfig)
+          .to.have.property('staticRepresentation')
           .and.to.eql(inputConfig.staticRepresentation);
       });
 
       it('should configure hiddenStaticFeatureIds', () => {
-        expect(outputConfig).to.have.property('hiddenStaticFeatureIds')
+        expect(outputConfig)
+          .to.have.property('hiddenStaticFeatureIds')
           .and.to.eql(inputConfig.hiddenStaticFeatureIds);
       });
     });
@@ -573,7 +631,9 @@ describe('FeatureStoreLayer', () => {
     afterEach(() => scope.done());
 
     it('should load all features into the static feature source', () => {
-      expect(featureStore._twoDimStaticSource.getFeatures()).to.have.lengthOf(2);
+      expect(featureStore._twoDimStaticSource.getFeatures()).to.have.lengthOf(
+        2,
+      );
     });
 
     it('should set the vcsLayerName on all features', () => {

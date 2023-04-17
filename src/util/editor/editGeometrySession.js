@@ -1,6 +1,11 @@
 import { getLogger } from '@vcsuite/logger';
 import { unByKey } from 'ol/Observable.js';
-import { GeometryType, SessionType, setupInteractionChain, setupScratchLayer } from './editorSessionHelpers.js';
+import {
+  GeometryType,
+  SessionType,
+  setupInteractionChain,
+  setupScratchLayer,
+} from './editorSessionHelpers.js';
 import InteractionChain from '../../interaction/interactionChain.js';
 import VcsEvent from '../../vcsEvent.js';
 import TranslateVertexInteraction from './interactions/translateVertexInteraction.js';
@@ -37,7 +42,9 @@ function createEditLineStringGeometryInteraction(feature, scratchLayer) {
   const vertices = geometry.getCoordinates().map(createVertex);
   scratchLayer.addFeatures(vertices);
   const resetGeometry = () => {
-    geometry.setCoordinates(vertices.map(f => f.getGeometry().getCoordinates()));
+    geometry.setCoordinates(
+      vertices.map((f) => f.getGeometry().getCoordinates()),
+    );
   };
   const translateVertex = new TranslateVertexInteraction();
   translateVertex.vertexChanged.addEventListener(resetGeometry);
@@ -68,7 +75,7 @@ function createEditLineStringGeometryInteraction(feature, scratchLayer) {
   return {
     interactionChain,
     destroy: () => {
-      scratchLayer.removeFeaturesById(vertices.map(v => v.getId()));
+      scratchLayer.removeFeaturesById(vertices.map((v) => v.getId()));
       interactionChain.destroy();
     },
   };
@@ -103,10 +110,9 @@ function createEditCircleGeometryInteraction(feature, scratchLayer) {
 
   const geometryListener = geometry.on('change', () => {
     if (!suspend) {
-      geometry.getCoordinates()
-        .forEach((c, index) => {
-          vertices[index].getGeometry().setCoordinates(c);
-        });
+      geometry.getCoordinates().forEach((c, index) => {
+        vertices[index].getGeometry().setCoordinates(c);
+      });
     }
   });
 
@@ -115,7 +121,7 @@ function createEditCircleGeometryInteraction(feature, scratchLayer) {
   return {
     interactionChain,
     destroy: () => {
-      scratchLayer.removeFeaturesById(vertices.map(v => v.getId()));
+      scratchLayer.removeFeaturesById(vertices.map((v) => v.getId()));
       interactionChain.destroy();
       unByKey(geometryListener);
     },
@@ -169,16 +175,17 @@ function createEditBBoxGeometryInteraction(feature, scratchLayer) {
     updateOtherVertex(leftOfIndex);
 
     suspend = true;
-    geometry.setCoordinates([vertices.map(f => f.getGeometry().getCoordinates())]);
+    geometry.setCoordinates([
+      vertices.map((f) => f.getGeometry().getCoordinates()),
+    ]);
     suspend = false;
   });
 
   const geometryListener = geometry.on('change', () => {
     if (!suspend) {
-      geometry.getCoordinates()[0]
-        .forEach((c, index) => {
-          vertices[index].getGeometry().setCoordinates(c);
-        });
+      geometry.getCoordinates()[0].forEach((c, index) => {
+        vertices[index].getGeometry().setCoordinates(c);
+      });
     }
   });
   const interactionChain = new InteractionChain([translateVertex]);
@@ -186,7 +193,7 @@ function createEditBBoxGeometryInteraction(feature, scratchLayer) {
   return {
     interactionChain,
     destroy: () => {
-      scratchLayer.removeFeaturesById(vertices.map(v => v.getId()));
+      scratchLayer.removeFeaturesById(vertices.map((v) => v.getId()));
       interactionChain.destroy();
       unByKey(geometryListener);
     },
@@ -204,9 +211,11 @@ function createEditSimplePolygonInteraction(feature, scratchLayer) {
   const vertices = linearRing.getCoordinates().map(createVertex);
   scratchLayer.addFeatures(vertices);
   const resetGeometry = () => {
-    const coordinates = vertices.map(f => f.getGeometry().getCoordinates());
+    const coordinates = vertices.map((f) => f.getGeometry().getCoordinates());
     linearRing.setCoordinates(coordinates); // update linear ring for proper vertex insertion
-    geometry.setCoordinates([vertices.map(f => f.getGeometry().getCoordinates())]); // update actual geometry, since linear ring is a clone and not a ref
+    geometry.setCoordinates([
+      vertices.map((f) => f.getGeometry().getCoordinates()),
+    ]); // update actual geometry, since linear ring is a clone and not a ref
   };
 
   const translateVertex = new TranslateVertexInteraction();
@@ -238,7 +247,7 @@ function createEditSimplePolygonInteraction(feature, scratchLayer) {
   return {
     interactionChain,
     destroy: () => {
-      scratchLayer.removeFeaturesById(vertices.map(v => v.getId()));
+      scratchLayer.removeFeaturesById(vertices.map((v) => v.getId()));
       interactionChain.destroy();
     },
   };
@@ -271,9 +280,7 @@ function createEditPointInteraction(feature, scratchLayer, layer) {
     }
   });
 
-  const interactionChain = new InteractionChain([
-    translateVertex,
-  ]);
+  const interactionChain = new InteractionChain([translateVertex]);
 
   return {
     interactionChain,
@@ -323,10 +330,11 @@ function startEditGeometrySession(app, layer, interactionId) {
    */
   let currentFeature = null;
 
-
   const destroyCurrentInteractionSet = () => {
     if (currentInteractionSet) {
-      interactionChain.removeInteraction(currentInteractionSet.interactionChain);
+      interactionChain.removeInteraction(
+        currentInteractionSet.interactionChain,
+      );
       currentInteractionSet.destroy();
       currentInteractionSet = null;
     }
@@ -354,29 +362,43 @@ function startEditGeometrySession(app, layer, interactionId) {
       if (geometryType === GeometryType.Polygon) {
         if (geometry.get('_vcsGeomType') === GeometryType.BBox) {
           currentInteractionSet = createEditBBoxGeometryInteraction(
-            /** @type {import("ol").Feature<import("ol/geom").Polygon>} */ (feature),
+            /** @type {import("ol").Feature<import("ol/geom").Polygon>} */ (
+              feature
+            ),
             scratchLayer,
           );
-        } else if (/** @type {import("ol/geom").Polygon} */ (geometry).getLinearRingCount() === 1) {
+        } else if (
+          /** @type {import("ol/geom").Polygon} */ (
+            geometry
+          ).getLinearRingCount() === 1
+        ) {
           currentInteractionSet = createEditSimplePolygonInteraction(
-            /** @type {import("ol").Feature<import("ol/geom").Polygon>} */ (feature),
+            /** @type {import("ol").Feature<import("ol/geom").Polygon>} */ (
+              feature
+            ),
             scratchLayer,
           );
         }
       } else if (geometryType === GeometryType.LineString) {
         currentInteractionSet = createEditLineStringGeometryInteraction(
-          /** @type {import("ol").Feature<import("ol/geom").LineString>} */ (feature),
+          /** @type {import("ol").Feature<import("ol/geom").LineString>} */ (
+            feature
+          ),
           scratchLayer,
         );
       } else if (geometryType === GeometryType.Point) {
         currentInteractionSet = createEditPointInteraction(
-          /** @type {import("ol").Feature<import("ol/geom").Point>} */ (feature),
+          /** @type {import("ol").Feature<import("ol/geom").Point>} */ (
+            feature
+          ),
           scratchLayer,
           layer,
         );
       } else if (geometryType === GeometryType.Circle) {
         currentInteractionSet = createEditCircleGeometryInteraction(
-          /** @type {import("ol").Feature<import("ol/geom").Circle>} */ (feature),
+          /** @type {import("ol").Feature<import("ol/geom").Circle>} */ (
+            feature
+          ),
           scratchLayer,
         );
       }
@@ -384,7 +406,9 @@ function startEditGeometrySession(app, layer, interactionId) {
       if (currentInteractionSet) {
         interactionChain.addInteraction(currentInteractionSet.interactionChain);
       } else {
-        getLogger('EditGeometrySession').warning(`Geometry of type ${geometryType} is currently not supported`);
+        getLogger('EditGeometrySession').warning(
+          `Geometry of type ${geometryType} is currently not supported`,
+        );
         currentFeature[createSync] = false;
         currentFeature = null;
       }
@@ -396,7 +420,8 @@ function startEditGeometrySession(app, layer, interactionId) {
     mouseOverInteraction.reset();
     createCurrentInteractionSet(null);
   };
-  const mapActivatedListener = app.maps.mapActivated.addEventListener(setupActiveMap);
+  const mapActivatedListener =
+    app.maps.mapActivated.addEventListener(setupActiveMap);
   setupActiveMap();
 
   const stop = () => {

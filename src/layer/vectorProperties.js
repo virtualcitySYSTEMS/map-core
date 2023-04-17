@@ -1,7 +1,17 @@
 import deepEqual from 'fast-deep-equal';
-import { Cartesian3, ClassificationType, HeightReference, NearFarScalar } from '@vcmap-cesium/engine';
+import {
+  Cartesian3,
+  ClassificationType,
+  HeightReference,
+  NearFarScalar,
+} from '@vcmap-cesium/engine';
 import { check, checkMaybe } from '@vcsuite/check';
-import { parseBoolean, parseEnumKey, parseInteger, parseNumber } from '@vcsuite/parsers';
+import {
+  parseBoolean,
+  parseEnumKey,
+  parseInteger,
+  parseNumber,
+} from '@vcsuite/parsers';
 import { getLogger as getLoggerByName } from '@vcsuite/logger';
 import VcsEvent from '../vcsEvent.js';
 
@@ -121,8 +131,8 @@ export const ClassificationTypeCesium = {
 export function parseNearFarScalar(value, defaultValue) {
   if (Array.isArray(value)) {
     const valid = value
-      .map(entry => parseNumber(entry, null))
-      .filter(entry => entry != null);
+      .map((entry) => parseNumber(entry, null))
+      .filter((entry) => entry != null);
     if (valid.length === 4) {
       return new NearFarScalar(valid[0], valid[1], valid[2], valid[3]);
     }
@@ -138,8 +148,8 @@ export function parseNearFarScalar(value, defaultValue) {
 export function parseCartesian3(value, defaultValue) {
   if (Array.isArray(value)) {
     const valid = value
-      .map(entry => parseNumber(entry, null))
-      .filter(entry => entry != null);
+      .map((entry) => parseNumber(entry, null))
+      .filter((entry) => entry != null);
     if (valid.length === 3) {
       return new Cartesian3(valid[0], valid[1], valid[2]);
     }
@@ -156,8 +166,8 @@ export function parseCartesian3(value, defaultValue) {
 export function parseStoreyHeights(storeyHeights, defaultStoreyHeights) {
   if (Array.isArray(storeyHeights)) {
     return storeyHeights
-      .map(value => parseNumber(value, null))
-      .filter(value => value !== null && value > 0);
+      .map((value) => parseNumber(value, null))
+      .filter((value) => value !== null && value > 0);
   } else {
     const numberValue = parseNumber(storeyHeights, null);
     if (numberValue && numberValue > 0) {
@@ -175,8 +185,9 @@ export function parseStoreyHeights(storeyHeights, defaultStoreyHeights) {
  * @returns {string}
  */
 export function getAltitudeModeOptions(altitudeMode) {
-  return Object.keys(AltitudeModeCesium)
-    .find(key => AltitudeModeCesium[key] === altitudeMode);
+  return Object.keys(AltitudeModeCesium).find(
+    (key) => AltitudeModeCesium[key] === altitudeMode,
+  );
 }
 
 /**
@@ -184,8 +195,9 @@ export function getAltitudeModeOptions(altitudeMode) {
  * @returns {string}
  */
 export function getClassificationTypeOptions(classificationType) {
-  return Object.keys(ClassificationTypeCesium)
-    .find(key => ClassificationTypeCesium[key] === classificationType);
+  return Object.keys(ClassificationTypeCesium).find(
+    (key) => ClassificationTypeCesium[key] === classificationType,
+  );
 }
 
 /**
@@ -255,26 +267,39 @@ class VectorProperties {
      * @type {import("@vcmap-cesium/engine").HeightReference}
      * @private
      */
-    this._altitudeMode = parseEnumKey(options.altitudeMode, AltitudeModeCesium, HeightReference.CLAMP_TO_GROUND);
+    this._altitudeMode = parseEnumKey(
+      options.altitudeMode,
+      AltitudeModeCesium,
+      HeightReference.CLAMP_TO_GROUND,
+    );
 
     /**
      * @type {boolean}
      * @private
      */
-    this._allowPicking = parseBoolean(options.allowPicking, defaultValues.allowPicking);
+    this._allowPicking = parseBoolean(
+      options.allowPicking,
+      defaultValues.allowPicking,
+    );
 
     /**
      * @type {import("@vcmap-cesium/engine").ClassificationType|undefined}
      * @private
      */
-    this._classificationType = parseEnumKey(options.classificationType, ClassificationTypeCesium, undefined);
-
+    this._classificationType = parseEnumKey(
+      options.classificationType,
+      ClassificationTypeCesium,
+      undefined,
+    );
 
     /**
      * @type {import("@vcmap-cesium/engine").NearFarScalar|undefined}
      * @private
      */
-    this._scaleByDistance = parseNearFarScalar(options.scaleByDistance, undefined);
+    this._scaleByDistance = parseNearFarScalar(
+      options.scaleByDistance,
+      undefined,
+    );
 
     /**
      * @type {import("@vcmap-cesium/engine").Cartesian3|undefined}
@@ -286,7 +311,10 @@ class VectorProperties {
      * @type {number}
      * @private
      */
-    this._heightAboveGround = parseNumber(options.heightAboveGround, defaultValues.heightAboveGround);
+    this._heightAboveGround = parseNumber(
+      options.heightAboveGround,
+      defaultValues.heightAboveGround,
+    );
 
     /**
      * @type {number}
@@ -298,46 +326,65 @@ class VectorProperties {
      * @type {number|undefined}
      * @private
      */
-    this._groundLevel = parseNumber(options.groundLevel, defaultValues.groundLevel);
+    this._groundLevel = parseNumber(
+      options.groundLevel,
+      defaultValues.groundLevel,
+    );
 
     /**
      * @type {number}
      * @private
      */
-    this._extrudedHeight = parseNumber(options.extrudedHeight, defaultValues.extrudedHeight);
+    this._extrudedHeight = parseNumber(
+      options.extrudedHeight,
+      defaultValues.extrudedHeight,
+    );
 
     /**
      * @type {number}
      * @private
      */
-    this._storeysAboveGround = parseInteger(options.storeysAboveGround, defaultValues.storeysAboveGround);
+    this._storeysAboveGround = parseInteger(
+      options.storeysAboveGround,
+      defaultValues.storeysAboveGround,
+    );
 
     /**
      * @type {number}
      * @private
      */
-    this._storeysBelowGround = parseInteger(options.storeysBelowGround, defaultValues.storeysBelowGround);
+    this._storeysBelowGround = parseInteger(
+      options.storeysBelowGround,
+      defaultValues.storeysBelowGround,
+    );
 
     /**
      * @type {Array<number>}
      * @private
      */
-    this._storeyHeightsAboveGround =
-      parseStoreyHeights(options.storeyHeightsAboveGround, defaultValues.storeyHeightsAboveGround);
+    this._storeyHeightsAboveGround = parseStoreyHeights(
+      options.storeyHeightsAboveGround,
+      defaultValues.storeyHeightsAboveGround,
+    );
 
     /**
      * @type {Array<number>}
      * @private
      */
-    this._storeyHeightsBelowGround =
-      parseStoreyHeights(options.storeyHeightsBelowGround, defaultValues.storeyHeightsBelowGround);
+    this._storeyHeightsBelowGround = parseStoreyHeights(
+      options.storeyHeightsBelowGround,
+      defaultValues.storeyHeightsBelowGround,
+    );
 
     /**
      * @type {number|undefined}
      * @private
      * @deprecated v3.8
      */
-    this._storeyHeight = parseNumber(options.storeyHeight, defaultValues.storeyHeight);
+    this._storeyHeight = parseNumber(
+      options.storeyHeight,
+      defaultValues.storeyHeight,
+    );
 
     /**
      * @type {string}
@@ -349,29 +396,44 @@ class VectorProperties {
      * @type {number}
      * @private
      */
-    this._modelScaleX = parseNumber(options.modelScaleX, defaultValues.modelScaleX);
+    this._modelScaleX = parseNumber(
+      options.modelScaleX,
+      defaultValues.modelScaleX,
+    );
     /**
      * @type {number}
      * @private
      */
-    this._modelScaleY = parseNumber(options.modelScaleY, defaultValues.modelScaleY);
+    this._modelScaleY = parseNumber(
+      options.modelScaleY,
+      defaultValues.modelScaleY,
+    );
     /**
      * @type {number}
      * @private
      */
-    this._modelScaleZ = parseNumber(options.modelScaleZ, defaultValues.modelScaleZ);
+    this._modelScaleZ = parseNumber(
+      options.modelScaleZ,
+      defaultValues.modelScaleZ,
+    );
 
     /**
      * @type {number}
      * @private
      */
-    this._modelHeading = parseNumber(options.modelHeading, defaultValues.modelHeading);
+    this._modelHeading = parseNumber(
+      options.modelHeading,
+      defaultValues.modelHeading,
+    );
 
     /**
      * @type {number}
      * @private
      */
-    this._modelPitch = parseNumber(options.modelPitch, defaultValues.modelPitch);
+    this._modelPitch = parseNumber(
+      options.modelPitch,
+      defaultValues.modelPitch,
+    );
 
     /**
      * @type {number}
@@ -394,12 +456,16 @@ class VectorProperties {
      * @type {boolean}
      * @private
      */
-    this._modelAutoScale = parseBoolean(options.modelAutoScale, defaultValues.modelAutoScale);
+    this._modelAutoScale = parseBoolean(
+      options.modelAutoScale,
+      defaultValues.modelAutoScale,
+    );
     /**
      * @type {VectorPropertiesPrimitiveOptions}
      * @private
      */
-    this._primitiveOptions = options.primitiveOptions || defaultValues.primitiveOptions;
+    this._primitiveOptions =
+      options.primitiveOptions || defaultValues.primitiveOptions;
 
     /**
      * Event raised when properties change. is passed an array of keys for the changed properties.
@@ -468,7 +534,6 @@ class VectorProperties {
     return parseBoolean(allowPicking, this._allowPicking);
   }
 
-
   /**
    * @type {import("@vcmap-cesium/engine").ClassificationType|undefined}
    * @api
@@ -495,7 +560,11 @@ class VectorProperties {
    */
   getClassificationType(feature) {
     const classificationType = feature.get('olcs_classificationType');
-    return parseEnumKey(classificationType, ClassificationTypeCesium, this.classificationType);
+    return parseEnumKey(
+      classificationType,
+      ClassificationTypeCesium,
+      this.classificationType,
+    );
   }
 
   /**
@@ -556,7 +625,10 @@ class VectorProperties {
     if (!featureValue) {
       const zCoordinateEyeOffset = feature.get('olcs_zCoordinateEyeOffset');
       if (zCoordinateEyeOffset) {
-        getLogger().deprecate('zCoordinateEyeOffset', 'use eyeOffset and provide [0,0,value]');
+        getLogger().deprecate(
+          'zCoordinateEyeOffset',
+          'use eyeOffset and provide [0,0,value]',
+        );
         return new Cartesian3(0, 0, parseNumber(zCoordinateEyeOffset, 0));
       }
     }
@@ -1160,7 +1232,11 @@ class VectorProperties {
    */
   _getBaseOptions(feature) {
     return {
-      scale: [this.getModelScaleX(feature), this.getModelScaleY(feature), this.getModelScaleZ(feature)],
+      scale: [
+        this.getModelScaleX(feature),
+        this.getModelScaleY(feature),
+        this.getModelScaleZ(feature),
+      ],
       heading: this.getModelHeading(feature),
       pitch: this.getModelPitch(feature),
       roll: this.getModelRoll(feature),
@@ -1198,7 +1274,7 @@ class VectorProperties {
 
     const baseUrl = this.getBaseUrl(feature);
     if (baseUrl) {
-      url = (new URL(url, baseUrl)).toString();
+      url = new URL(url, baseUrl).toString();
     }
 
     return {
@@ -1230,8 +1306,16 @@ class VectorProperties {
     const changedProperties = [];
     // check if key exists in options, to also set undefined values
     if ('altitudeMode' in options) {
-      const defaultAltitudeMode = parseEnumKey(defaultValues.altitudeMode, AltitudeModeCesium, undefined);
-      const parsedAltitudeMode = parseEnumKey(options.altitudeMode, AltitudeModeCesium, defaultAltitudeMode);
+      const defaultAltitudeMode = parseEnumKey(
+        defaultValues.altitudeMode,
+        AltitudeModeCesium,
+        undefined,
+      );
+      const parsedAltitudeMode = parseEnumKey(
+        options.altitudeMode,
+        AltitudeModeCesium,
+        defaultAltitudeMode,
+      );
       if (this._altitudeMode !== parsedAltitudeMode) {
         this._altitudeMode = parsedAltitudeMode;
         changedProperties.push('altitudeMode');
@@ -1239,7 +1323,10 @@ class VectorProperties {
     }
 
     if ('allowPicking' in options) {
-      const parsedAllowPicking = parseBoolean(options.allowPicking, defaultValues.allowPicking);
+      const parsedAllowPicking = parseBoolean(
+        options.allowPicking,
+        defaultValues.allowPicking,
+      );
       if (this._allowPicking !== parsedAllowPicking) {
         this._allowPicking = parsedAllowPicking;
         changedProperties.push('allowPicking');
@@ -1247,10 +1334,16 @@ class VectorProperties {
     }
 
     if ('classificationType' in options) {
-      const defaultClassificationType =
-        parseEnumKey(defaultValues.classificationType, ClassificationTypeCesium, undefined);
-      const parsedClassificationType =
-        parseEnumKey(options.classificationType, ClassificationTypeCesium, defaultClassificationType);
+      const defaultClassificationType = parseEnumKey(
+        defaultValues.classificationType,
+        ClassificationTypeCesium,
+        undefined,
+      );
+      const parsedClassificationType = parseEnumKey(
+        options.classificationType,
+        ClassificationTypeCesium,
+        defaultClassificationType,
+      );
       if (this._classificationType !== parsedClassificationType) {
         this._classificationType = parsedClassificationType;
         changedProperties.push('classificationType');
@@ -1258,7 +1351,10 @@ class VectorProperties {
     }
 
     if ('scaleByDistance' in options) {
-      const parsedScaleByDistance = parseNearFarScalar(options.scaleByDistance, undefined);
+      const parsedScaleByDistance = parseNearFarScalar(
+        options.scaleByDistance,
+        undefined,
+      );
       if (!NearFarScalar.equals(parsedScaleByDistance, this._scaleByDistance)) {
         this._scaleByDistance = parsedScaleByDistance;
         changedProperties.push('scaleByDistance');
@@ -1274,7 +1370,10 @@ class VectorProperties {
     }
 
     if ('heightAboveGround' in options) {
-      const parsedHeightAboveGround = parseNumber(options.heightAboveGround, defaultValues.heightAboveGround);
+      const parsedHeightAboveGround = parseNumber(
+        options.heightAboveGround,
+        defaultValues.heightAboveGround,
+      );
       if (parsedHeightAboveGround !== this._heightAboveGround) {
         this._heightAboveGround = parsedHeightAboveGround;
         changedProperties.push('heightAboveGround');
@@ -1290,7 +1389,10 @@ class VectorProperties {
     }
 
     if ('groundLevel' in options) {
-      const parsedGroundLevel = parseNumber(options.groundLevel, defaultValues.groundLevel);
+      const parsedGroundLevel = parseNumber(
+        options.groundLevel,
+        defaultValues.groundLevel,
+      );
       if (parsedGroundLevel !== this._groundLevel) {
         this._groundLevel = parsedGroundLevel;
         changedProperties.push('groundLevel');
@@ -1298,21 +1400,30 @@ class VectorProperties {
     }
 
     if ('extrudedHeight' in options) {
-      const parsedExtrudedHeight = parseNumber(options.extrudedHeight, defaultValues.extrudedHeight);
+      const parsedExtrudedHeight = parseNumber(
+        options.extrudedHeight,
+        defaultValues.extrudedHeight,
+      );
       if (parsedExtrudedHeight !== this._extrudedHeight) {
         this._extrudedHeight = parsedExtrudedHeight;
         changedProperties.push('extrudedHeight');
       }
     }
     if ('storeysAboveGround' in options) {
-      const parsedStoreysAboveGround = parseInteger(options.storeysAboveGround, defaultValues.storeysAboveGround);
+      const parsedStoreysAboveGround = parseInteger(
+        options.storeysAboveGround,
+        defaultValues.storeysAboveGround,
+      );
       if (parsedStoreysAboveGround !== this._storeysAboveGround) {
         this._storeysAboveGround = parsedStoreysAboveGround;
         changedProperties.push('storeysAboveGround');
       }
     }
     if ('storeysBelowGround' in options) {
-      const parsedStoreysBelowGround = parseInteger(options.storeysBelowGround, defaultValues.storeysBelowGround);
+      const parsedStoreysBelowGround = parseInteger(
+        options.storeysBelowGround,
+        defaultValues.storeysBelowGround,
+      );
       if (parsedStoreysBelowGround !== this._storeysBelowGround) {
         this._storeysBelowGround = parsedStoreysBelowGround;
         changedProperties.push('storeysBelowGround');
@@ -1320,25 +1431,42 @@ class VectorProperties {
     }
 
     if ('storeyHeightsAboveGround' in options) {
-      const parsedStoreyHeightsAboveGround =
-        parseStoreyHeights(options.storeyHeightsAboveGround, defaultValues.storeyHeightsAboveGround);
-      if (!deepEqual(parsedStoreyHeightsAboveGround, this._storeyHeightsAboveGround)) {
+      const parsedStoreyHeightsAboveGround = parseStoreyHeights(
+        options.storeyHeightsAboveGround,
+        defaultValues.storeyHeightsAboveGround,
+      );
+      if (
+        !deepEqual(
+          parsedStoreyHeightsAboveGround,
+          this._storeyHeightsAboveGround,
+        )
+      ) {
         this._storeyHeightsAboveGround = parsedStoreyHeightsAboveGround;
         changedProperties.push('storeyHeightsAboveGround');
       }
     }
 
     if ('storeyHeightsBelowGround' in options) {
-      const parsedStoreyHeightsBelowGround =
-        parseStoreyHeights(options.storeyHeightsBelowGround, defaultValues.storeyHeightsBelowGround);
-      if (!deepEqual(parsedStoreyHeightsBelowGround, this._storeyHeightsBelowGround)) {
+      const parsedStoreyHeightsBelowGround = parseStoreyHeights(
+        options.storeyHeightsBelowGround,
+        defaultValues.storeyHeightsBelowGround,
+      );
+      if (
+        !deepEqual(
+          parsedStoreyHeightsBelowGround,
+          this._storeyHeightsBelowGround,
+        )
+      ) {
         this._storeyHeightsBelowGround = parsedStoreyHeightsBelowGround;
         changedProperties.push('storeyHeightsBelowGround');
       }
     }
 
     if ('storeyHeight' in options) {
-      const parsedStoreyHeight = parseNumber(options.storeyHeight, defaultValues.storeyHeight);
+      const parsedStoreyHeight = parseNumber(
+        options.storeyHeight,
+        defaultValues.storeyHeight,
+      );
       if (parsedStoreyHeight !== this._storeyHeight) {
         getLogger().deprecate('storeyHeight', 'use storeyHeightAboveGround');
         this._storeyHeight = parsedStoreyHeight;
@@ -1354,7 +1482,10 @@ class VectorProperties {
     }
 
     if ('modelScaleX' in options) {
-      const parsedModelScaleX = parseNumber(options.modelScaleX, defaultValues.modelScaleX);
+      const parsedModelScaleX = parseNumber(
+        options.modelScaleX,
+        defaultValues.modelScaleX,
+      );
       if (parsedModelScaleX !== this._modelScaleX) {
         this._modelScaleX = parsedModelScaleX;
         changedProperties.push('modelScaleX');
@@ -1362,7 +1493,10 @@ class VectorProperties {
     }
 
     if ('modelScaleY' in options) {
-      const parsedModelScaleY = parseNumber(options.modelScaleY, defaultValues.modelScaleY);
+      const parsedModelScaleY = parseNumber(
+        options.modelScaleY,
+        defaultValues.modelScaleY,
+      );
       if (parsedModelScaleY !== this._modelScaleY) {
         this._modelScaleY = parsedModelScaleY;
         changedProperties.push('modelScaleY');
@@ -1370,7 +1504,10 @@ class VectorProperties {
     }
 
     if ('modelScaleZ' in options) {
-      const parsedModelScaleZ = parseNumber(options.modelScaleZ, defaultValues.modelScaleZ);
+      const parsedModelScaleZ = parseNumber(
+        options.modelScaleZ,
+        defaultValues.modelScaleZ,
+      );
       if (parsedModelScaleZ !== this._modelScaleZ) {
         this._modelScaleZ = parsedModelScaleZ;
         changedProperties.push('modelScaleZ');
@@ -1378,7 +1515,10 @@ class VectorProperties {
     }
 
     if ('modelHeading' in options) {
-      const parsedModelHeading = parseNumber(options.modelHeading, defaultValues.modelHeading);
+      const parsedModelHeading = parseNumber(
+        options.modelHeading,
+        defaultValues.modelHeading,
+      );
       if (parsedModelHeading !== this._modelHeading) {
         this._modelHeading = parsedModelHeading;
         changedProperties.push('modelHeading');
@@ -1386,7 +1526,10 @@ class VectorProperties {
     }
 
     if ('modelPitch' in options) {
-      const parsedModelPitch = parseNumber(options.modelPitch, defaultValues.modelPitch);
+      const parsedModelPitch = parseNumber(
+        options.modelPitch,
+        defaultValues.modelPitch,
+      );
       if (parsedModelPitch !== this._modelPitch) {
         this._modelPitch = parsedModelPitch;
         changedProperties.push('modelPitch');
@@ -1394,7 +1537,10 @@ class VectorProperties {
     }
 
     if ('modelRoll' in options) {
-      const parsedModelRoll = parseNumber(options.modelRoll, defaultValues.modelRoll);
+      const parsedModelRoll = parseNumber(
+        options.modelRoll,
+        defaultValues.modelRoll,
+      );
       if (parsedModelRoll !== this._modelRoll) {
         this._modelRoll = parsedModelRoll;
         changedProperties.push('modelRoll');
@@ -1450,22 +1596,37 @@ class VectorProperties {
    * @returns {VcsMeta}
    */
   getVcsMeta(defaultOptions) {
-    const defaultValues = defaultOptions || VectorProperties.getDefaultOptions();
+    const defaultValues =
+      defaultOptions || VectorProperties.getDefaultOptions();
     /** @type {VcsMeta} */
     const vcsMeta = {};
-    if (getAltitudeModeOptions(this.altitudeMode) !== defaultValues.altitudeMode) {
+    if (
+      getAltitudeModeOptions(this.altitudeMode) !== defaultValues.altitudeMode
+    ) {
       vcsMeta.altitudeMode = getAltitudeModeOptions(this.altitudeMode);
     }
     if (this.allowPicking !== defaultValues.allowPicking) {
       vcsMeta.allowPicking = this.allowPicking;
     }
-    if (getClassificationTypeOptions(this.classificationType) !== defaultValues.classificationType) {
-      vcsMeta.classificationType = getClassificationTypeOptions(this.classificationType);
+    if (
+      getClassificationTypeOptions(this.classificationType) !==
+      defaultValues.classificationType
+    ) {
+      vcsMeta.classificationType = getClassificationTypeOptions(
+        this.classificationType,
+      );
     }
-    if (!deepEqual(getNearFarValueOptions(this.scaleByDistance), defaultValues.scaleByDistance)) {
+    if (
+      !deepEqual(
+        getNearFarValueOptions(this.scaleByDistance),
+        defaultValues.scaleByDistance,
+      )
+    ) {
       vcsMeta.scaleByDistance = getNearFarValueOptions(this.scaleByDistance);
     }
-    if (!deepEqual(getCartesian3Options(this.eyeOffset), defaultValues.eyeOffset)) {
+    if (
+      !deepEqual(getCartesian3Options(this.eyeOffset), defaultValues.eyeOffset)
+    ) {
       vcsMeta.eyeOffset = getCartesian3Options(this.eyeOffset);
     }
     if (this.heightAboveGround !== defaultValues.heightAboveGround) {
@@ -1486,10 +1647,20 @@ class VectorProperties {
     if (this.storeysBelowGround !== defaultValues.storeysBelowGround) {
       vcsMeta.storeysBelowGround = this.storeysBelowGround;
     }
-    if (!deepEqual(this.storeyHeightsAboveGround, defaultValues.storeyHeightsAboveGround)) {
+    if (
+      !deepEqual(
+        this.storeyHeightsAboveGround,
+        defaultValues.storeyHeightsAboveGround,
+      )
+    ) {
       vcsMeta.storeyHeightsAboveGround = this.storeyHeightsAboveGround;
     }
-    if (!deepEqual(this.storeyHeightsBelowGround, defaultValues.storeyHeightsBelowGround)) {
+    if (
+      !deepEqual(
+        this.storeyHeightsBelowGround,
+        defaultValues.storeyHeightsBelowGround,
+      )
+    ) {
       vcsMeta.storeyHeightsBelowGround = this.storeyHeightsBelowGround;
     }
     if (this.storeyHeight !== defaultValues.storeyHeight) {

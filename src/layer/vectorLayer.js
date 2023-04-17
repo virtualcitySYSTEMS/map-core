@@ -4,9 +4,15 @@ import Feature from 'ol/Feature.js';
 import { v4 as uuidv4 } from 'uuid';
 import { check } from '@vcsuite/check';
 import { parseBoolean } from '@vcsuite/parsers';
-import Projection, { getDefaultProjection, mercatorProjection } from '../util/projection.js';
+import Projection, {
+  getDefaultProjection,
+  mercatorProjection,
+} from '../util/projection.js';
 import Layer, { vcsMetaVersion } from './layer.js';
-import VectorStyleItem, { defaultVectorStyle, vectorStyleSymbol } from '../style/vectorStyleItem.js';
+import VectorStyleItem, {
+  defaultVectorStyle,
+  vectorStyleSymbol,
+} from '../style/vectorStyleItem.js';
 import DeclarativeStyleItem from '../style/declarativeStyleItem.js';
 import writeStyle from '../style/writeStyle.js';
 import {
@@ -92,37 +98,49 @@ class VectorLayer extends FeatureLayer {
    * @readonly
    * @returns {string}
    */
-  static get className() { return 'VectorLayer'; }
+  static get className() {
+    return 'VectorLayer';
+  }
 
   /**
    * @returns {symbol}
    * @readonly
    */
-  static get alreadyTransformedToMercator() { return alreadyTransformedToMercator; }
+  static get alreadyTransformedToMercator() {
+    return alreadyTransformedToMercator;
+  }
 
   /**
    * @returns {symbol}
    * @readonly
    */
-  static get alreadyTransformedToImage() { return alreadyTransformedToImage; }
+  static get alreadyTransformedToImage() {
+    return alreadyTransformedToImage;
+  }
 
   /**
    * @returns {symbol}
    * @readonly
    */
-  static get obliqueGeometry() { return obliqueGeometry; }
+  static get obliqueGeometry() {
+    return obliqueGeometry;
+  }
 
   /**
    * @returns {symbol}
    * @readonly
    */
-  static get doNotTransform() { return doNotTransform; }
+  static get doNotTransform() {
+    return doNotTransform;
+  }
 
   /**
    * @returns {symbol}
    * @readonly
    */
-  static get originalFeatureSymbol() { return originalFeatureSymbol; }
+  static get originalFeatureSymbol() {
+    return originalFeatureSymbol;
+  }
 
   /**
    * @returns {VectorOptions}
@@ -161,21 +179,32 @@ class VectorLayer extends FeatureLayer {
     this.projection = new Projection(options.projection);
 
     /** @type {?number} */
-    this.maxResolution = options.maxResolution != null ? options.maxResolution : defaultOptions.maxResolution;
+    this.maxResolution =
+      options.maxResolution != null
+        ? options.maxResolution
+        : defaultOptions.maxResolution;
 
     /** @type {?number} */
-    this.minResolution = options.minResolution != null ? options.minResolution : defaultOptions.minResolution;
+    this.minResolution =
+      options.minResolution != null
+        ? options.minResolution
+        : defaultOptions.minResolution;
 
     /** @type {boolean} */
-    this.dontUseTerrainForOblique =
-      parseBoolean(options.dontUseTerrainForOblique, defaultOptions.dontUseTerrainForOblique);
+    this.dontUseTerrainForOblique = parseBoolean(
+      options.dontUseTerrainForOblique,
+      defaultOptions.dontUseTerrainForOblique,
+    );
 
     /** @type {import("@vcmap/core").VectorStyleItem} */
-    this.highlightStyle = /** @type {undefined} */ (defaultOptions.highlightStyle);
+    this.highlightStyle = /** @type {undefined} */ (
+      defaultOptions.highlightStyle
+    );
     if (options.highlightStyle) {
-      this.highlightStyle = options.highlightStyle instanceof VectorStyleItem ?
-        options.highlightStyle :
-        new VectorStyleItem(options.highlightStyle);
+      this.highlightStyle =
+        options.highlightStyle instanceof VectorStyleItem
+          ? options.highlightStyle
+          : new VectorStyleItem(options.highlightStyle);
     }
 
     /**
@@ -243,7 +272,9 @@ class VectorLayer extends FeatureLayer {
    * @type {boolean}
    * @api
    */
-  get visibility() { return this._visibility; }
+  get visibility() {
+    return this._visibility;
+  }
 
   /**
    * @param {boolean} visible
@@ -260,10 +291,9 @@ class VectorLayer extends FeatureLayer {
    * @returns {Promise<void>}
    */
   initialize() {
-    return super.initialize()
-      .then(() => {
-        this._trackStyleChanges();
-      });
+    return super.initialize().then(() => {
+      this._trackStyleChanges();
+    });
   }
 
   /**
@@ -299,7 +329,8 @@ class VectorLayer extends FeatureLayer {
    * Sets the meta values based on a {@link VcsMeta} Object. Does not carry over the style
    * @param {VcsMeta} vcsMeta
    */
-  setVcsMeta(vcsMeta) { // XXX what about the style?
+  setVcsMeta(vcsMeta) {
+    // XXX what about the style?
     this.vectorProperties.setVcsMeta(vcsMeta);
     if (vcsMeta.layerProperties) {
       Object.assign(this.properties, vcsMeta.layerProperties);
@@ -350,7 +381,10 @@ class VectorLayer extends FeatureLayer {
    * @returns {import("@vcmap/core").StyleItem}
    */
   getStyleOrDefaultStyle(styleOptions, defaultStyle) {
-    return super.getStyleOrDefaultStyle(styleOptions, defaultStyle || defaultVectorStyle.clone());
+    return super.getStyleOrDefaultStyle(
+      styleOptions,
+      defaultStyle || defaultVectorStyle.clone(),
+    );
   }
 
   /**
@@ -391,13 +425,15 @@ class VectorLayer extends FeatureLayer {
     }
 
     const isDeclarative = this.style instanceof DeclarativeStyleItem;
-    this._onStyleChangeRemover = this.style.styleChanged.addEventListener(() => {
-      this.getFeatures().forEach((f) => {
-        if (isDeclarative || !f[vectorStyleSymbol]) {
-          f.changed();
-        }
-      });
-    });
+    this._onStyleChangeRemover = this.style.styleChanged.addEventListener(
+      () => {
+        this.getFeatures().forEach((f) => {
+          if (isDeclarative || !f[vectorStyleSymbol]) {
+            f.changed();
+          }
+        });
+      },
+    );
   }
 
   /**
@@ -468,9 +504,13 @@ class VectorLayer extends FeatureLayer {
 
         return feature;
       })
-      .filter(f => f);
-    this.source.addFeatures(/** @type {Array<import("ol").Feature<import("ol/geom/Geometry").default>>} */ (toAdd));
-    return features.map(f => f.getId());
+      .filter((f) => f);
+    this.source.addFeatures(
+      /** @type {Array<import("ol").Feature<import("ol/geom/Geometry").default>>} */ (
+        toAdd
+      ),
+    );
+    return features.map((f) => f.getId());
   }
 
   /**
@@ -502,8 +542,7 @@ class VectorLayer extends FeatureLayer {
    */
   getFeaturesById(ids) {
     check(ids, [[String, Number]]);
-    return ids.map(id => this.getFeatureById(id))
-      .filter(f => f != null);
+    return ids.map((id) => this.getFeatureById(id)).filter((f) => f != null);
   }
 
   /**
@@ -582,7 +621,9 @@ class VectorLayer extends FeatureLayer {
       config.minResolution = this.minResolution;
     }
 
-    if (this.dontUseTerrainForOblique !== defaultOptions.dontUseTerrainForOblique) {
+    if (
+      this.dontUseTerrainForOblique !== defaultOptions.dontUseTerrainForOblique
+    ) {
       config.dontUseTerrainForOblique = this.dontUseTerrainForOblique;
     }
 

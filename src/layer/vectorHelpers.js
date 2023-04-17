@@ -18,21 +18,19 @@ export const globalHiderLastUpdated = Symbol('GlobalHiderLastUpdated');
  * @param {import("ol/source").Vector<import("ol/geom/Geometry").default>} source
  */
 export function updateFeatureVisibility(featureVisibility, source) {
-  Object.keys(featureVisibility.highlightedObjects)
-    .forEach((id) => {
-      const feat = source.getFeatureById(id);
-      if (feat && !featureVisibility.hasHighlightFeature(id, feat)) {
-        featureVisibility.addHighlightFeature(id, feat);
-      }
-    });
+  Object.keys(featureVisibility.highlightedObjects).forEach((id) => {
+    const feat = source.getFeatureById(id);
+    if (feat && !featureVisibility.hasHighlightFeature(id, feat)) {
+      featureVisibility.addHighlightFeature(id, feat);
+    }
+  });
 
-  Object.keys(featureVisibility.hiddenObjects)
-    .forEach((id) => {
-      const feat = source.getFeatureById(id);
-      if (feat && !featureVisibility.hasHiddenFeature(id, feat)) {
-        featureVisibility.addHiddenFeature(id, feat);
-      }
-    });
+  Object.keys(featureVisibility.hiddenObjects).forEach((id) => {
+    const feat = source.getFeatureById(id);
+    if (feat && !featureVisibility.hasHiddenFeature(id, feat)) {
+      featureVisibility.addHiddenFeature(id, feat);
+    }
+  });
   source[fvLastUpdated] = Date.now();
 }
 
@@ -41,13 +39,12 @@ export function updateFeatureVisibility(featureVisibility, source) {
  * @param {import("ol/source").Vector<import("ol/geom/Geometry").default>} source
  */
 export function updateGlobalHider(globalHider, source) {
-  Object.keys(globalHider.hiddenObjects)
-    .forEach((id) => {
-      const feat = source.getFeatureById(id);
-      if (feat && !globalHider.hasFeature(id, feat)) {
-        globalHider.addFeature(id, feat);
-      }
-    });
+  Object.keys(globalHider.hiddenObjects).forEach((id) => {
+    const feat = source.getFeatureById(id);
+    if (feat && !globalHider.hasFeature(id, feat)) {
+      globalHider.addFeature(id, feat);
+    }
+  });
   source[globalHiderLastUpdated] = Date.now();
 }
 
@@ -57,7 +54,11 @@ export function updateGlobalHider(globalHider, source) {
  * @param {import("@vcmap/core").GlobalHider} globalHider
  * @returns {Array<Function>}
  */
-export function synchronizeFeatureVisibilityWithSource(featureVisibility, source, globalHider) {
+export function synchronizeFeatureVisibilityWithSource(
+  featureVisibility,
+  source,
+  globalHider,
+) {
   const sourceListener = source.on('addfeature', ({ feature }) => {
     const id = feature.getId();
     if (featureVisibility.highlightedObjects[id]) {
@@ -76,11 +77,17 @@ export function synchronizeFeatureVisibilityWithSource(featureVisibility, source
     source[globalHiderLastUpdated] = now;
   });
 
-  if (!source[fvLastUpdated] || source[fvLastUpdated] < featureVisibility.lastUpdated) {
+  if (
+    !source[fvLastUpdated] ||
+    source[fvLastUpdated] < featureVisibility.lastUpdated
+  ) {
     updateFeatureVisibility(featureVisibility, source);
   }
 
-  if (!source[globalHiderLastUpdated] || source[globalHiderLastUpdated] < featureVisibility.lastUpdated) {
+  if (
+    !source[globalHiderLastUpdated] ||
+    source[globalHiderLastUpdated] < featureVisibility.lastUpdated
+  ) {
     updateGlobalHider(globalHider, source);
   }
 
@@ -115,6 +122,8 @@ export function synchronizeFeatureVisibilityWithSource(featureVisibility, source
         source[globalHiderLastUpdated] = Date.now();
       }
     }),
-    () => { unByKey(sourceListener); },
+    () => {
+      unByKey(sourceListener);
+    },
   ];
 }

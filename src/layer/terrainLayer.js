@@ -1,6 +1,9 @@
 import { parseBoolean } from '@vcsuite/parsers';
 import Layer from './layer.js';
-import { getHeightFromTerrainProvider, getTerrainProviderForUrl } from './terrainHelpers.js';
+import {
+  getHeightFromTerrainProvider,
+  getTerrainProviderForUrl,
+} from './terrainHelpers.js';
 import CesiumMap from '../map/cesiumMap.js';
 import TerrainCesiumImpl from './cesium/terrainCesiumImpl.js';
 import { layerClassRegistry } from '../classRegistry.js';
@@ -25,7 +28,9 @@ import { layerClassRegistry } from '../classRegistry.js';
  * @api stable
  */
 class TerrainLayer extends Layer {
-  static get className() { return 'TerrainLayer'; }
+  static get className() {
+    return 'TerrainLayer';
+  }
 
   /**
    * @returns {TerrainOptions}
@@ -45,21 +50,25 @@ class TerrainLayer extends Layer {
     super(options);
     const defaultOptions = TerrainLayer.getDefaultOptions();
 
-    this._supportedMaps = [
-      CesiumMap.className,
-    ];
+    this._supportedMaps = [CesiumMap.className];
 
     /**
      * @type {boolean}
      * @api
      */
-    this.requestVertexNormals = parseBoolean(options.requestVertexNormals, defaultOptions.requestVertexNormals);
+    this.requestVertexNormals = parseBoolean(
+      options.requestVertexNormals,
+      defaultOptions.requestVertexNormals,
+    );
 
     /**
      * @type {boolean}
      * @api
      */
-    this.requestWaterMask = parseBoolean(options.requestWaterMask, defaultOptions.requestWaterMask);
+    this.requestWaterMask = parseBoolean(
+      options.requestWaterMask,
+      defaultOptions.requestWaterMask,
+    );
   }
 
   /**

@@ -15,7 +15,9 @@ import { getLogger } from '@vcsuite/logger';
  * @api stable
  */
 class VcsObject {
-  static get className() { return 'VcsObject'; }
+  static get className() {
+    return 'VcsObject';
+  }
 
   /**
    * @param {VcsObjectOptions} options
@@ -28,7 +30,6 @@ class VcsObject {
      * @readonly
      */
     this.name = options.name || uuidv4();
-
 
     /**
      * @type {Object}

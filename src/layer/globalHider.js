@@ -65,7 +65,10 @@ class GlobalHider {
 
     if (updatedIds.length > 0) {
       this.lastUpdated = Date.now();
-      this.changed.raiseEvent({ action: FeatureVisibilityAction.HIDE, ids: updatedIds });
+      this.changed.raiseEvent({
+        action: FeatureVisibilityAction.HIDE,
+        ids: updatedIds,
+      });
     }
   }
 
@@ -95,7 +98,10 @@ class GlobalHider {
     });
 
     if (updatedIds.length > 0) {
-      this.changed.raiseEvent({ action: FeatureVisibilityAction.SHOW, ids: updatedIds });
+      this.changed.raiseEvent({
+        action: FeatureVisibilityAction.SHOW,
+        ids: updatedIds,
+      });
     }
   }
 
@@ -119,12 +125,16 @@ class GlobalHider {
    * @returns {boolean}
    */
   hasFeature(uuid, feature) {
-    return this._hiddenObjectFeatures[uuid] ? this._hiddenObjectFeatures[uuid].has(feature) : false;
+    return this._hiddenObjectFeatures[uuid]
+      ? this._hiddenObjectFeatures[uuid].has(feature)
+      : false;
   }
 
   destroy() {
     this.hiddenObjects = {};
-    Object.values(this._hiddenObjectFeatures).forEach((set) => { set.clear(); });
+    Object.values(this._hiddenObjectFeatures).forEach((set) => {
+      set.clear();
+    });
     this._hiddenObjectFeatures = {};
     this.changed.destroy();
   }

@@ -2,7 +2,9 @@ import { Cartographic, Ellipsoid } from '@vcmap-cesium/engine';
 import nock from 'nock';
 import { setCesiumMap } from '../helpers/cesiumHelpers.js';
 import VcsApp from '../../../src/vcsApp.js';
-import CameraLimiter, { CameraLimiterMode } from '../../../src/map/cameraLimiter.js';
+import CameraLimiter, {
+  CameraLimiterMode,
+} from '../../../src/map/cameraLimiter.js';
 import { setTerrainServer } from '../helpers/terrain/terrainData.js';
 import Projection from '../../../src/util/projection.js';
 import { mercatorCoordinates } from '../helpers/obliqueHelpers.js';
@@ -47,16 +49,24 @@ describe('maps.CameraLimiter', () => {
       });
       const position = Projection.mercatorToWgs84(mercatorCoordinates);
       const cameraCartographic = Cartographic.fromDegrees(...position);
-      Cartographic.toCartesian(cameraCartographic, Ellipsoid.WGS84, camera.position);
+      Cartographic.toCartesian(
+        cameraCartographic,
+        Ellipsoid.WGS84,
+        camera.position,
+      );
       sampleTerrain = sandbox.spy(cameraLimiter, '_limitWithLevel');
-      sampleTerrainMostDetailed = sandbox.spy(cameraLimiter, '_limitMostDetailed');
+      sampleTerrainMostDetailed = sandbox.spy(
+        cameraLimiter,
+        '_limitMostDetailed',
+      );
     });
 
     it('should clamp the height, if the terrain provider is null', async () => {
       cameraLimiter.limit = 1300;
       cameraLimiter.terrainUrl = null;
       await cameraLimiter.limitCamera(camera);
-      expect(Cartographic.fromCartesian(camera.position)).to.have.property('height')
+      expect(Cartographic.fromCartesian(camera.position))
+        .to.have.property('height')
         .and.to.be.closeTo(1300, 0.00001);
       expect(sampleTerrain).to.not.have.been.called;
       expect(sampleTerrainMostDetailed).to.not.have.been.called;
@@ -85,7 +95,8 @@ describe('maps.CameraLimiter', () => {
     it('should clamp the camera height based on last updated terrainHeight', async () => {
       cameraLimiter._terrainHeight = 2100;
       await cameraLimiter.limitCamera(camera);
-      expect(Cartographic.fromCartesian(camera.position)).to.have.property('height')
+      expect(Cartographic.fromCartesian(camera.position))
+        .to.have.property('height')
         .and.to.be.closeTo(2300, 0.00001);
     });
   });
@@ -94,9 +105,14 @@ describe('maps.CameraLimiter', () => {
     it('should clamp the camera height', async () => {
       const cameraLimiter = new CameraLimiter({});
       const cameraCartographic = new Cartographic(0, 0, 100);
-      Cartographic.toCartesian(cameraCartographic, Ellipsoid.WGS84, camera.position);
+      Cartographic.toCartesian(
+        cameraCartographic,
+        Ellipsoid.WGS84,
+        camera.position,
+      );
       await cameraLimiter.limitCamera(camera);
-      expect(Cartographic.fromCartesian(camera.position)).to.have.property('height')
+      expect(Cartographic.fromCartesian(camera.position))
+        .to.have.property('height')
         .and.to.be.closeTo(200, 0.00001);
     });
   });
@@ -128,7 +144,10 @@ describe('maps.CameraLimiter', () => {
       });
 
       it('should configure terrainUrl', () => {
-        expect(outputConfig).to.have.property('terrainUrl', inputConfig.terrainUrl);
+        expect(outputConfig).to.have.property(
+          'terrainUrl',
+          inputConfig.terrainUrl,
+        );
       });
 
       it('should configure level', () => {

@@ -15,19 +15,18 @@ describe('vcsApp', () => {
       let added;
 
       before(async () => {
-        startingVp = new Viewpoint({ name: 'foo', groundPosition: [13, 52], distance: 200 });
+        startingVp = new Viewpoint({
+          name: 'foo',
+          groundPosition: [13, 52],
+          distance: 200,
+        });
         module = new VcsModule({
           layers: [
             new VectorLayer({ name: 'foo' }).toJSON(),
             new VectorLayer({ name: 'bar', activeOnStartup: true }).toJSON(),
           ],
-          viewpoints: [
-            new Viewpoint({}).toJSON(),
-            startingVp.toJSON(),
-          ],
-          maps: [
-            new OpenlayersMap({ name: 'foo' }).toJSON(),
-          ],
+          viewpoints: [new Viewpoint({}).toJSON(), startingVp.toJSON()],
+          maps: [new OpenlayersMap({ name: 'foo' }).toJSON()],
           startingViewpointName: 'foo',
           startingMapName: 'foo',
         });
@@ -81,19 +80,18 @@ describe('vcsApp', () => {
       let added;
 
       before(async () => {
-        startingVp = new Viewpoint({ name: 'foo', groundPosition: [13, 52], distance: 200 });
+        startingVp = new Viewpoint({
+          name: 'foo',
+          groundPosition: [13, 52],
+          distance: 200,
+        });
         const initialModule = new VcsModule({
           layers: [
             new VectorLayer({ name: 'foo' }).toJSON(),
             new VectorLayer({ name: 'bar', activeOnStartup: true }).toJSON(),
           ],
-          viewpoints: [
-            new Viewpoint({}).toJSON(),
-            startingVp.toJSON(),
-          ],
-          maps: [
-            new OpenlayersMap({ name: 'foo' }).toJSON(),
-          ],
+          viewpoints: [new Viewpoint({}).toJSON(), startingVp.toJSON()],
+          maps: [new OpenlayersMap({ name: 'foo' }).toJSON()],
           startingViewpointName: 'foo',
           startingMapName: 'foo',
         });
@@ -150,16 +148,17 @@ describe('vcsApp', () => {
       let startingVp;
 
       before(async () => {
-        startingVp = new Viewpoint({ name: 'foo', groundPosition: [13, 52], distance: 200 });
+        startingVp = new Viewpoint({
+          name: 'foo',
+          groundPosition: [13, 52],
+          distance: 200,
+        });
         module = new VcsModule({
           layers: [
             new VectorLayer({ name: 'foo' }).toJSON(),
             new VectorLayer({ name: 'bar', activeOnStartup: true }).toJSON(),
           ],
-          viewpoints: [
-            new Viewpoint({}).toJSON(),
-            startingVp.toJSON(),
-          ],
+          viewpoints: [new Viewpoint({}).toJSON(), startingVp.toJSON()],
           maps: [
             new OpenlayersMap({ name: 'foo' }).toJSON(),
             new OpenlayersMap({ name: 'bar' }).toJSON(),
@@ -189,19 +188,18 @@ describe('vcsApp', () => {
       let added;
 
       before(async () => {
-        startingVp = new Viewpoint({ name: 'foo', groundPosition: [13, 52], distance: 200 });
+        startingVp = new Viewpoint({
+          name: 'foo',
+          groundPosition: [13, 52],
+          distance: 200,
+        });
         module = new VcsModule({
           layers: [
             new VectorLayer({ name: 'foo' }).toJSON(),
             new VectorLayer({ name: 'bar', activeOnStartup: true }).toJSON(),
           ],
-          viewpoints: [
-            new Viewpoint({}).toJSON(),
-            startingVp.toJSON(),
-          ],
-          maps: [
-            new OpenlayersMap({ name: 'foo' }).toJSON(),
-          ],
+          viewpoints: [new Viewpoint({}).toJSON(), startingVp.toJSON()],
+          maps: [new OpenlayersMap({ name: 'foo' }).toJSON()],
           startingViewpointName: 'foo',
           startingMapName: 'foo',
         });
@@ -258,19 +256,18 @@ describe('vcsApp', () => {
       let removed;
 
       before(async () => {
-        startingVp = new Viewpoint({ name: 'foo', groundPosition: [13, 52], distance: 200 });
+        startingVp = new Viewpoint({
+          name: 'foo',
+          groundPosition: [13, 52],
+          distance: 200,
+        });
         module = new VcsModule({
           layers: [
             new VectorLayer({ name: 'foo' }).toJSON(),
             new VectorLayer({ name: 'bar', activeOnStartup: true }).toJSON(),
           ],
-          viewpoints: [
-            new Viewpoint({}).toJSON(),
-            startingVp.toJSON(),
-          ],
-          maps: [
-            new OpenlayersMap({ name: 'foo' }).toJSON(),
-          ],
+          viewpoints: [new Viewpoint({}).toJSON(), startingVp.toJSON()],
+          maps: [new OpenlayersMap({ name: 'foo' }).toJSON()],
           startingViewpointName: 'foo',
           startingMapName: 'foo',
         });
@@ -309,19 +306,18 @@ describe('vcsApp', () => {
       let removed;
 
       before(async () => {
-        startingVp = new Viewpoint({ name: 'foo', groundPosition: [13, 52], distance: 200 });
+        startingVp = new Viewpoint({
+          name: 'foo',
+          groundPosition: [13, 52],
+          distance: 200,
+        });
         module = new VcsModule({
           layers: [
             new VectorLayer({ name: 'foo' }).toJSON(),
             new VectorLayer({ name: 'bar', activeOnStartup: true }).toJSON(),
           ],
-          viewpoints: [
-            new Viewpoint({}).toJSON(),
-            startingVp.toJSON(),
-          ],
-          maps: [
-            new OpenlayersMap({ name: 'foo' }).toJSON(),
-          ],
+          viewpoints: [new Viewpoint({}).toJSON(), startingVp.toJSON()],
+          maps: [new OpenlayersMap({ name: 'foo' }).toJSON()],
           startingViewpointName: 'foo',
           startingMapName: 'foo',
         });

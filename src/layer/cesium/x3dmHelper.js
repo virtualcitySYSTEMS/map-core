@@ -17,6 +17,9 @@ export default function getJSONObjectFromObject(feature) {
     JSONObject.gmlId = JSONObject.id;
   }
   // @ts-ignore
-  JSONObject.clickedPosition = feature.clickedPosition ? feature.clickedPosition : {};
+  JSONObject.clickedPosition = feature.clickedPosition
+    ? // @ts-ignore
+      feature.clickedPosition
+    : {};
   return JSONObject;
 }

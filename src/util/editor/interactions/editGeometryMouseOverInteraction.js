@@ -1,11 +1,15 @@
 import { mouseOverSymbol, vertexSymbol } from '../editorSymbols.js';
 import AbstractInteraction from '../../../interaction/abstractInteraction.js';
-import { ModificationKeyType, EventType } from '../../../interaction/interactionType.js';
+import {
+  ModificationKeyType,
+  EventType,
+} from '../../../interaction/interactionType.js';
 
 /**
  * @type {Object}
  */
-export const cursorMap = { // TODO these can now be designed custom. IE11 no linger required
+export const cursorMap = {
+  // TODO these can now be designed custom. IE11 no linger required
   auto: 'auto',
   scaleNESW: 'nesw-resize',
   scaleNWSE: 'nwse-resize',
@@ -48,7 +52,8 @@ class EditGeometryMouseOverInteraction extends AbstractInteraction {
    */
   async pipe(event) {
     if (event.feature && event.feature[vertexSymbol]) {
-      this._currentVertex = /** @type {import("ol").Feature|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature} */
+      this._currentVertex =
+        /** @type {import("ol").Feature|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature} */
         (event.feature);
     } else {
       this._currentVertex = null;

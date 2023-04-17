@@ -16,8 +16,14 @@ import { check } from '@vcsuite/check';
  * @typedef {function(Array<number>, Array<number>=, number=): Array<number>} CorrectTransformFunction
  */
 
-export const wgs84ToMercatorTransformer = /** @type {CorrectTransformFunction} */ (getTransform('EPSG:4326', 'EPSG:3857'));
-export const mercatorToWgs84Transformer = /** @type {CorrectTransformFunction} */ (getTransform('EPSG:3857', 'EPSG:4326'));
+export const wgs84ToMercatorTransformer =
+  /** @type {CorrectTransformFunction} */ (
+    getTransform('EPSG:4326', 'EPSG:3857')
+  );
+export const mercatorToWgs84Transformer =
+  /** @type {CorrectTransformFunction} */ (
+    getTransform('EPSG:3857', 'EPSG:4326')
+  );
 
 /**
  * @type {ProjectionOptions}
@@ -123,7 +129,9 @@ class Projection {
   /**
    * @returns {string}
    */
-  static get className() { return 'Projection'; }
+  static get className() {
+    return 'Projection';
+  }
 
   /**
    * @param {ProjectionOptions} options
@@ -293,7 +301,11 @@ class Projection {
    * @api
    */
   static mercatorToWgs84(coords, inPlace) {
-    return mercatorToWgs84Transformer(coords, inPlace ? coords : undefined, coords.length);
+    return mercatorToWgs84Transformer(
+      coords,
+      inPlace ? coords : undefined,
+      coords.length,
+    );
   }
 
   /**
@@ -304,7 +316,11 @@ class Projection {
    * @api
    */
   static wgs84ToMercator(coords, inPlace) {
-    return wgs84ToMercatorTransformer(coords, inPlace ? coords : undefined, coords.length);
+    return wgs84ToMercatorTransformer(
+      coords,
+      inPlace ? coords : undefined,
+      coords.length,
+    );
   }
 
   /**

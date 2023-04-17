@@ -57,7 +57,10 @@ describe('FeatureLayer', () => {
     it('should set an ol style on a styleItem without overwritting the default style', () => {
       const style = new Style({ fill: new Fill({ color: [0, 0, 255, 1] }) });
       featureLayer.setStyle(style);
-      expect(featureLayer).to.have.property('style').and.to.be.an.instanceOf(VectorStyleItem).and.to.not.equal(featureLayer.defaultStyle);
+      expect(featureLayer)
+        .to.have.property('style')
+        .and.to.be.an.instanceOf(VectorStyleItem)
+        .and.to.not.equal(featureLayer.defaultStyle);
       expect(featureLayer.style.fillColor).to.have.members([0, 0, 255, 1]);
     });
 
@@ -130,7 +133,8 @@ describe('FeatureLayer', () => {
       });
 
       it('should set the style options', () => {
-        expect(outputConfig).to.have.property('style')
+        expect(outputConfig)
+          .to.have.property('style')
           .and.to.eql({
             type: VectorStyleItem.className,
             name: 'style',
@@ -141,7 +145,10 @@ describe('FeatureLayer', () => {
       });
 
       it('should configure splitDirection', () => {
-        expect(outputConfig).to.have.property('splitDirection', inputConfig.splitDirection);
+        expect(outputConfig).to.have.property(
+          'splitDirection',
+          inputConfig.splitDirection,
+        );
       });
     });
   });

@@ -26,7 +26,9 @@ import { wgs84Projection } from '../util/projection.js';
  * @api stable
  */
 class SingleImageLayer extends RasterLayer {
-  static get className() { return 'SingleImageLayer'; }
+  static get className() {
+    return 'SingleImageLayer';
+  }
 
   /**
    * @returns {SingleImageOptions}
@@ -48,17 +50,16 @@ class SingleImageLayer extends RasterLayer {
     this.credit = options.credit || defaultOptions.credit;
 
     if (!this.extent.isValid()) {
-      this.getLogger().warning(`layer ${this.name} was constructed with an invalid extent, defaulting to global extent`);
+      this.getLogger().warning(
+        `layer ${this.name} was constructed with an invalid extent, defaulting to global extent`,
+      );
       this.extent = new Extent({
         projection: wgs84Projection.toJSON(),
         coordinates: [-180, -90, 180, 90],
       });
     }
 
-    this._supportedMaps = [
-      CesiumMap.className,
-      OpenlayersMap.className,
-    ];
+    this._supportedMaps = [CesiumMap.className, OpenlayersMap.className];
   }
 
   /**
@@ -79,7 +80,9 @@ class SingleImageLayer extends RasterLayer {
     if (map instanceof CesiumMap) {
       return [new SingleImageCesiumImpl(map, this.getImplementationOptions())];
     } else if (map instanceof OpenlayersMap) {
-      return [new SingleImageOpenlayersImpl(map, this.getImplementationOptions())];
+      return [
+        new SingleImageOpenlayersImpl(map, this.getImplementationOptions()),
+      ];
     }
     return [];
   }

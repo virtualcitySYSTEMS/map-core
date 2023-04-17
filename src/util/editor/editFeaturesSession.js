@@ -1,8 +1,17 @@
-import { extend as extendExtent, createEmpty as createEmptyExtent, getCenter, isEmpty } from 'ol/extent.js';
+import {
+  extend as extendExtent,
+  createEmpty as createEmptyExtent,
+  getCenter,
+  isEmpty,
+} from 'ol/extent.js';
 import { getLogger } from '@vcsuite/logger';
 
 import VcsEvent from '../../vcsEvent.js';
-import { setupInteractionChain, SessionType, setupScratchLayer } from './editorSessionHelpers.js';
+import {
+  setupInteractionChain,
+  SessionType,
+  setupScratchLayer,
+} from './editorSessionHelpers.js';
 import createTransformationHandler from './transformation/transformationHandler.js';
 import { TransformationMode } from './transformation/transformationTypes.js';
 import MapInteractionController from './interactions/mapInteractionController.js';
@@ -72,7 +81,6 @@ function startEditFeaturesSession(
   layer,
   interactionId,
   initialMode = TransformationMode.TRANSLATE,
-
 ) {
   /**
    * @type {VcsEvent<void>}
@@ -92,11 +100,15 @@ function startEditFeaturesSession(
   const allowPickingMap = new Map();
   let modificationKey;
   /** Callback to remove the modifier changed listener. */
-  const modifierChangedListener = app.maps.eventHandler.modifierChanged.addEventListener((mod) => { // CTRL is used to modify the current selection set, we must allow picking again so you can deselect a feature
-    modificationKey = mod;
-    const allowPicking = modificationKey === ModificationKeyType.CTRL;
-    currentFeatures.forEach((feature) => { feature.set('olcs_allowPicking', allowPicking); });
-  });
+  const modifierChangedListener =
+    app.maps.eventHandler.modifierChanged.addEventListener((mod) => {
+      // CTRL is used to modify the current selection set, we must allow picking again so you can deselect a feature
+      modificationKey = mod;
+      const allowPicking = modificationKey === ModificationKeyType.CTRL;
+      currentFeatures.forEach((feature) => {
+        feature.set('olcs_allowPicking', allowPicking);
+      });
+    });
 
   const scratchLayer = setupScratchLayer(app.layers);
 
@@ -109,7 +121,9 @@ function startEditFeaturesSession(
   const mouseOverInteraction = new EditFeaturesMouseOverInteraction();
   interactionChain.addInteraction(mouseOverInteraction);
 
-  interactionChain.addInteraction(new EnsureHandlerSelectionInteraction(currentFeatures));
+  interactionChain.addInteraction(
+    new EnsureHandlerSelectionInteraction(currentFeatures),
+  );
 
   const mapInteractionController = new MapInteractionController();
   interactionChain.addInteraction(mapInteractionController);
@@ -152,7 +166,8 @@ function startEditFeaturesSession(
 
   const scale = (sx, sy) => {
     let center = transformationHandler?.center;
-    if (!center) { // XXX copy paste
+    if (!center) {
+      // XXX copy paste
       const extent = createEmptyExtent();
       currentFeatures.forEach((f) => {
         extendExtent(extent, f.getGeometry().getExtent());
@@ -224,8 +239,13 @@ function startEditFeaturesSession(
   const modeChanged = new VcsEvent();
   const setMode = (newMode) => {
     if (newMode !== mode) {
-      if (newMode === TransformationMode.EXTRUDE && !(app.maps.activeMap instanceof CesiumMap)) {
-        getLogger('EditFeaturesSession').warning('Cannot set extrude mode if map is not a CesiumMap');
+      if (
+        newMode === TransformationMode.EXTRUDE &&
+        !(app.maps.activeMap instanceof CesiumMap)
+      ) {
+        getLogger('EditFeaturesSession').warning(
+          'Cannot set extrude mode if map is not a CesiumMap',
+        );
       } else {
         mode = newMode;
         createTransformations();
@@ -261,7 +281,9 @@ function startEditFeaturesSession(
     obliqueImageChangedListener();
     mapChangedListener();
     modifierChangedListener();
-    currentFeatures.forEach(feature => clearAllowPicking(feature, allowPickingMap));
+    currentFeatures.forEach((feature) =>
+      clearAllowPicking(feature, allowPickingMap),
+    );
     allowPickingMap.clear();
     app.layers.remove(scratchLayer);
     modeChanged.destroy();
@@ -284,10 +306,14 @@ function startEditFeaturesSession(
     translate,
     scale,
     setFeatures(features) {
-      currentFeatures.forEach(feature => clearAllowPicking(feature, allowPickingMap));
+      currentFeatures.forEach((feature) =>
+        clearAllowPicking(feature, allowPickingMap),
+      );
       currentFeatures.length = 0;
       currentFeatures.push(...features);
-      currentFeatures.forEach(feature => setAllowPicking(feature, allowPickingMap, modificationKey));
+      currentFeatures.forEach((feature) =>
+        setAllowPicking(feature, allowPickingMap, modificationKey),
+      );
       transformationHandler?.setFeatures(features);
     },
     get features() {

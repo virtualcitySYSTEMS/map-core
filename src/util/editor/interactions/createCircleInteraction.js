@@ -61,7 +61,11 @@ class CreateCircleInteraction extends AbstractInteraction {
    */
   async pipe(event) {
     if (event.type & EventType.CLICKMOVE && this._geometry) {
-      this._lastCoordinate.splice(0, event.positionOrPixel.length, ...event.positionOrPixel);
+      this._lastCoordinate.splice(
+        0,
+        event.positionOrPixel.length,
+        ...event.positionOrPixel,
+      );
       this._setCoordinates();
     }
 
@@ -71,7 +75,8 @@ class CreateCircleInteraction extends AbstractInteraction {
       } else {
         this._geometry = new Circle(event.positionOrPixel, 20, 'XYZ');
         this._geometry[actuallyIsCircle] = event.map instanceof ObliqueMap;
-        this._geometry[alreadyTransformedToImage] = event.map instanceof ObliqueMap;
+        this._geometry[alreadyTransformedToImage] =
+          event.map instanceof ObliqueMap;
         this.created.raiseEvent(this._geometry);
         this._coordinates = this._geometry.getCoordinates();
         this._lastCoordinate = this._coordinates[1];

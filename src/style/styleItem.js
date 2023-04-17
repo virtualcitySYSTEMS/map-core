@@ -1,4 +1,7 @@
-import { Cesium3DTileStyle, Cesium3DTileColorBlendMode } from '@vcmap-cesium/engine';
+import {
+  Cesium3DTileStyle,
+  Cesium3DTileColorBlendMode,
+} from '@vcmap-cesium/engine';
 import deepEqual from 'fast-deep-equal';
 
 import { parseEnumValue } from '@vcsuite/parsers';
@@ -26,7 +29,9 @@ import { styleClassRegistry } from '../classRegistry.js';
  * @extends {VcsObject}
  */
 class StyleItem extends VcsObject {
-  static get className() { return 'StyleItem'; }
+  static get className() {
+    return 'StyleItem';
+  }
 
   /**
    * @param {StyleItemOptions} options
@@ -52,9 +57,14 @@ class StyleItem extends VcsObject {
     this.styleChanged = new VcsEvent();
 
     /** @type {import("@vcmap-cesium/engine").Cesium3DTileColorBlendMode} */
-    this.colorBlendMode = /** @type {import("@vcmap-cesium/engine").Cesium3DTileColorBlendMode} */(parseEnumValue(
-      options.colorBlendMode, Cesium3DTileColorBlendMode, Cesium3DTileColorBlendMode.HIGHLIGHT,
-    ));
+    this.colorBlendMode =
+      /** @type {import("@vcmap-cesium/engine").Cesium3DTileColorBlendMode} */ (
+        parseEnumValue(
+          options.colorBlendMode,
+          Cesium3DTileColorBlendMode,
+          Cesium3DTileColorBlendMode.HIGHLIGHT,
+        )
+      );
 
     /**
      * @type {import("ol/style/Style").default|import("ol/style/Style").StyleFunction}
@@ -68,12 +78,16 @@ class StyleItem extends VcsObject {
    * @type {import("ol/style/Style").default|import("ol/style/Style").StyleFunction}
    * @api
    */
-  get style() { return this._style; }
+  get style() {
+    return this._style;
+  }
 
   /**
    * @param {import("ol/style/Style").default|import("ol/style/Style").StyleFunction} style
    */
-  set style(style) { this._style = style; }
+  set style(style) {
+    this._style = style;
+  }
 
   /**
    * @param {string} className
@@ -81,8 +95,10 @@ class StyleItem extends VcsObject {
    * @todo redundant, remove
    */
   isSupported(className) {
-    return this.supportedLayers.length === 0 ||
-      this.supportedLayers.indexOf(className) > -1;
+    return (
+      this.supportedLayers.length === 0 ||
+      this.supportedLayers.indexOf(className) > -1
+    );
   }
 
   /**
@@ -105,7 +121,9 @@ class StyleItem extends VcsObject {
    * @api
    */
   // eslint-disable-next-line class-methods-use-this
-  clone(result) { return result; }
+  clone(result) {
+    return result;
+  }
 
   /**
    * @param {StyleItem} styleItem

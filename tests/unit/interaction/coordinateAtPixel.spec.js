@@ -20,7 +20,11 @@ describe('CoordinateAtPixel', () => {
     it('should transform image coordinates to wgs84, and project to mercator', async () => {
       const map = await setObliqueMap(app);
       const position = [1, 1, 1];
-      const event = await CoordinateAtPixel.obliqueHandler({ map, position, type: EventType.CLICK });
+      const event = await CoordinateAtPixel.obliqueHandler({
+        map,
+        position,
+        type: EventType.CLICK,
+      });
       expect(event)
         .to.have.property('position')
         .and.to.have.members([1488844.5237925982, 6891361.880123189, 0]);
@@ -33,10 +37,12 @@ describe('CoordinateAtPixel', () => {
     it('should stop propagation if no currentImage exists', async () => {
       const map = await getObliqueMap();
       const position = [1, 1, 1];
-      const event = await CoordinateAtPixel.obliqueHandler({ map, position, type: EventType.CLICK });
-      expect(event)
-        .to.have.property('stopPropagation')
-        .and.to.be.true;
+      const event = await CoordinateAtPixel.obliqueHandler({
+        map,
+        position,
+        type: EventType.CLICK,
+      });
+      expect(event).to.have.property('stopPropagation').and.to.be.true;
       map.destroy();
     });
   });
@@ -52,20 +58,26 @@ describe('CoordinateAtPixel', () => {
 
     it('should use exact coordinate transformation on CLICK', async () => {
       const position = [1, 1, 1];
-      const event = await CoordinateAtPixel.obliqueHandler({ map, position, type: EventType.CLICK });
+      const event = await CoordinateAtPixel.obliqueHandler({
+        map,
+        position,
+        type: EventType.CLICK,
+      });
       expect(event)
         .to.have.property('obliqueParameters')
-        .and.to.have.property('estimate')
-        .and.to.be.false;
+        .and.to.have.property('estimate').and.to.be.false;
     });
 
     it('should use estimated coordinate transformation on MOVE', async () => {
       const position = [1, 1, 1];
-      const event = await CoordinateAtPixel.obliqueHandler({ map, position, type: EventType.MOVE });
+      const event = await CoordinateAtPixel.obliqueHandler({
+        map,
+        position,
+        type: EventType.MOVE,
+      });
       expect(event)
         .to.have.property('obliqueParameters')
-        .and.to.have.property('estimate')
-        .and.to.be.true;
+        .and.to.have.property('estimate').and.to.be.true;
     });
   });
 });

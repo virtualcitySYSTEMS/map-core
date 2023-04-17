@@ -32,6 +32,7 @@ export const obliqueViewDirectionNames = {
  * @returns {string|undefined}
  */
 export function getDirectionName(direction) {
-  return Object.keys(obliqueViewDirectionNames)
-    .find((name => obliqueViewDirectionNames[name] === direction));
+  return Object.keys(obliqueViewDirectionNames).find(
+    (name) => obliqueViewDirectionNames[name] === direction,
+  );
 }

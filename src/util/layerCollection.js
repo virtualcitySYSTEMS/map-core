@@ -95,7 +95,9 @@ class LayerCollection extends IndexedCollection {
    * @type {symbol}
    * @readonly
    */
-  get zIndexSymbol() { return this._zIndexSymbol; }
+  get zIndexSymbol() {
+    return this._zIndexSymbol;
+  }
 
   /**
    * The current global hider of these layers
@@ -157,15 +159,20 @@ class LayerCollection extends IndexedCollection {
       this._zIndexChanged(layer);
     });
 
-    const exclusiveGroupsListener = layer.exclusiveGroupsChanged.addEventListener(() => {
-      this.exclusiveManager.handleExclusiveGroupsChanged(layer);
-    });
+    const exclusiveGroupsListener =
+      layer.exclusiveGroupsChanged.addEventListener(() => {
+        this.exclusiveManager.handleExclusiveGroupsChanged(layer);
+      });
 
     const listeners = [stateListener, zIndexListener, exclusiveGroupsListener];
     if (/** @type {SplitLayer} */ (layer).splitDirectionChanged) {
-      listeners.push(/** @type {SplitLayer} */ (layer).splitDirectionChanged.addEventListener(() => {
-        this.exclusiveManager.handleSplitDirectionChanged(layer);
-      }));
+      listeners.push(
+        /** @type {SplitLayer} */ (
+          layer
+        ).splitDirectionChanged.addEventListener(() => {
+          this.exclusiveManager.handleSplitDirectionChanged(layer);
+        }),
+      );
     }
     this._layerEventListeners[layer.name] = listeners;
   }
@@ -177,7 +184,9 @@ class LayerCollection extends IndexedCollection {
    * @private
    */
   _findZIndexPosition(zIndex) {
-    const usedIndex = this._array.findIndex(l => l[this._zIndexSymbol] > zIndex);
+    const usedIndex = this._array.findIndex(
+      (l) => l[this._zIndexSymbol] > zIndex,
+    );
     return usedIndex > -1 ? usedIndex : null;
   }
 
@@ -195,7 +204,8 @@ class LayerCollection extends IndexedCollection {
       if (zIndexPosition > 0 && zIndexPosition > currentIndex) {
         zIndexPosition -= 1; // remove self from count
       }
-      zIndexPosition = zIndexPosition != null ? zIndexPosition : this._array.length - 1;
+      zIndexPosition =
+        zIndexPosition != null ? zIndexPosition : this._array.length - 1;
       this._move(layer, currentIndex, zIndexPosition);
       this._ensureLocalZIndex(layer);
     }
@@ -258,7 +268,9 @@ class LayerCollection extends IndexedCollection {
    */
   _remove(layer) {
     if (this._layerEventListeners[layer.name]) {
-      this._layerEventListeners[layer.name].forEach((cb) => { cb(); });
+      this._layerEventListeners[layer.name].forEach((cb) => {
+        cb();
+      });
       delete this._layerEventListeners[layer.name];
     }
     delete layer[this._zIndexSymbol];
@@ -270,7 +282,9 @@ class LayerCollection extends IndexedCollection {
   clear() {
     Object.values(this._layerEventListeners)
       .flat()
-      .forEach((r) => { r(); });
+      .forEach((r) => {
+        r();
+      });
     this._array.forEach((l) => {
       delete l[this._zIndexSymbol];
     });
@@ -283,7 +297,9 @@ class LayerCollection extends IndexedCollection {
   destroy() {
     Object.values(this._layerEventListeners)
       .flat()
-      .forEach((r) => { r(); });
+      .forEach((r) => {
+        r();
+      });
 
     this._layerEventListeners = {};
     this.exclusiveManager.destroy();

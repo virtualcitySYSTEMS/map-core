@@ -45,7 +45,12 @@ describe('LayerCollection', () => {
 
   describe('creating from an existing array', () => {
     it('should add each layer, sorting by zIndex', () => {
-      const layerCollection = LayerCollection.from([layer1, layer2, layer3, layer4]);
+      const layerCollection = LayerCollection.from([
+        layer1,
+        layer2,
+        layer3,
+        layer4,
+      ]);
       const asArray = [...layerCollection];
       expect(asArray).to.have.ordered.members([layer1, layer4, layer3, layer2]);
       layerCollection.destroy();
@@ -115,16 +120,24 @@ describe('LayerCollection', () => {
       layerCollection.add(layer4);
       layerCollection.add(layer5);
       const asArray = [...layerCollection];
-      expect(asArray).to.have.ordered.members([layer1, layer4, layer5, layer3, layer2]);
+      expect(asArray).to.have.ordered.members([
+        layer1,
+        layer4,
+        layer5,
+        layer3,
+        layer2,
+      ]);
     });
 
     it('should add a state change listener and emit state changed', async () => {
       layerCollection.add(layer1);
       const spy = sandbox.spy();
-      const listener = layerCollection.stateChanged.addEventListener((layer) => {
-        expect(layer).to.equal(layer1);
-        spy();
-      });
+      const listener = layerCollection.stateChanged.addEventListener(
+        (layer) => {
+          expect(layer).to.equal(layer1);
+          spy();
+        },
+      );
       await layer1.activate();
       expect(spy).to.have.been.calledTwice;
       layer1.deactivate();
@@ -312,7 +325,9 @@ describe('LayerCollection', () => {
 
     it('should set the layer at the end, if there is no higher zIndex', () => {
       layer5.zIndex = 10;
-      expect(layerCollection.indexOf(layer5)).to.equal(layerCollection.size - 1);
+      expect(layerCollection.indexOf(layer5)).to.equal(
+        layerCollection.size - 1,
+      );
     });
 
     it('should move a layer at the end of its block if decreasing', () => {
@@ -353,10 +368,17 @@ describe('LayerCollection', () => {
         exclusiveGroups: ['test'],
       });
 
-      layerCollection = LayerCollection.from([
-        originalLayer,
-      ]);
-      makeOverrideCollection(layerCollection, () => { return 'uuid'; }, null, null, Layer, getLayerIndex);
+      layerCollection = LayerCollection.from([originalLayer]);
+      makeOverrideCollection(
+        layerCollection,
+        () => {
+          return 'uuid';
+        },
+        null,
+        null,
+        Layer,
+        getLayerIndex,
+      );
     });
 
     afterEach(() => {
@@ -368,7 +390,11 @@ describe('LayerCollection', () => {
     describe('on override', () => {
       it('should remove originalLayer from the ExclusiveManager', () => {
         layerCollection.override(overrideLayer);
-        expect(layerCollection.exclusiveManager.layers.get('test').has(originalLayer)).to.be.false;
+        expect(
+          layerCollection.exclusiveManager.layers
+            .get('test')
+            .has(originalLayer),
+        ).to.be.false;
       });
     });
   });

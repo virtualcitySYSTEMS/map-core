@@ -1,5 +1,8 @@
 import AbstractInteraction from '../../../interaction/abstractInteraction.js';
-import { EventType, ModificationKeyType } from '../../../interaction/interactionType.js';
+import {
+  EventType,
+  ModificationKeyType,
+} from '../../../interaction/interactionType.js';
 import SelectMultiFeatureInteraction from './selectMultiFeatureInteraction.js';
 import SelectSingleFeatureInteraction from './selectSingleFeatureInteraction.js';
 import { cursorMap } from './editGeometryMouseOverInteraction.js';
@@ -33,7 +36,9 @@ class SelectFeatureMouseOverInteraction extends AbstractInteraction {
     if (selectFeatureInteraction instanceof SelectSingleFeatureInteraction) {
       modkeys = ModificationKeyType.NONE;
       selectionMode = SelectionMode.SINGLE;
-    } else if (selectFeatureInteraction instanceof SelectMultiFeatureInteraction) {
+    } else if (
+      selectFeatureInteraction instanceof SelectMultiFeatureInteraction
+    ) {
       modkeys = ModificationKeyType.NONE | ModificationKeyType.CTRL;
       selectionMode = SelectionMode.MULTI;
     } else {
@@ -69,11 +74,9 @@ class SelectFeatureMouseOverInteraction extends AbstractInteraction {
    * @returns {Promise<InteractionEvent>}
    */
   async pipe(event) {
-    if (
-      event.feature &&
-      (event.feature[vcsLayerName] === this.layerName)
-    ) {
-      this._currentFeature = /** @type {import("ol").Feature|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature} */
+    if (event.feature && event.feature[vcsLayerName] === this.layerName) {
+      this._currentFeature =
+        /** @type {import("ol").Feature|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature} */
         (event.feature);
     } else {
       this._currentFeature = null;
@@ -114,11 +117,17 @@ class SelectFeatureMouseOverInteraction extends AbstractInteraction {
    */
   _evaluate(modifier) {
     if (this._currentFeature) {
-      const isCtrlPressed = this.selectionMode === SelectionMode.MULTI && (modifier & ModificationKeyType.CTRL);
-      const isSelected = this._selectFeatureInteraction.hasFeatureId(this._currentFeature.getId());
+      const isCtrlPressed =
+        this.selectionMode === SelectionMode.MULTI &&
+        modifier & ModificationKeyType.CTRL;
+      const isSelected = this._selectFeatureInteraction.hasFeatureId(
+        this._currentFeature.getId(),
+      );
 
       if (isCtrlPressed) {
-        this.cursorStyle.cursor = isSelected ? cursorMap.removeFromSelection : cursorMap.addToSelection;
+        this.cursorStyle.cursor = isSelected
+          ? cursorMap.removeFromSelection
+          : cursorMap.addToSelection;
       } else {
         this.cursorStyle.cursor = cursorMap.select;
       }

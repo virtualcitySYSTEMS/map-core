@@ -1,7 +1,15 @@
-import { Cartographic, Cartesian3, Math as CesiumMath } from '@vcmap-cesium/engine';
+import {
+  Cartographic,
+  Cartesian3,
+  Math as CesiumMath,
+} from '@vcmap-cesium/engine';
 import AbstractInteraction from './abstractInteraction.js';
 import Projection, { mercatorProjection } from '../util/projection.js';
-import { EventType, ModificationKeyType, PointerKeyType } from './interactionType.js';
+import {
+  EventType,
+  ModificationKeyType,
+  PointerKeyType,
+} from './interactionType.js';
 import { transformFromImage } from '../oblique/helpers.js';
 
 /**
@@ -46,20 +54,32 @@ class CoordinateAtPixel extends AbstractInteraction {
    * @private
    */
   _cesiumHandler(event) {
-    const cesiumMap = /** @type {import("@vcmap/core").CesiumMap} */ (event.map);
+    const cesiumMap = /** @type {import("@vcmap/core").CesiumMap} */ (
+      event.map
+    );
     const scene = cesiumMap.getScene();
     event.ray = scene.camera.getPickRay(event.windowPosition);
-    const pickResult = scene.globe.pick(event.ray, scene, this._scratchCartesian);
+    const pickResult = scene.globe.pick(
+      event.ray,
+      scene,
+      this._scratchCartesian,
+    );
     if (!pickResult) {
       event.position = [0, 0, 0];
     } else {
-      this._scratchCartographic = Cartographic
-        .fromCartesian(pickResult, scene.globe.ellipsoid, this._scratchCartographic);
-      event.position = Projection.wgs84ToMercator([
-        CesiumMath.toDegrees(this._scratchCartographic.longitude),
-        CesiumMath.toDegrees(this._scratchCartographic.latitude),
-        this._scratchCartographic.height,
-      ], true);
+      this._scratchCartographic = Cartographic.fromCartesian(
+        pickResult,
+        scene.globe.ellipsoid,
+        this._scratchCartographic,
+      );
+      event.position = Projection.wgs84ToMercator(
+        [
+          CesiumMath.toDegrees(this._scratchCartographic.longitude),
+          CesiumMath.toDegrees(this._scratchCartographic.latitude),
+          this._scratchCartographic.height,
+        ],
+        true,
+      );
     }
     event.positionOrPixel = event.position;
     return Promise.resolve(event);
@@ -71,7 +91,9 @@ class CoordinateAtPixel extends AbstractInteraction {
    * @private
    */
   static obliqueHandler(event) {
-    const obliqueMap = /** @type {import("@vcmap/core").ObliqueMap} */ (event.map);
+    const obliqueMap = /** @type {import("@vcmap/core").ObliqueMap} */ (
+      event.map
+    );
     const image = obliqueMap.currentImage;
     if (image) {
       // don't use TerrainLayer for coordinate Transformation if the event is a move or drag event,

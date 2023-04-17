@@ -2,25 +2,13 @@
   "geometries": [
     {
       "type": "Point",
-      "coordinates": [
-        1,
-        1,
-        1
-      ]
+      "coordinates": [1, 1, 1]
     },
     {
       "type": "MultiPoint",
       "coordinates": [
-        [
-          1,
-          1,
-          1
-        ],
-        [
-          2,
-          2,
-          2
-        ]
+        [1, 1, 1],
+        [2, 2, 2]
       ]
     },
     {
@@ -140,7 +128,7 @@
       "type": "Point",
       "coordinates": [1, 1, 1]
     },
-    "vcsMeta":{
+    "vcsMeta": {
       "style": {
         "fill": {
           "color": [255, 0, 0, 1]

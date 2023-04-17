@@ -17,8 +17,16 @@ export function timeout(ms) {
  * @param {Array<number>} expectedNumbers
  * @param {number} [epsilon=CesiumMath.EPSILON8]
  */
-export function arrayCloseTo(numbers, expectedNumbers, epsilon = CesiumMath.EPSILON8) {
+export function arrayCloseTo(
+  numbers,
+  expectedNumbers,
+  epsilon = CesiumMath.EPSILON8,
+) {
   numbers.forEach((c, index) => {
-    expect(c).to.be.closeTo(expectedNumbers[index], epsilon, `Array at index ${index}`);
+    expect(c).to.be.closeTo(
+      expectedNumbers[index],
+      epsilon,
+      `Array at index ${index}`,
+    );
   });
 }

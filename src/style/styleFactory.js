@@ -17,7 +17,10 @@ export function getStyleOrDefaultStyle(styleOptions, defaultStyle) {
     } else {
       const styleItem = styleClassRegistry.createFromTypeOptions(styleOptions);
       if (styleItem) {
-        if (styleItem instanceof VectorStyleItem && defaultStyle instanceof VectorStyleItem) {
+        if (
+          styleItem instanceof VectorStyleItem &&
+          defaultStyle instanceof VectorStyleItem
+        ) {
           return defaultStyle.assign(styleItem);
         }
         return styleItem;

@@ -1,7 +1,11 @@
 import { check } from '@vcsuite/check';
 import { Feature } from 'ol';
 import VcsEvent from '../../vcsEvent.js';
-import { GeometryType, SessionType, setupInteractionChain } from './editorSessionHelpers.js';
+import {
+  GeometryType,
+  SessionType,
+  setupInteractionChain,
+} from './editorSessionHelpers.js';
 import CreateLineStringInteraction from './interactions/createLineStringInteraction.js';
 import CreateCircleInteraction from './interactions/createCircleInteraction.js';
 import CreateBBoxInteraction from './interactions/createBBoxInteraction.js';
@@ -9,7 +13,10 @@ import CreatePointInteraction from './interactions/createPointInteraction.js';
 import CreatePolygonInteraction from './interactions/createPolygonInteraction.js';
 import VcsApp from '../../vcsApp.js';
 import VectorLayer from '../../layer/vectorLayer.js';
-import { createSync } from '../../layer/vectorSymbols.js';
+import {
+  alreadyTransformedToMercator,
+  createSync,
+} from '../../layer/vectorSymbols.js';
 import geometryIsValid from './validateGeoemetry.js';
 import ObliqueMap from '../../map/obliqueMap.js';
 
@@ -74,7 +81,9 @@ function startCreateFeatureSession(app, layer, geometryType) {
       currentInteraction.destroy();
       currentInteraction = null;
     }
-    interactionListeners.forEach((cb) => { cb(); });
+    interactionListeners.forEach((cb) => {
+      cb();
+    });
     interactionListeners = [];
   };
 
@@ -98,6 +107,7 @@ function startCreateFeatureSession(app, layer, geometryType) {
           /** @type {ObliqueMap} */ (app.maps.activeMap).switchEnabled = false;
         }
         currentFeature = new Feature({ geometry });
+        currentFeature[alreadyTransformedToMercator] = true;
         currentFeature[createSync] = true;
         layer.addFeatures([currentFeature]);
         featureCreated.raiseEvent(currentFeature);
@@ -108,7 +118,11 @@ function startCreateFeatureSession(app, layer, geometryType) {
         }
         if (currentFeature) {
           delete currentFeature[createSync];
-          if (!geometry || currentFeature.getGeometry() !== geometry || !geometryIsValid(geometry)) {
+          if (
+            !geometry ||
+            currentFeature.getGeometry() !== geometry ||
+            !geometryIsValid(geometry)
+          ) {
             layer.removeFeaturesById([currentFeature.getId()]);
             currentFeature = null;
           }
@@ -138,8 +152,9 @@ function startCreateFeatureSession(app, layer, geometryType) {
     const { activeMap } = app.maps;
     isOblique = activeMap instanceof ObliqueMap;
     if (isOblique) {
-      obliqueImageChangedListener = /** @type {ObliqueMap} */ (activeMap).imageChanged
-        .addEventListener(resetCurrentInteraction);
+      obliqueImageChangedListener = /** @type {ObliqueMap} */ (
+        activeMap
+      ).imageChanged.addEventListener(resetCurrentInteraction);
     } else {
       obliqueImageChangedListener = () => {};
     }

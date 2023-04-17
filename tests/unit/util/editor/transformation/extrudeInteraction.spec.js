@@ -2,8 +2,17 @@ import { Feature } from 'ol';
 import { Point } from 'ol/geom.js';
 import { Cartographic } from '@vcmap-cesium/engine';
 import { getCesiumMap } from '../../../helpers/cesiumHelpers.js';
-import { AXIS_AND_PLANES, EventType, ExtrudeInteraction, TransformationMode } from '../../../../../index.js';
-import { setupTransformationHandler, createHandlerFeature, patchPickRay } from './setupTransformationHandler.js';
+import {
+  AXIS_AND_PLANES,
+  EventType,
+  ExtrudeInteraction,
+  TransformationMode,
+} from '../../../../../index.js';
+import {
+  setupTransformationHandler,
+  createHandlerFeature,
+  patchPickRay,
+} from './setupTransformationHandler.js';
 
 describe('ExtrudeInteraction', () => {
   let sandbox;
@@ -15,7 +24,9 @@ describe('ExtrudeInteraction', () => {
     sandbox = sinon.createSandbox();
     map = getCesiumMap({});
     setup = await setupTransformationHandler(map, TransformationMode.EXTRUDE);
-    await setup.transformationHandler.setFeatures([new Feature({ geometry: new Point([0, 0, 0]) })]);
+    await setup.transformationHandler.setFeatures([
+      new Feature({ geometry: new Point([0, 0, 0]) }),
+    ]);
   });
 
   afterEach(() => {
@@ -31,12 +42,15 @@ describe('ExtrudeInteraction', () => {
       const interaction = new ExtrudeInteraction(setup.transformationHandler);
       const spy = sandbox.spy();
       interaction.extruded.addEventListener(spy);
-      patchPickRay([
-        Cartographic.toCartesian(new Cartographic(0, 0, 1)),
-        Cartographic.toCartesian(new Cartographic(0, 0, 2)),
-        Cartographic.toCartesian(new Cartographic(0, 0, 4)),
-        Cartographic.toCartesian(new Cartographic(0, 0, 4)),
-      ], sandbox);
+      patchPickRay(
+        [
+          Cartographic.toCartesian(new Cartographic(0, 0, 1)),
+          Cartographic.toCartesian(new Cartographic(0, 0, 2)),
+          Cartographic.toCartesian(new Cartographic(0, 0, 4)),
+          Cartographic.toCartesian(new Cartographic(0, 0, 4)),
+        ],
+        sandbox,
+      );
       const feature = createHandlerFeature(AXIS_AND_PLANES.Z);
       await interaction.pipe({
         map,
@@ -69,9 +83,15 @@ describe('ExtrudeInteraction', () => {
       interaction.destroy();
 
       expect(spy).to.have.been.calledThrice;
-      expect(spy.getCall(0).args.map(i => Math.round(i))).to.have.members([1]);
-      expect(spy.getCall(1).args.map(i => Math.round(i))).to.have.members([2]);
-      expect(spy.getCall(2).args.map(i => Math.round(i))).to.have.members([0]);
+      expect(spy.getCall(0).args.map((i) => Math.round(i))).to.have.members([
+        1,
+      ]);
+      expect(spy.getCall(1).args.map((i) => Math.round(i))).to.have.members([
+        2,
+      ]);
+      expect(spy.getCall(2).args.map((i) => Math.round(i))).to.have.members([
+        0,
+      ]);
     });
   });
 });

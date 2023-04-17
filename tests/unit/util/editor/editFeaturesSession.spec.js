@@ -4,7 +4,8 @@ import { Point } from 'ol/geom.js';
 import Feature from 'ol/Feature.js';
 import {
   AXIS_AND_PLANES,
-  EventType, mercatorToCartesian,
+  EventType,
+  mercatorToCartesian,
   ModificationKeyType,
   ObliqueMap,
   OpenlayersMap,
@@ -68,7 +69,10 @@ describe('startEditFeaturesSession', () => {
     });
 
     it('should set allowPicking false', async () => {
-      expect(feature.getProperties()).to.have.property('olcs_allowPicking', false);
+      expect(feature.getProperties()).to.have.property(
+        'olcs_allowPicking',
+        false,
+      );
     });
 
     describe('changing features', () => {
@@ -84,7 +88,9 @@ describe('startEditFeaturesSession', () => {
       });
 
       it('should clear allow picking for previous features', () => {
-        expect(feature.getProperties()).to.not.have.property('olcs_allowPicking');
+        expect(feature.getProperties()).to.not.have.property(
+          'olcs_allowPicking',
+        );
       });
     });
 
@@ -146,7 +152,12 @@ describe('startEditFeaturesSession', () => {
     let session;
 
     before(() => {
-      session = startEditFeaturesSession(app, layer, interactionId, TransformationMode.TRANSLATE);
+      session = startEditFeaturesSession(
+        app,
+        layer,
+        interactionId,
+        TransformationMode.TRANSLATE,
+      );
     });
 
     after(() => {
@@ -158,7 +169,9 @@ describe('startEditFeaturesSession', () => {
     });
 
     it('should add a an exclusive listener to the event handler', () => {
-      expect(app.maps.eventHandler.interactions[3]).to.be.an.instanceof(InteractionChain);
+      expect(app.maps.eventHandler.interactions[3]).to.be.an.instanceof(
+        InteractionChain,
+      );
     });
 
     it('should add the translate interaction', async () => {
@@ -198,7 +211,12 @@ describe('startEditFeaturesSession', () => {
     let session;
 
     before(() => {
-      session = startEditFeaturesSession(app, layer, interactionId, TransformationMode.ROTATE);
+      session = startEditFeaturesSession(
+        app,
+        layer,
+        interactionId,
+        TransformationMode.ROTATE,
+      );
     });
 
     after(() => {
@@ -210,7 +228,9 @@ describe('startEditFeaturesSession', () => {
     });
 
     it('should add a an exclusive listener to the event handler', () => {
-      expect(app.maps.eventHandler.interactions[3]).to.be.an.instanceof(InteractionChain);
+      expect(app.maps.eventHandler.interactions[3]).to.be.an.instanceof(
+        InteractionChain,
+      );
     });
 
     it('should add the rotate interaction', async () => {
@@ -245,8 +265,12 @@ describe('startEditFeaturesSession', () => {
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
       });
-      expect(point1.getCoordinates().map(c => Math.round(c))).to.have.ordered.members([-1, -1, 0]);
-      expect(point2.getCoordinates().map(c => Math.round(c))).to.have.ordered.members([1, 1, 0]);
+      expect(
+        point1.getCoordinates().map((c) => Math.round(c)),
+      ).to.have.ordered.members([-1, -1, 0]);
+      expect(
+        point2.getCoordinates().map((c) => Math.round(c)),
+      ).to.have.ordered.members([1, 1, 0]);
     });
   });
 
@@ -255,7 +279,12 @@ describe('startEditFeaturesSession', () => {
     let session;
 
     before(() => {
-      session = startEditFeaturesSession(app, layer, interactionId, TransformationMode.SCALE);
+      session = startEditFeaturesSession(
+        app,
+        layer,
+        interactionId,
+        TransformationMode.SCALE,
+      );
     });
 
     after(() => {
@@ -267,7 +296,9 @@ describe('startEditFeaturesSession', () => {
     });
 
     it('should add a an exclusive listener to the event handler', () => {
-      expect(app.maps.eventHandler.interactions[3]).to.be.an.instanceof(InteractionChain);
+      expect(app.maps.eventHandler.interactions[3]).to.be.an.instanceof(
+        InteractionChain,
+      );
     });
 
     it('should add the scale interaction', async () => {
@@ -302,8 +333,12 @@ describe('startEditFeaturesSession', () => {
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
       });
-      expect(point1.getCoordinates().map(c => Math.round(c))).to.have.ordered.members([-1, 1, 0]);
-      expect(point2.getCoordinates().map(c => Math.round(c))).to.have.ordered.members([1, -1, 0]);
+      expect(
+        point1.getCoordinates().map((c) => Math.round(c)),
+      ).to.have.ordered.members([-1, 1, 0]);
+      expect(
+        point2.getCoordinates().map((c) => Math.round(c)),
+      ).to.have.ordered.members([1, -1, 0]);
     });
   });
 
@@ -313,7 +348,12 @@ describe('startEditFeaturesSession', () => {
 
     before(async () => {
       await app.maps.setActiveMap(cesiumMap.name);
-      session = startEditFeaturesSession(app, layer, interactionId, TransformationMode.EXTRUDE);
+      session = startEditFeaturesSession(
+        app,
+        layer,
+        interactionId,
+        TransformationMode.EXTRUDE,
+      );
     });
 
     after(async () => {
@@ -326,7 +366,9 @@ describe('startEditFeaturesSession', () => {
     });
 
     it('should add a an exclusive listener to the event handler', () => {
-      expect(app.maps.eventHandler.interactions[3]).to.be.an.instanceof(InteractionChain);
+      expect(app.maps.eventHandler.interactions[3]).to.be.an.instanceof(
+        InteractionChain,
+      );
     });
 
     describe('extruding a feature', () => {
@@ -340,15 +382,17 @@ describe('startEditFeaturesSession', () => {
           mercatorToCartesian([1, 1, 4]),
           mercatorToCartesian([1, 1, 4]),
         ]);
-        stub = sinon.stub(cesiumMap, 'getHeightFromTerrain').callsFake(async (coords) => {
-          coords.forEach((c) => { c[2] = 1; });
-          return coords;
-        });
+        stub = sinon
+          .stub(cesiumMap, 'getHeightFromTerrain')
+          .callsFake(async (coords) => {
+            coords.forEach((c) => {
+              c[2] = 1;
+            });
+            return coords;
+          });
 
         feature = createFeatureWithId(new Point([1, 1, 0]));
-        await session.setFeatures([
-          feature,
-        ]);
+        await session.setFeatures([feature]);
         const handlerFeature = createHandlerFeature(AXIS_AND_PLANES.Z);
 
         await app.maps.eventHandler.interactions[3].pipe({
@@ -386,7 +430,10 @@ describe('startEditFeaturesSession', () => {
       });
 
       it('should add the extruded interaction', () => {
-        expect(feature.get('olcs_extrudedHeight')).to.exist.and.to.be.closeTo(3, CesiumMath.EPSILON5);
+        expect(feature.get('olcs_extrudedHeight')).to.exist.and.to.be.closeTo(
+          3,
+          CesiumMath.EPSILON5,
+        );
       });
 
       it('it should ensure the feature is absolute', () => {
@@ -394,7 +441,9 @@ describe('startEditFeaturesSession', () => {
       });
 
       it('should place the feature onto the terrain', () => {
-        expect(feature.getGeometry().getCoordinates()).to.have.ordered.members([1, 1, 1]);
+        expect(feature.getGeometry().getCoordinates()).to.have.ordered.members([
+          1, 1, 1,
+        ]);
       });
     });
   });
@@ -404,7 +453,12 @@ describe('startEditFeaturesSession', () => {
     let session;
 
     before(async () => {
-      session = startEditFeaturesSession(app, layer, interactionId, TransformationMode.EXTRUDE);
+      session = startEditFeaturesSession(
+        app,
+        layer,
+        interactionId,
+        TransformationMode.EXTRUDE,
+      );
     });
 
     after(async () => {
@@ -421,7 +475,11 @@ describe('startEditFeaturesSession', () => {
     let session;
 
     beforeEach(() => {
-      session = startEditFeaturesSession(app, layer, TransformationMode.TRANSLATE);
+      session = startEditFeaturesSession(
+        app,
+        layer,
+        TransformationMode.TRANSLATE,
+      );
     });
 
     afterEach(() => {
@@ -458,7 +516,12 @@ describe('startEditFeaturesSession', () => {
 
     beforeEach(async () => {
       await app.maps.setActiveMap(cesiumMap.name);
-      session = startEditFeaturesSession(app, layer, interactionId, TransformationMode.EXTRUDE);
+      session = startEditFeaturesSession(
+        app,
+        layer,
+        interactionId,
+        TransformationMode.EXTRUDE,
+      );
     });
 
     afterEach(async () => {
@@ -474,7 +537,9 @@ describe('startEditFeaturesSession', () => {
     it('should call modeChanged', async () => {
       const modeChangeListener = getVcsEventSpy(session.modeChanged);
       await app.maps.setActiveMap(defaultMap.name);
-      expect(modeChangeListener).to.have.been.calledWithExactly(TransformationMode.TRANSLATE);
+      expect(modeChangeListener).to.have.been.calledWithExactly(
+        TransformationMode.TRANSLATE,
+      );
     });
   });
 

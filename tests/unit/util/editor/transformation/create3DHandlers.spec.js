@@ -86,35 +86,50 @@ describe('create3DHandlers', () => {
     });
 
     it('should create an X axis handler', () => {
-      const primitives = filterPrimitives(primitiveCollection, (f => f.olFeature[handlerSymbol] === AXIS_AND_PLANES.X));
+      const primitives = filterPrimitives(
+        primitiveCollection,
+        (f) => f.olFeature[handlerSymbol] === AXIS_AND_PLANES.X,
+      );
       expect(primitives).to.have.lengthOf(2);
     });
 
     it('should create an Y axis handler', () => {
-      const primitives = filterPrimitives(primitiveCollection, (f => f.olFeature[handlerSymbol] === AXIS_AND_PLANES.Y));
+      const primitives = filterPrimitives(
+        primitiveCollection,
+        (f) => f.olFeature[handlerSymbol] === AXIS_AND_PLANES.Y,
+      );
       expect(primitives).to.have.lengthOf(2);
     });
 
     it('should create an Z axis handler', () => {
-      const primitives = filterPrimitives(primitiveCollection, (f => f.olFeature[handlerSymbol] === AXIS_AND_PLANES.Z));
+      const primitives = filterPrimitives(
+        primitiveCollection,
+        (f) => f.olFeature[handlerSymbol] === AXIS_AND_PLANES.Z,
+      );
       expect(primitives).to.have.lengthOf(2);
     });
 
     it('should create an XY plane handler', () => {
-      const primitives =
-        filterPrimitives(primitiveCollection, (f => f.olFeature[handlerSymbol] === AXIS_AND_PLANES.XY));
+      const primitives = filterPrimitives(
+        primitiveCollection,
+        (f) => f.olFeature[handlerSymbol] === AXIS_AND_PLANES.XY,
+      );
       expect(primitives).to.have.lengthOf(1);
     });
 
     it('should create an XZ plane handler', () => {
-      const primitives =
-        filterPrimitives(primitiveCollection, (f => f.olFeature[handlerSymbol] === AXIS_AND_PLANES.XZ));
+      const primitives = filterPrimitives(
+        primitiveCollection,
+        (f) => f.olFeature[handlerSymbol] === AXIS_AND_PLANES.XZ,
+      );
       expect(primitives).to.have.lengthOf(1);
     });
 
     it('should create an YZ plane handler', () => {
-      const primitives =
-        filterPrimitives(primitiveCollection, (f => f.olFeature[handlerSymbol] === AXIS_AND_PLANES.YZ));
+      const primitives = filterPrimitives(
+        primitiveCollection,
+        (f) => f.olFeature[handlerSymbol] === AXIS_AND_PLANES.YZ,
+      );
       expect(primitives).to.have.lengthOf(1);
     });
   });
@@ -171,7 +186,11 @@ describe('create3DHandlers', () => {
         if (p?.geometryInstances?.[0]?.geometry instanceof CylinderGeometry) {
           return; // handler cylinders have an override
         }
-        const sub = Matrix4.subtract(modelMatrices[i], p.modelMatrix, new Matrix4());
+        const sub = Matrix4.subtract(
+          modelMatrices[i],
+          p.modelMatrix,
+          new Matrix4(),
+        );
         const res = Matrix4.getTranslation(sub, new Cartesian3());
         expect(Cartesian3.magnitude(res)).to.be.closeTo(1.72819454, 0.00001);
       });
@@ -204,7 +223,13 @@ describe('create3DHandlers', () => {
           return; // handler cylinders have an override
         }
         const scale = Matrix4.getScale(p.modelMatrix, new Cartesian3());
-        expect(Cartesian3.equalsEpsilon(scale, new Cartesian3(2, 2, 2), CesiumMath.EPSILON8)).to.be.true;
+        expect(
+          Cartesian3.equalsEpsilon(
+            scale,
+            new Cartesian3(2, 2, 2),
+            CesiumMath.EPSILON8,
+          ),
+        ).to.be.true;
       });
     });
 
@@ -216,7 +241,13 @@ describe('create3DHandlers', () => {
             return; // handler cylinders have an override
           }
           const scale = Matrix4.getScale(p.modelMatrix, new Cartesian3());
-          expect(Cartesian3.equalsEpsilon(scale, new Cartesian3(2, 2, 2), CesiumMath.EPSILON8)).to.be.true;
+          expect(
+            Cartesian3.equalsEpsilon(
+              scale,
+              new Cartesian3(2, 2, 2),
+              CesiumMath.EPSILON8,
+            ),
+          ).to.be.true;
         });
       });
     });
@@ -243,7 +274,10 @@ describe('create3DHandlers', () => {
       });
 
       it('should add the X axis primitive & X shadows', () => {
-        const features = filterPrimitives(primitiveCollection, p => !p.olFeature);
+        const features = filterPrimitives(
+          primitiveCollection,
+          (p) => !p.olFeature,
+        );
         expect(features).to.have.lengthOf(2);
         expect(features[0]).to.have.property('length', 1);
         expect(features[1]).to.have.property('length', 2);
@@ -252,17 +286,25 @@ describe('create3DHandlers', () => {
       it('should set the X axis shadow to the original center', () => {
         const handlerModelMatrix = findPrimitive(
           primitiveCollection,
-          p => p?.olFeature?.[handlerSymbol] === AXIS_AND_PLANES.X &&
+          (p) =>
+            p?.olFeature?.[handlerSymbol] === AXIS_AND_PLANES.X &&
             p.geometryInstances[0].geometry instanceof PolylineGeometry,
         ).modelMatrix;
 
-        const [, shadowCollection] = filterPrimitives(primitiveCollection, p => !p.olFeature);
+        const [, shadowCollection] = filterPrimitives(
+          primitiveCollection,
+          (p) => !p.olFeature,
+        );
         const shadowModelMatrix = findPrimitive(
           shadowCollection,
-          p => p.geometryInstances[0].geometry instanceof PolylineGeometry,
+          (p) => p.geometryInstances[0].geometry instanceof PolylineGeometry,
         ).modelMatrix;
 
-        const sub = Matrix4.subtract(shadowModelMatrix, handlerModelMatrix, new Matrix4());
+        const sub = Matrix4.subtract(
+          shadowModelMatrix,
+          handlerModelMatrix,
+          new Matrix4(),
+        );
         const res = Matrix4.getTranslation(sub, new Cartesian3());
         expect(Cartesian3.magnitude(res)).to.be.closeTo(1.72819454, 0.00001);
       });
@@ -288,7 +330,10 @@ describe('create3DHandlers', () => {
       });
 
       it('should add the Y axis primitive & X shadows', () => {
-        const features = filterPrimitives(primitiveCollection, p => !p.olFeature);
+        const features = filterPrimitives(
+          primitiveCollection,
+          (p) => !p.olFeature,
+        );
         expect(features).to.have.lengthOf(2);
         expect(features[0]).to.have.property('length', 1);
         expect(features[1]).to.have.property('length', 2);
@@ -297,17 +342,25 @@ describe('create3DHandlers', () => {
       it('should set the Y axis shadow to the original center', () => {
         const handlerModelMatrix = findPrimitive(
           primitiveCollection,
-          p => p?.olFeature?.[handlerSymbol] === AXIS_AND_PLANES.Y &&
+          (p) =>
+            p?.olFeature?.[handlerSymbol] === AXIS_AND_PLANES.Y &&
             p.geometryInstances[0].geometry instanceof PolylineGeometry,
         ).modelMatrix;
 
-        const [, shadowCollection] = filterPrimitives(primitiveCollection, p => !p.olFeature);
+        const [, shadowCollection] = filterPrimitives(
+          primitiveCollection,
+          (p) => !p.olFeature,
+        );
         const shadowModelMatrix = findPrimitive(
           shadowCollection,
-          p => p.geometryInstances[0].geometry instanceof PolylineGeometry,
+          (p) => p.geometryInstances[0].geometry instanceof PolylineGeometry,
         ).modelMatrix;
 
-        const sub = Matrix4.subtract(shadowModelMatrix, handlerModelMatrix, new Matrix4());
+        const sub = Matrix4.subtract(
+          shadowModelMatrix,
+          handlerModelMatrix,
+          new Matrix4(),
+        );
         const res = Matrix4.getTranslation(sub, new Cartesian3());
         expect(Cartesian3.magnitude(res)).to.be.closeTo(1.72819454, 0.00001);
       });
@@ -333,7 +386,10 @@ describe('create3DHandlers', () => {
       });
 
       it('should add the Z axis primitive & Z shadows', () => {
-        const features = filterPrimitives(primitiveCollection, p => !p.olFeature);
+        const features = filterPrimitives(
+          primitiveCollection,
+          (p) => !p.olFeature,
+        );
         expect(features).to.have.lengthOf(2);
         expect(features[0]).to.have.property('length', 1);
         expect(features[1]).to.have.property('length', 2);
@@ -342,17 +398,25 @@ describe('create3DHandlers', () => {
       it('should set the Z axis shadow to the original center', () => {
         const handlerModelMatrix = findPrimitive(
           primitiveCollection,
-          p => p?.olFeature?.[handlerSymbol] === AXIS_AND_PLANES.Y &&
+          (p) =>
+            p?.olFeature?.[handlerSymbol] === AXIS_AND_PLANES.Y &&
             p.geometryInstances[0].geometry instanceof PolylineGeometry,
         ).modelMatrix;
 
-        const [, shadowCollection] = filterPrimitives(primitiveCollection, p => !p.olFeature);
+        const [, shadowCollection] = filterPrimitives(
+          primitiveCollection,
+          (p) => !p.olFeature,
+        );
         const shadowModelMatrix = findPrimitive(
           shadowCollection,
-          p => p.geometryInstances[0].geometry instanceof PolylineGeometry,
+          (p) => p.geometryInstances[0].geometry instanceof PolylineGeometry,
         ).modelMatrix;
 
-        const sub = Matrix4.subtract(shadowModelMatrix, handlerModelMatrix, new Matrix4());
+        const sub = Matrix4.subtract(
+          shadowModelMatrix,
+          handlerModelMatrix,
+          new Matrix4(),
+        );
         const res = Matrix4.getTranslation(sub, new Cartesian3());
         expect(Cartesian3.magnitude(res)).to.be.closeTo(1.72819454, 0.00001);
       });
@@ -378,7 +442,10 @@ describe('create3DHandlers', () => {
       });
 
       it('should add the XY axis primitive & XY shadows', () => {
-        const features = filterPrimitives(primitiveCollection, p => !p.olFeature);
+        const features = filterPrimitives(
+          primitiveCollection,
+          (p) => !p.olFeature,
+        );
         expect(features).to.have.lengthOf(2);
         expect(features[0]).to.have.property('length', 2);
         expect(features[1]).to.have.property('length', 1);
@@ -387,13 +454,20 @@ describe('create3DHandlers', () => {
       it('should set the XY axis shadow to the original center', () => {
         const handlerModelMatrix = findPrimitive(
           primitiveCollection,
-          p => p?.olFeature?.[handlerSymbol] === AXIS_AND_PLANES.XY,
+          (p) => p?.olFeature?.[handlerSymbol] === AXIS_AND_PLANES.XY,
         ).modelMatrix;
 
-        const [, shadowCollection] = filterPrimitives(primitiveCollection, p => !p.olFeature);
+        const [, shadowCollection] = filterPrimitives(
+          primitiveCollection,
+          (p) => !p.olFeature,
+        );
         const shadowModelMatrix = shadowCollection.get(0).modelMatrix;
 
-        const sub = Matrix4.subtract(shadowModelMatrix, handlerModelMatrix, new Matrix4());
+        const sub = Matrix4.subtract(
+          shadowModelMatrix,
+          handlerModelMatrix,
+          new Matrix4(),
+        );
         const res = Matrix4.getTranslation(sub, new Cartesian3());
         expect(Cartesian3.magnitude(res)).to.be.closeTo(1.72819454, 0.00001);
       });
@@ -419,7 +493,10 @@ describe('create3DHandlers', () => {
       });
 
       it('should add the XZ axis primitive & XZ shadows', () => {
-        const features = filterPrimitives(primitiveCollection, p => !p.olFeature);
+        const features = filterPrimitives(
+          primitiveCollection,
+          (p) => !p.olFeature,
+        );
         expect(features).to.have.lengthOf(2);
         expect(features[0]).to.have.property('length', 2);
         expect(features[1]).to.have.property('length', 1);
@@ -428,13 +505,20 @@ describe('create3DHandlers', () => {
       it('should set the XZ axis shadow to the original center', () => {
         const handlerModelMatrix = findPrimitive(
           primitiveCollection,
-          p => p?.olFeature?.[handlerSymbol] === AXIS_AND_PLANES.XZ,
+          (p) => p?.olFeature?.[handlerSymbol] === AXIS_AND_PLANES.XZ,
         ).modelMatrix;
 
-        const [, shadowCollection] = filterPrimitives(primitiveCollection, p => !p.olFeature);
+        const [, shadowCollection] = filterPrimitives(
+          primitiveCollection,
+          (p) => !p.olFeature,
+        );
         const shadowModelMatrix = shadowCollection.get(0).modelMatrix;
 
-        const sub = Matrix4.subtract(shadowModelMatrix, handlerModelMatrix, new Matrix4());
+        const sub = Matrix4.subtract(
+          shadowModelMatrix,
+          handlerModelMatrix,
+          new Matrix4(),
+        );
         const res = Matrix4.getTranslation(sub, new Cartesian3());
         expect(Cartesian3.magnitude(res)).to.be.closeTo(1.72819454, 0.00001);
       });
@@ -460,7 +544,10 @@ describe('create3DHandlers', () => {
       });
 
       it('should add the YZ axis primitive & YZ shadows', () => {
-        const features = filterPrimitives(primitiveCollection, p => !p.olFeature);
+        const features = filterPrimitives(
+          primitiveCollection,
+          (p) => !p.olFeature,
+        );
         expect(features).to.have.lengthOf(2);
         expect(features[0]).to.have.property('length', 2);
         expect(features[1]).to.have.property('length', 1);
@@ -469,13 +556,20 @@ describe('create3DHandlers', () => {
       it('should set the YZ axis shadow to the original center', () => {
         const handlerModelMatrix = findPrimitive(
           primitiveCollection,
-          p => p?.olFeature?.[handlerSymbol] === AXIS_AND_PLANES.YZ,
+          (p) => p?.olFeature?.[handlerSymbol] === AXIS_AND_PLANES.YZ,
         ).modelMatrix;
 
-        const [, shadowCollection] = filterPrimitives(primitiveCollection, p => !p.olFeature);
+        const [, shadowCollection] = filterPrimitives(
+          primitiveCollection,
+          (p) => !p.olFeature,
+        );
         const shadowModelMatrix = shadowCollection.get(0).modelMatrix;
 
-        const sub = Matrix4.subtract(shadowModelMatrix, handlerModelMatrix, new Matrix4());
+        const sub = Matrix4.subtract(
+          shadowModelMatrix,
+          handlerModelMatrix,
+          new Matrix4(),
+        );
         const res = Matrix4.getTranslation(sub, new Cartesian3());
         expect(Cartesian3.magnitude(res)).to.be.closeTo(1.72819454, 0.00001);
       });
@@ -504,7 +598,10 @@ describe('create3DHandlers', () => {
       });
 
       it('should add the X axis primitive & X shadows', () => {
-        const features = filterPrimitives(primitiveCollection, p => !p.olFeature);
+        const features = filterPrimitives(
+          primitiveCollection,
+          (p) => !p.olFeature,
+        );
         expect(features).to.have.lengthOf(2);
         expect(features[0]).to.have.property('length', 1);
         expect(features[1]).to.have.property('length', 2);
@@ -513,29 +610,46 @@ describe('create3DHandlers', () => {
       it('should set the X axis shadow to the original center', () => {
         const handlerModelMatrix = findPrimitive(
           primitiveCollection,
-          p => p?.olFeature?.[handlerSymbol] === AXIS_AND_PLANES.X &&
+          (p) =>
+            p?.olFeature?.[handlerSymbol] === AXIS_AND_PLANES.X &&
             p.geometryInstances[0].geometry instanceof PolylineGeometry,
         ).modelMatrix;
 
-        const [, shadowCollection] = filterPrimitives(primitiveCollection, p => !p.olFeature);
+        const [, shadowCollection] = filterPrimitives(
+          primitiveCollection,
+          (p) => !p.olFeature,
+        );
         const shadowModelMatrix = findPrimitive(
           shadowCollection,
-          p => p.geometryInstances[0].geometry instanceof PolylineGeometry,
+          (p) => p.geometryInstances[0].geometry instanceof PolylineGeometry,
         ).modelMatrix;
 
-        const sub = Matrix4.subtract(shadowModelMatrix, handlerModelMatrix, new Matrix4());
+        const sub = Matrix4.subtract(
+          shadowModelMatrix,
+          handlerModelMatrix,
+          new Matrix4(),
+        );
         const res = Matrix4.getTranslation(sub, new Cartesian3());
         expect(Cartesian3.magnitude(res)).to.be.closeTo(1.72819454, 0.00001);
       });
 
       it('should properly apply scaling', () => {
-        const [, shadowCollection] = filterPrimitives(primitiveCollection, p => !p.olFeature);
+        const [, shadowCollection] = filterPrimitives(
+          primitiveCollection,
+          (p) => !p.olFeature,
+        );
         const shadowModelMatrix = findPrimitive(
           shadowCollection,
-          p => p.geometryInstances[0].geometry instanceof PolylineGeometry,
+          (p) => p.geometryInstances[0].geometry instanceof PolylineGeometry,
         ).modelMatrix;
         const scale = Matrix4.getScale(shadowModelMatrix, new Cartesian3());
-        expect(Cartesian3.equalsEpsilon(scale, new Cartesian3(2, 2, 2), CesiumMath.EPSILON8)).to.be.true;
+        expect(
+          Cartesian3.equalsEpsilon(
+            scale,
+            new Cartesian3(2, 2, 2),
+            CesiumMath.EPSILON8,
+          ),
+        ).to.be.true;
       });
     });
   });
@@ -559,14 +673,17 @@ describe('create3DHandlers', () => {
 
     it('should replace Z handlers', () => {
       const currentZHandlers = filterPrimitives(
-        primitiveCollection, p => p.olFeature[handlerSymbol] === AXIS_AND_PLANES.Z ||
+        primitiveCollection,
+        (p) =>
+          p.olFeature[handlerSymbol] === AXIS_AND_PLANES.Z ||
           p.olFeature[handlerSymbol] === AXIS_AND_PLANES.XZ ||
           p.olFeature[handlerSymbol] === AXIS_AND_PLANES.YZ,
       );
       handlers.greyOutZ = true;
-      expect(currentZHandlers.every(p => p.isDestroyed())).to.be.true;
+      expect(currentZHandlers.every((p) => p.isDestroyed())).to.be.true;
       const newZHandlers = filterPrimitives(
-        primitiveCollection, p => !p.olFeature,
+        primitiveCollection,
+        (p) => !p.olFeature,
       );
       expect(newZHandlers).to.have.lengthOf(currentZHandlers.length);
     });
@@ -575,7 +692,9 @@ describe('create3DHandlers', () => {
       handlers.greyOutZ = true;
       handlers.greyOutZ = false;
       const currentZHandlers = filterPrimitives(
-        primitiveCollection, p => p.olFeature[handlerSymbol] === AXIS_AND_PLANES.Z ||
+        primitiveCollection,
+        (p) =>
+          p.olFeature[handlerSymbol] === AXIS_AND_PLANES.Z ||
           p.olFeature[handlerSymbol] === AXIS_AND_PLANES.XZ ||
           p.olFeature[handlerSymbol] === AXIS_AND_PLANES.YZ,
       );

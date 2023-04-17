@@ -43,7 +43,8 @@ class VcsCameraPrimitive {
     this.show = typeof options.show === 'undefined' ? true : options.show;
     this._camera = options.camera;
     this._color = options.color || Color.YELLOW;
-    this.allowPicking = typeof options.allowPicking === 'undefined' ? true : options.allowPicking;
+    this.allowPicking =
+      typeof options.allowPicking === 'undefined' ? true : options.allowPicking;
     this.id = options.id || {};
   }
 
@@ -74,7 +75,10 @@ class VcsCameraPrimitive {
       Matrix3.setColumn(rotation, 1, up, rotation);
       Matrix3.setColumn(rotation, 2, direction, rotation);
 
-      const orientation = Quaternion.fromRotationMatrix(rotation, scratchOrientation);
+      const orientation = Quaternion.fromRotationMatrix(
+        rotation,
+        scratchOrientation,
+      );
 
       planesPrimitives.length = 1;
       outlinePrimitives.length = 1;
@@ -92,7 +96,9 @@ class VcsCameraPrimitive {
             _drawNearPlane: true,
           }),
           attributes: {
-            color: ColorGeometryInstanceAttribute.fromColor(Color.fromAlpha(this._color, 0.1, scratchColor)),
+            color: ColorGeometryInstanceAttribute.fromColor(
+              Color.fromAlpha(this._color, 0.1, scratchColor),
+            ),
           },
           id: this.id,
           pickPrimitive: this,
@@ -136,8 +142,10 @@ class VcsCameraPrimitive {
   destroy() {
     const { length } = this._planesPrimitives;
     for (let i = 0; i < length; ++i) {
-      this._outlinePrimitives[i] = this._outlinePrimitives[i] && this._outlinePrimitives[i].destroy();
-      this._planesPrimitives[i] = this._planesPrimitives[i] && this._planesPrimitives[i].destroy();
+      this._outlinePrimitives[i] =
+        this._outlinePrimitives[i] && this._outlinePrimitives[i].destroy();
+      this._planesPrimitives[i] =
+        this._planesPrimitives[i] && this._planesPrimitives[i].destroy();
     }
     return destroyObject(this);
   }

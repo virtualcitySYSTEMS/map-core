@@ -66,7 +66,9 @@ class VcsModule {
     /**
      * @type {Projection|undefined}
      */
-    this.projection = config.projection ? new Projection(config.projection) : undefined;
+    this.projection = config.projection
+      ? new Projection(config.projection)
+      : undefined;
     /**
      * @type {VcsModuleConfig}
      * @private
@@ -97,7 +99,6 @@ class VcsModule {
   setConfigFromApp(app) {
     this._config = app.serializeModule(this._uuid);
   }
-
 
   /**
    * @returns {VcsModuleConfig}

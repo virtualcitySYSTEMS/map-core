@@ -50,7 +50,9 @@ describe('CreatePolygonInteraction', () => {
       });
 
       it('should set the geometry to be a polygon with starting coordinates at positionOrPixel', () => {
-        expect(geometry.getCoordinates()).to.have.deep.ordered.members([[[1, 2, 3]]]);
+        expect(geometry.getCoordinates()).to.have.deep.ordered.members([
+          [[1, 2, 3]],
+        ]);
       });
     });
 
@@ -84,7 +86,9 @@ describe('CreatePolygonInteraction', () => {
       });
 
       it('should set the geometry to be a polygon with starting coordinates at positionOrPixel', () => {
-        expect(geometry.getCoordinates()).to.have.deep.ordered.members([[[1, 2, 3]]]);
+        expect(geometry.getCoordinates()).to.have.deep.ordered.members([
+          [[1, 2, 3]],
+        ]);
       });
     });
   });
@@ -118,7 +122,13 @@ describe('CreatePolygonInteraction', () => {
 
     it('should update the geometries coordinates, including a validity dummy', () => {
       expect(geometry).to.be.an.instanceOf(Polygon);
-      expect(geometry.getCoordinates()).to.have.deep.ordered.members([[[1, 2, 3], [2, 2, 3], [1, 2, 3]]]);
+      expect(geometry.getCoordinates()).to.have.deep.ordered.members([
+        [
+          [1, 2, 3],
+          [2, 2, 3],
+          [1, 2, 3],
+        ],
+      ]);
     });
   });
 
@@ -151,7 +161,13 @@ describe('CreatePolygonInteraction', () => {
 
     it('should update the geometries coordinates, including a validity dummy', () => {
       expect(geometry).to.be.an.instanceOf(Polygon);
-      expect(geometry.getCoordinates()).to.have.deep.ordered.members([[[1, 2, 3], [2, 2, 3], [1, 2, 3]]]);
+      expect(geometry.getCoordinates()).to.have.deep.ordered.members([
+        [
+          [1, 2, 3],
+          [2, 2, 3],
+          [1, 2, 3],
+        ],
+      ]);
     });
   });
 
@@ -190,7 +206,13 @@ describe('CreatePolygonInteraction', () => {
 
     it('should update the geometries coordinates, no longer changing the validity dummy', () => {
       expect(geometry).to.be.an.instanceOf(Polygon);
-      expect(geometry.getCoordinates()).to.have.deep.ordered.members([[[1, 2, 3], [2, 2, 3], [2, 1, 3]]]);
+      expect(geometry.getCoordinates()).to.have.deep.ordered.members([
+        [
+          [1, 2, 3],
+          [2, 2, 3],
+          [2, 1, 3],
+        ],
+      ]);
     });
   });
 
@@ -238,7 +260,13 @@ describe('CreatePolygonInteraction', () => {
 
     it('should update the geometries coordinates', () => {
       expect(geometry).to.be.an.instanceOf(Polygon);
-      expect(geometry.getCoordinates()).to.have.deep.ordered.members([[[1, 2, 3], [2, 2, 3], [2, 1, 3]]]);
+      expect(geometry.getCoordinates()).to.have.deep.ordered.members([
+        [
+          [1, 2, 3],
+          [2, 2, 3],
+          [2, 1, 3],
+        ],
+      ]);
     });
 
     it('should call finished with Polygon', () => {

@@ -3,7 +3,9 @@ import OverrideClassRegistry from '../../src/overrideClassRegistry.js';
 import ClassRegistry from '../../src/classRegistry.js';
 
 class Class {
-  static get className() { return 'Class'; }
+  static get className() {
+    return 'Class';
+  }
 
   constructor() {
     this.type = Class.className;
@@ -11,7 +13,9 @@ class Class {
 }
 
 class Override {
-  static get className() { return 'Class'; }
+  static get className() {
+    return 'Class';
+  }
 
   constructor() {
     this.type = Class.className;
@@ -258,7 +262,9 @@ describe('OverrideClassRegistry', () => {
       });
 
       it('should be part of the classNames', () => {
-        expect(classRegistry.getClassNames()).to.have.members([Class.className]);
+        expect(classRegistry.getClassNames()).to.have.members([
+          Class.className,
+        ]);
       });
 
       it('should be retrievable', () => {
@@ -284,7 +290,9 @@ describe('OverrideClassRegistry', () => {
       });
 
       it('should be part of the classNames', () => {
-        expect(classRegistry.getClassNames()).to.have.members([Class.className]);
+        expect(classRegistry.getClassNames()).to.have.members([
+          Class.className,
+        ]);
       });
 
       it('should be retrievable', () => {
@@ -311,7 +319,9 @@ describe('OverrideClassRegistry', () => {
       });
 
       it('should be part of the classNames', () => {
-        expect(classRegistry.getClassNames()).to.have.members([Override.className]);
+        expect(classRegistry.getClassNames()).to.have.members([
+          Override.className,
+        ]);
       });
 
       it('should be retrievable', () => {

@@ -8,7 +8,9 @@ import { getWMSSource } from '../wmsHelpers.js';
  * @extends {RasterLayerOpenlayersImpl}
  */
 class WmsOpenlayersImpl extends RasterLayerOpenlayersImpl {
-  static get className() { return 'WmsOpenlayersImpl'; }
+  static get className() {
+    return 'WmsOpenlayersImpl';
+  }
 
   /**
    * @param {import("@vcmap/core").OpenlayersMap} map

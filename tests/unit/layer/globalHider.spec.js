@@ -1,8 +1,13 @@
 import Feature from 'ol/Feature.js';
 import Style from 'ol/style/Style.js';
 import GlobalHider from '../../../src/layer/globalHider.js';
-import VectorStyleItem, { vectorStyleSymbol } from '../../../src/style/vectorStyleItem.js';
-import { getVcsEventSpy, createDummyCesium3DTileFeature } from '../helpers/cesiumHelpers.js';
+import VectorStyleItem, {
+  vectorStyleSymbol,
+} from '../../../src/style/vectorStyleItem.js';
+import {
+  getVcsEventSpy,
+  createDummyCesium3DTileFeature,
+} from '../helpers/cesiumHelpers.js';
 import {
   FeatureVisibilityAction,
   globalHidden,
@@ -53,7 +58,10 @@ describe('GlobalHider', () => {
     it('should raise changed event', () => {
       const spy = getVcsEventSpy(GH.changed, sandbox);
       GH.hideObjects(['test', 'test1']);
-      expect(spy).to.have.been.calledWith({ action: FeatureVisibilityAction.HIDE, ids: ['test', 'test1'] });
+      expect(spy).to.have.been.calledWith({
+        action: FeatureVisibilityAction.HIDE,
+        ids: ['test', 'test1'],
+      });
     });
 
     it('should not set lastUpdated, if the array is empty', () => {
@@ -87,7 +95,10 @@ describe('GlobalHider', () => {
       GH.hideObjects(['test']);
       const spy = getVcsEventSpy(GH.changed, sandbox);
       GH.hideObjects(['test', 'test1']);
-      expect(spy).to.have.been.calledWith({ action: FeatureVisibilityAction.HIDE, ids: ['test1'] });
+      expect(spy).to.have.been.calledWith({
+        action: FeatureVisibilityAction.HIDE,
+        ids: ['test1'],
+      });
     });
   });
 
@@ -165,7 +176,10 @@ describe('GlobalHider', () => {
     it('should raise changed event', () => {
       const spy = getVcsEventSpy(GH.changed, sandbox);
       GH.showObjects(['test', 'test1']);
-      expect(spy).to.have.been.calledWith({ action: FeatureVisibilityAction.SHOW, ids: ['test', 'test1'] });
+      expect(spy).to.have.been.calledWith({
+        action: FeatureVisibilityAction.SHOW,
+        ids: ['test', 'test1'],
+      });
     });
 
     it('should not raise changed event, if the array is empty', () => {
@@ -185,7 +199,10 @@ describe('GlobalHider', () => {
       GH.hideObjects(['test']);
       const spy = getVcsEventSpy(GH.changed, sandbox);
       GH.showObjects(['test', 'test1']);
-      expect(spy).to.have.been.calledWith({ action: FeatureVisibilityAction.SHOW, ids: ['test1'] });
+      expect(spy).to.have.been.calledWith({
+        action: FeatureVisibilityAction.SHOW,
+        ids: ['test1'],
+      });
     });
 
     describe('feature handling', () => {

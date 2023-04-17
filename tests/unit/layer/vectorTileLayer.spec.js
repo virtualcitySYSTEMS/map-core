@@ -32,7 +32,9 @@ describe('VectorTileLayer', () => {
     });
 
     it('should create FeatureProvider', () => {
-      expect(vectorTile.featureProvider).to.be.instanceOf(TileProviderFeatureProvider);
+      expect(vectorTile.featureProvider).to.be.instanceOf(
+        TileProviderFeatureProvider,
+      );
     });
   });
 
@@ -85,11 +87,20 @@ describe('VectorTileLayer', () => {
         vectorTile.setGlobalHider(new GlobalHider());
         await vectorTile.initialize();
         vectorTile.featureVisibility.hideObjects(['hiddenFeature']);
-        vectorTile.featureVisibility.highlight({ highlightedFeature: new Style({}) });
+        vectorTile.featureVisibility.highlight({
+          highlightedFeature: new Style({}),
+        });
         vectorTile.globalHider.hideObjects(['globallyHiddenFeature']);
-        sandbox.stub(vectorTile.tileProvider, 'loader').resolves([
-          featureWithStyle, featureWithId, hiddenFeature, globallyHiddenFeature, featureWithoutId, highlightedFeature,
-        ]);
+        sandbox
+          .stub(vectorTile.tileProvider, 'loader')
+          .resolves([
+            featureWithStyle,
+            featureWithId,
+            hiddenFeature,
+            globallyHiddenFeature,
+            featureWithoutId,
+            highlightedFeature,
+          ]);
         await vectorTile.tileProvider.getFeaturesForTile(0, 0, 0);
       });
 
@@ -118,16 +129,25 @@ describe('VectorTileLayer', () => {
       });
 
       it('should return empty style if hidden by globalHider', () => {
-        expect(globallyHiddenFeature.getStyleFunction()(globallyHiddenFeature, 0)).to.be.empty;
+        expect(
+          globallyHiddenFeature.getStyleFunction()(globallyHiddenFeature, 0),
+        ).to.be.empty;
       });
 
       it('should return highlighted style for highlighted features', () => {
-        expect(highlightedFeature.getStyleFunction()(highlightedFeature, 0))
-          .to.have.members([vectorTile.featureVisibility.highlightedObjects.highlightedFeature.style.style]);
+        expect(
+          highlightedFeature.getStyleFunction()(highlightedFeature, 0),
+        ).to.have.members([
+          vectorTile.featureVisibility.highlightedObjects.highlightedFeature
+            .style.style,
+        ]);
       });
 
       it('should set Z Index on featureStyle if exists.', () => {
-        const style = featureWithStyle.getStyleFunction()(featureWithStyle, 0)[0];
+        const style = featureWithStyle.getStyleFunction()(
+          featureWithStyle,
+          0,
+        )[0];
         expect(style.getZIndex()).to.not.be.undefined;
       });
     });
@@ -144,9 +164,16 @@ describe('VectorTileLayer', () => {
         vectorTile.setGlobalHider(new GlobalHider());
         await vectorTile.initialize();
         await vectorTile.activate();
-        sandbox.stub(vectorTile.tileProvider, 'loader').resolves([
-          featureWithStyle, featureWithId, hiddenFeature, globallyHiddenFeature, featureWithoutId, highlightedFeature,
-        ]);
+        sandbox
+          .stub(vectorTile.tileProvider, 'loader')
+          .resolves([
+            featureWithStyle,
+            featureWithId,
+            hiddenFeature,
+            globallyHiddenFeature,
+            featureWithoutId,
+            highlightedFeature,
+          ]);
         await vectorTile.tileProvider.getFeaturesForTile(0, 0, 0);
       });
 
@@ -158,7 +185,9 @@ describe('VectorTileLayer', () => {
         let styles = featureWithStyle.getStyleFunction()(featureWithStyle, 0);
         expect(styles[0]).to.be.equal(featureWithStyle.getStyle());
         const highlightStyle = new Style({});
-        vectorTile.featureVisibility.highlight({ featureWithStyle: highlightStyle });
+        vectorTile.featureVisibility.highlight({
+          featureWithStyle: highlightStyle,
+        });
         styles = featureWithStyle.getStyleFunction()(featureWithStyle, 0);
         expect(styles[0]).to.be.equal(highlightStyle);
         vectorTile.featureVisibility.clearHighlighting();
@@ -166,7 +195,9 @@ describe('VectorTileLayer', () => {
 
       it('should reset highlighted state on unHighlight', () => {
         const highlightStyle = new Style({});
-        vectorTile.featureVisibility.highlight({ featureWithStyle: highlightStyle });
+        vectorTile.featureVisibility.highlight({
+          featureWithStyle: highlightStyle,
+        });
         let style = featureWithStyle.getStyleFunction()(featureWithStyle, 0)[0];
         expect(style).to.be.equal(highlightStyle);
         vectorTile.featureVisibility.unHighlight(['featureWithStyle']);
@@ -223,9 +254,9 @@ describe('VectorTileLayer', () => {
         vectorTile.setGlobalHider(new GlobalHider());
         await vectorTile.initialize();
         await vectorTile.activate();
-        sandbox.stub(vectorTile.tileProvider, 'loader').resolves([
-          hiddenFeature,
-        ]);
+        sandbox
+          .stub(vectorTile.tileProvider, 'loader')
+          .resolves([hiddenFeature]);
         await vectorTile.tileProvider.getFeaturesForTile(0, 0, 0);
       });
 
@@ -306,7 +337,9 @@ describe('VectorTileLayer', () => {
     });
 
     it('should export vectorProperties Options', () => {
-      expect(configObject.vectorProperties).to.be.deep.equal(options.vectorProperties);
+      expect(configObject.vectorProperties).to.be.deep.equal(
+        options.vectorProperties,
+      );
     });
 
     it('should export tileProvider Options', () => {

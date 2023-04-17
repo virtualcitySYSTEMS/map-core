@@ -8,12 +8,14 @@ describe('terrainHelpers', () => {
     sandbox = sinon.createSandbox();
   });
 
-  afterEach(() => { sandbox.restore(); });
+  afterEach(() => {
+    sandbox.restore();
+  });
 
   describe('~getTerrainProviderForUrl', () => {
     beforeEach(() => {
       sandbox.useFakeServer();
-      sandbox.server.respondWith(new RegExp('test'), JSON.stringify({}));
+      sandbox.server.respondWith(/test/, JSON.stringify({}));
     });
 
     it('should create a new terrain provider, if non is present for the passed url', () => {
@@ -28,9 +30,11 @@ describe('terrainHelpers', () => {
     });
 
     it('should set the requestVertexNormals to true', () => {
-      const CTP = getTerrainProviderForUrl({ url: 'test2', requestVertexNormals: true });
+      const CTP = getTerrainProviderForUrl({
+        url: 'test2',
+        requestVertexNormals: true,
+      });
       expect(CTP).to.have.property('requestVertexNormals').and.to.be.true;
     });
   });
 });
-

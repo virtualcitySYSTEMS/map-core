@@ -118,7 +118,9 @@ describe('Category', () => {
 
     it('should fail, if the keyProperty of the collection does not match the categories key property', () => {
       const category = new Category({ keyProperty: 'foo' });
-      expect(() => { category.setCollection(new IndexedCollection()); }).to.throw;
+      expect(() => {
+        category.setCollection(new IndexedCollection());
+      }).to.throw;
       category.destroy();
     });
 
@@ -168,7 +170,10 @@ describe('Category', () => {
 
       before(async () => {
         app1 = new VcsApp();
-        category = await app1.categories.requestCategory({ name: 'foo', featureProperty: 'feature' });
+        category = await app1.categories.requestCategory({
+          name: 'foo',
+          featureProperty: 'feature',
+        });
       });
 
       after(() => {
@@ -180,7 +185,9 @@ describe('Category', () => {
         category.collection.add(item);
 
         setTimeout(() => {
-          expect(category.layer.getFeatureById(item.name)).to.equal(item.feature);
+          expect(category.layer.getFeatureById(item.name)).to.equal(
+            item.feature,
+          );
           done();
         }, 20);
       });
@@ -267,15 +274,22 @@ describe('Category', () => {
 
       it('should serialize the items of said module', () => {
         expect(serialized).to.have.property('items').and.to.have.lengthOf(2);
-        expect(serialized.items.map(i => i.name)).to.have.members(['foo', 'baz']);
+        expect(serialized.items.map((i) => i.name)).to.have.members([
+          'foo',
+          'baz',
+        ]);
       });
 
       it('should copy/serialize the items', () => {
-        const serializedFooItem = serialized.items.find(i => i.name === 'foo');
+        const serializedFooItem = serialized.items.find(
+          (i) => i.name === 'foo',
+        );
         expect(serializedFooItem).to.have.all.keys('name');
         expect(serializedFooItem).to.not.equal(fooItem);
 
-        const serializedBazItem = serialized.items.find(i => i.name === 'baz');
+        const serializedBazItem = serialized.items.find(
+          (i) => i.name === 'baz',
+        );
         expect(serializedBazItem).to.not.be.an.instanceOf(VcsObject);
       });
     });
@@ -290,7 +304,11 @@ describe('Category', () => {
           featureProperty: 'feat',
         });
         category.setApp(app);
-        fooItem = { name: 'foo', [moduleIdSymbol]: 'foo', feat: new OlFeature({ geometry: new Point([1, 1, 0]) }) };
+        fooItem = {
+          name: 'foo',
+          [moduleIdSymbol]: 'foo',
+          feat: new OlFeature({ geometry: new Point([1, 1, 0]) }),
+        };
         category.collection.add(fooItem);
         category.collection.add({ name: 'bar' });
         const bazItem = new VcsObject({ name: 'baz' });
@@ -308,11 +326,15 @@ describe('Category', () => {
 
       it('should serialize the items of said module', () => {
         expect(serialized).to.have.property('items').and.to.have.lengthOf(2);
-        expect(serialized.items.map(i => i.name)).to.have.members(['foo', 'baz']);
+        expect(serialized.items.map((i) => i.name)).to.have.members([
+          'foo',
+          'baz',
+        ]);
       });
 
       it('should serialize a features property', () => {
-        expect(serialized.items[0]).to.have.property('feat')
+        expect(serialized.items[0])
+          .to.have.property('feat')
           .and.to.have.property('type', 'Feature');
       });
     });
@@ -384,20 +406,33 @@ describe('Category', () => {
         });
 
         it('should set layerOptions style', () => {
-          expect(category.layer).to.have.property('style', options.layerOptions.style);
+          expect(category.layer).to.have.property(
+            'style',
+            options.layerOptions.style,
+          );
         });
 
         it('should set layerOptions highlightStyle', () => {
-          expect(category.layer).to.have.property('highlightStyle', options.layerOptions.highlightStyle);
+          expect(category.layer).to.have.property(
+            'highlightStyle',
+            options.layerOptions.highlightStyle,
+          );
         });
 
         it('should set layerOptions zIndex', () => {
-          expect(category.layer).to.have.property('zIndex', options.layerOptions.zIndex);
+          expect(category.layer).to.have.property(
+            'zIndex',
+            options.layerOptions.zIndex,
+          );
         });
 
         it('should set layerOptions vectorProperties', () => {
-          expect(category.layer).to.have.property('vectorProperties')
-            .and.to.have.property('extrudedHeight', options.layerOptions.vectorProperties.extrudedHeight);
+          expect(category.layer)
+            .to.have.property('vectorProperties')
+            .and.to.have.property(
+              'extrudedHeight',
+              options.layerOptions.vectorProperties.extrudedHeight,
+            );
         });
       });
     });
@@ -415,11 +450,13 @@ describe('Category', () => {
         });
 
         it('should throw on resetting classRegistryName', () => {
-          expect(() => category.mergeOptions({ classRegistryName: 'foo' })).to.throw;
+          expect(() => category.mergeOptions({ classRegistryName: 'foo' })).to
+            .throw;
         });
 
         it('should throw on resetting featureProperty', () => {
-          expect(() => category.mergeOptions({ featureProperty: 'foo' })).to.throw;
+          expect(() => category.mergeOptions({ featureProperty: 'foo' })).to
+            .throw;
         });
 
         it('should throw on resetting keyProperty', () => {
@@ -445,15 +482,24 @@ describe('Category', () => {
         });
 
         it('should throw on resetting classRegistryName', () => {
-          expect(() => category.mergeOptions({ ...options, classRegistryName: 'layerClassRegistry' })).to.throw;
+          expect(() =>
+            category.mergeOptions({
+              ...options,
+              classRegistryName: 'layerClassRegistry',
+            }),
+          ).to.throw;
         });
 
         it('should throw on resetting featureProperty', () => {
-          expect(() => category.mergeOptions({ ...options, featureProperty: 'foo' })).to.throw;
+          expect(() =>
+            category.mergeOptions({ ...options, featureProperty: 'foo' }),
+          ).to.throw;
         });
 
         it('should throw on resetting keyProperty', () => {
-          expect(() => category.mergeOptions({ ...options, keyProperty: 'foo' })).to.throw;
+          expect(() =>
+            category.mergeOptions({ ...options, keyProperty: 'foo' }),
+          ).to.throw;
         });
 
         it('should throw on omitting classRegistryName', () => {
@@ -513,19 +559,30 @@ describe('Category', () => {
       });
 
       it('should configure featureProperty', () => {
-        expect(outputConfig).to.have.property('featureProperty', inputConfig.featureProperty);
+        expect(outputConfig).to.have.property(
+          'featureProperty',
+          inputConfig.featureProperty,
+        );
       });
 
       it('should configure classRegistryName', () => {
-        expect(outputConfig).to.have.property('classRegistryName', inputConfig.classRegistryName);
+        expect(outputConfig).to.have.property(
+          'classRegistryName',
+          inputConfig.classRegistryName,
+        );
       });
 
       it('should configure keyProperty', () => {
-        expect(outputConfig).to.have.property('keyProperty', inputConfig.keyProperty);
+        expect(outputConfig).to.have.property(
+          'keyProperty',
+          inputConfig.keyProperty,
+        );
       });
 
       it('should configure layerOptions', () => {
-        expect(outputConfig).to.have.property('layerOptions').and.to.eql(inputConfig.layerOptions);
+        expect(outputConfig)
+          .to.have.property('layerOptions')
+          .and.to.eql(inputConfig.layerOptions);
       });
     });
   });

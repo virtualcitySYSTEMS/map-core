@@ -65,7 +65,10 @@ class CreateBBoxInteraction extends AbstractInteraction {
 
       this._lastCoordinate[2] = this._origin[2];
       let ringCoordinates;
-      if ((originXHigher && originYHigher) || (!originXHigher && !originYHigher)) {
+      if (
+        (originXHigher && originYHigher) ||
+        (!originXHigher && !originYHigher)
+      ) {
         ringCoordinates = [
           this._origin,
           [this._lastCoordinate[0], this._origin[1], this._origin[2]],
@@ -91,7 +94,11 @@ class CreateBBoxInteraction extends AbstractInteraction {
    */
   async pipe(event) {
     if (event.type & EventType.CLICKMOVE && this._geometry) {
-      this._lastCoordinate.splice(0, event.positionOrPixel.length, ...event.positionOrPixel);
+      this._lastCoordinate.splice(
+        0,
+        event.positionOrPixel.length,
+        ...event.positionOrPixel,
+      );
       this._setCoordinates();
     }
 
@@ -101,7 +108,8 @@ class CreateBBoxInteraction extends AbstractInteraction {
       } else {
         this._geometry = new Polygon([[event.positionOrPixel.slice()]], 'XYZ');
         this._geometry.set('_vcsGeomType', GeometryType.BBox);
-        this._geometry[alreadyTransformedToImage] = event.map instanceof ObliqueMap;
+        this._geometry[alreadyTransformedToImage] =
+          event.map instanceof ObliqueMap;
         this.created.raiseEvent(this._geometry);
         this._origin = event.positionOrPixel.slice();
         this._lastCoordinate = this._origin.slice();

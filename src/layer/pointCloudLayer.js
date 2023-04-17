@@ -36,7 +36,9 @@ export const defaultPointCloudStyle = new DeclarativeStyleItem({});
  * @api stable
  */
 class PointCloudLayer extends CesiumTilesetLayer {
-  static get className() { return 'PointCloudLayer'; }
+  static get className() {
+    return 'PointCloudLayer';
+  }
 
   /**
    * @returns {PointCloudOptions}
@@ -60,13 +62,12 @@ class PointCloudLayer extends CesiumTilesetLayer {
      * @api
      * @type {number|string|null}
      */
-    this.defaultPointSize = options.pointSize != null ? options.pointSize : defaultOptions.pointSize;
+    this.defaultPointSize =
+      options.pointSize != null ? options.pointSize : defaultOptions.pointSize;
     /** @type {number|string|null} */
     this._pointSize = this.defaultPointSize;
 
-    this._supportedMaps = [
-      CesiumMap.className,
-    ];
+    this._supportedMaps = [CesiumMap.className];
   }
 
   /**
@@ -76,14 +77,19 @@ class PointCloudLayer extends CesiumTilesetLayer {
    * @returns {import("@vcmap/core").StyleItem}
    */
   getStyleOrDefaultStyle(styleOptions, defaultStyle) {
-    return super.getStyleOrDefaultStyle(styleOptions, defaultStyle || defaultPointCloudStyle);
+    return super.getStyleOrDefaultStyle(
+      styleOptions,
+      defaultStyle || defaultPointCloudStyle,
+    );
   }
 
   /**
    * @type {number|string|null}
    * @api
    */
-  get pointSize() { return this._pointSize; }
+  get pointSize() {
+    return this._pointSize;
+  }
 
   /**
    * @param {string|number|undefined} size
@@ -91,7 +97,8 @@ class PointCloudLayer extends CesiumTilesetLayer {
   set pointSize(size) {
     checkMaybe(size, [Number, String]);
     this._pointSize = size;
-    /** @type {DeclarativeStyleItem} */ (this.style).pointSize = size?.toString();
+    /** @type {DeclarativeStyleItem} */ (this.style).pointSize =
+      size?.toString();
   }
 
   async initialize() {
@@ -105,7 +112,9 @@ class PointCloudLayer extends CesiumTilesetLayer {
    */
   createImplementationsForMap(map) {
     if (map instanceof CesiumMap) {
-      return [new CesiumTilesetCesiumImpl(map, this.getImplementationOptions())];
+      return [
+        new CesiumTilesetCesiumImpl(map, this.getImplementationOptions()),
+      ];
     }
 
     return [];
@@ -128,7 +137,9 @@ class PointCloudLayer extends CesiumTilesetLayer {
    */
   setStyle(style, silent) {
     if (style instanceof VectorStyleItem) {
-      this.getLogger().warning('trying to apply vector style to point cloud layer.');
+      this.getLogger().warning(
+        'trying to apply vector style to point cloud layer.',
+      );
     } else {
       super.setStyle(style, silent);
     }

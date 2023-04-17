@@ -29,7 +29,6 @@ describe('Collection', () => {
         expect(collection.size).to.equal(2);
       });
 
-
       it('should create a collection from an Array of atomics (if non-unique)', () => {
         collection = Collection.from([1, 2, 3], false);
         expect(collection.size).to.equal(3);
@@ -44,25 +43,47 @@ describe('Collection', () => {
       });
 
       it('should respect the unique key, removing any duplicates, if passed an input iterable', () => {
-        collection = Collection.from([{ name: 1 }, { name: 2 }, 3, { name: 2 }]);
+        collection = Collection.from([
+          { name: 1 },
+          { name: 2 },
+          3,
+          { name: 2 },
+        ]);
         expect(collection.size).to.equal(2);
       });
 
       it('should allow the setting of a string unique key', () => {
-        collection = Collection.from([{ name: 1, id: 1 }, { name: 2, id: 2 }, { name: 2, id: 3 }], 'id');
+        collection = Collection.from(
+          [
+            { name: 1, id: 1 },
+            { name: 2, id: 2 },
+            { name: 2, id: 3 },
+          ],
+          'id',
+        );
         expect(collection.size).to.equal(3);
         expect(collection.uniqueKey).to.equal('id');
       });
 
       it('should allow a symbol as a unique key', () => {
         const id = Symbol('id');
-        collection = Collection.from([{ name: 1, [id]: 1 }, { name: 2, [id]: 2 }, { name: 2, [id]: 3 }], id);
+        collection = Collection.from(
+          [
+            { name: 1, [id]: 1 },
+            { name: 2, [id]: 2 },
+            { name: 2, [id]: 3 },
+          ],
+          id,
+        );
         expect(collection.size).to.equal(3);
         expect(collection.uniqueKey).to.equal(id);
       });
 
       it('should allow the ignoring of a unique key', () => {
-        collection = Collection.from([{ name: 1 }, { name: 2 }, 3, { name: 2 }], false);
+        collection = Collection.from(
+          [{ name: 1 }, { name: 2 }, 3, { name: 2 }],
+          false,
+        );
         expect(collection.size).to.equal(4);
         expect(collection.uniqueKey).to.be.undefined;
       });

@@ -18,7 +18,10 @@ describe('CategoryCollection', () => {
             name: 'bar',
           },
         ];
-        await app.categories.requestCategory({ name: 'foo', type: Category.className });
+        await app.categories.requestCategory({
+          name: 'foo',
+          type: Category.className,
+        });
         await app.categories.parseCategoryItems('foo', items, 'foo');
       });
 
@@ -54,7 +57,11 @@ describe('CategoryCollection', () => {
             type: VectorLayer.className,
           },
         ];
-        await app.categories.requestCategory({ name: 'foo', type: Category.className, classRegistryName: 'layerClassRegistry' });
+        await app.categories.requestCategory({
+          name: 'foo',
+          type: Category.className,
+          classRegistryName: 'layerClassRegistry',
+        });
         await app.categories.parseCategoryItems('foo', items, 'foo');
       });
 
@@ -98,7 +105,11 @@ describe('CategoryCollection', () => {
           },
         ];
         await app.categories.parseCategoryItems('foo', items, 'foo');
-        await app.categories.requestCategory({ name: 'foo', type: Category.className, classRegistryName: 'layerClassRegistry' });
+        await app.categories.requestCategory({
+          name: 'foo',
+          type: Category.className,
+          classRegistryName: 'layerClassRegistry',
+        });
       });
 
       after(() => {
@@ -138,7 +149,11 @@ describe('CategoryCollection', () => {
         ];
         await app.categories.parseCategoryItems('foo', items, 'foo');
         app.moduleRemoved.raiseEvent({ _id: 'foo' });
-        await app.categories.requestCategory({ name: 'foo', type: Category.className, classRegistryName: 'layerClassRegistry' });
+        await app.categories.requestCategory({
+          name: 'foo',
+          type: Category.className,
+          classRegistryName: 'layerClassRegistry',
+        });
       });
 
       after(() => {
@@ -164,7 +179,10 @@ describe('CategoryCollection', () => {
 
       before(async () => {
         app = new VcsApp();
-        category = await app.categories.requestCategory({ name: 'foo', type: Category.className });
+        category = await app.categories.requestCategory({
+          name: 'foo',
+          type: Category.className,
+        });
       });
 
       after(() => {
@@ -193,8 +211,16 @@ describe('CategoryCollection', () => {
 
       before(async () => {
         app = new VcsApp();
-        category = await app.categories.requestCategory({ name: 'foo', type: Category.className, title: 'foo' });
-        categoryAgain = await app.categories.requestCategory({ name: 'foo', type: Category.className, title: 'bar' });
+        category = await app.categories.requestCategory({
+          name: 'foo',
+          type: Category.className,
+          title: 'foo',
+        });
+        categoryAgain = await app.categories.requestCategory({
+          name: 'foo',
+          type: Category.className,
+          title: 'bar',
+        });
       });
 
       after(() => {

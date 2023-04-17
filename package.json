@@ -7,7 +7,10 @@
   "types": "index.d.ts",
   "scripts": {
     "test": "node node_modules/mocha/bin/_mocha --exit --require tests/setupJsdom.js --require tests/setup.js --file tests/vcs.js --recursive \"tests/**/*spec.js\"",
-    "lint": "eslint .",
+    "lint:js": "eslint . --ext .vue,.js,.cjs,.mjs",
+    "lint:prettier": "prettier --check .",
+    "lint": "npm run lint:js && npm run lint:prettier",
+    "format": "prettier --write --list-different . && npm run lint:js -- --fix",
     "pretype-check": "npm run build-typedefs",
     "type-check": "node build/typeCheck.js",
     "postinstall": "node build/postinstall.js",
@@ -36,12 +39,12 @@
   "author": "Virtual City Systems",
   "license": "MIT",
   "devDependencies": {
-    "@vcsuite/eslint-config": "^2.0.3",
+    "@vcsuite/eslint-config": "^3.0.3",
     "@vcsuite/tsd-jsdoc": "^1.0.2",
     "c8": "^7.7.1",
     "canvas": "^2.8.0",
     "chai": "^4.3.4",
-    "eslint": "^8.1.0",
+    "eslint": "^8.38.0",
     "jsdoc": "^3.6.7",
     "jsdoc-plugin-typescript": "^2.0.6",
     "jsdom": "^16.5.2",
@@ -50,6 +53,7 @@
     "mocha-junit-reporter": "^2.0.2",
     "nock": "^13.2.4",
     "node-fetch": "^3.2.0",
+    "prettier": "^2.8.7",
     "resize-observer-polyfill": "1.5.1",
     "sinon": "^9.2.4",
     "sinon-chai": "^3.6.0",
@@ -72,6 +76,7 @@
     "*.d.ts",
     "docs"
   ],
+  "prettier": "@vcsuite/eslint-config/prettier.js",
   "dependencies": {
     "@types/rbush": "^3.0.0",
     "@vcsuite/check": "^1.1.2",

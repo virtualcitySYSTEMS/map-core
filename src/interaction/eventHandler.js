@@ -7,7 +7,11 @@ import AbstractInteraction from './abstractInteraction.js';
 import InteractionChain from './interactionChain.js';
 import CoordinateAtPixel from './coordinateAtPixel.js';
 import FeatureAtPixelInteraction from './featureAtPixelInteraction.js';
-import { EventType, ModificationKeyType, PointerEventType } from './interactionType.js';
+import {
+  EventType,
+  ModificationKeyType,
+  PointerEventType,
+} from './interactionType.js';
 import FeatureProviderInteraction from './featureProviderInteraction.js';
 import VcsEvent from '../vcsEvent.js';
 
@@ -180,21 +184,27 @@ class EventHandler {
    * @readonly
    * @api
    */
-  get positionInteraction() { return this._positionInteraction; }
+  get positionInteraction() {
+    return this._positionInteraction;
+  }
 
   /**
    * @type {FeatureAtPixelInteraction}
    * @readonly
    * @api
    */
-  get featureInteraction() { return this._featureInteraction; }
+  get featureInteraction() {
+    return this._featureInteraction;
+  }
 
   /**
    * @api
    * @readonly
    * @type {FeatureProviderInteraction}
    */
-  get featureProviderInteraction() { return this._featureProviderInteraction; }
+  get featureProviderInteraction() {
+    return this._featureProviderInteraction;
+  }
 
   /**
    * A copy of all the EventHandler interactions
@@ -202,14 +212,18 @@ class EventHandler {
    * @type {AbstractInteraction[]}
    * @api
    */
-  get interactions() { return this._interactionChain.chain.slice(); }
+  get interactions() {
+    return this._interactionChain.chain.slice();
+  }
 
   /**
    * An event called, when the modifier changes. Order of precedence, if more then one key is pressed: SHIFT, ALT, CTRL
    * @type {VcsEvent<ModificationKeyType>}
    * @readonly
    */
-  get modifierChanged() { return this._modifierChanged; }
+  get modifierChanged() {
+    return this._modifierChanged;
+  }
 
   /**
    * Add a dynamic interaction to the interaction chain. This is the default methodology for
@@ -244,7 +258,11 @@ class EventHandler {
       };
     }
     this.exclusiveAdded.raiseEvent();
-    return this._exclusiveUnListen.bind(this, interaction, this._exclusiveInteraction.id);
+    return this._exclusiveUnListen.bind(
+      this,
+      interaction,
+      this._exclusiveInteraction.id,
+    );
   }
 
   /**
@@ -254,12 +272,12 @@ class EventHandler {
   removeExclusive() {
     if (this._exclusiveInteraction) {
       this._exclusiveInteraction.interactions
-        .filter(i => i)
+        .filter((i) => i)
         .forEach((i) => {
           this._interactionChain.removeInteraction(i);
         });
       this._exclusiveInteraction.cb
-        .filter(cb => cb)
+        .filter((cb) => cb)
         .forEach((cb) => {
           cb();
         });
@@ -276,17 +294,21 @@ class EventHandler {
    * @private
    */
   _exclusiveUnListen(interaction, id) {
-    if (!this._exclusiveInteraction || (this._exclusiveInteraction && this._exclusiveInteraction.id !== id)) {
+    if (
+      !this._exclusiveInteraction ||
+      (this._exclusiveInteraction && this._exclusiveInteraction.id !== id)
+    ) {
       return 0;
     }
     const removed = this._interactionChain.removeInteraction(interaction);
-    const index = this._exclusiveInteraction.interactions
-      .findIndex(candidate => candidate && candidate.id === interaction.id);
+    const index = this._exclusiveInteraction.interactions.findIndex(
+      (candidate) => candidate && candidate.id === interaction.id,
+    );
     if (index > -1) {
       this._exclusiveInteraction.interactions.splice(index, 1, undefined);
       this._exclusiveInteraction.cb.splice(index, 1, undefined);
     }
-    if (this._exclusiveInteraction.interactions.every(i => i === undefined)) {
+    if (this._exclusiveInteraction.interactions.every((i) => i === undefined)) {
       this._exclusiveInteraction = null;
     }
     if (removed > -1) {
@@ -308,7 +330,8 @@ class EventHandler {
     check(index, Number);
 
     this._interactionChain.addInteraction(interaction, index);
-    return () => (this._interactionChain.removeInteraction(interaction) !== -1 ? 1 : 0);
+    return () =>
+      this._interactionChain.removeInteraction(interaction) !== -1 ? 1 : 0;
   }
 
   /**
@@ -368,13 +391,19 @@ class EventHandler {
       if (
         this._lastClick.time &&
         Date.now() - this._lastClick.time < this.clickDuration &&
-        Cartesian2.distanceSquared(this._lastClick.windowPosition, actualEvent.windowPosition) < 12
+        Cartesian2.distanceSquared(
+          this._lastClick.windowPosition,
+          actualEvent.windowPosition,
+        ) < 12
       ) {
         this._lastClick.time = null;
         actualEvent.type = EventType.DBLCLICK;
       } else {
         this._lastClick.time = Date.now();
-        Cartesian2.clone(actualEvent.windowPosition, this._lastClick.windowPosition);
+        Cartesian2.clone(
+          actualEvent.windowPosition,
+          this._lastClick.windowPosition,
+        );
         actualEvent.type = EventType.CLICK;
       }
       this._startChain(actualEvent);
@@ -395,7 +424,10 @@ class EventHandler {
         actualEvent.key = this._dragging.key;
         actualEvent.pointer = this._dragging.pointer;
         this._startChain(actualEvent, true);
-      } else if (!this._dragging && Date.now() - this._lastDown.time > this.dragDuration) {
+      } else if (
+        !this._dragging &&
+        Date.now() - this._lastDown.time > this.dragDuration
+      ) {
         actualEvent = { type: EventType.DRAGSTART, ...this._lastDown };
         this._dragging = actualEvent;
         this._startChain(actualEvent, true);
@@ -417,15 +449,23 @@ class EventHandler {
     }
 
     if (
-      this._lastKeyEventModifiers.get(ModificationKeyType.SHIFT) !== event.shiftKey ||
-      this._lastKeyEventModifiers.get(ModificationKeyType.ALT) !== event.altKey ||
-      this._lastKeyEventModifiers.get(ModificationKeyType.CTRL) !== event.ctrlKey
+      this._lastKeyEventModifiers.get(ModificationKeyType.SHIFT) !==
+        event.shiftKey ||
+      this._lastKeyEventModifiers.get(ModificationKeyType.ALT) !==
+        event.altKey ||
+      this._lastKeyEventModifiers.get(ModificationKeyType.CTRL) !==
+        event.ctrlKey
     ) {
-      this._lastKeyEventModifiers.set(ModificationKeyType.SHIFT, event.shiftKey);
+      this._lastKeyEventModifiers.set(
+        ModificationKeyType.SHIFT,
+        event.shiftKey,
+      );
       this._lastKeyEventModifiers.set(ModificationKeyType.ALT, event.altKey);
       this._lastKeyEventModifiers.set(ModificationKeyType.CTRL, event.ctrlKey);
-      const modifier = [...this._lastKeyEventModifiers.keys()]
-        .find(k => this._lastKeyEventModifiers.get(k)) || ModificationKeyType.NONE;
+      const modifier =
+        [...this._lastKeyEventModifiers.keys()].find((k) =>
+          this._lastKeyEventModifiers.get(k),
+        ) || ModificationKeyType.NONE;
 
       if (modifier !== this._lastDispatchedModifier) {
         this._interactionChain.modifierChanged(modifier);

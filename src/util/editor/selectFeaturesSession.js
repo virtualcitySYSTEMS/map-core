@@ -4,7 +4,9 @@ import { createSync } from '../../layer/vectorSymbols.js';
 import { SessionType, setupInteractionChain } from './editorSessionHelpers.js';
 import SelectSingleFeatureInteraction from './interactions/selectSingleFeatureInteraction.js';
 import SelectMultiFeatureInteraction from './interactions/selectMultiFeatureInteraction.js';
-import SelectFeatureMouseOverInteraction, { SelectionMode } from './interactions/selectFeatureMouseOverInteraction.js';
+import SelectFeatureMouseOverInteraction, {
+  SelectionMode,
+} from './interactions/selectFeatureMouseOverInteraction.js';
 import VcsEvent from '../../vcsEvent.js';
 import ObliqueMap from '../../map/obliqueMap.js';
 import { vcsLayerName } from '../../layer/layerSymbols.js';
@@ -30,10 +32,12 @@ function createHighlightManager(layer, highlightStyle) {
    * @param {Array<import("ol").Feature>} newFeatures Features to be highlighted.
    */
   const update = (newFeatures) => {
-    const newIds = new Set(newFeatures.map((f) => {
-      f[createSync] = true;
-      return f.getId();
-    }));
+    const newIds = new Set(
+      newFeatures.map((f) => {
+        f[createSync] = true;
+        return f.getId();
+      }),
+    );
     const idsToHighlight = [];
     newIds.forEach((id) => {
       if (!currentFeaturesMap.has(id)) {
@@ -49,11 +53,17 @@ function createHighlightManager(layer, highlightStyle) {
     });
 
     layer.featureVisibility.unHighlight(idsToUnHighlight);
-    layer.featureVisibility.highlight(Object.fromEntries(idsToHighlight.map(id => [id, highlightStyle])));
-    layer.getFeaturesById(idsToUnHighlight).forEach(feature => delete feature[createSync]);
+    layer.featureVisibility.highlight(
+      Object.fromEntries(idsToHighlight.map((id) => [id, highlightStyle])),
+    );
+    layer
+      .getFeaturesById(idsToUnHighlight)
+      .forEach((feature) => delete feature[createSync]);
 
     currentFeaturesMap.clear();
-    newFeatures.forEach(feature => currentFeaturesMap.set(feature.getId(), feature));
+    newFeatures.forEach((feature) =>
+      currentFeaturesMap.set(feature.getId(), feature),
+    );
   };
 
   return {
@@ -61,14 +71,18 @@ function createHighlightManager(layer, highlightStyle) {
       return [...currentFeaturesMap.values()];
     },
     update(newFeatures) {
-      const featuresOnHighlightLayer = newFeatures.filter(feature => feature[vcsLayerName] === layer.name);
+      const featuresOnHighlightLayer = newFeatures.filter(
+        (feature) => feature[vcsLayerName] === layer.name,
+      );
       update(featuresOnHighlightLayer);
     },
     destroy() {
       if (currentFeaturesMap.size > 0) {
         const idsToUnHighlight = [...currentFeaturesMap.keys()];
         layer.featureVisibility.unHighlight(idsToUnHighlight);
-        layer.getFeaturesById(idsToUnHighlight).forEach(feature => delete feature[createSync]);
+        layer
+          .getFeaturesById(idsToUnHighlight)
+          .forEach((feature) => delete feature[createSync]);
         currentFeaturesMap.clear();
       }
     },
@@ -141,9 +155,7 @@ function startSelectFeaturesSession(
     destroy: destroyInteractionChain,
   } = setupInteractionChain(app.maps.eventHandler, interactionId);
 
-  const highlightManager = createHighlightManager(
-    layer, highlightStyle,
-  );
+  const highlightManager = createHighlightManager(layer, highlightStyle);
 
   let interactionListeners = [];
   function destroyCurrentSelectInteraction() {
@@ -159,7 +171,9 @@ function startSelectFeaturesSession(
         mouseOverInteraction = null;
       }
     }
-    interactionListeners.forEach((cb) => { cb(); });
+    interactionListeners.forEach((cb) => {
+      cb();
+    });
     interactionListeners = [];
   }
 
@@ -190,13 +204,15 @@ function startSelectFeaturesSession(
     } else if (newMode === SelectionMode.MULTI) {
       currentSelectInteraction = new SelectMultiFeatureInteraction(layer);
       interactionListeners.push(
-        currentSelectInteraction.featuresChanged.addEventListener((features) => {
-          highlightManager.update(features);
-          featuresChanged.raiseEvent(features);
-          if (obliqueMap) {
-            obliqueMap.switchEnabled = features.length === 0;
-          }
-        }),
+        currentSelectInteraction.featuresChanged.addEventListener(
+          (features) => {
+            highlightManager.update(features);
+            featuresChanged.raiseEvent(features);
+            if (obliqueMap) {
+              obliqueMap.switchEnabled = features.length === 0;
+            }
+          },
+        ),
       );
     }
     const { highlightedFeatures } = highlightManager;

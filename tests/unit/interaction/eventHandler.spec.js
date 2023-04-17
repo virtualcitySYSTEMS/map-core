@@ -147,8 +147,18 @@ describe('EventHandler', () => {
       const listener = EH.exclusiveAdded.addEventListener(() => {
         spy();
       });
-      const remover1 = EH.addExclusiveInteraction(dummy1, sinonBox.spy(), 3, 'test');
-      const remover2 = EH.addExclusiveInteraction(dummy2, sinonBox.spy(), 4, 'test');
+      const remover1 = EH.addExclusiveInteraction(
+        dummy1,
+        sinonBox.spy(),
+        3,
+        'test',
+      );
+      const remover2 = EH.addExclusiveInteraction(
+        dummy2,
+        sinonBox.spy(),
+        4,
+        'test',
+      );
       expect(spy).to.have.been.calledTwice;
       remover1();
       remover2();
@@ -197,18 +207,16 @@ describe('EventHandler', () => {
 
     it('should trigger a click on mouse up', () => {
       EH._mouseDown({ windowPosition });
-      expect(EH)
-        .to.have.property('_lastDown')
-        .to.have.property('time');
+      expect(EH).to.have.property('_lastDown').to.have.property('time');
 
       EH._mouseUp({ windowPosition });
 
-      expect(EH)
-        .to.have.property('_lastDown')
-        .to.be.null;
+      expect(EH).to.have.property('_lastDown').to.be.null;
 
-      expect(chainPipe).to.have.been
-        .calledWith({ windowPosition, type: EventType.CLICK });
+      expect(chainPipe).to.have.been.calledWith({
+        windowPosition,
+        type: EventType.CLICK,
+      });
     });
 
     it('should call a double click', () => {
@@ -220,11 +228,11 @@ describe('EventHandler', () => {
         .to.have.property('time', Date.now());
 
       EH._mouseUp({ windowPosition });
-      expect(EH)
-        .to.have.property('_lastDown')
-        .to.be.null;
-      expect(chainPipe).to.have.been
-        .calledWith({ windowPosition, type: EventType.CLICK });
+      expect(EH).to.have.property('_lastDown').to.be.null;
+      expect(chainPipe).to.have.been.calledWith({
+        windowPosition,
+        type: EventType.CLICK,
+      });
 
       EH._mouseDown({ windowPosition });
       expect(EH)
@@ -234,8 +242,10 @@ describe('EventHandler', () => {
 
       sinonBox.clock.tick(1);
       EH._mouseUp({ windowPosition });
-      expect(chainPipe).to.have.been
-        .calledWith({ windowPosition, type: EventType.DBLCLICK });
+      expect(chainPipe).to.have.been.calledWith({
+        windowPosition,
+        type: EventType.DBLCLICK,
+      });
     });
 
     it('should not call a double click, if the click duration is exceeded', () => {
@@ -246,11 +256,11 @@ describe('EventHandler', () => {
         .to.have.property('time', Date.now());
 
       EH._mouseUp({ windowPosition });
-      expect(EH)
-        .to.have.property('_lastDown')
-        .to.be.null;
-      expect(chainPipe).to.have.been
-        .calledWith({ windowPosition, type: EventType.CLICK });
+      expect(EH).to.have.property('_lastDown').to.be.null;
+      expect(chainPipe).to.have.been.calledWith({
+        windowPosition,
+        type: EventType.CLICK,
+      });
 
       EH._mouseDown({ windowPosition });
       expect(EH)
@@ -260,8 +270,10 @@ describe('EventHandler', () => {
 
       sinonBox.clock.tick(EH.clickDuration);
       EH._mouseUp({ windowPosition });
-      expect(chainPipe).to.have.been
-        .calledWith({ windowPosition, type: EventType.CLICK });
+      expect(chainPipe).to.have.been.calledWith({
+        windowPosition,
+        type: EventType.CLICK,
+      });
     });
 
     it('should not call a double click, if the click distance between the two clicks is exceeded', () => {
@@ -273,8 +285,10 @@ describe('EventHandler', () => {
       sinonBox.clock.tick(1);
       EH._mouseDown({ windowPosition });
       EH._mouseUp({ windowPosition });
-      expect(chainPipe).to.have.been
-        .calledWith({ windowPosition, type: EventType.CLICK });
+      expect(chainPipe).to.have.been.calledWith({
+        windowPosition,
+        type: EventType.CLICK,
+      });
     });
 
     it('should start dragging, if the dragDuration has passed since lastDown, maintaining the original keys', () => {
@@ -285,11 +299,18 @@ describe('EventHandler', () => {
       sinonBox.clock.tick(EH.dragDuration + 1);
       EH._mouseMove({ windowPosition });
       expect(chainPipe).to.have.been.calledWith({
-        windowPosition, type: EventType.DRAGSTART, time: 1, key: 'test', pointer: 'test',
+        windowPosition,
+        type: EventType.DRAGSTART,
+        time: 1,
+        key: 'test',
+        pointer: 'test',
       });
       EH._mouseMove({ windowPosition });
       expect(chainPipe).to.have.been.calledWith({
-        windowPosition, type: EventType.DRAG, key: 'test', pointer: 'test',
+        windowPosition,
+        type: EventType.DRAG,
+        key: 'test',
+        pointer: 'test',
       });
       EH._mouseUp({ windowPosition });
     });
@@ -306,7 +327,10 @@ describe('EventHandler', () => {
 
       EH._mouseDown({ windowPosition });
       EH._mouseUp({ windowPosition });
-      expect(chainPipe).to.have.been.calledWith({ windowPosition, type: EventType.CLICK });
+      expect(chainPipe).to.have.been.calledWith({
+        windowPosition,
+        type: EventType.CLICK,
+      });
     });
   });
 
@@ -322,11 +346,9 @@ describe('EventHandler', () => {
       const endChain = sinonBox.spy(EH, '_endChain');
       EH._mouseDown({ windowPosition });
       EH._mouseUp({ windowPosition });
-      expect(startChain)
-        .to.have.been.calledOnce;
+      expect(startChain).to.have.been.calledOnce;
       setTimeout(() => {
-        expect(endChain)
-          .to.have.been.calledOnce;
+        expect(endChain).to.have.been.calledOnce;
         done();
       }, 1);
     });
@@ -337,16 +359,16 @@ describe('EventHandler', () => {
       EH._mouseUp({ windowPosition });
       EH._mouseDown({ windowPosition });
       EH._mouseUp({ windowPosition });
-      expect(startChain)
-        .to.have.been.calledTwice;
-      expect(EH).to.have.property('_eventQueue').that.satisfy((value) => {
-        expect(value).to.be.instanceof(Array);
-        expect(value).to.have.length(1);
-        return true;
-      });
+      expect(startChain).to.have.been.calledTwice;
+      expect(EH)
+        .to.have.property('_eventQueue')
+        .that.satisfy((value) => {
+          expect(value).to.be.instanceof(Array);
+          expect(value).to.have.length(1);
+          return true;
+        });
       setTimeout(() => {
-        expect(endChain)
-          .to.have.been.calledTwice;
+        expect(endChain).to.have.been.calledTwice;
         done();
       }, 1);
     });
@@ -356,16 +378,13 @@ describe('EventHandler', () => {
       EH._mouseDown({ windowPosition });
       EH._mouseUp({ windowPosition });
       EH._mouseMove({ windowPosition });
-      expect(startChain)
-        .to.have.been.calledTwice;
+      expect(startChain).to.have.been.calledTwice;
       expect(EH).to.have.property('_running', true);
       setTimeout(() => {
-        expect(endChain)
-          .to.have.been.calledOnce;
+        expect(endChain).to.have.been.calledOnce;
         EH._mouseMove({ windowPosition });
         setTimeout(() => {
-          expect(endChain)
-            .to.have.been.calledTwice;
+          expect(endChain).to.have.been.calledTwice;
           done();
         }, 1);
       }, 1);
@@ -383,107 +402,164 @@ describe('EventHandler', () => {
     });
 
     it('should call modifierChanged with the new SHIFT modification', async () => {
-      window.dispatchEvent(new KeyboardEvent('keydown', {
-        key: 'Shift',
-        shiftKey: true,
-      }));
-      expect(modifierChangedSpy).to.have.been.calledWith(ModificationKeyType.SHIFT);
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Shift',
+          shiftKey: true,
+        }),
+      );
+      expect(modifierChangedSpy).to.have.been.calledWith(
+        ModificationKeyType.SHIFT,
+      );
       modifierChangedSpy.resetHistory();
-      window.dispatchEvent(new KeyboardEvent('keyup', {
-        key: 'Shift',
-        shiftKey: false,
-      }));
-      expect(modifierChangedSpy).to.have.been.calledWith(ModificationKeyType.NONE);
+      window.dispatchEvent(
+        new KeyboardEvent('keyup', {
+          key: 'Shift',
+          shiftKey: false,
+        }),
+      );
+      expect(modifierChangedSpy).to.have.been.calledWith(
+        ModificationKeyType.NONE,
+      );
     });
 
     it('should call modifierChanged with the new ALT modification', async () => {
-      window.dispatchEvent(new KeyboardEvent('keydown', {
-        key: 'Alt',
-        altKey: true,
-      }));
-      expect(modifierChangedSpy).to.have.been.calledWith(ModificationKeyType.ALT);
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Alt',
+          altKey: true,
+        }),
+      );
+      expect(modifierChangedSpy).to.have.been.calledWith(
+        ModificationKeyType.ALT,
+      );
       modifierChangedSpy.resetHistory();
-      window.dispatchEvent(new KeyboardEvent('keyup', {
-        key: 'Alt',
-        altKey: false,
-      }));
-      expect(modifierChangedSpy).to.have.been.calledWith(ModificationKeyType.NONE);
+      window.dispatchEvent(
+        new KeyboardEvent('keyup', {
+          key: 'Alt',
+          altKey: false,
+        }),
+      );
+      expect(modifierChangedSpy).to.have.been.calledWith(
+        ModificationKeyType.NONE,
+      );
     });
 
     it('should call modifierChanged with the new CTRL modification', async () => {
-      window.dispatchEvent(new KeyboardEvent('keydown', {
-        key: 'Ctrl',
-        ctrlKey: true,
-      }));
-      expect(modifierChangedSpy).to.have.been.calledWith(ModificationKeyType.CTRL);
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Ctrl',
+          ctrlKey: true,
+        }),
+      );
+      expect(modifierChangedSpy).to.have.been.calledWith(
+        ModificationKeyType.CTRL,
+      );
       modifierChangedSpy.resetHistory();
-      window.dispatchEvent(new KeyboardEvent('keyup', {
-        key: 'Ctrl',
-        ctrlKey: false,
-      }));
-      expect(modifierChangedSpy).to.have.been.calledWith(ModificationKeyType.NONE);
+      window.dispatchEvent(
+        new KeyboardEvent('keyup', {
+          key: 'Ctrl',
+          ctrlKey: false,
+        }),
+      );
+      expect(modifierChangedSpy).to.have.been.calledWith(
+        ModificationKeyType.NONE,
+      );
     });
 
     it('should call modifierChanged only once', async () => {
-      window.dispatchEvent(new KeyboardEvent('keydown', {
-        key: 'Ctrl',
-        ctrlKey: true,
-      }));
-      window.dispatchEvent(new KeyboardEvent('keydown', {
-        key: 'A',
-        ctrlKey: true,
-      }));
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Ctrl',
+          ctrlKey: true,
+        }),
+      );
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'A',
+          ctrlKey: true,
+        }),
+      );
       expect(modifierChangedSpy).to.have.been.calledOnce;
-      expect(modifierChangedSpy).to.have.been.calledWith(ModificationKeyType.CTRL);
+      expect(modifierChangedSpy).to.have.been.calledWith(
+        ModificationKeyType.CTRL,
+      );
       modifierChangedSpy.resetHistory();
-      window.dispatchEvent(new KeyboardEvent('keyup', {
-        key: 'A',
-        ctrlKey: true,
-      }));
-      window.dispatchEvent(new KeyboardEvent('keyup', {
-        key: 'Ctrl',
-        ctrlKey: false,
-      }));
+      window.dispatchEvent(
+        new KeyboardEvent('keyup', {
+          key: 'A',
+          ctrlKey: true,
+        }),
+      );
+      window.dispatchEvent(
+        new KeyboardEvent('keyup', {
+          key: 'Ctrl',
+          ctrlKey: false,
+        }),
+      );
       expect(modifierChangedSpy).to.have.been.calledOnce;
-      expect(modifierChangedSpy).to.have.been.calledWith(ModificationKeyType.NONE);
+      expect(modifierChangedSpy).to.have.been.calledWith(
+        ModificationKeyType.NONE,
+      );
     });
 
     it('should raise the event with the correct modifier, if more then one modifier is pressed', () => {
-      window.dispatchEvent(new KeyboardEvent('keydown', {
-        key: 'Shift',
-        shiftKey: true,
-      }));
-      window.dispatchEvent(new KeyboardEvent('keydown', {
-        key: 'Alt',
-        shiftKey: true,
-        altKey: true,
-      }));
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Shift',
+          shiftKey: true,
+        }),
+      );
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Alt',
+          shiftKey: true,
+          altKey: true,
+        }),
+      );
       expect(modifierChangedSpy).to.have.been.calledOnce;
-      expect(modifierChangedSpy).to.have.been.calledWith(ModificationKeyType.SHIFT);
+      expect(modifierChangedSpy).to.have.been.calledWith(
+        ModificationKeyType.SHIFT,
+      );
       modifierChangedSpy.resetHistory();
-      window.dispatchEvent(new KeyboardEvent('keyup', {
-        key: 'Shift',
-        shiftKey: false,
-        altKey: true,
-      }));
+      window.dispatchEvent(
+        new KeyboardEvent('keyup', {
+          key: 'Shift',
+          shiftKey: false,
+          altKey: true,
+        }),
+      );
       expect(modifierChangedSpy).to.have.been.calledOnce;
-      expect(modifierChangedSpy).to.have.been.calledWith(ModificationKeyType.ALT);
+      expect(modifierChangedSpy).to.have.been.calledWith(
+        ModificationKeyType.ALT,
+      );
       modifierChangedSpy.resetHistory();
-      window.dispatchEvent(new KeyboardEvent('keyup', {
-        key: 'Alt',
-        altKey: false,
-      }));
-      expect(modifierChangedSpy).to.have.been.calledWith(ModificationKeyType.NONE);
+      window.dispatchEvent(
+        new KeyboardEvent('keyup', {
+          key: 'Alt',
+          altKey: false,
+        }),
+      );
+      expect(modifierChangedSpy).to.have.been.calledWith(
+        ModificationKeyType.NONE,
+      );
     });
 
     it('should raise the modifierChanged event on the handler', async () => {
-      const modifierChangedEventSpy = getVcsEventSpy(EH.modifierChanged, sinonBox);
-      window.dispatchEvent(new KeyboardEvent('keydown', {
-        key: 'Shift',
-        shiftKey: true,
-      }));
+      const modifierChangedEventSpy = getVcsEventSpy(
+        EH.modifierChanged,
+        sinonBox,
+      );
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Shift',
+          shiftKey: true,
+        }),
+      );
       expect(modifierChangedEventSpy).to.have.been.calledOnce;
-      expect(modifierChangedEventSpy).to.have.been.calledWith(ModificationKeyType.SHIFT);
+      expect(modifierChangedEventSpy).to.have.been.calledWith(
+        ModificationKeyType.SHIFT,
+      );
     });
   });
 });

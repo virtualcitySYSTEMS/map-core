@@ -17,7 +17,6 @@ import { cartesian2DDistance } from '../util/math.js';
  * @api
  */
 
-
 /**
  * @class
  */
@@ -42,7 +41,7 @@ class ObliqueImageMeta {
     /** @type {Array<number>|undefined} */
     this.radialF2E = options['radial-distorsion-found-2-expected'];
     /** @type {boolean} */
-    this.hasRadial = !!(this.pixelSize && (this.radialE2F && this.radialF2E));
+    this.hasRadial = !!(this.pixelSize && this.radialE2F && this.radialF2E);
     /**
      * The size of the images associated with this meta data
      * @type {import("ol/size").Size}
@@ -96,7 +95,9 @@ class ObliqueImageMeta {
     if (this.hasRadial && this.principalPoint) {
       const coefficientsArray = useF2E ? this.radialF2E : this.radialE2F;
 
-      const distC2PPInMM = cartesian2DDistance(this.principalPoint, coordinate) * this.pixelSize[0];
+      const distC2PPInMM =
+        cartesian2DDistance(this.principalPoint, coordinate) *
+        this.pixelSize[0];
       if (distC2PPInMM === 0) {
         return coordinate.slice();
       }
@@ -106,15 +107,15 @@ class ObliqueImageMeta {
       // get shift value
       let shift = 0;
       for (let i = 0; i < coefficientsArray.length; ++i) {
-        shift += coefficientsArray[i] * (distC2PPInMM ** i);
+        shift += coefficientsArray[i] * distC2PPInMM ** i;
       }
 
       // get new position through spherical coordinates system - http://mathworld.wolfram.com/SphericalCoordinates.html
       const newDistInPixel = (distC2PPInMM + shift) / this.pixelSize[0];
       const angleTheta = Math.atan2(diffY, diffX);
       return [
-        this.principalPoint[0] + (newDistInPixel * Math.cos(angleTheta)),
-        this.principalPoint[1] + (newDistInPixel * Math.sin(angleTheta)),
+        this.principalPoint[0] + newDistInPixel * Math.cos(angleTheta),
+        this.principalPoint[1] + newDistInPixel * Math.sin(angleTheta),
       ];
     }
 

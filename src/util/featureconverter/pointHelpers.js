@@ -2,15 +2,22 @@ import {
   BoxGeometry,
   BoxOutlineGeometry,
   Cartesian3,
-  Cartographic, Color, ColorGeometryInstanceAttribute,
+  Cartographic,
+  Color,
+  ColorGeometryInstanceAttribute,
   CylinderGeometry,
   CylinderOutlineGeometry,
   EllipsoidGeometry,
-  EllipsoidOutlineGeometry, GeometryInstance,
-  HeadingPitchRoll, Material, MaterialAppearance,
+  EllipsoidOutlineGeometry,
+  GeometryInstance,
+  HeadingPitchRoll,
+  Material,
+  MaterialAppearance,
   Matrix4,
   Model,
-  ModelAnimationLoop, PerInstanceColorAppearance, Primitive,
+  ModelAnimationLoop,
+  PerInstanceColorAppearance,
+  Primitive,
   sampleTerrainMostDetailed,
   SphereGeometry,
   SphereOutlineGeometry,
@@ -33,7 +40,9 @@ function makeOffsetAutoScalePrimitive(primitive, transform, scale, offset) {
   const currentOffset = offset.clone();
 
   Object.defineProperty(primitive, 'modelMatrix', {
-    get() { return modelMatrix; },
+    get() {
+      return modelMatrix;
+    },
     set(newModelMatrix) {
       const newScale = Matrix4.getScale(newModelMatrix, new Cartesian3());
       if (!newScale.equals(currentScale)) {
@@ -57,7 +66,9 @@ function makeScaledAutoScalePrimitive(primitive, scale) {
   let currentScale = scale.clone();
 
   Object.defineProperty(primitive, 'modelMatrix', {
-    get() { return modelMatrix; },
+    get() {
+      return modelMatrix;
+    },
     set(newModelMatrix) {
       const newScale = Matrix4.getScale(newModelMatrix, new Cartesian3());
       if (!newScale.equals(currentScale)) {
@@ -78,18 +89,27 @@ function makeScaledAutoScalePrimitive(primitive, scale) {
  */
 async function placePrimitiveOnTerrain(primitive, position, scene, offset) {
   await sampleTerrainMostDetailed(
-    /** @type {import("@vcmap-cesium/engine").CesiumTerrainProvider} */ (scene.globe.terrainProvider),
+    /** @type {import("@vcmap-cesium/engine").CesiumTerrainProvider} */ (
+      scene.globe.terrainProvider
+    ),
     [Cartographic.fromCartesian(position)],
   )
     .then(([cartoWithNewHeight]) => {
       if (!primitive.isDestroyed()) {
         const { modelMatrix } = primitive;
-        const newPosition = Cartographic.toCartesian(cartoWithNewHeight, undefined, position);
+        const newPosition = Cartographic.toCartesian(
+          cartoWithNewHeight,
+          undefined,
+          position,
+        );
         if (offset) {
           Cartesian3.add(newPosition, offset, newPosition);
         }
-        primitive.modelMatrix = Matrix4
-          .setTranslation(modelMatrix, newPosition, modelMatrix);
+        primitive.modelMatrix = Matrix4.setTranslation(
+          modelMatrix,
+          newPosition,
+          modelMatrix,
+        );
       }
     })
     .catch(() => {});
@@ -103,13 +123,23 @@ async function placePrimitiveOnTerrain(primitive, position, scene, offset) {
  * @param {import("@vcmap-cesium/engine").Scene} scene
  * @returns {null|{ primitives: Array<import("@vcmap-cesium/engine").Model>, options: VectorPropertiesModelOptions }}
  */
-export function getModelOptions(feature, wgs84Positions, positions, vectorProperties, scene) {
+export function getModelOptions(
+  feature,
+  wgs84Positions,
+  positions,
+  vectorProperties,
+  scene,
+) {
   const options = vectorProperties.getModel(feature);
   if (!options) {
     return null;
   }
   const scale = Cartesian3.fromArray(options.scale);
-  const headingPitchRoll = HeadingPitchRoll.fromDegrees(options.heading, options.pitch, options.roll);
+  const headingPitchRoll = HeadingPitchRoll.fromDegrees(
+    options.heading,
+    options.pitch,
+    options.roll,
+  );
   const allowPicking = vectorProperties.getAllowPicking(feature);
   const primitives = positions.map((position, index) => {
     const modelMatrix = Matrix4.multiply(
@@ -159,35 +189,43 @@ function getGeometryInstanceFromOptions(options, color, outline) {
   const { type } = options;
   let geometry;
   if (type === PrimitiveOptionsType.CYLINDER) {
-    geometry = outline ?
-      new CylinderOutlineGeometry(options.geometryOptions) :
-      new CylinderGeometry(options.geometryOptions);
+    geometry = outline
+      ? new CylinderOutlineGeometry(options.geometryOptions)
+      : new CylinderGeometry(options.geometryOptions);
   } else if (type === PrimitiveOptionsType.ELLIPSOID) {
     if (Array.isArray(options.geometryOptions.radii)) {
-      options.geometryOptions.radii = Cartesian3.fromArray(options.geometryOptions.radii);
+      options.geometryOptions.radii = Cartesian3.fromArray(
+        options.geometryOptions.radii,
+      );
     }
     if (Array.isArray(options.geometryOptions.innerRadii)) {
-      options.geometryOptions.innerRadii = Cartesian3.fromArray(options.geometryOptions.innerRadii);
+      options.geometryOptions.innerRadii = Cartesian3.fromArray(
+        options.geometryOptions.innerRadii,
+      );
     }
-    geometry = outline ?
-      new EllipsoidOutlineGeometry(options.geometryOptions) :
-      new EllipsoidGeometry(options.geometryOptions);
+    geometry = outline
+      ? new EllipsoidOutlineGeometry(options.geometryOptions)
+      : new EllipsoidGeometry(options.geometryOptions);
   }
   if (type === PrimitiveOptionsType.SPHERE) {
-    geometry = outline ?
-      new SphereOutlineGeometry(options.geometryOptions) :
-      new SphereGeometry(options.geometryOptions);
+    geometry = outline
+      ? new SphereOutlineGeometry(options.geometryOptions)
+      : new SphereGeometry(options.geometryOptions);
   }
   if (type === PrimitiveOptionsType.BOX) {
     if (Array.isArray(options.geometryOptions.minimum)) {
-      options.geometryOptions.minimum = Cartesian3.fromArray(options.geometryOptions.minimum);
+      options.geometryOptions.minimum = Cartesian3.fromArray(
+        options.geometryOptions.minimum,
+      );
     }
     if (Array.isArray(options.geometryOptions.maximum)) {
-      options.geometryOptions.maximum = Cartesian3.fromArray(options.geometryOptions.maximum);
+      options.geometryOptions.maximum = Cartesian3.fromArray(
+        options.geometryOptions.maximum,
+      );
     }
-    geometry = outline ?
-      new BoxOutlineGeometry(options.geometryOptions) :
-      new BoxGeometry(options.geometryOptions);
+    geometry = outline
+      ? new BoxOutlineGeometry(options.geometryOptions)
+      : new BoxGeometry(options.geometryOptions);
   }
 
   if (geometry) {
@@ -210,7 +248,14 @@ function getGeometryInstanceFromOptions(options, color, outline) {
  * @param {import("@vcmap-cesium/engine").Scene} scene
  * @returns {null|{ primitives: Array<import("@vcmap-cesium/engine").Primitive>, options: VectorPropertiesPrimitive}}
  */
-export function getPrimitiveOptions(feature, style, wgs84Positions, positions, vectorProperties, scene) {
+export function getPrimitiveOptions(
+  feature,
+  style,
+  wgs84Positions,
+  positions,
+  vectorProperties,
+  scene,
+) {
   const options = vectorProperties.getPrimitive(feature);
   if (!options) {
     return null;
@@ -222,7 +267,8 @@ export function getPrimitiveOptions(feature, style, wgs84Positions, positions, v
   if (imageStyle instanceof RegularShape) {
     fill = imageStyle.getFill();
     stroke = imageStyle.getStroke();
-  } else if (imageStyle) { // XXX or should we only allow primitives with regular shapes defined as image?
+  } else if (imageStyle) {
+    // XXX or should we only allow primitives with regular shapes defined as image?
     fill = style.getFill();
     stroke = style.getStroke(); // XXX this makes it impossible to create an extruded un-stroked primitive with an icon in 2D or we add a new primitive option
   }
@@ -240,8 +286,11 @@ export function getPrimitiveOptions(feature, style, wgs84Positions, positions, v
   }
 
   const scale = Cartesian3.fromArray(options.scale);
-  const headingPitchRoll = HeadingPitchRoll
-    .fromDegrees(options.heading, options.pitch, options.roll);
+  const headingPitchRoll = HeadingPitchRoll.fromDegrees(
+    options.heading,
+    options.pitch,
+    options.roll,
+  );
   const allowPicking = vectorProperties.getAllowPicking(feature);
 
   const primitives = positions.flatMap((position, index) => {
@@ -255,7 +304,10 @@ export function getPrimitiveOptions(feature, style, wgs84Positions, positions, v
         geometryModelMatrix,
       );
     }
-    const transform = Transforms.headingPitchRollToFixedFrame(position, headingPitchRoll);
+    const transform = Transforms.headingPitchRollToFixedFrame(
+      position,
+      headingPitchRoll,
+    );
     const modelMatrix = Matrix4.multiply(
       transform,
       geometryModelMatrix,
@@ -264,7 +316,10 @@ export function getPrimitiveOptions(feature, style, wgs84Positions, positions, v
 
     let deptFail;
     if (options.primitiveOptions.depthFailColor) {
-      const depthFailColor = getCesiumColor(options.primitiveOptions.depthFailColor, [255, 255, 255, 0.4]);
+      const depthFailColor = getCesiumColor(
+        options.primitiveOptions.depthFailColor,
+        [255, 255, 255, 0.4],
+      );
       deptFail = new MaterialAppearance({
         translucent: depthFailColor.alpha < 1,
         material: Material.fromType('Color', {
@@ -273,7 +328,11 @@ export function getPrimitiveOptions(feature, style, wgs84Positions, positions, v
       });
     }
 
-    const createPrimitive = (translucent, geometryInstances, depthFailAppearance) => {
+    const createPrimitive = (
+      translucent,
+      geometryInstances,
+      depthFailAppearance,
+    ) => {
       const primitive = new Primitive({
         asynchronous: !feature[createSync],
         geometryInstances,
@@ -288,10 +347,15 @@ export function getPrimitiveOptions(feature, style, wgs84Positions, positions, v
       });
 
       if (!wgs84Positions[index][2]) {
-        placePrimitiveOnTerrain(primitive, position, scene, offset)
-          .then(() => {
-            Transforms.headingPitchRollToFixedFrame(position, headingPitchRoll, undefined, undefined, transform); // update transform for usage in offset auto scale
-          });
+        placePrimitiveOnTerrain(primitive, position, scene, offset).then(() => {
+          Transforms.headingPitchRollToFixedFrame(
+            position,
+            headingPitchRoll,
+            undefined,
+            undefined,
+            transform,
+          ); // update transform for usage in offset auto scale
+        });
       }
 
       if (options.autoScale) {
@@ -308,7 +372,7 @@ export function getPrimitiveOptions(feature, style, wgs84Positions, positions, v
     if (fillColor) {
       fillAndOutline.push(
         createPrimitive(
-          (fillColor.alpha < 1) || !!deptFail,
+          fillColor.alpha < 1 || !!deptFail,
           [getGeometryInstanceFromOptions(options.primitiveOptions, fillColor)],
           deptFail,
         ),
@@ -318,17 +382,25 @@ export function getPrimitiveOptions(feature, style, wgs84Positions, positions, v
       fillAndOutline.push(
         createPrimitive(
           true,
-          [getGeometryInstanceFromOptions(options.primitiveOptions, transparent)],
+          [
+            getGeometryInstanceFromOptions(
+              options.primitiveOptions,
+              transparent,
+            ),
+          ],
           deptFail,
         ),
       );
     }
     if (strokeColor) {
       fillAndOutline.push(
-        createPrimitive(
-          (strokeColor.alpha < 1) || !!deptFail,
-          [getGeometryInstanceFromOptions(options.primitiveOptions, strokeColor, true)],
-        ),
+        createPrimitive(strokeColor.alpha < 1 || !!deptFail, [
+          getGeometryInstanceFromOptions(
+            options.primitiveOptions,
+            strokeColor,
+            true,
+          ),
+        ]),
       );
     }
     return fillAndOutline;

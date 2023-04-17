@@ -1,4 +1,9 @@
-import { ImageryLayer as CesiumImageryLayer, Rectangle, WebMercatorTilingScheme, WebMapServiceImageryProvider } from '@vcmap-cesium/engine';
+import {
+  ImageryLayer as CesiumImageryLayer,
+  Rectangle,
+  WebMercatorTilingScheme,
+  WebMapServiceImageryProvider,
+} from '@vcmap-cesium/engine';
 
 import RasterLayerCesiumImpl from './rasterLayerCesiumImpl.js';
 import { wgs84Projection } from '../../util/projection.js';
@@ -9,7 +14,9 @@ import { wgs84Projection } from '../../util/projection.js';
  * @extends {RasterLayerCesiumImpl}
  */
 class WmsCesiumImpl extends RasterLayerCesiumImpl {
-  static get className() { return 'WmsCesiumImpl'; }
+  static get className() {
+    return 'WmsCesiumImpl';
+  }
 
   /**
    * @param {import("@vcmap/core").CesiumMap} map
@@ -51,7 +58,12 @@ class WmsCesiumImpl extends RasterLayerCesiumImpl {
     if (this.extent && this.extent.isValid()) {
       const extent = this.extent.getCoordinatesInProjection(wgs84Projection);
       if (extent) {
-        options.rectangle = Rectangle.fromDegrees(extent[0], extent[1], extent[2], extent[3]);
+        options.rectangle = Rectangle.fromDegrees(
+          extent[0],
+          extent[1],
+          extent[2],
+          extent[3],
+        );
       }
     }
     if (this.tilingSchema === 'mercator') {

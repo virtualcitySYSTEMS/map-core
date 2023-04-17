@@ -1,4 +1,8 @@
-import { Math as CesiumMath, Cartesian3, Cartographic } from '@vcmap-cesium/engine';
+import {
+  Math as CesiumMath,
+  Cartesian3,
+  Cartographic,
+} from '@vcmap-cesium/engine';
 import Projection from './projection.js';
 
 /**
@@ -13,13 +17,20 @@ export function coordinateAtDistance(coord, d, brng) {
   const brngRadians = CesiumMath.toRadians(brng);
   const lat1 = CesiumMath.toRadians(coord[1]);
   const lon1 = CesiumMath.toRadians(coord[0]);
-  const lat2 = Math.asin((Math.sin(lat1) * Math.cos(d / R)) +
-    (Math.cos(lat1) * Math.sin(d / R) * Math.cos(brngRadians)));
-  const lon2 = lon1 + Math.atan2(
-    Math.sin(brngRadians) * Math.sin(d / R) * Math.cos(lat1),
-    Math.cos(d / R) - (Math.sin(lat1) * Math.sin(lat2)),
+  const lat2 = Math.asin(
+    Math.sin(lat1) * Math.cos(d / R) +
+      Math.cos(lat1) * Math.sin(d / R) * Math.cos(brngRadians),
   );
-  return [parseFloat(CesiumMath.toDegrees(lon2).toFixed(5)), parseFloat(CesiumMath.toDegrees(lat2).toFixed(5))];
+  const lon2 =
+    lon1 +
+    Math.atan2(
+      Math.sin(brngRadians) * Math.sin(d / R) * Math.cos(lat1),
+      Math.cos(d / R) - Math.sin(lat1) * Math.sin(lat2),
+    );
+  return [
+    parseFloat(CesiumMath.toDegrees(lon2).toFixed(5)),
+    parseFloat(CesiumMath.toDegrees(lat2).toFixed(5)),
+  ];
 }
 
 /**
@@ -39,7 +50,9 @@ export function initialBearingBetweenCoords(coords1, coords2) {
   const f2 = CesiumMath.toRadians(coords2[1]);
 
   const y = Math.sin(l2 - l1) * Math.cos(f2);
-  const x = (Math.cos(f1) * Math.sin(f2)) - (Math.sin(f1) * Math.cos(f2) * Math.cos(l2 - l1));
+  const x =
+    Math.cos(f1) * Math.sin(f2) -
+    Math.sin(f1) * Math.cos(f2) * Math.cos(l2 - l1);
   let brng = CesiumMath.toDegrees(Math.atan2(y, x));
   brng = (brng + 360) % 360;
   return brng;
@@ -65,7 +78,7 @@ export function getCartesianBearing(p1, p2) {
 export function cartesian2DDistance(point0, point1) {
   const distX = point0[0] - point1[0];
   const distY = point0[1] - point1[1];
-  return Math.sqrt((distX ** 2) + (distY ** 2));
+  return Math.sqrt(distX ** 2 + distY ** 2);
 }
 
 /**
@@ -108,7 +121,13 @@ export function cartographicToWgs84(cartographic) {
  */
 export function mercatorToCartesian(mercatorCoordinates, result) {
   const wgs84Coords = Projection.mercatorToWgs84(mercatorCoordinates);
-  return Cartesian3.fromDegrees(wgs84Coords[0], wgs84Coords[1], wgs84Coords[2], null, result ?? new Cartesian3());
+  return Cartesian3.fromDegrees(
+    wgs84Coords[0],
+    wgs84Coords[1],
+    wgs84Coords[2],
+    null,
+    result ?? new Cartesian3(),
+  );
 }
 
 /**
@@ -128,16 +147,12 @@ export function cartesianToMercator(cartesian) {
  */
 export function getMidPoint(p1, p2) {
   if (p1.length < 3 && p2.length < 3) {
-    return [
-      p1[0] + ((p2[0] - p1[0]) / 2),
-      p1[1] + ((p2[1] - p1[1]) / 2),
-      0,
-    ];
+    return [p1[0] + (p2[0] - p1[0]) / 2, p1[1] + (p2[1] - p1[1]) / 2, 0];
   }
   return [
-    p1[0] + ((p2[0] - p1[0]) / 2),
-    p1[1] + ((p2[1] - p1[1]) / 2),
-    p1[2] + ((p2[2] - p1[2]) / 2),
+    p1[0] + (p2[0] - p1[0]) / 2,
+    p1[1] + (p2[1] - p1[1]) / 2,
+    p1[2] + (p2[2] - p1[2]) / 2,
   ];
 }
 
@@ -168,7 +183,8 @@ export function getCartesianPitch(p1, p2) {
 
   let pitch;
   if (p1[2] > p2[2]) {
-    pitch = CesiumMath.toDegrees(Math.acos(Cartesian3.dot(scratch2, scratch3))) - 90;
+    pitch =
+      CesiumMath.toDegrees(Math.acos(Cartesian3.dot(scratch2, scratch3))) - 90;
   } else {
     pitch = CesiumMath.toDegrees(Math.acos(Cartesian3.dot(scratch2, scratch3)));
   }

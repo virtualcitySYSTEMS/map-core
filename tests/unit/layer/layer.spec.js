@@ -3,7 +3,10 @@ import VcsApp from '../../../src/vcsApp.js';
 import LayerState from '../../../src/layer/layerState.js';
 import LayerImplementation from '../../../src/layer/layerImplementation.js';
 import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
-import { getOpenlayersMap, setOpenlayersMap } from '../helpers/openlayersHelpers.js';
+import {
+  getOpenlayersMap,
+  setOpenlayersMap,
+} from '../helpers/openlayersHelpers.js';
 import Extent from '../../../src/util/extent.js';
 import GlobalHider from '../../../src/layer/globalHider.js';
 
@@ -24,8 +27,11 @@ describe('Layer', () => {
     AL = new Layer({});
     AL.setGlobalHider(new GlobalHider());
     AL._supportedMaps = [map.className];
-    sandbox.stub(AL, 'createImplementationsForMap')
-      .callsFake(() => [new LayerImplementation(map, AL.getImplementationOptions())]);
+    sandbox
+      .stub(AL, 'createImplementationsForMap')
+      .callsFake(() => [
+        new LayerImplementation(map, AL.getImplementationOptions()),
+      ]);
   });
 
   afterEach(() => {
@@ -76,10 +82,9 @@ describe('Layer', () => {
       const p1 = AL.activate();
       const p2 = AL.activate();
       expect(p1).to.equal(p2);
-      return p1
-        .then(() => {
-          expect(AL.active).to.be.true;
-        });
+      return p1.then(() => {
+        expect(AL.active).to.be.true;
+      });
     });
 
     it('should activate if deactivated in between', async () => {
@@ -381,11 +386,17 @@ describe('Layer', () => {
       });
 
       it('should configure activeOnStartup', () => {
-        expect(outputConfig).to.have.property('activeOnStartup', inputConfig.activeOnStartup);
+        expect(outputConfig).to.have.property(
+          'activeOnStartup',
+          inputConfig.activeOnStartup,
+        );
       });
 
       it('should configure allowPicking', () => {
-        expect(outputConfig).to.have.property('allowPicking', inputConfig.allowPicking);
+        expect(outputConfig).to.have.property(
+          'allowPicking',
+          inputConfig.allowPicking,
+        );
       });
 
       it('should configure url', () => {
@@ -393,27 +404,32 @@ describe('Layer', () => {
       });
 
       it('should configure exclusiveGroups', () => {
-        expect(outputConfig).to.have.property('exclusiveGroups')
+        expect(outputConfig)
+          .to.have.property('exclusiveGroups')
           .and.to.have.members(['myGroup']);
       });
 
       it('should set hiddenObjectIds', () => {
-        expect(outputConfig).to.have.property('hiddenObjectIds')
+        expect(outputConfig)
+          .to.have.property('hiddenObjectIds')
           .and.to.have.members(inputConfig.hiddenObjectIds);
       });
 
       it('should set mapNames', () => {
-        expect(outputConfig).to.have.property('mapNames')
+        expect(outputConfig)
+          .to.have.property('mapNames')
           .and.to.have.members(inputConfig.mapNames);
       });
 
       it('should set extent', () => {
-        expect(outputConfig).to.have.property('extent')
+        expect(outputConfig)
+          .to.have.property('extent')
           .and.to.eql(inputConfig.extent);
       });
 
       it('should set copyright', () => {
-        expect(outputConfig).to.have.property('copyright')
+        expect(outputConfig)
+          .to.have.property('copyright')
           .and.to.eql(inputConfig.copyright);
       });
     });

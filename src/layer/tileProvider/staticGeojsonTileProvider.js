@@ -21,7 +21,9 @@ class StaticGeoJSONTileProvider extends TileProvider {
    * @readonly
    * @returns {string}
    */
-  static get className() { return 'StaticGeoJSONTileProvider'; }
+  static get className() {
+    return 'StaticGeoJSONTileProvider';
+  }
 
   /**
    * @returns {StaticGeoJSONTileProviderOptions}
@@ -48,7 +50,6 @@ class StaticGeoJSONTileProvider extends TileProvider {
     this.url = options.url || defaultOptions.url;
   }
 
-
   /**
    * @inheritDoc
    * @param {number} x
@@ -67,7 +68,9 @@ class StaticGeoJSONTileProvider extends TileProvider {
    * @returns {StaticGeoJSONTileProviderOptions}
    */
   toJSON() {
-    const config = /** @type {StaticGeoJSONTileProviderOptions} */ (super.toJSON());
+    const config = /** @type {StaticGeoJSONTileProviderOptions} */ (
+      super.toJSON()
+    );
     delete config.baseLevels;
 
     if (this.url) {
@@ -78,4 +81,7 @@ class StaticGeoJSONTileProvider extends TileProvider {
 }
 
 export default StaticGeoJSONTileProvider;
-tileProviderClassRegistry.registerClass(StaticGeoJSONTileProvider.className, StaticGeoJSONTileProvider);
+tileProviderClassRegistry.registerClass(
+  StaticGeoJSONTileProvider.className,
+  StaticGeoJSONTileProvider,
+);

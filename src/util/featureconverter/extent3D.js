@@ -11,7 +11,14 @@ class Extent3D {
   static fromArray(array) {
     check(array, [Number]);
     check(array.length, 6);
-    return new Extent3D(array[0], array[1], array[2], array[3], array[4], array[5]);
+    return new Extent3D(
+      array[0],
+      array[1],
+      array[2],
+      array[3],
+      array[4],
+      array[5],
+    );
   }
 
   /**
@@ -56,7 +63,14 @@ class Extent3D {
    * @param {number} maxY
    * @param {number} maxZ
    */
-  constructor(minX = Infinity, minY = Infinity, minZ = Infinity, maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity) {
+  constructor(
+    minX = Infinity,
+    minY = Infinity,
+    minZ = Infinity,
+    maxX = -Infinity,
+    maxY = -Infinity,
+    maxZ = -Infinity,
+  ) {
     /**
      * @type {number}
      */
@@ -89,25 +103,31 @@ class Extent3D {
   extendWithGeometry(geometry) {
     if (geometry.getType() === 'GeometryCollection') {
       /** @type {import("ol/geom/GeometryCollection").default} */ (geometry)
-        .getGeometriesArray().forEach((geom) => { this.extendWithGeometry(geom); });
+        .getGeometriesArray()
+        .forEach((geom) => {
+          this.extendWithGeometry(geom);
+        });
     } else if (geometry.getType() === 'Circle') {
-      const flatCoordinates = /** @type {import("ol/geom/Circle").default} */ (geometry).getFlatCoordinates();
-      const stride = /** @type {import("ol/geom/Circle").default} */ (geometry).getStride();
+      const flatCoordinates = /** @type {import("ol/geom/Circle").default} */ (
+        geometry
+      ).getFlatCoordinates();
+      const stride = /** @type {import("ol/geom/Circle").default} */ (
+        geometry
+      ).getStride();
       const radius = flatCoordinates[stride] - flatCoordinates[0];
-      this.extendXY(
-        flatCoordinates[0] - radius,
-        flatCoordinates[1] - radius,
-      );
-      this.extendXY(
-        flatCoordinates[0] + radius,
-        flatCoordinates[1] + radius,
-      );
+      this.extendXY(flatCoordinates[0] - radius, flatCoordinates[1] - radius);
+      this.extendXY(flatCoordinates[0] + radius, flatCoordinates[1] + radius);
       if (stride > 2) {
         this.extendZ(flatCoordinates[2]);
       }
     } else {
-      const flatCoordinates = /** @type {import("ol/geom/SimpleGeometry").default} */ (geometry).getFlatCoordinates();
-      const stride = /** @type {import("ol/geom/SimpleGeometry").default} */ (geometry).getStride();
+      const flatCoordinates =
+        /** @type {import("ol/geom/SimpleGeometry").default} */ (
+          geometry
+        ).getFlatCoordinates();
+      const stride = /** @type {import("ol/geom/SimpleGeometry").default} */ (
+        geometry
+      ).getStride();
       this.extendFlatCoordinates(flatCoordinates, stride);
     }
   }
@@ -118,14 +138,22 @@ class Extent3D {
   extendWithHeightInfo(heightInfo) {
     if (heightInfo.extruded) {
       const calculatedFeatureMaxHeight =
-        heightInfo.groundLevel + heightInfo.storeyHeightsAboveGround.reduce((accumulator, currentValue) => {
-          return accumulator + currentValue;
-        }, 0);
+        heightInfo.groundLevel +
+        heightInfo.storeyHeightsAboveGround.reduce(
+          (accumulator, currentValue) => {
+            return accumulator + currentValue;
+          },
+          0,
+        );
       this.extendZ(calculatedFeatureMaxHeight);
       const calculatedFeatureMinHeight =
-        heightInfo.groundLevel - heightInfo.storeyHeightsBelowGround.reduce((accumulator, currentValue) => {
-          return accumulator + currentValue;
-        }, 0);
+        heightInfo.groundLevel -
+        heightInfo.storeyHeightsBelowGround.reduce(
+          (accumulator, currentValue) => {
+            return accumulator + currentValue;
+          },
+          0,
+        );
       this.extendZ(calculatedFeatureMinHeight);
     }
   }
@@ -171,7 +199,11 @@ class Extent3D {
     const { length } = flatCoordinates;
     for (let offset = 0; offset < length; offset += stride) {
       if (stride > 2) {
-        this.extendXYZ(flatCoordinates[offset], flatCoordinates[offset + 1], flatCoordinates[offset + 2]);
+        this.extendXYZ(
+          flatCoordinates[offset],
+          flatCoordinates[offset + 1],
+          flatCoordinates[offset + 2],
+        );
       } else {
         this.extendXY(flatCoordinates[offset], flatCoordinates[offset + 1]);
       }
@@ -196,12 +228,14 @@ class Extent3D {
    * @returns {boolean}
    */
   isEmpty() {
-    return this.minX === Infinity &&
+    return (
+      this.minX === Infinity &&
       this.minY === Infinity &&
       this.minZ === Infinity &&
       this.maxX === -Infinity &&
       this.maxY === -Infinity &&
-      this.maxZ === -Infinity;
+      this.maxZ === -Infinity
+    );
   }
 
   /**
@@ -212,9 +246,9 @@ class Extent3D {
       return [0, 0, 0];
     }
     return [
-      this.minX + ((this.maxX - this.minX) / 2),
-      this.minY + ((this.maxY - this.minY) / 2),
-      this.minZ + ((this.maxZ - this.minZ) / 2),
+      this.minX + (this.maxX - this.minX) / 2,
+      this.minY + (this.maxY - this.minY) / 2,
+      this.minZ + (this.maxZ - this.minZ) / 2,
     ];
   }
 
@@ -236,7 +270,14 @@ class Extent3D {
    * @returns {Extent3D}
    */
   clone() {
-    return new Extent3D(this.minX, this.minY, this.minZ, this.maxX, this.maxY, this.maxZ);
+    return new Extent3D(
+      this.minX,
+      this.minY,
+      this.minZ,
+      this.maxX,
+      this.maxY,
+      this.maxZ,
+    );
   }
 }
 

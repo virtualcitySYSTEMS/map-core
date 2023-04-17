@@ -3,9 +3,15 @@ import OLMap from 'ol/Map.js';
 import View from 'ol/View.js';
 import TileLayer from 'ol/layer/Tile.js';
 import ObliqueCollection from '../../../src/oblique/obliqueCollection.js';
-import ObliqueDataSet, { DataState } from '../../../src/oblique/obliqueDataSet.js';
+import ObliqueDataSet, {
+  DataState,
+} from '../../../src/oblique/obliqueDataSet.js';
 import ObliqueProvider from '../../../src/oblique/obliqueProvider.js';
-import setTiledObliqueImageServer, { tiledMercatorCoordinate, tiledMercatorCoordinate2, imagev35MercatorCoordinate } from '../helpers/obliqueData.js';
+import setTiledObliqueImageServer, {
+  tiledMercatorCoordinate,
+  tiledMercatorCoordinate2,
+  imagev35MercatorCoordinate,
+} from '../helpers/obliqueData.js';
 import { ObliqueViewDirection } from '../../../src/oblique/obliqueViewDirection.js';
 import { setTerrainServer } from '../helpers/terrain/terrainData.js';
 import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
@@ -14,7 +20,9 @@ import { getTerrainProviderForUrl } from '../../../src/layer/terrainHelpers.js';
 import { transformFromImage } from '../../../src/oblique/helpers.js';
 import importJSON from '../helpers/importJSON.js';
 
-const imageJson = await importJSON('./tests/data/oblique/imageData/imagev35.json');
+const imageJson = await importJSON(
+  './tests/data/oblique/imageData/imagev35.json',
+);
 
 describe('ObliqueProvider', () => {
   let sandbox;
@@ -28,7 +36,10 @@ describe('ObliqueProvider', () => {
     olMap = new OLMap({ target, view: new View() });
     sandbox = sinon.createSandbox();
     url = 'http://localhost/tiledOblique/image.json';
-    projection = new Projection({ epsg: 'EPSG:25833', proj4: '+proj=utm +zone=33 +ellps=GRS80 +units=m +no_defs ' });
+    projection = new Projection({
+      epsg: 'EPSG:25833',
+      proj4: '+proj=utm +zone=33 +ellps=GRS80 +units=m +no_defs ',
+    });
   });
 
   after(() => {
@@ -67,7 +78,10 @@ describe('ObliqueProvider', () => {
       beforeEach(async () => {
         await collection.load();
         obliqueProvider.setCollection(collection);
-        const image = await collection.loadImageForCoordinate(imagev35MercatorCoordinate, ObliqueViewDirection.NORTH);
+        const image = await collection.loadImageForCoordinate(
+          imagev35MercatorCoordinate,
+          ObliqueViewDirection.NORTH,
+        );
         obliqueProvider.activate();
         await obliqueProvider.setImage(image);
       });
@@ -120,7 +134,10 @@ describe('ObliqueProvider', () => {
     it('should add the post render listener', async () => {
       obliqueProvider.setCollection(collection);
       obliqueProvider.activate();
-      await obliqueProvider.setView(imagev35MercatorCoordinate, ObliqueViewDirection.NORTH);
+      await obliqueProvider.setView(
+        imagev35MercatorCoordinate,
+        ObliqueViewDirection.NORTH,
+      );
       olMap.getView().setCenter(obliqueProvider.currentImage.meta.size);
       olMap.renderSync();
       expect(obliqueProvider.loading).to.be.true;
@@ -128,7 +145,10 @@ describe('ObliqueProvider', () => {
 
     it('should add the current images layer, if there is a current image', async () => {
       obliqueProvider.setCollection(collection);
-      await obliqueProvider.setView(tiledMercatorCoordinate2, ObliqueViewDirection.NORTH);
+      await obliqueProvider.setView(
+        tiledMercatorCoordinate2,
+        ObliqueViewDirection.NORTH,
+      );
       expect(olMap.getLayers().getArray()).to.be.empty;
       obliqueProvider.activate();
       expect(olMap.getLayers().getArray()).to.have.lengthOf(1);
@@ -160,20 +180,29 @@ describe('ObliqueProvider', () => {
     });
 
     it('should remove the current images layer', async () => {
-      await obliqueProvider.setView(imagev35MercatorCoordinate, ObliqueViewDirection.NORTH);
+      await obliqueProvider.setView(
+        imagev35MercatorCoordinate,
+        ObliqueViewDirection.NORTH,
+      );
       obliqueProvider.deactivate();
       expect(olMap.getLayers().getArray()).to.be.empty;
     });
 
     it('should unset the current images view', async () => {
-      await obliqueProvider.setView(imagev35MercatorCoordinate, ObliqueViewDirection.NORTH);
+      await obliqueProvider.setView(
+        imagev35MercatorCoordinate,
+        ObliqueViewDirection.NORTH,
+      );
       const view = olMap.getView();
       obliqueProvider.deactivate();
       expect(olMap.getView()).to.not.equal(view);
     });
 
     it('should remove the post render listener', async () => {
-      await obliqueProvider.setView(imagev35MercatorCoordinate, ObliqueViewDirection.NORTH);
+      await obliqueProvider.setView(
+        imagev35MercatorCoordinate,
+        ObliqueViewDirection.NORTH,
+      );
       obliqueProvider.deactivate();
       olMap.getView().setCenter(obliqueProvider.currentImage.meta.size);
       olMap.renderSync();
@@ -188,13 +217,21 @@ describe('ObliqueProvider', () => {
     beforeEach(async () => {
       obliqueProvider = new ObliqueProvider(olMap);
       collection = new ObliqueCollection({
-        dataSets: [new ObliqueDataSet('http://localhost/tiledOblique/image.json', projection)],
+        dataSets: [
+          new ObliqueDataSet(
+            'http://localhost/tiledOblique/image.json',
+            projection,
+          ),
+        ],
       });
       setTiledObliqueImageServer();
       await collection.load();
       obliqueProvider.setCollection(collection);
       obliqueProvider.activate();
-      await obliqueProvider.setView(tiledMercatorCoordinate, ObliqueViewDirection.NORTH);
+      await obliqueProvider.setView(
+        tiledMercatorCoordinate,
+        ObliqueViewDirection.NORTH,
+      );
     });
 
     afterEach(() => {
@@ -210,11 +247,12 @@ describe('ObliqueProvider', () => {
     it('should load data at the current center, if it is PENDING', async () => {
       olMap.getView().setCenter([0, 0]);
       olMap.renderSync();
-      expect(collection.getTiles()).to.have.property('12/2199/1344', DataState.LOADING);
+      expect(collection.getTiles()).to.have.property(
+        '12/2199/1344',
+        DataState.LOADING,
+      );
       await collection.loadDataForExtent([
-        1486725.4975735783,
-        6887267.44966054,
-        1487125.4975735783,
+        1486725.4975735783, 6887267.44966054, 1487125.4975735783,
         6887667.44966054,
       ]); // wait for extent to be loaded before destroying.
     });
@@ -240,13 +278,20 @@ describe('ObliqueProvider', () => {
       scope = nock('http://localhost');
       setTerrainServer(scope);
       setTiledObliqueImageServer(scope);
-      const terrainProvider = getTerrainProviderForUrl({ url: 'http://localhost/terrain/' });
+      const terrainProvider = getTerrainProviderForUrl({
+        url: 'http://localhost/terrain/',
+      });
       await terrainProvider.readyPromise;
-      const dataSet = new ObliqueDataSet(url, projection, { url: 'http://localhost/terrain/' });
+      const dataSet = new ObliqueDataSet(url, projection, {
+        url: 'http://localhost/terrain/',
+      });
       dataSet.initialize(imageJson);
       collection = new ObliqueCollection({ dataSets: [dataSet] });
       await collection.load();
-      image = await collection.loadImageForCoordinate(tiledMercatorCoordinate, ObliqueViewDirection.NORTH);
+      image = await collection.loadImageForCoordinate(
+        tiledMercatorCoordinate,
+        ObliqueViewDirection.NORTH,
+      );
     });
 
     beforeEach(() => {
@@ -284,8 +329,9 @@ describe('ObliqueProvider', () => {
       await obliqueProvider.setImage(image);
       const layer = olMap.getLayers().getArray()[0];
       expect(layer).to.be.an.instanceOf(TileLayer);
-      expect(layer.getSource().getTileUrlFunction()([0, 1, -1]))
-        .to.equal(`${image.meta.url}/${image.name}/0/1/0.${image.meta.format}`);
+      expect(layer.getSource().getTileUrlFunction()([0, 1, -1])).to.equal(
+        `${image.meta.url}/${image.name}/0/1/0.${image.meta.format}`,
+      );
     });
 
     it('should add the current images layer as the base layer', async () => {
@@ -314,7 +360,10 @@ describe('ObliqueProvider', () => {
 
     it('should truncate the provided center to be within the bounds of the image', async () => {
       obliqueProvider.activate();
-      const coords = [imagev35MercatorCoordinate[0] - 2000, imagev35MercatorCoordinate[1] - 2000];
+      const coords = [
+        imagev35MercatorCoordinate[0] - 2000,
+        imagev35MercatorCoordinate[1] - 2000,
+      ];
       await obliqueProvider.setImage(image, coords);
       expect(olMap.getView().getCenter()).to.have.members([0, 0]);
     });
@@ -335,7 +384,10 @@ describe('ObliqueProvider', () => {
 
       it('should set the newest passed center, if the provider is loading another image', async () => {
         obliqueProvider.activate();
-        const coords = [imagev35MercatorCoordinate[0] - 2000, imagev35MercatorCoordinate[1] - 2000];
+        const coords = [
+          imagev35MercatorCoordinate[0] - 2000,
+          imagev35MercatorCoordinate[1] - 2000,
+        ];
         const p1 = obliqueProvider.setImage(adjacentImage);
         const p2 = obliqueProvider.setImage(image, coords);
         await Promise.all([p1, p2]);
@@ -347,7 +399,10 @@ describe('ObliqueProvider', () => {
       let nextImage;
 
       before(async () => {
-        nextImage = await collection.loadImageForCoordinate(tiledMercatorCoordinate, ObliqueViewDirection.SOUTH);
+        nextImage = await collection.loadImageForCoordinate(
+          tiledMercatorCoordinate,
+          ObliqueViewDirection.SOUTH,
+        );
       });
 
       beforeEach(async () => {
@@ -377,17 +432,22 @@ describe('ObliqueProvider', () => {
 
       it('should not remove the previous images layer, if providing an image with the same image meta, but set the new url function', async () => {
         const layer = olMap.getLayers().getArray()[0];
-        const sameMeta = collection.images.find(i => i.meta === image.meta && i !== image);
+        const sameMeta = collection.images.find(
+          (i) => i.meta === image.meta && i !== image,
+        );
         await obliqueProvider.setImage(sameMeta);
         const layers = olMap.getLayers().getArray();
         expect(layers).to.have.lengthOf(1);
         expect(layers[0]).to.equal(layer);
-        expect(layers[0].getSource().getTileUrlFunction()([0, 1, -1]))
-          .to.equal(`${image.meta.url}/${sameMeta.name}/0/1/0.${image.meta.format}`);
+        expect(layers[0].getSource().getTileUrlFunction()([0, 1, -1])).to.equal(
+          `${image.meta.url}/${sameMeta.name}/0/1/0.${image.meta.format}`,
+        );
       });
 
       it('should not change the view, if providing an image with the same image meta', async () => {
-        const sameMeta = collection.images.find(i => i.meta === image.meta && i !== image);
+        const sameMeta = collection.images.find(
+          (i) => i.meta === image.meta && i !== image,
+        );
         const view = olMap.getView();
         await obliqueProvider.setImage(sameMeta);
         expect(olMap.getView()).to.equal(view);
@@ -421,45 +481,84 @@ describe('ObliqueProvider', () => {
     });
 
     it('should set the image for the given coordinate', async () => {
-      await obliqueProvider.setView(imagev35MercatorCoordinate, ObliqueViewDirection.NORTH);
-      const image = await collection.loadImageForCoordinate(imagev35MercatorCoordinate, ObliqueViewDirection.NORTH);
+      await obliqueProvider.setView(
+        imagev35MercatorCoordinate,
+        ObliqueViewDirection.NORTH,
+      );
+      const image = await collection.loadImageForCoordinate(
+        imagev35MercatorCoordinate,
+        ObliqueViewDirection.NORTH,
+      );
       expect(obliqueProvider.currentImage).to.equal(image);
     });
 
     it('should use the provided coordinate as the center', async () => {
-      await obliqueProvider.setView(imagev35MercatorCoordinate, ObliqueViewDirection.NORTH);
+      await obliqueProvider.setView(
+        imagev35MercatorCoordinate,
+        ObliqueViewDirection.NORTH,
+      );
       const { center } = await obliqueProvider.getView();
       expect(center[0]).to.be.closeTo(imagev35MercatorCoordinate[0], 0.001);
       expect(center[1]).to.be.closeTo(imagev35MercatorCoordinate[1], 0.001);
     });
 
     it('should set an optionally provided zoom', async () => {
-      await obliqueProvider.setView(imagev35MercatorCoordinate, ObliqueViewDirection.NORTH, 3);
+      await obliqueProvider.setView(
+        imagev35MercatorCoordinate,
+        ObliqueViewDirection.NORTH,
+        3,
+      );
       const { zoom } = await obliqueProvider.getView();
       expect(zoom).to.equal(3);
     });
 
     describe('parallel loading', () => {
       it('should set the last set coordinate', async () => {
-        const p1 = obliqueProvider.setView(imagev35MercatorCoordinate, ObliqueViewDirection.NORTH);
-        const coords = [imagev35MercatorCoordinate[0] + 1200, imagev35MercatorCoordinate[1] + 1200];
+        const p1 = obliqueProvider.setView(
+          imagev35MercatorCoordinate,
+          ObliqueViewDirection.NORTH,
+        );
+        const coords = [
+          imagev35MercatorCoordinate[0] + 1200,
+          imagev35MercatorCoordinate[1] + 1200,
+        ];
         const p2 = obliqueProvider.setView(coords, ObliqueViewDirection.NORTH);
         await Promise.all([p1, p2]);
-        const image = await collection.loadImageForCoordinate(coords, ObliqueViewDirection.NORTH);
+        const image = await collection.loadImageForCoordinate(
+          coords,
+          ObliqueViewDirection.NORTH,
+        );
         expect(obliqueProvider.currentImage).to.equal(image);
       });
 
       it('should set the last set direction', async () => {
-        const p1 = obliqueProvider.setView(imagev35MercatorCoordinate, ObliqueViewDirection.SOUTH);
-        const p2 = obliqueProvider.setView(imagev35MercatorCoordinate, ObliqueViewDirection.NORTH);
+        const p1 = obliqueProvider.setView(
+          imagev35MercatorCoordinate,
+          ObliqueViewDirection.SOUTH,
+        );
+        const p2 = obliqueProvider.setView(
+          imagev35MercatorCoordinate,
+          ObliqueViewDirection.NORTH,
+        );
         await Promise.all([p1, p2]);
-        const image = await collection.loadImageForCoordinate(imagev35MercatorCoordinate, ObliqueViewDirection.NORTH);
+        const image = await collection.loadImageForCoordinate(
+          imagev35MercatorCoordinate,
+          ObliqueViewDirection.NORTH,
+        );
         expect(obliqueProvider.currentImage).to.equal(image);
       });
 
       it('should set the last set zoom', async () => {
-        const p1 = obliqueProvider.setView(imagev35MercatorCoordinate, ObliqueViewDirection.NORTH, 1);
-        const p2 = obliqueProvider.setView(imagev35MercatorCoordinate, ObliqueViewDirection.NORTH, 3);
+        const p1 = obliqueProvider.setView(
+          imagev35MercatorCoordinate,
+          ObliqueViewDirection.NORTH,
+          1,
+        );
+        const p2 = obliqueProvider.setView(
+          imagev35MercatorCoordinate,
+          ObliqueViewDirection.NORTH,
+          3,
+        );
         await Promise.all([p1, p2]);
         const { zoom } = await obliqueProvider.getView();
         expect(zoom).to.equal(3);
@@ -496,12 +595,19 @@ describe('ObliqueProvider', () => {
       let view;
 
       before(async () => {
-        await obliqueProvider.setView(imagev35MercatorCoordinate, ObliqueViewDirection.NORTH, 3);
+        await obliqueProvider.setView(
+          imagev35MercatorCoordinate,
+          ObliqueViewDirection.NORTH,
+          3,
+        );
         view = await obliqueProvider.getView();
       });
 
       it('should return the center of the current view', () => {
-        expect(view).to.have.property('center').and.to.be.an('array').with.lengthOf(3);
+        expect(view)
+          .to.have.property('center')
+          .and.to.be.an('array')
+          .with.lengthOf(3);
       });
 
       it('should return mercator coordinates of the current view', () => {

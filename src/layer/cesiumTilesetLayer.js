@@ -5,7 +5,9 @@ import { parseInteger } from '@vcsuite/parsers';
 import getJSONObjectFromObject from './cesium/x3dmHelper.js';
 import VectorStyleItem from '../style/vectorStyleItem.js';
 import FeatureLayer from './featureLayer.js';
-import CesiumTilesetCesiumImpl, { getExtentFromTileset } from './cesium/cesiumTilesetCesiumImpl.js';
+import CesiumTilesetCesiumImpl, {
+  getExtentFromTileset,
+} from './cesium/cesiumTilesetCesiumImpl.js';
 import CesiumMap from '../map/cesiumMap.js';
 import Extent from '../util/extent.js';
 import { mercatorProjection } from '../util/projection.js';
@@ -48,7 +50,9 @@ import { layerClassRegistry } from '../classRegistry.js';
  */
 class CesiumTilesetLayer extends FeatureLayer {
   /** @type {string} */
-  static get className() { return 'CesiumTilesetLayer'; }
+  static get className() {
+    return 'CesiumTilesetLayer';
+  }
 
   /**
    * @returns {CesiumTilesetOptions}
@@ -70,9 +74,7 @@ class CesiumTilesetLayer extends FeatureLayer {
    */
   constructor(options) {
     super(options);
-    this._supportedMaps = [
-      CesiumMap.className,
-    ];
+    this._supportedMaps = [CesiumMap.className];
     const defaultOptions = CesiumTilesetLayer.getDefaultOptions();
     if (this.url && !/\.json$/.test(this.url)) {
       this.url = `${this.url.replace(/\/$/, '')}/tileset.json`;
@@ -81,25 +83,40 @@ class CesiumTilesetLayer extends FeatureLayer {
     /** @type {VectorStyleItem} */
     this.highlightStyle = null;
     if (options.highlightStyle) {
-      this.highlightStyle = options.highlightStyle instanceof VectorStyleItem ?
-        options.highlightStyle :
-        new VectorStyleItem(/** @type {VectorStyleItemOptions} */ (options.highlightStyle));
+      this.highlightStyle =
+        options.highlightStyle instanceof VectorStyleItem
+          ? options.highlightStyle
+          : new VectorStyleItem(
+              /** @type {VectorStyleItemOptions} */ (options.highlightStyle),
+            );
     }
     /** @type {number} */
-    this.screenSpaceError = parseInteger(options.screenSpaceError, defaultOptions.screenSpaceError);
+    this.screenSpaceError = parseInteger(
+      options.screenSpaceError,
+      defaultOptions.screenSpaceError,
+    );
 
     /** @type {number} */
-    this.screenSpaceErrorMobile = parseInteger(options.screenSpaceErrorMobile, defaultOptions.screenSpaceErrorMobile);
+    this.screenSpaceErrorMobile = parseInteger(
+      options.screenSpaceErrorMobile,
+      defaultOptions.screenSpaceErrorMobile,
+    );
 
     /** @type {number} */
-    this.maximumMemoryUsage = parseInteger(options.maximumMemoryUsage, defaultOptions.maximumMemoryUsage);
+    this.maximumMemoryUsage = parseInteger(
+      options.maximumMemoryUsage,
+      defaultOptions.maximumMemoryUsage,
+    );
 
-    const tilesetOptions = options.tilesetOptions || defaultOptions.tilesetOptions;
+    const tilesetOptions =
+      options.tilesetOptions || defaultOptions.tilesetOptions;
 
     /** @type {!Object} */
     this.tilesetOptions = {
       url: this.url,
-      maximumScreenSpaceError: isMobile() ? this.screenSpaceErrorMobile : this.screenSpaceError,
+      maximumScreenSpaceError: isMobile()
+        ? this.screenSpaceErrorMobile
+        : this.screenSpaceError,
       maximumMemoryUsage: this.maximumMemoryUsage,
       ...tilesetOptions,
     };
@@ -134,10 +151,11 @@ class CesiumTilesetLayer extends FeatureLayer {
     checkMaybe(modelMatrix, Matrix4);
 
     this._modelMatrix = modelMatrix;
-    this.getImplementations()
-      .forEach(/** @param {CesiumTilesetCesiumImpl} impl */ (impl) => {
+    this.getImplementations().forEach(
+      /** @param {CesiumTilesetCesiumImpl} impl */ (impl) => {
         impl.updateModelMatrix(modelMatrix);
-      });
+      },
+    );
   }
 
   /**
@@ -158,10 +176,11 @@ class CesiumTilesetLayer extends FeatureLayer {
     checkMaybe(offset, [Number]);
 
     this._offset = offset;
-    this.getImplementations()
-      .forEach(/** @param {CesiumTilesetCesiumImpl} impl */ (impl) => {
+    this.getImplementations().forEach(
+      /** @param {CesiumTilesetCesiumImpl} impl */ (impl) => {
         impl.updateOffset(offset);
-      });
+      },
+    );
   }
 
   /**
@@ -184,7 +203,9 @@ class CesiumTilesetLayer extends FeatureLayer {
    */
   createImplementationsForMap(map) {
     if (map instanceof CesiumMap) {
-      return [new CesiumTilesetCesiumImpl(map, this.getImplementationOptions())];
+      return [
+        new CesiumTilesetCesiumImpl(map, this.getImplementationOptions()),
+      ];
     }
     return [];
   }
@@ -218,7 +239,9 @@ class CesiumTilesetLayer extends FeatureLayer {
     if (metaExtent) {
       return metaExtent;
     }
-    const impl = /** @type {CesiumTilesetCesiumImpl} */ (this.getImplementations()[0]);
+    const impl = /** @type {CesiumTilesetCesiumImpl} */ (
+      this.getImplementations()[0]
+    );
     if (impl) {
       const threeDimExtent = getExtentFromTileset(impl.cesium3DTileset);
 
@@ -241,12 +264,13 @@ class CesiumTilesetLayer extends FeatureLayer {
    * @api stable
    */
   setMaximumScreenSpaceError(value) {
-    this.getImplementations()
-      .forEach(/** @param {CesiumTilesetCesiumImpl} impl */(impl) => {
+    this.getImplementations().forEach(
+      /** @param {CesiumTilesetCesiumImpl} impl */ (impl) => {
         if (impl.cesium3DTileset) {
           impl.cesium3DTileset.maximumScreenSpaceError = value;
         }
-      });
+      },
+    );
   }
 
   /**
@@ -277,7 +301,9 @@ class CesiumTilesetLayer extends FeatureLayer {
       delete tilesetOptions.url;
     }
 
-    const usedScreenSpaceError = isMobile() ? this.screenSpaceErrorMobile : this.screenSpaceError;
+    const usedScreenSpaceError = isMobile()
+      ? this.screenSpaceErrorMobile
+      : this.screenSpaceError;
     if (tilesetOptions.maximumScreenSpaceError === usedScreenSpaceError) {
       delete tilesetOptions.maximumScreenSpaceError;
     }
@@ -306,5 +332,8 @@ class CesiumTilesetLayer extends FeatureLayer {
   }
 }
 
-layerClassRegistry.registerClass(CesiumTilesetLayer.className, CesiumTilesetLayer);
+layerClassRegistry.registerClass(
+  CesiumTilesetLayer.className,
+  CesiumTilesetLayer,
+);
 export default CesiumTilesetLayer;

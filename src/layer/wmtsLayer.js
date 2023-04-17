@@ -35,7 +35,6 @@ import { layerClassRegistry } from '../classRegistry.js';
  * @property {Object} openlayersOptions
  */
 
-
 /**
  * @param {Array<string>} matrixIds
  * @param {number} maxLevel
@@ -44,18 +43,18 @@ import { layerClassRegistry } from '../classRegistry.js';
  */
 function getMatrixIds(matrixIds, maxLevel, prefix) {
   if (matrixIds.length > 0) {
-    if (matrixIds.length === (maxLevel + 1)) {
+    if (matrixIds.length === maxLevel + 1) {
       return matrixIds;
     } else {
-      getLogger('WmtsCesiumImpl')
-        .log('matrixIds must have the same length as maxLevel');
+      getLogger('WmtsCesiumImpl').log(
+        'matrixIds must have the same length as maxLevel',
+      );
     }
   }
   return new Array(maxLevel + 1).fill(undefined).map((value, index) => {
     return `${prefix}${index}`;
   });
 }
-
 
 /**
  * WmtsLayer layer
@@ -64,7 +63,9 @@ function getMatrixIds(matrixIds, maxLevel, prefix) {
  * @api stable
  */
 class WMTSLayer extends RasterLayer {
-  static get className() { return 'WMTSLayer'; }
+  static get className() {
+    return 'WMTSLayer';
+  }
 
   /**
    * @returns {WMTSOptions}
@@ -94,10 +95,7 @@ class WMTSLayer extends RasterLayer {
     options.tilingSchema = options.tilingSchema || defaultOptions.tilingSchema;
     super(options);
 
-    this._supportedMaps = [
-      OpenlayersMap.className,
-      CesiumMap.className,
-    ];
+    this._supportedMaps = [OpenlayersMap.className, CesiumMap.className];
 
     /** @type {number} */
     this.numberOfLevelZeroTilesX = parseInteger(
@@ -121,16 +119,21 @@ class WMTSLayer extends RasterLayer {
     this.format = options.format || defaultOptions.format;
 
     /** @type {string} */
-    this.tileMatrixPrefix = options.tileMatrixPrefix || defaultOptions.tileMatrixPrefix;
+    this.tileMatrixPrefix =
+      options.tileMatrixPrefix || defaultOptions.tileMatrixPrefix;
 
     /** @type {string} */
-    this.tileMatrixSetID = options.tileMatrixSetID || defaultOptions.tileMatrixSetID;
+    this.tileMatrixSetID =
+      options.tileMatrixSetID || defaultOptions.tileMatrixSetID;
 
     /** @type {Object} */
-    this.openlayersOptions = options.openlayersOptions || defaultOptions.openlayersOptions;
+    this.openlayersOptions =
+      options.openlayersOptions || defaultOptions.openlayersOptions;
 
     /** @type {Array.<string> | null} */
-    this.matrixIds = Array.isArray(options.matrixIds) ? options.matrixIds : defaultOptions.matrixIds;
+    this.matrixIds = Array.isArray(options.matrixIds)
+      ? options.matrixIds
+      : defaultOptions.matrixIds;
 
     /** @type {import("ol/size").Size} */
     this.tileSize = options.tileSize || defaultOptions.tileSize;
@@ -150,7 +153,11 @@ class WMTSLayer extends RasterLayer {
       tileSize: this.tileSize,
       numberOfLevelZeroTilesX: this.numberOfLevelZeroTilesX,
       numberOfLevelZeroTilesY: this.numberOfLevelZeroTilesY,
-      matrixIds: getMatrixIds(this.matrixIds, this.maxLevel, this.tileMatrixPrefix),
+      matrixIds: getMatrixIds(
+        this.matrixIds,
+        this.maxLevel,
+        this.tileMatrixPrefix,
+      ),
       openlayersOptions: this.openlayersOptions,
     };
   }
@@ -185,11 +192,15 @@ class WMTSLayer extends RasterLayer {
       delete config.tilingSchema;
     }
 
-    if (this.numberOfLevelZeroTilesX !== defaultOptions.numberOfLevelZeroTilesX) {
+    if (
+      this.numberOfLevelZeroTilesX !== defaultOptions.numberOfLevelZeroTilesX
+    ) {
       config.numberOfLevelZeroTilesX = this.numberOfLevelZeroTilesX;
     }
 
-    if (this.numberOfLevelZeroTilesY !== defaultOptions.numberOfLevelZeroTilesY) {
+    if (
+      this.numberOfLevelZeroTilesY !== defaultOptions.numberOfLevelZeroTilesY
+    ) {
       config.numberOfLevelZeroTilesY = this.numberOfLevelZeroTilesY;
     }
 
@@ -221,8 +232,13 @@ class WMTSLayer extends RasterLayer {
       config.matrixIds = this.matrixIds.slice();
     }
 
-    if (this.tileSize[0] !== defaultOptions.tileSize[0] || this.tileSize[1] !== defaultOptions.tileSize[1]) {
-      config.tileSize = /** @type {import("ol/size").Size} */ (this.tileSize.slice());
+    if (
+      this.tileSize[0] !== defaultOptions.tileSize[0] ||
+      this.tileSize[1] !== defaultOptions.tileSize[1]
+    ) {
+      config.tileSize = /** @type {import("ol/size").Size} */ (
+        this.tileSize.slice()
+      );
     }
 
     return config;
@@ -231,4 +247,3 @@ class WMTSLayer extends RasterLayer {
 
 layerClassRegistry.registerClass(WMTSLayer.className, WMTSLayer);
 export default WMTSLayer;
-

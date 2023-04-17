@@ -4,7 +4,7 @@ describe('TMSLayer', () => {
   describe('getting config objects', () => {
     describe('of a default object', () => {
       it('should return an object with type and name for default layers', () => {
-        const config = (new TMSLayer({})).toJSON();
+        const config = new TMSLayer({}).toJSON();
         expect(config).to.have.all.keys('name', 'type');
       });
     });
@@ -29,7 +29,10 @@ describe('TMSLayer', () => {
       });
 
       it('should configure tilingSchema', () => {
-        expect(outputConfig).to.have.property('tilingSchema', inputConfig.tilingSchema);
+        expect(outputConfig).to.have.property(
+          'tilingSchema',
+          inputConfig.tilingSchema,
+        );
       });
 
       it('should configure format', () => {
@@ -37,7 +40,8 @@ describe('TMSLayer', () => {
       });
 
       it('should configure tileSize', () => {
-        expect(outputConfig).to.have.property('tileSize')
+        expect(outputConfig)
+          .to.have.property('tileSize')
           .and.to.have.members(inputConfig.tileSize);
       });
     });

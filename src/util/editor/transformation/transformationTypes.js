@@ -68,9 +68,11 @@ export const greyedOutColor = Color.GRAY.withAlpha(0.5);
  * @returns {boolean}
  */
 export function is1DAxis(axis) {
-  return axis === AXIS_AND_PLANES.X ||
+  return (
+    axis === AXIS_AND_PLANES.X ||
     axis === AXIS_AND_PLANES.Y ||
-    axis === AXIS_AND_PLANES.Z;
+    axis === AXIS_AND_PLANES.Z
+  );
 }
 
 /**
@@ -78,7 +80,9 @@ export function is1DAxis(axis) {
  * @returns {boolean}
  */
 export function is2DAxis(axis) {
-  return axis === AXIS_AND_PLANES.XY ||
+  return (
+    axis === AXIS_AND_PLANES.XY ||
     axis === AXIS_AND_PLANES.XZ ||
-    axis === AXIS_AND_PLANES.YZ;
+    axis === AXIS_AND_PLANES.YZ
+  );
 }

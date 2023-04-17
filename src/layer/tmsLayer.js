@@ -25,7 +25,9 @@ import { layerClassRegistry } from '../classRegistry.js';
  * @api stable
  */
 class TMSLayer extends RasterLayer {
-  static get className() { return 'TMSLayer'; }
+  static get className() {
+    return 'TMSLayer';
+  }
 
   /**
    * @returns {TMSOptions}
@@ -47,16 +49,15 @@ class TMSLayer extends RasterLayer {
     options.tilingSchema = options.tilingSchema || defaultOptions.tilingSchema;
     super(options);
 
-    this._supportedMaps = [
-      OpenlayersMap.className,
-      CesiumMap.className,
-    ];
+    this._supportedMaps = [OpenlayersMap.className, CesiumMap.className];
 
     /** @type {?string} */
     this.format = options.format || defaultOptions.format;
 
     /** @type {import("ol/size").Size} */
-    this.tileSize = Array.isArray(options.tileSize) ? options.tileSize.slice() : defaultOptions.tileSize;
+    this.tileSize = Array.isArray(options.tileSize)
+      ? options.tileSize.slice()
+      : defaultOptions.tileSize;
   }
 
   /**

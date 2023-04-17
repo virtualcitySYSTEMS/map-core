@@ -1,5 +1,7 @@
 import DeclarativeStyleItem from '../../../src/style/declarativeStyleItem.js';
-import VectorStyleItem, { defaultVectorStyle } from '../../../src/style/vectorStyleItem.js';
+import VectorStyleItem, {
+  defaultVectorStyle,
+} from '../../../src/style/vectorStyleItem.js';
 import { getStyleOrDefaultStyle } from '../../../src/style/styleFactory.js';
 
 describe('getStyleOrDefaultStyle', () => {
@@ -10,7 +12,10 @@ describe('getStyleOrDefaultStyle', () => {
   });
 
   it('should return a new vector style item', () => {
-    const style = getStyleOrDefaultStyle({ type: VectorStyleItem.className, stroke: { width: 5, color: '#FF00FF' } });
+    const style = getStyleOrDefaultStyle({
+      type: VectorStyleItem.className,
+      stroke: { width: 5, color: '#FF00FF' },
+    });
     expect(style).to.be.an.instanceOf(VectorStyleItem);
     expect(style).to.have.property('stroke');
     expect(style.stroke.getWidth()).to.equal(5);
@@ -18,15 +23,22 @@ describe('getStyleOrDefaultStyle', () => {
 
   it('should return a passed defaultStyle', () => {
     const style = getStyleOrDefaultStyle(defaultVectorStyle.clone());
-    expect(style).to.have.property('fillColor').to.have.members(defaultVectorStyle.fillColor);
+    expect(style)
+      .to.have.property('fillColor')
+      .to.have.members(defaultVectorStyle.fillColor);
   });
 
   it('should return an assigned to a passed default style', () => {
     const style = getStyleOrDefaultStyle(
-      { type: VectorStyleItem.className, stroke: { width: 5, color: '#FF00FF' } },
+      {
+        type: VectorStyleItem.className,
+        stroke: { width: 5, color: '#FF00FF' },
+      },
       defaultVectorStyle.clone(),
     );
-    expect(style).to.have.property('fillColor').to.have.members(defaultVectorStyle.fillColor);
+    expect(style)
+      .to.have.property('fillColor')
+      .to.have.members(defaultVectorStyle.fillColor);
     expect(style).to.have.property('stroke');
     expect(style.stroke.getWidth()).to.equal(5);
   });

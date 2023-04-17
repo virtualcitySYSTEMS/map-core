@@ -1,5 +1,8 @@
 import AbstractInteraction from '../../../interaction/abstractInteraction.js';
-import { EventType, ModificationKeyType } from '../../../interaction/interactionType.js';
+import {
+  EventType,
+  ModificationKeyType,
+} from '../../../interaction/interactionType.js';
 import VcsEvent from '../../../vcsEvent.js';
 import { vcsLayerName } from '../../../layer/layerSymbols.js';
 import { isTiledFeature } from '../../../layer/featureStoreLayer.js';
@@ -48,11 +51,13 @@ class SelectSingleFeatureInteraction extends AbstractInteraction {
    * @returns {Promise<InteractionEvent>}
    */
   async pipe(event) {
-    if (
-      event.feature &&
-      event.feature[vcsLayerName] === this._layer.name
-    ) {
-      if (!(this._selectedFeature && event.feature.getId() === this._selectedFeature.getId())) {
+    if (event.feature && event.feature[vcsLayerName] === this._layer.name) {
+      if (
+        !(
+          this._selectedFeature &&
+          event.feature.getId() === this._selectedFeature.getId()
+        )
+      ) {
         event.stopPropagation = true;
         await this.setSelected(
           /** @type {import("ol").Feature|import("@vcmap-cesium/engine").Cesium3DTileFeature|import("@vcmap-cesium/engine").Cesium3DTilePointFeature} */
@@ -74,8 +79,9 @@ class SelectSingleFeatureInteraction extends AbstractInteraction {
   async setSelected(feature) {
     let olFeature = Array.isArray(feature) ? feature[0] : feature;
     if (feature[isTiledFeature]) {
-      olFeature = await /** @type {import("@vcmap/core").FeatureStoreLayer} */ (this._layer)
-        .switchStaticFeatureToDynamic(olFeature.getId());
+      olFeature = await /** @type {import("@vcmap/core").FeatureStoreLayer} */ (
+        this._layer
+      ).switchStaticFeatureToDynamic(olFeature.getId());
     }
 
     this._selectedFeature = /** @type {import("ol").Feature} */ (olFeature);

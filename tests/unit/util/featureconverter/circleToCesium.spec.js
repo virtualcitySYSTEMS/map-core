@@ -53,7 +53,9 @@ describe('util.featureConverter.circleToCesium', () => {
     it('should order height and extrudedHeight values', () => {
       const solidGeometries = createSolidGeometries(options, 20, false, 10);
       expect(solidGeometries[0]._ellipseGeometry._height).to.be.equal(20);
-      expect(solidGeometries[0]._ellipseGeometry._extrudedHeight).to.be.equal(10);
+      expect(solidGeometries[0]._ellipseGeometry._extrudedHeight).to.be.equal(
+        10,
+      );
     });
   });
 
@@ -72,7 +74,9 @@ describe('util.featureConverter.circleToCesium', () => {
 
     it('should order height and extrudedHeight values', () => {
       expect(outlineGeometries[0]._ellipseGeometry._height).to.be.equal(20);
-      expect(outlineGeometries[0]._ellipseGeometry._extrudedHeight).to.be.equal(10);
+      expect(outlineGeometries[0]._ellipseGeometry._extrudedHeight).to.be.equal(
+        10,
+      );
     });
   });
 
@@ -97,7 +101,9 @@ describe('util.featureConverter.circleToCesium', () => {
 
     it('should extract stroke width from the style ', () => {
       expect(lineGeometryOptions).to.have.property('width');
-      expect(lineGeometryOptions.width).to.be.equal(style.getStroke().getWidth());
+      expect(lineGeometryOptions.width).to.be.equal(
+        style.getStroke().getWidth(),
+      );
     });
   });
 
@@ -254,7 +260,14 @@ describe('util.featureConverter.circleToCesium', () => {
     });
 
     it('should not create Primitives without a fill or stroke style', () => {
-      circleToCesium(feature, emptyStyle, geometries, vectorProperties, scene, context);
+      circleToCesium(
+        feature,
+        emptyStyle,
+        geometries,
+        vectorProperties,
+        scene,
+        context,
+      );
       expect(context.featureToPrimitiveMap.size).to.be.equal(0);
       expect(context.featureToBillboardMap.size).to.be.equal(0);
       expect(context.featureToLabelMap.size).to.be.equal(0);
@@ -264,7 +277,14 @@ describe('util.featureConverter.circleToCesium', () => {
       const altitudeModeVectorProperties = new VectorProperties({
         altitudeMode: 'absolute',
       });
-      circleToCesium(feature, style, geometries, altitudeModeVectorProperties, scene, context);
+      circleToCesium(
+        feature,
+        style,
+        geometries,
+        altitudeModeVectorProperties,
+        scene,
+        context,
+      );
       expect(context.primitives.length).to.be.equal(2);
       expect(context.primitives.get(0)).to.be.instanceOf(Primitive);
       expect(context.primitives.get(1)).to.be.instanceOf(Primitive);
@@ -275,9 +295,18 @@ describe('util.featureConverter.circleToCesium', () => {
       const altitudeModeVectorProperties = new VectorProperties({
         altitudeMode: 'clampToGround',
       });
-      circleToCesium(feature, style, geometries, altitudeModeVectorProperties, scene, context);
+      circleToCesium(
+        feature,
+        style,
+        geometries,
+        altitudeModeVectorProperties,
+        scene,
+        context,
+      );
       expect(context.primitives.length).to.be.equal(2);
-      expect(context.primitives.get(0)).to.be.instanceOf(GroundPolylinePrimitive);
+      expect(context.primitives.get(0)).to.be.instanceOf(
+        GroundPolylinePrimitive,
+      );
       expect(context.primitives.get(1)).to.be.instanceOf(GroundPrimitive);
       altitudeModeVectorProperties.destroy();
     });
@@ -287,7 +316,14 @@ describe('util.featureConverter.circleToCesium', () => {
         altitudeMode: 'clampToGround',
       });
       const fillStyle = new Style({ fill: new Fill({}) });
-      circleToCesium(feature, fillStyle, geometries, altitudeModeVectorProperties, scene, context);
+      circleToCesium(
+        feature,
+        fillStyle,
+        geometries,
+        altitudeModeVectorProperties,
+        scene,
+        context,
+      );
       expect(context.primitives.length).to.be.equal(1);
       expect(context.primitives.get(0)).to.be.instanceOf(GroundPrimitive);
       altitudeModeVectorProperties.destroy();
@@ -298,9 +334,18 @@ describe('util.featureConverter.circleToCesium', () => {
         altitudeMode: 'clampToGround',
       });
       const strokeStyle = new Style({ stroke: new Stroke({}) });
-      circleToCesium(feature, strokeStyle, geometries, altitudeModeVectorProperties, scene, context);
+      circleToCesium(
+        feature,
+        strokeStyle,
+        geometries,
+        altitudeModeVectorProperties,
+        scene,
+        context,
+      );
       expect(context.primitives.length).to.be.equal(1);
-      expect(context.primitives.get(0)).to.be.instanceOf(GroundPolylinePrimitive);
+      expect(context.primitives.get(0)).to.be.instanceOf(
+        GroundPolylinePrimitive,
+      );
       altitudeModeVectorProperties.destroy();
     });
   });

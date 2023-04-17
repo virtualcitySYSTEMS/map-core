@@ -29,7 +29,6 @@ function checkExtentValidity(extent) {
   return extent[0] <= extent[2] && extent[1] <= extent[3];
 }
 
-
 /**
  * Extent Class
  * @class
@@ -39,7 +38,9 @@ class Extent {
   /**
    * @type {string}
    */
-  static get className() { return 'Extent'; }
+  static get className() {
+    return 'Extent';
+  }
 
   /**
    * @param {ExtentOptions=} options object
@@ -58,12 +59,14 @@ class Extent {
    * @returns {import("ol/extent").Extent}
    */
   getCoordinatesInProjection(destination, result) {
-    if (destination.epsg === this.projection.epsg) { // TODO aliases?!
-      const extent = result ? result.splice(0, 4, ...this.extent) : this.extent.slice();
+    if (destination.epsg === this.projection.epsg) {
+      // TODO aliases?!
+      const extent = result
+        ? result.splice(0, 4, ...this.extent)
+        : this.extent.slice();
       return /** @type {import("ol/extent").Extent} */ (extent);
     }
-    const transformer = Projection
-      .getTransformer(destination, this.projection);
+    const transformer = Projection.getTransformer(destination, this.projection);
     const target = result || [];
     transformer(this.extent, target, 2);
     return /** @type {import("ol/extent").Extent} */ (target);
@@ -104,10 +107,12 @@ class Extent {
       return true;
     }
 
-    return this.isValid() &&
+    return (
+      this.isValid() &&
       extent.isValid() &&
       this.extent.every((c, i) => c === extent.extent[i]) &&
-      this.projection.equals(extent.projection);
+      this.projection.equals(extent.projection)
+    );
   }
 
   /**
@@ -118,13 +123,18 @@ class Extent {
    * @api
    */
   static validateOptions(options) {
-    return Projection.validateOptions(options.projection || {}) && checkExtentValidity(options.coordinates);
+    return (
+      Projection.validateOptions(options.projection || {}) &&
+      checkExtentValidity(options.coordinates)
+    );
   }
 
   /**
    * @type {import("ol/extent").Extent}
    */
-  static get WGS_84_EXTENT() { return [-180, -90, 180, 90]; }
+  static get WGS_84_EXTENT() {
+    return [-180, -90, 180, 90];
+  }
 }
 
 export default Extent;

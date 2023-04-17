@@ -14,7 +14,9 @@ import { synchronizeFeatureVisibilityWithSource } from '../vectorHelpers.js';
  * @implements {FeatureLayerImplementation}
  */
 class VectorCesiumImpl extends LayerImplementation {
-  static get className() { return 'VectorCesiumImpl'; }
+  static get className() {
+    return 'VectorCesiumImpl';
+  }
 
   /**
    * @param {import("@vcmap/core").CesiumMap} map
@@ -80,23 +82,37 @@ class VectorCesiumImpl extends LayerImplementation {
    * @private
    */
   _addListeners() {
-    this._olListeners.push(this.source
-      .on('addfeature', (event) => {
-        this._addFeature(/** @type {import("ol/source/Vector").VectorSourceEvent} */(event).feature);
-      }));
+    this._olListeners.push(
+      this.source.on('addfeature', (event) => {
+        this._addFeature(
+          /** @type {import("ol/source/Vector").VectorSourceEvent} */ (event)
+            .feature,
+        );
+      }),
+    );
 
-    this._olListeners.push(this.source
-      .on('removefeature', (event) => {
-        this._removeFeature(/** @type {import("ol/source/Vector").VectorSourceEvent} */(event).feature);
-      }));
+    this._olListeners.push(
+      this.source.on('removefeature', (event) => {
+        this._removeFeature(
+          /** @type {import("ol/source/Vector").VectorSourceEvent} */ (event)
+            .feature,
+        );
+      }),
+    );
 
-    this._olListeners.push(this.source
-      .on('changefeature', (event) => {
-        this._featureChanged(/** @type {import("ol/source/Vector").VectorSourceEvent} */(event).feature);
-      }));
+    this._olListeners.push(
+      this.source.on('changefeature', (event) => {
+        this._featureChanged(
+          /** @type {import("ol/source/Vector").VectorSourceEvent} */ (event)
+            .feature,
+        );
+      }),
+    );
 
     this._removeVectorPropertiesChangeHandler =
-      this.vectorProperties.propertyChanged.addEventListener(this.refresh.bind(this));
+      this.vectorProperties.propertyChanged.addEventListener(
+        this.refresh.bind(this),
+      );
   }
 
   /**
@@ -105,8 +121,15 @@ class VectorCesiumImpl extends LayerImplementation {
    * @protected
    */
   async _setupContext(cesiumMap) {
-    const rootCollection = /** @type {import("@vcmap-cesium/engine").PrimitiveCollection} */ (this._rootCollection);
-    this._context = new VectorContext(cesiumMap, rootCollection, this.splitDirection);
+    const rootCollection =
+      /** @type {import("@vcmap-cesium/engine").PrimitiveCollection} */ (
+        this._rootCollection
+      );
+    this._context = new VectorContext(
+      cesiumMap,
+      rootCollection,
+      this.splitDirection,
+    );
     cesiumMap.addPrimitiveCollection(rootCollection);
   }
 
@@ -133,7 +156,9 @@ class VectorCesiumImpl extends LayerImplementation {
    */
   _addFeatures(features) {
     // TODO we should make this non-blocking to better handle larger data sets check in RIWA Impl
-    features.forEach((f) => { this._addFeature(f); });
+    features.forEach((f) => {
+      this._addFeature(f);
+    });
   }
 
   /**
@@ -142,8 +167,15 @@ class VectorCesiumImpl extends LayerImplementation {
    * @private
    */
   _addFeature(feature) {
-    if (this.active) { // XXX cluster check here? or on init?
-      convert(feature, this.style.style, this.vectorProperties, this._context, this._scene);
+    if (this.active) {
+      // XXX cluster check here? or on init?
+      convert(
+        feature,
+        this.style.style,
+        this.vectorProperties,
+        this._context,
+        this._scene,
+      );
     } else {
       this._featureToAdd.add(feature);
     }
@@ -193,7 +225,11 @@ class VectorCesiumImpl extends LayerImplementation {
         this._rootCollection.show = true;
         if (this._featureVisibilityListeners.length === 0) {
           this._featureVisibilityListeners =
-            synchronizeFeatureVisibilityWithSource(this.featureVisibility, this.source, this.globalHider);
+            synchronizeFeatureVisibilityWithSource(
+              this.featureVisibility,
+              this.source,
+              this.globalHider,
+            );
         }
       }
     }
@@ -205,7 +241,9 @@ class VectorCesiumImpl extends LayerImplementation {
   deactivate() {
     super.deactivate();
     this._rootCollection.show = false;
-    this._featureVisibilityListeners.forEach((cb) => { cb(); });
+    this._featureVisibilityListeners.forEach((cb) => {
+      cb();
+    });
     this._featureVisibilityListeners = [];
   }
 
@@ -216,7 +254,7 @@ class VectorCesiumImpl extends LayerImplementation {
   updateStyle(style, silent) {
     this.style = style;
     if (this.initialized && !silent) {
-      const features = this.source.getFeatures().filter(f => !f.getStyle());
+      const features = this.source.getFeatures().filter((f) => !f.getStyle());
       features.forEach((f) => {
         this._featureChanged(f);
       });
@@ -237,7 +275,9 @@ class VectorCesiumImpl extends LayerImplementation {
    * @protected
    */
   _destroyCollection() {
-    this.map.removePrimitiveCollection(/** @type {undefined} */ (this._rootCollection)); // cast to undefined do to missing inheritance
+    this.map.removePrimitiveCollection(
+      /** @type {undefined} */ (this._rootCollection),
+    ); // cast to undefined do to missing inheritance
   }
 
   /**
@@ -251,10 +291,14 @@ class VectorCesiumImpl extends LayerImplementation {
     this._context = null;
     this._scene = null;
     this._removeVectorPropertiesChangeHandler();
-    this._olListeners.forEach((listener) => { unByKey(listener); });
+    this._olListeners.forEach((listener) => {
+      unByKey(listener);
+    });
     this._olListeners = [];
     this._featureToAdd.clear();
-    this._featureVisibilityListeners.forEach((cb) => { cb(); });
+    this._featureVisibilityListeners.forEach((cb) => {
+      cb();
+    });
     this._featureVisibilityListeners = [];
     this.source = null;
     this.vectorProperties = null;
