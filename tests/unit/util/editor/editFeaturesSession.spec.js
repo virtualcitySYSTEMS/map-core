@@ -22,7 +22,6 @@ import {
 } from './transformation/setupTransformationHandler.js';
 import { getVcsEventSpy, getCesiumMap } from '../../helpers/cesiumHelpers.js';
 
-
 describe('startEditFeaturesSession', () => {
   let app;
   let layer;
@@ -115,8 +114,26 @@ describe('startEditFeaturesSession', () => {
   });
 
   describe('stopping an edit session', () => {
+    let session;
+
+    beforeEach(() => {
+      session = startEditFeaturesSession(app, layer);
+    });
+
+    it('should remove the interaction', () => {
+      const interaction = app.maps.eventHandler.interactions[3];
+      session.stop();
+      expect(app.maps.eventHandler.interactions).to.not.include(interaction);
+    });
+
+    it('should call stopped', () => {
+      const spy = sinon.spy();
+      session.stopped.addEventListener(spy);
+      session.stop();
+      expect(spy).to.have.been.called;
+    });
+
     it('should unset allowPicking false', async () => {
-      const session = startEditFeaturesSession(app, layer);
       const feature = createFeatureWithId(new Point([0, 0, 0]));
       session.setFeatures([feature]);
       session.stop();

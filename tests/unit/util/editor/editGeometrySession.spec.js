@@ -530,6 +530,26 @@ describe('EditGeometrySession', () => {
     });
   });
 
+  describe('stopping a session', () => {
+    let session;
+
+    beforeEach(() => {
+      session = startEditGeometrySession(app, layer);
+    });
+
+    it('should remove the interaction', () => {
+      const interaction = app.maps.eventHandler.interactions[3];
+      session.stop();
+      expect(app.maps.eventHandler.interactions).to.not.include(interaction);
+    });
+
+    it('should call stopped', () => {
+      const spy = sinon.spy();
+      session.stopped.addEventListener(spy);
+      session.stop();
+      expect(spy).to.have.been.called;
+    });
+  });
 
   describe('forcefully removing a session', () => {
     let session;
