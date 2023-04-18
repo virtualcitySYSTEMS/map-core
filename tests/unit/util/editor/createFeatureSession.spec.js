@@ -9,10 +9,7 @@ import {
   ModificationKeyType,
   PointerKeyType,
 } from '../../../../src/interaction/interactionType.js';
-import {
-  createSync,
-  alreadyTransformedToMercator,
-} from '../../../../src/layer/vectorSymbols.js';
+import { createSync } from '../../../../src/layer/vectorSymbols.js';
 import { ObliqueMap, OpenlayersMap } from '../../../../index.js';
 
 describe('create feature session', () => {
@@ -91,21 +88,6 @@ describe('create feature session', () => {
         positionOrPixel: [1, 2, 3],
       });
       expect(feature).to.have.property(createSync, true);
-    });
-
-    it('should set a created feature to alreadyTransformedToMercator', async () => {
-      let feature;
-      session.featureCreated.addEventListener((f) => {
-        feature = f;
-      });
-      await app.maps.eventHandler.interactions[3].pipe({
-        type: EventType.CLICK,
-        pointer: PointerKeyType.LEFT,
-        key: ModificationKeyType.NONE,
-        position: [1, 2, 0],
-        positionOrPixel: [1, 2, 3],
-      });
-      expect(feature).to.have.property(alreadyTransformedToMercator, true);
     });
 
     it('should remove createSync, once the feature is finished', async () => {

@@ -5,6 +5,7 @@ import VcsEvent from '../../../vcsEvent.js';
 import {
   actuallyIsCircle,
   alreadyTransformedToImage,
+  alreadyTransformedToMercator,
 } from '../../../layer/vectorSymbols.js';
 import ObliqueMap from '../../../map/obliqueMap.js';
 
@@ -75,8 +76,11 @@ class CreateCircleInteraction extends AbstractInteraction {
       } else {
         this._geometry = new Circle(event.positionOrPixel, 20, 'XYZ');
         this._geometry[actuallyIsCircle] = event.map instanceof ObliqueMap;
-        this._geometry[alreadyTransformedToImage] =
-          event.map instanceof ObliqueMap;
+        if (event.map instanceof ObliqueMap) {
+          this._geometry[alreadyTransformedToImage] = true;
+        } else {
+          this._geometry[alreadyTransformedToMercator] = true;
+        }
         this.created.raiseEvent(this._geometry);
         this._coordinates = this._geometry.getCoordinates();
         this._lastCoordinate = this._coordinates[1];

@@ -5,6 +5,7 @@ import { alreadyTransformedToImage } from '../../../../../src/layer/vectorSymbol
 import { EventType } from '../../../../../src/interaction/interactionType.js';
 import OpenlayersMap from '../../../../../src/map/openlayersMap.js';
 import ObliqueMap from '../../../../../src/map/obliqueMap.js';
+import { alreadyTransformedToMercator } from '../../../../../index.js';
 
 describe('CreateBBoxInteraction', () => {
   let openlayersMap;
@@ -46,8 +47,8 @@ describe('CreateBBoxInteraction', () => {
         expect(geometry).to.be.an.instanceOf(Polygon);
       });
 
-      it('should set already transformed to false', () => {
-        expect(geometry).to.have.property(alreadyTransformedToImage, false);
+      it('should set already transformed to true', () => {
+        expect(geometry).to.have.property(alreadyTransformedToMercator, true);
       });
 
       it('should set the geometry to be a polygon at positionOrPixel', () => {

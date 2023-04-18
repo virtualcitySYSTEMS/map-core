@@ -7,6 +7,7 @@ import {
 import { EventType } from '../../../../../src/interaction/interactionType.js';
 import OpenlayersMap from '../../../../../src/map/openlayersMap.js';
 import ObliqueMap from '../../../../../src/map/obliqueMap.js';
+import { alreadyTransformedToMercator } from '../../../../../index.js';
 
 describe('CreateCircleInteraction', () => {
   let openlayersMap;
@@ -49,7 +50,7 @@ describe('CreateCircleInteraction', () => {
       });
 
       it('should set already transformed on the circle', () => {
-        expect(geometry).to.have.property(alreadyTransformedToImage, false);
+        expect(geometry).to.have.property(alreadyTransformedToMercator, true);
       });
 
       it('should set the geometry to be a circle with center at positionOrPixel', () => {

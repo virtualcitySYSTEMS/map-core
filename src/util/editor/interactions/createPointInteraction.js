@@ -2,7 +2,10 @@ import Point from 'ol/geom/Point.js';
 import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import VcsEvent from '../../../vcsEvent.js';
 import { EventType } from '../../../interaction/interactionType.js';
-import { alreadyTransformedToImage } from '../../../layer/vectorSymbols.js';
+import {
+  alreadyTransformedToImage,
+  alreadyTransformedToMercator,
+} from '../../../layer/vectorSymbols.js';
 import ObliqueMap from '../../../map/obliqueMap.js';
 
 /**
@@ -37,7 +40,11 @@ class CreatePointInteraction extends AbstractInteraction {
    */
   async pipe(event) {
     this._geometry = new Point(event.positionOrPixel, 'XYZ');
-    this._geometry[alreadyTransformedToImage] = event.map instanceof ObliqueMap;
+    if (event.map instanceof ObliqueMap) {
+      this._geometry[alreadyTransformedToImage] = true;
+    } else {
+      this._geometry[alreadyTransformedToMercator] = true;
+    }
     this.created.raiseEvent(this._geometry);
     this.finish();
     return event;

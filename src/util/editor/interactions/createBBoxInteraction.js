@@ -3,7 +3,10 @@ import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import { EventType } from '../../../interaction/interactionType.js';
 import VcsEvent from '../../../vcsEvent.js';
 import { GeometryType } from '../editorSessionHelpers.js';
-import { alreadyTransformedToImage } from '../../../layer/vectorSymbols.js';
+import {
+  alreadyTransformedToImage,
+  alreadyTransformedToMercator,
+} from '../../../layer/vectorSymbols.js';
 import ObliqueMap from '../../../map/obliqueMap.js';
 
 /**
@@ -108,8 +111,11 @@ class CreateBBoxInteraction extends AbstractInteraction {
       } else {
         this._geometry = new Polygon([[event.positionOrPixel.slice()]], 'XYZ');
         this._geometry.set('_vcsGeomType', GeometryType.BBox);
-        this._geometry[alreadyTransformedToImage] =
-          event.map instanceof ObliqueMap;
+        if (event.map instanceof ObliqueMap) {
+          this._geometry[alreadyTransformedToImage] = true;
+        } else {
+          this._geometry[alreadyTransformedToMercator] = true;
+        }
         this.created.raiseEvent(this._geometry);
         this._origin = event.positionOrPixel.slice();
         this._lastCoordinate = this._origin.slice();

@@ -13,10 +13,7 @@ import CreatePointInteraction from './interactions/createPointInteraction.js';
 import CreatePolygonInteraction from './interactions/createPolygonInteraction.js';
 import VcsApp from '../../vcsApp.js';
 import VectorLayer from '../../layer/vectorLayer.js';
-import {
-  alreadyTransformedToMercator,
-  createSync,
-} from '../../layer/vectorSymbols.js';
+import { createSync } from '../../layer/vectorSymbols.js';
 import geometryIsValid from './validateGeoemetry.js';
 import ObliqueMap from '../../map/obliqueMap.js';
 
@@ -107,7 +104,6 @@ function startCreateFeatureSession(app, layer, geometryType) {
           /** @type {ObliqueMap} */ (app.maps.activeMap).switchEnabled = false;
         }
         currentFeature = new Feature({ geometry });
-        currentFeature[alreadyTransformedToMercator] = true;
         currentFeature[createSync] = true;
         layer.addFeatures([currentFeature]);
         featureCreated.raiseEvent(currentFeature);

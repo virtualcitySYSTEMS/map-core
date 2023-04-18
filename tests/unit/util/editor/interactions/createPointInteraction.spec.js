@@ -3,7 +3,10 @@ import CreatePointInteraction from '../../../../../src/util/editor/interactions/
 import { alreadyTransformedToImage } from '../../../../../src/layer/vectorSymbols.js';
 import OpenlayersMap from '../../../../../src/map/openlayersMap.js';
 import ObliqueMap from '../../../../../src/map/obliqueMap.js';
-import { EventType } from '../../../../../index.js';
+import {
+  alreadyTransformedToMercator,
+  EventType,
+} from '../../../../../index.js';
 
 describe('CreatPointInteraction', () => {
   let openlayersMap;
@@ -53,7 +56,7 @@ describe('CreatPointInteraction', () => {
       });
 
       it('should set already transformed on the point to false', () => {
-        expect(geometry).to.have.property(alreadyTransformedToImage, false);
+        expect(geometry).to.have.property(alreadyTransformedToMercator, true);
       });
 
       it('should set the geometry to be a point at positionOrPixel', () => {
