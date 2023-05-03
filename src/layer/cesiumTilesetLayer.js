@@ -113,7 +113,6 @@ class CesiumTilesetLayer extends FeatureLayer {
 
     /** @type {!Object} */
     this.tilesetOptions = {
-      url: this.url,
       maximumScreenSpaceError: isMobile()
         ? this.screenSpaceErrorMobile
         : this.screenSpaceError,
@@ -297,9 +296,6 @@ class CesiumTilesetLayer extends FeatureLayer {
     }
 
     const tilesetOptions = { ...this.tilesetOptions };
-    if (tilesetOptions.url === this.url) {
-      delete tilesetOptions.url;
-    }
 
     const usedScreenSpaceError = isMobile()
       ? this.screenSpaceErrorMobile

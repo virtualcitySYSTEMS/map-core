@@ -100,9 +100,8 @@ class TerrainLayer extends Layer {
    * @returns {Promise<Array<import("ol/coordinate").Coordinate>>}
    * @api stable
    */
-  getHeightForWGS84Coordinates(coords) {
-    const terrainProvider = getTerrainProviderForUrl({
-      url: this.url,
+  async getHeightForWGS84Coordinates(coords) {
+    const terrainProvider = await getTerrainProviderForUrl(this.url, {
       requestVertexNormals: this.requestVertexNormals,
       requestWaterMask: this.requestWaterMask,
     });

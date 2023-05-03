@@ -552,7 +552,8 @@ class CesiumMap extends VcsMap {
       this._cesiumWidget = new CesiumWidget(this.mapElement, {
         requestRenderMode: false,
         scene3DOnly: true,
-        imageryProvider: false,
+        // @ts-ignore // error in Cesium, recheck on next cesium update
+        baseLayer: false,
         shadows: false,
         terrainShadows: ShadowMode.ENABLED,
         contextOptions: {

@@ -62,10 +62,15 @@ import VcsObject from '../vcsObject.js';
  */
 
 /**
+ * @typedef {TerrainProviderOptions} ObliqueDataSetTerrainProviderOptions
+ * @property {string} url
+ */
+
+/**
  * @typedef {Object} ObliqueDataSetOptions
  * @property {string} url
  * @property {ProjectionOptions} [projection]
- * @property {TerrainProviderOptions} [terrainProvider]
+ * @property {ObliqueDataSetTerrainProviderOptions} [terrainProvider]
  */
 
 /**

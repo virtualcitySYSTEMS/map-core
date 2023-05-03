@@ -37,11 +37,9 @@ export function setTerrainServer(scope) {
 
 /**
  * @param {Scope} scope
- * @returns {cesium/CesiumTerrainProvider}
+ * @returns {Promise<cesium/CesiumTerrainProvider>}
  */
-export function getTerrainProvider(scope) {
+export async function getTerrainProvider(scope) {
   setTerrainServer(scope);
-  return new CesiumTerrainProvider({
-    url: 'http://localhost/terrain/',
-  });
+  return CesiumTerrainProvider.fromUrl('http://localhost/terrain/', {});
 }

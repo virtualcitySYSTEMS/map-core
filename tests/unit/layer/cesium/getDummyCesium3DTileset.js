@@ -9,9 +9,7 @@ import {
 
 class Cesium3DTileset {
   constructor() {
-    this.ready = true;
     this.extras = {};
-    this.readyPromise = Promise.resolve(this);
     this.colorBlendMode = Cesium3DTileColorBlendMode.HIGHLIGHT;
     this.tileVisible = new CesiumEvent();
     this.tileUnload = new CesiumEvent();

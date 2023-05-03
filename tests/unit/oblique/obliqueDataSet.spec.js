@@ -178,12 +178,6 @@ describe('ObliqueDataSet', () => {
       expect(obliqueDataSet.state).to.equal(DataState.READY);
     });
 
-    it('should return the same promise, if called multiple times', () => {
-      const p1 = obliqueDataSet.load();
-      const p2 = obliqueDataSet.load();
-      expect(p1).to.equal(p2);
-    });
-
     it('should set the state loading before resolving the request', async () => {
       const obliqueDataSet2 = new ObliqueDataSet(
         'http://localhost/tiledOblique',

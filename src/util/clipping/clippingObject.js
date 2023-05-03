@@ -215,12 +215,10 @@ class ClippingObject {
               /** @param {import("@vcmap-cesium/engine").Cesium3DTileset} tileset */ (
                 tileset,
               ) => {
-                tileset.readyPromise.then((cesium3DTileset) => {
-                  if (this.layerNames.includes(layer.name) && layer.active) {
-                    this.targets.set(layer.name, cesium3DTileset);
-                    this.targetsUpdated.raiseEvent();
-                  }
-                });
+                if (this.layerNames.includes(layer.name) && layer.active) {
+                  this.targets.set(layer.name, tileset);
+                  this.targetsUpdated.raiseEvent();
+                }
               },
             );
           } else {

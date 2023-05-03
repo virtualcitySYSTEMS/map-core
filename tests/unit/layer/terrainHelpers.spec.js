@@ -1,37 +1,40 @@
+import nock from 'nock';
 import { CesiumTerrainProvider } from '@vcmap-cesium/engine';
 import { getTerrainProviderForUrl } from '../../../src/layer/terrainHelpers.js';
+import { setTerrainServer } from '../helpers/terrain/terrainData.js';
 
 describe('terrainHelpers', () => {
-  let sandbox;
+  let scope;
 
   before(() => {
-    sandbox = sinon.createSandbox();
+    scope = nock('http://localhost');
+    setTerrainServer(scope);
   });
 
-  afterEach(() => {
-    sandbox.restore();
+  after(() => {
+    nock.cleanAll();
   });
 
   describe('~getTerrainProviderForUrl', () => {
-    beforeEach(() => {
-      sandbox.useFakeServer();
-      sandbox.server.respondWith(/test/, JSON.stringify({}));
-    });
-
-    it('should create a new terrain provider, if non is present for the passed url', () => {
-      const TP = getTerrainProviderForUrl({ url: 'test' });
+    it('should create a new terrain provider, if non is present for the passed url', async () => {
+      const TP = await getTerrainProviderForUrl('http://localhost/terrain', {});
       expect(TP).to.be.an.instanceOf(CesiumTerrainProvider);
     });
 
-    it('it should return the previously created terrain provider', () => {
-      const createdCTP = getTerrainProviderForUrl({ url: 'test1' });
-      const secondCTP = getTerrainProviderForUrl({ url: 'test1' });
+    it('it should return the previously created terrain provider', async () => {
+      const createdCTP = await getTerrainProviderForUrl(
+        'http://localhost/terrain',
+        {},
+      );
+      const secondCTP = await getTerrainProviderForUrl(
+        'http://localhost/terrain',
+        {},
+      );
       expect(createdCTP).to.equal(secondCTP);
     });
 
-    it('should set the requestVertexNormals to true', () => {
-      const CTP = getTerrainProviderForUrl({
-        url: 'test2',
+    it('should set the requestVertexNormals to true', async () => {
+      const CTP = await getTerrainProviderForUrl('http://localhost/terrain', {
         requestVertexNormals: true,
       });
       expect(CTP).to.have.property('requestVertexNormals').and.to.be.true;

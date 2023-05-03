@@ -20,7 +20,6 @@ describe('DeclarativeStyleItem', () => {
   describe('constructor', () => {
     it('should always add a show property to the cesiumStyle', async () => {
       DSI = new DeclarativeStyleItem({});
-      await DSI.cesiumStyle.readyPromise;
       expect(DSI).to.have.property('cesiumStyle').and.to.have.property('show');
 
       expect(DSI.cesiumStyle.show.evaluate(new Feature())).to.be.true;
@@ -94,7 +93,6 @@ describe('DeclarativeStyleItem', () => {
           },
         },
       });
-      await DSI.cesiumStyle.readyPromise;
     });
 
     afterEach(() => {
@@ -351,7 +349,6 @@ describe('DeclarativeStyleItem', () => {
               },
             },
           });
-          await DSI.cesiumStyle.readyPromise;
         });
 
         it('should set an image based on a url', () => {
@@ -416,6 +413,10 @@ describe('DeclarativeStyleItem', () => {
       DSI = new DeclarativeStyleItem({});
     });
 
+    afterEach(() => {
+      DSI.destroy();
+    });
+
     it('should add the declarative style to the options', () => {
       const options = DSI.toJSON();
       expect(options)
@@ -425,6 +426,14 @@ describe('DeclarativeStyleItem', () => {
   });
 
   describe('clone', () => {
+    beforeEach(() => {
+      DSI = new DeclarativeStyleItem({});
+    });
+
+    afterEach(() => {
+      DSI.destroy();
+    });
+
     it('should create a new style item identical to this one', () => {
       const newStyle = DSI.clone();
       newStyle.name = DSI.name;
@@ -440,6 +449,14 @@ describe('DeclarativeStyleItem', () => {
   });
 
   describe('assign', () => {
+    beforeEach(() => {
+      DSI = new DeclarativeStyleItem({});
+    });
+
+    afterEach(() => {
+      DSI.destroy();
+    });
+
     it('should assign the options of one to the other', () => {
       const newStyle = new DeclarativeStyleItem({});
       newStyle.assign(DSI);

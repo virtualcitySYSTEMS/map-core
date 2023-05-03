@@ -15,10 +15,10 @@ describe('ObliqueMap', () => {
   let obliqueCollection1;
   let obliqueCollection2;
 
-  before(() => {
+  before(async () => {
     sandbox = sinon.createSandbox();
-    obliqueCollection1 = getObliqueCollection();
-    obliqueCollection2 = getObliqueCollection();
+    obliqueCollection1 = await getObliqueCollection();
+    obliqueCollection2 = await getObliqueCollection();
     obliqueCollection2.name = 'obliqueCollection2';
   });
 
@@ -267,7 +267,7 @@ describe('ObliqueMap', () => {
     });
 
     it('should load the collection', async () => {
-      const collection = getObliqueCollection();
+      const collection = await getObliqueCollection();
       await map.setCollection(collection);
       expect(collection.loaded).to.be.true;
       collection.destroy();
@@ -286,7 +286,7 @@ describe('ObliqueMap', () => {
     });
 
     it('should load the last collection if loading in parallel', async () => {
-      const collection = getObliqueCollection();
+      const collection = await getObliqueCollection();
       const p1 = map.setCollection(obliqueCollection1);
       const p2 = map.setCollection(collection);
       await Promise.all([p1, p2]);
@@ -323,7 +323,7 @@ describe('ObliqueMap', () => {
 
     before(async () => {
       map = new ObliqueMap({});
-      doomedCollection = getObliqueCollection();
+      doomedCollection = await getObliqueCollection();
       await map.setCollection(doomedCollection);
       await map.activate();
       doomedCollection.destroy();

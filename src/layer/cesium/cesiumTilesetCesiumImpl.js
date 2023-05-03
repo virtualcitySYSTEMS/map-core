@@ -21,11 +21,11 @@ import { circleFromCenterRadius } from '../../util/geometryHelpers.js';
 export const cesiumTilesetLastUpdated = Symbol('cesiumTilesetLastUpdated');
 
 /**
- * @param {import("@vcmap-cesium/engine").Cesium3DTileset} cesium3DTileset
+ * @param {import("@vcmap-cesium/engine").Cesium3DTileset|undefined} cesium3DTileset
  * @returns {import("ol/extent").Extent} in mercator
  */
 export function getExtentFromTileset(cesium3DTileset) {
-  if (!cesium3DTileset.ready) {
+  if (!cesium3DTileset) {
     return createEmpty();
   }
   const { rectangle } = cesium3DTileset.root.boundingVolume;
@@ -121,8 +121,12 @@ class CesiumTilesetCesiumImpl extends LayerImplementation {
    */
   async initialize() {
     if (!this._initializedPromise) {
+      this._initializedPromise = Cesium3DTileset.fromUrl(
+        this.url,
+        this.tilesetOptions,
+      );
       /** @type {import("@vcmap-cesium/engine").Cesium3DTileset} */
-      this.cesium3DTileset = new Cesium3DTileset(this.tilesetOptions);
+      this.cesium3DTileset = await this._initializedPromise;
       if (this.tilesetProperties) {
         this.tilesetProperties.forEach(({ key, value }) => {
           this.cesium3DTileset[key] = value;
@@ -136,9 +140,6 @@ class CesiumTilesetCesiumImpl extends LayerImplementation {
         delete tile[cesiumTilesetLastUpdated];
       });
 
-      this._initializedPromise = this.cesium3DTileset.readyPromise;
-
-      await this._initializedPromise;
       this._originalOrigin = Cartesian3.clone(
         this.cesium3DTileset.boundingSphere.center,
       );
@@ -249,24 +250,22 @@ class CesiumTilesetCesiumImpl extends LayerImplementation {
         },
       );
       this._styleLastUpdated = Date.now();
-      this.cesium3DTileset.readyPromise.then(() => {
-        if (this.cesium3DTileset.colorBlendMode !== this.style.colorBlendMode) {
-          // we only support replace and mix mode if the _3DTILESDIFFUSE Flag is set in the tileset
+      if (this.cesium3DTileset.colorBlendMode !== this.style.colorBlendMode) {
+        // we only support replace and mix mode if the _3DTILESDIFFUSE Flag is set in the tileset
+        if (
+          this.style.colorBlendMode !== Cesium3DTileColorBlendMode.HIGHLIGHT
+        ) {
           if (
-            this.style.colorBlendMode !== Cesium3DTileColorBlendMode.HIGHLIGHT
+            this.cesium3DTileset.extras &&
+            // eslint-disable-next-line no-underscore-dangle
+            this.cesium3DTileset.extras._3DTILESDIFFUSE
           ) {
-            if (
-              this.cesium3DTileset.extras &&
-              // eslint-disable-next-line no-underscore-dangle
-              this.cesium3DTileset.extras._3DTILESDIFFUSE
-            ) {
-              this.cesium3DTileset.colorBlendMode = this.style.colorBlendMode;
-            }
-          } else {
             this.cesium3DTileset.colorBlendMode = this.style.colorBlendMode;
           }
+        } else {
+          this.cesium3DTileset.colorBlendMode = this.style.colorBlendMode;
         }
-      });
+      }
     }
   }
 
@@ -284,12 +283,14 @@ class CesiumTilesetCesiumImpl extends LayerImplementation {
    * @param {import("@vcmap-cesium/engine").Cesium3DTile} tile
    */
   applyStyle(tile) {
-    if (tile.content instanceof Composite3DTileContent) {
-      for (let i = 0; i < tile.content.innerContents.length; i++) {
-        this.styleContent(tile.content.innerContents[i]);
+    if (tile.contentReady) {
+      if (tile.content instanceof Composite3DTileContent) {
+        for (let i = 0; i < tile.content.innerContents.length; i++) {
+          this.styleContent(tile.content.innerContents[i]);
+        }
+      } else {
+        this.styleContent(tile.content);
       }
-    } else {
-      this.styleContent(tile.content);
     }
   }
 

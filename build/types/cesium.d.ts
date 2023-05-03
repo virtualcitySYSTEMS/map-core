@@ -69,6 +69,7 @@ declare module '@vcmap-cesium/engine' {
 
   interface Cesium3DTile {
     boundingVolume: TileBoundingVolume;
+    contentReady: boolean;
   }
 
   interface Cesium3DTileContent {

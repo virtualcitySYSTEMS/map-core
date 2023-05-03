@@ -47,7 +47,7 @@ function getStartingViewpoint() {
  * @param {Scope=} scope if provided the dataset is initialized with a terrainProvider
  * @returns {vcs-oblique/ObliqueDataSet}
  */
-export function getObliqueDataSet(scope) {
+export async function getObliqueDataSet(scope) {
   if (!obliqueProjection) {
     obliqueProjection = new Projection({
       epsg: 'EPSG:25833',
@@ -56,7 +56,7 @@ export function getObliqueDataSet(scope) {
   }
   let terrainProvider;
   if (scope) {
-    getTerrainProvider(scope);
+    await getTerrainProvider(scope);
     terrainProvider = {
       url: 'http://localhost/terrain/',
     };
@@ -66,7 +66,7 @@ export function getObliqueDataSet(scope) {
     obliqueProjection,
     terrainProvider,
   );
-  obliqueDataSet.initialize(imageJson);
+  await obliqueDataSet.initialize(imageJson);
   return obliqueDataSet;
 }
 
@@ -74,8 +74,8 @@ export function getObliqueDataSet(scope) {
  * @param {Array<ObliqueDataSet>=} obliqueDataSets
  * @returns {ObliqueCollection}
  */
-export function getObliqueCollection(obliqueDataSets) {
-  const dataSets = obliqueDataSets || [getObliqueDataSet()];
+export async function getObliqueCollection(obliqueDataSets) {
+  const dataSets = obliqueDataSets || [await getObliqueDataSet()];
   const obliqueCollection = new ObliqueCollection({
     name: 'obliqueCollection',
     dataSets,
@@ -89,8 +89,8 @@ export function getObliqueCollection(obliqueDataSets) {
  * @returns {Promise<ObliqueMap>}
  */
 export async function getObliqueMap(mapOptions = {}, scope = undefined) {
-  const obliqueDataSet = getObliqueDataSet(scope);
-  const obliqueCollection = getObliqueCollection([obliqueDataSet]);
+  const obliqueDataSet = await getObliqueDataSet(scope);
+  const obliqueCollection = await getObliqueCollection([obliqueDataSet]);
   const map = new ObliqueMap(mapOptions);
   await map.initialize();
   await map.setCollection(obliqueCollection);

@@ -75,13 +75,6 @@ class CameraLimiter {
      */
     this._terrainUrl = options.terrainUrl || defaultOptions.terrainUrl;
     /**
-     * @type {import("@vcmap-cesium/engine").CesiumTerrainProvider|null}
-     * @private
-     */
-    this._terrainProvider = this._terrainUrl
-      ? getTerrainProviderForUrl({ url: this._terrainUrl })
-      : null;
-    /**
      * The minimum height/distance to the terrain the camera must maintain
      * @type {number}
      * @api
@@ -131,9 +124,6 @@ class CameraLimiter {
 
     if (this._terrainUrl !== url) {
       this._terrainUrl = url;
-      this._terrainProvider = this._terrainUrl
-        ? getTerrainProviderForUrl({ url: this._terrainUrl })
-        : null;
     }
   }
 
@@ -142,17 +132,12 @@ class CameraLimiter {
    * @returns {Promise<Array<import("@vcmap-cesium/engine").Cartographic>>}
    * @private
    */
-  _limitWithLevel(cameraCartographic) {
+  async _limitWithLevel(cameraCartographic) {
+    const terrainProvider = await getTerrainProviderForUrl(this.terrainUrl, {});
     if (
-      isTerrainTileAvailable(
-        this._terrainProvider,
-        this.level,
-        cameraCartographic,
-      )
+      isTerrainTileAvailable(terrainProvider, this.level, cameraCartographic)
     ) {
-      return sampleTerrain(this._terrainProvider, this.level, [
-        cameraCartographic,
-      ]);
+      return sampleTerrain(terrainProvider, this.level, [cameraCartographic]);
     }
     return this._limitMostDetailed(cameraCartographic);
   }
@@ -162,10 +147,9 @@ class CameraLimiter {
    * @returns {Promise<Array<import("@vcmap-cesium/engine").Cartographic>>}
    * @private
    */
-  _limitMostDetailed(cameraCartographic) {
-    return sampleTerrainMostDetailed(this._terrainProvider, [
-      cameraCartographic,
-    ]);
+  async _limitMostDetailed(cameraCartographic) {
+    const terrainProvider = await getTerrainProviderForUrl(this.terrainUrl, {});
+    return sampleTerrainMostDetailed(terrainProvider, [cameraCartographic]);
   }
 
   /**
@@ -202,7 +186,7 @@ class CameraLimiter {
     let promise = Promise.resolve();
     const cameraCartographic = Cartographic.fromCartesian(camera.position);
     if (cameraCartographic) {
-      if (this.mode === CameraLimiterMode.DISTANCE && this._terrainProvider) {
+      if (this.mode === CameraLimiterMode.DISTANCE && this.terrainUrl) {
         promise = this._updateTerrainHeight(cameraCartographic);
         if (
           this._terrainHeight &&

@@ -54,7 +54,7 @@ class ObliqueDataSet {
   /**
    * @param {string} url
    * @param {import("@vcmap/core").Projection|ProjectionOptions=} projection
-   * @param {TerrainProviderOptions=} terrainProviderOptions
+   * @param {ObliqueDataSetTerrainProviderOptions=} terrainProviderOptions
    */
   constructor(url, projection, terrainProviderOptions) {
     /** @type {string} */
@@ -75,7 +75,7 @@ class ObliqueDataSet {
       projectionObject
     );
     /**
-     * @type {TerrainProviderOptions}
+     * @type {ObliqueDataSetTerrainProviderOptions|undefined}
      * @private
      */
     this._terrainProviderOptions = terrainProviderOptions
@@ -85,9 +85,7 @@ class ObliqueDataSet {
      * @type {import("@vcmap-cesium/engine").CesiumTerrainProvider|undefined}
      * @private
      */
-    this._terrainProvider = this._terrainProviderOptions
-      ? getTerrainProviderForUrl(this._terrainProviderOptions)
-      : undefined;
+    this._terrainProvider = undefined;
     /**
      * @type {Array<import("@vcmap/core").ObliqueImageMeta>}
      * @private
@@ -147,24 +145,17 @@ class ObliqueDataSet {
   }
 
   /**
-   * @type {import("@vcmap-cesium/engine").CesiumTerrainProvider|undefined}
-   * @readonly
-   */
-  get terrainProvider() {
-    return this._terrainProvider;
-  }
-
-  /**
    * Loads the data set.
    * @returns {Promise<void>}
    * @api
    */
-  load() {
+  async load() {
     if (!this._loadingPromise) {
       this._state = DataState.LOADING;
-
       this._loadingPromise = requestJson(this.url)
-        .then((data) => this._initialize(data))
+        .then((data) => {
+          return this._initialize(data);
+        })
         .catch((err) => {
           return Promise.reject(err);
         });
@@ -192,19 +183,29 @@ class ObliqueDataSet {
    * @param {ObliqueImageJson} json
    * @api
    */
-  initialize(json) {
+  async initialize(json) {
     if (this._state !== DataState.PENDING) {
       throw new Error('DataSet has already been loaded');
     }
     this._loadingPromise = Promise.resolve();
-    this._initialize(json);
+    await this._initialize(json);
   }
 
   /**
    * @param {ObliqueImageJson} json
    * @private
    */
-  _initialize(json) {
+  async _initialize(json) {
+    if (this._terrainProviderOptions?.url) {
+      const terrainProviderOptions = {
+        requestVertexNormals: this._terrainProviderOptions.requestVertexNormals,
+        requestWaterMask: this._terrainProviderOptions.requestWaterMask,
+      };
+      this._terrainProvider = await getTerrainProviderForUrl(
+        this._terrainProviderOptions.url,
+        terrainProviderOptions,
+      );
+    }
     this._parseMetaData(json);
     this._state = DataState.READY;
   }
@@ -218,7 +219,7 @@ class ObliqueDataSet {
       json,
       this.baseUrl,
       this.projection,
-      this.terrainProvider,
+      this._terrainProvider,
     );
     const { version, buildNumber } = getVersionFromImageJson(json);
 

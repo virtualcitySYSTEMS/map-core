@@ -35,10 +35,9 @@ class TerrainCesiumImpl extends LayerImplementation {
    * @inheritDoc
    * @returns {Promise<void>}
    */
-  initialize() {
+  async initialize() {
     if (!this.initialized) {
-      this.terrainProvider = getTerrainProviderForUrl({
-        url: this.url,
+      this.terrainProvider = await getTerrainProviderForUrl(this.url, {
         requestVertexNormals: this.requestVertexNormals,
         requestWaterMask: this.requestWaterMask,
       });

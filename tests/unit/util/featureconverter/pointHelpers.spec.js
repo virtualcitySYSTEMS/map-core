@@ -24,6 +24,7 @@ import {
 } from '../../../../src/util/featureconverter/pointHelpers.js';
 import { getTerrainProvider } from '../../helpers/terrain/terrainData.js';
 import { getMockScene } from '../../helpers/cesiumHelpers.js';
+import { timeout } from '../../helpers/helpers.js';
 
 describe('point helpers', () => {
   after(() => {
@@ -84,13 +85,13 @@ describe('point helpers', () => {
       expect(scale.z).to.closeTo(8, CesiumMath.EPSILON8);
     });
 
-    it('should set a 2D point onto the terrain', (done) => {
+    it('should set a 2D point onto the terrain', async () => {
       const scene2 = getMockScene();
       const scope = nock('http://localhost');
       scope
         .get('/test.glb')
         .reply(200, {}, { 'Content-Type': 'application/json' });
-      scene2.globe.terrainProvider = getTerrainProvider(scope);
+      scene2.globe.terrainProvider = await getTerrainProvider(scope);
       const twoD = [[13.374517914005413, 52.501750770534045, 0]];
       const [twoDModel] = getModelOptions(
         feature,
@@ -104,14 +105,12 @@ describe('point helpers', () => {
         Matrix4.getTranslation(modelMatrix, new Cartesian3()),
       );
       expect(cartographicBefore.height).to.equal(0);
-      setTimeout(() => {
-        const cartographicAfter = Cartographic.fromCartesian(
-          Matrix4.getTranslation(twoDModel.modelMatrix, new Cartesian3()),
-        );
+      await timeout(100);
+      const cartographicAfter = Cartographic.fromCartesian(
+        Matrix4.getTranslation(twoDModel.modelMatrix, new Cartesian3()),
+      );
 
-        expect(cartographicAfter.height).to.not.equal(0);
-        done();
-      }, 200);
+      expect(cartographicAfter.height).to.not.equal(0);
     });
 
     describe('of a scaled autoScale model', () => {
@@ -247,7 +246,7 @@ describe('point helpers', () => {
     });
 
     describe('of an elevation less primitive', () => {
-      it('should set a 2D point onto the terrain', (done) => {
+      it('should set a 2D point onto the terrain', async () => {
         const vectorProperties = new VectorProperties({
           modelScaleX: 2,
           modelScaleY: 4,
@@ -260,7 +259,7 @@ describe('point helpers', () => {
         });
         const scene2 = getMockScene();
         const scope = nock('http://localhost');
-        scene2.globe.terrainProvider = getTerrainProvider(scope);
+        scene2.globe.terrainProvider = await getTerrainProvider(scope);
         const twoD = [[13.374517914005413, 52.501750770534045, 0]];
         const feature = new Feature({
           olcs_primitiveOptions: {
@@ -283,14 +282,12 @@ describe('point helpers', () => {
           Matrix4.getTranslation(modelMatrix, new Cartesian3()),
         );
         expect(cartographicBefore.height).to.equal(0);
-        setTimeout(() => {
-          const cartographicAfter = Cartographic.fromCartesian(
-            Matrix4.getTranslation(primitive.modelMatrix, new Cartesian3()),
-          );
+        await timeout(100);
+        const cartographicAfter = Cartographic.fromCartesian(
+          Matrix4.getTranslation(primitive.modelMatrix, new Cartesian3()),
+        );
 
-          expect(cartographicAfter.height).to.not.equal(0);
-          done();
-        }, 200);
+        expect(cartographicAfter.height).to.not.equal(0);
       });
     });
 

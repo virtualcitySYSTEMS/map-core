@@ -9,7 +9,6 @@ import { wgs84Projection } from '../util/projection.js';
 
 /**
  * @typedef {Object} TerrainProviderOptions
- * @property {!string} url
  * @property {boolean|undefined} requestVertexNormals
  * @property {boolean|undefined} requestWaterMask
  * @api
@@ -21,23 +20,24 @@ import { wgs84Projection } from '../util/projection.js';
 const terrainProviders = {};
 
 /**
+ * @param {string} url
  * @param {TerrainProviderOptions} options
- * @returns {import("@vcmap-cesium/engine").CesiumTerrainProvider}
+ * @returns {Promise<import("@vcmap-cesium/engine").CesiumTerrainProvider>}
  */
-export function getTerrainProviderForUrl(options) {
-  if (!terrainProviders[options.url]) {
-    terrainProviders[options.url] = new CesiumTerrainProvider(options);
-    return terrainProviders[options.url];
+export async function getTerrainProviderForUrl(url, options) {
+  if (!terrainProviders[url]) {
+    terrainProviders[url] = await CesiumTerrainProvider.fromUrl(url, options);
+    return terrainProviders[url];
   }
-  let terrainProvider = terrainProviders[options.url];
+  let terrainProvider = terrainProviders[url];
   if (
     (options.requestVertexNormals !== undefined &&
       terrainProvider.requestVertexNormals !== options.requestVertexNormals) ||
     (options.requestWaterMask !== undefined &&
       terrainProvider.requestWaterMask !== options.requestWaterMask)
   ) {
-    terrainProviders[options.url] = new CesiumTerrainProvider(options);
-    terrainProvider = terrainProviders[options.url];
+    terrainProviders[url] = await CesiumTerrainProvider.fromUrl(url, options);
+    terrainProvider = terrainProviders[url];
   }
   return terrainProvider;
 }
@@ -86,9 +86,6 @@ export function getHeightFromTerrainProvider(
  * @returns {boolean}
  */
 export function isTerrainTileAvailable(terrainProvider, level, position) {
-  if (!terrainProvider.ready) {
-    return false;
-  }
   const tileXY = terrainProvider.tilingScheme.positionToTileXY(
     position,
     level,

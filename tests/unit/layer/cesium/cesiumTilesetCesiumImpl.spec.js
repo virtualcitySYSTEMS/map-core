@@ -235,9 +235,6 @@ describe('CesiumTilesetCesiumImpl', () => {
     });
 
     it('should set style.colorBlendMode to the cesium 3DTileset.colorBlendMode', () => {
-      sandbox
-        .stub(Cesium3DTileset.prototype, 'readyPromise')
-        .returns(Promise.resolve());
       cesiumTilesetCesium.cesium3DTileset = getDummyCesium3DTileset();
       cesiumTilesetCesium.cesium3DTileset.extras._3DTILESDIFFUSE = true;
       const colorBlendStyle = new DeclarativeStyleItem({
@@ -245,17 +242,12 @@ describe('CesiumTilesetCesiumImpl', () => {
         colorBlendMode: Cesium3DTileColorBlendMode.REPLACE,
       });
       cesiumTilesetCesium.updateStyle(colorBlendStyle);
-      return cesiumTilesetCesium.cesium3DTileset.readyPromise.then(() => {
-        expect(cesiumTilesetCesium.cesium3DTileset.colorBlendMode).to.equal(
-          Cesium3DTileColorBlendMode.REPLACE,
-        );
-      });
+      expect(cesiumTilesetCesium.cesium3DTileset.colorBlendMode).to.equal(
+        Cesium3DTileColorBlendMode.REPLACE,
+      );
     });
 
     it('should not set style.colorBlendMode to the cesium 3DTileset.colorBlendMode if the _3DTILESDIFFUSE is set', () => {
-      sandbox
-        .stub(Cesium3DTileset.prototype, 'readyPromise')
-        .returns(Promise.resolve());
       cesiumTilesetCesium.cesium3DTileset = getDummyCesium3DTileset();
       cesiumTilesetCesium.cesium3DTileset.extras._3DTILESDIFFUSE = false;
       const colorBlendStyle = new DeclarativeStyleItem({
@@ -263,11 +255,9 @@ describe('CesiumTilesetCesiumImpl', () => {
         colorBlendMode: Cesium3DTileColorBlendMode.REPLACE,
       });
       cesiumTilesetCesium.updateStyle(colorBlendStyle);
-      return cesiumTilesetCesium.cesium3DTileset.readyPromise.then(() => {
-        expect(cesiumTilesetCesium.cesium3DTileset.colorBlendMode).to.equal(
-          Cesium3DTileColorBlendMode.HIGHLIGHT,
-        );
-      });
+      expect(cesiumTilesetCesium.cesium3DTileset.colorBlendMode).to.equal(
+        Cesium3DTileColorBlendMode.HIGHLIGHT,
+      );
     });
   });
 
@@ -436,7 +426,7 @@ describe('CesiumTilesetCesiumImpl', () => {
       );
       const innerContent = [{}, {}];
       content._contents = innerContent;
-      cesiumTilesetCesium.applyStyle({ content });
+      cesiumTilesetCesium.applyStyle({ contentReady: true, content });
       expect(styleContent).to.have.been.calledTwice;
       expect(styleContent).to.have.been.calledWith(innerContent[0]);
       expect(styleContent).to.have.been.calledWith(innerContent[1]);
