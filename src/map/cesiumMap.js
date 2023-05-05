@@ -676,19 +676,17 @@ class CesiumMap extends VcsMap {
    */
   getHeightFromTerrain(positions) {
     const { terrainProvider } = this._cesiumWidget.scene;
-    return terrainProvider.readyPromise.then(() => {
-      if (terrainProvider.availability) {
-        return getHeightFromTerrainProvider(
-          /** @type {import("@vcmap-cesium/engine").CesiumTerrainProvider} */ (
-            terrainProvider
-          ),
-          positions,
-          mercatorProjection,
-          positions,
-        );
-      }
-      return Promise.resolve(positions);
-    });
+    if (terrainProvider.availability) {
+      return getHeightFromTerrainProvider(
+        /** @type {import("@vcmap-cesium/engine").CesiumTerrainProvider} */ (
+          terrainProvider
+        ),
+        positions,
+        mercatorProjection,
+        positions,
+      );
+    }
+    return Promise.resolve(positions);
   }
 
   /**

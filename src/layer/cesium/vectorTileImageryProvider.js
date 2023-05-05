@@ -129,12 +129,6 @@ class VectorTileImageryProvider {
     this._errorEvent = new CesiumEvent();
 
     /**
-     * @type {Promise<boolean>}
-     * @private
-     */
-    this._readyPromise = Promise.resolve(true);
-
-    /**
      * @type {HTMLCanvasElement}
      */
     this.emptyCanvas = document.createElement('canvas');
@@ -154,18 +148,14 @@ class VectorTileImageryProvider {
      * @type {Function}
      */
     this._reload = undefined;
+  }
 
-    // Necessary to satisfy Cesium ImageryProvider Interface
-    this.defaultAlpha = undefined;
-    this.defaultNightAlpha = undefined;
-    this.defaultDayAlpha = undefined;
-    this.defaultBrightness = undefined;
-    this.defaultContrast = undefined;
-    this.defaultHue = undefined;
-    this.defaultSaturation = undefined;
-    this.defaultGamma = undefined;
-    this.defaultMinificationFilter = undefined;
-    this.defaultMagnificationFilter = undefined;
+  /**
+   * @returns {boolean}
+   */
+  // eslint-disable-next-line class-methods-use-this
+  get _ready() {
+    return true;
   }
 
   /**
@@ -174,13 +164,6 @@ class VectorTileImageryProvider {
   // eslint-disable-next-line class-methods-use-this
   get ready() {
     return true;
-  }
-
-  /**
-   * @returns {Promise<boolean>}
-   */
-  get readyPromise() {
-    return this._readyPromise;
   }
 
   /**

@@ -1,8 +1,15 @@
 ### 5.0.0-next
 
+- fixed Bug in vectorTileImageryProvider (missing `_ready`)
+- removed usage of readyPromise in `CesiumMap.getHeightFromTerrain`
+
+### 5.0.0-31
+
 - uses prettier and new eslint config v3.
 - features created by the editor are flagged as mercator.
 - scaling an ol image style with an array does not break feature converter.
+- Updated Openlayers to 7.3
+- Updated Cesium to v1.105
 
 ### 5.0.0-rc.28
 
