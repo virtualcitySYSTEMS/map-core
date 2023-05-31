@@ -3,20 +3,20 @@
 A layer is the representation of a geographic dataset within a map environment.
 Layers can contain vector or raster data. The [@vcmap/core](../README.md) offers a variety of layer classes to visualize different types of data.
 
-All layers of a map are managed in a [LayerCollection](../src/util/layerCollection.js), which takes care of rendering order and layer exclusivity.
-The layer collection is passed to a [Map](../src/map/vcsMap.js) for layers available to said map. Layers within a LayerCollection must have unique names.
+All layers of a map are managed in a [LayerCollection](../src/util/layerCollection.ts), which takes care of rendering order and layer exclusivity.
+The layer collection is passed to a [Map](../src/map/vcsMap.ts) for layers available to said map. Layers within a LayerCollection must have unique names.
 
 ## Layer types
 
-The abstract base [layer](../src/layer/layer.js) class is derived from the [VcsObject](../src/vcsObject.js) class.
+The abstract base [layer](../src/layer/layer.ts) class is derived from the [VcsObject](../src/vcsObject.ts) class.
 It defines standard properties of layers, like `extent`, `state`, `supportedMaps`, its source (`url`) and attributions (`copyright`).
 
 Further child classes for both vector and raster data are available.
 Since the [@vcmap/core](../README.md) is a framework supporting a 2D, 3D and oblique view, it has a concept called LayerImplementations.
-A [LayerImplementation](../src/layer/layerImplementation.js) represents an implementation for a [Layer](../src/layer/layer.js) for a specific [Map](../src/map/vcsMap.js).
+A [LayerImplementation](../src/layer/layerImplementation.ts) represents an implementation for a [Layer](../src/layer/layer.ts) for a specific [Map](../src/map/vcsMap.ts).
 Whenever a map is active an implementation of all supported layers will be generated for this map type.
 The implementation takes care of initializing and viewing the datasource on the specific map.
-Some layers only relevant for one specific map, e.g. [TerrainLayer](../src/layer/terrainLayer.js) for 3D, only provide an implementation for this map, in that case [CesiumMap](../src/map/cesiumMap.js).
+Some layers only relevant for one specific map, e.g. [TerrainLayer](../src/layer/terrainLayer.ts) for 3D, only provide an implementation for this map, in that case [CesiumMap](../src/map/cesiumMap.ts).
 
 The following diagram gives an overview over all available layer types and their corresponding implementations:
 ![VcsLayerDiagram](VcsLayer.png)
@@ -42,7 +42,7 @@ The interface is defined as:
 
 ## Configuration
 
-When instancing a [Layer](../src/layer/layer.js) options can be provided. The options vary depending on the layer type.
+When instancing a [Layer](../src/layer/layer.ts) options can be provided. The options vary depending on the layer type.
 The base options of a layer are defined as:
 
 ```js

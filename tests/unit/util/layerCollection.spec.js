@@ -208,7 +208,7 @@ describe('LayerCollection', () => {
     });
 
     it('should unset globalHider on removed layer', () => {
-      expect(layer1.globalHider).to.be.null;
+      expect(layer1.globalHider).to.be.undefined;
     });
   });
 

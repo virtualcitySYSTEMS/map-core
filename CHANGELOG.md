@@ -2,6 +2,7 @@
 
 - fixed Bug in vectorTileImageryProvider (missing `_ready`)
 - removed usage of readyPromise in `CesiumMap.getHeightFromTerrain`
+- moved to TS.
 
 ### 5.0.0-31
 

@@ -15,6 +15,7 @@ import {
   obliqueGeometry,
   originalFeatureSymbol,
 } from '../../../../src/layer/vectorSymbols.js';
+import { timeout } from '../../helpers/helpers.js';
 
 describe('VectorObliqueImpl', () => {
   let sandbox;
@@ -50,6 +51,7 @@ describe('VectorObliqueImpl', () => {
       });
       VL.addFeatures([addedFeature]);
       await OVL.activate();
+      await timeout(0);
       expect(
         OVL.obliqueSource.getFeatureById(addedFeature.getId()),
       ).to.be.an.instanceof(Feature);
@@ -159,6 +161,7 @@ describe('VectorObliqueImpl', () => {
         });
         VL.addFeatures([originalFeature]);
         await OVL.activate();
+        await timeout(0);
         obliqueFeature = OVL.obliqueSource.getFeatureById(
           originalFeature.getId(),
         );
@@ -433,6 +436,7 @@ describe('VectorObliqueImpl', () => {
       id = uuidv4();
       originalFeature.setId(id);
       await OVL.addFeature(originalFeature);
+      await timeout(0);
       obliqueFeature = OVL.obliqueSource.getFeatureById(id);
       unByKey(Object.values(OVL._featureListeners[id])); // otherwise feature listeners are triggered
       clock = sandbox.useFakeTimers(1);

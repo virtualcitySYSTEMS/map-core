@@ -7,7 +7,7 @@ import {
   setupTransformationHandler,
 } from './setupTransformationHandler.js';
 import {
-  AXIS_AND_PLANES,
+  AxisAndPlanes,
   TransformationMode,
   EventType,
   TranslateInteraction,
@@ -58,7 +58,7 @@ describe('TranslateInteraction', () => {
         ],
         sandbox,
       );
-      const feature = createHandlerFeature(AXIS_AND_PLANES.XY);
+      const feature = createHandlerFeature(AxisAndPlanes.XY);
       await interaction.pipe({
         map,
         feature,
@@ -112,7 +112,7 @@ describe('TranslateInteraction', () => {
         ],
         sandbox,
       );
-      const feature = createHandlerFeature(AXIS_AND_PLANES.XZ);
+      const feature = createHandlerFeature(AxisAndPlanes.XZ);
       await interaction.pipe({
         map,
         feature,
@@ -166,7 +166,7 @@ describe('TranslateInteraction', () => {
         ],
         sandbox,
       );
-      const feature = createHandlerFeature(AXIS_AND_PLANES.XY);
+      const feature = createHandlerFeature(AxisAndPlanes.XY);
       await interaction.pipe({
         map,
         feature,
@@ -220,7 +220,7 @@ describe('TranslateInteraction', () => {
         ],
         sandbox,
       );
-      const feature = createHandlerFeature(AXIS_AND_PLANES.X);
+      const feature = createHandlerFeature(AxisAndPlanes.X);
       await interaction.pipe({
         map,
         feature,
@@ -274,7 +274,7 @@ describe('TranslateInteraction', () => {
         ],
         sandbox,
       );
-      const feature = createHandlerFeature(AXIS_AND_PLANES.Y);
+      const feature = createHandlerFeature(AxisAndPlanes.Y);
       await interaction.pipe({
         map,
         feature,
@@ -328,7 +328,7 @@ describe('TranslateInteraction', () => {
         ],
         sandbox,
       );
-      const feature = createHandlerFeature(AXIS_AND_PLANES.Y);
+      const feature = createHandlerFeature(AxisAndPlanes.Y);
       await interaction.pipe({
         map,
         feature,
@@ -394,7 +394,7 @@ describe('TranslateInteraction', () => {
     it('should call translate x/y if dragging the plane handler', async () => {
       const spy = sandbox.spy();
       interaction.translated.addEventListener(spy);
-      const feature = createHandlerFeature(AXIS_AND_PLANES.XY);
+      const feature = createHandlerFeature(AxisAndPlanes.XY);
       await interaction.pipe({
         map,
         feature,
@@ -439,7 +439,7 @@ describe('TranslateInteraction', () => {
     it('should call translate x if dragging the x axis handler', async () => {
       const spy = sandbox.spy();
       interaction.translated.addEventListener(spy);
-      const feature = createHandlerFeature(AXIS_AND_PLANES.X);
+      const feature = createHandlerFeature(AxisAndPlanes.X);
       await interaction.pipe({
         map,
         feature,
@@ -484,7 +484,7 @@ describe('TranslateInteraction', () => {
     it('should call translate y if dragging the y axis handler', async () => {
       const spy = sandbox.spy();
       interaction.translated.addEventListener(spy);
-      const feature = createHandlerFeature(AXIS_AND_PLANES.Y);
+      const feature = createHandlerFeature(AxisAndPlanes.Y);
       await interaction.pipe({
         map,
         feature,

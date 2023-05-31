@@ -4,7 +4,7 @@ import sinon from 'sinon';
 import canvas from 'canvas';
 import canvasBindings from 'canvas/lib/bindings.js';
 import fetch from 'node-fetch';
-import ResizeObserver from 'resize-observer-polyfill';
+import ResizeObserverPolyfill from 'resize-observer-polyfill';
 
 chai.use(sinonChai);
 
@@ -19,7 +19,7 @@ global.CESIUM_BASE_URL = 'cesium/Source/';
 global.FileReader = window.FileReader;
 global.DOMParser = window.DOMParser;
 global.fetch = fetch;
-global.ResizeObserver = ResizeObserver;
+global.ResizeObserver = ResizeObserverPolyfill;
 global.ShadowRoot = Function;
 
 Object.assign(canvas, {

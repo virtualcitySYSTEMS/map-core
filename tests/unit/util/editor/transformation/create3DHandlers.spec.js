@@ -6,7 +6,7 @@ import {
   PolylineGeometry,
 } from '@vcmap-cesium/engine';
 import {
-  AXIS_AND_PLANES,
+  AxisAndPlanes,
   create3DHandlers,
   handlerSymbol,
   TransformationMode,
@@ -88,7 +88,7 @@ describe('create3DHandlers', () => {
     it('should create an X axis handler', () => {
       const primitives = filterPrimitives(
         primitiveCollection,
-        (f) => f.olFeature[handlerSymbol] === AXIS_AND_PLANES.X,
+        (f) => f.olFeature[handlerSymbol] === AxisAndPlanes.X,
       );
       expect(primitives).to.have.lengthOf(2);
     });
@@ -96,7 +96,7 @@ describe('create3DHandlers', () => {
     it('should create an Y axis handler', () => {
       const primitives = filterPrimitives(
         primitiveCollection,
-        (f) => f.olFeature[handlerSymbol] === AXIS_AND_PLANES.Y,
+        (f) => f.olFeature[handlerSymbol] === AxisAndPlanes.Y,
       );
       expect(primitives).to.have.lengthOf(2);
     });
@@ -104,7 +104,7 @@ describe('create3DHandlers', () => {
     it('should create an Z axis handler', () => {
       const primitives = filterPrimitives(
         primitiveCollection,
-        (f) => f.olFeature[handlerSymbol] === AXIS_AND_PLANES.Z,
+        (f) => f.olFeature[handlerSymbol] === AxisAndPlanes.Z,
       );
       expect(primitives).to.have.lengthOf(2);
     });
@@ -112,7 +112,7 @@ describe('create3DHandlers', () => {
     it('should create an XY plane handler', () => {
       const primitives = filterPrimitives(
         primitiveCollection,
-        (f) => f.olFeature[handlerSymbol] === AXIS_AND_PLANES.XY,
+        (f) => f.olFeature[handlerSymbol] === AxisAndPlanes.XY,
       );
       expect(primitives).to.have.lengthOf(1);
     });
@@ -120,7 +120,7 @@ describe('create3DHandlers', () => {
     it('should create an XZ plane handler', () => {
       const primitives = filterPrimitives(
         primitiveCollection,
-        (f) => f.olFeature[handlerSymbol] === AXIS_AND_PLANES.XZ,
+        (f) => f.olFeature[handlerSymbol] === AxisAndPlanes.XZ,
       );
       expect(primitives).to.have.lengthOf(1);
     });
@@ -128,7 +128,7 @@ describe('create3DHandlers', () => {
     it('should create an YZ plane handler', () => {
       const primitives = filterPrimitives(
         primitiveCollection,
-        (f) => f.olFeature[handlerSymbol] === AXIS_AND_PLANES.YZ,
+        (f) => f.olFeature[handlerSymbol] === AxisAndPlanes.YZ,
       );
       expect(primitives).to.have.lengthOf(1);
     });
@@ -263,7 +263,7 @@ describe('create3DHandlers', () => {
         map = getCesiumMap({});
         handlers = create3DHandlers(map, TransformationMode.TRANSLATE);
         handlers.show = true;
-        handlers.showAxis = AXIS_AND_PLANES.X;
+        handlers.showAxis = AxisAndPlanes.X;
         handlers.setCenter([1, 1, 1]);
         primitiveCollection = map.getScene().primitives.get(0);
       });
@@ -287,7 +287,7 @@ describe('create3DHandlers', () => {
         const handlerModelMatrix = findPrimitive(
           primitiveCollection,
           (p) =>
-            p?.olFeature?.[handlerSymbol] === AXIS_AND_PLANES.X &&
+            p?.olFeature?.[handlerSymbol] === AxisAndPlanes.X &&
             p.geometryInstances[0].geometry instanceof PolylineGeometry,
         ).modelMatrix;
 
@@ -319,7 +319,7 @@ describe('create3DHandlers', () => {
         map = getCesiumMap({});
         handlers = create3DHandlers(map, TransformationMode.TRANSLATE);
         handlers.show = true;
-        handlers.showAxis = AXIS_AND_PLANES.Y;
+        handlers.showAxis = AxisAndPlanes.Y;
         handlers.setCenter([1, 1, 1]);
         primitiveCollection = map.getScene().primitives.get(0);
       });
@@ -343,7 +343,7 @@ describe('create3DHandlers', () => {
         const handlerModelMatrix = findPrimitive(
           primitiveCollection,
           (p) =>
-            p?.olFeature?.[handlerSymbol] === AXIS_AND_PLANES.Y &&
+            p?.olFeature?.[handlerSymbol] === AxisAndPlanes.Y &&
             p.geometryInstances[0].geometry instanceof PolylineGeometry,
         ).modelMatrix;
 
@@ -375,7 +375,7 @@ describe('create3DHandlers', () => {
         map = getCesiumMap({});
         handlers = create3DHandlers(map, TransformationMode.TRANSLATE);
         handlers.show = true;
-        handlers.showAxis = AXIS_AND_PLANES.Z;
+        handlers.showAxis = AxisAndPlanes.Z;
         handlers.setCenter([1, 1, 1]);
         primitiveCollection = map.getScene().primitives.get(0);
       });
@@ -399,7 +399,7 @@ describe('create3DHandlers', () => {
         const handlerModelMatrix = findPrimitive(
           primitiveCollection,
           (p) =>
-            p?.olFeature?.[handlerSymbol] === AXIS_AND_PLANES.Y &&
+            p?.olFeature?.[handlerSymbol] === AxisAndPlanes.Y &&
             p.geometryInstances[0].geometry instanceof PolylineGeometry,
         ).modelMatrix;
 
@@ -431,7 +431,7 @@ describe('create3DHandlers', () => {
         map = getCesiumMap({});
         handlers = create3DHandlers(map, TransformationMode.TRANSLATE);
         handlers.show = true;
-        handlers.showAxis = AXIS_AND_PLANES.XY;
+        handlers.showAxis = AxisAndPlanes.XY;
         handlers.setCenter([1, 1, 1]);
         primitiveCollection = map.getScene().primitives.get(0);
       });
@@ -454,7 +454,7 @@ describe('create3DHandlers', () => {
       it('should set the XY axis shadow to the original center', () => {
         const handlerModelMatrix = findPrimitive(
           primitiveCollection,
-          (p) => p?.olFeature?.[handlerSymbol] === AXIS_AND_PLANES.XY,
+          (p) => p?.olFeature?.[handlerSymbol] === AxisAndPlanes.XY,
         ).modelMatrix;
 
         const [, shadowCollection] = filterPrimitives(
@@ -482,7 +482,7 @@ describe('create3DHandlers', () => {
         map = getCesiumMap({});
         handlers = create3DHandlers(map, TransformationMode.TRANSLATE);
         handlers.show = true;
-        handlers.showAxis = AXIS_AND_PLANES.XZ;
+        handlers.showAxis = AxisAndPlanes.XZ;
         handlers.setCenter([1, 1, 1]);
         primitiveCollection = map.getScene().primitives.get(0);
       });
@@ -505,7 +505,7 @@ describe('create3DHandlers', () => {
       it('should set the XZ axis shadow to the original center', () => {
         const handlerModelMatrix = findPrimitive(
           primitiveCollection,
-          (p) => p?.olFeature?.[handlerSymbol] === AXIS_AND_PLANES.XZ,
+          (p) => p?.olFeature?.[handlerSymbol] === AxisAndPlanes.XZ,
         ).modelMatrix;
 
         const [, shadowCollection] = filterPrimitives(
@@ -533,7 +533,7 @@ describe('create3DHandlers', () => {
         map = getCesiumMap({});
         handlers = create3DHandlers(map, TransformationMode.TRANSLATE);
         handlers.show = true;
-        handlers.showAxis = AXIS_AND_PLANES.YZ;
+        handlers.showAxis = AxisAndPlanes.YZ;
         handlers.setCenter([1, 1, 1]);
         primitiveCollection = map.getScene().primitives.get(0);
       });
@@ -556,7 +556,7 @@ describe('create3DHandlers', () => {
       it('should set the YZ axis shadow to the original center', () => {
         const handlerModelMatrix = findPrimitive(
           primitiveCollection,
-          (p) => p?.olFeature?.[handlerSymbol] === AXIS_AND_PLANES.YZ,
+          (p) => p?.olFeature?.[handlerSymbol] === AxisAndPlanes.YZ,
         ).modelMatrix;
 
         const [, shadowCollection] = filterPrimitives(
@@ -587,7 +587,7 @@ describe('create3DHandlers', () => {
         sinon.stub(map, 'getCurrentResolution').returns(1 / 30);
         map.getScene().postRender.raiseEvent();
         handlers.show = true;
-        handlers.showAxis = AXIS_AND_PLANES.X;
+        handlers.showAxis = AxisAndPlanes.X;
         handlers.setCenter([2, 2, 1]);
         primitiveCollection = map.getScene().primitives.get(0);
       });
@@ -611,7 +611,7 @@ describe('create3DHandlers', () => {
         const handlerModelMatrix = findPrimitive(
           primitiveCollection,
           (p) =>
-            p?.olFeature?.[handlerSymbol] === AXIS_AND_PLANES.X &&
+            p?.olFeature?.[handlerSymbol] === AxisAndPlanes.X &&
             p.geometryInstances[0].geometry instanceof PolylineGeometry,
         ).modelMatrix;
 
@@ -675,9 +675,9 @@ describe('create3DHandlers', () => {
       const currentZHandlers = filterPrimitives(
         primitiveCollection,
         (p) =>
-          p.olFeature[handlerSymbol] === AXIS_AND_PLANES.Z ||
-          p.olFeature[handlerSymbol] === AXIS_AND_PLANES.XZ ||
-          p.olFeature[handlerSymbol] === AXIS_AND_PLANES.YZ,
+          p.olFeature[handlerSymbol] === AxisAndPlanes.Z ||
+          p.olFeature[handlerSymbol] === AxisAndPlanes.XZ ||
+          p.olFeature[handlerSymbol] === AxisAndPlanes.YZ,
       );
       handlers.greyOutZ = true;
       expect(currentZHandlers.every((p) => p.isDestroyed())).to.be.true;
@@ -694,9 +694,9 @@ describe('create3DHandlers', () => {
       const currentZHandlers = filterPrimitives(
         primitiveCollection,
         (p) =>
-          p.olFeature[handlerSymbol] === AXIS_AND_PLANES.Z ||
-          p.olFeature[handlerSymbol] === AXIS_AND_PLANES.XZ ||
-          p.olFeature[handlerSymbol] === AXIS_AND_PLANES.YZ,
+          p.olFeature[handlerSymbol] === AxisAndPlanes.Z ||
+          p.olFeature[handlerSymbol] === AxisAndPlanes.XZ ||
+          p.olFeature[handlerSymbol] === AxisAndPlanes.YZ,
       );
       expect(currentZHandlers).to.not.be.empty;
     });

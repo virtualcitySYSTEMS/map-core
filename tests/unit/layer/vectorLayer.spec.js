@@ -9,17 +9,16 @@ import VcsApp from '../../../src/vcsApp.js';
 import VectorStyleItem, {
   vectorStyleSymbol,
 } from '../../../src/style/vectorStyleItem.js';
-import { vcsMetaVersion } from '../../../src/layer/layer.js';
 import { originalStyle } from '../../../src/layer/featureVisibility.js';
 import {
   AltitudeModeCesium,
   ClassificationTypeCesium,
+  vcsMetaVersion,
 } from '../../../src/layer/vectorProperties.js';
 import { setOpenlayersMap } from '../helpers/openlayersHelpers.js';
 import Extent from '../../../src/util/extent.js';
 
 describe('VectorLayer', () => {
-  /** @type {import("@vcmap/core").VectorLayer} */
   let VL;
   let sandbox;
 

@@ -1,10 +1,10 @@
 # VcsModule
 
-A [module](../src/vcsModule.js) is a serialized configuration of the [VcsApp](../src/vcsApp.js).
+A [module](../src/vcsModule.ts) is a serialized configuration of the [VcsApp](../src/vcsApp.ts).
 This means it can include [style](./style.md) or [layer](./layers.md) definitions, oblique collections, viewpoints, [maps](./maps.md), categories or plugins.
 
 The VcsApp can load one or multiple serialized modules at the same time.
-The modules are stored in an IndexedCollection, all deserialized objects are added to the [VcsApp](../src/vcsApp.js).
+The modules are stored in an IndexedCollection, all deserialized objects are added to the [VcsApp](../src/vcsApp.ts).
 
 > If an object has already existed on the VcsApp, it will be overwritten by the new definition defined by the newly added module.
 
@@ -34,7 +34,7 @@ vcsApp.addModule({
 ```
 
 A module can als be removed from the VcsApp, if it's not needed any more.
-All objects belonging to this module, will be destroyed and removed from the [VcsApp](../src/vcsApp.js).
+All objects belonging to this module, will be destroyed and removed from the [VcsApp](../src/vcsApp.ts).
 
 > If an object has been overwritten by an added module, the original object will be restored once said module is removed.
 

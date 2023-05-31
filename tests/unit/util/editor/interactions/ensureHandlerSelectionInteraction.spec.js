@@ -1,7 +1,7 @@
 import { Feature } from 'ol';
 import { Cartesian2 } from '@vcmap-cesium/engine';
 import { getCesiumMap } from '../../../helpers/cesiumHelpers.js';
-import { AXIS_AND_PLANES, handlerSymbol } from '../../../../../index.js';
+import { AxisAndPlanes, handlerSymbol } from '../../../../../index.js';
 import EnsureHandlerSelectionInteraction from '../../../../../src/util/editor/interactions/ensureHandlerSelectionInteraction.js';
 
 describe('EnsureHandlerSelectionInteraction', () => {
@@ -16,7 +16,7 @@ describe('EnsureHandlerSelectionInteraction', () => {
     drillResults = [
       { primitive: {} },
       { primitive: { olFeature: {} } },
-      { primitive: { olFeature: { [handlerSymbol]: AXIS_AND_PLANES.X } } },
+      { primitive: { olFeature: { [handlerSymbol]: AxisAndPlanes.X } } },
     ];
     ensureHandlerSelection = new EnsureHandlerSelectionInteraction(
       currentFeatures,
@@ -69,7 +69,7 @@ describe('EnsureHandlerSelectionInteraction', () => {
 
   it('should not drill pick the scene, if the selected feature is a handler', async () => {
     const event = {
-      feature: { [handlerSymbol]: AXIS_AND_PLANES.X },
+      feature: { [handlerSymbol]: AxisAndPlanes.X },
       map,
       windowPosition: new Cartesian2(0, 0),
     };

@@ -1,7 +1,7 @@
 import { LineString, Polygon } from 'ol/geom.js';
 import { getOpenlayersMap } from '../../../helpers/openlayersHelpers.js';
 import {
-  AXIS_AND_PLANES,
+  AxisAndPlanes,
   create2DHandlers,
   handlerSymbol,
   mercatorProjection,
@@ -37,21 +37,21 @@ describe('create2DHandlers', () => {
     it('should create an X axis handler', () => {
       const features = scratchLayer
         .getFeatures()
-        .filter((f) => f[handlerSymbol] === AXIS_AND_PLANES.X);
+        .filter((f) => f[handlerSymbol] === AxisAndPlanes.X);
       expect(features).to.have.lengthOf(2);
     });
 
     it('should create an Y axis handler', () => {
       const features = scratchLayer
         .getFeatures()
-        .filter((f) => f[handlerSymbol] === AXIS_AND_PLANES.Y);
+        .filter((f) => f[handlerSymbol] === AxisAndPlanes.Y);
       expect(features).to.have.lengthOf(2);
     });
 
     it('should create an XY plane handler', () => {
       const features = scratchLayer
         .getFeatures()
-        .filter((f) => f[handlerSymbol] === AXIS_AND_PLANES.XY);
+        .filter((f) => f[handlerSymbol] === AxisAndPlanes.XY);
       expect(features).to.have.lengthOf(1);
       expect(features[0].getGeometry()).to.be.an.instanceOf(Polygon);
     });
@@ -118,7 +118,7 @@ describe('create2DHandlers', () => {
         .getFeatures()
         .find(
           (f) =>
-            f[handlerSymbol] === AXIS_AND_PLANES.X &&
+            f[handlerSymbol] === AxisAndPlanes.X &&
             f.getGeometry() instanceof LineString,
         );
       expect(handler).to.exist;
@@ -132,7 +132,7 @@ describe('create2DHandlers', () => {
         .getFeatures()
         .find(
           (f) =>
-            f[handlerSymbol] === AXIS_AND_PLANES.Y &&
+            f[handlerSymbol] === AxisAndPlanes.Y &&
             f.getGeometry() instanceof LineString,
         );
       expect(handler).to.exist;
@@ -144,7 +144,7 @@ describe('create2DHandlers', () => {
     it('should create an XY plane handler', () => {
       const handler = scratchLayer
         .getFeatures()
-        .find((f) => f[handlerSymbol] === AXIS_AND_PLANES.XY);
+        .find((f) => f[handlerSymbol] === AxisAndPlanes.XY);
       const extent = handler.getGeometry().getExtent();
       expect(extent[0]).to.equal(1.2);
       expect(extent[1]).to.equal(1.2);
@@ -183,7 +183,7 @@ describe('create2DHandlers', () => {
         .getFeatures()
         .find(
           (f) =>
-            f[handlerSymbol] === AXIS_AND_PLANES.X &&
+            f[handlerSymbol] === AxisAndPlanes.X &&
             f.getGeometry() instanceof LineString,
         );
       expect(handler).to.exist;
@@ -197,7 +197,7 @@ describe('create2DHandlers', () => {
         .getFeatures()
         .find(
           (f) =>
-            f[handlerSymbol] === AXIS_AND_PLANES.Y &&
+            f[handlerSymbol] === AxisAndPlanes.Y &&
             f.getGeometry() instanceof LineString,
         );
       expect(handler).to.exist;
@@ -209,7 +209,7 @@ describe('create2DHandlers', () => {
     it('should create an XY plane handler', () => {
       const handler = scratchLayer
         .getFeatures()
-        .find((f) => f[handlerSymbol] === AXIS_AND_PLANES.XY);
+        .find((f) => f[handlerSymbol] === AxisAndPlanes.XY);
       const extent = handler.getGeometry().getExtent();
       expect(extent[2]).to.be.closeTo(1.8, 0.0001);
       expect(extent[3]).to.be.closeTo(1.8, 0.0001);
@@ -239,7 +239,7 @@ describe('create2DHandlers', () => {
           TransformationMode.TRANSLATE,
         );
         handlers.show = true;
-        handlers.showAxis = AXIS_AND_PLANES.X;
+        handlers.showAxis = AxisAndPlanes.X;
         handlers.setCenter([1, 1, 0]);
       });
 
@@ -295,7 +295,7 @@ describe('create2DHandlers', () => {
           TransformationMode.TRANSLATE,
         );
         handlers.show = true;
-        handlers.showAxis = AXIS_AND_PLANES.Y;
+        handlers.showAxis = AxisAndPlanes.Y;
         handlers.setCenter([1, 1, 0]);
       });
 
@@ -353,7 +353,7 @@ describe('create2DHandlers', () => {
           TransformationMode.TRANSLATE,
         );
         handlers.show = true;
-        handlers.showAxis = AXIS_AND_PLANES.XY;
+        handlers.showAxis = AxisAndPlanes.XY;
         handlers.setCenter([1, 1, 0]);
       });
 
@@ -402,7 +402,7 @@ describe('create2DHandlers', () => {
         sinon.stub(map, 'getCurrentResolution').returns(1 / 30);
         map.olMap.renderSync();
 
-        handlers.showAxis = AXIS_AND_PLANES.X;
+        handlers.showAxis = AxisAndPlanes.X;
         handlers.setCenter([2, 2, 0]);
       });
 

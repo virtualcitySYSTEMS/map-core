@@ -5,20 +5,20 @@ It uses [OpenLayers](https://github.com/openlayers/openlayers) for the 2D visual
 [Cesium](https://github.com/cesiumGS/cesium/) is used for the visualization of 3D geo-data.
 Users can easily switch between the 2D, oblique and 3D views and dynamically add map layers to the scene that are accessible in all views.
 
-All maps of an application are managed in a [MapCollection](../src/util/mapCollection.js), which is a readonly property of the [VcsApp](../src/vcsApp.js) instance.
+All maps of an application are managed in a [MapCollection](../src/util/mapCollection.ts), which is a readonly property of the [VcsApp](../src/vcsApp.ts) instance.
 
 ## Map types
 
-The abstract base [map](../src/map/vcsMap.js) class is derived from the [VcsObject](../src/vcsObject.js) class.
+The abstract base [map](../src/map/vcsMap.ts) class is derived from the [VcsObject](../src/vcsObject.ts) class.
 It defines the `target`, a HTMLElement where the map's canvas is rendered in, its state, `splitPosition` and `layerCollection`.
 
 For all visualization technologies used, subclasses are derived.
-For [OpenLayers](https://github.com/openlayers/openlayers) based visualization of 2D and oblique a [baseOLMap](../src/map/baseOLMap.js) exists, which is further specialized in a [openlayersMap](../src/map/openlayersMap.js) and an [obliqueMap](../src/map/obliqueMap.js).
-For [Cesium](https://github.com/cesiumGS/cesium/) based 3D visualization the [cesiumMap](../src/map/cesiumMap.js) provides a wrapper around the Cesium Scene class.
+For [OpenLayers](https://github.com/openlayers/openlayers) based visualization of 2D and oblique a [baseOLMap](../src/map/baseOLMap.ts) exists, which is further specialized in a [openlayersMap](../src/map/openlayersMap.ts) and an [obliqueMap](../src/map/obliqueMap.ts).
+For [Cesium](https://github.com/cesiumGS/cesium/) based 3D visualization the [cesiumMap](../src/map/cesiumMap.ts) provides a wrapper around the Cesium Scene class.
 
 ## MapCollection
 
-The [MapCollection](../src/util/mapCollection.js) is a container for all available map types of a VcsApp.
+The [MapCollection](../src/util/mapCollection.ts) is a container for all available map types of a VcsApp.
 Maps can be added to or removed from this collection either via API or config.
 The collection has a couple of properties which are shared among its maps.
 This includes `layerCollection`, `target`, and `splitPosition`.

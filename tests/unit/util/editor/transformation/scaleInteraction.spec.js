@@ -7,7 +7,7 @@ import {
   setupTransformationHandler,
 } from './setupTransformationHandler.js';
 import {
-  AXIS_AND_PLANES,
+  AxisAndPlanes,
   TransformationMode,
   EventType,
   ScaleInteraction,
@@ -58,7 +58,7 @@ describe('ScaleInteraction', () => {
         ],
         sandbox,
       );
-      const feature = createHandlerFeature(AXIS_AND_PLANES.XY);
+      const feature = createHandlerFeature(AxisAndPlanes.XY);
       await interaction.pipe({
         map,
         feature,
@@ -112,7 +112,7 @@ describe('ScaleInteraction', () => {
         ],
         sandbox,
       );
-      const feature = createHandlerFeature(AXIS_AND_PLANES.X);
+      const feature = createHandlerFeature(AxisAndPlanes.X);
       await interaction.pipe({
         map,
         feature,
@@ -166,7 +166,7 @@ describe('ScaleInteraction', () => {
         ],
         sandbox,
       );
-      const feature = createHandlerFeature(AXIS_AND_PLANES.Y);
+      const feature = createHandlerFeature(AxisAndPlanes.Y);
       await interaction.pipe({
         map,
         feature,
@@ -232,7 +232,7 @@ describe('ScaleInteraction', () => {
     it('should call scale x/y if dragging the plane handler', async () => {
       const spy = sandbox.spy();
       interaction.scaled.addEventListener(spy);
-      const feature = createHandlerFeature(AXIS_AND_PLANES.XY);
+      const feature = createHandlerFeature(AxisAndPlanes.XY);
       await interaction.pipe({
         map,
         feature,
@@ -277,7 +277,7 @@ describe('ScaleInteraction', () => {
     it('should call scale x if dragging the x axis handler', async () => {
       const spy = sandbox.spy();
       interaction.scaled.addEventListener(spy);
-      const feature = createHandlerFeature(AXIS_AND_PLANES.X);
+      const feature = createHandlerFeature(AxisAndPlanes.X);
       await interaction.pipe({
         map,
         feature,
@@ -322,7 +322,7 @@ describe('ScaleInteraction', () => {
     it('should call scale y if dragging the y axis handler', async () => {
       const spy = sandbox.spy();
       interaction.scaled.addEventListener(spy);
-      const feature = createHandlerFeature(AXIS_AND_PLANES.Y);
+      const feature = createHandlerFeature(AxisAndPlanes.Y);
       await interaction.pipe({
         map,
         feature,

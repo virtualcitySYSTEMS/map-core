@@ -35,7 +35,7 @@ describe('PointCloudLayer', () => {
     it('should set no pointSize, if no default was specified', () => {
       PCL.pointSize = 3;
       PCL.clearStyle();
-      expect(PCL.pointSize).to.be.null;
+      expect(PCL.pointSize).to.be.undefined;
     });
 
     it('should set the default point size, which is the given pointsize in the constructor', () => {

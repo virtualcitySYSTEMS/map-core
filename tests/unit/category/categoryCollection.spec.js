@@ -1,7 +1,7 @@
 import Category from '../../../src/category/category.js';
 import VectorLayer from '../../../src/layer/vectorLayer.js';
 import VcsApp from '../../../src/vcsApp.js';
-import { moduleIdSymbol } from '../../../src/vcsModuleHelpers.js';
+import { moduleIdSymbol } from '../../../src/moduleIdSymbol.js';
 
 describe('CategoryCollection', () => {
   describe('parsing of items', () => {
@@ -18,7 +18,7 @@ describe('CategoryCollection', () => {
             name: 'bar',
           },
         ];
-        await app.categories.requestCategory({
+        app.categories.requestCategory({
           name: 'foo',
           type: Category.className,
         });
@@ -57,7 +57,7 @@ describe('CategoryCollection', () => {
             type: VectorLayer.className,
           },
         ];
-        await app.categories.requestCategory({
+        app.categories.requestCategory({
           name: 'foo',
           type: Category.className,
           classRegistryName: 'layerClassRegistry',
@@ -105,7 +105,7 @@ describe('CategoryCollection', () => {
           },
         ];
         await app.categories.parseCategoryItems('foo', items, 'foo');
-        await app.categories.requestCategory({
+        app.categories.requestCategory({
           name: 'foo',
           type: Category.className,
           classRegistryName: 'layerClassRegistry',
@@ -149,7 +149,7 @@ describe('CategoryCollection', () => {
         ];
         await app.categories.parseCategoryItems('foo', items, 'foo');
         app.moduleRemoved.raiseEvent({ _id: 'foo' });
-        await app.categories.requestCategory({
+        app.categories.requestCategory({
           name: 'foo',
           type: Category.className,
           classRegistryName: 'layerClassRegistry',
@@ -177,9 +177,9 @@ describe('CategoryCollection', () => {
       let category;
       let app;
 
-      before(async () => {
+      before(() => {
         app = new VcsApp();
-        category = await app.categories.requestCategory({
+        category = app.categories.requestCategory({
           name: 'foo',
           type: Category.className,
         });
@@ -209,14 +209,14 @@ describe('CategoryCollection', () => {
       let categoryAgain;
       let app;
 
-      before(async () => {
+      before(() => {
         app = new VcsApp();
-        category = await app.categories.requestCategory({
+        category = app.categories.requestCategory({
           name: 'foo',
           type: Category.className,
           title: 'foo',
         });
-        categoryAgain = await app.categories.requestCategory({
+        categoryAgain = app.categories.requestCategory({
           name: 'foo',
           type: Category.className,
           title: 'bar',
@@ -241,17 +241,17 @@ describe('CategoryCollection', () => {
     });
 
     describe('of a category without a type', () => {
-      it('should infer the type', async () => {
+      it('should infer the type', () => {
         const app = new VcsApp();
-        const category = await app.categories.requestCategory({ name: 'foo' });
+        const category = app.categories.requestCategory({ name: 'foo' });
         expect(category).to.be.an.instanceOf(Category);
       });
     });
 
     describe('of a category with items', () => {
-      it('should ignore items', async () => {
+      it('should ignore items', () => {
         const app = new VcsApp();
-        const category = await app.categories.requestCategory({
+        const category = app.categories.requestCategory({
           name: 'foo',
           items: [{ name: 'foo' }],
           type: Category.className,

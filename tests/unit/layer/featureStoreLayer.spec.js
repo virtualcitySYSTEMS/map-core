@@ -8,7 +8,6 @@ import FeatureStoreLayer, {
   isTiledFeature,
 } from '../../../src/layer/featureStoreLayer.js';
 import VcsApp from '../../../src/vcsApp.js';
-import VectorLayer from '../../../src/layer/vectorLayer.js';
 import VectorStyleItem, {
   vectorStyleSymbol,
   defaultVectorStyle,
@@ -19,17 +18,13 @@ import {
 } from '../../../src/layer/featureStoreLayerState.js';
 import DeclarativeStyleItem from '../../../src/style/declarativeStyleItem.js';
 import '../../../src/layer/cesium/cesiumTilesetCesiumImpl.js';
-import {
-  createTilesetServer,
-  setCesiumMap,
-  createDummyCesium3DTileFeature,
-} from '../helpers/cesiumHelpers.js';
+import { createTilesetServer, setCesiumMap } from '../helpers/cesiumHelpers.js';
 import { setOpenlayersMap } from '../helpers/openlayersHelpers.js';
-import CesiumTilesetLayer from '../../../src/layer/cesiumTilesetLayer.js';
 import { vcsLayerName } from '../../../src/layer/layerSymbols.js';
 import Extent from '../../../src/util/extent.js';
 import { wgs84Projection } from '../../../src/util/projection.js';
 import importJSON from '../helpers/importJSON.js';
+import { vcsMetaVersion } from '../../../src/layer/vectorProperties.js';
 
 const testGeoJSON = await importJSON('./tests/data/testGeoJSON.json');
 
@@ -388,32 +383,6 @@ describe('FeatureStoreLayer', () => {
     });
   });
 
-  describe('objectClickedHandler', () => {
-    it('should call super object clickedhandler, if feature is an ol.Feature', () => {
-      const feature = new Feature();
-      FS.addFeatures([feature]);
-      const objectClickedHandler = sandbox.spy(
-        VectorLayer.prototype,
-        'objectClickedHandler',
-      );
-      FS.objectClickedHandler(feature);
-      expect(objectClickedHandler).to.have.been.calledWithExactly(feature);
-    });
-
-    it('should call the staticFeatureLayers objectClickedHandler, if the feature is a tiledFeature 3DTilesetFeature', async () => {
-      await app.maps.setActiveMap(cesiumMap.name);
-      const feature = createDummyCesium3DTileFeature();
-      feature[isTiledFeature] = true;
-      const objectClickedHandler = sandbox.spy(
-        CesiumTilesetLayer.prototype,
-        'objectClickedHandler',
-      );
-      FS.objectClickedHandler(feature);
-      expect(objectClickedHandler).to.have.been.calledWithExactly(feature);
-      await app.maps.setActiveMap(openlayer.name);
-    });
-  });
-
   describe('switchStaticFeatureToDynamic', () => {
     let feature;
     beforeEach(() => {
@@ -572,6 +541,7 @@ describe('FeatureStoreLayer', () => {
           vcsMeta: {
             skirt: 3,
             screenSpaceError: 3,
+            version: vcsMetaVersion,
           },
           staticRepresentation: {
             threeDim: 'localhost',

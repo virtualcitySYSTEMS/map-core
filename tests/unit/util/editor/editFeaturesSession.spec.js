@@ -3,7 +3,7 @@ import { Cartesian2, Math as CesiumMath } from '@vcmap-cesium/engine';
 import { Point } from 'ol/geom.js';
 import Feature from 'ol/Feature.js';
 import {
-  AXIS_AND_PLANES,
+  AxisAndPlanes,
   EventType,
   mercatorToCartesian,
   ModificationKeyType,
@@ -177,7 +177,7 @@ describe('startEditFeaturesSession', () => {
     it('should add the translate interaction', async () => {
       const point = new Point([1, 1, 1]);
       await session.setFeatures([createFeatureWithId(point)]);
-      const feature = createHandlerFeature(AXIS_AND_PLANES.X);
+      const feature = createHandlerFeature(AxisAndPlanes.X);
       await app.maps.eventHandler.interactions[3].pipe({
         map: app.maps.activeMap,
         feature,
@@ -240,7 +240,7 @@ describe('startEditFeaturesSession', () => {
         createFeatureWithId(point1),
         createFeatureWithId(point2),
       ]);
-      const feature = createHandlerFeature(AXIS_AND_PLANES.X);
+      const feature = createHandlerFeature(AxisAndPlanes.X);
       await app.maps.eventHandler.interactions[3].pipe({
         map: app.maps.activeMap,
         feature,
@@ -308,7 +308,7 @@ describe('startEditFeaturesSession', () => {
         createFeatureWithId(point1),
         createFeatureWithId(point2),
       ]);
-      const feature = createHandlerFeature(AXIS_AND_PLANES.X);
+      const feature = createHandlerFeature(AxisAndPlanes.X);
       await app.maps.eventHandler.interactions[3].pipe({
         map: app.maps.activeMap,
         feature,
@@ -393,7 +393,7 @@ describe('startEditFeaturesSession', () => {
 
         feature = createFeatureWithId(new Point([1, 1, 0]));
         await session.setFeatures([feature]);
-        const handlerFeature = createHandlerFeature(AXIS_AND_PLANES.Z);
+        const handlerFeature = createHandlerFeature(AxisAndPlanes.Z);
 
         await app.maps.eventHandler.interactions[3].pipe({
           map: app.maps.activeMap,

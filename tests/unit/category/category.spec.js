@@ -5,7 +5,7 @@ import IndexedCollection from '../../../src/util/indexedCollection.js';
 import VectorStyleItem from '../../../src/style/vectorStyleItem.js';
 import VcsApp from '../../../src/vcsApp.js';
 import VcsObject from '../../../src/vcsObject.js';
-import { moduleIdSymbol } from '../../../src/vcsModuleHelpers.js';
+import { moduleIdSymbol } from '../../../src/moduleIdSymbol.js';
 
 describe('Category', () => {
   let app;
@@ -142,7 +142,7 @@ describe('Category', () => {
 
       before(async () => {
         app1 = new VcsApp();
-        category = await app1.categories.requestCategory({ name: 'foo' });
+        category = app1.categories.requestCategory({ name: 'foo' });
       });
 
       after(() => {
@@ -170,7 +170,7 @@ describe('Category', () => {
 
       before(async () => {
         app1 = new VcsApp();
-        category = await app1.categories.requestCategory({
+        category = app1.categories.requestCategory({
           name: 'foo',
           featureProperty: 'feature',
         });

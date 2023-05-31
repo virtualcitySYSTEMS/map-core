@@ -1,31 +1,48 @@
 import path from 'path';
 import fs from 'fs';
-import { fileURLToPath } from 'url';
+
+async function* getFilesInDirectory(filePath) {
+  const entries = await fs.promises.readdir(filePath, { withFileTypes: true });
+  // eslint-disable-next-line no-restricted-syntax
+  for (const file of entries) {
+    if (file.isDirectory()) {
+      yield* getFilesInDirectory(path.join(filePath, file.name));
+    } else if (file.isFile()) {
+      yield path.join(filePath, file.name);
+    }
+  }
+}
+
+function replaceRelativeImport(content) {
+  return content.replaceAll(
+    /(import[^'"]*['"](?:\.|\.\.)\/(?:\.\.\/)*[^'".]*)(['"])/g,
+    '$1.js$2',
+  );
+}
+
+async function fixNode16RelativeImport(dir) {
+  if (fs.existsSync(dir)) {
+    for await (const f of getFilesInDirectory(dir)) {
+      if (path.extname(f) === '.ts') {
+        let content = await fs.promises.readFile(f, 'utf-8');
+        content = replaceRelativeImport(content);
+        await fs.promises.writeFile(f, content);
+      }
+    }
+  }
+}
 
 /**
- * This circumvents a bug in webstorm, where scoped module .d.ts files arent
- * handled properly (there is no intellisense in webstorm otherwise)
+ * Fixes relative imports in openlayers TS definitions
  * @returns {Promise<void>}
  */
-async function fixCesiumTypes() {
-  const fileName = fileURLToPath(import.meta.url);
-  if (
-    path.resolve(path.dirname(fileName), '..') === process.cwd() &&
-    fs.existsSync(path.join(process.cwd(), 'build', 'types'))
-  ) {
-    console.log('Moving cesium engine index.d.ts');
-    await fs.promises.cp(
-      path.join(
-        process.cwd(),
-        'node_modules',
-        '@vcmap-cesium',
-        'engine',
-        'index.d.ts',
-      ),
-      path.join(process.cwd(), 'build', 'types', 'Cesium_module.d.ts'),
-      { force: true },
-    );
-  }
+async function fixOpenlayers() {
+  await Promise.all([
+    fixNode16RelativeImport(path.join(process.cwd(), 'node_modules', 'ol')),
+    fixNode16RelativeImport(
+      path.join(process.cwd(), 'node_modules', 'geotiff', 'dist-module'),
+    ),
+  ]);
 }
 
 /**
@@ -47,8 +64,27 @@ async function fixTinyQueue() {
   }
 }
 
+async function fixResizeObserverPolyfill() {
+  const fileName = path.join(
+    process.cwd(),
+    'node_modules',
+    'resize-observer-polyfill',
+    'src',
+    'index.d.ts',
+  );
+  if (fs.existsSync(fileName)) {
+    let content = await fs.promises.readFile(fileName, 'utf-8');
+    content = content.replace(/interface\sDOMRectReadOnly\s?\{[^}]*}\s/gm, '');
+    await fs.promises.writeFile(fileName, content);
+  }
+}
+
 async function run() {
-  await Promise.all([fixTinyQueue(), fixCesiumTypes()]);
+  await Promise.all([
+    fixTinyQueue(),
+    fixOpenlayers(),
+    fixResizeObserverPolyfill(),
+  ]);
   console.log('fixed modules');
 }
 

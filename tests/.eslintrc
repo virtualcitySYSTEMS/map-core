@@ -1,7 +1,8 @@
 {
   "extends": ["@vcsuite/eslint-config/mocha"],
   "rules": {
-    "import/extensions": ["error", "always"]
+    "import/extensions": ["error", "always"],
+    "import/no-unresolved": "off"
   },
   "globals": {
     "expect": "readonly",

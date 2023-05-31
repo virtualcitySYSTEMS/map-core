@@ -4,7 +4,7 @@ import {
   handlerSymbol,
   mouseOverSymbol,
   cursorMap,
-  AXIS_AND_PLANES,
+  AxisAndPlanes,
   EditFeaturesMouseOverInteraction,
   SelectMultiFeatureInteraction,
   VectorLayer,
@@ -23,7 +23,7 @@ describe('EditFeaturesMouseOverInteraction', () => {
     feature = new Feature();
     layer.addFeatures([feature]);
     handler = new Feature();
-    handler[handlerSymbol] = AXIS_AND_PLANES.X;
+    handler[handlerSymbol] = AxisAndPlanes.X;
   });
 
   beforeEach(() => {

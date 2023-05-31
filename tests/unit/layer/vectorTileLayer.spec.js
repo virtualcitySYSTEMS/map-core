@@ -348,10 +348,11 @@ describe('VectorTileLayer', () => {
 
     it('should not export default Options', () => {
       const defaultVectorTile = new VectorTileLayer({});
-      expect(defaultVectorTile.toJSON()).to.be.deep.equal({
-        name: defaultVectorTile.name,
-        type: defaultVectorTile.className,
-      });
+      expect(defaultVectorTile.toJSON()).to.have.keys([
+        'name',
+        'type',
+        'tileProvider',
+      ]);
     });
   });
 });

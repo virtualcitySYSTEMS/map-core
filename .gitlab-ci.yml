@@ -21,7 +21,6 @@ build:
     - npm set registry 'http://npmregistry:4873'
     - npm ci
     - npm run postinstall
-    - npm run build-index
   stage: build
 
 .after_build_template: &after_build_definition
@@ -43,7 +42,6 @@ type-check:
   only:
     - /^(feature-.*|hotfix-.*|main|release-.*)$/
   script:
-    - npm run build-tsd
     - npm run type-check
 
 audit:

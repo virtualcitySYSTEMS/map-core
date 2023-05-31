@@ -19,7 +19,7 @@ import {
 import CesiumTilesetLayer from '../../../src/layer/cesiumTilesetLayer.js';
 import DataSourceLayer from '../../../src/layer/dataSourceLayer.js';
 import CesiumMap from '../../../src/map/cesiumMap.js';
-import { Viewpoint } from '../../../index.js';
+import Viewpoint from '../../../src/util/viewpoint.js';
 
 export const tilesetJSON = {
   asset: {

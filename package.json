@@ -2,25 +2,23 @@
   "name": "@vcmap/core",
   "version": "5.0.0-rc.32",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "type": "module",
-  "types": "index.d.ts",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "test": "node node_modules/mocha/bin/_mocha --exit --require tests/setupJsdom.js --require tests/setup.js --file tests/vcs.js --recursive \"tests/**/*spec.js\"",
-    "lint:js": "eslint . --ext .vue,.js,.cjs,.mjs",
+    "test": "tsc -b tests && node -e \"require('fs').cpSync('tests/data', '.tests/tests/data', { recursive: true })\" && mocha --exit --require .tests/tests/setupJsdom.js --require .tests/tests/setup.js --file .tests/tests/vcs.js \".tests/**/*.spec.js\"",
+    "lint:js": "eslint . --ext .vue,.js,.cjs,.mjs,.ts",
     "lint:prettier": "prettier --check .",
     "lint": "npm run lint:js && npm run lint:prettier",
     "format": "prettier --write --list-different . && npm run lint:js -- --fix",
-    "pretype-check": "npm run build-typedefs",
-    "type-check": "node build/typeCheck.js",
+    "type-check": "tsc --noEmit",
     "postinstall": "node build/postinstall.js",
     "coverage": "c8 --reporter text-summary npm run test",
     "coverage:gitlab": "c8 --reporter text-summary npm run test -- --reporter mocha-junit-reporter",
-    "build-docs": "jsdoc -c build/docs/conf.json",
-    "build-index": "jsdoc -c build/index/conf.json",
-    "build-typedefs": "jsdoc -c build/info/conf.json",
-    "build-tsd": "node build/buildDTs.js",
-    "prepare": "npm run build-index && npm run build-tsd"
+    "build-docs": "typedoc index.ts --out docs",
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "prepare": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -29,24 +27,28 @@
   "files": [
     "build/postinstall.js",
     "src/",
+    "dist/",
     "tests/data/",
     "tests/unit/helpers/",
     "LICENSE.md",
     "README.md",
-    "index.js",
-    "index.d.ts"
+    "index.ts",
+    "!dist/tsconfig.tsbuildinfo"
   ],
   "author": "Virtual City Systems",
   "license": "MIT",
   "devDependencies": {
+    "@types/chai": "^4.3.5",
+    "@types/geojson": "^7946.0.10",
+    "@types/mocha": "^10.0.1",
+    "@types/proj4": "^2.5.2",
+    "@types/sinon": "^10.0.15",
+    "@types/uuid": "^9.0.1",
     "@vcsuite/eslint-config": "^3.0.3",
-    "@vcsuite/tsd-jsdoc": "^1.0.2",
     "c8": "^7.7.1",
-    "canvas": "^2.8.0",
+    "canvas": "^2.9.1",
     "chai": "^4.3.4",
     "eslint": "^8.38.0",
-    "jsdoc": "^3.6.7",
-    "jsdoc-plugin-typescript": "^2.0.6",
     "jsdom": "^16.5.2",
     "jsdom-global": "^3.0.2",
     "mocha": "^9.1.3",
@@ -54,11 +56,11 @@
     "nock": "^13.2.4",
     "node-fetch": "^3.2.0",
     "prettier": "^2.8.7",
-    "resize-observer-polyfill": "1.5.1",
+    "resize-observer-polyfill": "^1.5.1",
     "sinon": "^9.2.4",
     "sinon-chai": "^3.6.0",
-    "tui-jsdoc-template": "^1.2.2",
-    "typescript": "^4.9.3"
+    "typedoc": "^0.24.7",
+    "typescript": "^5.0.4"
   },
   "peerDependencies": {
     "@vcmap-cesium/engine": "~2.3.2",
@@ -66,22 +68,50 @@
   },
   "eslintConfig": {
     "extends": [
-      "@vcsuite/eslint-config/vue"
+      "@vcsuite/eslint-config/node-ts"
+    ],
+    "env": {
+      "browser": true
+    },
+    "rules": {
+      "no-restricted-syntax": "off",
+      "import/extensions": [
+        "error",
+        "always"
+      ]
+    },
+    "overrides": [
+      {
+        "files": [
+          "*.ts",
+          "*.vue"
+        ],
+        "parserOptions": {
+          "project": [
+            "./tsconfig.json",
+            "./tests/tsconfig.json"
+          ]
+        },
+        "rules": {
+          "@typescript-eslint/no-non-null-assertion": "off",
+          "@typescript-eslint/no-unused-vars": "off",
+          "@typescript-eslint/no-explicit-any": "off"
+        }
+      }
     ]
   },
   "eslintIgnore": [
     "node_modules",
     "coverage",
-    "index.js",
-    "*.d.ts",
-    "docs"
+    "docs",
+    "dist",
+    ".tests"
   ],
   "prettier": "@vcsuite/eslint-config/prettier.js",
   "dependencies": {
-    "@types/rbush": "^3.0.0",
     "@vcsuite/check": "^1.1.2",
     "@vcsuite/logger": "^1.0.1",
-    "@vcsuite/parsers": "^1.0.1",
+    "@vcsuite/parsers": "^1.0.3",
     "fast-deep-equal": "^3.1.3",
     "proj4": "^2.7.5",
     "rbush": ">=3.0.1",

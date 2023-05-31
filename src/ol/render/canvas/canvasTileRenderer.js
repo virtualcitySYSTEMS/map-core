@@ -130,9 +130,6 @@ class CanvasTileRenderer extends CanvasImmediateRenderer {
    * the current fill and stroke styles.
    *
    * takes the mercator yscale into account and draws a ellipse instead of a circle.
-   *
-   * @param {import("ol/geom/Circle").default} geometry Circle geometry.
-   * @api
    */
   drawCircle(geometry) {
     if (!intersects(this.extent_, geometry.getExtent())) {

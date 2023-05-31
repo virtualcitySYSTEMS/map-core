@@ -6,7 +6,7 @@ The [EventHandler](#event-handler) handles _ordered_ interactions within a chain
 
 ## Interaction types
 
-All interactions are derived from the [AbstractInteraction](../src/interaction/abstractInteraction.js) class.
+All interactions are derived from the [AbstractInteraction](../src/interaction/abstractInteraction.ts) class.
 An interaction is defined by
 
 - an `id` making it unique
@@ -37,7 +37,7 @@ Every time the active event type of the interaction is raised, an `InteractionEv
  */
 ```
 
-To define a behaviour of the interaction, the `pipe` method of [AbstractInteraction](../src/interaction/abstractInteraction.js) must be implemented.
+To define a behaviour of the interaction, the `pipe` method of [AbstractInteraction](../src/interaction/abstractInteraction.ts) must be implemented.
 It can react on the InteractionEvent using its properties. Since interactions are chained and the event is passed down a specific order you can stop the event beeing passed on to the next interaction by stop propagation:
 
 ```js
@@ -67,13 +67,13 @@ The event handler chains registered interactions and pipes the corresponding eve
 
 Per default the event handler has base interactions already registered:
 
-- [CoordinateAtPixelInteraction](../src/interaction/coordinateAtPixel.js) providing a click position
-- [FeatureAtPixelInteraction](../src/interaction/featureAtPixelInteraction.js) providing a clicked feature
-- [FeatureProviderInteraction](../src/interaction/featureProviderInteraction.js) providing a clicked feature from a [FeatureProvider](../src/featureProvider/abstractFeatureProvider.js).
+- [CoordinateAtPixelInteraction](../src/interaction/coordinateAtPixel.ts) providing a click position
+- [FeatureAtPixelInteraction](../src/interaction/featureAtPixelInteraction.ts) providing a clicked feature
+- [FeatureProviderInteraction](../src/interaction/featureProviderInteraction.ts) providing a clicked feature from a [FeatureProvider](../src/featureProvider/abstractFeatureProvider.ts).
 
 Those interactions are lined up at the beginning of the chain and will enrich the `InteractionEvent` by a position and a feature, if available.
 
-Apart from those, custom interactions can be implemented by extending [AbstractInteraction](../src/interaction/abstractInteraction.js).
+Apart from those, custom interactions can be implemented by extending [AbstractInteraction](../src/interaction/abstractInteraction.ts).
 They can be registered at the event handler as [exclusive](#exclusive-interaction) or [persistent](#persistent-interaction) interaction.
 
 ### Exclusive interaction
@@ -81,7 +81,7 @@ They can be registered at the event handler as [exclusive](#exclusive-interactio
 The event handler supports one exclusive interaction to be registered.
 This is the default methodology for user map interactions, such as drawing or measuring.
 If another exclusive interaction is added, this interaction is removed and a provided callback is called.
-Since an [InteractionChain](../src/interaction/interactionChain.js) is also an interaction, multiple interactions can be added as an exclusive chain.
+Since an [InteractionChain](../src/interaction/interactionChain.ts) is also an interaction, multiple interactions can be added as an exclusive chain.
 
 ```js
 const { eventHandler } = app.maps;

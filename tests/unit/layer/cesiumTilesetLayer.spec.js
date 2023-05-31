@@ -4,7 +4,6 @@ import {
   Cartesian3,
   Math as CesiumMath,
   Rectangle,
-  Cesium3DTileFeature,
 } from '@vcmap-cesium/engine';
 import Circle from 'ol/geom/Circle.js';
 import CesiumTilesetLayer from '../../../src/layer/cesiumTilesetLayer.js';
@@ -12,11 +11,7 @@ import VcsApp from '../../../src/vcsApp.js';
 import getDummyCesium3DTileset from './cesium/getDummyCesium3DTileset.js';
 import Projection, { wgs84Projection } from '../../../src/util/projection.js';
 import Extent from '../../../src/util/extent.js';
-import {
-  createTilesetServer,
-  setCesiumMap,
-  createDummyCesium3DTileFeature,
-} from '../helpers/cesiumHelpers.js';
+import { createTilesetServer, setCesiumMap } from '../helpers/cesiumHelpers.js';
 import { VectorStyleItem } from '../../../index.js';
 
 describe('CesiumTilesetLayer', () => {
@@ -100,30 +95,6 @@ describe('CesiumTilesetLayer', () => {
       const [impl] = cesiumTileset.getImplementationsForMap(cesiumMap);
       cesiumTileset.offset = offset;
       expect(impl.offset).to.equal(offset);
-    });
-  });
-
-  describe('objectClickHandler', () => {
-    it('should return an object with id and feature if allowPicking', () => {
-      const feature = createDummyCesium3DTileFeature({
-        id: 'test',
-        test: true,
-      });
-      const object = cesiumTileset.objectClickedHandler(feature);
-
-      expect(object).to.deep.equal({
-        feature: { gmlId: 'test', clickedPosition: {}, id: 'test', test: true },
-        id: feature.getId(),
-      });
-    });
-
-    it('should not raise feature event and return false if not allowPicking', () => {
-      cesiumTileset.allowPicking = false;
-
-      const object = cesiumTileset.objectClickedHandler(
-        new Cesium3DTileFeature(),
-      );
-      expect(object).to.be.null;
     });
   });
 

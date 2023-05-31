@@ -3,7 +3,7 @@ import { Point } from 'ol/geom.js';
 import { Cartographic } from '@vcmap-cesium/engine';
 import { getCesiumMap } from '../../../helpers/cesiumHelpers.js';
 import {
-  AXIS_AND_PLANES,
+  AxisAndPlanes,
   EventType,
   ExtrudeInteraction,
   TransformationMode,
@@ -51,7 +51,7 @@ describe('ExtrudeInteraction', () => {
         ],
         sandbox,
       );
-      const feature = createHandlerFeature(AXIS_AND_PLANES.Z);
+      const feature = createHandlerFeature(AxisAndPlanes.Z);
       await interaction.pipe({
         map,
         feature,

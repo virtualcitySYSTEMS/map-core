@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "node16",
+    "incremental": true,
+    "lib": ["esnext", "dom"],
+    "allowJs": true,
+    "checkJs": false,
+    "declaration": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "rootDir": ".",
+    /* Strict Type-Checking Options */
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+
+    /* Additional Checks */
+    "noImplicitReturns": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": false,
+
+    /* Module Resolution Options */
+    "baseUrl": ".",
+    "paths": {
+      "rbush-knn": ["types/rbush-knn"],
+      "rbush": ["types/rbush"]
+    },
+    "moduleResolution": "node16",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "preserveSymlinks": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "exclude": ["dist/", "build/", ".tests/"],
+  "include": ["types/", "src/", "index.ts"]
+}

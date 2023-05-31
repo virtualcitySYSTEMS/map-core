@@ -9,7 +9,7 @@ import {
 } from './setupTransformationHandler.js';
 import {
   EventType,
-  AXIS_AND_PLANES,
+  AxisAndPlanes,
   TransformationMode,
   RotateInteraction,
   mercatorToCartesian,
@@ -68,7 +68,7 @@ describe('RotateInteraction', () => {
         ],
         sandbox,
       );
-      const feature = createHandlerFeature(AXIS_AND_PLANES.Z);
+      const feature = createHandlerFeature(AxisAndPlanes.Z);
       await interaction.pipe({
         map,
         feature,
@@ -99,9 +99,9 @@ describe('RotateInteraction', () => {
       });
 
       expect(spy).to.have.been.calledThrice;
-      ensureRotateEvent(spy.getCall(0).args[0], -Math.PI, AXIS_AND_PLANES.Z);
-      ensureRotateEvent(spy.getCall(1).args[0], Math.PI / 2, AXIS_AND_PLANES.Z);
-      ensureRotateEvent(spy.getCall(2).args[0], 0, AXIS_AND_PLANES.Z);
+      ensureRotateEvent(spy.getCall(0).args[0], -Math.PI, AxisAndPlanes.Z);
+      ensureRotateEvent(spy.getCall(1).args[0], Math.PI / 2, AxisAndPlanes.Z);
+      ensureRotateEvent(spy.getCall(2).args[0], 0, AxisAndPlanes.Z);
     });
 
     it('should rotate around the X axis', async () => {
@@ -116,7 +116,7 @@ describe('RotateInteraction', () => {
         ],
         sandbox,
       );
-      const feature = createHandlerFeature(AXIS_AND_PLANES.X);
+      const feature = createHandlerFeature(AxisAndPlanes.X);
       await interaction.pipe({
         map,
         feature,
@@ -147,9 +147,9 @@ describe('RotateInteraction', () => {
       });
 
       expect(spy).to.have.been.calledThrice;
-      ensureRotateEvent(spy.getCall(0).args[0], Math.PI, AXIS_AND_PLANES.X);
-      ensureRotateEvent(spy.getCall(1).args[0], Math.PI / 2, AXIS_AND_PLANES.X);
-      ensureRotateEvent(spy.getCall(2).args[0], 0, AXIS_AND_PLANES.X);
+      ensureRotateEvent(spy.getCall(0).args[0], Math.PI, AxisAndPlanes.X);
+      ensureRotateEvent(spy.getCall(1).args[0], Math.PI / 2, AxisAndPlanes.X);
+      ensureRotateEvent(spy.getCall(2).args[0], 0, AxisAndPlanes.X);
     });
 
     it('should rotate around the Y axis', async () => {
@@ -164,7 +164,7 @@ describe('RotateInteraction', () => {
         ],
         sandbox,
       );
-      const feature = createHandlerFeature(AXIS_AND_PLANES.Y);
+      const feature = createHandlerFeature(AxisAndPlanes.Y);
       await interaction.pipe({
         map,
         feature,
@@ -195,9 +195,9 @@ describe('RotateInteraction', () => {
       });
 
       expect(spy).to.have.been.calledThrice;
-      ensureRotateEvent(spy.getCall(0).args[0], -Math.PI, AXIS_AND_PLANES.Y);
-      ensureRotateEvent(spy.getCall(1).args[0], Math.PI / 2, AXIS_AND_PLANES.Y);
-      ensureRotateEvent(spy.getCall(2).args[0], 0, AXIS_AND_PLANES.Y);
+      ensureRotateEvent(spy.getCall(0).args[0], -Math.PI, AxisAndPlanes.Y);
+      ensureRotateEvent(spy.getCall(1).args[0], Math.PI / 2, AxisAndPlanes.Y);
+      ensureRotateEvent(spy.getCall(2).args[0], 0, AxisAndPlanes.Y);
     });
   });
 
@@ -224,7 +224,7 @@ describe('RotateInteraction', () => {
     it('should rotate around the Z axis', async () => {
       const spy = sandbox.spy();
       interaction.rotated.addEventListener(spy);
-      const feature = createHandlerFeature(AXIS_AND_PLANES.Z);
+      const feature = createHandlerFeature(AxisAndPlanes.Z);
       await interaction.pipe({
         map,
         feature,
@@ -255,9 +255,9 @@ describe('RotateInteraction', () => {
       });
 
       expect(spy).to.have.been.calledThrice;
-      ensureRotateEvent(spy.getCall(0).args[0], -Math.PI, AXIS_AND_PLANES.Z);
-      ensureRotateEvent(spy.getCall(1).args[0], Math.PI / 2, AXIS_AND_PLANES.Z);
-      ensureRotateEvent(spy.getCall(2).args[0], 0, AXIS_AND_PLANES.Z);
+      ensureRotateEvent(spy.getCall(0).args[0], -Math.PI, AxisAndPlanes.Z);
+      ensureRotateEvent(spy.getCall(1).args[0], Math.PI / 2, AxisAndPlanes.Z);
+      ensureRotateEvent(spy.getCall(2).args[0], 0, AxisAndPlanes.Z);
     });
   });
 });

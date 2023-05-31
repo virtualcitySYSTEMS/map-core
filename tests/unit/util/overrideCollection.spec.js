@@ -3,13 +3,11 @@ import Collection from '../../../src/util/collection.js';
 import IndexedCollection from '../../../src/util/indexedCollection.js';
 import VcsObject from '../../../src/vcsObject.js';
 import Layer from '../../../src/layer/layer.js';
-import {
-  moduleIdSymbol,
-  destroyCollection,
-} from '../../../src/vcsModuleHelpers.js';
+import { destroyCollection } from '../../../src/vcsModuleHelpers.js';
 import {
   getObjectFromClassRegistry,
   layerClassRegistry,
+  moduleIdSymbol,
 } from '../../../index.js';
 
 describe('override collections', () => {

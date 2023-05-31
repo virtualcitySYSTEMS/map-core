@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Material, Cartesian2 } from '@vcmap-cesium/engine';
 
 /**

@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "node16",
+    "incremental": true,
+    "lib": ["esnext"],
+    "allowJs": true,
+    "checkJs": false,
+    "jsx": "preserve",
+    "outDir": "../.tests",
+    "rootDir": "..",
+    /* Strict Type-Checking Options */
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+
+    /* Additional Checks */
+    "noImplicitReturns": false,
+    "noFallthroughCasesInSwitch": false,
+
+    /* Module Resolution Options */
+    "baseUrl": ".",
+    "paths": {
+      "rbush-knn": ["../types/rbush-knn"],
+      "rbush": ["../types/rbush"]
+    },
+    "moduleResolution": "node16",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "preserveSymlinks": true,
+    "allowSyntheticDefaultImports": true,
+    "types": ["mocha", "node"]
+  },
+  "include": ["../types/", "../src/", "../index.ts", "."],
+  "exclude": ["../dist", "../.tests", "../build"]
+}

@@ -443,9 +443,10 @@ describe('maps.VcmMap', () => {
       layer.destroy();
     });
 
-    it('should set the map element null', () => {
+    it('should set the map element to a new element', () => {
+      const { mapElement } = map;
       map.destroy();
-      expect(map.mapElement).to.be.null;
+      expect(map.mapElement).to.not.equal(mapElement);
     });
 
     it('should remove the map from its parent', () => {
