@@ -34,5 +34,5 @@
     "allowSyntheticDefaultImports": true
   },
   "exclude": ["dist/", "build/", ".tests/"],
-  "include": ["types/", "src/", "index.ts"]
+  "include": ["types/", "src/", "index.ts", "tests/unit/helpers/"]
 }
