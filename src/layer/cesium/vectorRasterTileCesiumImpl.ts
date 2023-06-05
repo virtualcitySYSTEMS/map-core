@@ -36,7 +36,7 @@ class VectorRasterTileCesiumImpl extends RasterLayerCesiumImpl {
     const rasterLayerOptions: RasterLayerImplementationOptions = {
       ...options,
       tilingSchema: TilingScheme.MERCATOR,
-      opacity: 0,
+      opacity: 1,
     };
     super(map, rasterLayerOptions);
     this.tileProvider = options.tileProvider;

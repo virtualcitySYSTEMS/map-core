@@ -1,5 +1,12 @@
 ### 5.0.0-next
 
+- Updated Openlayers dependency to 7.4
+- Updated Cesium to 1.106
+- Updated proj4 to 2.9.0
+- Updated UUID to 9.0.0
+
+### 5.0.0-34
+
 - fixed Bug in vectorTileImageryProvider (missing `_ready`)
 - removed usage of readyPromise in `CesiumMap.getHeightFromTerrain`
 - moved to TS.

@@ -61,8 +61,8 @@
     "typescript": "^5.0.4"
   },
   "peerDependencies": {
-    "@vcmap-cesium/engine": "~2.3.2",
-    "ol": "~7.3.0"
+    "@vcmap-cesium/engine": "~2.4.1",
+    "ol": "~7.4.0"
   },
   "eslintConfig": {
     "extends": [
@@ -111,9 +111,9 @@
     "@vcsuite/logger": "^1.0.1",
     "@vcsuite/parsers": "^1.0.3",
     "fast-deep-equal": "^3.1.3",
-    "proj4": "^2.7.5",
+    "proj4": "^2.9.0",
     "rbush": ">=3.0.1",
     "rbush-knn": "^3.0.1",
-    "uuid": "^8.3.2"
+    "uuid": "^9.0.0"
   }
 }
