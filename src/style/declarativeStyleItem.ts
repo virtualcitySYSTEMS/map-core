@@ -90,6 +90,7 @@ function addCustomProperty(
 
 /**
  * Style Object {@link https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/Styling}
+ * @group Style
  */
 class DeclarativeStyleItem extends StyleItem {
   static get className(): string {

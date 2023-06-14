@@ -40,6 +40,9 @@ export function markVolatile(
   object[moduleIdSymbol] = volatileModuleId;
 }
 
+/**
+ * @group Application
+ */
 class VcsModule {
   private _uuid: string;
 

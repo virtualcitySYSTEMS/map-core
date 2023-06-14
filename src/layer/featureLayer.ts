@@ -42,6 +42,7 @@ export interface FeatureLayerImplementation {
 
 /**
  * Base class for all layers representing features, e.g. VectorLayer, Buildings, POIs
+ * @group Layer
  */
 class FeatureLayer<
     T extends LayerImplementation<VcsMap> & FeatureLayerImplementation,

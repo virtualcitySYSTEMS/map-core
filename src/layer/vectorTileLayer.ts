@@ -102,6 +102,7 @@ export interface VectorTileImplementation extends FeatureLayerImplementation {
 
 /**
  * VectorTileLayer Layer for tiled vector Data. Can be connected to data with a TileProvider
+ * @group Layer
  */
 class VectorTileLayer extends FeatureLayer<
   VectorTileOpenlayersImpl | VectorRasterTileCesiumImpl

@@ -20,6 +20,7 @@ export type DataSourceImplementationOptions = LayerImplementationOptions & {
 
 /**
  * Represents a layer of Cesium.Entity
+ * @group Layer
  */
 class DataSourceLayer extends Layer<DataSourceCesiumImpl> {
   static get className(): string {

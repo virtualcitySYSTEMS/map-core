@@ -21,6 +21,9 @@ export type TMSImplementationOptions = RasterLayerImplementationOptions & {
   tileSize: Size;
 };
 
+/**
+ * @group Layer
+ */
 class TMSLayer extends RasterLayer<TmsCesiumImpl | TmsOpenlayersImpl> {
   static get className(): string {
     return 'TMSLayer';

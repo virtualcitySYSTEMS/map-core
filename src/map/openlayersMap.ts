@@ -14,6 +14,9 @@ export type OpenlayersOptions = VcsMapOptions & {
   fixedNorthOrientation?: boolean;
 };
 
+/**
+ * @group Map
+ */
 class OpenlayersMap extends BaseOLMap {
   static get className(): string {
     return 'OpenlayersMap';

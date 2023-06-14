@@ -20,6 +20,9 @@ export type WFSOptions = VectorOptions & {
   getFeatureOptions?: Record<string, unknown>;
 };
 
+/**
+ * @group Layer
+ */
 class WFSLayer extends VectorLayer {
   static get className(): string {
     return 'WFSLayer';

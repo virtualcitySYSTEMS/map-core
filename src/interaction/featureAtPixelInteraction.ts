@@ -26,6 +26,9 @@ import type OpenlayersMap from '../map/openlayersMap.js';
 import type ObliqueMap from '../map/obliqueMap.js';
 import type CesiumMap from '../map/cesiumMap.js';
 
+/**
+ * @group Interaction
+ */
 class FeatureAtPixelInteraction extends AbstractInteraction {
   private _pickPosition = EventType.CLICK;
 

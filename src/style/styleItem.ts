@@ -16,6 +16,7 @@ export type StyleItemOptions = VcsObjectOptions & {
 
 /**
  * An abstract style definition which can be applied to a layer
+ * @group Style
  */
 class StyleItem extends VcsObject {
   static get className(): string {

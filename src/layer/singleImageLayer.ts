@@ -23,6 +23,7 @@ export type SingleImageImplementationOptions =
 
 /**
  * Image layer for Cesium and OpenlayersMap
+ * @group Layer
  */
 class SingleImageLayer extends RasterLayer<
   SingleImageCesiumImpl | SingleImageOpenlayersImpl

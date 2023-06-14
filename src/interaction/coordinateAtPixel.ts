@@ -18,6 +18,9 @@ import { transformFromImage } from '../oblique/helpers.js';
 import type CesiumMap from '../map/cesiumMap.js';
 import type ObliqueMap from '../map/obliqueMap.js';
 
+/**
+ * @group Interaction
+ */
 class CoordinateAtPixel extends AbstractInteraction {
   private _scratchCartographic = new Cartographic();
 

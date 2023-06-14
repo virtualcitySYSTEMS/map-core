@@ -149,6 +149,7 @@ export function calculateMinLevel(
 /**
  * This abstract class allows for automatic loading scheme determination
  * for raster layers
+ * @group Layer
  */
 class RasterLayer<
     I extends LayerImplementation<VcsMap> & RasterLayerImplementation,

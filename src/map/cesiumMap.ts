@@ -265,6 +265,7 @@ export type CesiumVisualisationType =
 
 /**
  * Cesium Globe Map Class (3D map)
+ * @group Map
  */
 class CesiumMap extends VcsMap<CesiumVisualisationType> {
   static get className(): string {

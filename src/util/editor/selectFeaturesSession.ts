@@ -134,9 +134,10 @@ type SelectFeaturesSession = EditorSession & {
 /**
  * @param  app
  * @param  layer
- * @param  [interactionId] id for registering mutliple exclusive interaction.
+ * @param  [interactionId] id for registering multiple exclusive interaction.
  * @param  [initialMode=SelectionMode.MULTI]
  * @param  [highlightStyle]
+ * @group Editor
  */
 function startSelectFeaturesSession(
   app: VcsApp,

@@ -51,6 +51,9 @@ const vcsApps: Map<string, VcsApp> = new Map();
 
 export const defaultDynamicModuleId = '_defaultDynamicModule';
 
+/**
+ * @group Application
+ */
 class VcsApp {
   private _id: string;
 

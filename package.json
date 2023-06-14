@@ -15,7 +15,7 @@
     "postinstall": "node build/postinstall.js",
     "coverage": "c8 --reporter text-summary npm run test",
     "coverage:gitlab": "c8 --reporter text-summary npm run test -- --reporter mocha-junit-reporter",
-    "build-docs": "typedoc index.ts --out docs",
+    "build-docs": "typedoc index.ts --out docs --skipErrorChecking",
     "build": "tsc && node -e \"require('fs').cpSync('tests/data', 'dist/tests/data', { recursive: true })\"",
     "watch": "tsc --watch",
     "prepare": "npm run build"
@@ -57,7 +57,7 @@
     "resize-observer-polyfill": "^1.5.1",
     "sinon": "^9.2.4",
     "sinon-chai": "^3.6.0",
-    "typedoc": "^0.24.7",
+    "typedoc": "^0.24.8",
     "typescript": "^5.0.4"
   },
   "peerDependencies": {

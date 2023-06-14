@@ -94,8 +94,9 @@ export type EditFeaturesSession = EditorSession & {
  * Creates an editor session to select, translate, rotate & scale the feature on a given layer
  * @param  app
  * @param  layer
- * @param  [interactionId] id for registering mutliple exclusive interaction. Needed to run a selection session at the same time as a edit features session.
+ * @param  [interactionId] id for registering multiple exclusive interaction. Needed to run a selection session at the same time as a edit features session.
  * @param  [initialMode=TransformationMode.TRANSLATE]
+ * @group Editor
  */
 function startEditFeaturesSession(
   app: VcsApp,

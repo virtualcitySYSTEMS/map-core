@@ -104,6 +104,7 @@ export type ViewpointUrlParameters = {
 
 /**
  * A Viewpoint Object
+ * @group Viewpoint
  */
 class Viewpoint extends VcsObject {
   static get className(): string {

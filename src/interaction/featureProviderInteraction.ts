@@ -9,6 +9,9 @@ import {
   PointerKeyType,
 } from './interactionType.js';
 
+/**
+ * @group Interaction
+ */
 class FeatureProviderInteraction extends AbstractInteraction {
   constructor() {
     super(EventType.CLICK, ModificationKeyType.ALL, PointerKeyType.ALL);

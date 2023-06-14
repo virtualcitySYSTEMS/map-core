@@ -69,6 +69,9 @@ export function getMercatorViewpointCenter(viewpoint: Viewpoint): Coordinate {
   return transform(gpWGS84, wgs84Projection.proj, mercatorProjection.proj);
 }
 
+/**
+ * @group Map
+ */
 class ObliqueMap extends BaseOLMap {
   static get className(): string {
     return 'ObliqueMap';

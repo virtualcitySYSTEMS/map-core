@@ -16,6 +16,9 @@ export type GeoJSONOptions = VectorOptions & {
  */
 export const featureFromOptions = Symbol('featureFromOptions');
 
+/**
+ * @group Layer
+ */
 class GeoJSONLayer extends VectorLayer {
   static get className(): string {
     return 'GeoJSONLayer';

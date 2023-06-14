@@ -84,6 +84,7 @@ export interface CreateInteraction<T extends Geometry> {
  * @param  app
  * @param  layer
  * @param  geometryType
+ * @group Editor
  */
 function startCreateFeatureSession<T extends GeometryType>(
   app: VcsApp,

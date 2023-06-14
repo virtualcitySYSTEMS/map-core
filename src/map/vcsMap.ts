@@ -40,6 +40,7 @@ export type VcsMapRenderEvent<V extends VisualisationType> = {
 
 /**
  * Map Base Class, each different map is derived from this abstract base class.
+ * @group Map
  */
 class VcsMap<
   V extends VisualisationType = VisualisationType,

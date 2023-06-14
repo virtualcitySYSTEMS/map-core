@@ -44,6 +44,7 @@ type EditGeometryInteraction = {
  * Create the editing interaction for a feature with a line geometry
  * @param  feature
  * @param  scratchLayer
+ * @group Editor
  */
 function createEditLineStringGeometryInteraction(
   feature: Feature<LineString>,

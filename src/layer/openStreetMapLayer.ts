@@ -31,6 +31,9 @@ export type OpenStreetMapOptions = LayerOptions & {
   maxLevel?: number;
 };
 
+/**
+ * @group Layer
+ */
 class OpenStreetMapLayer
   extends Layer<OpenStreetMapCesiumImpl | OpenStreetMapOpenlayersImpl>
   implements SplitLayer

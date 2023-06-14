@@ -20,6 +20,9 @@ export type TerrainImplementationOptions = LayerImplementationOptions & {
   requestWaterMask: boolean;
 };
 
+/**
+ * @group Layer
+ */
 class TerrainLayer extends Layer<TerrainCesiumImpl> {
   static get className(): string {
     return 'TerrainLayer';

@@ -144,6 +144,7 @@ export type VectorImplementationOptions = FeatureLayerImplementationOptions & {
 
 /**
  * VectorLayer Layer for OpenlayersMap, Cesium and ObliqueMap
+ * @group Layer
  */
 class VectorLayer
   extends FeatureLayer<

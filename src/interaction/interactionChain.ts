@@ -7,6 +7,9 @@ import {
   PointerKeyType,
 } from './interactionType.js';
 
+/**
+ * @group Interaction
+ */
 class InteractionChain extends AbstractInteraction {
   /**
    * The interactions to handle one after the other

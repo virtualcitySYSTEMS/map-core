@@ -2,6 +2,8 @@
 
 > Part of the [VC Map Project](https://github.com/virtualcitySYSTEMS/map-ui)
 
+> [API Docs](https://lib.virtualcitymap.de/core/5.0/docs/)
+
 The VC Map Core is a thin abstraction layer and wrapper around OpenLayers and Cesium.
 It provides a common data and feature management API and automatically synchronizes data and user actions between the 2D, oblique and 3D views.
 Map functions and tools can be developed against this core API to make them available in 2D, 3D and the oblique view rather than having to develop

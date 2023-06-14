@@ -1,5 +1,11 @@
 ### 5.0.0-next
 
+- Updated API Documentation
+  - Ordering By main type
+  - added permanent API docs link at https://lib.virtualcitymap.de/core/5.0/docs/
+
+### 5.0.0-35
+
 - Updated Openlayers dependency to 7.4
 - Updated Cesium to 1.106
 - Updated proj4 to 2.9.0

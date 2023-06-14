@@ -56,6 +56,7 @@ export type LayerImplementationOptions = {
  * Abstract base class for Layers.
  * To create a layer Implementation the function `createImplementationsForMap` has to be implemented.
  * To receive implementation options, implement `geImplementationOptions`
+ * @group Layer
  */
 class Layer<
   I extends LayerImplementation<VcsMap> = LayerImplementation<VcsMap>,

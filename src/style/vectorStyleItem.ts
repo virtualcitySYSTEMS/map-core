@@ -98,6 +98,9 @@ export type VectorStyleItemOptions = StyleItemOptions & {
  */
 export const vectorStyleSymbol: unique symbol = Symbol('VcsVectorStyleItem');
 
+/**
+ * @group Style
+ */
 class VectorStyleItem extends StyleItem {
   static get className(): string {
     return 'VectorStyleItem';

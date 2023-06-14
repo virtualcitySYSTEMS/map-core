@@ -8,6 +8,7 @@ stages:
   - build
   - test
   - publish
+  - docs
 
 .template: &job_definition
   only:
@@ -89,3 +90,18 @@ publish:
     - chmod 644 ~/.ssh/known_hosts
     - git config user.name "Gitlab Runner"
     - git config user.email "gitlab-runner@vc.systems"
+
+deployDocs:
+  <<: *after_build_definition
+  stage: docs
+  only:
+    variables:
+      - $PUBLISH
+    refs:
+      - /^(main|release-v.*)$/
+  script:
+    - npm run build-docs
+    - npm i -D @vcsuite/publishtox --registry http://npmregistry:4873
+    - VERSION=$(node -pe "const version = require('./package.json').version; /\d*\.\d*/.exec(version)[0]")
+    - echo "Uploading documentation to /lib/core/${VERSION}/docs"
+    - node_modules/.bin/publishToX sftp --prefix /map/virtualcitymap.de/lib/core/ hostingsftp.virtualcitypublisher.de --cores 4 -s ./docs -d "${VERSION}/docs/"

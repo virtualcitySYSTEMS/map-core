@@ -9,6 +9,9 @@ export type CzmlOptions = LayerOptions & {
   sourceUri?: string;
 };
 
+/**
+ * @group Layer
+ */
 class CzmlLayer extends DataSourceLayer {
   static get className(): string {
     return 'CzmlLayer';

@@ -76,6 +76,7 @@ function checkMergeOptionOverride<
  * categories outlive modules and may be changed with mergeOptions to no longer reflect your initial state. Requestors
  * should keep track of the requested options themselves.
  * @template {Object|VcsObject} T
+ * @group Category
  */
 class Category<
   T extends VcsObject | object = VcsObject | object,

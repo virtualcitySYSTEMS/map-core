@@ -79,6 +79,7 @@ export type EventAfterEventHandler = Omit<
 
 /**
  * An abstract interface for all interactions
+ * @group Interaction
  */
 class AbstractInteraction {
   /**

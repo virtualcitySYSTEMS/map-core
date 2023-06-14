@@ -100,6 +100,8 @@ export const isTiledFeature: unique symbol = Symbol('isTiledFeature');
 
 /**
  * FeatureStoreLayer Layer
+ * @group Layer
+ * @experimental
  */
 class FeatureStoreLayer extends VectorLayer {
   static get className(): string {

@@ -1,0 +1,30 @@
+{
+  "navigation": {
+    "includeCategories": true,
+    "includeGroups": true
+  },
+  "categorizeByGroup": true,
+  "groupOrder": [
+    "Application",
+    "Map",
+    "Layer",
+    "Style",
+    "Viewpoint",
+    "Editor",
+    "Interaction",
+    "Category",
+    "Classes",
+    "*"
+  ],
+  "searchGroupBoosts": {
+    "Application": 5,
+    "Map": 4.5,
+    "Layer": 4,
+    "Style": 3.5,
+    "Viewpoint": 3,
+    "Editor": 2,
+    "Interaction": 2,
+    "Category": 2
+  },
+  "sourceLinkTemplate": "https://github.com/virtualcitySYSTEMS/map-core/tree/main/{path}#L{line}"
+}

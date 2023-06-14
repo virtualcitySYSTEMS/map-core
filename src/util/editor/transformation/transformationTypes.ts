@@ -4,8 +4,8 @@ import type { Feature } from 'ol/index.js';
 
 /**
  * Handlers are map specific transformation handlers wich enable the use of the transformation interactions.
- * There visualization is {@see TransformationMode} specific. Do not create these handlers yourself
- * use {@see createTransformationHandler} instead.
+ * There visualization is {@link TransformationMode} specific. Do not create these handlers yourself
+ * use {@link createTransformationHandler} instead.
  */
 export type Handlers = {
   show: boolean;

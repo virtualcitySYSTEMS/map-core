@@ -29,6 +29,7 @@ export const defaultPointCloudStyle = new DeclarativeStyleItem({});
  *  <li>url: string: url to the p3dm dataset
  *  <li>pointSize: number: size of the points to display
  * </ul>
+ * @group Layer
  */
 class PointCloudLayer extends CesiumTilesetLayer {
   static get className(): string {

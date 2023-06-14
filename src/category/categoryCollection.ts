@@ -9,6 +9,9 @@ function getLogger(): Logger {
   return getLoggerByName('CategoryCollection');
 }
 
+/**
+ * @group Category
+ */
 class CategoryCollection extends IndexedCollection<Category> {
   private _app: VcsApp;
 

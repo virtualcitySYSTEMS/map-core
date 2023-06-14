@@ -58,6 +58,7 @@ export type CesiumTilesetImplementationOptions =
 
 /**
  * represents a specific Building layer for cesium.
+ * @group Layer
  */
 class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
   static get className(): string {

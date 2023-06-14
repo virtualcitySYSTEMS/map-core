@@ -54,6 +54,7 @@ export type WMSOptions = RasterLayerOptions & {
 
 /**
  * WmsLayer layer for Cesium and OpenlayersMap
+ * @group Layer
  */
 class WMSLayer extends RasterLayer<WmsCesiumImpl | WmsOpenlayersImpl> {
   static get className(): string {

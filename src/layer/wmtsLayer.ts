@@ -59,6 +59,9 @@ function getMatrixIds(
   });
 }
 
+/**
+ * @group Layer
+ */
 class WMTSLayer extends RasterLayer<WmtsCesiumImpl | WmtsOpenlayersImpl> {
   static get className(): string {
     return 'WMTSLayer';

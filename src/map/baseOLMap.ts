@@ -42,6 +42,9 @@ export function ensureLayerInCollection(
   }
 }
 
+/**
+ * @group Map
+ */
 class BaseOLMap extends VcsMap<OLLayer> {
   static get className(): string {
     return 'BaseOLMap';
