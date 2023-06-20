@@ -19,7 +19,6 @@ import {
   parseColor,
   PatternType,
   createPattern,
-  getFillOptions,
   getStrokeOptions,
   getTextOptions,
   getTextFromOptions,
@@ -28,6 +27,8 @@ import {
   getDefaultVectorStyleItemOptions,
   type FontObject,
   olColorToCesiumColor,
+  getStrokeFromOptions,
+  getImageStyleOptions,
 } from './styleHelpers.js';
 import { getShapeFromOptions } from './shapesCategory.js';
 import { styleClassRegistry } from '../classRegistry.js';
@@ -133,7 +134,10 @@ class VectorStyleItem extends StyleItem {
     };
     this._fillOptions = null;
     this._fill = undefined;
-    this._stroke = options.stroke ? new Stroke(options.stroke) : undefined;
+
+    this._stroke = options.stroke
+      ? getStrokeFromOptions(options.stroke)
+      : undefined;
     this._text = undefined;
     if (options.text) {
       this._text = getTextFromOptions(options.text);
@@ -752,32 +756,11 @@ class VectorStyleItem extends StyleItem {
       options.label = this._label;
     }
 
-    if (this._image instanceof Icon) {
-      options.image = {
-        src: this._image.getSrc(), // XXX this is an issue... we dont want a data URI in the geoJSON
-        scale: this._image.getScale(),
-        opacity: this._image.getOpacity(),
-      };
-    } else if (this._image instanceof Circle) {
-      options.image = {
-        scale: this._image.getScale(),
-        fill: getFillOptions(this._image),
-        radius: this._image.getRadius(),
-        stroke: this._image.getStroke()
-          ? getStrokeOptions(this._image.getStroke())
-          : undefined,
-      };
-    } else if (this._image instanceof RegularShape) {
-      options.image = {
-        scale: this._image.getScale(),
-        fill: getFillOptions(this._image),
-        points: this._image.getPoints(),
-        angle: this._image.getAngle(),
-        radius: this._image.getRadius(),
-        stroke: this._image.getStroke()
-          ? getStrokeOptions(this._image.getStroke())
-          : undefined,
-      };
+    const imageOptions = this._image
+      ? getImageStyleOptions(this._image)
+      : undefined;
+    if (imageOptions) {
+      options.image = imageOptions;
     } else if (this.exclude.image) {
       options.image = false;
     }

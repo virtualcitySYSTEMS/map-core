@@ -6,7 +6,10 @@ import Style from 'ol/style/Style.js';
 import { Color } from '@vcmap-cesium/engine';
 import type { Color as OLColor } from 'ol/color.js';
 import type { Size } from 'ol/size.js';
-import { RegularShape } from 'ol/style.js';
+import ImageStyle from 'ol/style/Image.js';
+import Circle from 'ol/style/Circle.js';
+import Icon from 'ol/style/Icon.js';
+import RegularShape from 'ol/style/RegularShape.js';
 import { getLogger as getLoggerByName, type Logger } from '@vcsuite/logger';
 import type {
   ColorType,
@@ -354,19 +357,22 @@ export function colorInCanvas(
   canvasContext.putImageData(imgData, origin[0], origin[1]);
 }
 
-export function getFillOptions(
-  item: OLText | RegularShape,
-): FillOptions | undefined {
-  if (item.getFill()) {
-    let color = item.getFill().getColor();
-    try {
-      color = parseColor(color as ColorType).slice();
-    } catch (e) {
-      getLogger().warning((e as Error).message);
-    }
-    return { color };
+export function getFillOptions(fill: Fill): FillOptions {
+  let color = fill.getColor();
+  try {
+    color = parseColor(color as ColorType).slice();
+  } catch (e) {
+    getLogger().warning((e as Error).message);
   }
-  return undefined;
+  return { color };
+}
+
+export function getFillFromOptions(options: FillOptions): Fill {
+  return new Fill(options);
+}
+
+export function getStrokeFromOptions(options: StrokeOptions): Stroke {
+  return new Stroke(options);
 }
 
 export function getStrokeOptions(stroke: Stroke): StrokeOptions {
@@ -378,17 +384,23 @@ export function getStrokeOptions(stroke: Stroke): StrokeOptions {
       getLogger().warning((e as Error).message);
     }
   }
-  return {
+  const options: StrokeOptions = {
     color,
-    width: stroke.getWidth(),
-    lineDash: stroke.getLineDash() ?? undefined,
   };
+  if (stroke.getWidth() != null) {
+    options.width = stroke.getWidth();
+  }
+  const lineDash = stroke.getLineDash();
+  if (lineDash) {
+    options.lineDash = lineDash;
+  }
+  return options;
 }
 
 export function getTextOptions(text: OLText): VectorStyleItemText {
   return {
     font: text.getFont(),
-    fill: getFillOptions(text),
+    fill: text.getFill() ? getFillOptions(text.getFill()) : undefined,
     stroke: text.getStroke() ? getStrokeOptions(text.getStroke()) : undefined,
     textBaseline: text.getTextBaseline(),
     offsetY: text.getOffsetY(),
@@ -408,6 +420,143 @@ export function getTextFromOptions(options: VectorStyleItemText): OLText {
     textOptions.font = combineFont(textOptions.font);
   }
   return new OLText(textOptions as TextOptions);
+}
+
+export type ImageStyleOptions = {
+  src?: string;
+  scale?: number | Size;
+  opacity?: number;
+  color?: OLColor;
+  fill?: FillOptions;
+  stroke?: StrokeOptions;
+  radius?: number;
+  points?: number;
+  angle?: number;
+  anchor?: number[];
+};
+
+export function getImageStyleOptions(image: ImageStyle): ImageStyleOptions {
+  if (image instanceof Icon) {
+    const options: ImageStyleOptions = {
+      scale: image.getScale(),
+    };
+    try {
+      const color = image.getColor() ? parseColor(image.getColor()) : undefined;
+      if (color) {
+        options.color = color;
+      }
+    } catch (e) {
+      getLogger().warning((e as Error).message);
+    }
+    if (image.getSrc()) {
+      options.src = image.getSrc();
+    }
+    if (image.getOpacity() != null) {
+      options.opacity = image.getOpacity();
+    }
+    if (image.getAnchor()) {
+      options.anchor = image.getAnchor();
+    }
+    return options;
+  } else if (image instanceof Circle) {
+    const options: ImageStyleOptions = {
+      scale: image.getScale(),
+    };
+    if (image.getFill()) {
+      options.fill = getFillOptions(image.getFill());
+    }
+    if (image.getRadius() != null) {
+      options.radius = image.getRadius();
+    }
+    if (image.getStroke()) {
+      options.stroke = getStrokeOptions(image.getStroke());
+    }
+    return options;
+  } else if (image instanceof RegularShape) {
+    const options: ImageStyleOptions = {
+      scale: image.getScale(),
+    };
+    if (image.getFill()) {
+      options.fill = getFillOptions(image.getFill());
+    }
+    if (image.getPoints()) {
+      options.points = image.getPoints();
+    }
+    if (image.getAngle()) {
+      options.angle = image.getAngle();
+    }
+    if (image.getRadius() != null) {
+      options.radius = image.getRadius();
+    }
+    if (image.getStroke()) {
+      options.stroke = getStrokeOptions(image.getStroke());
+    }
+    return options;
+  }
+  throw new Error('no Subclass of ImageStyle found');
+}
+
+export function getImageStyleFromOptions(
+  options: ImageStyleOptions,
+): ImageStyle {
+  if (options.radius) {
+    const fill = options.fill ? getFillFromOptions(options.fill) : undefined;
+    const stroke = options.stroke
+      ? getStrokeFromOptions(options.stroke)
+      : undefined;
+    if (options.points) {
+      return new RegularShape({
+        fill,
+        stroke,
+        points: options.points,
+        radius: options.radius,
+        scale: options.scale,
+        angle: options.angle,
+      });
+    } else {
+      return new Circle({
+        fill,
+        stroke,
+        radius: options.radius,
+        scale: options.scale,
+      });
+    }
+  } else {
+    return new Icon({
+      src: options.src,
+      scale: options.scale,
+      opacity: options.opacity,
+      color: options.color,
+      anchor: options.anchor,
+    });
+  }
+}
+
+export type StyleOptions = {
+  fill?: FillOptions | undefined;
+  stroke?: StrokeOptions | undefined;
+  image?: ImageStyleOptions | undefined;
+  text?: VectorStyleItemText | undefined;
+};
+
+export function getStyleFromOptions(options: StyleOptions): Style {
+  return new Style({
+    stroke: options.stroke ? getStrokeFromOptions(options.stroke) : undefined,
+    fill: options.fill ? getFillFromOptions(options.fill) : undefined,
+    image: options.image ? getImageStyleFromOptions(options.image) : undefined,
+    text: options.text ? getTextFromOptions(options.text) : undefined,
+  });
+}
+
+export function getStyleOptions(style: Style): StyleOptions {
+  return {
+    fill: style.getFill() ? getFillOptions(style.getFill()) : undefined,
+    stroke: style.getStroke() ? getStrokeOptions(style.getStroke()) : undefined,
+    image: style.getImage()
+      ? getImageStyleOptions(style.getImage())
+      : undefined,
+    text: style.getText() ? getTextOptions(style.getText()) : undefined,
+  };
 }
 
 export function getCssStyleFromTextStyle(textStyle: OLText): {

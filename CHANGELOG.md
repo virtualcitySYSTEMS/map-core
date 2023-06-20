@@ -3,6 +3,11 @@
 - Updated API Documentation
   - Ordering By main type
   - added permanent API docs link at https://lib.virtualcitymap.de/core/5.0/docs/
+- Added StyleHelpers
+  - `getFillFromOptions` and `getFillOptions`
+  - `getStrokeFromOptions` and `getStrokeOptions`
+  - `getImageStyleFromOptions` and `getImageStyleOptions`
+  - `getStyleFromOptions` and `getStyleOptions`
 
 ### 5.0.0-35
 

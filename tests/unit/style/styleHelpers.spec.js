@@ -1,10 +1,21 @@
 import { Color } from '@vcmap-cesium/engine';
+import Fill from 'ol/style/Fill.js';
+import Stroke from 'ol/style/Stroke.js';
+import RegularShape from 'ol/style/RegularShape.js';
+import Circle from 'ol/style/Circle.js';
+import Icon from 'ol/style/Icon.js';
 import {
   cesiumColorToColor,
   hexToOlColor,
   parseColor,
   getCesiumColor,
   getStringColor,
+  getFillOptions,
+  getFillFromOptions,
+  getStrokeOptions,
+  getStrokeFromOptions,
+  getImageStyleFromOptions,
+  getImageStyleOptions,
 } from '../../../src/style/styleHelpers.js';
 
 describe('styleHelpers', () => {
@@ -121,6 +132,198 @@ describe('styleHelpers', () => {
       expect(color).to.equal('rgba(255,0,0,1)');
       const color2 = getStringColor([255, 0, 0, 0.5]);
       expect(color2).to.equal('rgba(255,0,0,0.5)');
+    });
+  });
+
+  describe('fillOptions', () => {
+    it('should serialize a Fill Object', () => {
+      const fill = new Fill({
+        color: [2, 3, 4, 0.5],
+      });
+      const fillOptions = getFillOptions(fill);
+      expect(fillOptions.color).to.have.members([2, 3, 4, 0.5]);
+    });
+
+    it('should deserialize a Fill Object', () => {
+      const fillOptions = {
+        color: [2, 3, 4, 0.5],
+      };
+      const fill = getFillFromOptions(fillOptions);
+      expect(fill).to.be.an.instanceof(Fill);
+      expect(fill.getColor()).to.have.members([2, 3, 4, 0.5]);
+    });
+  });
+
+  describe('strokeOptions', () => {
+    it('should serialize a Stroke Object', () => {
+      const stroke = new Stroke({
+        color: [2, 3, 4, 0.5],
+        width: 10,
+        lineDash: [2],
+      });
+      const strokeOptions = getStrokeOptions(stroke);
+      expect(strokeOptions.color).to.have.members([2, 3, 4, 0.5]);
+      expect(strokeOptions.width).to.be.equal(10);
+      expect(strokeOptions.lineDash).to.have.members([2]);
+    });
+
+    it('should serialize a Stroke Object with undefined properties', () => {
+      const stroke = new Stroke({
+        color: [2, 3, 4, 0.5],
+      });
+      const strokeOptions = getStrokeOptions(stroke);
+      expect(strokeOptions).to.be.deep.equal({ color: [2, 3, 4, 0.5] });
+    });
+
+    it('should deserialize a Stroke Object', () => {
+      const strokeOptions = {
+        color: [2, 3, 4, 0.5],
+        width: 10,
+        lineDash: [2],
+      };
+      const stroke = getStrokeFromOptions(strokeOptions);
+      expect(stroke).to.be.an.instanceof(Stroke);
+      expect(stroke.getColor()).to.have.members([2, 3, 4, 0.5]);
+      expect(stroke.getWidth()).to.be.equal(10);
+      expect(stroke.getLineDash()).to.have.members([2]);
+    });
+  });
+
+  describe('imageStyleOptions', () => {
+    describe('RegularShape', () => {
+      it('should serialize a RegularShape', () => {
+        const regularShape = new RegularShape({
+          scale: 2,
+          fill: new Fill({ color: [1, 2, 3, 1] }),
+          points: 3,
+          angle: 2,
+          radius: 4,
+          stroke: new Stroke({ color: [2, 3, 4, 1], width: 3 }),
+        });
+        const imageStyleOptions = getImageStyleOptions(regularShape);
+        expect(imageStyleOptions.scale).to.be.equal(2);
+        expect(imageStyleOptions.points).to.be.equal(3);
+        expect(imageStyleOptions.angle).to.be.equal(2);
+        expect(imageStyleOptions.radius).to.be.equal(4);
+        expect(imageStyleOptions.fill).to.be.deep.equal({
+          color: [1, 2, 3, 1],
+        });
+        expect(imageStyleOptions.stroke).to.be.deep.equal({
+          color: [2, 3, 4, 1],
+          width: 3,
+        });
+      });
+      it('should serialize a RegularShape with undefined properties', () => {
+        const regularShape = new RegularShape({
+          scale: 2,
+        });
+        const imageStyleOptions = getImageStyleOptions(regularShape);
+        expect(imageStyleOptions).to.be.deep.equal({ scale: 2 });
+      });
+      it('should deserialize a RegularShape', () => {
+        const regularShapeOptions = {
+          scale: 2,
+          fill: {
+            color: [1, 2, 3, 1],
+          },
+          points: 3,
+          radius: 4,
+        };
+        const regularShape = getImageStyleFromOptions(regularShapeOptions);
+        expect(regularShape).to.be.an.instanceof(RegularShape);
+        expect(regularShape.getStroke()).to.be.null;
+        expect(regularShape.getFill()).to.be.an.instanceof(Fill);
+        expect(regularShape.getFill().getColor()).to.have.members([1, 2, 3, 1]);
+        expect(regularShape.getScale()).to.be.equal(2);
+        expect(regularShape.getPoints()).to.be.equal(3);
+        expect(regularShape.getRadius()).to.be.equal(4);
+      });
+    });
+    describe('Circle', () => {
+      it('should serialize a Circle', () => {
+        const circleStyle = new Circle({
+          scale: 2,
+          fill: new Fill({ color: [1, 2, 3, 1] }),
+          radius: 4,
+          stroke: new Stroke({ color: [2, 3, 4, 1], width: 3 }),
+        });
+        const imageStyleOptions = getImageStyleOptions(circleStyle);
+        expect(imageStyleOptions.scale).to.be.equal(2);
+        expect(imageStyleOptions.radius).to.be.equal(4);
+        expect(imageStyleOptions.fill).to.be.deep.equal({
+          color: [1, 2, 3, 1],
+        });
+        expect(imageStyleOptions.stroke).to.be.deep.equal({
+          color: [2, 3, 4, 1],
+          width: 3,
+        });
+      });
+      it('should serialize a Circle with undefined properties', () => {
+        const circleStyle = new Circle({
+          scale: 2,
+        });
+        const imageStyleOptions = getImageStyleOptions(circleStyle);
+        expect(imageStyleOptions).to.be.deep.equal({ scale: 2 });
+      });
+      it('should deserialize a Circle', () => {
+        const circleOptions = {
+          scale: 2,
+          fill: {
+            color: [1, 2, 3, 1],
+          },
+          radius: 4,
+        };
+        const circleStyle = getImageStyleFromOptions(circleOptions);
+        expect(circleStyle).to.be.an.instanceof(Circle);
+        expect(circleStyle.getStroke()).to.be.null;
+        expect(circleStyle.getFill()).to.be.an.instanceof(Fill);
+        expect(circleStyle.getFill().getColor()).to.have.members([1, 2, 3, 1]);
+        expect(circleStyle.getScale()).to.be.equal(2);
+        expect(circleStyle.getRadius()).to.be.equal(4);
+      });
+    });
+    describe('Icon', () => {
+      it('should serialize a Icon', () => {
+        const iconStyle = new Icon({
+          src: 'test',
+          scale: 2,
+          opacity: 3,
+          color: [1, 2, 3, 1],
+          anchor: [1, 1],
+        });
+        const imageStyleOptions = getImageStyleOptions(iconStyle);
+        expect(imageStyleOptions.scale).to.be.equal(2);
+        expect(imageStyleOptions.opacity).to.be.equal(3);
+        expect(imageStyleOptions.src).to.be.equal('test');
+        expect(imageStyleOptions.color).to.have.members([1, 2, 3, 1]);
+        // we do not check anchor, anchor returns undefined if the icon has not
+        // been loaded and the internal size is still null
+      });
+      it('should serialize a Icon with undefined properties', () => {
+        const iconStyle = new Icon({
+          scale: 2,
+          src: 'test',
+        });
+        const imageStyleOptions = getImageStyleOptions(iconStyle);
+        expect(imageStyleOptions).to.be.deep.equal({
+          scale: 2,
+          src: 'test',
+          opacity: 1,
+        });
+      });
+      it('should deserialize a Icon', () => {
+        const iconOptions = {
+          scale: 2,
+          src: 'test',
+          color: [1, 2, 3, 1],
+          opacity: 1,
+        };
+        const iconStyle = getImageStyleFromOptions(iconOptions);
+        expect(iconStyle).to.be.an.instanceof(Icon);
+        expect(iconStyle.getColor()).to.have.members([1, 2, 3, 1]);
+        expect(iconStyle.getOpacity()).to.be.equal(1);
+        expect(iconStyle.getSrc()).to.be.equal('test');
+      });
     });
   });
 });
