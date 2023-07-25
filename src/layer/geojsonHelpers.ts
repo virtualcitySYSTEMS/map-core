@@ -265,9 +265,6 @@ function readFeature(
   }
 
   featureObj.vcsMeta = featureObj.vcsMeta || ({} as VcsMeta);
-  if (featureObj.vcsStyle) {
-    featureObj.vcsMeta.style = featureObj.vcsMeta.style || featureObj.vcsStyle;
-  }
   const { properties } = featureObj;
   if (
     properties &&
@@ -352,7 +349,6 @@ export function parseGeoJSON(
       geoJSON.vcsMeta ||
       ({
         embeddedIcons: geoJSON.vcsEmbeddedIcons,
-        style: geoJSON.vcsStyle,
       } as VcsMeta);
 
     let style;

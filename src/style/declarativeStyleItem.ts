@@ -221,9 +221,7 @@ class DeclarativeStyleItem extends StyleItem {
 
   private _styleLineString(feature: Feature): Style {
     const style = new Style({});
-    const isExtruded = (!!feature.get('olcs_extrudedHeight') ||
-      (feature.get('olcs_storeyHeight') &&
-        feature.get('olcs_storeyNumber'))) as boolean;
+    const isExtruded = !!feature.get('olcs_extrudedHeight');
     const color = this.cesiumStyle.color
       ? this.cesiumStyle.color.evaluate<Color>(feature, scratchColor)
       : Color.WHITE;

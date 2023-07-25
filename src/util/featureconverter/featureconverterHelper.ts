@@ -30,7 +30,6 @@ import {
   type CircleGeometry,
   type WallGeometry,
 } from '@vcmap-cesium/engine';
-import { parseInteger, parseNumber } from '@vcsuite/parsers';
 import { getCesiumColor } from '../../style/styleHelpers.js';
 import { createSync } from '../../layer/vectorSymbols.js';
 import type VectorProperties from '../../layer/vectorProperties.js';
@@ -382,92 +381,33 @@ export function getHeightInfo(
   coordinates: Coordinate[],
 ): VectorHeightInfo {
   const extrudedHeight = vectorProperties.getExtrudedHeight(feature);
-  const storeyNumber = Math.abs(
-    parseInteger(feature.get('olcs_storeyNumber'), 0),
-  ); // legacy
-  const storeyHeight = Math.abs(
-    parseNumber(feature.get('olcs_storeyHeight'), 0),
-  ); // legacy
-  let storeysAboveGround = 0;
-  let storeysBelowGround = 0;
-  let storeyHeightsAboveGround: number[] = [];
-  let storeyHeightsBelowGround: number[] = [];
 
-  // legacy CASE
-  if (storeyHeight || storeyNumber) {
-    if (extrudedHeight && extrudedHeight > 0 && storeyHeight) {
-      storeysAboveGround = Math.ceil(extrudedHeight / storeyHeight);
-      storeyHeightsAboveGround = new Array(storeysAboveGround - 1).fill(
-        storeyHeight,
-      ) as number[];
-      storeyHeightsAboveGround.push(
-        extrudedHeight - (storeysAboveGround - 1) * storeyHeight,
+  let storeysAboveGround = vectorProperties.getStoreysAboveGround(feature);
+  let storeysBelowGround = vectorProperties.getStoreysBelowGround(feature);
+  let storeyHeightsAboveGround =
+    vectorProperties.getStoreyHeightsAboveGround(feature);
+  let storeyHeightsBelowGround =
+    vectorProperties.getStoreyHeightsBelowGround(feature);
+  if (extrudedHeight) {
+    // current Case only extrudedHeight
+    if (extrudedHeight > 0) {
+      storeyHeightsAboveGround = getStoreyHeights(
+        extrudedHeight,
+        storeyHeightsAboveGround,
+        storeysAboveGround,
       );
-    } else if (extrudedHeight && extrudedHeight < 0 && storeyHeight) {
-      storeysBelowGround = Math.ceil(Math.abs(extrudedHeight / storeyHeight));
-      storeyHeightsBelowGround = new Array(storeysBelowGround - 1).fill(
-        storeyHeight,
-      ) as number[];
-      storeyHeightsBelowGround.push(
-        Math.abs(extrudedHeight) - (storeysBelowGround - 1) * storeyHeight,
+      storeysAboveGround = storeyHeightsAboveGround.length;
+      storeyHeightsBelowGround = [];
+      storeysBelowGround = 0;
+    } else if (extrudedHeight < 0) {
+      storeyHeightsBelowGround = getStoreyHeights(
+        extrudedHeight,
+        storeyHeightsBelowGround,
+        storeysBelowGround,
       );
-    } else if (extrudedHeight && extrudedHeight > 0 && storeyNumber) {
-      storeysAboveGround = storeyNumber;
-      const currentStoreyHeight = Math.abs(extrudedHeight / storeyNumber);
-      storeyHeightsAboveGround = new Array(storeyNumber).fill(
-        currentStoreyHeight,
-      ) as number[];
-    } else if (extrudedHeight && extrudedHeight < 0 && storeyNumber) {
-      storeysBelowGround = storeyNumber;
-      const currentStoreyHeight = Math.abs(extrudedHeight / storeyNumber);
-      storeyHeightsBelowGround = new Array(storeyNumber).fill(
-        currentStoreyHeight,
-      ) as number[];
-    } else if (storeyNumber && storeyHeight) {
-      storeysAboveGround = storeyNumber;
-      storeyHeightsAboveGround = new Array(storeyNumber).fill(
-        storeyHeight,
-      ) as number[];
-    } else if (storeyNumber && vectorProperties.storeyHeight) {
-      storeysAboveGround = storeyNumber;
-      storeyHeightsAboveGround = new Array(storeyNumber).fill(
-        vectorProperties.storeyHeight,
-      ) as number[];
-    }
-  }
-
-  // no legacy case // can also be an invalid legacy case
-  if (
-    !(storeysAboveGround && storeyHeightsAboveGround.length) &&
-    !(storeysBelowGround && storeyHeightsBelowGround.length)
-  ) {
-    storeysAboveGround = vectorProperties.getStoreysAboveGround(feature);
-    storeysBelowGround = vectorProperties.getStoreysBelowGround(feature);
-    storeyHeightsAboveGround =
-      vectorProperties.getStoreyHeightsAboveGround(feature);
-    storeyHeightsBelowGround =
-      vectorProperties.getStoreyHeightsBelowGround(feature);
-    if (extrudedHeight) {
-      // current Case only extrudedHeight
-      if (extrudedHeight > 0) {
-        storeyHeightsAboveGround = getStoreyHeights(
-          extrudedHeight,
-          storeyHeightsAboveGround,
-          storeysAboveGround,
-        );
-        storeysAboveGround = storeyHeightsAboveGround.length;
-        storeyHeightsBelowGround = [];
-        storeysBelowGround = 0;
-      } else if (extrudedHeight < 0) {
-        storeyHeightsBelowGround = getStoreyHeights(
-          extrudedHeight,
-          storeyHeightsBelowGround,
-          storeysBelowGround,
-        );
-        storeysBelowGround = storeyHeightsBelowGround.length;
-        storeyHeightsAboveGround = [];
-        storeysAboveGround = 0;
-      }
+      storeysBelowGround = storeyHeightsBelowGround.length;
+      storeyHeightsAboveGround = [];
+      storeysAboveGround = 0;
     }
   }
 

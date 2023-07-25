@@ -8,7 +8,6 @@ import {
 import Feature from 'ol/Feature.js';
 import FeatureAtPixel from '../../../src/interaction/featureAtPixelInteraction.js';
 import OpenlayersMap from '../../../src/map/openlayersMap.js';
-import Layer from '../../../src/layer/layer.js';
 import {
   EventType,
   ModificationKeyType,
@@ -116,7 +115,7 @@ describe('FeatureAtPixelInteraction', () => {
     it('should pick the position when dragging a feature, if the pickPositon entails the DRAG event type', () => {
       const dummy = createDummyCesium3DTileFeature(
         {},
-        { [Layer.vcsLayerNameSymbol]: 'test' },
+        { [vcsLayerName]: 'test' },
       );
       return setup3DTest(dummy)
         .then(() => {
@@ -208,7 +207,7 @@ describe('FeatureAtPixelInteraction', () => {
       const test = Symbol('testSymobl');
       const dummy = createDummyCesium3DTileFeature(
         {},
-        { [Layer.vcsLayerNameSymbol]: 'test', [test]: true },
+        { [vcsLayerName]: 'test', [test]: true },
       );
       return setup3DTest(dummy).then((event) => {
         expect(event)
@@ -231,12 +230,12 @@ describe('FeatureAtPixelInteraction', () => {
       it('should detect 3DTileFeatures, aka buildings -> obj.primitive with layerName', () => {
         const dummy = createDummyCesium3DTileFeature(
           {},
-          { [Layer.vcsLayerNameSymbol]: 'test' },
+          { [vcsLayerName]: 'test' },
         );
         return setup3DTest(dummy).then((event) => {
           expect(event)
             .to.have.property('feature')
-            .to.have.property(Layer.vcsLayerNameSymbol, 'test');
+            .to.have.property(vcsLayerName, 'test');
         });
       });
 
@@ -254,11 +253,11 @@ describe('FeatureAtPixelInteraction', () => {
         const dummy = {
           id: new Entity(),
         };
-        dummy.id[Layer.vcsLayerNameSymbol] = 'test';
+        dummy.id[vcsLayerName] = 'test';
         return setup3DTest(dummy).then((event) => {
           expect(event)
             .to.have.property('feature')
-            .to.have.property(Layer.vcsLayerNameSymbol, 'test');
+            .to.have.property(vcsLayerName, 'test');
         });
       });
     });

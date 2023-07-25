@@ -33,13 +33,7 @@ import DeclarativeStyleItem, {
   DeclarativeStyleItemOptions,
 } from '../style/declarativeStyleItem.js';
 import writeStyle from '../style/writeStyle.js';
-import {
-  alreadyTransformedToImage,
-  alreadyTransformedToMercator,
-  doNotTransform,
-  obliqueGeometry,
-  originalFeatureSymbol,
-} from './vectorSymbols.js';
+import { alreadyTransformedToMercator } from './vectorSymbols.js';
 import Extent from '../util/extent.js';
 import VectorProperties, {
   VcsMeta,
@@ -157,41 +151,6 @@ class VectorLayer
 {
   static get className(): string {
     return 'VectorLayer';
-  }
-
-  /**
-   * @deprecated
-   */
-  static get alreadyTransformedToMercator(): symbol {
-    return alreadyTransformedToMercator;
-  }
-
-  /**
-   * @deprecated
-   */
-  static get alreadyTransformedToImage(): symbol {
-    return alreadyTransformedToImage;
-  }
-
-  /**
-   * @deprecated
-   */
-  static get obliqueGeometry(): symbol {
-    return obliqueGeometry;
-  }
-
-  /**
-   * @deprecated
-   */
-  static get doNotTransform(): symbol {
-    return doNotTransform;
-  }
-
-  /**
-   * @deprecated
-   */
-  static get originalFeatureSymbol(): symbol {
-    return originalFeatureSymbol;
   }
 
   static getDefaultOptions(): VectorOptions {

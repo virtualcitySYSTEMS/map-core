@@ -113,7 +113,6 @@ export type VectorPropertiesOptions = {
   storeysBelowGround?: number;
   storeyHeightsAboveGround?: number[] | number;
   storeyHeightsBelowGround?: number[] | number;
-  storeyHeight?: number;
   modelUrl?: string;
   modelScaleX?: number;
   modelScaleY?: number;
@@ -302,7 +301,6 @@ class VectorProperties {
       storeysBelowGround: 0,
       storeyHeightsAboveGround: [],
       storeyHeightsBelowGround: [],
-      storeyHeight: undefined,
       modelUrl: undefined,
       modelScaleX: 1,
       modelScaleY: 1,
@@ -342,11 +340,6 @@ class VectorProperties {
   private _storeyHeightsAboveGround: number[];
 
   private _storeyHeightsBelowGround: number[];
-
-  /**
-   * @deprecated v3.8
-   */
-  private _storeyHeight: number | undefined;
 
   private _modelUrl: string | undefined;
 
@@ -439,11 +432,6 @@ class VectorProperties {
     this._storeyHeightsBelowGround = parseStoreyHeights(
       options.storeyHeightsBelowGround,
       defaultValues.storeyHeightsBelowGround,
-    );
-
-    this._storeyHeight = parseNumber(
-      options.storeyHeight,
-      defaultValues.storeyHeight,
     );
 
     this._modelUrl = options.modelUrl ?? defaultValues.modelUrl;
@@ -736,26 +724,6 @@ class VectorProperties {
       feature.get('olcs_storeyHeightsBelowGround'),
       this.storeyHeightsBelowGround,
     );
-  }
-
-  /**
-   * @deprecated v3.8
-   */
-  get storeyHeight(): number | undefined {
-    return this._storeyHeight;
-  }
-
-  /**
-   * @param  value
-   * @deprecated v3.8
-   */
-  set storeyHeight(value: number | undefined) {
-    if (value !== this._storeyHeight) {
-      getLogger().deprecate('storeyHeight', 'use storeyHeightAboveGround');
-      check(value, Number);
-      this._storeyHeight = value;
-      this.propertyChanged.raiseEvent(['storeyHeight']);
-    }
   }
 
   get modelUrl(): string | undefined {
@@ -1199,18 +1167,6 @@ class VectorProperties {
       }
     }
 
-    if ('storeyHeight' in options) {
-      const parsedStoreyHeight = parseNumber(
-        options.storeyHeight,
-        defaultValues.storeyHeight,
-      );
-      if (parsedStoreyHeight !== this._storeyHeight) {
-        getLogger().deprecate('storeyHeight', 'use storeyHeightAboveGround');
-        this._storeyHeight = parsedStoreyHeight;
-        changedProperties.push('storeyHeight');
-      }
-    }
-
     if ('modelUrl' in options) {
       if (options.modelUrl !== this._modelUrl) {
         this._modelUrl = options.modelUrl ?? '';
@@ -1311,7 +1267,6 @@ class VectorProperties {
       storeysBelowGround: this.storeysBelowGround,
       storeyHeightsAboveGround: this.storeyHeightsAboveGround,
       storeyHeightsBelowGround: this.storeyHeightsBelowGround,
-      storeyHeight: this.storeyHeight,
       modelUrl: this.modelUrl,
       modelScaleX: this.modelScaleX,
       modelScaleY: this.modelScaleY,
@@ -1393,9 +1348,6 @@ class VectorProperties {
       )
     ) {
       vcsMeta.storeyHeightsBelowGround = this.storeyHeightsBelowGround;
-    }
-    if (this.storeyHeight !== defaultValues.storeyHeight) {
-      vcsMeta.storeyHeight = this.storeyHeight;
     }
     if (this.modelUrl !== defaultValues.modelUrl) {
       vcsMeta.modelUrl = this.modelUrl;

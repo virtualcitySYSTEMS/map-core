@@ -12,6 +12,7 @@ import VcsApp from '../../../../src/vcsApp.js';
 import {
   actuallyIsCircle,
   alreadyTransformedToImage,
+  doNotTransform,
   obliqueGeometry,
   originalFeatureSymbol,
 } from '../../../../src/layer/vectorSymbols.js';
@@ -233,7 +234,7 @@ describe('VectorObliqueImpl', () => {
       const doNotTransformFeature = new Feature({
         geometry: new Point([1489084, 6892790, 0]),
       });
-      doNotTransformFeature[VectorLayer.doNotTransform] = true;
+      doNotTransformFeature[doNotTransform] = true;
       const id = uuidv4();
       doNotTransformFeature.setId(id);
       doNotTransformFeature.getGeometry()[

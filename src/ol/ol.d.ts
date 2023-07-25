@@ -22,10 +22,7 @@ import {
   originalFeatureSymbol,
 } from '../layer/vectorSymbols.js';
 import { vcsLayerName } from '../layer/layerSymbols.js';
-import {
-  isProvidedFeature,
-  showProvidedFeature,
-} from '../featureProvider/featureProviderSymbols.js';
+import { isProvidedFeature } from '../featureProvider/featureProviderSymbols.js';
 import {
   globalHidden,
   hidden,
@@ -90,7 +87,6 @@ declare module 'ol/index.js' {
     [vectorStyleSymbol]?: VectorStyleItem;
     [featureArcStruct]?: ArcStruct;
     [isProvidedFeature]?: boolean;
-    [showProvidedFeature]?: boolean;
     [globalHidden]?: boolean;
     [hidden]?: boolean;
     [highlighted]?: VectorStyleItem;

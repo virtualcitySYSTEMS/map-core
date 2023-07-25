@@ -10,10 +10,7 @@ import { defaultVectorStyle } from '../style/vectorStyleItem.js';
 import VectorProperties, {
   type VectorPropertiesOptions,
 } from '../layer/vectorProperties.js';
-import {
-  isProvidedFeature,
-  showProvidedFeature,
-} from './featureProviderSymbols.js';
+import { isProvidedFeature } from './featureProviderSymbols.js';
 import StyleItem, { type StyleItemOptions } from '../style/styleItem.js';
 import type VcsMap from '../map/vcsMap.js';
 
@@ -131,7 +128,6 @@ class AbstractFeatureProvider extends VcsObject {
     }
     feature[vcsLayerName] = this.layerName;
     feature[isProvidedFeature] = true;
-    feature[showProvidedFeature] = this.showGeometry;
     Object.entries(this.vectorProperties.getValues()).forEach(
       ([key, value]) => {
         const olcsKey = `olcs_${key}`;

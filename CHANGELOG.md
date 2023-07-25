@@ -8,6 +8,17 @@
   - `getStrokeFromOptions` and `getStrokeOptions`
   - `getImageStyleFromOptions` and `getImageStyleOptions`
   - `getStyleFromOptions` and `getStyleOptions`
+- Removed all APIs which were marked deprecated
+  - removed Geojson Feature vcsStyle or FeatureCollection vcsStyle. Use vcsMeta instead.
+  - removed symbol showProvidedFeature (this is not needed anymore)
+  - removed VectorLayer.alreadyTransformedToMercator Symbol use `import { alreadyTransformedToMercator } from @vcmap/core`
+  - removed VectorLayer.alreadyTransformedToImage Symbol use `import { alreadyTransformedToMercator } from @vcmap/core`
+  - removed Layer.vcsLayerNameSymbol Symbol use `import { vcsLayerName } from @vcmap/core`
+  - removed VectorLayer.obliqueGeometry Symbol use `import { obliqueGeometry } from @vcmap/core`
+  - removed VectorLayer.doNotTransform Symbol use `import { doNotTransform } from @vcmap/core`
+  - removed VectorLayer.originalFeatureSymbol Symbol use `import { originalFeatureSymbol } from @vcmap/core`
+  - removed Evaluation of vectorProperties storeyHeight use vectorProperties `extrudedHeight` and `storeysAboveGround` and `storeyHeightsAboveGround`
+  - removed Evaluation of olcs_storeyHeight and olcs_storeyNumbers from Features, use `olcs_extrudedHeight` and `olcs_storeysAboveGround` and `olcs_storeyHeightsAboveGround`
 
 ### 5.0.0-35
 

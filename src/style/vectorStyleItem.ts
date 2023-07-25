@@ -770,9 +770,7 @@ class VectorStyleItem extends StyleItem {
 
   getOptionsForFeature(feature: Feature): VectorStyleItemOptions {
     const type = feature.getGeometry()?.getType();
-    const extrusion = (!!feature.get('olcs_extrudedHeight') ||
-      (feature.get('olcs_storeyHeight') &&
-        feature.get('olcs_storeyNumber'))) as boolean;
+    const extrusion = !!feature.get('olcs_extrudedHeight');
     const sections: Set<keyof VectorStyleItemOptions> = new Set();
 
     if (type === 'Point' || type === 'MultiPoint') {

@@ -203,14 +203,6 @@ describe('VectorLayer', () => {
       expect(VL.vectorProperties).to.have.property('skirt').and.to.equal(0);
     });
 
-    it('should set/remove the storeyHeight property', () => {
-      VL.setVcsMeta({ storeyHeight: 5 });
-      expect(VL.vectorProperties).to.have.property('storeyHeight', 5);
-      VL.setVcsMeta({});
-      expect(VL.vectorProperties).to.have.property('storeyHeight').and.be
-        .undefined;
-    });
-
     it('should set/remove the classificationType', () => {
       VL.setVcsMeta({ classificationType: 'both' });
       expect(VL.vectorProperties).to.have.property(

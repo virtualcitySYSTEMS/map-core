@@ -2,7 +2,6 @@ import { check, checkMaybe } from '@vcsuite/check';
 import { parseBoolean, parseInteger } from '@vcsuite/parsers';
 import VcsObject, { VcsObjectOptions } from '../vcsObject.js';
 import Extent, { type ExtentOptions } from '../util/extent.js';
-import { vcsLayerName } from './layerSymbols.js';
 import LayerState from './layerState.js';
 import VcsEvent from '../vcsEvent.js';
 import { layerClassRegistry } from '../classRegistry.js';
@@ -63,14 +62,6 @@ class Layer<
 > extends VcsObject {
   static get className(): string {
     return 'Layer';
-  }
-
-  /**
-   * Symbol to declare a layers name on its visualizations, e.g. ol.layer.Layer, Cesium.Cesium3DTileset
-   * @deprecated
-   */
-  static get vcsLayerNameSymbol(): symbol {
-    return vcsLayerName;
   }
 
   static getDefaultOptions(): LayerOptions {

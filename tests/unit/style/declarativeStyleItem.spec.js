@@ -175,14 +175,6 @@ describe('DeclarativeStyleItem', () => {
           expect(style.getStroke().getWidth()).to.equal(2);
         });
 
-        it('should set the color as fill, if the line is extruded', () => {
-          feature.set('olcs_storeyHeight', 1);
-          feature.set('olcs_storeyNumber', 1);
-          const style = DSI.style(feature, 1);
-          expect(style.getFill()).to.be.an.instanceOf(Fill);
-          expect(style.getFill().getColor()).to.have.members([0, 0, 255, 1]);
-        });
-
         it('should set the strokeColor as stroke, if extruded', () => {
           feature.set('olcs_extrudedHeight', 1);
           const style = DSI.style(feature, 1);

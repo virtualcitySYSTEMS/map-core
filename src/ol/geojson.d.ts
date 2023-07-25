@@ -1,5 +1,4 @@
 import { GeoJsonProperties, Geometry } from 'geojson';
-import type { StyleItemOptions } from '../style/styleItem.js';
 import type { VcsMeta } from '../layer/vectorProperties.js';
 import { FeatureStoreLayerState } from '../layer/featureStoreLayerState.js';
 
@@ -16,10 +15,6 @@ declare module 'geojson' {
     id?: string | number;
     radius?: G extends Point ? number : never;
     vcsMeta?: VcsMeta;
-    /**
-     * @deprecated
-     */
-    vcsStyle?: StyleItemOptions;
     state?: FeatureStoreLayerState;
   }
 
@@ -29,6 +24,5 @@ declare module 'geojson' {
       | { type: 'EPSG'; properties: { code: string } };
     vcsMeta?: VcsMeta;
     vcsEmbeddedIcons?: string[];
-    vcsStyle?: StyleItemOptions;
   }
 }

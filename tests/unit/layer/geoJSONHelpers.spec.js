@@ -13,12 +13,12 @@ import Projection, {
   mercatorProjection,
   wgs84Projection,
 } from '../../../src/util/projection.js';
-import VectorLayer from '../../../src/layer/vectorLayer.js';
 import {
   FeatureStoreLayerState,
   featureStoreStateSymbol,
 } from '../../../src/layer/featureStoreLayerState.js';
 import importJSON from '../helpers/importJSON.js';
+import { alreadyTransformedToMercator } from '../../../src/layer/vectorSymbols.js';
 
 const testGeoJSON = await importJSON('./tests/data/testGeoJSON.json');
 
@@ -84,7 +84,7 @@ describe('GeoJSONLayer', () => {
       ).features;
       const geometry = feature.getGeometry();
       expect(geometry).to.be.an.instanceOf(Point);
-      expect(geometry[VectorLayer.alreadyTransformedToMercator]).to.be.true;
+      expect(geometry[alreadyTransformedToMercator]).to.be.true;
       expect(geometry.getCoordinates()).to.have.members([
         111319.49079327358, 111325.14286638486, 1,
       ]);

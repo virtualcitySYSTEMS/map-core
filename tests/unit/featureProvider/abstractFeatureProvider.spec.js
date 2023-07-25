@@ -1,10 +1,7 @@
 import Feature from 'ol/Feature.js';
 import AbstractFeatureProvider from '../../../src/featureProvider/abstractFeatureProvider.js';
 import { vcsLayerName } from '../../../src/layer/layerSymbols.js';
-import {
-  isProvidedFeature,
-  showProvidedFeature,
-} from '../../../src/featureProvider/featureProviderSymbols.js';
+import { isProvidedFeature } from '../../../src/featureProvider/featureProviderSymbols.js';
 import VectorStyleItem from '../../../src/style/vectorStyleItem.js';
 
 describe('AbstractFeatureProvider', () => {
@@ -39,14 +36,6 @@ describe('AbstractFeatureProvider', () => {
       it('should add the isProvidedFeature symbol', () => {
         const providerFeature = provider.getProviderFeature(feature);
         expect(providerFeature).to.have.property(isProvidedFeature, true);
-      });
-
-      it('should add the showProvidedFeature symbol', () => {
-        const providerFeature = provider.getProviderFeature(feature);
-        expect(providerFeature).to.have.property(
-          showProvidedFeature,
-          provider.showGeometry,
-        );
       });
 
       it('should enforce a uuid', () => {

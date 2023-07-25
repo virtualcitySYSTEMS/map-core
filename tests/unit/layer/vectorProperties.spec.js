@@ -158,7 +158,6 @@ describe('VectorProperties', () => {
         storeysBelowGround: 3,
         storeyHeightsAboveGround: [1, 2, 3],
         storeyHeightsBelowGround: [2, 3],
-        storeyHeight: 2,
         modelUrl: 'http://localhost/test.glb',
         modelPitch: 180,
         modelRoll: 180,
@@ -697,24 +696,6 @@ describe('VectorProperties', () => {
         const { storeyHeightsBelowGround } = vectorProperties;
         storeyHeightsBelowGround.splice(0);
         expect(vectorProperties.storeyHeightsBelowGround).to.not.be.empty;
-      });
-    });
-
-    describe('storeyHeight', () => {
-      it('should parse value storeyHeight', () => {
-        expect(vectorProperties.storeyHeight).to.be.equal(2);
-      });
-
-      it('should not set storeyHeight and not raiseEvent, if value does not change', () => {
-        vectorProperties.storeyHeight = vectorProperties.storeyHeight;
-        expect(eventListener).to.have.not.been.called;
-      });
-
-      it('should set storeyHeight and raiseEvent, if value changed', () => {
-        vectorProperties.storeyHeight = 15;
-        expect(vectorProperties.storeyHeight).to.be.equal(15);
-        expect(eventListener).to.have.been.calledOnce;
-        expect(eventListener).to.have.been.calledWith(['storeyHeight']);
       });
     });
 

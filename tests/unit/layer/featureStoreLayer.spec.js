@@ -85,13 +85,11 @@ describe('FeatureStoreLayer', () => {
       FS = new FeatureStoreLayer({
         vcsMeta: {
           skirt: 5,
-          storeyHeight: 5,
           classificationType: 'both',
           altitudeMode: 'absolute',
         },
       });
       expect(FS.vectorProperties).to.have.property('skirt', 5);
-      expect(FS.vectorProperties).to.have.property('storeyHeight', 5);
       expect(FS.vectorProperties).to.have.property(
         'classificationType',
         ClassificationType.BOTH,
