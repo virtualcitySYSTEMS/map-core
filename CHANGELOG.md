@@ -1,5 +1,7 @@
 ### 5.0.0-next
 
+- Updated Cesium library to include custom VCS Shader rendering.
+  - The original Shading can be reinstated by activating the flag `useOriginalCesiumShader` on the CesiumMap
 - Updated API Documentation
   - Ordering By main type
   - added permanent API docs link at https://lib.virtualcitymap.de/core/5.0/docs/

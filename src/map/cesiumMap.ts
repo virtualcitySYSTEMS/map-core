@@ -74,6 +74,12 @@ export type CesiumMapOptions = VcsMapOptions & {
    * the color of the globe, if no image is provided
    */
   globeColor?: string;
+
+  /**
+   * use Original Cesium Shader, otherwise the VCS Customized Shader will be used.
+   * This is a global Setting for all VCMap Instances on the same page.
+   */
+  useOriginalCesiumShader?: boolean;
 };
 
 export type CesiumMapEvent = {
@@ -280,6 +286,7 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
       webGLaa: false,
       cameraLimiter: undefined,
       globeColor: '#3f47cc',
+      useOriginalCesiumShader: false,
     };
   }
 
@@ -335,6 +342,8 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
 
   private _lastEventFrameNumber: number | null;
 
+  private _useOriginalCesiumShader: boolean;
+
   constructor(options: CesiumMapOptions) {
     super(options);
 
@@ -366,6 +375,11 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
     this.defaultJDate = JulianDate.fromDate(new Date(2014, 6, 20, 13, 0, 0, 0));
 
     this.webGLaa = parseBoolean(options.webGLaa, defaultOptions.webGLaa);
+
+    this._useOriginalCesiumShader = parseBoolean(
+      options.useOriginalCesiumShader,
+      defaultOptions.useOriginalCesiumShader,
+    );
 
     this.globeColor = Color.fromCssColorString(
       options.globeColor || (defaultOptions.globeColor as string),
@@ -579,6 +593,17 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
 
   initialize(): Promise<void> {
     if (!this.initialized) {
+      if (!this._useOriginalCesiumShader) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        globalThis.useVcsCustomShading = true;
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+      } else if (globalThis.useVcsCustomShading) {
+        console.error(
+          'Cannot activate Original Cesium Shader, flag to use VCS Shader is already set by another Cesium Map or VCMap Instance',
+        );
+      }
       this._cesiumWidget = new CesiumWidget(this.mapElement, {
         requestRenderMode: false,
         scene3DOnly: true,
