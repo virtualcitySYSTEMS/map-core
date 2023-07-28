@@ -44,6 +44,12 @@ export type LayerOptions = VcsObjectOptions & {
    */
   hiddenObjectIds?: string[];
   copyright?: CopyrightOptions;
+
+  /**
+   * Optional Id to synchronize with the vcPublisher Datasources. This can also be used to track a connection
+   * to other sources of data.
+   */
+  datasourceId?: string;
 };
 
 export type LayerImplementationOptions = {
@@ -75,6 +81,7 @@ class Layer<
       url: undefined,
       hiddenObjectIds: [],
       copyright: undefined,
+      datasourceId: undefined,
     };
   }
 
@@ -138,6 +145,12 @@ class Layer<
 
   private _locale: string;
 
+  /**
+   * Optional Id to synchronize with the vcPublisher Datasources. This can also be used to track a connection
+   * to other sources of data.
+   */
+  datasourceId?: string;
+
   constructor(options: LayerOptions) {
     super(options);
     const defaultOptions = Layer.getDefaultOptions();
@@ -193,6 +206,8 @@ class Layer<
     this.featureProvider = undefined;
 
     this._locale = 'en';
+
+    this.datasourceId = options.datasourceId || defaultOptions.datasourceId;
   }
 
   /**
@@ -631,6 +646,10 @@ class Layer<
 
     if (this.copyright !== defaultOptions.copyright) {
       config.copyright = { ...this.copyright };
+    }
+
+    if (this.datasourceId !== defaultOptions.datasourceId) {
+      config.datasourceId = this.datasourceId;
     }
 
     return config;

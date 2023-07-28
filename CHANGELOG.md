@@ -1,5 +1,9 @@
 ### 5.0.0-next
 
+- Added a `datasourceId` option to `Layer`
+
+### 5.0.0-36
+
 - Updated Cesium library to include custom VCS Shader rendering.
   - The original Shading can be reinstated by activating the flag `useOriginalCesiumShader` on the CesiumMap
 - Updated API Documentation
