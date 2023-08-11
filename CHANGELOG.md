@@ -1,6 +1,8 @@
 ### 5.0.0-next
 
 - Added a `datasourceId` option to `Layer`
+- Added `VcsAppOptions` including optional keys `_id`, `name`, `description` and `properties`
+- Added `startingObliqueCollectionName` to `VcsModule`
 
 ### 5.0.0-36
 

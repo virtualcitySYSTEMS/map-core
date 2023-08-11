@@ -12,12 +12,14 @@ export type VcsModuleConfig = {
   _id?: string | undefined;
   name?: string | undefined;
   description?: string | undefined;
+  properties?: Record<string, unknown>;
   layers?: LayerOptions[];
   maps?: VcsMapOptions[];
   styles?: StyleItemOptions[];
   viewpoints?: ViewpointOptions[];
   startingViewpointName?: string;
   startingMapName?: string;
+  startingObliqueCollectionName?: string;
   projection?: ProjectionOptions;
   obliqueCollections?: ObliqueCollectionOptions[];
   categories?: { name: string; items: object[] }[];
@@ -50,9 +52,13 @@ class VcsModule {
 
   description: string | undefined;
 
+  properties: Record<string, unknown> | undefined;
+
   startingViewpointName: string | undefined;
 
   startingMapName: string | undefined;
+
+  startingObliqueCollectionName: string | undefined;
 
   projection: Projection | undefined;
 
@@ -65,8 +71,10 @@ class VcsModule {
     this._uuid = config._id || uuidv4();
     this.name = config.name ?? this._uuid;
     this.description = config.description;
+    this.properties = config.properties;
     this.startingViewpointName = config.startingViewpointName;
     this.startingMapName = config.startingMapName;
+    this.startingObliqueCollectionName = config.startingObliqueCollectionName;
     this.projection = config.projection
       ? new Projection(config.projection)
       : undefined;
@@ -97,17 +105,20 @@ class VcsModule {
     if (this.name) {
       config.name = this.name;
     }
-    if (this.description) {
+    if (this.description != null) {
       config.description = this.description;
     }
-    if (this.startingViewpointName) {
+    if (this.startingViewpointName != null) {
       config.startingViewpointName = this.startingViewpointName;
     }
-    if (this.startingMapName) {
+    if (this.startingMapName != null) {
       config.startingMapName = this.startingMapName;
     }
-    if (this.projection) {
-      config.projection = this.projection.toJSON();
+    if (this.startingObliqueCollectionName != null) {
+      config.startingObliqueCollectionName = this.startingObliqueCollectionName;
+    }
+    if (this.projection != null) {
+      config.projection = this.projection?.toJSON();
     }
     return config;
   }

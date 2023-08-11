@@ -47,6 +47,13 @@ function getLogger(): Logger {
   return getLoggerByName('init');
 }
 
+export type VcsAppOptions = {
+  _id?: string | undefined;
+  name?: string | undefined;
+  description?: string | undefined;
+  properties?: Record<string, unknown>;
+};
+
 const vcsApps: Map<string, VcsApp> = new Map();
 
 export const defaultDynamicModuleId = '_defaultDynamicModule';
@@ -56,6 +63,12 @@ export const defaultDynamicModuleId = '_defaultDynamicModule';
  */
 class VcsApp {
   private _id: string;
+
+  name: string | undefined;
+
+  description: string | undefined;
+
+  properties: Record<string, unknown> | undefined;
 
   private _defaultDynamicModule: VcsModule;
 
@@ -109,8 +122,14 @@ class VcsApp {
     typeof AbstractFeatureProvider
   >;
 
-  constructor() {
-    this._id = uuidv4();
+  /**
+   * @param  options
+   */
+  constructor(options: VcsAppOptions = {}) {
+    this._id = options?._id || uuidv4();
+    this.name = options.name ?? this._id;
+    this.description = options.description;
+    this.properties = options.properties;
     this._defaultDynamicModule = new VcsModule({ _id: defaultDynamicModuleId });
     this._dynamicModule = this._defaultDynamicModule;
 
@@ -159,8 +178,8 @@ class VcsApp {
       new Collection(),
       getDynamicModuleId,
       undefined,
-      (options: StyleItemOptions) =>
-        getObjectFromClassRegistry(this._styleClassRegistry, options),
+      (styleOptions: StyleItemOptions) =>
+        getObjectFromClassRegistry(this._styleClassRegistry, styleOptions),
       StyleItem,
     );
 
@@ -345,17 +364,18 @@ class VcsApp {
         }
       });
 
-    const activeObliqueCollection = [...this._obliqueCollections].find(
-      (c) => c[moduleIdSymbol] === module._id && c.activeOnStartup,
-    );
-
-    if (activeObliqueCollection) {
-      [...this._maps]
-        .filter((m) => m instanceof ObliqueMap)
-        .forEach((m) => {
-          // eslint-disable-next-line no-void
-          void (m as ObliqueMap).setCollection(activeObliqueCollection);
-        });
+    if (config.startingObliqueCollectionName) {
+      const startingObliqueCollection = this._obliqueCollections.getByKey(
+        config.startingObliqueCollectionName,
+      );
+      if (startingObliqueCollection) {
+        [...this._maps]
+          .filter((m) => m instanceof ObliqueMap)
+          .forEach((m) => {
+            // eslint-disable-next-line no-void
+            void (m as ObliqueMap).setCollection(startingObliqueCollection);
+          });
+      }
     }
 
     if (config.startingMapName) {

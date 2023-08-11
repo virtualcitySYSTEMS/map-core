@@ -1,4 +1,4 @@
-import { parseBoolean, parseInteger, parseNumber } from '@vcsuite/parsers';
+import { parseInteger, parseNumber } from '@vcsuite/parsers';
 import RBush from 'rbush';
 import knn from 'rbush-knn';
 import { getTransform } from 'ol/proj.js';
@@ -72,7 +72,7 @@ export type ObliqueCollectionOptions = VcsObjectOptions & {
   minZoom?: number;
   scaleFactor?: number;
   hideLevels?: number;
-  activeOnStartup?: boolean;
+  datasourceId?: string;
 };
 
 export type ObliqueImageRbushItem = {
@@ -132,7 +132,7 @@ class ObliqueCollection extends VcsObject {
       scaleFactor: 4,
       dataSets: undefined,
       hideLevels: 0,
-      activeOnStartup: false,
+      datasourceId: undefined,
     };
   }
 
@@ -172,9 +172,10 @@ class ObliqueCollection extends VcsObject {
   private _loadingPromise: Promise<void> | undefined = undefined;
 
   /**
-   * Whether to activate this collection after loading its defining context.
+   * Optional Id to synchronize with the vcPublisher Datasources. This can also be used to track a connection
+   * to other sources of data.
    */
-  activeOnStartup: boolean;
+  datasourceId?: string;
 
   /**
    * @param  options
@@ -196,10 +197,7 @@ class ObliqueCollection extends VcsObject {
       });
     }
 
-    this.activeOnStartup = parseBoolean(
-      options.activeOnStartup,
-      defaultOptions.activeOnStartup,
-    );
+    this.datasourceId = options.datasourceId || defaultOptions.datasourceId;
   }
 
   get dataSets(): ObliqueDataSet[] {
@@ -621,6 +619,9 @@ class ObliqueCollection extends VcsObject {
     }
     if (this.viewOptions.hideLevels !== defaultOptions.hideLevels) {
       config.hideLevels = this.viewOptions.hideLevels;
+    }
+    if (this.datasourceId !== defaultOptions.datasourceId) {
+      config.datasourceId = this.datasourceId;
     }
 
     if (this.dataSets.length > 0) {
