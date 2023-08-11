@@ -405,6 +405,7 @@ export function getTextOptions(text: OLText): VectorStyleItemText {
     textBaseline: text.getTextBaseline(),
     offsetY: text.getOffsetY(),
     offsetX: text.getOffsetX(),
+    text: text.getText(),
   };
 }
 
@@ -430,8 +431,10 @@ export type ImageStyleOptions = {
   fill?: FillOptions;
   stroke?: StrokeOptions;
   radius?: number;
+  radius2?: number;
   points?: number;
   angle?: number;
+  rotation?: number;
   anchor?: number[];
 };
 
@@ -485,8 +488,14 @@ export function getImageStyleOptions(image: ImageStyle): ImageStyleOptions {
     if (image.getAngle()) {
       options.angle = image.getAngle();
     }
+    if (image.getRotation()) {
+      options.rotation = image.getRotation();
+    }
     if (image.getRadius() != null) {
       options.radius = image.getRadius();
+    }
+    if (image.getRadius2() != null) {
+      options.radius2 = image.getRadius2();
     }
     if (image.getStroke()) {
       options.stroke = getStrokeOptions(image.getStroke());
@@ -510,8 +519,10 @@ export function getImageStyleFromOptions(
         stroke,
         points: options.points,
         radius: options.radius,
+        radius2: options.radius2,
         scale: options.scale,
         angle: options.angle,
+        rotation: options.rotation,
       });
     } else {
       return new Circle({

@@ -63,7 +63,7 @@ export type VectorStyleItemImage = {
 };
 
 export type VectorStyleItemText = {
-  text?: string;
+  text?: string | string[];
   font?: string | FontObject;
   fill?: FillOptions | Fill;
   stroke?: StrokeOptions | Stroke;

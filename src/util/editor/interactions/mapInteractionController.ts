@@ -110,6 +110,10 @@ class MapInteractionController extends AbstractInteraction {
     this._clear();
     this._clear = (): void => {};
   }
+
+  destroy(): void {
+    this.reset();
+  }
 }
 
 export default MapInteractionController;
