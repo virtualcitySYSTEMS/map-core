@@ -10,6 +10,7 @@ import VectorProperties, {
   parseCartesian3,
   parseNearFarScalar,
   parseStoreyHeights,
+  getClassificationTypeOptions,
 } from '../../../src/layer/vectorProperties.js';
 import { PrimitiveOptionsType } from '../../../index.js';
 
@@ -994,6 +995,83 @@ describe('VectorProperties', () => {
         };
         const primitiveOptions = vectorProperties.getPrimitive(feature);
         expect(primitiveOptions).to.be.null;
+      });
+    });
+    describe('getting values from features', () => {
+      let features;
+
+      describe('single feature', () => {
+        beforeEach(() => {
+          features = [new Feature({})];
+        });
+
+        it('should return values set on feature', () => {
+          const extrudedHeight = 10;
+          features[0].set('olcs_extrudedHeight', extrudedHeight);
+          const featureValues = vectorProperties.getValuesForFeatures(features);
+          expect(featureValues.extrudedHeight).to.equal(extrudedHeight);
+        });
+
+        it('should return property value from VectorProperties if not set on feature', () => {
+          const featureValues = vectorProperties.getValuesForFeatures(features);
+          expect(featureValues.extrudedHeight).to.equal(
+            vectorProperties.extrudedHeight,
+          );
+        });
+      });
+
+      describe('multiple features', () => {
+        beforeEach(() => {
+          features = [new Feature({}), new Feature({})];
+        });
+
+        it('should return common values', () => {
+          const eyeOffset = [1, 2, 3];
+          features.forEach((f) => {
+            f.set('olcs_eyeOffset', eyeOffset);
+          });
+          const featureValues = vectorProperties.getValuesForFeatures(features);
+          expect(featureValues.eyeOffset).to.have.ordered.members(eyeOffset);
+          expect(featureValues.classificationType).to.equal(
+            getClassificationTypeOptions(vectorProperties.classificationType),
+          );
+        });
+
+        it('should not contain key if the features have different values for it', () => {
+          features[0].set('olcs_storeyHeightsBelowGround', [1, 2]);
+          const featureValues = vectorProperties.getValuesForFeatures(features);
+          expect(featureValues).to.not.have.key('storeyHeightsBelowGround');
+        });
+      });
+    });
+
+    describe('setting values on features', () => {
+      let features;
+
+      beforeEach(() => {
+        features = [new Feature({})];
+      });
+
+      it('should unset if value equals the one from VectorProperties instance', () => {
+        features[0].set('olcs_modelUrl', 'http://localhost/otherFile.glb');
+        vectorProperties.setValuesForFeatures(
+          {
+            modelUrl: vectorProperties.modelUrl,
+          },
+          features,
+        );
+        expect(features[0].getKeys()).to.not.have.key('olcs_modelUrl');
+      });
+
+      it('should set if value is unequal to the one from VectorProperties instance', () => {
+        const altitudeMode = 'clampToGround';
+        vectorProperties.setValuesForFeatures(
+          {
+            altitudeMode,
+          },
+          features,
+        );
+        expect(features[0].get('olcs_altitudeMode')).to.equal(altitudeMode);
       });
     });
   });

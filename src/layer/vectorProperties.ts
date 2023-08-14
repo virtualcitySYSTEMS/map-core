@@ -1279,6 +1279,197 @@ class VectorProperties {
     return values;
   }
 
+  /**
+   * The common vector properties for the input features.
+   * @param features Features for which the vector property values should be returned.
+   * @returns The common vector properties for the features. When a/all feature(s) does not has a property set, the layer or, if not set, the default value is returned. If features have different values for a property, the property key is not added to the returned obeject.
+   */
+  getValuesForFeatures(features: Feature[]): VectorPropertiesOptions {
+    const values: VectorPropertiesOptions = {};
+
+    /**
+     * Checks if all the values of the array are equal using fast-deep-equal.
+     * @param propertyValues An array of values for a specific property from different features.
+     * @returns Whether all values are equal.
+     */
+    function isAllEqual<T extends string | number | boolean | number[]>(
+      propertyValues: (T | undefined)[],
+    ): boolean {
+      return propertyValues.every((curr, index, array) => {
+        if (index === 0) {
+          return true;
+        }
+        return deepEqual(curr, array[0]);
+      });
+    }
+
+    const altitudeModeValues = features.map((f) => this.getAltitudeMode(f));
+    if (isAllEqual(altitudeModeValues)) {
+      values.altitudeMode = getAltitudeModeOptions(altitudeModeValues[0]);
+    }
+
+    const allowPickingValues = features.map((f) => this.getAllowPicking(f));
+    if (isAllEqual(allowPickingValues)) {
+      values.allowPicking = allowPickingValues[0];
+    }
+
+    const classificationTypeValues = features.map((f) =>
+      this.getClassificationType(f),
+    );
+    if (isAllEqual(classificationTypeValues)) {
+      values.classificationType = getClassificationTypeOptions(
+        classificationTypeValues[0],
+      );
+    }
+
+    const scaleByDistanceValues = features.map((f) =>
+      getNearFarValueOptions(this.getScaleByDistance(f)),
+    );
+    if (isAllEqual(scaleByDistanceValues)) {
+      values.scaleByDistance = scaleByDistanceValues[0];
+    }
+
+    const eyeOffsetValues = features.map((f) =>
+      getCartesian3Options(this.getEyeOffset(f)),
+    );
+    if (isAllEqual(eyeOffsetValues)) {
+      values.eyeOffset = eyeOffsetValues[0];
+    }
+
+    const heightAboveGroundValues = features.map((f) =>
+      this.getHeightAboveGround(f),
+    );
+    if (isAllEqual(heightAboveGroundValues)) {
+      values.heightAboveGround = heightAboveGroundValues[0];
+    }
+
+    const skirtValues = features.map((f) => this.getSkirt(f));
+    if (isAllEqual(skirtValues)) {
+      values.skirt = skirtValues[0];
+    }
+
+    const groundLevelValues = features.map((f) => this.getGroundLevel(f));
+    if (isAllEqual(groundLevelValues)) {
+      values.groundLevel = groundLevelValues[0];
+    }
+
+    const extrudedHeightValues = features.map((f) => this.getExtrudedHeight(f));
+    if (isAllEqual(extrudedHeightValues)) {
+      values.extrudedHeight = extrudedHeightValues[0];
+    }
+
+    const storeysAboveGroundValues = features.map((f) =>
+      this.getStoreysAboveGround(f),
+    );
+    if (isAllEqual(storeysAboveGroundValues)) {
+      values.storeysAboveGround = storeysAboveGroundValues[0];
+    }
+
+    const storeysBelowGroundValues = features.map((f) =>
+      this.getStoreysBelowGround(f),
+    );
+    if (isAllEqual(storeysBelowGroundValues)) {
+      values.storeysBelowGround = storeysBelowGroundValues[0];
+    }
+
+    const storeyHeightsAboveGroundValues = features.map((f) =>
+      this.getStoreyHeightsAboveGround(f),
+    );
+    if (isAllEqual(storeyHeightsAboveGroundValues)) {
+      values.storeyHeightsAboveGround = storeyHeightsAboveGroundValues[0];
+    }
+
+    const storeyHeightsBelowGroundValues = features.map((f) =>
+      this.getStoreyHeightsBelowGround(f),
+    );
+    if (isAllEqual(storeyHeightsBelowGroundValues)) {
+      values.storeyHeightsBelowGround = storeyHeightsBelowGroundValues[0];
+    }
+
+    const modelUrlValues = features.map((f) => this.getModelUrl(f));
+    if (isAllEqual(modelUrlValues)) {
+      values.modelUrl = modelUrlValues[0];
+    }
+
+    const modelScaleXValues = features.map((f) => this.getModelScaleX(f));
+    if (isAllEqual(modelScaleXValues)) {
+      values.modelScaleX = modelScaleXValues[0];
+    }
+
+    const modelScaleYValues = features.map((f) => this.getModelScaleY(f));
+    if (isAllEqual(modelScaleYValues)) {
+      values.modelScaleY = modelScaleYValues[0];
+    }
+
+    const modelScaleZValues = features.map((f) => this.getModelScaleZ(f));
+    if (isAllEqual(modelScaleZValues)) {
+      values.modelScaleZ = modelScaleZValues[0];
+    }
+
+    const modelHeadingValues = features.map((f) => this.getModelHeading(f));
+    if (isAllEqual(modelHeadingValues)) {
+      values.modelHeading = modelHeadingValues[0];
+    }
+
+    const modelPitchValues = features.map((f) => this.getModelPitch(f));
+    if (isAllEqual(modelPitchValues)) {
+      values.modelPitch = modelPitchValues[0];
+    }
+
+    const modelRollValues = features.map((f) => this.getModelRoll(f));
+    if (isAllEqual(modelRollValues)) {
+      values.modelRoll = modelRollValues[0];
+    }
+
+    const baseUrlValues = features.map((f) => this.getBaseUrl(f));
+    if (isAllEqual(baseUrlValues)) {
+      values.baseUrl = baseUrlValues[0];
+    }
+
+    return values;
+  }
+
+  /**
+   * Sets vector property options on a array of features. When a property equals the value that is returned from the getter of the VectorProperties instance, the property is unset from the feature(s).
+   * @param options The vector property options to be set on the features.
+   * @param features The features to set the vector property options on.
+   */
+  setValuesForFeatures(
+    options: VectorPropertiesOptions,
+    features: Feature[],
+  ): void {
+    const layerValues = this.getValues();
+
+    type UpdateConfig<
+      T extends keyof VectorPropertiesOptions = keyof VectorPropertiesOptions,
+    > = {
+      key: T;
+      set: boolean;
+      value: VectorPropertiesOptions[T];
+    };
+
+    const updates: UpdateConfig[] = [];
+    Object.entries(options).forEach(([key, value]) => {
+      const keyCast = key as keyof VectorPropertiesOptions;
+      updates.push({
+        key: keyCast,
+        value,
+        set: !deepEqual(value, layerValues[keyCast]),
+      });
+    });
+
+    features.forEach((f) => {
+      updates.forEach(({ key, set, value }) => {
+        const propertyName = `olcs_${key}`;
+        if (set) {
+          f.set(propertyName, value);
+        } else {
+          f.unset(propertyName);
+        }
+      });
+    });
+  }
+
   // XXX ugly design, this does NOT return a VcsMeta (missing version) but is missued to get config objects too often to change
   getVcsMeta(
     defaultOptions?: VectorPropertiesOptions,
