@@ -32,7 +32,7 @@ class WmsCesiumImpl extends RasterLayerCesiumImpl {
     this.tileSize = options.tileSize;
   }
 
-  getCesiumLayer(): CesiumImageryLayer {
+  getCesiumLayer(): Promise<CesiumImageryLayer> {
     const parameters = { ...this.parameters };
     if (this.highResolution) {
       parameters.width = String(this.tileSize[0] * 2);
@@ -68,7 +68,9 @@ class WmsCesiumImpl extends RasterLayerCesiumImpl {
       alpha: this.opacity,
       splitDirection: this.splitDirection,
     };
-    return new CesiumImageryLayer(imageryProvider, layerOptions);
+    return Promise.resolve(
+      new CesiumImageryLayer(imageryProvider, layerOptions),
+    );
   }
 }
 

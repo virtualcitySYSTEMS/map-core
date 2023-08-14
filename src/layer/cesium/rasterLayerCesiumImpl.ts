@@ -41,9 +41,9 @@ class RasterLayerCesiumImpl
     this.tilingSchema = options.tilingSchema;
   }
 
-  initialize(): Promise<void> {
+  async initialize(): Promise<void> {
     if (!this.initialized) {
-      this.cesiumLayer = this.getCesiumLayer();
+      this.cesiumLayer = await this.getCesiumLayer();
       this.cesiumLayer[vcsLayerName] = this.name;
       this.cesiumLayer.show = false;
       this.map.addImageryLayer(this.cesiumLayer);
@@ -59,7 +59,7 @@ class RasterLayerCesiumImpl
   }
 
   // eslint-disable-next-line class-methods-use-this
-  getCesiumLayer(): ImageryLayer {
+  getCesiumLayer(): Promise<ImageryLayer> {
     throw new Error('implementation error');
   }
 

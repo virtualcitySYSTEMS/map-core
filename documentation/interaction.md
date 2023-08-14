@@ -107,3 +107,26 @@ const listener = eventHandler.addPersistentInteraction(interaction);
 // when done, call the returned function to unlisten
 listener();
 ```
+
+### Feature Detection
+
+The `FeatureAtPixelInteraction` on the `EventHander` detects features
+on the current map at adds them to the Event. Since this can
+be costly, especially in 3D, picking is not active for `MOVE` events
+by default. If you wish to enable feature picking on move, you
+will have to do the following:
+
+```js
+const { eventHandler } = app.maps;
+eventHandler.featureInteraction.setActive(EventType.ALL);
+```
+
+Furthermore, the position is only picked with respect to
+features in 3D for `CLICK` events. To have the position
+update to be the position on the feature instead of on the globe
+for other event types, you will have to do the following:
+
+```js
+const { eventHandler } = app.maps;
+eventHandler.pickPosition = EventType.CLICKMOVE; // pick on click and move
+```

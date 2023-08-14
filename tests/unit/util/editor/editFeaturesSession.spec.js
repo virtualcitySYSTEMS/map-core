@@ -448,6 +448,59 @@ describe('startEditFeaturesSession', () => {
     });
   });
 
+  describe('setting olcs properties on a set feature', () => {
+    /** @type {EditFeaturesSession} */
+    let session;
+    /** @type {import("ol").Feature[]} */
+    let features;
+
+    before(() => {
+      session = startEditFeaturesSession(app, layer);
+    });
+
+    beforeEach(() => {
+      features = [
+        createFeatureWithId(new Point([0, 0, 0])),
+        createFeatureWithId(new Point([1, 0, 0])),
+      ];
+      session.setFeatures(features);
+    });
+
+    after(() => {
+      session.stop();
+    });
+
+    it('should recalculate the handlers, when changing altitude mode', () => {
+      const scratchLayer = [...app.layers].pop();
+      const scratchFeatures = scratchLayer.getFeatures();
+      expect(scratchFeatures[0]).to.exist;
+      const changed = sinon.spy();
+      scratchFeatures[0].once('change', changed);
+      features[0].set('olcs_altitudeMode', 'absolute');
+      expect(changed).to.have.been.calledOnce;
+    });
+
+    it('should recalculate the handlers, when changing ground level', () => {
+      const scratchLayer = [...app.layers].pop();
+      const scratchFeatures = scratchLayer.getFeatures();
+      expect(scratchFeatures[0]).to.exist;
+      const changed = sinon.spy();
+      scratchFeatures[0].once('change', changed);
+      features[0].set('olcs_groundLevel', 2);
+      expect(changed).to.have.been.calledOnce;
+    });
+
+    it('should recalculate the handlers, when ', () => {
+      const scratchLayer = [...app.layers].pop();
+      const scratchFeatures = scratchLayer.getFeatures();
+      expect(scratchFeatures[0]).to.exist;
+      const changed = sinon.spy();
+      scratchFeatures[0].once('change', changed);
+      features[0].set('olcs_heightAboveGround', 20);
+      expect(changed).to.have.been.calledOnce;
+    });
+  });
+
   describe('starting a EXTRUDE session without having an active cesium map', () => {
     /** @type {EditFeaturesSession} */
     let session;

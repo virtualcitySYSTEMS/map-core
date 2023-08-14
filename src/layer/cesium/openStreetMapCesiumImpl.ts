@@ -12,13 +12,15 @@ class OpenStreetMapCesiumImpl extends RasterLayerCesiumImpl {
     return 'OpenStreetMapCesiumImpl';
   }
 
-  getCesiumLayer(): CesiumImageryLayer {
-    return new CesiumImageryLayer(
-      new OpenStreetMapImageryProvider({ maximumLevel: this.maxLevel }),
-      {
-        alpha: this.opacity,
-        splitDirection: this.splitDirection,
-      },
+  getCesiumLayer(): Promise<CesiumImageryLayer> {
+    return Promise.resolve(
+      new CesiumImageryLayer(
+        new OpenStreetMapImageryProvider({ maximumLevel: this.maxLevel }),
+        {
+          alpha: this.opacity,
+          splitDirection: this.splitDirection,
+        },
+      ),
     );
   }
 }

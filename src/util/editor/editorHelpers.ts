@@ -34,7 +34,9 @@ export type Vertex = Feature<Point>;
 export type SelectableFeatureType = Feature | Cesium3DTileFeature;
 export interface SelectFeatureInteraction {
   readonly selected: Array<Feature>;
-  setSelected(features: SelectableFeatureType[] | SelectableFeatureType): void;
+  setSelected(
+    features: SelectableFeatureType[] | SelectableFeatureType,
+  ): Promise<void>;
   hasFeatureId(id: string): boolean;
 }
 

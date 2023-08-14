@@ -5,6 +5,8 @@ import {
   isEmpty,
 } from 'ol/extent.js';
 import type { Feature } from 'ol/index.js';
+import type { EventsKey } from 'ol/events.js';
+import { unByKey } from 'ol/Observable.js';
 import { getLogger } from '@vcsuite/logger';
 
 import VcsEvent from '../../vcsEvent.js';
@@ -89,6 +91,12 @@ export type EditFeaturesSession = EditorSession & {
   setFeatures(features: Feature[]): void;
   features: Feature[];
 };
+
+const geometryChangeKeys = [
+  'olcs_altitudeMode',
+  'olcs_groundLevel',
+  'olcs_heightAboveGround',
+];
 
 /**
  * Creates an editor session to select, translate, rotate & scale the feature on a given layer
@@ -294,12 +302,25 @@ function startEditFeaturesSession(
   const mapChangedListener = app.maps.mapActivated.addEventListener(mapChanged);
   mapChanged(app.maps.activeMap!);
 
+  let featureListeners: EventsKey[] = [];
+  const setFeatureListeners = (): void => {
+    unByKey(featureListeners);
+    featureListeners = currentFeatures.map((f) =>
+      f.on('propertychange', ({ key }) => {
+        if (geometryChangeKeys.includes(key)) {
+          transformationHandler?.setFeatures(currentFeatures);
+        }
+      }),
+    );
+  };
+
   const stop = (): void => {
     destroyTransformation();
     destroyInteractionChain();
     obliqueImageChangedListener();
     mapChangedListener();
     modifierChangedListener();
+    unByKey(featureListeners);
     currentFeatures.forEach((feature) =>
       clearAllowPicking(feature, allowPickingMap),
     );
@@ -333,6 +354,7 @@ function startEditFeaturesSession(
       currentFeatures.forEach((feature) =>
         setAllowPicking(feature, allowPickingMap, modificationKey),
       );
+      setFeatureListeners();
       transformationHandler?.setFeatures(features);
     },
     get features(): Feature[] {

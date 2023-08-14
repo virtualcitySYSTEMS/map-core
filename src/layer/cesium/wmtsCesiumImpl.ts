@@ -47,7 +47,7 @@ class WmtsCesiumImpl extends RasterLayerCesiumImpl {
     this.matrixIds = options.matrixIds;
   }
 
-  getCesiumLayer(): CesiumImageryLayer {
+  getCesiumLayer(): Promise<CesiumImageryLayer> {
     const currentUrl = this.url as string;
     // This is a bug in Cesium, they cant cope with {Layer} placeholder..
     const url =
@@ -85,7 +85,9 @@ class WmtsCesiumImpl extends RasterLayerCesiumImpl {
       alpha: this.opacity,
       splitDirection: this.splitDirection,
     };
-    return new CesiumImageryLayer(imageryProvider, layerOptions);
+    return Promise.resolve(
+      new CesiumImageryLayer(imageryProvider, layerOptions),
+    );
   }
 }
 

@@ -25,9 +25,8 @@ class TmsCesiumImpl extends RasterLayerCesiumImpl {
     this.format = options.format;
   }
 
-  getCesiumLayer(): CesiumImageryLayer {
+  async getCesiumLayer(): Promise<CesiumImageryLayer> {
     const options: TileMapServiceImageryProvider.ConstructorOptions = {
-      url: this.url,
       fileExtension: this.format,
       maximumLevel: this.maxLevel,
       minimumLevel: this.minLevel,
@@ -48,7 +47,10 @@ class TmsCesiumImpl extends RasterLayerCesiumImpl {
     if (this.tilingSchema === TilingScheme.GEOGRAPHIC) {
       options.tilingScheme = new GeographicTilingScheme();
     }
-    const imageryProvider = new TileMapServiceImageryProvider(options);
+    const imageryProvider = await TileMapServiceImageryProvider.fromUrl(
+      this.url!,
+      options,
+    );
     const layerOptions = {
       alpha: this.opacity,
       splitDirection: this.splitDirection,

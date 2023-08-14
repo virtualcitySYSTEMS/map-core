@@ -11,6 +11,7 @@ import {
   EllipsoidOutlineGeometry,
   GeometryInstance,
   HeadingPitchRoll,
+  HeightReference,
   Material,
   MaterialAppearance,
   Matrix4,
@@ -143,6 +144,7 @@ export function getModelOptions(
     );
 
     const additionalModelOptions = vectorProperties.getModelOptions(feature);
+    const heightReference = vectorProperties.getAltitudeMode(feature);
     const model = Model.fromGltf({
       asynchronous: !feature[createSync],
       url: options.url,
@@ -151,7 +153,10 @@ export function getModelOptions(
       ...additionalModelOptions,
     });
 
-    if (!wgs84Positions[index][2]) {
+    if (
+      wgs84Positions[index][2] == null ||
+      heightReference === HeightReference.CLAMP_TO_GROUND
+    ) {
       // eslint-disable-next-line no-void
       void placePrimitiveOnTerrain(model, position, scene);
     }

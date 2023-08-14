@@ -43,7 +43,7 @@ class VectorRasterTileCesiumImpl extends RasterLayerCesiumImpl {
     this.tileSize = options.tileSize;
   }
 
-  getCesiumLayer(): CesiumImageryLayer {
+  getCesiumLayer(): Promise<CesiumImageryLayer> {
     this.imageryProvider = new VectorTileImageryProvider({
       tileProvider: this.tileProvider,
       tileSize: this.tileSize,
@@ -64,13 +64,14 @@ class VectorRasterTileCesiumImpl extends RasterLayerCesiumImpl {
         extent[3],
       );
     }
-    const imageryLayer = new CesiumImageryLayer(
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      this.imageryProvider,
-      layerOptions,
+    return Promise.resolve(
+      new CesiumImageryLayer(
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        this.imageryProvider,
+        layerOptions,
+      ),
     );
-    return imageryLayer;
   }
 
   /**

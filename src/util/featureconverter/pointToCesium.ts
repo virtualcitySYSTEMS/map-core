@@ -86,6 +86,9 @@ export function getBillboardOptions(
 
     options.eyeOffset = vectorProperties.getEyeOffset(feature);
     options.scaleByDistance = vectorProperties.getScaleByDistance(feature);
+    if (heightReference === HeightReference.CLAMP_TO_GROUND) {
+      options.disableDepthTestDistance = Number.POSITIVE_INFINITY;
+    }
 
     return options;
   }
@@ -181,6 +184,10 @@ export function getLabelOptions(
     options.verticalOrigin = verticalOrigin;
     options.eyeOffset = vectorProperties.getEyeOffset(feature);
     options.scaleByDistance = vectorProperties.getScaleByDistance(feature);
+
+    if (heightReference === HeightReference.CLAMP_TO_GROUND) {
+      options.disableDepthTestDistance = Number.POSITIVE_INFINITY;
+    }
     return options;
   }
   return null;

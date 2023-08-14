@@ -129,7 +129,7 @@ class CesiumTilesetCesiumImpl
         this.tilesetProperties.forEach(({ key, value }) => {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          this.cesium3DTileset![key] = value;
+          this.cesium3DTileset[key] = value;
         });
       }
       this.cesium3DTileset[vcsLayerName] = this.name;

@@ -23,9 +23,8 @@ class SingleImageCesiumImpl extends RasterLayerCesiumImpl {
     this.credit = options.credit;
   }
 
-  getCesiumLayer(): ImageryLayer {
-    const options: SingleTileImageryProvider.ConstructorOptions = {
-      url: this.url as string,
+  async getCesiumLayer(): Promise<ImageryLayer> {
+    const options: SingleTileImageryProvider.fromUrlOptions = {
       credit: this.credit,
     };
 
@@ -39,7 +38,10 @@ class SingleImageCesiumImpl extends RasterLayerCesiumImpl {
       );
     }
 
-    const imageryProvider = new SingleTileImageryProvider(options);
+    const imageryProvider = await SingleTileImageryProvider.fromUrl(
+      this.url!,
+      options,
+    );
     const layerOptions = {
       rectangle: options.rectangle,
       alpha: this.opacity,

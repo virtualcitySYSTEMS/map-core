@@ -1,5 +1,4 @@
 import { check } from '@vcsuite/check';
-import { v4 as uuidv4 } from 'uuid';
 import { Feature } from 'ol';
 import type { GeoJSONFeature } from 'ol/format/GeoJSON.js';
 import { destroyCollection } from '../vcsModuleHelpers.js';
@@ -23,7 +22,7 @@ import OverrideClassRegistry from '../overrideClassRegistry.js';
 import VcsEvent from '../vcsEvent.js';
 import type VectorStyleItem from '../style/vectorStyleItem.js';
 import type VcsApp from '../vcsApp.js';
-import { moduleIdSymbol } from '../moduleIdSymbol.js';
+import { markVolatile } from '../vcsModule.js';
 
 export type CategoryOptions<T extends VcsObject | object> = VcsObjectOptions & {
   title?: string;
@@ -35,8 +34,6 @@ export type CategoryOptions<T extends VcsObject | object> = VcsObjectOptions & {
   layerOptions?: VectorOptions;
   keyProperty?: keyof T;
 };
-
-const categoryModuleId = uuidv4();
 
 function assignLayerOptions(layer: VectorLayer, options: VectorOptions): void {
   if (options.style) {
@@ -141,7 +138,7 @@ class Category<
     this._layer = null;
     if (this._featureProperty) {
       this._layer = new VectorLayer(this._layerOptions);
-      this._layer[moduleIdSymbol] = categoryModuleId;
+      markVolatile(this._layer);
     }
 
     this._keyProperty =
