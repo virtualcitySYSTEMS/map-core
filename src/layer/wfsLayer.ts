@@ -2,7 +2,7 @@ import WFSFormat from 'ol/format/WFS.js';
 import VectorLayer, { VectorOptions } from './vectorLayer.js';
 import Projection from '../util/projection.js';
 import { layerClassRegistry } from '../classRegistry.js';
-import { requestJson } from '../util/fetch.js';
+import { requestUrl } from '../util/fetch.js';
 
 export type WFSOptions = VectorOptions & {
   /**
@@ -18,6 +18,11 @@ export type WFSOptions = VectorOptions & {
    * additional config for [ol/format/WFS/writeGetFeature]{@link https://openlayers.org/en/latest/apidoc/ol.format.WFS.html} excluding featureType, featureNS and featurePrefix
    */
   getFeatureOptions?: Record<string, unknown>;
+
+  /**
+   * Version of the WFS Service, will be forwarded to the openlayers WFS Format.
+   */
+  version?: string;
 };
 
 /**
@@ -34,6 +39,8 @@ class WFSLayer extends VectorLayer {
 
   featurePrefix: string;
 
+  version: string | undefined;
+
   getFeaturesOptions: Record<string, unknown>;
 
   wfsFormat: WFSFormat;
@@ -47,6 +54,7 @@ class WFSLayer extends VectorLayer {
       featureNS: '',
       featurePrefix: '',
       getFeatureOptions: {},
+      version: undefined,
     };
   }
 
@@ -70,10 +78,11 @@ class WFSLayer extends VectorLayer {
     this.featureNS = options.featureNS;
     this.featurePrefix = options.featurePrefix;
     this.getFeaturesOptions = options.getFeatureOptions || {};
-
+    this.version = options.version;
     this.wfsFormat = new WFSFormat({
       featureNS: this.featureNS,
       featureType: this.featureType,
+      version: this.version,
     });
 
     this._dataFetchedPromise = null;
@@ -87,6 +96,11 @@ class WFSLayer extends VectorLayer {
   }
 
   async reload(): Promise<void> {
+    this.wfsFormat = new WFSFormat({
+      featureNS: this.featureNS,
+      featureType: this.featureType,
+      version: this.version,
+    });
     if (this._dataFetchedPromise) {
       this.removeAllFeatures();
       this._dataFetchedPromise = null;
@@ -111,14 +125,15 @@ class WFSLayer extends VectorLayer {
         ...this.getFeaturesOptions,
       });
       const postData = new XMLSerializer().serializeToString(requestDocument);
-      this._dataFetchedPromise = requestJson(this.url, {
+      this._dataFetchedPromise = requestUrl(this.url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/text+xml',
         },
-        body: JSON.stringify(postData),
+        body: postData,
       })
-        .then((data) => this._parseWFSData(data as Element))
+        .then((response) => response.text())
+        .then((data) => this._parseWFSData(data))
         .catch((err) => {
           this.getLogger().info(
             `Could not send request for loading layer content (${String(err)})`,
@@ -132,7 +147,7 @@ class WFSLayer extends VectorLayer {
     return Promise.reject(new Error('missing url in WFSLayer layer'));
   }
 
-  private _parseWFSData(obj: Element): void {
+  private _parseWFSData(obj: string): void {
     const features = this.wfsFormat.readFeatures(obj);
     this.addFeatures(features);
   }

@@ -3,6 +3,8 @@
 - Added a `datasourceId` option to `Layer`
 - Added `VcsAppOptions` including optional keys `_id`, `name`, `description` and `properties`
 - Added `startingObliqueCollectionName` to `VcsModule`
+- Fixed Bug in WFSLayer, can handle XML now.
+- Added `version` option to WFSLayer
 - Added new function `getValuesForFeatures` and `setValuesForFeatures` to vectorProperties
 - Updated Openlayers to version 7.5.1
 
