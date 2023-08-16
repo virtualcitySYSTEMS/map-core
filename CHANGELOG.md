@@ -3,6 +3,8 @@
 - Added a `datasourceId` option to `Layer`
 - Added `VcsAppOptions` including optional keys `_id`, `name`, `description` and `properties`
 - Added `startingObliqueCollectionName` to `VcsModule`
+- Added new function `getValuesForFeatures` and `setValuesForFeatures` to vectorProperties
+- Updated Openlayers to version 7.5.1
 
 ### 5.0.0-36
 
