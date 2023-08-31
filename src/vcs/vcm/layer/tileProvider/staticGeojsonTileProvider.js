@@ -63,6 +63,20 @@ class StaticGeojsonTileProvider extends TileProvider {
     const { features } = parseGeoJSON(response.data, { dynamicStyle: true });
     return features;
   }
+
+  /**
+   * @inheritDoc
+   * @returns {vcs.vcm.layer.tileProvider.StaticGeojsonTileProvider.Options}
+   */
+  getConfigObject() {
+    const config = /** @type {vcs.vcm.layer.tileProvider.StaticGeojsonTileProvider.Options } */ (super.toJSON());
+    delete config.baseLevels;
+
+    if (this.url) {
+      config.url = this.url;
+    }
+    return config;
+  }
 }
 
 export default StaticGeojsonTileProvider;

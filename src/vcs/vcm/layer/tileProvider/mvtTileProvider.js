@@ -100,6 +100,23 @@ class MVTTileProvider extends TileProvider {
     });
     return features;
   }
+
+  /**
+   * @inheritDoc
+   * @returns {vcs.vcm.layer.tileProvider.MVTTileProvider.Options}
+   */
+  getConfigObject() {
+    const config = /** @type {vcs.vcm.layer.tileProvider.MVTTileProvider.Options} */ (super.toJSON());
+
+    if (this.url) {
+      config.url = this.url;
+    }
+
+    if (this.idProperty) {
+      config.idProperty = this.idProperty;
+    }
+    return config;
+  }
 }
 
 export default MVTTileProvider;

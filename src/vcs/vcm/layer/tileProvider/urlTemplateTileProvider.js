@@ -103,6 +103,20 @@ class URLTemplateTileProvider extends TileProvider {
     const { features } = parseGeoJSON(response.data, { dynamicStyle: true });
     return features;
   }
+
+  /**
+   * @inheritDoc
+   * @returns {vcs.vcm.layer.tileProvider.URLTemplateTileProvider.Options}
+   */
+  getConfigObject() {
+    const config = /** @type {vcs.vcm.layer.tileProvider.URLTemplateTileProvider.Options} */ (super.toJSON());
+
+    if (this.url) {
+      config.url = this.url;
+    }
+
+    return config;
+  }
 }
 
 export default URLTemplateTileProvider;
