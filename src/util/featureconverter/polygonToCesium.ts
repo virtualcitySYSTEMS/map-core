@@ -7,6 +7,7 @@ import {
   PolygonHierarchy,
   PolylineGeometry,
   type Scene,
+  Cartographic,
 } from '@vcmap-cesium/engine';
 import type { Style } from 'ol/style.js';
 import type { Polygon } from 'ol/geom.js';
@@ -73,19 +74,32 @@ export function createFillGeometries(
 export function getLineGeometryOptions(
   options: PolygonGeometryOptions,
   style: Style,
+  groundLevel?: number,
 ): PolylineGeometryOptions[] {
   const width = parseNumber(style.getStroke().getWidth(), 1.0);
   const geometryOptions: PolylineGeometryOptions[] = [];
+
   geometryOptions.push({
     positions: options.polygonHierarchy.positions,
     width,
   });
+
   options.polygonHierarchy.holes.forEach((polygonHierarchy) => {
     geometryOptions.push({
       positions: polygonHierarchy.positions,
       width,
     });
   });
+
+  if (groundLevel) {
+    geometryOptions.forEach((polylineOptions) => {
+      polylineOptions.positions = polylineOptions.positions.map((c) => {
+        const geographic = Cartographic.fromCartesian(c);
+        geographic.height = groundLevel;
+        return Cartographic.toCartesian(geographic);
+      });
+    });
+  }
   return geometryOptions;
 }
 
@@ -100,8 +114,9 @@ export function createGroundLineGeometries(
 export function createLineGeometries(
   options: PolygonGeometryOptions,
   style: Style,
+  groundLevel?: number,
 ): PolylineGeometry[] {
-  return getLineGeometryOptions(options, style).map((option) => {
+  return getLineGeometryOptions(options, style, groundLevel).map((option) => {
     return new PolylineGeometry(option);
   });
 }

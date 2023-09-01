@@ -40,6 +40,12 @@ export interface SelectFeatureInteraction {
   hasFeatureId(id: string): boolean;
 }
 
+export const geometryChangeKeys = [
+  'olcs_altitudeMode',
+  'olcs_groundLevel',
+  'olcs_heightAboveGround',
+];
+
 /**
  * @param  coordinate
  */

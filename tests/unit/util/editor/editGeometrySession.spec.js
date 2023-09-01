@@ -629,6 +629,44 @@ describe('EditGeometrySession', () => {
         expect(layer.getFeatures()).to.not.include(invalidFeature);
       });
     });
+
+    describe('setting olcs properties on a set feature', () => {
+      /** @type {import("ol").Feature} */
+      let feature;
+
+      beforeEach(() => {
+        feature = createFeatureWithId(new Point([0, 0, 0]));
+        session.setFeature(feature);
+      });
+
+      after(() => {
+        session.stop();
+      });
+
+      it('should recalculate the handlers, when changing altitude mode', () => {
+        const scratchLayer = [...app.layers].pop();
+        const scratchFeatures = scratchLayer.getFeatures();
+        expect(scratchFeatures[0]).to.exist;
+        feature.set('olcs_altitudeMode', 'absolute');
+        expect(scratchLayer.getFeatures()[0]).to.not.equal(scratchFeatures[0]);
+      });
+
+      it('should recalculate the handlers, when changing ground level', () => {
+        const scratchLayer = [...app.layers].pop();
+        const scratchFeatures = scratchLayer.getFeatures();
+        expect(scratchFeatures[0]).to.exist;
+        feature.set('olcs_groundLevel', 2);
+        expect(scratchLayer.getFeatures()[0]).to.not.equal(scratchFeatures[0]);
+      });
+
+      it('should recalculate the handlers, when changing height above ground', () => {
+        const scratchLayer = [...app.layers].pop();
+        const scratchFeatures = scratchLayer.getFeatures();
+        expect(scratchFeatures[0]).to.exist;
+        feature.set('olcs_heightAboveGround', 20);
+        expect(scratchLayer.getFeatures()[0]).to.not.equal(scratchFeatures[0]);
+      });
+    });
   });
 
   describe('stopping a session', () => {

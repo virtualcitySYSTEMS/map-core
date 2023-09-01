@@ -490,7 +490,7 @@ describe('startEditFeaturesSession', () => {
       expect(changed).to.have.been.calledOnce;
     });
 
-    it('should recalculate the handlers, when ', () => {
+    it('should recalculate the handlers, when changing height above ground', () => {
       const scratchLayer = [...app.layers].pop();
       const scratchFeatures = scratchLayer.getFeatures();
       expect(scratchFeatures[0]).to.exist;

@@ -120,10 +120,10 @@ class CesiumTilesetCesiumImpl
 
   async initialize(): Promise<void> {
     if (!this._initializedPromise) {
-      this._initializedPromise = Cesium3DTileset.fromUrl(
-        this.url as string,
-        this.tilesetOptions,
-      );
+      this._initializedPromise = Cesium3DTileset.fromUrl(this.url as string, {
+        ...this.tilesetOptions,
+        show: false, // show is handled by activate
+      });
       this.cesium3DTileset = await this._initializedPromise;
       if (this.tilesetProperties) {
         this.tilesetProperties.forEach(({ key, value }) => {

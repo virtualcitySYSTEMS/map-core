@@ -281,6 +281,7 @@ export function getPrimitiveOptions(
     options.roll,
   );
   const allowPicking = vectorProperties.getAllowPicking(feature);
+  const heightReference = vectorProperties.getAltitudeMode(feature);
 
   const primitives = positions.flatMap((position, index) => {
     const geometryModelMatrix = Matrix4.fromScale(scale);
@@ -337,7 +338,10 @@ export function getPrimitiveOptions(
         ...options.primitiveOptions.additionalOptions,
       });
 
-      if (!wgs84Positions[index][2]) {
+      if (
+        wgs84Positions[index][2] == null ||
+        heightReference === HeightReference.CLAMP_TO_GROUND
+      ) {
         // eslint-disable-next-line no-void
         void placePrimitiveOnTerrain(primitive, position, scene, offset).then(
           () => {

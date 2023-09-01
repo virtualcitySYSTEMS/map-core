@@ -22,14 +22,16 @@ class FeatureProviderInteraction extends AbstractInteraction {
   // eslint-disable-next-line class-methods-use-this
   async pipe(event: InteractionEvent): Promise<InteractionEvent> {
     if (!event.feature) {
-      const layersWithProvider = [...event.map.layerCollection].filter((l) => {
-        return (
-          l.featureProvider &&
-          l.active &&
-          l.isSupported(event.map) &&
-          l.featureProvider.isSupported(event.map)
-        );
-      });
+      const layersWithProvider = [...event.map.layerCollection]
+        .filter((l) => {
+          return (
+            l.featureProvider &&
+            l.active &&
+            l.isSupported(event.map) &&
+            l.featureProvider.isSupported(event.map)
+          );
+        })
+        .reverse();
 
       if (layersWithProvider.length > 0) {
         const resolution = event.map.getCurrentResolution(

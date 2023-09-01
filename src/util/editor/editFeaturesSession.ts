@@ -28,7 +28,7 @@ import ScaleInteraction from './transformation/scaleInteraction.js';
 import { obliqueGeometry } from '../../layer/vectorSymbols.js';
 import ExtrudeInteraction from './transformation/extrudeInteraction.js';
 import ObliqueMap from '../../map/obliqueMap.js';
-import { ensureFeatureAbsolute } from './editorHelpers.js';
+import { ensureFeatureAbsolute, geometryChangeKeys } from './editorHelpers.js';
 import CesiumMap from '../../map/cesiumMap.js';
 import EnsureHandlerSelectionInteraction from './interactions/ensureHandlerSelectionInteraction.js';
 import EditFeaturesMouseOverInteraction from './interactions/editFeaturesMouseOverInteraction.js';
@@ -91,12 +91,6 @@ export type EditFeaturesSession = EditorSession & {
   setFeatures(features: Feature[]): void;
   features: Feature[];
 };
-
-const geometryChangeKeys = [
-  'olcs_altitudeMode',
-  'olcs_groundLevel',
-  'olcs_heightAboveGround',
-];
 
 /**
  * Creates an editor session to select, translate, rotate & scale the feature on a given layer

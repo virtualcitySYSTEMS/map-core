@@ -101,6 +101,11 @@ export type VectorGeometryFactoryType = {
     style: Style,
   ): GroundPolylineGeometry[];
   createLineGeometries(obj: unknown, style: Style): PolylineGeometry[];
+  createLineGeometries(
+    obj: unknown,
+    style: Style,
+    groundLevel?: number,
+  ): PolylineGeometry[];
 };
 
 export type VectorHeightInfo = {

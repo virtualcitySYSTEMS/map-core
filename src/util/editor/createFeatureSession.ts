@@ -19,6 +19,7 @@ import VectorLayer from '../../layer/vectorLayer.js';
 import { createSync } from '../../layer/vectorSymbols.js';
 import geometryIsValid from './validateGeoemetry.js';
 import ObliqueMap from '../../map/obliqueMap.js';
+import { cursorMap } from './interactions/editGeometryMouseOverInteraction.js';
 
 export type CreateFeatureSession<T extends GeometryType> = EditorSession & {
   geometryType: T;
@@ -200,8 +201,15 @@ function startCreateFeatureSession<T extends GeometryType>(
   });
   setupActiveMap();
 
+  if (app.maps.target) {
+    app.maps.target.style.cursor = cursorMap.edit;
+  }
+
   const stop = (): void => {
     isStopped = true; // setting stopped true immediately, to prevent the recreation of the interaction chain on finished
+    if (app.maps.target) {
+      app.maps.target.style.cursor = cursorMap.auto;
+    }
     mapChangedListener();
     obliqueImageChangedListener();
     if (currentInteraction) {

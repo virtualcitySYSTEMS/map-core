@@ -9,6 +9,7 @@ import type {
   LinearRing,
   Geometry,
 } from 'ol/geom.js';
+import { EventsKey } from 'ol/events.js';
 import {
   EditorSession,
   GeometryType,
@@ -20,7 +21,7 @@ import InteractionChain from '../../interaction/interactionChain.js';
 import VcsEvent from '../../vcsEvent.js';
 import TranslateVertexInteraction from './interactions/translateVertexInteraction.js';
 import RemoveVertexInteraction from './interactions/removeVertexInteraction.js';
-import { createVertex } from './editorHelpers.js';
+import { createVertex, geometryChangeKeys } from './editorHelpers.js';
 import InsertVertexInteraction from './interactions/insertVertexInteraction.js';
 import EditGeometryMouseOverInteraction from './interactions/editGeometryMouseOverInteraction.js';
 import { cartesian2DDistance, modulo } from '../math.js';
@@ -362,18 +363,30 @@ function startEditGeometrySession(
     currentFeature = null;
   };
 
+  let featureListener: EventsKey | undefined;
+
   /**
    * Creates an interaction set from an edit geometry interaction. If the geometry of the feature is not supported a message is logged.
    * @param {Feature} feature The feature to be edited.
    */
   function createCurrentInteractionSet(feature?: Feature): void {
     destroyCurrentInteractionSet();
+    if (featureListener) {
+      unByKey(featureListener);
+    }
     if (feature) {
+      featureListener = feature.on('propertychange', ({ key }) => {
+        if (geometryChangeKeys.includes(key)) {
+          createCurrentInteractionSet(feature);
+        }
+      });
       currentFeature = feature;
       currentFeature[createSync] = true;
       const geometry =
         feature[obliqueGeometry] ?? (feature.getGeometry() as Geometry);
       const geometryType = geometry.getType();
+      scratchLayer.vectorProperties.altitudeMode =
+        layer.vectorProperties.getAltitudeMode(feature);
       if (geometryType === GeometryType.Polygon) {
         if (geometry.get('_vcsGeomType') === GeometryType.BBox) {
           currentInteractionSet = createEditBBoxGeometryInteraction(
@@ -427,6 +440,9 @@ function startEditGeometrySession(
 
   const stop = (): void => {
     app.layers.remove(scratchLayer);
+    if (featureListener) {
+      unByKey(featureListener);
+    }
     mapActivatedListener();
     mapInteractionController.reset();
     mouseOverInteraction.reset();

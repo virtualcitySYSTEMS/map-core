@@ -609,7 +609,11 @@ export function addPrimitivesToContext(
           );
         } else {
           lineGeometries.push(
-            ...geometryFactory.createLineGeometries(geometryOptions, style),
+            ...geometryFactory.createLineGeometries(
+              geometryOptions,
+              style,
+              heightInfo.groundLevel,
+            ),
           );
         }
       }
