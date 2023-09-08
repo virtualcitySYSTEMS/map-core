@@ -44,6 +44,10 @@ class RasterLayerCesiumImpl
   async initialize(): Promise<void> {
     if (!this.initialized) {
       this.cesiumLayer = await this.getCesiumLayer();
+      if (this.isDestroyed) {
+        this.cesiumLayer.destroy();
+        return Promise.resolve();
+      }
       this.cesiumLayer[vcsLayerName] = this.name;
       this.cesiumLayer.show = false;
       this.map.addImageryLayer(this.cesiumLayer);

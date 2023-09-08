@@ -16,6 +16,9 @@ import type { Coordinate } from 'ol/coordinate.js';
 import LayerImplementation from '../layerImplementation.js';
 import { vcsLayerName } from '../layerSymbols.js';
 import FeatureVisibility, {
+  hideFeature,
+  HighlightableFeature,
+  highlightFeature,
   originalStyle,
   updateOriginalStyle,
 } from '../featureVisibility.js';
@@ -32,6 +35,10 @@ import GlobalHider from '../globalHider.js';
 
 export const cesiumTilesetLastUpdated: unique symbol = Symbol(
   'cesiumTilesetLastUpdated',
+);
+
+export const updateFeatureOverride: unique symbol = Symbol(
+  'updateFeatureOverride',
 );
 
 export function getExtentFromTileset(
@@ -125,6 +132,10 @@ class CesiumTilesetCesiumImpl
         show: false, // show is handled by activate
       });
       this.cesium3DTileset = await this._initializedPromise;
+      if (this.isDestroyed) {
+        this.cesium3DTileset.destroy();
+        return;
+      }
       if (this.tilesetProperties) {
         this.tilesetProperties.forEach(({ key, value }) => {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -138,6 +149,8 @@ class CesiumTilesetCesiumImpl
       );
       this.cesium3DTileset.tileUnload.addEventListener((tile: Cesium3DTile) => {
         delete tile[cesiumTilesetLastUpdated];
+        delete tile.content[cesiumTilesetLastUpdated];
+        delete tile.content[updateFeatureOverride];
       });
 
       this._originalOrigin = Cartesian3.clone(
@@ -277,7 +290,14 @@ class CesiumTilesetCesiumImpl
         (this.globalHider?.lastUpdated ?? 0) ||
       content[cesiumTilesetLastUpdated] < this._styleLastUpdated
     ) {
+      // content[updateFeatureOverride]?.reset();
+      delete content[updateFeatureOverride];
       const batchSize = content.featuresLength;
+      const featureOverride = {
+        hideLocal: [] as [string, HighlightableFeature][],
+        hideGlobal: [] as [string, HighlightableFeature][],
+        highlight: [] as [string, HighlightableFeature][],
+      };
       for (let batchId = 0; batchId < batchSize; batchId++) {
         const feature = content.getFeature(batchId);
         if (feature) {
@@ -286,11 +306,14 @@ class CesiumTilesetCesiumImpl
             id = `${content.url}${batchId}`;
           }
 
+          let shouldUpdateOriginalStyle = true;
           if (
             this.featureVisibility.highlightedObjects[id] &&
             !this.featureVisibility.hasHighlightFeature(id, feature)
           ) {
             this.featureVisibility.addHighlightFeature(id, feature);
+            featureOverride.highlight.push([id, feature]);
+            shouldUpdateOriginalStyle = false;
           }
 
           if (
@@ -298,6 +321,7 @@ class CesiumTilesetCesiumImpl
             !this.featureVisibility.hasHiddenFeature(id, feature)
           ) {
             this.featureVisibility.addHiddenFeature(id, feature);
+            featureOverride.hideLocal.push([id, feature]);
           }
 
           if (
@@ -305,9 +329,11 @@ class CesiumTilesetCesiumImpl
             !this.globalHider?.hasFeature(id, feature)
           ) {
             this.globalHider?.addFeature(id, feature);
+            featureOverride.hideGlobal.push([id, feature]);
           }
 
           if (
+            shouldUpdateOriginalStyle &&
             this._styleLastUpdated > (content[cesiumTilesetLastUpdated] ?? 0) &&
             feature[originalStyle] // can only be a color for cesium, so no check for undefined required
           ) {
@@ -315,7 +341,34 @@ class CesiumTilesetCesiumImpl
           }
         }
       }
+      if (
+        featureOverride.hideLocal.length > 0 ||
+        featureOverride.hideGlobal.length > 0 ||
+        featureOverride.highlight.length > 0
+      ) {
+        content[updateFeatureOverride] = (): void => {
+          featureOverride.hideGlobal.forEach(([id, feature]) => {
+            if (this.globalHider?.hasFeature(id, feature)) {
+              hideFeature(feature);
+            }
+          });
+
+          featureOverride.hideLocal.forEach(([id, feature]) => {
+            if (this.featureVisibility.hasHiddenFeature(id, feature)) {
+              hideFeature(feature);
+            }
+          });
+
+          featureOverride.highlight.forEach(([id, feature]) => {
+            if (this.featureVisibility.hasHighlightFeature(id, feature)) {
+              highlightFeature(feature);
+            }
+          });
+        };
+      }
       content[cesiumTilesetLastUpdated] = Date.now();
+    } else {
+      content[updateFeatureOverride]?.();
     }
   }
 

@@ -1,4 +1,21 @@
-### 5.0.0-next
+### 5.0.0-38
+
+- Cursor when using the `createFeatureSession` is now a pen.
+- Point with the `primitiveOption` set can now be rendered `clampToGround`
+- The altitude mode of the editing feature is respected in `editGeometrySesssion`.
+- Changing a features altitude mode while editing its geometry will also update the sessions layer.
+- Updated Openlayers to 7.5.2
+- Updated Cesium to 1.109
+- Added a new Options to Cesium Model and Cesium Tileset `useSRGBVertexColors`, `useSRGBColorFactors`.
+  - These Options can be used to change the cesium default Color Handling of datasets.
+  - (Per GLTF Spec Cesium expects color values in linear space)
+- Changed the Cesium custom VCS Shader to now handle Gltf Color values in linear color space.
+- Changed the Cesium custom VCS Shader to not do tonemapping anymore.
+- Changed the default Cesium Scene Light intensity from 2.0 to 3.0 (can be changed with CesiumMap `lightIntensity`)
+- Changed FeatureConverter to work `async` (Cesium changed the Model.fromGltf function to Model.fromGltfAsync)
+- Fixed a highlighting bug in cesium.
+
+### 5.0.0-37
 
 - Added a `datasourceId` option to `Layer`
 - Added `VcsAppOptions` including optional keys `_id`, `name`, `description` and `properties`

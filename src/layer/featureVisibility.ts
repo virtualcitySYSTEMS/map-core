@@ -105,6 +105,7 @@ export function resetOriginalStyle(feature: HighlightableFeature): void {
   if (!(feature[globalHidden] || feature[hidden] || feature[highlighted])) {
     const style = feature[originalStyle];
     if (
+      style &&
       (feature instanceof Cesium3DTileFeature ||
         feature instanceof Cesium3DTilePointFeature) &&
       featureExists(feature)
@@ -383,21 +384,12 @@ class FeatureVisibility {
 
   hasHiddenFeature(
     id: string | number,
-    feature:
-      | import('ol').Feature<import('ol/geom/Geometry.js').default>
-      | import('@vcmap-cesium/engine').Cesium3DTileFeature
-      | import('@vcmap-cesium/engine').Entity,
+    feature: HighlightableFeature,
   ): boolean {
     return this.hiddenObjects[id] && this.hiddenObjects[id].has(feature);
   }
 
-  addHiddenFeature(
-    id: string | number,
-    feature:
-      | import('ol').Feature<import('ol/geom/Geometry.js').default>
-      | import('@vcmap-cesium/engine').Cesium3DTileFeature
-      | import('@vcmap-cesium/engine').Entity,
-  ): void {
+  addHiddenFeature(id: string | number, feature: HighlightableFeature): void {
     if (this.hiddenObjects[id]) {
       cacheOriginalStyle(feature);
       this.hiddenObjects[id].add(feature);

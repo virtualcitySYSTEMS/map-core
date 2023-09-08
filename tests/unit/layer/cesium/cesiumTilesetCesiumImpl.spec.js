@@ -9,6 +9,7 @@ import {
   Cartesian3,
   Math as CesiumMath,
   Resource,
+  Color,
 } from '@vcmap-cesium/engine';
 import CesiumTilesetLayer from '../../../../src/layer/cesiumTilesetLayer.js';
 import DeclarativeStyleItem from '../../../../src/style/declarativeStyleItem.js';
@@ -20,7 +21,10 @@ import {
   createDummyCesium3DTileFeature,
 } from '../../helpers/cesiumHelpers.js';
 import VectorStyleItem from '../../../../src/style/vectorStyleItem.js';
-import { cesiumTilesetLastUpdated } from '../../../../src/layer/cesium/cesiumTilesetCesiumImpl.js';
+import {
+  cesiumTilesetLastUpdated,
+  updateFeatureOverride,
+} from '../../../../src/layer/cesium/cesiumTilesetCesiumImpl.js';
 import { vcsLayerName } from '../../../../src/layer/layerSymbols.js';
 import GlobalHider from '../../../../src/layer/globalHider.js';
 
@@ -84,10 +88,18 @@ describe('CesiumTilesetCesiumImpl', () => {
     });
 
     it('adds an unload event listener, which removed the lastUpdated symbol', async () => {
-      const test = { [cesiumTilesetLastUpdated]: true };
+      const test = {
+        [cesiumTilesetLastUpdated]: true,
+        content: {
+          [cesiumTilesetLastUpdated]: true,
+          [updateFeatureOverride]: () => {},
+        },
+      };
       await cesiumTilesetCesium.initialize();
       cesiumTilesetCesium.cesium3DTileset.tileUnload.raiseEvent(test);
       expect(test).to.not.have.property(cesiumTilesetLastUpdated);
+      expect(test.content).to.not.have.property(cesiumTilesetLastUpdated);
+      expect(test.content).to.not.have.property(updateFeatureOverride);
     });
 
     it('should set the style and the color blend mode', async () => {
@@ -500,6 +512,13 @@ describe('CesiumTilesetCesiumImpl', () => {
         cesiumTilesetCesium.styleContent(content);
         cesiumTilesetCesium.featureVisibility.hasHiddenFeature('test', feature);
       });
+
+      it('should re-hide the feature when calling the update feature override', () => {
+        cesiumTilesetCesium.styleContent(content);
+        feature.show = true;
+        cesiumTilesetCesium.styleContent(content);
+        expect(feature).to.have.property('show', false);
+      });
     });
 
     describe('hide objects - GH', () => {
@@ -521,6 +540,13 @@ describe('CesiumTilesetCesiumImpl', () => {
         expect(cesiumTileset.globalHider.hasFeature('test', feature)).to.be
           .true;
       });
+
+      it('should re-hide the feature when calling the update feature override', () => {
+        cesiumTilesetCesium.styleContent(content);
+        feature.show = true;
+        cesiumTilesetCesium.styleContent(content);
+        expect(feature).to.have.property('show', false);
+      });
     });
 
     describe('highlight objects', () => {
@@ -541,6 +567,16 @@ describe('CesiumTilesetCesiumImpl', () => {
           'test',
           feature,
         );
+      });
+
+      it('should re-hide the feature when calling the update feature override', () => {
+        cesiumTilesetCesium.featureVisibility.highlight({
+          test: highlightStyle,
+        });
+        cesiumTilesetCesium.styleContent(content);
+        feature.color = Color.GREEN;
+        cesiumTilesetCesium.styleContent(content);
+        expect(feature.color).to.equal(highlightStyle.cesiumFillColor);
       });
     });
 

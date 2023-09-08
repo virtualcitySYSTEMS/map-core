@@ -20,7 +20,10 @@ import {
 } from '../layer/featureVisibility.js';
 import { handlerSymbol } from '../util/editor/editorSymbols.js';
 import { AxisAndPlanes } from '../util/editor/transformation/transformationTypes.js';
-import { cesiumTilesetLastUpdated } from '../layer/cesium/cesiumTilesetCesiumImpl.js';
+import {
+  cesiumTilesetLastUpdated,
+  updateFeatureOverride,
+} from '../layer/cesium/cesiumTilesetCesiumImpl.js';
 import { isTiledFeature } from '../layer/featureStoreLayer.js';
 
 declare module '@vcmap-cesium/engine' {
@@ -122,6 +125,7 @@ declare module '@vcmap-cesium/engine' {
     readonly batchTable: Cesium3DTileBatchTable;
     isDestroyed(): boolean;
     [cesiumTilesetLastUpdated]?: number;
+    [updateFeatureOverride]?: () => void;
   }
 
   interface Cesium3DTileset {
