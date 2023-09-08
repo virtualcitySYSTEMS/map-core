@@ -48,7 +48,7 @@ function getArrowOptions(
   };
 }
 
-export function addArrowsToContext(
+export async function addArrowsToContext(
   feature: Feature,
   style: ArrowStyle,
   validGeometries: LineString[],
@@ -56,7 +56,7 @@ export function addArrowsToContext(
   scene: Scene,
   lineGeometryFactory: VectorGeometryFactoryType,
   context: CesiumVectorContext,
-): void {
+): Promise<void> {
   if (style.end === ArrowEnd.NONE || !style.primitiveOptions?.geometryOptions) {
     return;
   }
@@ -88,39 +88,41 @@ export function addArrowsToContext(
   const usedStyle = style.getOlcsStyle();
   const allowPicking = vectorProperties.getAllowPicking(feature);
 
-  arrowOptions.forEach((arrowOption) => {
-    const arrowFeature = new Feature({
-      ...feature.getProperties(),
-      olcs_primitiveOptions: style.primitiveOptions,
-      olcs_modelHeading: arrowOption.heading,
-      olcs_modelPitch: arrowOption.pitch,
-      geometry: new Point(arrowOption.location),
-      olcs_modelAutoScale: true,
-    });
+  await Promise.all(
+    arrowOptions.map(async (arrowOption) => {
+      const arrowFeature = new Feature({
+        ...feature.getProperties(),
+        olcs_primitiveOptions: style.primitiveOptions,
+        olcs_modelHeading: arrowOption.heading,
+        olcs_modelPitch: arrowOption.pitch,
+        geometry: new Point(arrowOption.location),
+        olcs_modelAutoScale: true,
+      });
 
-    const wgs84Position = Projection.mercatorToWgs84(arrowOption.location);
-    const cartesianLocation = Cartesian3.fromDegrees(
-      wgs84Position[0],
-      wgs84Position[1],
-      wgs84Position[2],
-    );
-    const primitiveOptions = getPrimitiveOptions(
-      arrowFeature,
-      usedStyle,
-      [wgs84Position],
-      [cartesianLocation],
-      vectorProperties,
-      scene,
-    );
-
-    if (primitiveOptions?.primitives) {
-      context.addScaledPrimitives(
-        primitiveOptions.primitives,
-        feature,
-        allowPicking,
+      const wgs84Position = Projection.mercatorToWgs84(arrowOption.location);
+      const cartesianLocation = Cartesian3.fromDegrees(
+        wgs84Position[0],
+        wgs84Position[1],
+        wgs84Position[2],
       );
-    }
-  });
+      const primitiveOptions = await getPrimitiveOptions(
+        arrowFeature,
+        usedStyle,
+        [wgs84Position],
+        [cartesianLocation],
+        vectorProperties,
+        scene,
+      );
+
+      if (primitiveOptions?.primitives) {
+        context.addScaledPrimitives(
+          primitiveOptions.primitives,
+          feature,
+          allowPicking,
+        );
+      }
+    }),
+  );
 }
 
 export type LineGeometryOptions = { positions: Cartesian3[] };
@@ -266,14 +268,14 @@ export function validateLineString(lineString: LineString): boolean {
  * @param  scene
  * @param  context
  */
-export default function lineStringToCesium(
+export default async function lineStringToCesium(
   feature: Feature,
   style: Style,
   geometries: LineString[],
   vectorProperties: VectorProperties,
   scene: Scene,
   context: CesiumVectorContext,
-): void {
+): Promise<void> {
   if (!style.getFill() && !style.getStroke()) {
     return;
   }
@@ -291,7 +293,7 @@ export default function lineStringToCesium(
     context,
   );
   if (style instanceof ArrowStyle) {
-    addArrowsToContext(
+    await addArrowsToContext(
       feature,
       style,
       validGeometries,

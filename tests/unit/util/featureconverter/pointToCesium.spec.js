@@ -23,6 +23,7 @@ import {
 } from '@vcmap-cesium/engine';
 import Fill from 'ol/style/Fill.js';
 import Stroke from 'ol/style/Stroke.js';
+import nock from 'nock';
 import VectorProperties, {
   PrimitiveOptionsType,
 } from '../../../../src/layer/vectorProperties.js';
@@ -696,6 +697,11 @@ describe('util.featureConverter.pointToCesium', () => {
     let regularShapeStyle;
 
     before(() => {
+      const scope = nock('http://localhost');
+      scope
+        .persist()
+        .get('/test.glb')
+        .reply(200, {}, { 'Content-Type': 'application/json' });
       feature = new Feature({ id: 'myId' });
       emptyStyle = new Style({});
       fillStyle = new Fill({
@@ -713,21 +719,24 @@ describe('util.featureConverter.pointToCesium', () => {
       scene = map.getScene();
       primitiveCollection = new PrimitiveCollection();
       context = new VectorContext(map, primitiveCollection);
+      context.features.add(feature);
     });
 
     afterEach(() => {
       context.clear();
+      context.features.add(feature);
     });
 
     after(() => {
+      nock.cleanAll();
       context.destroy();
       primitiveCollection.destroy();
       vectorProperties.destroy();
       map.destroy();
     });
 
-    it('should return if no image, or text style is given ', () => {
-      pointToCesium(
+    it('should return if no image, or text style is given ', async () => {
+      await pointToCesium(
         feature,
         emptyStyle,
         geometries,
@@ -740,8 +749,8 @@ describe('util.featureConverter.pointToCesium', () => {
       expect(context.featureToLabelMap.size).to.be.equal(0);
     });
 
-    it('should create a billboard if an image style is provided', () => {
-      pointToCesium(
+    it('should create a billboard if an image style is provided', async () => {
+      await pointToCesium(
         feature,
         new Style({ image: regularShapeStyle }),
         geometries,
@@ -755,8 +764,8 @@ describe('util.featureConverter.pointToCesium', () => {
       expect(context.featureToPrimitiveMap.size).to.be.equal(0);
     });
 
-    it('should create a label if an text style is provided', () => {
-      pointToCesium(
+    it('should create a label if an text style is provided', async () => {
+      await pointToCesium(
         feature,
         new Style({ text: new TextStyle({ text: 'test' }) }),
         geometries,
@@ -770,7 +779,7 @@ describe('util.featureConverter.pointToCesium', () => {
       expect(context.featureToPrimitiveMap.size).to.be.equal(0);
     });
 
-    it('should create a linePrimitive if an extrusion and stroke style exists', () => {
+    it('should create a linePrimitive if an extrusion and stroke style exists', async () => {
       const style = new Style({
         image: regularShapeStyle,
         stroke: new Stroke({ width: 1, color: [1, 1, 1] }),
@@ -780,7 +789,7 @@ describe('util.featureConverter.pointToCesium', () => {
         eyeOffset: [1, 1, 1],
         extrudedHeight: 10,
       });
-      pointToCesium(
+      await pointToCesium(
         feature,
         style,
         geometries,
@@ -797,14 +806,14 @@ describe('util.featureConverter.pointToCesium', () => {
       vectorPropertiesWithExtrusion.destroy();
     });
 
-    it('should not create a linePrimitive if an extrusion and no stroke style exists', () => {
+    it('should not create a linePrimitive if an extrusion and no stroke style exists', async () => {
       const style = new Style({ image: regularShapeStyle });
       const vectorPropertiesWithExtrusion = new VectorProperties({
         altitudeMode: 'absolute',
         eyeOffset: [1, 1, 1],
         extrudedHeight: 10,
       });
-      pointToCesium(
+      await pointToCesium(
         feature,
         style,
         geometries,
@@ -833,8 +842,8 @@ describe('util.featureConverter.pointToCesium', () => {
           modelVectorProperties.destroy();
         });
 
-        it('should create a model, if a model is parameterized', () => {
-          pointToCesium(
+        it('should create a model, if a model is parameterized', async () => {
+          await pointToCesium(
             feature,
             new Style({ image: regularShapeStyle }),
             geometries,
@@ -846,8 +855,8 @@ describe('util.featureConverter.pointToCesium', () => {
           expect(context.primitives.get(0)).to.be.an.instanceOf(Model);
         });
 
-        it('should not create a billboard, if creating a model', () => {
-          pointToCesium(
+        it('should not create a billboard, if creating a model', async () => {
+          await pointToCesium(
             feature,
             new Style({ image: regularShapeStyle }),
             geometries,
@@ -859,8 +868,8 @@ describe('util.featureConverter.pointToCesium', () => {
           expect(context.featureToBillboardMap.size).to.be.equal(0);
         });
 
-        it('should not create a label, if creating a model', () => {
-          pointToCesium(
+        it('should not create a label, if creating a model', async () => {
+          await pointToCesium(
             feature,
             new Style({ text: new TextStyle({ text: 'test' }) }),
             geometries,
@@ -892,8 +901,8 @@ describe('util.featureConverter.pointToCesium', () => {
           modelVectorProperties.destroy();
         });
 
-        it('should create two primitives', () => {
-          pointToCesium(
+        it('should create two primitives', async () => {
+          await pointToCesium(
             feature,
             style,
             geometries,
@@ -904,8 +913,8 @@ describe('util.featureConverter.pointToCesium', () => {
           expect(context.primitives.length).to.be.equal(2);
         });
 
-        it('should create a model', () => {
-          pointToCesium(
+        it('should create a model', async () => {
+          await pointToCesium(
             feature,
             style,
             geometries,
@@ -917,8 +926,8 @@ describe('util.featureConverter.pointToCesium', () => {
           expect(context.primitives.get(1)).to.be.an.instanceOf(Model);
         });
 
-        it('should create a linePrimitive', () => {
-          pointToCesium(
+        it('should create a linePrimitive', async () => {
+          await pointToCesium(
             feature,
             style,
             geometries,
@@ -930,8 +939,8 @@ describe('util.featureConverter.pointToCesium', () => {
           expect(context.primitives.get(0)).to.be.instanceOf(Primitive);
         });
 
-        it('should not create a billboard, if creating a model', () => {
-          pointToCesium(
+        it('should not create a billboard, if creating a model', async () => {
+          await pointToCesium(
             feature,
             new Style({ image: regularShapeStyle }),
             geometries,
@@ -943,8 +952,8 @@ describe('util.featureConverter.pointToCesium', () => {
           expect(context.featureToBillboardMap.size).to.be.equal(0);
         });
 
-        it('should not create a label, if creating a model', () => {
-          pointToCesium(
+        it('should not create a label, if creating a model', async () => {
+          await pointToCesium(
             feature,
             new Style({ text: new TextStyle({ text: 'test' }) }),
             geometries,
@@ -971,8 +980,8 @@ describe('util.featureConverter.pointToCesium', () => {
           modelVectorProperties.destroy();
         });
 
-        it('should create a scaled model', () => {
-          pointToCesium(
+        it('should create a scaled model', async () => {
+          await pointToCesium(
             feature,
             new Style({ image: regularShapeStyle }),
             geometries,
@@ -984,8 +993,8 @@ describe('util.featureConverter.pointToCesium', () => {
           expect(context.scaledPrimitives.get(0)).to.be.an.instanceOf(Model);
         });
 
-        it('should not create a billboard, if creating a model', () => {
-          pointToCesium(
+        it('should not create a billboard, if creating a model', async () => {
+          await pointToCesium(
             feature,
             new Style({ image: regularShapeStyle }),
             geometries,
@@ -997,8 +1006,8 @@ describe('util.featureConverter.pointToCesium', () => {
           expect(context.featureToBillboardMap.size).to.be.equal(0);
         });
 
-        it('should not create a label, if creating a model', () => {
-          pointToCesium(
+        it('should not create a label, if creating a model', async () => {
+          await pointToCesium(
             feature,
             new Style({ text: new TextStyle({ text: 'test' }) }),
             geometries,
@@ -1031,8 +1040,8 @@ describe('util.featureConverter.pointToCesium', () => {
           modelVectorProperties.destroy();
         });
 
-        it('should create a scaled model', () => {
-          pointToCesium(
+        it('should create a scaled model', async () => {
+          await pointToCesium(
             feature,
             style,
             geometries,
@@ -1044,8 +1053,8 @@ describe('util.featureConverter.pointToCesium', () => {
           expect(context.scaledPrimitives.get(0)).to.be.an.instanceOf(Model);
         });
 
-        it('should create a linePrimitive', () => {
-          pointToCesium(
+        it('should create a linePrimitive', async () => {
+          await pointToCesium(
             feature,
             style,
             geometries,
@@ -1057,8 +1066,8 @@ describe('util.featureConverter.pointToCesium', () => {
           expect(context.primitives.get(0)).to.be.instanceOf(Primitive);
         });
 
-        it('should not create a billboard, if creating a model', () => {
-          pointToCesium(
+        it('should not create a billboard, if creating a model', async () => {
+          await pointToCesium(
             feature,
             style,
             geometries,
@@ -1070,8 +1079,8 @@ describe('util.featureConverter.pointToCesium', () => {
           expect(context.featureToBillboardMap.size).to.be.equal(0);
         });
 
-        it('should not create a label, if creating a model', () => {
-          pointToCesium(
+        it('should not create a label, if creating a model', async () => {
+          await pointToCesium(
             feature,
             new Style({ text: new TextStyle({ text: 'test' }) }),
             geometries,
@@ -1102,8 +1111,8 @@ describe('util.featureConverter.pointToCesium', () => {
           primitiveVectorProperties.destroy();
         });
 
-        it('should create a primitive, if a primitive is parameterized', () => {
-          pointToCesium(
+        it('should create a primitive, if a primitive is parameterized', async () => {
+          await pointToCesium(
             feature,
             new Style({ image: regularShapeStyle }),
             geometries,
@@ -1115,8 +1124,8 @@ describe('util.featureConverter.pointToCesium', () => {
           expect(context.primitives.get(0)).to.be.an.instanceOf(Primitive);
         });
 
-        it('should not create a billboard, if creating a primitive', () => {
-          pointToCesium(
+        it('should not create a billboard, if creating a primitive', async () => {
+          await pointToCesium(
             feature,
             new Style({ image: regularShapeStyle }),
             geometries,
@@ -1128,8 +1137,8 @@ describe('util.featureConverter.pointToCesium', () => {
           expect(context.featureToBillboardMap.size).to.be.equal(0);
         });
 
-        it('should not create a label, if creating a primitive', () => {
-          pointToCesium(
+        it('should not create a label, if creating a primitive', async () => {
+          await pointToCesium(
             feature,
             new Style({
               image: regularShapeStyle,
@@ -1167,8 +1176,8 @@ describe('util.featureConverter.pointToCesium', () => {
           primitiveVectorProperties.destroy();
         });
 
-        it('should create two primitives', () => {
-          pointToCesium(
+        it('should create two primitives', async () => {
+          await pointToCesium(
             feature,
             style,
             geometries,
@@ -1179,8 +1188,8 @@ describe('util.featureConverter.pointToCesium', () => {
           expect(context.primitives.length).to.be.equal(2);
         });
 
-        it('should create the primitive', () => {
-          pointToCesium(
+        it('should create the primitive', async () => {
+          await pointToCesium(
             feature,
             style,
             geometries,
@@ -1195,8 +1204,8 @@ describe('util.featureConverter.pointToCesium', () => {
           ).to.be.an.instanceOf(SphereGeometry);
         });
 
-        it('should create a linePrimitive', () => {
-          pointToCesium(
+        it('should create a linePrimitive', async () => {
+          await pointToCesium(
             feature,
             style,
             geometries,
@@ -1208,8 +1217,8 @@ describe('util.featureConverter.pointToCesium', () => {
           expect(context.primitives.get(0)).to.be.instanceOf(Primitive);
         });
 
-        it('should not create a billboard, if creating a primitive', () => {
-          pointToCesium(
+        it('should not create a billboard, if creating a primitive', async () => {
+          await pointToCesium(
             feature,
             new Style({ image: regularShapeStyle }),
             geometries,
@@ -1221,8 +1230,8 @@ describe('util.featureConverter.pointToCesium', () => {
           expect(context.featureToBillboardMap.size).to.be.equal(0);
         });
 
-        it('should not create a label, if creating a primitive', () => {
-          pointToCesium(
+        it('should not create a label, if creating a primitive', async () => {
+          await pointToCesium(
             feature,
             new Style({
               image: regularShapeStyle,
@@ -1255,8 +1264,8 @@ describe('util.featureConverter.pointToCesium', () => {
           primitiveVectorProperties.destroy();
         });
 
-        it('should create a scaled primitive', () => {
-          pointToCesium(
+        it('should create a scaled primitive', async () => {
+          await pointToCesium(
             feature,
             new Style({ image: regularShapeStyle }),
             geometries,
@@ -1270,8 +1279,8 @@ describe('util.featureConverter.pointToCesium', () => {
           );
         });
 
-        it('should not create a billboard, if creating a primitive', () => {
-          pointToCesium(
+        it('should not create a billboard, if creating a primitive', async () => {
+          await pointToCesium(
             feature,
             new Style({ image: regularShapeStyle }),
             geometries,
@@ -1283,8 +1292,8 @@ describe('util.featureConverter.pointToCesium', () => {
           expect(context.featureToBillboardMap.size).to.be.equal(0);
         });
 
-        it('should not create a label, if creating a primitive', () => {
-          pointToCesium(
+        it('should not create a label, if creating a primitive', async () => {
+          await pointToCesium(
             feature,
             new Style({
               image: regularShapeStyle,
@@ -1323,8 +1332,8 @@ describe('util.featureConverter.pointToCesium', () => {
           primitiveVectorProperties.destroy();
         });
 
-        it('should create a scaled primitive', () => {
-          pointToCesium(
+        it('should create a scaled primitive', async () => {
+          await pointToCesium(
             feature,
             style,
             geometries,
@@ -1338,8 +1347,8 @@ describe('util.featureConverter.pointToCesium', () => {
           );
         });
 
-        it('should create a linePrimitive', () => {
-          pointToCesium(
+        it('should create a linePrimitive', async () => {
+          await pointToCesium(
             feature,
             style,
             geometries,
@@ -1351,8 +1360,8 @@ describe('util.featureConverter.pointToCesium', () => {
           expect(context.primitives.get(0)).to.be.instanceOf(Primitive);
         });
 
-        it('should not create a billboard, if creating a primitive', () => {
-          pointToCesium(
+        it('should not create a billboard, if creating a primitive', async () => {
+          await pointToCesium(
             feature,
             style,
             geometries,
@@ -1364,8 +1373,8 @@ describe('util.featureConverter.pointToCesium', () => {
           expect(context.featureToBillboardMap.size).to.be.equal(0);
         });
 
-        it('should not create a label, if creating a primitive', () => {
-          pointToCesium(
+        it('should not create a label, if creating a primitive', async () => {
+          await pointToCesium(
             feature,
             new Style({
               image: regularShapeStyle,
@@ -1383,18 +1392,19 @@ describe('util.featureConverter.pointToCesium', () => {
     });
 
     describe('priority of model vs. primitive', () => {
-      it('should create a model, if the model is defined on the feature, even if a primitive is defined on the vector properties', () => {
+      it('should create a model, if the model is defined on the feature, even if a primitive is defined on the vector properties', async () => {
         const modelFeature = new Feature({
           id: 'foo',
           olcs_modelUrl: 'http://localhost/test.glb',
         });
+        context.features.add(modelFeature);
         const primitiveVectorProperties = new VectorProperties({
           primitiveOptions: {
             type: PrimitiveOptionsType.SPHERE,
             geometryOptions: {},
           },
         });
-        pointToCesium(
+        await pointToCesium(
           modelFeature,
           new Style({ image: regularShapeStyle }),
           geometries,
@@ -1407,7 +1417,7 @@ describe('util.featureConverter.pointToCesium', () => {
         expect(context.primitives.get(0)).to.be.an.instanceOf(Model);
       });
 
-      it('should create a primitive, if the primitive is defined on the feature, even if a model is defined on the vector properties', () => {
+      it('should create a primitive, if the primitive is defined on the feature, even if a model is defined on the vector properties', async () => {
         const primitiveFeature = new Feature({
           id: 'foo',
           olcs_primitiveOptions: {
@@ -1415,10 +1425,11 @@ describe('util.featureConverter.pointToCesium', () => {
             geometryOptions: {},
           },
         });
+        context.features.add(primitiveFeature);
         const modelVectorProperties = new VectorProperties({
           modelUrl: 'http://localhost/test.glb',
         });
-        pointToCesium(
+        await pointToCesium(
           primitiveFeature,
           new Style({ image: regularShapeStyle }),
           geometries,
@@ -1431,7 +1442,7 @@ describe('util.featureConverter.pointToCesium', () => {
         expect(context.primitives.get(0)).to.be.an.instanceOf(Primitive);
       });
 
-      it('should create a model, if both model and primitive are defined on the vector properties', () => {
+      it('should create a model, if both model and primitive are defined on the vector properties', async () => {
         const primitiveAndModelVectorProperties = new VectorProperties({
           modelUrl: 'http://localhost/test.glb',
           primitiveOptions: {
@@ -1439,7 +1450,7 @@ describe('util.featureConverter.pointToCesium', () => {
             geometryOptions: {},
           },
         });
-        pointToCesium(
+        await pointToCesium(
           feature,
           new Style({ image: regularShapeStyle }),
           geometries,

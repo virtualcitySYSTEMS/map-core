@@ -78,7 +78,8 @@ class VectorCesiumImpl
   private _addListeners(): void {
     this._olListeners.push(
       this.source.on('addfeature', (event) => {
-        this._addFeature(event.feature as Feature);
+        // eslint-disable-next-line no-void
+        void this._addFeature(event.feature as Feature);
       }),
     );
 
@@ -90,7 +91,8 @@ class VectorCesiumImpl
 
     this._olListeners.push(
       this.source.on('changefeature', (event) => {
-        this._featureChanged(event.feature as Feature);
+        // eslint-disable-next-line no-void
+        void this._featureChanged(event.feature as Feature);
       }),
     );
 
@@ -115,7 +117,7 @@ class VectorCesiumImpl
     if (!this.initialized) {
       this._scene = this.map.getScene();
       this._addListeners();
-      this._addFeatures(this.source.getFeatures());
+      await this._addFeatures(this.source.getFeatures());
       await this._setupContext(this.map);
     }
     await super.initialize();
@@ -124,20 +126,19 @@ class VectorCesiumImpl
     }
   }
 
-  private _addFeatures(features: Feature[]): void {
+  private async _addFeatures(features: Feature[]): Promise<void> {
     // TODO we should make this non-blocking to better handle larger data sets check in RIWA Impl
-    features.forEach((f) => {
-      this._addFeature(f);
-    });
+    await Promise.allSettled(features.map((f) => this._addFeature(f)));
   }
 
   /**
    * converts a feature and adds the associated primitives to the collection of primitives
    */
-  private _addFeature(feature: Feature): void {
+  private async _addFeature(feature: Feature): Promise<void> {
     if (this.active) {
       // XXX cluster check here? or on init?
-      convert(
+      this._context!.features.add(feature);
+      await convert(
         feature,
         this.style.style,
         this.vectorProperties,
@@ -152,9 +153,9 @@ class VectorCesiumImpl
   /**
    * Forces a complete re-render of all features.
    */
-  refresh(): void {
+  async refresh(): Promise<void> {
     this._context?.clear();
-    this._addFeatures(this.source.getFeatures());
+    await this._addFeatures(this.source.getFeatures());
   }
 
   /**
@@ -168,10 +169,10 @@ class VectorCesiumImpl
   /**
    * called when a features property have changed
    */
-  private _featureChanged(feature: Feature): void {
+  private async _featureChanged(feature: Feature): Promise<void> {
     const cache = this._context!.createFeatureCache(feature);
     this._featureToAdd.delete(feature);
-    this._addFeature(feature);
+    await this._addFeature(feature);
     this._context!.clearFeatureCache(cache);
   }
 
@@ -179,7 +180,7 @@ class VectorCesiumImpl
     if (!this.active) {
       await super.activate();
       if (this.active) {
-        this._addFeatures([...this._featureToAdd]);
+        await this._addFeatures([...this._featureToAdd]);
         this._featureToAdd.clear();
         this._rootCollection.show = true;
         if (this._featureVisibilityListeners.length === 0) {
@@ -208,7 +209,8 @@ class VectorCesiumImpl
     if (this.initialized && !silent) {
       const features = this.source.getFeatures().filter((f) => !f.getStyle());
       features.forEach((f) => {
-        this._featureChanged(f);
+        // eslint-disable-next-line no-void
+        void this._featureChanged(f);
       });
     }
   }

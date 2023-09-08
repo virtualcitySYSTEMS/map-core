@@ -271,14 +271,14 @@ export function getLineGeometries(
   return lineGeometries;
 }
 
-export default function pointToCesium(
+export default async function pointToCesium(
   feature: Feature,
   style: Style,
   geometries: Point[],
   vectorProperties: VectorProperties,
   scene: Scene,
   context: CesiumVectorContext,
-): void {
+): Promise<void> {
   if (!style.getImage() && !(style.getText() && style.getText().getText())) {
     return;
   }
@@ -301,7 +301,7 @@ export default function pointToCesium(
 
   let modelOrPrimitiveOptions = null;
   if (feature.get('olcs_modelUrl')) {
-    modelOrPrimitiveOptions = getModelOptions(
+    modelOrPrimitiveOptions = await getModelOptions(
       feature,
       wgs84Positions,
       positions,
@@ -309,7 +309,7 @@ export default function pointToCesium(
       scene,
     );
   } else if (feature.get('olcs_primitiveOptions')) {
-    modelOrPrimitiveOptions = getPrimitiveOptions(
+    modelOrPrimitiveOptions = await getPrimitiveOptions(
       feature,
       style,
       wgs84Positions,
@@ -319,21 +319,21 @@ export default function pointToCesium(
     );
   } else {
     modelOrPrimitiveOptions =
-      getModelOptions(
+      (await getModelOptions(
         feature,
         wgs84Positions,
         positions,
         vectorProperties,
         scene,
-      ) ??
-      getPrimitiveOptions(
+      )) ??
+      (await getPrimitiveOptions(
         feature,
         style,
         wgs84Positions,
         positions,
         vectorProperties,
         scene,
-      );
+      ));
   }
 
   if (heightInfo.extruded && style.getStroke()) {

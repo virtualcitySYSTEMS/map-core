@@ -118,13 +118,16 @@ async function placePrimitiveOnTerrain(
     .catch(() => {});
 }
 
-export function getModelOptions(
+export async function getModelOptions(
   feature: Feature,
   wgs84Positions: Coordinate[],
   positions: Cartesian3[],
   vectorProperties: VectorProperties,
   scene: Scene,
-): null | { primitives: Model[]; options: VectorPropertiesModelOptions } {
+): Promise<null | {
+  primitives: Model[];
+  options: VectorPropertiesModelOptions;
+}> {
   const options = vectorProperties.getModel(feature);
   if (!options) {
     return null;
@@ -136,43 +139,52 @@ export function getModelOptions(
     options.roll,
   );
   const allowPicking = vectorProperties.getAllowPicking(feature);
-  const primitives = positions.map((position, index) => {
-    const modelMatrix = Matrix4.multiply(
-      Transforms.headingPitchRollToFixedFrame(position, headingPitchRoll),
-      Matrix4.fromScale(scale),
-      new Matrix4(),
-    );
+  const primitives = await Promise.all(
+    positions.map(async (position, index) => {
+      const modelMatrix = Matrix4.multiply(
+        Transforms.headingPitchRollToFixedFrame(position, headingPitchRoll),
+        Matrix4.fromScale(scale),
+        new Matrix4(),
+      );
 
-    const additionalModelOptions = vectorProperties.getModelOptions(feature);
-    const heightReference = vectorProperties.getAltitudeMode(feature);
-    const model = Model.fromGltf({
-      asynchronous: !feature[createSync],
-      url: options.url,
-      modelMatrix,
-      allowPicking,
-      ...additionalModelOptions,
-    });
-
-    if (
-      wgs84Positions[index][2] == null ||
-      heightReference === HeightReference.CLAMP_TO_GROUND
-    ) {
-      // eslint-disable-next-line no-void
-      void placePrimitiveOnTerrain(model, position, scene);
-    }
-
-    // eslint-disable-next-line no-void
-    void model.readyPromise.then(() => {
-      model.activeAnimations.addAll({
-        loop: ModelAnimationLoop.REPEAT,
+      const additionalModelOptions = vectorProperties.getModelOptions(feature);
+      const heightReference = vectorProperties.getAltitudeMode(feature);
+      const model = await Model.fromGltfAsync({
+        asynchronous: !feature[createSync],
+        url: options.url,
+        modelMatrix,
+        allowPicking,
+        ...additionalModelOptions,
       });
-    });
 
-    if (options.autoScale && !Cartesian3.ONE.equals(scale)) {
-      makeScaledAutoScalePrimitive(model, scale);
-    }
-    return model;
-  });
+      if (
+        wgs84Positions[index][2] == null ||
+        heightReference === HeightReference.CLAMP_TO_GROUND
+      ) {
+        await placePrimitiveOnTerrain(model, position, scene);
+      }
+
+      const activateAnimations = (): void => {
+        model.activeAnimations.addAll({
+          loop: ModelAnimationLoop.REPEAT,
+        });
+      };
+
+      if (model.ready) {
+        activateAnimations();
+      } else {
+        const listener = model.readyEvent.addEventListener(() => {
+          listener();
+          activateAnimations();
+        });
+      }
+
+      if (options.autoScale && !Cartesian3.ONE.equals(scale)) {
+        makeScaledAutoScalePrimitive(model, scale);
+      }
+      return model;
+    }),
+  );
 
   return {
     primitives,
@@ -237,14 +249,17 @@ function getGeometryInstanceFromOptions(
   return null;
 }
 
-export function getPrimitiveOptions(
+export async function getPrimitiveOptions(
   feature: Feature,
   style: Style,
   wgs84Positions: Coordinate[],
   positions: Cartesian3[],
   vectorProperties: VectorProperties,
   scene: Scene,
-): null | { primitives: Primitive[]; options: VectorPropertiesPrimitive } {
+): Promise<null | {
+  primitives: Primitive[];
+  options: VectorPropertiesPrimitive;
+}> {
   const options = vectorProperties.getPrimitive(feature);
   if (!options) {
     return null;
@@ -283,129 +298,132 @@ export function getPrimitiveOptions(
   const allowPicking = vectorProperties.getAllowPicking(feature);
   const heightReference = vectorProperties.getAltitudeMode(feature);
 
-  const primitives = positions.flatMap((position, index) => {
-    const geometryModelMatrix = Matrix4.fromScale(scale);
-    let offset: Cartesian3 | undefined;
-    if (options.primitiveOptions.offset?.length === 3) {
-      offset = Cartesian3.fromArray(options.primitiveOptions.offset);
-      Matrix4.setTranslation(
-        geometryModelMatrix,
-        Cartesian3.multiplyComponents(offset, scale, new Cartesian3()),
-        geometryModelMatrix,
-      );
-    }
-    const transform = Transforms.headingPitchRollToFixedFrame(
-      position,
-      headingPitchRoll,
-    );
-    const modelMatrix = Matrix4.multiply(
-      transform,
-      geometryModelMatrix,
-      new Matrix4(),
-    );
-
-    let depthFail;
-    if (options.primitiveOptions.depthFailColor) {
-      const depthFailColor = getCesiumColor(
-        options.primitiveOptions.depthFailColor,
-        [255, 255, 255, 0.4],
-      );
-      depthFail = new MaterialAppearance({
-        translucent: depthFailColor.alpha < 1,
-        material: Material.fromType('Color', {
-          color: depthFailColor,
-        }),
-      });
-    }
-
-    const createPrimitive = (
-      translucent: boolean,
-      geometryInstances: (GeometryInstance | null)[],
-      depthFailAppearance?: MaterialAppearance,
-    ): Primitive => {
-      const primitive = new Primitive({
-        asynchronous: !feature[createSync],
-        geometryInstances: geometryInstances.filter(
-          (g) => g,
-        ) as GeometryInstance[],
-        modelMatrix,
-        appearance: new PerInstanceColorAppearance({
-          translucent,
-          flat: true,
-        }),
-        depthFailAppearance,
-        allowPicking,
-        ...options.primitiveOptions.additionalOptions,
-      });
-
-      if (
-        wgs84Positions[index][2] == null ||
-        heightReference === HeightReference.CLAMP_TO_GROUND
-      ) {
-        // eslint-disable-next-line no-void
-        void placePrimitiveOnTerrain(primitive, position, scene, offset).then(
-          () => {
-            Transforms.headingPitchRollToFixedFrame(
-              position,
-              headingPitchRoll,
-              undefined,
-              undefined,
-              transform,
-            ); // update transform for usage in offset auto scale
-          },
+  const primitives = await Promise.all(
+    positions.map(async (position, index) => {
+      const geometryModelMatrix = Matrix4.fromScale(scale);
+      let offset: Cartesian3 | undefined;
+      if (options.primitiveOptions.offset?.length === 3) {
+        offset = Cartesian3.fromArray(options.primitiveOptions.offset);
+        Matrix4.setTranslation(
+          geometryModelMatrix,
+          Cartesian3.multiplyComponents(offset, scale, new Cartesian3()),
+          geometryModelMatrix,
         );
       }
-
-      if (options.autoScale) {
-        if (offset) {
-          makeOffsetAutoScalePrimitive(primitive, transform, scale, offset);
-        } else if (!Cartesian3.ONE.equals(scale)) {
-          makeScaledAutoScalePrimitive(primitive, scale);
-        }
-      }
-      return primitive;
-    };
-
-    const fillAndOutline = [];
-    if (fillColor) {
-      fillAndOutline.push(
-        createPrimitive(
-          fillColor.alpha < 1 || !!depthFail,
-          [getGeometryInstanceFromOptions(options.primitiveOptions, fillColor)],
-          depthFail,
-        ),
+      const transform = Transforms.headingPitchRollToFixedFrame(
+        position,
+        headingPitchRoll,
       );
-    } else if (depthFail) {
-      const transparent = Color.TRANSPARENT;
-      fillAndOutline.push(
-        createPrimitive(
-          true,
-          [
+      const modelMatrix = Matrix4.multiply(
+        transform,
+        geometryModelMatrix,
+        new Matrix4(),
+      );
+
+      let depthFail;
+      if (options.primitiveOptions.depthFailColor) {
+        const depthFailColor = getCesiumColor(
+          options.primitiveOptions.depthFailColor,
+          [255, 255, 255, 0.4],
+        );
+        depthFail = new MaterialAppearance({
+          translucent: depthFailColor.alpha < 1,
+          material: Material.fromType('Color', {
+            color: depthFailColor,
+          }),
+        });
+      }
+
+      const createPrimitive = async (
+        translucent: boolean,
+        geometryInstances: (GeometryInstance | null)[],
+        depthFailAppearance?: MaterialAppearance,
+      ): Promise<Primitive> => {
+        const primitive = new Primitive({
+          asynchronous: !feature[createSync],
+          geometryInstances: geometryInstances.filter(
+            (g) => g,
+          ) as GeometryInstance[],
+          modelMatrix,
+          appearance: new PerInstanceColorAppearance({
+            translucent,
+            flat: true,
+          }),
+          depthFailAppearance,
+          allowPicking,
+          ...options.primitiveOptions.additionalOptions,
+        });
+
+        if (
+          wgs84Positions[index][2] == null ||
+          heightReference === HeightReference.CLAMP_TO_GROUND
+        ) {
+          await placePrimitiveOnTerrain(primitive, position, scene, offset);
+          Transforms.headingPitchRollToFixedFrame(
+            position,
+            headingPitchRoll,
+            undefined,
+            undefined,
+            transform,
+          ); // update transform for usage in offset auto scale
+        }
+
+        if (options.autoScale) {
+          if (offset) {
+            makeOffsetAutoScalePrimitive(primitive, transform, scale, offset);
+          } else if (!Cartesian3.ONE.equals(scale)) {
+            makeScaledAutoScalePrimitive(primitive, scale);
+          }
+        }
+        return primitive;
+      };
+
+      const fillAndOutline = [];
+      if (fillColor) {
+        fillAndOutline.push(
+          createPrimitive(
+            fillColor.alpha < 1 || !!depthFail,
+            [
+              getGeometryInstanceFromOptions(
+                options.primitiveOptions,
+                fillColor,
+              ),
+            ],
+            depthFail,
+          ),
+        );
+      } else if (depthFail) {
+        const transparent = Color.TRANSPARENT;
+        fillAndOutline.push(
+          createPrimitive(
+            true,
+            [
+              getGeometryInstanceFromOptions(
+                options.primitiveOptions,
+                transparent,
+              ),
+            ],
+            depthFail,
+          ),
+        );
+      }
+      if (strokeColor) {
+        fillAndOutline.push(
+          createPrimitive(strokeColor.alpha < 1 || !!depthFail, [
             getGeometryInstanceFromOptions(
               options.primitiveOptions,
-              transparent,
+              strokeColor,
+              true,
             ),
-          ],
-          depthFail,
-        ),
-      );
-    }
-    if (strokeColor) {
-      fillAndOutline.push(
-        createPrimitive(strokeColor.alpha < 1 || !!depthFail, [
-          getGeometryInstanceFromOptions(
-            options.primitiveOptions,
-            strokeColor,
-            true,
-          ),
-        ]),
-      );
-    }
-    return fillAndOutline;
-  });
+          ]),
+        );
+      }
+      return Promise.all(fillAndOutline);
+    }),
+  );
 
   return {
-    primitives,
+    primitives: primitives.flatMap((p) => p),
     options,
   };
 }

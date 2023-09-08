@@ -320,10 +320,12 @@ describe('util.featureConverter.lineStringToCesium', () => {
       scene = map.getScene();
       primitiveCollection = new PrimitiveCollection();
       context = new VectorContext(map, primitiveCollection);
+      context.features.add(feature);
     });
 
     afterEach(() => {
       context.clear();
+      context.features.add(feature);
     });
 
     after(() => {
@@ -333,8 +335,8 @@ describe('util.featureConverter.lineStringToCesium', () => {
       map.destroy();
     });
 
-    it('should not create Primitives without a fill or stroke style', () => {
-      lineStringToCesium(
+    it('should not create Primitives without a fill or stroke style', async () => {
+      await lineStringToCesium(
         feature,
         new Style({}),
         geometries,
@@ -347,11 +349,11 @@ describe('util.featureConverter.lineStringToCesium', () => {
       expect(context.featureToLabelMap.size).to.be.equal(0);
     });
 
-    it('should create a Primitive for AltitudeMode absolute', () => {
+    it('should create a Primitive for AltitudeMode absolute', async () => {
       const altitudeModeVectorProperties = new VectorProperties({
         altitudeMode: 'absolute',
       });
-      lineStringToCesium(
+      await lineStringToCesium(
         feature,
         style,
         geometries,
@@ -364,11 +366,11 @@ describe('util.featureConverter.lineStringToCesium', () => {
       altitudeModeVectorProperties.destroy();
     });
 
-    it('should create a GroundPolylinePrimitive for AltitudeMode clampToGround', () => {
+    it('should create a GroundPolylinePrimitive for AltitudeMode clampToGround', async () => {
       const altitudeModeVectorProperties = new VectorProperties({
         altitudeMode: 'clampToGround',
       });
-      lineStringToCesium(
+      await lineStringToCesium(
         feature,
         style,
         geometries,
@@ -383,12 +385,12 @@ describe('util.featureConverter.lineStringToCesium', () => {
       altitudeModeVectorProperties.destroy();
     });
 
-    it('should create a Fill and Outline Primitives for extruded geometry', () => {
+    it('should create a Fill and Outline Primitives for extruded geometry', async () => {
       const altitudeModeVectorProperties = new VectorProperties({
         altitudeMode: 'absolute',
         extrudedHeight: 10,
       });
-      lineStringToCesium(
+      await lineStringToCesium(
         feature,
         style,
         geometries,
@@ -402,13 +404,13 @@ describe('util.featureConverter.lineStringToCesium', () => {
       altitudeModeVectorProperties.destroy();
     });
 
-    it('should create only a Fill Primitive if stroke style is not set ', () => {
+    it('should create only a Fill Primitive if stroke style is not set ', async () => {
       const altitudeModeVectorProperties = new VectorProperties({
         altitudeMode: 'absolute',
         extrudedHeight: 10,
       });
       const fillStyle = new Style({ fill: new Fill({}) });
-      lineStringToCesium(
+      await lineStringToCesium(
         feature,
         fillStyle,
         geometries,
@@ -421,13 +423,13 @@ describe('util.featureConverter.lineStringToCesium', () => {
       altitudeModeVectorProperties.destroy();
     });
 
-    it('should create only a Stroke Primitive if fill style is not set ', () => {
+    it('should create only a Stroke Primitive if fill style is not set ', async () => {
       const altitudeModeVectorProperties = new VectorProperties({
         altitudeMode: 'absolute',
         extrudedHeight: 10,
       });
       const strokeStyle = new Style({ stroke: new Stroke({}) });
-      lineStringToCesium(
+      await lineStringToCesium(
         feature,
         strokeStyle,
         geometries,
@@ -454,8 +456,8 @@ describe('util.featureConverter.lineStringToCesium', () => {
         });
       });
 
-      it('should add an arrow primitive to the last coordinate', () => {
-        lineStringToCesium(
+      it('should add an arrow primitive to the last coordinate', async () => {
+        await lineStringToCesium(
           feature,
           arrowStyle,
           geometries,
@@ -476,9 +478,9 @@ describe('util.featureConverter.lineStringToCesium', () => {
         ).to.be.true;
       });
 
-      it('should add an arrow primitive to the first coordinate', () => {
+      it('should add an arrow primitive to the first coordinate', async () => {
         arrowStyle.end = ArrowEnd.START;
-        lineStringToCesium(
+        await lineStringToCesium(
           feature,
           arrowStyle,
           geometries,
@@ -499,9 +501,9 @@ describe('util.featureConverter.lineStringToCesium', () => {
         ).to.be.true;
       });
 
-      it('should add an arrow primitive to the first & last coordinate', () => {
+      it('should add an arrow primitive to the first & last coordinate', async () => {
         arrowStyle.end = ArrowEnd.BOTH;
-        lineStringToCesium(
+        await lineStringToCesium(
           feature,
           arrowStyle,
           geometries,
@@ -512,9 +514,9 @@ describe('util.featureConverter.lineStringToCesium', () => {
         expect(context.scaledPrimitives.length).to.equal(2);
       });
 
-      it('should not add arrow primitives, if end is NONE', () => {
+      it('should not add arrow primitives, if end is NONE', async () => {
         arrowStyle.end = ArrowEnd.NONE;
-        lineStringToCesium(
+        await lineStringToCesium(
           feature,
           arrowStyle,
           geometries,
@@ -525,8 +527,8 @@ describe('util.featureConverter.lineStringToCesium', () => {
         expect(context.scaledPrimitives.length).to.equal(0);
       });
 
-      it('should set pitch & heading on the primitive', () => {
-        lineStringToCesium(
+      it('should set pitch & heading on the primitive', async () => {
+        await lineStringToCesium(
           feature,
           arrowStyle,
           geometries,

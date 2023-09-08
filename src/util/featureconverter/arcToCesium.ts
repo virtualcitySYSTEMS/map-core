@@ -86,14 +86,14 @@ function getGeometryFactory(
 /**
  * converts a linestring with an ArcStyle to a a cesium primitive
  */
-export default function arcToCesium(
+export default async function arcToCesium(
   feature: Feature,
   style: ArcStyle,
   geometries: LineString[],
   vectorProperties: VectorProperties,
   scene: Scene,
   context: CesiumVectorContext,
-): void {
+): Promise<void> {
   if (!style.getFill() && !style.getStroke()) {
     return;
   }
@@ -114,7 +114,7 @@ export default function arcToCesium(
     arcGeometryFactory,
     context,
   );
-  addArrowsToContext(
+  await addArrowsToContext(
     feature,
     style,
     validGeometries,

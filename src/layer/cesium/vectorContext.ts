@@ -301,6 +301,8 @@ class VectorContext implements CesiumVectorContext {
 
   featureToLabelMap: Map<Feature, Array<Label>> = new Map();
 
+  features: Set<Feature> = new Set();
+
   splitDirection: SplitDirection;
 
   private _rootCollection: PrimitiveCollection;
@@ -346,14 +348,16 @@ class VectorContext implements CesiumVectorContext {
     feature: Feature,
     allowPicking = false,
   ): void {
-    addPrimitiveToContext(
-      primitives,
-      feature,
-      allowPicking,
-      this.primitives,
-      this.featureToPrimitiveMap,
-      this.splitDirection,
-    );
+    if (this.features.has(feature)) {
+      addPrimitiveToContext(
+        primitives,
+        feature,
+        allowPicking,
+        this.primitives,
+        this.featureToPrimitiveMap,
+        this.splitDirection,
+      );
+    }
   }
 
   addScaledPrimitives(
@@ -367,15 +371,17 @@ class VectorContext implements CesiumVectorContext {
     feature: Feature,
     allowPicking = false,
   ): void {
-    addPrimitiveToContext(
-      primitives,
-      feature,
-      allowPicking,
-      this.scaledPrimitives,
-      this.featureToScaledPrimitiveMap,
-      this.splitDirection,
-    );
-    this._scaledDirty.value = true;
+    if (this.features.has(feature)) {
+      addPrimitiveToContext(
+        primitives,
+        feature,
+        allowPicking,
+        this.scaledPrimitives,
+        this.featureToScaledPrimitiveMap,
+        this.splitDirection,
+      );
+      this._scaledDirty.value = true;
+    }
   }
 
   addBillboards(
@@ -383,14 +389,16 @@ class VectorContext implements CesiumVectorContext {
     feature: Feature,
     allowPicking = false,
   ): void {
-    addPrimitiveToContext(
-      billboardOptions,
-      feature,
-      allowPicking,
-      this.billboards,
-      this.featureToBillboardMap,
-      this.splitDirection,
-    );
+    if (this.features.has(feature)) {
+      addPrimitiveToContext(
+        billboardOptions,
+        feature,
+        allowPicking,
+        this.billboards,
+        this.featureToBillboardMap,
+        this.splitDirection,
+      );
+    }
   }
 
   addLabels(
@@ -398,20 +406,23 @@ class VectorContext implements CesiumVectorContext {
     feature: Feature,
     allowPicking = false,
   ): void {
-    addPrimitiveToContext(
-      labelOptions,
-      feature,
-      allowPicking,
-      this.labels,
-      this.featureToLabelMap,
-      this.splitDirection,
-    );
+    if (this.features.has(feature)) {
+      addPrimitiveToContext(
+        labelOptions,
+        feature,
+        allowPicking,
+        this.labels,
+        this.featureToLabelMap,
+        this.splitDirection,
+      );
+    }
   }
 
   /**
    * @param  feature
    */
   removeFeature(feature: Feature): void {
+    this.features.delete(feature);
     removeFeatureFromMap(feature, this.featureToPrimitiveMap, this.primitives);
     this._scaledDirty.value = removeFeatureFromMap(
       feature,
@@ -472,6 +483,7 @@ class VectorContext implements CesiumVectorContext {
     this.featureToPrimitiveMap.clear();
     this._scaledDirty.value = this.featureToScaledPrimitiveMap.size > 0;
     this.featureToScaledPrimitiveMap.clear();
+    this.features.clear();
   }
 
   /**
@@ -490,6 +502,7 @@ class VectorContext implements CesiumVectorContext {
     this.featureToBillboardMap.clear();
     this.featureToLabelMap.clear();
     this.featureToPrimitiveMap.clear();
+    this.features.clear();
     this.featureToScaledPrimitiveMap.clear();
     this._postRenderListener();
   }

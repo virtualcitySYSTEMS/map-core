@@ -40,7 +40,7 @@ import {
 import type { Coordinate } from 'ol/coordinate.js';
 
 import { checkMaybe } from '@vcsuite/check';
-import { parseBoolean, parseInteger } from '@vcsuite/parsers';
+import { parseBoolean, parseInteger, parseNumber } from '@vcsuite/parsers';
 import VcsMap, { type VcsMapOptions } from './vcsMap.js';
 import Viewpoint from '../util/viewpoint.js';
 import Projection, { mercatorProjection } from '../util/projection.js';
@@ -80,6 +80,12 @@ export type CesiumMapOptions = VcsMapOptions & {
    * This is a global Setting for all VCMap Instances on the same page.
    */
   useOriginalCesiumShader?: boolean;
+
+  /**
+   * changes the default Cesium Sunlight Intensity (default is 3.0)
+   * Cesium Default is 2.0
+   */
+  lightIntensity?: number;
 };
 
 export type CesiumMapEvent = {
@@ -344,6 +350,8 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
 
   private _useOriginalCesiumShader: boolean;
 
+  private _lightIntensity: number;
+
   constructor(options: CesiumMapOptions) {
     super(options);
 
@@ -403,6 +411,8 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
     this._listeners = [];
 
     this._lastEventFrameNumber = null;
+
+    this._lightIntensity = parseNumber(options.lightIntensity, 3.0);
   }
 
   get splitPosition(): number {
@@ -653,6 +663,7 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
       this._cesiumWidget.scene.highDynamicRange = false;
       // this._cesiumWidget.scene.logarithmicDepthBuffer = false; // TODO observe this
       this._cesiumWidget.scene.splitPosition = this.splitPosition;
+      this._cesiumWidget.scene.light.intensity = this._lightIntensity;
 
       this._cesiumWidget.scene.globe.enableLighting = this.enableLightning;
 

@@ -181,7 +181,11 @@ describe('CesiumMap', () => {
 
     beforeEach(() => {
       // destroyed on map destroy
-      imageryProvider = new SingleTileImageryProvider({ url: blackPixelURI });
+      imageryProvider = new SingleTileImageryProvider({
+        url: blackPixelURI,
+        tileWidth: 1,
+        tileHeight: 1,
+      });
       imageryLayer1 = new ImageryLayer(imageryProvider);
       imageryLayer1[vcsLayerName] = layer1.name;
       imageryLayer2 = new ImageryLayer(imageryProvider);

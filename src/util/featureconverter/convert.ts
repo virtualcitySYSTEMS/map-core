@@ -21,16 +21,23 @@ import ArcStyle, { featureArcStruct } from '../../style/arcStyle.js';
 import type VectorProperties from '../../layer/vectorProperties.js';
 import type { CesiumVectorContext } from '../../layer/cesium/vectorContext.js';
 
-function convertGeometry(
+async function convertGeometry(
   feature: Feature,
   geometry: Geometry,
   style: Style,
   vectorProperties: VectorProperties,
   scene: Scene,
   context: CesiumVectorContext,
-): void {
+): Promise<void> {
   if (geometry instanceof Point) {
-    pointToCesium(feature, style, [geometry], vectorProperties, scene, context);
+    await pointToCesium(
+      feature,
+      style,
+      [geometry],
+      vectorProperties,
+      scene,
+      context,
+    );
   } else if (geometry instanceof Polygon) {
     polygonToCesium(
       feature,
@@ -42,9 +49,16 @@ function convertGeometry(
     );
   } else if (geometry instanceof LineString) {
     if (style instanceof ArcStyle && feature[featureArcStruct]?.coordinates) {
-      arcToCesium(feature, style, [geometry], vectorProperties, scene, context);
+      await arcToCesium(
+        feature,
+        style,
+        [geometry],
+        vectorProperties,
+        scene,
+        context,
+      );
     } else {
-      lineStringToCesium(
+      await lineStringToCesium(
         feature,
         style,
         [geometry],
@@ -63,7 +77,7 @@ function convertGeometry(
       context,
     );
   } else if (geometry instanceof MultiPoint) {
-    pointToCesium(
+    await pointToCesium(
       feature,
       style,
       geometry.getPoints(),
@@ -81,7 +95,7 @@ function convertGeometry(
       context,
     );
   } else if (geometry instanceof MultiLineString) {
-    lineStringToCesium(
+    await lineStringToCesium(
       feature,
       style,
       geometry.getLineStrings(),
@@ -90,16 +104,18 @@ function convertGeometry(
       context,
     );
   } else if (geometry instanceof GeometryCollection) {
-    geometry.getGeometries().forEach((currentGeometry) => {
-      convertGeometry(
-        feature,
-        currentGeometry,
-        style,
-        vectorProperties,
-        scene,
-        context,
-      );
-    });
+    await Promise.all(
+      geometry.getGeometries().map(async (currentGeometry) => {
+        await convertGeometry(
+          feature,
+          currentGeometry,
+          style,
+          vectorProperties,
+          scene,
+          context,
+        );
+      }),
+    );
   }
 }
 
@@ -136,25 +152,27 @@ export function getStylesArray(
  * @param  context
  * @param  scene
  */
-export default function convert(
+export default async function convert(
   feature: Feature,
   style: StyleLike,
   vectorProperties: VectorProperties,
   context: CesiumVectorContext,
   scene: Scene,
-): void {
+): Promise<void> {
   const styles = getStylesArray(feature.getStyle() || style, feature, 0);
-  styles.forEach((currentStyle) => {
-    const geometry = currentStyle.getGeometryFunction()(feature) as Geometry;
-    if (geometry) {
-      convertGeometry(
-        feature,
-        geometry,
-        currentStyle,
-        vectorProperties,
-        scene,
-        context,
-      );
-    }
-  });
+  await Promise.all(
+    styles.map(async (currentStyle) => {
+      const geometry = currentStyle.getGeometryFunction()(feature) as Geometry;
+      if (geometry) {
+        await convertGeometry(
+          feature,
+          geometry,
+          currentStyle,
+          vectorProperties,
+          scene,
+          context,
+        );
+      }
+    }),
+  );
 }

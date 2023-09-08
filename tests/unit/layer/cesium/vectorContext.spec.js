@@ -117,6 +117,7 @@ describe('VectorContext', () => {
     beforeEach(() => {
       primitive = new Primitive({});
       feature = new Feature({});
+      vectorContext.features.add(feature);
     });
 
     it('should add the feature to the primitives & the featureToPrimitiveMap', () => {
@@ -153,6 +154,7 @@ describe('VectorContext', () => {
     beforeEach(() => {
       primitive = new Primitive({});
       feature = new Feature({});
+      vectorContext.features.add(feature);
     });
 
     it('should add the feature to the primitives & the featureToPrimitiveMap', () => {
@@ -189,6 +191,7 @@ describe('VectorContext', () => {
     beforeEach(() => {
       billboardOptions = {};
       feature = new Feature({});
+      vectorContext.features.add(feature);
     });
 
     it('should add the feature to the billboards and the featureToBillboardMap', () => {
@@ -227,6 +230,7 @@ describe('VectorContext', () => {
     beforeEach(() => {
       labelOptions = {};
       feature = new Feature({});
+      vectorContext.features.add(feature);
     });
 
     it('should add the feature to the labels and the featureToLabelMap', () => {
@@ -277,6 +281,7 @@ describe('VectorContext', () => {
         scaled = new Primitive({});
         pCollection = new PrimitiveCollection({ destroyPrimitives: true });
         context = new VectorContext(map, pCollection, SplitDirection.NONE);
+        context.features.add(feature);
         context.addPrimitives([primitive], feature, true);
         context.addScaledPrimitives([scaled], feature, true);
         context.addBillboards([{}], feature, true);
@@ -323,6 +328,7 @@ describe('VectorContext', () => {
         scaled = new Primitive({});
         pCollection = new PrimitiveCollection({ destroyPrimitives: true });
         context = new VectorContext(map, pCollection, SplitDirection.NONE);
+        context.features.add(feature);
         context.addPrimitives([primitive], feature, true);
         context.addScaledPrimitives([scaled], feature, true);
         context.addBillboards([{}], feature, true);
@@ -363,12 +369,14 @@ describe('VectorContext', () => {
     let primitive;
     let scaled;
 
-    before(() => {
+    before(async () => {
       feature = new Feature({});
-      primitive = Model.fromGltf({ url: 'test' });
-      scaled = Model.fromGltf({ url: 'test' });
+      const url = 'data:model/vnd.gltf+json,{}';
+      primitive = await Model.fromGltfAsync({ url });
+      scaled = await Model.fromGltfAsync({ url });
       pCollection = new PrimitiveCollection({ destroyPrimitives: true });
       context = new VectorContext(map, pCollection, SplitDirection.NONE);
+      context.features.add(feature);
       context.addPrimitives([primitive], feature, true);
       context.addScaledPrimitives([scaled], feature, true);
     });
@@ -391,6 +399,7 @@ describe('VectorContext', () => {
       const feature = new Feature({});
       const primitive = new Primitive({});
       const scaled = new Primitive({});
+      vectorContext.features.add(feature);
       vectorContext.addPrimitives([primitive], feature, true);
       vectorContext.addScaledPrimitives([scaled], feature, true);
       vectorContext.addBillboards([{}], feature, true);

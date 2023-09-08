@@ -24,7 +24,6 @@ import {
 } from '../../../../src/util/featureconverter/pointHelpers.js';
 import { getTerrainProvider } from '../../helpers/terrain/terrainData.js';
 import { getMockScene } from '../../helpers/cesiumHelpers.js';
-import { timeout } from '../../helpers/helpers.js';
 
 describe('point helpers', () => {
   after(() => {
@@ -38,7 +37,7 @@ describe('point helpers', () => {
     let model;
     let scene;
 
-    before(() => {
+    before(async () => {
       const scope = nock('http://localhost');
       scope
         .get('/test.glb')
@@ -55,12 +54,14 @@ describe('point helpers', () => {
         modelScaleY: 4,
         modelScaleZ: 8,
       });
-      [model] = getModelOptions(
-        feature,
-        coordinates,
-        positions,
-        vectorProperties,
-        scene,
+      [model] = (
+        await getModelOptions(
+          feature,
+          coordinates,
+          positions,
+          vectorProperties,
+          scene,
+        )
       ).primitives;
     });
 
@@ -93,31 +94,27 @@ describe('point helpers', () => {
         .reply(200, {}, { 'Content-Type': 'application/json' });
       scene2.globe.terrainProvider = await getTerrainProvider(scope);
       const twoD = [[13.374517914005413, 52.501750770534045, 0]];
-      const [twoDModel] = getModelOptions(
-        feature,
-        twoD,
-        twoD.map((pos) => Cartesian3.fromDegrees(...pos)),
-        vectorProperties,
-        scene2,
+      const [twoDModel] = (
+        await getModelOptions(
+          feature,
+          twoD,
+          twoD.map((pos) => Cartesian3.fromDegrees(...pos)),
+          vectorProperties,
+          scene2,
+        )
       ).primitives;
       const { modelMatrix } = twoDModel;
-      const cartographicBefore = Cartographic.fromCartesian(
+      const cartographic = Cartographic.fromCartesian(
         Matrix4.getTranslation(modelMatrix, new Cartesian3()),
       );
-      expect(cartographicBefore.height).to.equal(0);
-      await timeout(100);
-      const cartographicAfter = Cartographic.fromCartesian(
-        Matrix4.getTranslation(twoDModel.modelMatrix, new Cartesian3()),
-      );
-
-      expect(cartographicAfter.height).to.not.equal(0);
+      expect(cartographic.height).to.not.equal(0);
     });
 
     describe('of a scaled autoScale model', () => {
       let autoscaleVectorProperties;
       let autoscaleModel;
 
-      before(() => {
+      before(async () => {
         const coordinates = [[1, 1, 2]];
         positions = coordinates.map((pos) => Cartesian3.fromDegrees(...pos));
         autoscaleVectorProperties = new VectorProperties({
@@ -127,12 +124,14 @@ describe('point helpers', () => {
           modelAutoScale: true,
         });
 
-        [autoscaleModel] = getModelOptions(
-          feature,
-          coordinates,
-          positions,
-          autoscaleVectorProperties,
-          scene,
+        [autoscaleModel] = (
+          await getModelOptions(
+            feature,
+            coordinates,
+            positions,
+            autoscaleVectorProperties,
+            scene,
+          )
         ).primitives;
       });
 
@@ -189,7 +188,7 @@ describe('point helpers', () => {
       let primitive;
       let scene;
 
-      before(() => {
+      before(async () => {
         feature = new Feature({
           olcs_primitiveOptions: {
             type: PrimitiveOptionsType.SPHERE,
@@ -210,13 +209,15 @@ describe('point helpers', () => {
             fill: new Fill({ color: '#FF00FF' }),
           }),
         });
-        [primitive] = getPrimitiveOptions(
-          feature,
-          style,
-          coordinates,
-          positions,
-          vectorProperties,
-          scene,
+        [primitive] = (
+          await getPrimitiveOptions(
+            feature,
+            style,
+            coordinates,
+            positions,
+            vectorProperties,
+            scene,
+          )
         ).primitives;
       });
 
@@ -268,26 +269,22 @@ describe('point helpers', () => {
           },
           olcs_allowPicking: false,
         });
-        const [primitive] = getPrimitiveOptions(
-          feature,
-          style,
-          twoD,
-          twoD.map((pos) => Cartesian3.fromDegrees(...pos)),
-          vectorProperties,
-          scene2,
+        const [primitive] = (
+          await getPrimitiveOptions(
+            feature,
+            style,
+            twoD,
+            twoD.map((pos) => Cartesian3.fromDegrees(...pos)),
+            vectorProperties,
+            scene2,
+          )
         ).primitives;
         vectorProperties.destroy();
         const { modelMatrix } = primitive;
-        const cartographicBefore = Cartographic.fromCartesian(
+        const cartographic = Cartographic.fromCartesian(
           Matrix4.getTranslation(modelMatrix, new Cartesian3()),
         );
-        expect(cartographicBefore.height).to.equal(0);
-        await timeout(100);
-        const cartographicAfter = Cartographic.fromCartesian(
-          Matrix4.getTranslation(primitive.modelMatrix, new Cartesian3()),
-        );
-
-        expect(cartographicAfter.height).to.not.equal(0);
+        expect(cartographic.height).to.not.equal(0);
       });
     });
 
@@ -299,7 +296,7 @@ describe('point helpers', () => {
       let outline;
       let scene;
 
-      before(() => {
+      before(async () => {
         feature = new Feature({
           olcs_primitiveOptions: {
             type: PrimitiveOptionsType.SPHERE,
@@ -321,13 +318,15 @@ describe('point helpers', () => {
             stroke: new Stroke({ color: '#FF00FF', width: 1 }),
           }),
         });
-        [primitive, outline] = getPrimitiveOptions(
-          feature,
-          style,
-          coordinates,
-          positions,
-          vectorProperties,
-          scene,
+        [primitive, outline] = (
+          await getPrimitiveOptions(
+            feature,
+            style,
+            coordinates,
+            positions,
+            vectorProperties,
+            scene,
+          )
         ).primitives;
       });
 
@@ -381,7 +380,7 @@ describe('point helpers', () => {
       let outline;
       let scene;
 
-      before(() => {
+      before(async () => {
         feature = new Feature({
           olcs_primitiveOptions: {
             type: PrimitiveOptionsType.SPHERE,
@@ -402,13 +401,15 @@ describe('point helpers', () => {
             stroke: new Stroke({ color: '#FF00FF', width: 1 }),
           }),
         });
-        [outline] = getPrimitiveOptions(
-          feature,
-          style,
-          coordinates,
-          positions,
-          vectorProperties,
-          scene,
+        [outline] = (
+          await getPrimitiveOptions(
+            feature,
+            style,
+            coordinates,
+            positions,
+            vectorProperties,
+            scene,
+          )
         ).primitives;
       });
 
@@ -445,7 +446,7 @@ describe('point helpers', () => {
       let primitive;
       let scene;
 
-      before(() => {
+      before(async () => {
         feature = new Feature({
           olcs_primitiveOptions: {
             type: PrimitiveOptionsType.SPHERE,
@@ -467,13 +468,15 @@ describe('point helpers', () => {
             stroke: new Stroke({ color: '#FF00FF', width: 1 }),
           }),
         });
-        [primitive, outline] = getPrimitiveOptions(
-          feature,
-          style,
-          coordinates,
-          positions,
-          vectorProperties,
-          scene,
+        [primitive, outline] = (
+          await getPrimitiveOptions(
+            feature,
+            style,
+            coordinates,
+            positions,
+            vectorProperties,
+            scene,
+          )
         ).primitives;
       });
 
@@ -527,7 +530,7 @@ describe('point helpers', () => {
       let primitive;
       let scene;
 
-      before(() => {
+      before(async () => {
         feature = new Feature({
           olcs_primitiveOptions: {
             type: PrimitiveOptionsType.SPHERE,
@@ -549,13 +552,15 @@ describe('point helpers', () => {
             src: '/icon.png',
           }),
         });
-        [primitive] = getPrimitiveOptions(
-          feature,
-          style,
-          coordinates,
-          positions,
-          vectorProperties,
-          scene,
+        [primitive] = (
+          await getPrimitiveOptions(
+            feature,
+            style,
+            coordinates,
+            positions,
+            vectorProperties,
+            scene,
+          )
         ).primitives;
       });
 
@@ -591,7 +596,7 @@ describe('point helpers', () => {
       let primitive;
       let scene;
 
-      before(() => {
+      before(async () => {
         feature = new Feature({
           olcs_primitiveOptions: {
             type: PrimitiveOptionsType.SPHERE,
@@ -613,13 +618,15 @@ describe('point helpers', () => {
             fill: new Fill({ color: '#FF00FF' }),
           }),
         });
-        [primitive] = getPrimitiveOptions(
-          feature,
-          style,
-          coordinates,
-          positions,
-          vectorProperties,
-          scene,
+        [primitive] = (
+          await getPrimitiveOptions(
+            feature,
+            style,
+            coordinates,
+            positions,
+            vectorProperties,
+            scene,
+          )
         ).primitives;
       });
 
@@ -664,7 +671,7 @@ describe('point helpers', () => {
       let primitive;
       let scene;
 
-      before(() => {
+      before(async () => {
         feature = new Feature({
           olcs_primitiveOptions: {
             type: PrimitiveOptionsType.SPHERE,
@@ -683,13 +690,15 @@ describe('point helpers', () => {
             fill: new Fill({ color: '#FF00FF' }),
           }),
         });
-        [primitive] = getPrimitiveOptions(
-          feature,
-          style,
-          coordinates,
-          positions,
-          vectorProperties,
-          scene,
+        [primitive] = (
+          await getPrimitiveOptions(
+            feature,
+            style,
+            coordinates,
+            positions,
+            vectorProperties,
+            scene,
+          )
         ).primitives;
       });
 
@@ -750,7 +759,7 @@ describe('point helpers', () => {
       let primitive;
       let scene;
 
-      before(() => {
+      before(async () => {
         feature = new Feature({
           olcs_primitiveOptions: {
             type: PrimitiveOptionsType.SPHERE,
@@ -772,13 +781,15 @@ describe('point helpers', () => {
             fill: new Fill({ color: '#FF00FF' }),
           }),
         });
-        [primitive] = getPrimitiveOptions(
-          feature,
-          style,
-          coordinates,
-          positions,
-          vectorProperties,
-          scene,
+        [primitive] = (
+          await getPrimitiveOptions(
+            feature,
+            style,
+            coordinates,
+            positions,
+            vectorProperties,
+            scene,
+          )
         ).primitives;
       });
 
@@ -836,7 +847,7 @@ describe('point helpers', () => {
       let primitive;
       let scene;
 
-      before(() => {
+      before(async () => {
         feature = new Feature({
           olcs_primitiveOptions: {
             type: PrimitiveOptionsType.SPHERE,
@@ -859,13 +870,15 @@ describe('point helpers', () => {
             fill: new Fill({ color: '#FF00FF' }),
           }),
         });
-        [primitive] = getPrimitiveOptions(
-          feature,
-          style,
-          coordinates,
-          positions,
-          vectorProperties,
-          scene,
+        [primitive] = (
+          await getPrimitiveOptions(
+            feature,
+            style,
+            coordinates,
+            positions,
+            vectorProperties,
+            scene,
+          )
         ).primitives;
       });
 
@@ -944,7 +957,7 @@ describe('point helpers', () => {
     });
 
     describe('returning null', () => {
-      it('should return null, if no primitive can be created', () => {
+      it('should return null, if no primitive can be created', async () => {
         const feature = new Feature({
           olcs_allowPicking: false,
         });
@@ -964,7 +977,7 @@ describe('point helpers', () => {
             src: '/icon.png',
           }),
         });
-        const primitive = getPrimitiveOptions(
+        const primitive = await getPrimitiveOptions(
           feature,
           style,
           coordinates,
@@ -976,7 +989,7 @@ describe('point helpers', () => {
         expect(primitive).to.be.null;
       });
 
-      it('should return null, if there is no image style', () => {
+      it('should return null, if there is no image style', async () => {
         const feature = new Feature({
           olcs_primitiveOptions: {
             type: PrimitiveOptionsType.SPHERE,
@@ -997,7 +1010,7 @@ describe('point helpers', () => {
         const style = new Style({
           fill: new Fill({ color: '#FF00FF' }),
         });
-        const primitive = getPrimitiveOptions(
+        const primitive = await getPrimitiveOptions(
           feature,
           style,
           coordinates,

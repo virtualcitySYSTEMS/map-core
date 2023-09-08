@@ -138,37 +138,37 @@ describe('VectorCesiumImpl', () => {
         await vectorLayer.activate();
       });
 
-      it('should convert a feature, adding it to its primitives', () => {
-        vectorLayer._addFeature(feature);
+      it('should convert a feature, adding it to its primitives', async () => {
+        await vectorLayer._addFeature(feature);
         expect(vectorLayer._context.primitives.length).to.equal(1);
       });
 
-      it('should add a feature to the primitive map', () => {
-        vectorLayer._addFeature(feature);
+      it('should add a feature to the primitive map', async () => {
+        await vectorLayer._addFeature(feature);
         const primitiveArray =
           vectorLayer._context.featureToPrimitiveMap.get(feature);
         expect(primitiveArray).to.be.an('array').and.have.lengthOf(1);
       });
 
-      it('should convert a point feature, adding it to the billboards', () => {
-        vectorLayer._addFeature(pointFeature);
+      it('should convert a point feature, adding it to the billboards', async () => {
+        await vectorLayer._addFeature(pointFeature);
         expect(vectorLayer._context.billboards.length).to.equal(1);
       });
 
-      it('should add a point feature to the billboards map', () => {
-        vectorLayer._addFeature(pointFeature);
+      it('should add a point feature to the billboards map', async () => {
+        await vectorLayer._addFeature(pointFeature);
         const billboardArray =
           vectorLayer._context.featureToBillboardMap.get(pointFeature);
         expect(billboardArray).to.be.an('array').and.have.lengthOf(1);
       });
 
-      it('should convert a labeled point feature, adding it to the billboards', () => {
-        vectorLayer._addFeature(pointFeature);
+      it('should convert a labeled point feature, adding it to the billboards', async () => {
+        await vectorLayer._addFeature(pointFeature);
         expect(vectorLayer._context.labels.length).to.equal(1);
       });
 
-      it('should add a labeled point feature to the labels map', () => {
-        vectorLayer._addFeature(pointFeature);
+      it('should add a labeled point feature to the labels map', async () => {
+        await vectorLayer._addFeature(pointFeature);
         const labelArray =
           vectorLayer._context.featureToLabelMap.get(pointFeature);
         expect(labelArray).to.be.an('array').and.have.lengthOf(1);
@@ -176,7 +176,7 @@ describe('VectorCesiumImpl', () => {
     });
 
     it('should, if not active, cache a feature, until the layer is active', async () => {
-      vectorLayer._addFeature(feature);
+      await vectorLayer._addFeature(feature);
       expect(vectorLayer._context.primitives.length).to.equal(0);
 
       await vectorLayer.activate();
@@ -186,7 +186,7 @@ describe('VectorCesiumImpl', () => {
     it('should, if current map is not a cesium map, cache a feature, until the map is a cesium map', async () => {
       await app.maps.setActiveMap(openlayers.name);
       await commonLayer.activate();
-      vectorLayer._addFeature(feature);
+      await vectorLayer._addFeature(feature);
       expect(vectorLayer._context.primitives.length).to.equal(0);
       await app.maps.setActiveMap(cesiumMap.name);
       expect(vectorLayer._context.primitives.length).to.equal(1);
@@ -196,12 +196,12 @@ describe('VectorCesiumImpl', () => {
   describe('refresh', () => {
     beforeEach(async () => {
       await vectorLayer.activate();
-      vectorLayer._addFeature(feature);
-      vectorLayer._addFeature(pointFeature);
+      await vectorLayer._addFeature(feature);
+      await vectorLayer._addFeature(pointFeature);
     });
 
-    it('chould clear all primitives, billboards, labels & feature maps', () => {
-      vectorLayer.refresh();
+    it('chould clear all primitives, billboards, labels & feature maps', async () => {
+      await vectorLayer.refresh();
       expect(vectorLayer._context.primitives.length).to.equal(0);
       expect(vectorLayer._context.billboards.length).to.equal(0);
       expect(vectorLayer._context.labels.length).to.equal(0);
@@ -210,12 +210,12 @@ describe('VectorCesiumImpl', () => {
       expect(vectorLayer._context.featureToLabelMap).to.be.empty;
     });
 
-    it('should add features which are part of the vectorLayer', () => {
+    it('should add features which are part of the vectorLayer', async () => {
       const newFeature = new Feature({
         geometry: feature.getGeometry().clone(),
       });
       commonLayer.addFeatures([newFeature]);
-      vectorLayer.refresh();
+      await vectorLayer.refresh();
       expect(vectorLayer._context.primitives.length).to.equal(1);
       expect(vectorLayer._context.featureToPrimitiveMap.has(newFeature)).to.be
         .true;
@@ -226,8 +226,8 @@ describe('VectorCesiumImpl', () => {
     beforeEach(async () => {
       await vectorLayer.initialize();
       await vectorLayer.activate();
-      vectorLayer._addFeature(feature);
-      vectorLayer._addFeature(pointFeature);
+      await vectorLayer._addFeature(feature);
+      await vectorLayer._addFeature(pointFeature);
     });
 
     it('should remove a feature from the primitives', () => {
@@ -252,9 +252,9 @@ describe('VectorCesiumImpl', () => {
     });
 
     it('should remove a feature from the cache', async () => {
-      vectorLayer.refresh();
+      await vectorLayer.refresh();
       vectorLayer.deactivate();
-      vectorLayer._addFeature(feature);
+      await vectorLayer._addFeature(feature);
       vectorLayer._removeFeature(feature);
       await vectorLayer.activate();
       expect(vectorLayer._context.primitives.length).to.equal(0);
@@ -265,10 +265,10 @@ describe('VectorCesiumImpl', () => {
     beforeEach(async () => {
       await vectorLayer.initialize();
       await vectorLayer.activate();
-      vectorLayer._addFeature(feature);
+      await vectorLayer._addFeature(feature);
     });
 
-    it('should cache the features cesium resources, add the feature and clear the cache', () => {
+    it('should cache the features cesium resources, add the feature and clear the cache', async () => {
       const createFeatureCache = sandbox.spy(
         vectorLayer._context,
         'createFeatureCache',
@@ -277,7 +277,7 @@ describe('VectorCesiumImpl', () => {
         vectorLayer._context,
         'clearFeatureCache',
       );
-      vectorLayer._featureChanged(feature);
+      await vectorLayer._featureChanged(feature);
       expect(createFeatureCache).to.have.been.calledWith(feature);
       expect(clearFeatureCache).to.have.been.called;
     });
