@@ -1042,6 +1042,23 @@ describe('VectorProperties', () => {
           const featureValues = vectorProperties.getValuesForFeatures(features);
           expect(featureValues).to.not.have.key('storeyHeightsBelowGround');
         });
+
+        it('should return complex common values', () => {
+          const modelOptions = { foo: true };
+          const primitiveOptions = { bar: true };
+          features.forEach((f) => {
+            f.set('olcs_modelOptions', { ...modelOptions });
+            f.set('olcs_primitiveOptions', { ...primitiveOptions });
+          });
+
+          const featureValues = vectorProperties.getValuesForFeatures(features);
+          expect(featureValues)
+            .to.have.property('modelOptions')
+            .and.to.have.property('foo', true);
+          expect(featureValues)
+            .to.have.property('primitiveOptions')
+            .and.to.have.property('bar', true);
+        });
       });
     });
 

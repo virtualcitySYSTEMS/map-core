@@ -1292,9 +1292,9 @@ class VectorProperties {
      * @param propertyValues An array of values for a specific property from different features.
      * @returns Whether all values are equal.
      */
-    function isAllEqual<T extends string | number | boolean | number[]>(
-      propertyValues: (T | undefined)[],
-    ): boolean {
+    function isAllEqual<
+      T extends string | number | boolean | number[] | Record<string, unknown>,
+    >(propertyValues: (T | undefined)[]): boolean {
       return propertyValues.every((curr, index, array) => {
         if (index === 0) {
           return true;
@@ -1419,6 +1419,21 @@ class VectorProperties {
     const modelRollValues = features.map((f) => this.getModelRoll(f));
     if (isAllEqual(modelRollValues)) {
       values.modelRoll = modelRollValues[0];
+    }
+
+    const modelAutoScale = features.map((f) => this.getModelAutoScale(f));
+    if (isAllEqual(modelAutoScale)) {
+      values.modelAutoScale = modelAutoScale[0];
+    }
+
+    const modelOptions = features.map((f) => this.getModelOptions(f));
+    if (isAllEqual(modelOptions)) {
+      values.modelOptions = modelOptions[0];
+    }
+
+    const primitiveOptions = features.map((f) => this.getPrimitiveOptions(f));
+    if (isAllEqual(primitiveOptions)) {
+      values.primitiveOptions = primitiveOptions[0];
     }
 
     const baseUrlValues = features.map((f) => this.getBaseUrl(f));
