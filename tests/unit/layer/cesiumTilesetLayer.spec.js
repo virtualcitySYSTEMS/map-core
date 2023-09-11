@@ -176,7 +176,6 @@ describe('CesiumTilesetLayer', () => {
 
       before(() => {
         inputConfig = {
-          maximumMemoryUsage: 128,
           screenSpaceErrorMobile: 8,
           screenSpaceError: 8,
           highlightStyle: {
@@ -188,7 +187,6 @@ describe('CesiumTilesetLayer', () => {
           },
           tilesetOptions: {
             test: true,
-            maximumMemoryUsage: 64,
           },
           offset: [0, 0, 20],
         };
@@ -198,13 +196,6 @@ describe('CesiumTilesetLayer', () => {
 
       after(() => {
         configuredLayer.destroy();
-      });
-
-      it('should configure maximumMemoryUsage', () => {
-        expect(outputConfig).to.have.property(
-          'maximumMemoryUsage',
-          inputConfig.maximumMemoryUsage,
-        );
       });
 
       it('should configure screenSpaceError', () => {

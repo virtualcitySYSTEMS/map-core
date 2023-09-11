@@ -30,10 +30,6 @@ export type CesiumTilesetOptions = LayerOptions & {
    * relates inversely to the depth over which the layer is activated
    */
   screenSpaceErrorMobile?: number;
-  /**
-   * sets the cesium maximumMemoryUsage Parameter (Is when the cached tiles exceed this value cesium starts to clear the cached tiles)
-   */
-  maximumMemoryUsage?: number;
   tilesetOptions?: object;
   highlightStyle?: VectorStyleItem | VectorStyleItemOptions;
   featureVisibility?: FeatureVisibility;
@@ -71,7 +67,6 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
       highlightStyle: undefined,
       screenSpaceError: 16,
       screenSpaceErrorMobile: 32,
-      maximumMemoryUsage: 16,
       tilesetOptions: {},
       offset: undefined,
     };
@@ -82,8 +77,6 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
   screenSpaceError: number;
 
   screenSpaceErrorMobile: number;
-
-  maximumMemoryUsage: number;
 
   tilesetOptions: Record<string, unknown>;
 
@@ -119,11 +112,6 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
       defaultOptions.screenSpaceErrorMobile,
     );
 
-    this.maximumMemoryUsage = parseInteger(
-      options.maximumMemoryUsage,
-      defaultOptions.maximumMemoryUsage,
-    );
-
     const tilesetOptions =
       options.tilesetOptions || defaultOptions.tilesetOptions;
 
@@ -131,7 +119,6 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
       maximumScreenSpaceError: isMobile()
         ? this.screenSpaceErrorMobile
         : this.screenSpaceError,
-      maximumMemoryUsage: this.maximumMemoryUsage,
       ...tilesetOptions,
     };
 
@@ -245,10 +232,6 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
       config.screenSpaceErrorMobile = this.screenSpaceErrorMobile;
     }
 
-    if (this.maximumMemoryUsage !== defaultOptions.maximumMemoryUsage) {
-      config.maximumMemoryUsage = this.maximumMemoryUsage;
-    }
-
     const tilesetOptions: Record<string, unknown> = { ...this.tilesetOptions };
 
     const usedScreenSpaceError = isMobile()
@@ -256,10 +239,6 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
       : this.screenSpaceError;
     if (tilesetOptions.maximumScreenSpaceError === usedScreenSpaceError) {
       delete tilesetOptions.maximumScreenSpaceError;
-    }
-
-    if (tilesetOptions.maximumMemoryUsage === this.maximumMemoryUsage) {
-      delete tilesetOptions.maximumMemoryUsage;
     }
 
     if (Object.keys(tilesetOptions).length > 0) {

@@ -1,3 +1,9 @@
+### 5.0.0-39
+
+- removed deprecated maximumMemoryUsage from CesiumTilesetLayer (use `tilesetOptions` and https://cesium.com/learn/cesiumjs/ref-doc/Cesium3DTileset.html#cacheBytes instead)
+- added `lightIntensity` on CesiumMap to defaultOptions and added getter/setter
+- fixed Bug in VectorProperties `getValuesFromFeatures`, `modelOptions` and `primitiveOptions` are now evaluated
+
 ### 5.0.0-38
 
 - Cursor when using the `createFeatureSession` is now a pen.

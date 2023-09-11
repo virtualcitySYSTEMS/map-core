@@ -293,6 +293,7 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
       cameraLimiter: undefined,
       globeColor: '#3f47cc',
       useOriginalCesiumShader: false,
+      lightIntensity: 3.0,
     };
   }
 
@@ -412,7 +413,27 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
 
     this._lastEventFrameNumber = null;
 
-    this._lightIntensity = parseNumber(options.lightIntensity, 3.0);
+    this._lightIntensity = parseNumber(
+      options.lightIntensity,
+      defaultOptions.lightIntensity,
+    );
+  }
+
+  /**
+   * returns the light Intensity, see Cesium https://cesium.com/learn/cesiumjs/ref-doc/SunLight.html?classFilter=sunlight#intensity
+   */
+  get lightIntensity(): number {
+    return this._lightIntensity;
+  }
+
+  /**
+   * sets the light Intensity, see Cesium https://cesium.com/learn/cesiumjs/ref-doc/SunLight.html?classFilter=sunlight#intensity
+   */
+  set lightIntensity(intensity: number) {
+    this._lightIntensity = intensity;
+    if (this.initialized && this._cesiumWidget) {
+      this._cesiumWidget.scene.light.intensity = intensity;
+    }
   }
 
   get splitPosition(): number {
@@ -1299,6 +1320,10 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
       config.cameraLimiter = this._cameraLimiter.toJSON();
     } else if (this._cameraLimiterOptions && !this.initialized) {
       config.cameraLimiter = this._cameraLimiterOptions;
+    }
+
+    if (this._lightIntensity !== defaultOptions.lightIntensity) {
+      config.lightIntensity = this._lightIntensity;
     }
 
     return config;
