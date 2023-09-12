@@ -40,7 +40,7 @@ class SelectFeatureMouseOverInteraction extends AbstractInteraction {
    */
   layerName: string;
 
-  private cursorStyle: CSSStyleDeclaration;
+  private cursorStyle: CSSStyleDeclaration | undefined;
 
   constructor(
     layerName: string,
@@ -66,7 +66,6 @@ class SelectFeatureMouseOverInteraction extends AbstractInteraction {
     this._selectFeatureInteraction = selectFeatureInteraction;
     this.selectionMode = selectionMode;
     this.layerName = layerName;
-    this.cursorStyle = document.body.style;
   }
 
   pipe(event: EventAfterEventHandler): Promise<EventAfterEventHandler> {
@@ -74,6 +73,9 @@ class SelectFeatureMouseOverInteraction extends AbstractInteraction {
       this._currentFeature = event.feature;
     } else {
       this._currentFeature = null;
+    }
+    if (!this.cursorStyle && event.map?.target) {
+      this.cursorStyle = event.map.target.style;
     }
     this._evaluate(event.key);
     return Promise.resolve(event);
@@ -91,10 +93,14 @@ class SelectFeatureMouseOverInteraction extends AbstractInteraction {
   reset(): void {
     if (this.cursorStyle && this.cursorStyle.cursor) {
       this.cursorStyle.cursor = cursorMap.auto;
+      this.cursorStyle = undefined;
     }
   }
 
   private _evaluate(modifier: ModificationKeyType): void {
+    if (!this.cursorStyle) {
+      return;
+    }
     if (this._currentFeature) {
       const isCtrlPressed =
         this.selectionMode === SelectionMode.MULTI &&
@@ -110,7 +116,6 @@ class SelectFeatureMouseOverInteraction extends AbstractInteraction {
       } else {
         this.cursorStyle.cursor = cursorMap.select;
       }
-
       this.cursorStyle[mouseOverSymbol] = this.id;
     } else if (this.cursorStyle?.[mouseOverSymbol] === this.id) {
       this.cursorStyle.cursor = cursorMap.auto;

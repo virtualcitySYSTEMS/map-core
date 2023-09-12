@@ -16,11 +16,10 @@ import { cursorMap } from './editGeometryMouseOverInteraction.js';
 class EditFeaturesMouseOverInteraction extends AbstractInteraction {
   private _currentHandler: Feature | null = null;
 
-  cursorStyle: CSSStyleDeclaration;
+  cursorStyle: CSSStyleDeclaration | undefined;
 
   constructor() {
     super(EventType.MOVE, ModificationKeyType.NONE);
-    this.cursorStyle = document.body.style;
 
     this.setActive();
   }
@@ -30,6 +29,9 @@ class EditFeaturesMouseOverInteraction extends AbstractInteraction {
       this._currentHandler = event.feature as Feature;
     } else {
       this._currentHandler = null;
+    }
+    if (!this.cursorStyle && event.map?.target) {
+      this.cursorStyle = event.map.target.style;
     }
     this._evaluate();
     return Promise.resolve(event);
@@ -46,10 +48,14 @@ class EditFeaturesMouseOverInteraction extends AbstractInteraction {
   reset(): void {
     if (this.cursorStyle && this.cursorStyle.cursor) {
       this.cursorStyle.cursor = cursorMap.auto;
+      this.cursorStyle = undefined;
     }
   }
 
   private _evaluate(): void {
+    if (!this.cursorStyle) {
+      return;
+    }
     if (this._currentHandler) {
       this.cursorStyle.cursor = cursorMap.translate;
       this.cursorStyle[mouseOverSymbol] = this.id;

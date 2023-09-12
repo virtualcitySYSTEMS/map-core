@@ -41,12 +41,10 @@ export const cursorMap = {
 class EditGeometryMouseOverInteraction extends AbstractInteraction {
   private _currentVertex: Vertex | null = null;
 
-  cursorStyle: CSSStyleDeclaration;
+  cursorStyle: CSSStyleDeclaration | undefined;
 
   constructor() {
     super(EventType.MOVE, ModificationKeyType.NONE | ModificationKeyType.SHIFT);
-
-    this.cursorStyle = document.body.style;
 
     this.setActive();
   }
@@ -56,6 +54,9 @@ class EditGeometryMouseOverInteraction extends AbstractInteraction {
       this._currentVertex = event.feature as Vertex;
     } else {
       this._currentVertex = null;
+    }
+    if (!this.cursorStyle && event.map?.target) {
+      this.cursorStyle = event.map.target.style;
     }
     this._evaluate(event.key);
     return Promise.resolve(event);
@@ -80,6 +81,9 @@ class EditGeometryMouseOverInteraction extends AbstractInteraction {
   }
 
   private _evaluate(modifier: ModificationKeyType): void {
+    if (!this.cursorStyle) {
+      return;
+    }
     if (this._currentVertex) {
       if (modifier === ModificationKeyType.SHIFT) {
         this.cursorStyle.cursor = cursorMap.removeVertex;

@@ -1,3 +1,9 @@
+### 5.0.0-next
+
+- Changed CI/CD from Node 16 to 18
+- Updated Node-canvas to 2.11.2 (for Node 18/20 prebuild binaries)
+- Changed Editor MouseoverInteraction to not change document.body cursor (only changes the map target container cursor)
+
 ### 5.0.0-39
 
 - removed deprecated maximumMemoryUsage from CesiumTilesetLayer (use `tilesetOptions` and https://cesium.com/learn/cesiumjs/ref-doc/Cesium3DTileset.html#cacheBytes instead)
