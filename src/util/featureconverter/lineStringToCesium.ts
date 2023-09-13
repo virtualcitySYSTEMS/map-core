@@ -23,7 +23,7 @@ import { getCartesianBearing, getCartesianPitch } from '../math.js';
 import { getPrimitiveOptions } from './pointHelpers.js';
 import type VectorProperties from '../../layer/vectorProperties.js';
 import type { VectorGeometryFactoryType } from '../../layer/vectorLayer.js';
-import type { CesiumVectorContext } from '../../layer/cesium/vectorContext.js';
+import type { AsyncCesiumVectorContext } from '../../layer/cesium/vectorContext.js';
 
 type ArrowOptions = {
   location: Coordinate;
@@ -55,7 +55,7 @@ export async function addArrowsToContext(
   vectorProperties: VectorProperties,
   scene: Scene,
   lineGeometryFactory: VectorGeometryFactoryType,
-  context: CesiumVectorContext,
+  context: AsyncCesiumVectorContext,
 ): Promise<void> {
   if (style.end === ArrowEnd.NONE || !style.primitiveOptions?.geometryOptions) {
     return;
@@ -274,7 +274,7 @@ export default async function lineStringToCesium(
   geometries: LineString[],
   vectorProperties: VectorProperties,
   scene: Scene,
-  context: CesiumVectorContext,
+  context: AsyncCesiumVectorContext,
 ): Promise<void> {
   if (!style.getFill() && !style.getStroke()) {
     return;

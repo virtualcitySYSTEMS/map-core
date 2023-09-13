@@ -19,7 +19,7 @@ import Projection from '../projection.js';
 import { getFlatCoordinatesFromSimpleGeometry } from '../geometryHelpers.js';
 import type { VectorGeometryFactoryType } from '../../layer/vectorLayer.js';
 import type VectorProperties from '../../layer/vectorProperties.js';
-import { CesiumVectorContext } from '../../layer/cesium/vectorContext.js';
+import type { AsyncCesiumVectorContext } from '../../layer/cesium/vectorContext.js';
 
 export type PolygonGeometryOptions = ConstructorParameters<
   typeof PolygonGeometry
@@ -228,7 +228,7 @@ export default function polygonToCesium(
   geometries: Polygon[],
   vectorProperties: VectorProperties,
   scene: Scene,
-  context: CesiumVectorContext,
+  context: AsyncCesiumVectorContext,
 ): void {
   if (!style.getFill() && !style.getStroke()) {
     return;

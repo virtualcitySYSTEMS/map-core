@@ -7,7 +7,6 @@ import {
 import type VectorSource from 'ol/source/Vector.js';
 import type { EventsKey } from 'ol/events.js';
 import type { Feature } from 'ol/index.js';
-import convert from '../../util/featureconverter/convert.js';
 import VectorContext from './vectorContext.js';
 import { vcsLayerName } from '../layerSymbols.js';
 import LayerImplementation from '../layerImplementation.js';
@@ -78,8 +77,7 @@ class VectorCesiumImpl
   private _addListeners(): void {
     this._olListeners.push(
       this.source.on('addfeature', (event) => {
-        // eslint-disable-next-line no-void
-        void this._addFeature(event.feature as Feature);
+        this._addFeature(event.feature as Feature);
       }),
     );
 
@@ -91,8 +89,7 @@ class VectorCesiumImpl
 
     this._olListeners.push(
       this.source.on('changefeature', (event) => {
-        // eslint-disable-next-line no-void
-        void this._featureChanged(event.feature as Feature);
+        this._featureChanged(event.feature as Feature);
       }),
     );
 
@@ -117,7 +114,7 @@ class VectorCesiumImpl
     if (!this.initialized) {
       this._scene = this.map.getScene();
       this._addListeners();
-      await this._addFeatures(this.source.getFeatures());
+      this._addFeatures(this.source.getFeatures());
       await this._setupContext(this.map);
     }
     await super.initialize();
@@ -126,23 +123,21 @@ class VectorCesiumImpl
     }
   }
 
-  private async _addFeatures(features: Feature[]): Promise<void> {
+  _addFeatures(features: Feature[]): void {
     // TODO we should make this non-blocking to better handle larger data sets check in RIWA Impl
-    await Promise.allSettled(features.map((f) => this._addFeature(f)));
+    features.forEach((f) => this._addFeature(f));
   }
 
   /**
    * converts a feature and adds the associated primitives to the collection of primitives
    */
-  private async _addFeature(feature: Feature): Promise<void> {
+  private _addFeature(feature: Feature): void {
     if (this.active) {
       // XXX cluster check here? or on init?
-      this._context!.features.add(feature);
-      await convert(
+      this._context!.convertFeature(
         feature,
         this.style.style,
         this.vectorProperties,
-        this._context as VectorContext,
         this._scene as Scene,
       );
     } else {
@@ -153,9 +148,9 @@ class VectorCesiumImpl
   /**
    * Forces a complete re-render of all features.
    */
-  async refresh(): Promise<void> {
+  refresh(): void {
     this._context?.clear();
-    await this._addFeatures(this.source.getFeatures());
+    this._addFeatures(this.source.getFeatures());
   }
 
   /**
@@ -169,10 +164,10 @@ class VectorCesiumImpl
   /**
    * called when a features property have changed
    */
-  private async _featureChanged(feature: Feature): Promise<void> {
+  private _featureChanged(feature: Feature): void {
     const cache = this._context!.createFeatureCache(feature);
     this._featureToAdd.delete(feature);
-    await this._addFeature(feature);
+    this._addFeature(feature);
     this._context!.clearFeatureCache(cache);
   }
 
@@ -180,7 +175,7 @@ class VectorCesiumImpl
     if (!this.active) {
       await super.activate();
       if (this.active) {
-        await this._addFeatures([...this._featureToAdd]);
+        this._addFeatures([...this._featureToAdd]);
         this._featureToAdd.clear();
         this._rootCollection.show = true;
         if (this._featureVisibilityListeners.length === 0) {

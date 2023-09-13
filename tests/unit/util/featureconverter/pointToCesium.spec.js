@@ -719,12 +719,10 @@ describe('util.featureConverter.pointToCesium', () => {
       scene = map.getScene();
       primitiveCollection = new PrimitiveCollection();
       context = new VectorContext(map, primitiveCollection);
-      context.features.add(feature);
     });
 
     afterEach(() => {
       context.clear();
-      context.features.add(feature);
     });
 
     after(() => {
@@ -1397,7 +1395,6 @@ describe('util.featureConverter.pointToCesium', () => {
           id: 'foo',
           olcs_modelUrl: 'http://localhost/test.glb',
         });
-        context.features.add(modelFeature);
         const primitiveVectorProperties = new VectorProperties({
           primitiveOptions: {
             type: PrimitiveOptionsType.SPHERE,
@@ -1425,7 +1422,6 @@ describe('util.featureConverter.pointToCesium', () => {
             geometryOptions: {},
           },
         });
-        context.features.add(primitiveFeature);
         const modelVectorProperties = new VectorProperties({
           modelUrl: 'http://localhost/test.glb',
         });

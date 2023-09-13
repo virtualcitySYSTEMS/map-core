@@ -409,12 +409,10 @@ describe('util.featureConverter.polygonToCesium', () => {
       scene = map.getScene();
       primitiveCollection = new PrimitiveCollection();
       context = new VectorContext(map, primitiveCollection);
-      context.features.add(feature);
     });
 
     afterEach(() => {
       context.clear();
-      context.features.add(feature);
     });
 
     after(() => {

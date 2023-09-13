@@ -15,41 +15,33 @@ import {
   type Label,
   type EntityCollection,
   SplitDirection,
+  Scene,
 } from '@vcmap-cesium/engine';
+import { Style } from 'ol/style.js';
+import { StyleFunction } from 'ol/style/Style.js';
 import type { Feature } from 'ol/index.js';
 import Viewpoint from '../../util/viewpoint.js';
 import type CesiumMap from '../../map/cesiumMap.js';
+import VectorProperties from '../vectorProperties.js';
+import convert from '../../util/featureconverter/convert.js';
+
+type PrimitiveType =
+  | Primitive
+  | GroundPrimitive
+  | GroundPolylinePrimitive
+  | ClassificationPrimitive
+  | Model;
 
 export type VectorContextFeatureCache = {
-  primitives?: (
-    | Primitive
-    | GroundPrimitive
-    | GroundPolylinePrimitive
-    | ClassificationPrimitive
-    | Model
-  )[];
-  scaledPrimitives?: (
-    | Primitive
-    | GroundPrimitive
-    | GroundPolylinePrimitive
-    | ClassificationPrimitive
-    | Model
-  )[];
+  primitives?: PrimitiveType[];
+  scaledPrimitives?: PrimitiveType[];
   billboards?: (Billboard | Entity)[];
   labels?: (Label | Entity)[];
 };
 
 export function setReferenceForPicking(
   feature: Feature,
-  primitive:
-    | Primitive
-    | GroundPrimitive
-    | GroundPolylinePrimitive
-    | ClassificationPrimitive
-    | Label
-    | Billboard
-    | Entity
-    | Model,
+  primitive: PrimitiveType | Label | Billboard | Entity,
 ): void {
   primitive.olFeature = feature;
 }
@@ -60,16 +52,7 @@ export function removeArrayFromCollection(
     | BillboardCollection
     | LabelCollection
     | EntityCollection,
-  array?: (
-    | Primitive
-    | GroundPrimitive
-    | GroundPolylinePrimitive
-    | ClassificationPrimitive
-    | Billboard
-    | Label
-    | Entity
-    | Model
-  )[],
+  array?: (PrimitiveType | Billboard | Label | Entity)[],
 ): void {
   if (array) {
     array.forEach((primitive) => {
@@ -80,19 +63,7 @@ export function removeArrayFromCollection(
 
 export function removeFeatureFromMap(
   feature: Feature,
-  featuresMap: Map<
-    Feature,
-    (
-      | Primitive
-      | GroundPrimitive
-      | GroundPolylinePrimitive
-      | ClassificationPrimitive
-      | Billboard
-      | Label
-      | Entity
-      | Model
-    )[]
-  >,
+  featuresMap: Map<Feature, (PrimitiveType | Billboard | Label | Entity)[]>,
   primitiveCollection:
     | PrimitiveCollection
     | BillboardCollection
@@ -104,14 +75,7 @@ export function removeFeatureFromMap(
 }
 
 export function addPrimitiveToContext(
-  primitives: (
-    | Primitive
-    | GroundPrimitive
-    | GroundPolylinePrimitive
-    | ClassificationPrimitive
-    | Entity.ConstructorOptions
-    | Model
-  )[],
+  primitives: (PrimitiveType | Entity.ConstructorOptions)[],
   feature: Feature,
   allowPicking: boolean,
   primitiveCollection:
@@ -119,19 +83,7 @@ export function addPrimitiveToContext(
     | LabelCollection
     | PrimitiveCollection
     | EntityCollection,
-  featureMap: Map<
-    Feature,
-    (
-      | Billboard
-      | Label
-      | Primitive
-      | GroundPrimitive
-      | GroundPolylinePrimitive
-      | ClassificationPrimitive
-      | Entity
-      | Model
-    )[]
-  >,
+  featureMap: Map<Feature, (Billboard | Label | PrimitiveType | Entity)[]>,
   splitDirection?: SplitDirection,
 ): void {
   if (primitives.length) {
@@ -139,10 +91,7 @@ export function addPrimitiveToContext(
       const primitive = primitiveCollection.add(primitiveOptions) as
         | Billboard
         | Label
-        | Primitive
-        | GroundPrimitive
-        | GroundPolylinePrimitive
-        | ClassificationPrimitive
+        | PrimitiveType
         | Entity
         | Model;
       if (allowPicking) {
@@ -226,26 +175,14 @@ export function setupScalingPrimitiveCollection(
   });
 }
 
-export interface CesiumVectorContext {
+export interface AsyncCesiumVectorContext {
   addPrimitives(
-    primitives: (
-      | Primitive
-      | GroundPrimitive
-      | GroundPolylinePrimitive
-      | ClassificationPrimitive
-      | Model
-    )[],
+    primitives: PrimitiveType[],
     feature: Feature,
     allowPicking: boolean,
   ): void;
   addScaledPrimitives(
-    primitives: (
-      | Primitive
-      | GroundPrimitive
-      | GroundPolylinePrimitive
-      | ClassificationPrimitive
-      | Model
-    )[],
+    primitives: PrimitiveType[],
     feature: Feature,
     allowPicking: boolean,
   ): void;
@@ -259,11 +196,109 @@ export interface CesiumVectorContext {
     feature: Feature,
     allowPicking: boolean,
   ): void;
+}
+
+export interface CesiumVectorContext extends AsyncCesiumVectorContext {
   removeFeature(feature: Feature): void;
   createFeatureCache(feature: Feature): VectorContextFeatureCache;
   clearFeatureCache(cache: VectorContextFeatureCache): void;
   updateSplitDirection(splitDirection: SplitDirection): void;
   clear(): void;
+}
+
+function createAsyncFeatureConvert(
+  feature: Feature,
+  style: Style | StyleFunction,
+  vectorProperties: VectorProperties,
+  context: CesiumVectorContext,
+  scene: Scene,
+): () => void {
+  let isDestroyed = false;
+  const primitivesArray: {
+    primitives: PrimitiveType[];
+    allowPicking: boolean;
+  }[] = [];
+  const scaledPrimitives: {
+    primitives: PrimitiveType[];
+    allowPicking: boolean;
+  }[] = [];
+  const billboards: { billboardOptions: object[]; allowPicking: boolean }[] =
+    [];
+  const labels: { labelOptions: object[]; allowPicking: boolean }[] = [];
+
+  const asyncContext: AsyncCesiumVectorContext = {
+    addPrimitives(
+      primitives: PrimitiveType[],
+      _feature: Feature,
+      allowPicking: boolean,
+    ): void {
+      primitivesArray.push({ primitives, allowPicking });
+    },
+    addScaledPrimitives(
+      primitives: PrimitiveType[],
+      _feature: Feature,
+      allowPicking: boolean,
+    ): void {
+      scaledPrimitives.push({ primitives, allowPicking });
+    },
+    addBillboards(
+      billboardOptions: object[],
+      _feature: Feature,
+      allowPicking: boolean,
+    ): void {
+      billboards.push({ billboardOptions, allowPicking });
+    },
+    addLabels(
+      labelOptions: object[],
+      _feature: Feature,
+      allowPicking: boolean,
+    ): void {
+      labels.push({ labelOptions, allowPicking });
+    },
+  };
+
+  convert(feature, style, vectorProperties, asyncContext, scene)
+    .then(() => {
+      if (!isDestroyed) {
+        primitivesArray.forEach(({ primitives, allowPicking }) => {
+          context.addPrimitives(primitives, feature, allowPicking);
+        });
+        scaledPrimitives.forEach(({ primitives, allowPicking }) => {
+          context.addScaledPrimitives(primitives, feature, allowPicking);
+        });
+        billboards.forEach(({ billboardOptions, allowPicking }) => {
+          context.addBillboards(billboardOptions, feature, allowPicking);
+        });
+        labels.forEach(({ labelOptions, allowPicking }) => {
+          context.addLabels(labelOptions, feature, allowPicking);
+        });
+      } else {
+        primitivesArray.forEach(({ primitives }) => {
+          primitives.forEach((p) => {
+            p.destroy();
+          });
+        });
+        scaledPrimitives.forEach(({ primitives }) => {
+          primitives.forEach((p) => {
+            p.destroy();
+          });
+        });
+      }
+    })
+    .catch((err) => {
+      console.error('feature conversion failed');
+      console.error(err);
+    })
+    .finally(() => {
+      primitivesArray.splice(0);
+      scaledPrimitives.splice(0);
+      billboards.splice(0);
+      labels.splice(0);
+    });
+
+  return () => {
+    isDestroyed = true;
+  };
 }
 
 class VectorContext implements CesiumVectorContext {
@@ -275,33 +310,15 @@ class VectorContext implements CesiumVectorContext {
 
   labels: LabelCollection;
 
-  featureToPrimitiveMap: Map<
-    Feature,
-    Array<
-      | Primitive
-      | GroundPrimitive
-      | GroundPolylinePrimitive
-      | ClassificationPrimitive
-      | Model
-    >
-  > = new Map();
+  featureToPrimitiveMap: Map<Feature, PrimitiveType[]> = new Map();
 
-  featureToScaledPrimitiveMap: Map<
-    Feature,
-    Array<
-      | Primitive
-      | GroundPrimitive
-      | GroundPolylinePrimitive
-      | ClassificationPrimitive
-      | Model
-    >
-  > = new Map();
+  featureToScaledPrimitiveMap: Map<Feature, PrimitiveType[]> = new Map();
 
   featureToBillboardMap: Map<Feature, Array<Billboard>> = new Map();
 
   featureToLabelMap: Map<Feature, Array<Label>> = new Map();
 
-  features: Set<Feature> = new Set();
+  _features: Map<Feature, () => void> = new Map();
 
   splitDirection: SplitDirection;
 
@@ -338,50 +355,34 @@ class VectorContext implements CesiumVectorContext {
   }
 
   addPrimitives(
-    primitives: (
-      | Primitive
-      | GroundPrimitive
-      | GroundPolylinePrimitive
-      | ClassificationPrimitive
-      | Model
-    )[],
+    primitives: PrimitiveType[],
     feature: Feature,
     allowPicking = false,
   ): void {
-    if (this.features.has(feature)) {
-      addPrimitiveToContext(
-        primitives,
-        feature,
-        allowPicking,
-        this.primitives,
-        this.featureToPrimitiveMap,
-        this.splitDirection,
-      );
-    }
+    addPrimitiveToContext(
+      primitives,
+      feature,
+      allowPicking,
+      this.primitives,
+      this.featureToPrimitiveMap,
+      this.splitDirection,
+    );
   }
 
   addScaledPrimitives(
-    primitives: (
-      | Primitive
-      | GroundPrimitive
-      | GroundPolylinePrimitive
-      | ClassificationPrimitive
-      | Model
-    )[],
+    primitives: PrimitiveType[],
     feature: Feature,
     allowPicking = false,
   ): void {
-    if (this.features.has(feature)) {
-      addPrimitiveToContext(
-        primitives,
-        feature,
-        allowPicking,
-        this.scaledPrimitives,
-        this.featureToScaledPrimitiveMap,
-        this.splitDirection,
-      );
-      this._scaledDirty.value = true;
-    }
+    addPrimitiveToContext(
+      primitives,
+      feature,
+      allowPicking,
+      this.scaledPrimitives,
+      this.featureToScaledPrimitiveMap,
+      this.splitDirection,
+    );
+    this._scaledDirty.value = true;
   }
 
   addBillboards(
@@ -389,16 +390,14 @@ class VectorContext implements CesiumVectorContext {
     feature: Feature,
     allowPicking = false,
   ): void {
-    if (this.features.has(feature)) {
-      addPrimitiveToContext(
-        billboardOptions,
-        feature,
-        allowPicking,
-        this.billboards,
-        this.featureToBillboardMap,
-        this.splitDirection,
-      );
-    }
+    addPrimitiveToContext(
+      billboardOptions,
+      feature,
+      allowPicking,
+      this.billboards,
+      this.featureToBillboardMap,
+      this.splitDirection,
+    );
   }
 
   addLabels(
@@ -406,23 +405,22 @@ class VectorContext implements CesiumVectorContext {
     feature: Feature,
     allowPicking = false,
   ): void {
-    if (this.features.has(feature)) {
-      addPrimitiveToContext(
-        labelOptions,
-        feature,
-        allowPicking,
-        this.labels,
-        this.featureToLabelMap,
-        this.splitDirection,
-      );
-    }
+    addPrimitiveToContext(
+      labelOptions,
+      feature,
+      allowPicking,
+      this.labels,
+      this.featureToLabelMap,
+      this.splitDirection,
+    );
   }
 
   /**
    * @param  feature
    */
   removeFeature(feature: Feature): void {
-    this.features.delete(feature);
+    this._features.get(feature)?.();
+    this._features.delete(feature);
     removeFeatureFromMap(feature, this.featureToPrimitiveMap, this.primitives);
     this._scaledDirty.value = removeFeatureFromMap(
       feature,
@@ -483,7 +481,23 @@ class VectorContext implements CesiumVectorContext {
     this.featureToPrimitiveMap.clear();
     this._scaledDirty.value = this.featureToScaledPrimitiveMap.size > 0;
     this.featureToScaledPrimitiveMap.clear();
-    this.features.clear();
+    this._features.forEach((destroy) => {
+      destroy();
+    });
+    this._features.clear();
+  }
+
+  convertFeature(
+    feature: Feature,
+    style: Style | StyleFunction,
+    vectorProperties: VectorProperties,
+    scene: Scene,
+  ): void {
+    this._features.get(feature)?.();
+    this._features.set(
+      feature,
+      createAsyncFeatureConvert(feature, style, vectorProperties, this, scene),
+    );
   }
 
   /**
@@ -502,7 +516,10 @@ class VectorContext implements CesiumVectorContext {
     this.featureToBillboardMap.clear();
     this.featureToLabelMap.clear();
     this.featureToPrimitiveMap.clear();
-    this.features.clear();
+    this._features.forEach((destroy) => {
+      destroy();
+    });
+    this._features.clear();
     this.featureToScaledPrimitiveMap.clear();
     this._postRenderListener();
   }

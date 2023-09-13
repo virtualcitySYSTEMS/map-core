@@ -19,7 +19,7 @@ import pointToCesium from './pointToCesium.js';
 import arcToCesium from './arcToCesium.js';
 import ArcStyle, { featureArcStruct } from '../../style/arcStyle.js';
 import type VectorProperties from '../../layer/vectorProperties.js';
-import type { CesiumVectorContext } from '../../layer/cesium/vectorContext.js';
+import type { AsyncCesiumVectorContext } from '../../layer/cesium/vectorContext.js';
 
 async function convertGeometry(
   feature: Feature,
@@ -27,7 +27,7 @@ async function convertGeometry(
   style: Style,
   vectorProperties: VectorProperties,
   scene: Scene,
-  context: CesiumVectorContext,
+  context: AsyncCesiumVectorContext,
 ): Promise<void> {
   if (geometry instanceof Point) {
     await pointToCesium(
@@ -156,7 +156,7 @@ export default async function convert(
   feature: Feature,
   style: StyleLike,
   vectorProperties: VectorProperties,
-  context: CesiumVectorContext,
+  context: AsyncCesiumVectorContext,
   scene: Scene,
 ): Promise<void> {
   const styles = getStylesArray(feature.getStyle() || style, feature, 0);

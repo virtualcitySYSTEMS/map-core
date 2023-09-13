@@ -24,7 +24,7 @@ import {
 import ArcStyle, { featureArcStruct } from '../../style/arcStyle.js';
 import { VectorGeometryFactoryType } from '../../layer/vectorLayer.js';
 import VectorProperties from '../../layer/vectorProperties.js';
-import { type CesiumVectorContext } from '../../layer/cesium/vectorContext.js';
+import type { AsyncCesiumVectorContext } from '../../layer/cesium/vectorContext.js';
 
 /**
  * Creates the positions & arcType option for the PolylineGeometry
@@ -92,7 +92,7 @@ export default async function arcToCesium(
   geometries: LineString[],
   vectorProperties: VectorProperties,
   scene: Scene,
-  context: CesiumVectorContext,
+  context: AsyncCesiumVectorContext,
 ): Promise<void> {
   if (!style.getFill() && !style.getStroke()) {
     return;

@@ -1,4 +1,7 @@
+import nock from 'nock';
 import Feature from 'ol/Feature.js';
+import { Point } from 'ol/geom.js';
+import { Fill, RegularShape, Style } from 'ol/style.js';
 import {
   Primitive,
   PrimitiveCollection,
@@ -13,6 +16,8 @@ import VectorContext, {
   setupScalingPrimitiveCollection,
 } from '../../../../src/layer/cesium/vectorContext.js';
 import { getCesiumMap } from '../../helpers/cesiumHelpers.js';
+import VectorProperties from '../../../../src/layer/vectorProperties.js';
+import { timeout } from '../../helpers/helpers.js';
 
 describe('VectorContext', () => {
   /** @type {import("@vcmap/core").VectorContext} */
@@ -117,7 +122,6 @@ describe('VectorContext', () => {
     beforeEach(() => {
       primitive = new Primitive({});
       feature = new Feature({});
-      vectorContext.features.add(feature);
     });
 
     it('should add the feature to the primitives & the featureToPrimitiveMap', () => {
@@ -154,7 +158,6 @@ describe('VectorContext', () => {
     beforeEach(() => {
       primitive = new Primitive({});
       feature = new Feature({});
-      vectorContext.features.add(feature);
     });
 
     it('should add the feature to the primitives & the featureToPrimitiveMap', () => {
@@ -191,7 +194,6 @@ describe('VectorContext', () => {
     beforeEach(() => {
       billboardOptions = {};
       feature = new Feature({});
-      vectorContext.features.add(feature);
     });
 
     it('should add the feature to the billboards and the featureToBillboardMap', () => {
@@ -230,7 +232,6 @@ describe('VectorContext', () => {
     beforeEach(() => {
       labelOptions = {};
       feature = new Feature({});
-      vectorContext.features.add(feature);
     });
 
     it('should add the feature to the labels and the featureToLabelMap', () => {
@@ -281,7 +282,6 @@ describe('VectorContext', () => {
         scaled = new Primitive({});
         pCollection = new PrimitiveCollection({ destroyPrimitives: true });
         context = new VectorContext(map, pCollection, SplitDirection.NONE);
-        context.features.add(feature);
         context.addPrimitives([primitive], feature, true);
         context.addScaledPrimitives([scaled], feature, true);
         context.addBillboards([{}], feature, true);
@@ -328,7 +328,6 @@ describe('VectorContext', () => {
         scaled = new Primitive({});
         pCollection = new PrimitiveCollection({ destroyPrimitives: true });
         context = new VectorContext(map, pCollection, SplitDirection.NONE);
-        context.features.add(feature);
         context.addPrimitives([primitive], feature, true);
         context.addScaledPrimitives([scaled], feature, true);
         context.addBillboards([{}], feature, true);
@@ -376,7 +375,6 @@ describe('VectorContext', () => {
       scaled = await Model.fromGltfAsync({ url });
       pCollection = new PrimitiveCollection({ destroyPrimitives: true });
       context = new VectorContext(map, pCollection, SplitDirection.NONE);
-      context.features.add(feature);
       context.addPrimitives([primitive], feature, true);
       context.addScaledPrimitives([scaled], feature, true);
     });
@@ -399,7 +397,6 @@ describe('VectorContext', () => {
       const feature = new Feature({});
       const primitive = new Primitive({});
       const scaled = new Primitive({});
-      vectorContext.features.add(feature);
       vectorContext.addPrimitives([primitive], feature, true);
       vectorContext.addScaledPrimitives([scaled], feature, true);
       vectorContext.addBillboards([{}], feature, true);
@@ -502,6 +499,71 @@ describe('VectorContext', () => {
       getCurrentResolutionFromCartesian.returns(3);
       map.getScene().postRender.raiseEvent();
       expect(primitive.modelMatrix).to.not.equal(modelMatrix);
+    });
+  });
+
+  describe('converting a feature', () => {
+    let feature;
+    let vectorProperties;
+    let style;
+
+    before(() => {
+      const scope = nock('http://localhost');
+      scope
+        .persist()
+        .get('/test.glb')
+        .reply(200, {}, { 'Content-Type': 'application/json' });
+      feature = new Feature({
+        id: 'myId',
+        geometry: new Point([1, 1, 0]),
+        olcs_modelUrl: 'http://localhost/test.glb',
+      });
+      style = new Style({
+        image: new RegularShape({ fill: new Fill({ color: 'black' }) }),
+      });
+      vectorProperties = new VectorProperties({
+        altitudeMode: 'absolute',
+        eyeOffset: [1, 1, 1],
+      });
+    });
+
+    after(() => {
+      nock.cleanAll();
+      vectorProperties.destroy();
+    });
+
+    it('should add the primitives of the feature', async () => {
+      vectorContext.convertFeature(
+        feature,
+        style,
+        vectorProperties,
+        map.getScene(),
+      );
+      await timeout(100);
+      expect(vectorContext.primitives).to.have.property('length', 1);
+    });
+
+    it('should only add the primitives once, even if the feature is converter in quick succession', async () => {
+      vectorContext.convertFeature(
+        feature,
+        style,
+        vectorProperties,
+        map.getScene(),
+      );
+      vectorContext.convertFeature(
+        feature,
+        style,
+        vectorProperties,
+        map.getScene(),
+      );
+      vectorContext.convertFeature(
+        feature,
+        style,
+        vectorProperties,
+        map.getScene(),
+      );
+      await timeout(100);
+      expect(vectorContext.primitives).to.have.property('length', 1);
     });
   });
 });

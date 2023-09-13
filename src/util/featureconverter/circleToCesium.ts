@@ -19,7 +19,7 @@ import { addPrimitivesToContext } from './featureconverterHelper.js';
 import Projection from '../projection.js';
 import type { VectorGeometryFactoryType } from '../../layer/vectorLayer.js';
 import type VectorProperties from '../../layer/vectorProperties.js';
-import type { CesiumVectorContext } from '../../layer/cesium/vectorContext.js';
+import type { AsyncCesiumVectorContext } from '../../layer/cesium/vectorContext.js';
 
 export function createSolidGeometries(
   options: ConstructorParameters<typeof CircleGeometry>[0],
@@ -192,7 +192,7 @@ export default function circleToCesium(
   geometries: Circle[],
   vectorProperties: VectorProperties,
   scene: Scene,
-  context: CesiumVectorContext,
+  context: AsyncCesiumVectorContext,
 ): void {
   if (!style.getFill() && !style.getStroke()) {
     return;

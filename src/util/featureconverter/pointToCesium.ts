@@ -28,7 +28,7 @@ import { getCesiumColor } from '../../style/styleHelpers.js';
 import { getModelOptions, getPrimitiveOptions } from './pointHelpers.js';
 import VectorProperties from '../../layer/vectorProperties.js';
 import type { VectorHeightInfo } from '../../layer/vectorLayer.js';
-import { CesiumVectorContext } from '../../layer/cesium/vectorContext.js';
+import { AsyncCesiumVectorContext } from '../../layer/cesium/vectorContext.js';
 
 export function getCoordinates(geometries: Point[]): Coordinate[] {
   return geometries.map((point) => {
@@ -277,7 +277,7 @@ export default async function pointToCesium(
   geometries: Point[],
   vectorProperties: VectorProperties,
   scene: Scene,
-  context: CesiumVectorContext,
+  context: AsyncCesiumVectorContext,
 ): Promise<void> {
   if (!style.getImage() && !(style.getText() && style.getText().getText())) {
     return;

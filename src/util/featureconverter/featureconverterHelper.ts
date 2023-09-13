@@ -37,7 +37,7 @@ import type {
   VectorGeometryFactoryType,
   VectorHeightInfo,
 } from '../../layer/vectorLayer.js';
-import { CesiumVectorContext } from '../../layer/cesium/vectorContext.js';
+import type { AsyncCesiumVectorContext } from '../../layer/cesium/vectorContext.js';
 
 export function getMaterialAppearance(
   scene: Scene,
@@ -489,7 +489,7 @@ export function addPrimitivesToContext(
   vectorProperties: VectorProperties,
   scene: Scene,
   geometryFactory: VectorGeometryFactoryType,
-  context: CesiumVectorContext,
+  context: AsyncCesiumVectorContext,
 ): void {
   // no geometries, so early escape
   if (!geometries.length) {
