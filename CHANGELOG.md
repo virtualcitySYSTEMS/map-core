@@ -1,3 +1,10 @@
+### 5.0.1
+
+- updates @vcsuite/eslint-config
+- updates prettier to v3.0
+- fixes Bug in cesiumMap.toJson function
+- fixes Bug where the OverrideCollection did not create a clone from an item on serialization
+
 ### 5.0.0
 
 - Changed CI/CD from Node 16 to 18

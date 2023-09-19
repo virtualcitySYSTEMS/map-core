@@ -337,6 +337,8 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
 
   defaultTerrainProvider: TerrainProvider | null;
 
+  useOriginalCesiumShader: boolean;
+
   private _cameraLimiter: CameraLimiter | null;
 
   private _cameraLimiterOptions: CameraLimiterOptions | undefined;
@@ -348,8 +350,6 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
   private _listeners: (() => void)[];
 
   private _lastEventFrameNumber: number | null;
-
-  private _useOriginalCesiumShader: boolean;
 
   private _lightIntensity: number;
 
@@ -385,7 +385,7 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
 
     this.webGLaa = parseBoolean(options.webGLaa, defaultOptions.webGLaa);
 
-    this._useOriginalCesiumShader = parseBoolean(
+    this.useOriginalCesiumShader = parseBoolean(
       options.useOriginalCesiumShader,
       defaultOptions.useOriginalCesiumShader,
     );
@@ -624,7 +624,7 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
 
   initialize(): Promise<void> {
     if (!this.initialized) {
-      if (!this._useOriginalCesiumShader) {
+      if (!this.useOriginalCesiumShader) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         globalThis.useVcsCustomShading = true;
@@ -1324,6 +1324,12 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
 
     if (this._lightIntensity !== defaultOptions.lightIntensity) {
       config.lightIntensity = this._lightIntensity;
+    }
+
+    if (
+      this.useOriginalCesiumShader !== defaultOptions.useOriginalCesiumShader
+    ) {
+      config.useOriginalCesiumShader = this.useOriginalCesiumShader;
     }
 
     return config;

@@ -574,8 +574,8 @@ class TileProvider extends VcsObject {
     if (
       !(
         this.baseLevels.length === defaultOptions.baseLevels?.length &&
-        this.baseLevels.every((level) =>
-          defaultOptions.baseLevels?.includes(level),
+        this.baseLevels.every(
+          (level) => defaultOptions.baseLevels?.includes(level),
         )
       )
     ) {

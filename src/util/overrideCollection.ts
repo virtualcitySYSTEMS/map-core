@@ -93,7 +93,7 @@ function makeOverrideCollection<
   const serialize =
     serializeItem ||
     ((i: T): object & { [moduleIdSymbol]?: string } =>
-      i.toJSON ? i.toJSON() : i);
+      i.toJSON ? i.toJSON() : structuredClone(i));
   const getShadowIndex =
     determineShadowIndex ||
     ((
