@@ -37,8 +37,12 @@ class TileProviderFeatureProvider extends AbstractFeatureProvider {
       coordinate,
       resolution,
     );
+    const checkShow = (feature: Feature): boolean =>
+      this.style ? !!this.style.cesiumStyle.show.evaluate(feature) : true;
     return features.filter((feature) => {
-      return this.vectorProperties.getAllowPicking(feature);
+      return (
+        this.vectorProperties.getAllowPicking(feature) && checkShow(feature)
+      );
     });
   }
 

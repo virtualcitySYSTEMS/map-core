@@ -1,3 +1,8 @@
+### 5.0.2
+
+- Fixed a Bug in VectorTiles, where a hidden Feature by the layer Style could still be clicked with the FeatureInfo tool.
+- Fixed a Bug in the ImageStyleHelper where the Anchor was not correctly returned.
+
 ### 5.0.1
 
 - updates @vcsuite/eslint-config
