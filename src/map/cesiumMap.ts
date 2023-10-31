@@ -36,6 +36,7 @@ import {
   type EntityCluster,
   type DataSource,
   type Visualizer,
+  type ShadowMap,
 } from '@vcmap-cesium/engine';
 import type { Coordinate } from 'ol/coordinate.js';
 
@@ -55,6 +56,7 @@ import CameraLimiter, { CameraLimiterOptions } from './cameraLimiter.js';
 import { mapClassRegistry } from '../classRegistry.js';
 import type LayerCollection from '../util/layerCollection.js';
 import type Layer from '../layer/layer.js';
+import VcsEvent from '../vcsEvent.js';
 
 export type CesiumMapOptions = VcsMapOptions & {
   /**
@@ -327,6 +329,18 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
 
   defaultJDate: JulianDate;
 
+  /**
+   * The defaultShadowMap which is created when calling the constructor of the CesiumWidet in {@link initialize}. This is a reference, not a clone.
+   */
+  private _defaultShadowMap: ShadowMap | null;
+
+  /**
+   * A cache of the shadowMap that is set, before {@link initialize} is called. It is applied as soon the instance is initialized.
+   */
+  private _initialShadowMap: ShadowMap | null;
+
+  shadowMapChanged: VcsEvent<ShadowMap>;
+
   webGLaa: boolean;
 
   globeColor: Color;
@@ -382,6 +396,12 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
     this._screenSpaceListeners = [];
 
     this.defaultJDate = JulianDate.fromDate(new Date(2014, 6, 20, 13, 0, 0, 0));
+
+    this._defaultShadowMap = null;
+
+    this._initialShadowMap = null;
+
+    this.shadowMapChanged = new VcsEvent();
 
     this.webGLaa = parseBoolean(options.webGLaa, defaultOptions.webGLaa);
 
@@ -732,6 +752,13 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
           },
         ),
       );
+
+      this._defaultShadowMap = this._cesiumWidget.scene.shadowMap;
+
+      if (this._initialShadowMap) {
+        this.setShadowMap(this._initialShadowMap);
+        this._initialShadowMap = null;
+      }
     }
     return Promise.resolve();
   }
@@ -1021,6 +1048,40 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
     if (this._cesiumWidget) {
       this._cesiumWidget.scene.globe.enableLighting = value;
     }
+  }
+
+  /**
+   * Sets a shadow map on the scene of the cesiumMaps cesiumWidget. Raises an event if the shadow map changes. This function should be used to set the shadowMap instead of setting it directly on the scene.
+   * @param shadowMap The shadowMap to assign to the scene of the cesium widget.
+   */
+  setShadowMap(shadowMap: ShadowMap): void {
+    if (!shadowMap) {
+      return;
+    }
+
+    if (!this._cesiumWidget) {
+      this._initialShadowMap = shadowMap;
+      return;
+    }
+
+    const { scene } = this._cesiumWidget;
+
+    if (scene.shadowMap !== shadowMap) {
+      scene.shadowMap = shadowMap;
+      this.shadowMapChanged.raiseEvent(shadowMap);
+    }
+  }
+
+  /**
+   * Sets the default shadow map.
+   */
+  setDefaultShadowMap(): void {
+    if (!this._cesiumWidget || !this._defaultShadowMap) {
+      this._initialShadowMap = null;
+      return;
+    }
+
+    this.setShadowMap(this._defaultShadowMap);
   }
 
   /**
@@ -1373,6 +1434,10 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
       this._cesiumWidget.destroy();
       this._cesiumWidget = null;
     }
+
+    this._initialShadowMap = null;
+    this._defaultShadowMap = null;
+    this.shadowMapChanged.destroy();
 
     super.destroy();
   }

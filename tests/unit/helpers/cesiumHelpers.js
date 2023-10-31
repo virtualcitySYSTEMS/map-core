@@ -199,6 +199,8 @@ export function getCesiumMap(mapOptions) {
     resize() {},
   };
 
+  map._defaultShadowMap = scene.shadowMap;
+
   map.screenSpaceEventHandler = new ScreenSpaceEventHandler(
     map._cesiumWidget.scene.canvas,
   );

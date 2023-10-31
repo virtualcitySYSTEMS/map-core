@@ -1,3 +1,7 @@
+### 5.1.0
+
+- added `setShadowMap()` and `shadowMapChanged` event on CesiumMap.
+
 ### 5.0.0
 
 - Changed CI/CD from Node 16 to 18

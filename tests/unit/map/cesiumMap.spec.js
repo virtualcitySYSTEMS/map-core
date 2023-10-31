@@ -1060,4 +1060,47 @@ describe('CesiumMap', () => {
       });
     });
   });
+  describe('setting a shadowMap', () => {
+    let map;
+    let newShadowMap;
+
+    before(async () => {
+      newShadowMap = { enabled: true };
+    });
+
+    beforeEach(() => {
+      map = getCesiumMap();
+    });
+
+    afterEach(() => {
+      map.destroy();
+    });
+
+    it('should set a shadowMap', () => {
+      map.setShadowMap(newShadowMap);
+      expect(map.getScene().shadowMap).to.equal(newShadowMap);
+    });
+    it('should raise the shadowMapChanged event', () => {
+      const changed = sandbox.spy();
+      map.shadowMapChanged.addEventListener(changed);
+      map.setShadowMap(newShadowMap);
+      expect(changed).to.have.been.calledWithExactly(newShadowMap);
+    });
+    it('should only raise the shadowMapChanged event, if the shadow map actually changes', () => {
+      const changed = sandbox.spy();
+      map.shadowMapChanged.addEventListener(changed);
+      map.setShadowMap(map._defaultShadowMap);
+      expect(changed).to.not.have.been.called;
+    });
+    it('should set default shadow map', () => {
+      map.setShadowMap(newShadowMap);
+      map.setDefaultShadowMap();
+      expect(map.getScene().shadowMap).to.equal(map._defaultShadowMap);
+    });
+    it('should set initialShadowMap', () => {
+      const newMap = new CesiumMap({});
+      newMap.setShadowMap(newShadowMap);
+      expect(newMap._initialShadowMap).to.equal(newShadowMap);
+    });
+  });
 });
