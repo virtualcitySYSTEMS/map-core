@@ -1013,6 +1013,8 @@ describe('CesiumMap', () => {
           tileCacheSize: 2,
           webGLaa: true,
           globeColor: '#00ff00',
+          useOriginalCesiumShader: true,
+          lightIntensity: 4,
           cameraLimiter: {
             terrainUrl: 'test',
             limit: 200,
@@ -1057,6 +1059,18 @@ describe('CesiumMap', () => {
         expect(outputConfig)
           .to.have.property('cameraLimiter')
           .and.to.eql(inputConfig.cameraLimiter);
+      });
+
+      it('should configure lightIntensity', () => {
+        expect(outputConfig)
+          .to.have.property('lightIntensity')
+          .and.to.eql(inputConfig.lightIntensity);
+      });
+
+      it('should configure useOriginalCesiumShader', () => {
+        expect(outputConfig)
+          .to.have.property('useOriginalCesiumShader')
+          .and.to.eql(inputConfig.useOriginalCesiumShader);
       });
     });
   });

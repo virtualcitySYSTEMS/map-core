@@ -3,6 +3,22 @@
 - added `setShadowMap()` and `shadowMapChanged` event on CesiumMap.
 - added `hiddenObjects` to `VcsModuleConfig` and to `VcsApp` to globally hide objects from a config.
 
+### 5.0.3
+
+- Fixes a type bug. Augmentation to openlayers & cesium are now properly exported.
+
+### 5.0.2
+
+- Fixed a Bug in VectorTiles, where a hidden Feature by the layer Style could still be clicked with the FeatureInfo tool.
+- Fixed a Bug in the ImageStyleHelper where the Anchor was not correctly returned.
+
+### 5.0.1
+
+- updates @vcsuite/eslint-config
+- updates prettier to v3.0
+- fixes Bug in cesiumMap.toJson function
+- fixes Bug where the OverrideCollection did not create a clone from an item on serialization
+
 ### 5.0.0
 
 - Changed CI/CD from Node 16 to 18

@@ -993,6 +993,33 @@ describe('override collections', () => {
       });
     });
 
+    describe('which has Object Items', () => {
+      let collection;
+      let serializedModule;
+
+      before(() => {
+        collection = makeOverrideCollection(
+          new IndexedCollection(),
+          () => 'foo',
+        );
+
+        collection.override({ name: 'grape' });
+        serializedModule = collection.serializeModule('foo');
+      });
+
+      after(() => {
+        destroyCollection(collection);
+      });
+
+      it('should serialize all items of said module', () => {
+        expect(serializedModule).to.have.lengthOf(1);
+      });
+
+      it('the serialized item should not be the same item', () => {
+        expect(serializedModule[0]).to.not.equal(collection.get(0));
+      });
+    });
+
     describe('which has shadows', () => {
       let items;
       let collection;

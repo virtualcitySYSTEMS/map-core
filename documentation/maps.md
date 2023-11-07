@@ -46,7 +46,7 @@ You can easily define a `div` element and set it as map target.
 Here is a very basic example defining an application container with a map div inside:
 
 ```html
-<!DOCTYPE html>
+<!doctype html>
 <html class="vcs-ui" lang="en">
   <body>
     <div id="mySampleApp" class="myApplication">

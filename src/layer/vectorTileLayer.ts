@@ -217,6 +217,7 @@ class VectorTileLayer extends FeatureLayer<
         });
       this.featureProvider = new TileProviderFeatureProvider(this.name, {
         // XXX this overwrites
+        style: this.style,
         tileProvider: this.tileProvider,
         vectorProperties: this.vectorProperties,
       });

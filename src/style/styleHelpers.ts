@@ -457,8 +457,10 @@ export function getImageStyleOptions(image: ImageStyle): ImageStyleOptions {
     if (image.getOpacity() != null) {
       options.opacity = image.getOpacity();
     }
-    if (image.getAnchor()) {
-      options.anchor = image.getAnchor();
+    if (image.getAnchor() && image.getSize()) {
+      const widthFraction = image.getAnchor()[0] / image.getSize()[0];
+      const heightFraction = image.getAnchor()[1] / image.getSize()[1];
+      options.anchor = [widthFraction, heightFraction];
     }
     return options;
   } else if (image instanceof Circle) {
