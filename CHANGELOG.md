@@ -1,3 +1,7 @@
+### 5.0.3
+
+- Fixes a type bug. Augmentation to openlayers & cesium are now properly exported.
+
 ### 5.0.2
 
 - Fixed a Bug in VectorTiles, where a hidden Feature by the layer Style could still be clicked with the FeatureInfo tool.

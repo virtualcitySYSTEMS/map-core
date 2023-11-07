@@ -17,6 +17,7 @@
     "coverage:gitlab": "c8 --reporter text-summary npm run test -- --reporter mocha-junit-reporter",
     "build-docs": "typedoc index.ts --out docs --skipErrorChecking",
     "build": "tsc && node -e \"require('fs').cpSync('tests/data', 'dist/tests/data', { recursive: true })\"",
+    "postbuild": "node build/postBuild.js",
     "watch": "tsc --watch",
     "prepare": "npm run build"
   },
