@@ -42,6 +42,10 @@ import type LayerCollection from './util/layerCollection.js';
 import type Category from './category/category.js';
 import type TileProvider from './layer/tileProvider/tileProvider.js';
 import type AbstractFeatureProvider from './featureProvider/abstractFeatureProvider.js';
+import {
+  createHiddenObjectsCollection,
+  HiddenObject,
+} from './util/hiddenObjects.js';
 
 function getLogger(): Logger {
   return getLoggerByName('init');
@@ -103,6 +107,8 @@ class VcsApp {
   private _styles: OverrideCollection<StyleItem>;
 
   private _modules: IndexedCollection<VcsModule>;
+
+  private _hiddenObjects: OverrideCollection<HiddenObject>;
 
   private _categoryClassRegisty: OverrideClassRegistry<typeof Category>;
 
@@ -186,6 +192,11 @@ class VcsApp {
     this._modules = new IndexedCollection('_id');
     this._modules.add(this._dynamicModule);
 
+    this._hiddenObjects = createHiddenObjectsCollection(
+      getDynamicModuleId,
+      this._layers.globalHider,
+    );
+
     this._categoryClassRegisty = new OverrideClassRegistry(
       categoryClassRegistry,
     );
@@ -260,6 +271,10 @@ class VcsApp {
 
   get categories(): CategoryCollection {
     return this._categories;
+  }
+
+  get hiddenObject(): OverrideCollection<HiddenObject> {
+    return this._hiddenObjects;
   }
 
   get destroyed(): VcsEvent<void> {
@@ -337,6 +352,7 @@ class VcsApp {
     );
     await this._viewpoints.parseItems(config.viewpoints, module._id);
     await this._maps.parseItems(config.maps, module._id);
+    await this._hiddenObjects.parseItems(config.hiddenObjects, module._id);
 
     if (Array.isArray(config.categories)) {
       await Promise.all(
@@ -424,6 +440,9 @@ class VcsApp {
       this._obliqueCollections.serializeModule(moduleId);
     config.viewpoints = this._viewpoints.serializeModule(moduleId);
     config.styles = this._styles.serializeModule(moduleId);
+    config.hiddenObjects = this._hiddenObjects.serializeModule(
+      moduleId,
+    ) as HiddenObject[];
     config.categories = [...this._categories]
       .map((c) => c.serializeModule(moduleId))
       .filter((c) => !!c) as { name: string; items: object[] }[];
@@ -461,6 +480,7 @@ class VcsApp {
       this._viewpoints.removeModule(moduleId),
       this._styles.removeModule(moduleId),
       this._obliqueCollections.removeModule(moduleId),
+      this._hiddenObjects.removeModule(moduleId),
     ]);
   }
 
@@ -494,6 +514,8 @@ class VcsApp {
     destroyCollection(this._viewpoints);
     destroyCollection(this._styles);
     destroyCollection(this._categories);
+    this._modules.destroy();
+    this._hiddenObjects.destroy();
     this._mapClassRegistry.destroy();
     this._layerClassRegistry.destroy();
     this._styleClassRegistry.destroy();

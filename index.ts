@@ -654,6 +654,10 @@ export {
   maxZIndex,
   default as LayerCollection,
 } from './src/util/layerCollection.js';
+export {
+  HiddenObject,
+  createHiddenObjectsCollection,
+} from './src/util/hiddenObjects.js';
 export { detectBrowserLocale } from './src/util/locale.js';
 export {
   default as MapCollection,

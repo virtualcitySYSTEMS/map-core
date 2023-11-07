@@ -7,6 +7,7 @@ import type { ViewpointOptions } from './util/viewpoint.js';
 import type { ObliqueCollectionOptions } from './oblique/obliqueCollection.js';
 import type VcsApp from './vcsApp.js';
 import { moduleIdSymbol } from './moduleIdSymbol.js';
+import { HiddenObject } from './util/hiddenObjects.js';
 
 export type VcsModuleConfig = {
   _id?: string | undefined;
@@ -23,6 +24,7 @@ export type VcsModuleConfig = {
   projection?: ProjectionOptions;
   obliqueCollections?: ObliqueCollectionOptions[];
   categories?: { name: string; items: object[] }[];
+  hiddenObjects?: HiddenObject[];
 };
 
 /**

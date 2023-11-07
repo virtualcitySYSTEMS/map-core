@@ -11,26 +11,28 @@ The modules are stored in an IndexedCollection, all deserialized objects are add
 You can add a module programmatically as follows:
 
 ```js
-vcsApp.addModule({
-  id: 'myModuleId',
-  layers: [
-    {
-      type: 'CesiumTilesetLayer',
-      name: 'buildings',
-      url: '',
-    },
-  ],
-  styles: [
-    {
-      type: 'DeclarativeStyleItem',
-      name: 'buildingsStyle',
-      declarativeStyle: {
-        show: true,
-        color: 'rgb(${CIR}[0], ${CIR}[1], ${CIR}[2])',
+vcsApp.addModule(
+  new VcsModule({
+    _id: 'myModuleId',
+    layers: [
+      {
+        type: 'CesiumTilesetLayer',
+        name: 'buildings',
+        url: '',
       },
-    },
-  ],
-});
+    ],
+    styles: [
+      {
+        type: 'DeclarativeStyleItem',
+        name: 'buildingsStyle',
+        declarativeStyle: {
+          show: true,
+          color: 'rgb(${CIR}[0], ${CIR}[1], ${CIR}[2])',
+        },
+      },
+    ],
+  }),
+);
 ```
 
 A module can als be removed from the VcsApp, if it's not needed any more.
@@ -64,10 +66,12 @@ Per default the VcsApp sets an _empty_ `defaultDynamicModule` as `dynamicModule`
 The dynamic module can be changed though by calling:
 
 ```js
-vcsApp.setDynamicModule({
-  id: 'myDynamicModule',
+const module = new VcsModule({
+  _id: 'myDynamicModule',
   // ...
 });
+vcsApp.addModule(module);
+vcsApp.setDynamicModule(module);
 ```
 
 To unset the current dynamic module and set it back to the `defaultDynamicModule` call:

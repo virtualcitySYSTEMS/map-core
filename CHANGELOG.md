@@ -1,6 +1,7 @@
 ### 5.1.0
 
 - added `setShadowMap()` and `shadowMapChanged` event on CesiumMap.
+- added `hiddenObjects` to `VcsModuleConfig` and to `VcsApp` to globally hide objects from a config.
 
 ### 5.0.0
 

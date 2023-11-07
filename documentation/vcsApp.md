@@ -17,3 +17,4 @@ An VcsApp consists of the following [collections](../src/util/collection.ts) con
 - [styles](./style.md)
 - viewpoints
 - categories
+- hiddenObjects

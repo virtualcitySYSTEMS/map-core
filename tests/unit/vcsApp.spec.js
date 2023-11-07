@@ -29,6 +29,7 @@ describe('vcsApp', () => {
           maps: [new OpenlayersMap({ name: 'foo' }).toJSON()],
           startingViewpointName: 'foo',
           startingMapName: 'foo',
+          hiddenObjects: [{ id: 'foo' }, { id: 'bar' }],
         });
         app = new VcsApp();
         added = sinon.spy();
@@ -69,6 +70,12 @@ describe('vcsApp', () => {
         const vp = app.maps.activeMap.getViewpointSync();
         expect(vp.equals(startingVp, 10e-8)).to.be.true;
       });
+
+      it('should globaly hide hidden objects', () => {
+        expect(app.layers.globalHider.hiddenObjects).to.have.keys(
+          module.config.hiddenObjects.map((o) => o.id),
+        );
+      });
     });
 
     describe('adding of a second module', () => {
@@ -94,12 +101,14 @@ describe('vcsApp', () => {
           maps: [new OpenlayersMap({ name: 'foo' }).toJSON()],
           startingViewpointName: 'foo',
           startingMapName: 'foo',
+          hiddenObjects: [{ id: 'foo' }, { id: 'bar' }],
         });
         module = new VcsModule({
           layers: [
             new VectorLayer({ name: 'foo', activeOnStartup: true }).toJSON(),
             new VectorLayer({ name: 'baz', activeOnStartup: false }).toJSON(),
           ],
+          hiddenObjects: [{ id: 'foo' }],
         });
 
         app = new VcsApp();
@@ -137,6 +146,11 @@ describe('vcsApp', () => {
         const layer = app.layers.getByKey('bar');
         expect(layer).to.be.an.instanceOf(VectorLayer);
         expect(layer.active || layer.loading).to.be.false; // we do not wait for layers. so all good _as long as its not inactive_
+      });
+
+      it('should only hide an object once module', () => {
+        expect(app.layers.globalHider.hiddenObjects).to.have.property('foo', 1);
+        expect(app.layers.globalHider.hiddenObjects).to.have.property('bar', 1);
       });
     });
 
@@ -270,6 +284,7 @@ describe('vcsApp', () => {
           maps: [new OpenlayersMap({ name: 'foo' }).toJSON()],
           startingViewpointName: 'foo',
           startingMapName: 'foo',
+          hiddenObjects: [{ id: 'foo' }, { id: 'bar' }],
         });
         app = new VcsApp();
         removed = sinon.spy();
@@ -294,6 +309,12 @@ describe('vcsApp', () => {
         expect([...app.layers]).to.be.empty;
         expect([...app.maps]).to.be.empty;
         expect([...app.viewpoints]).to.be.empty;
+      });
+
+      it('should show globaly hidden objects', () => {
+        expect(app.layers.globalHider.hiddenObjects).to.not.have.keys(
+          module.config.hiddenObjects.map((o) => o.id),
+        );
       });
     });
 
