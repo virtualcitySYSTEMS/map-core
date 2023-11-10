@@ -109,7 +109,7 @@ export function createEntities(numberOfEntities = 1) {
 /**
  * @param {import("@vcmap/core").VcsEvent} event
  * @param {sinon.sandbox} [sandbox]
- * @returns {sinon.spy}
+ * @returns {import("sinon").SinonSpy}
  */
 export function getVcsEventSpy(event, sandbox) {
   const spy = (sandbox ?? sinon).spy();

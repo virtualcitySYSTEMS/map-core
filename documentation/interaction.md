@@ -33,7 +33,6 @@ Every time the active event type of the interaction is raised, an `InteractionEv
  * @property {undefined|ObliqueParameters} obliqueParameters - additional parameters from oblique if obliquemode is active
  * @property {import("@vcmap-cesium/engine").Ray|undefined} ray - potential ray
  * @property {boolean|undefined} exactPosition - whether the position is exact, eg with translucentDepthPicking on
- * @api
  */
 ```
 

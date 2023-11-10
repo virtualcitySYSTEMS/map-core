@@ -46,6 +46,9 @@ import {
   createHiddenObjectsCollection,
   HiddenObject,
 } from './util/hiddenObjects.js';
+import FlightInstance, {
+  FlightInstanceOptions,
+} from './util/flight/flightInstance.js';
 
 function getLogger(): Logger {
   return getLoggerByName('init');
@@ -109,6 +112,8 @@ class VcsApp {
   private _modules: IndexedCollection<VcsModule>;
 
   private _hiddenObjects: OverrideCollection<HiddenObject>;
+
+  private _flights: OverrideCollection<FlightInstance>;
 
   private _categoryClassRegisty: OverrideClassRegistry<typeof Category>;
 
@@ -197,6 +202,14 @@ class VcsApp {
       this._layers.globalHider,
     );
 
+    this._flights = makeOverrideCollection(
+      new Collection(),
+      getDynamicModuleId,
+      undefined,
+      (flightOptions: FlightInstanceOptions) =>
+        new FlightInstance(flightOptions),
+    );
+
     this._categoryClassRegisty = new OverrideClassRegistry(
       categoryClassRegistry,
     );
@@ -277,6 +290,10 @@ class VcsApp {
     return this._hiddenObjects;
   }
 
+  get flights(): OverrideCollection<FlightInstance> {
+    return this._flights;
+  }
+
   get destroyed(): VcsEvent<void> {
     return this._destroyed;
   }
@@ -353,6 +370,7 @@ class VcsApp {
     await this._viewpoints.parseItems(config.viewpoints, module._id);
     await this._maps.parseItems(config.maps, module._id);
     await this._hiddenObjects.parseItems(config.hiddenObjects, module._id);
+    await this._flights.parseItems(config.flights, module._id);
 
     if (Array.isArray(config.categories)) {
       await Promise.all(
@@ -443,6 +461,7 @@ class VcsApp {
     config.hiddenObjects = this._hiddenObjects.serializeModule(
       moduleId,
     ) as HiddenObject[];
+    config.flights = this._flights.serializeModule(moduleId);
     config.categories = [...this._categories]
       .map((c) => c.serializeModule(moduleId))
       .filter((c) => !!c) as { name: string; items: object[] }[];
@@ -481,6 +500,7 @@ class VcsApp {
       this._styles.removeModule(moduleId),
       this._obliqueCollections.removeModule(moduleId),
       this._hiddenObjects.removeModule(moduleId),
+      this._flights.removeModule(moduleId),
     ]);
   }
 

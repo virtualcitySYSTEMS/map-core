@@ -58,7 +58,6 @@ The base options of a layer are defined as:
  * @property {string|Object|undefined} url - for most layers, a resource url will be needed
  * @property {Array<string>|undefined} hiddenObjectIds - an array of building ids which should be hidden if this layer is active
  * @property {CopyrightOptions|undefined} copyright
- * @api
  */
 ```
 

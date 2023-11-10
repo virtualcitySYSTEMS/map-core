@@ -8,6 +8,7 @@ import type { ObliqueCollectionOptions } from './oblique/obliqueCollection.js';
 import type VcsApp from './vcsApp.js';
 import { moduleIdSymbol } from './moduleIdSymbol.js';
 import { HiddenObject } from './util/hiddenObjects.js';
+import { FlightInstanceOptions } from './util/flight/flightInstance.js';
 
 export type VcsModuleConfig = {
   _id?: string | undefined;
@@ -25,6 +26,7 @@ export type VcsModuleConfig = {
   obliqueCollections?: ObliqueCollectionOptions[];
   categories?: { name: string; items: object[] }[];
   hiddenObjects?: HiddenObject[];
+  flights?: FlightInstanceOptions[];
 };
 
 /**

@@ -24,6 +24,7 @@ import { getLogger as getLoggerByName, type Logger } from '@vcsuite/logger';
 import VcsEvent from '../vcsEvent.js';
 import { DeclarativeStyleItemOptions } from '../style/declarativeStyleItem.js';
 import { VectorStyleItemOptions } from '../style/vectorStyleItem.js';
+import type { FlightInstanceMeta } from '../util/flight/flightInstance.js';
 
 function getLogger(): Logger {
   return getLoggerByName('VectorProperties');
@@ -152,7 +153,7 @@ export type VcsMeta = VectorPropertiesOptions & {
   style?: VectorStyleItemOptions | DeclarativeStyleItemOptions;
   embeddedIcons?: string[];
   screenSpaceError?: number;
-  flightOptions?: unknown;
+  flightOptions?: FlightInstanceMeta;
   baseUrl?: string;
   /**
    * the layers properties bag

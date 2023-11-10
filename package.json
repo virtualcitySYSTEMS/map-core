@@ -43,6 +43,7 @@
     "@types/node": "^18.17.15",
     "@types/proj4": "^2.5.2",
     "@types/sinon": "^10.0.15",
+    "@types/sinon-chai": "^3.2.12",
     "@types/uuid": "^9.0.1",
     "@vcsuite/eslint-config": "^3.0.5",
     "c8": "^7.7.1",

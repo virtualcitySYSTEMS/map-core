@@ -726,3 +726,34 @@ export {
 } from './src/vcsModuleHelpers.js';
 export { default as VcsObject, VcsObjectOptions } from './src/vcsObject.js';
 export { moduleIdSymbol } from './src/moduleIdSymbol.js';
+export {
+  default as FlightInstance,
+  FlightInstanceOptions,
+  FlightInstanceMeta,
+  FlightInterpolation,
+} from './src/util/flight/flightInstance.js';
+export {
+  FlightAnchor,
+  FlightAnchorGeojsonFeature,
+  anchorToGeojsonFeature,
+  anchorFromGeojsonFeature,
+  anchorFromViewpoint,
+  anchorToViewpoint,
+} from './src/util/flight/flightAnchor.js';
+export {
+  FlightPlayerClock,
+  FlightPlayer,
+  FlightPlayerState,
+  createFlightPlayer,
+} from './src/util/flight/flightPlayer.js';
+export {
+  exportFlightAsGeoJson,
+  exportFlightPathAsGeoJson,
+  getFlightPathCoordinatesFromInstance,
+  getSplineAndTimesForInstance,
+  parseFlightOptionsFromGeoJson,
+} from './src/util/flight/flightHelpers.js';
+export {
+  FlightVisualization,
+  createFlightVisualization,
+} from './src/util/flight/flightVisualizer.js';
