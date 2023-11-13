@@ -3,7 +3,7 @@ import type { MapEvent as OLMapEvent } from 'ol';
 import type { Layer as OLLayer } from 'ol/layer.js';
 import type { Coordinate } from 'ol/coordinate.js';
 
-import { check, checkMaybe } from '@vcsuite/check';
+import { check, maybe, oneOf } from '@vcsuite/check';
 import VcsObject, { VcsObjectOptions } from '../vcsObject.js';
 import LayerCollection from '../util/layerCollection.js';
 import MapState from './mapState.js';
@@ -256,7 +256,7 @@ class VcsMap<
    * Sets the map target.
    */
   setTarget(target: string | HTMLElement | null): void {
-    checkMaybe(target, [String, HTMLElement]);
+    check(target, maybe(oneOf(String, HTMLElement)));
 
     if (this._target) {
       this._target.removeChild(this.mapElement);

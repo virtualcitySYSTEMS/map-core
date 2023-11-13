@@ -1,6 +1,6 @@
 import { type Cesium3DTileset, Matrix4 } from '@vcmap-cesium/engine';
 
-import { checkMaybe } from '@vcsuite/check';
+import { check, maybe } from '@vcsuite/check';
 import { parseInteger } from '@vcsuite/parsers';
 import type { Coordinate } from 'ol/coordinate.js';
 import VectorStyleItem, {
@@ -136,7 +136,7 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
   }
 
   set modelMatrix(modelMatrix: Matrix4 | undefined) {
-    checkMaybe(modelMatrix, Matrix4);
+    check(modelMatrix, maybe(Matrix4));
 
     this._modelMatrix = modelMatrix;
     this.getImplementations().forEach((impl) => {
@@ -154,7 +154,7 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
   }
 
   set offset(offset: Coordinate | undefined) {
-    checkMaybe(offset, [Number]);
+    check(offset, maybe([Number]));
 
     this._offset = offset;
     this.getImplementations().forEach((impl) => {

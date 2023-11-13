@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Cartesian2 } from '@vcmap-cesium/engine';
-import { check, checkMaybe } from '@vcsuite/check';
+import { check, maybe } from '@vcsuite/check';
 import { getLogger as getLoggerByName, type Logger } from '@vcsuite/logger';
 import AbstractInteraction, {
   InteractionEvent,
@@ -165,8 +165,8 @@ class EventHandler {
   ): () => void {
     check(interaction, AbstractInteraction);
     check(removed, Function);
-    checkMaybe(index, Number);
-    checkMaybe(id, String);
+    check(index, maybe(Number));
+    check(id, maybe(String));
 
     if (this._exclusiveInteraction && this._exclusiveInteraction.id !== id) {
       this.removeExclusive();

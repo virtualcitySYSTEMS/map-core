@@ -7,7 +7,7 @@ import {
 import { register } from 'ol/proj/proj4.js';
 import type { Coordinate } from 'ol/coordinate.js';
 import proj4 from 'proj4';
-import { check } from '@vcsuite/check';
+import { check, maybe, oneOf } from '@vcsuite/check';
 
 export type ProjectionOptions = {
   type?: string;
@@ -102,7 +102,10 @@ function registerProjection(options: ProjectionOptions): ProjectionOptions {
  * projection created prior to this functions call.
  */
 export function setDefaultProjectionOptions(options: ProjectionOptions): void {
-  check(options, { epsg: [String, Number], proj4: [String, undefined, null] });
+  check(options, {
+    epsg: oneOf(String, Number),
+    proj4: maybe(String),
+  });
   if (!validateProjectionOptions(options)) {
     throw new Error('Cannot set invalid projection options as default options');
   }

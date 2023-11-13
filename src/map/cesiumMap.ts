@@ -40,7 +40,7 @@ import {
 } from '@vcmap-cesium/engine';
 import type { Coordinate } from 'ol/coordinate.js';
 
-import { checkMaybe } from '@vcsuite/check';
+import { check, maybe } from '@vcsuite/check';
 import { parseBoolean, parseInteger, parseNumber } from '@vcsuite/parsers';
 import VcsMap, { type VcsMapOptions } from './vcsMap.js';
 import Viewpoint from '../util/viewpoint.js';
@@ -479,7 +479,7 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
   }
 
   set cameraLimiter(limiter: CameraLimiter | null) {
-    checkMaybe(limiter, CameraLimiter);
+    check(limiter, maybe(CameraLimiter));
 
     if (this._cameraLimiter !== limiter) {
       this._cameraLimiter = limiter;

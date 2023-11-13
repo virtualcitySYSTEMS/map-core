@@ -6,7 +6,7 @@ import {
   sampleTerrain,
   sampleTerrainMostDetailed,
 } from '@vcmap-cesium/engine';
-import { checkMaybe } from '@vcsuite/check';
+import { check, maybe } from '@vcsuite/check';
 import { parseInteger, parseNumber, parseEnumValue } from '@vcsuite/parsers';
 import {
   getTerrainProviderForUrl,
@@ -111,7 +111,7 @@ class CameraLimiter {
   }
 
   set terrainUrl(url: string | undefined) {
-    checkMaybe(url, String);
+    check(url, maybe(String));
 
     if (this._terrainUrl !== url) {
       this._terrainUrl = url;

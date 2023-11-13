@@ -10,7 +10,7 @@ import {
   NearFarScalar,
   type SphereGeometry,
 } from '@vcmap-cesium/engine';
-import { check, checkMaybe } from '@vcsuite/check';
+import { check, maybe, ofEnum } from '@vcsuite/check';
 import type { Coordinate } from 'ol/coordinate.js';
 import type { Color } from 'ol/color.js';
 import type { ColorLike } from 'ol/colorlike.js';
@@ -485,7 +485,7 @@ class VectorProperties {
 
   set altitudeMode(altitudeMode: HeightReference) {
     if (altitudeMode !== this._altitudeMode) {
-      check(altitudeMode, Object.values(HeightReference));
+      check(altitudeMode, ofEnum(HeightReference));
       this._altitudeMode = altitudeMode;
       this.propertyChanged.raiseEvent(['altitudeMode']);
     }
@@ -522,7 +522,7 @@ class VectorProperties {
 
   set classificationType(classificationType: ClassificationType | undefined) {
     if (classificationType !== this._classificationType) {
-      checkMaybe(classificationType, Object.values(ClassificationType));
+      check(classificationType, maybe(ofEnum(ClassificationType)));
       this._classificationType = classificationType;
       this.propertyChanged.raiseEvent(['classificationType']);
     }
@@ -542,7 +542,7 @@ class VectorProperties {
 
   set scaleByDistance(value: NearFarScalar | undefined) {
     if (!NearFarScalar.equals(value, this._scaleByDistance)) {
-      checkMaybe(value, NearFarScalar);
+      check(value, maybe(NearFarScalar));
       this._scaleByDistance = value;
       this.propertyChanged.raiseEvent(['scaleByDistance']);
     }
@@ -561,7 +561,7 @@ class VectorProperties {
 
   set eyeOffset(value: Cartesian3 | undefined) {
     if (!Cartesian3.equals(this.eyeOffset, value)) {
-      checkMaybe(value, Cartesian3);
+      check(value, maybe(Cartesian3));
       this._eyeOffset = value;
       this.propertyChanged.raiseEvent(['eyeOffset']);
     }
@@ -625,7 +625,7 @@ class VectorProperties {
 
   set groundLevel(value: number | undefined) {
     if (value !== this._groundLevel) {
-      checkMaybe(value, Number);
+      check(value, maybe(Number));
       this._groundLevel = value;
       this.propertyChanged.raiseEvent(['groundLevel']);
     }
@@ -732,7 +732,7 @@ class VectorProperties {
   }
 
   set modelUrl(value: string | undefined) {
-    checkMaybe(value, String);
+    check(value, maybe(String));
 
     if (this._modelUrl !== value) {
       this._modelUrl = value;
@@ -856,7 +856,7 @@ class VectorProperties {
   }
 
   set modelOptions(modelOptions: Record<string, unknown> | undefined) {
-    checkMaybe(modelOptions, Object);
+    check(modelOptions, maybe(Object));
 
     if (this._modelOptions !== modelOptions) {
       this._modelOptions = modelOptions;
@@ -886,7 +886,7 @@ class VectorProperties {
   }
 
   set modelAutoScale(value: boolean) {
-    checkMaybe(value, Boolean);
+    check(value, maybe(Boolean));
 
     const booleanValue = !!value;
     if (this._modelAutoScale !== booleanValue) {
@@ -907,7 +907,7 @@ class VectorProperties {
   }
 
   set baseUrl(value: string | undefined) {
-    checkMaybe(value, String);
+    check(value, maybe(String));
 
     if (this._baseUrl !== value) {
       this._baseUrl = value;
@@ -925,7 +925,7 @@ class VectorProperties {
   }
 
   set primitiveOptions(value: VectorPropertiesPrimitiveOptions | undefined) {
-    checkMaybe(value, Object);
+    check(value, maybe(Object));
 
     if (this._primitiveOptions !== value) {
       this._primitiveOptions = value;

@@ -16,7 +16,7 @@ import type {
 } from '@vcmap-cesium/engine';
 
 import { v4 as uuidv4 } from 'uuid';
-import { check } from '@vcsuite/check';
+import { check, oneOf } from '@vcsuite/check';
 import { parseBoolean } from '@vcsuite/parsers';
 import Projection, {
   getDefaultProjection,
@@ -415,7 +415,7 @@ class VectorLayer
    * sets the highlightstyle of this layer
    */
   setHighlightStyle(style: Style | StyleFunction | VectorStyleItem): void {
-    check(style, [Style, VectorStyleItem, Function]);
+    check(style, oneOf(Style, VectorStyleItem, Function));
     if (style instanceof VectorStyleItem) {
       this.highlightStyle = style;
     } else {
@@ -500,7 +500,7 @@ class VectorLayer
    * feature geometries are always in EPSG 3857 mercator coordinate system
    */
   getFeaturesById(ids: (string | number)[]): Feature[] {
-    check(ids, [[String, Number]]);
+    check(ids, [oneOf(String, Number)]);
     return ids
       .map((id) => this.getFeatureById(id))
       .filter((f) => f != null) as Feature[];

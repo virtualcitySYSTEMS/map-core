@@ -1,4 +1,4 @@
-import { check, checkMaybe } from '@vcsuite/check';
+import { check, maybe, oneOf } from '@vcsuite/check';
 import { getLogger } from '@vcsuite/logger';
 import VcsEvent from '../vcsEvent.js';
 import Collection from './collection.js';
@@ -240,7 +240,7 @@ class MapCollection extends Collection<VcsMap> {
    * Set the target for these maps.
    */
   setTarget(target: string | HTMLElement): void {
-    checkMaybe(target, [String, HTMLElement]);
+    check(target, maybe(oneOf(String, HTMLElement)));
 
     this._target =
       typeof target === 'string' ? document.getElementById(target) : target;

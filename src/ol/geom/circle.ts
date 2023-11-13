@@ -26,7 +26,7 @@ Circle.prototype.setCoordinates = function setCoordinates(
   coordinates: [Coordinate, Coordinate],
   optLayout?: GeometryLayout,
 ): void {
-  check(coordinates, [[Number]]);
+  check(coordinates as [Coordinate, Coordinate], [[Number]]);
   check(coordinates.length, 2);
 
   const layout = optLayout || this.getLayout();

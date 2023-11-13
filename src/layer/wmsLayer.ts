@@ -1,4 +1,4 @@
-import { check } from '@vcsuite/check';
+import { check, oneOf } from '@vcsuite/check';
 import { parseBoolean } from '@vcsuite/parsers';
 import type { Size } from 'ol/size.js';
 
@@ -190,7 +190,7 @@ class WMSLayer extends RasterLayer<WmsCesiumImpl | WmsOpenlayersImpl> {
    * @param  layers - a layer name or an array of layer names
    */
   async setLayers(layers: string | string[]): Promise<void> {
-    check(layers, [String, [String]]);
+    check(layers, oneOf(String, [String]));
     const layersArray = Array.isArray(layers) ? layers : [layers];
     this.parameters.LAYERS = layersArray.join(',');
     await this.forceRedraw();

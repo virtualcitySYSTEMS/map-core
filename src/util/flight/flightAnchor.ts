@@ -1,4 +1,4 @@
-import { check, checkMaybe, is } from '@vcsuite/check';
+import { check, is, maybe, PatternFor } from '@vcsuite/check';
 import { v4 as uuidv4 } from 'uuid';
 import type { Feature as GeojsonFeature, Point as GeojsonPoint } from 'geojson';
 import { type Coordinate, equals as coordinateEquals } from 'ol/coordinate.js';
@@ -27,30 +27,24 @@ export type FlightAnchor = FlightAnchorFeatureProperties & {
 
 type FlightAnchorOptions = Omit<FlightAnchor, 'changed' | 'destroy'>;
 
+const flightAnchorOptionsPattern: PatternFor<FlightAnchorOptions> = {
+  name: String,
+  coordinate: [Number],
+  heading: Number,
+  pitch: Number,
+  roll: Number,
+  duration: Number,
+  title: maybe(String),
+};
+
 function isOptions(options: unknown): options is FlightAnchorOptions {
   return (
-    is(options, {
-      name: String,
-      coordinate: [Number],
-      heading: Number,
-      pitch: Number,
-      roll: Number,
-      duration: Number,
-      title: [String, null, undefined],
-    }) && (options as FlightAnchorOptions).coordinate.length === 3
+    is(options, flightAnchorOptionsPattern) && options.coordinate.length === 3
   );
 }
 
 function fromOptions(options: FlightAnchorOptions): FlightAnchor {
-  check(options, {
-    name: String,
-    coordinate: [Number],
-    heading: Number,
-    pitch: Number,
-    roll: Number,
-    duration: Number,
-    title: [String, null, undefined],
-  });
+  check(options, flightAnchorOptionsPattern);
 
   const changed = new VcsEvent<void>();
   const { name } = options;
@@ -120,7 +114,7 @@ function fromOptions(options: FlightAnchorOptions): FlightAnchor {
       return title;
     },
     set title(value: string | undefined) {
-      checkMaybe(value, String);
+      check(value, maybe(String));
 
       if (title !== value) {
         title = value;

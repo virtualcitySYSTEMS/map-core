@@ -13,7 +13,7 @@ import { Color as OLColor } from 'ol/color.js';
 import { ColorLike as OLColorLike } from 'ol/colorlike.js';
 import type { Feature } from 'ol/index.js';
 
-import { check, checkMaybe } from '@vcsuite/check';
+import { check, maybe, oneOf, strict } from '@vcsuite/check';
 import StyleItem, { StyleItemOptions } from './styleItem.js';
 import {
   parseColor,
@@ -172,7 +172,7 @@ class VectorStyleItem extends StyleItem {
       try {
         option.color = parseColor(option.color as ColorType);
         check(option.color, [Number]);
-        check(option.color.length, [3, 4]);
+        check(option.color.length, oneOf(3, 4));
       } catch (e) {
         this.getLogger().error((e as Error).message);
         option.color = [255, 255, 255, 0.4];
@@ -306,15 +306,16 @@ class VectorStyleItem extends StyleItem {
       return;
     }
     if (patternOptions) {
-      checkMaybe(
+      check(
         patternOptions,
-        {
-          color: [String, [Number]],
-          width: Number,
-          type: Number,
-          size: [Number, undefined, null],
-        },
-        true,
+        maybe(
+          strict({
+            color: oneOf(String, [Number]),
+            width: Number,
+            type: Number,
+            size: maybe(Number),
+          }),
+        ),
       );
       this._fillOptions.pattern = patternOptions;
     } else {
@@ -330,7 +331,7 @@ class VectorStyleItem extends StyleItem {
   set stroke(stroke: Stroke | undefined) {
     this.exclude.stroke = false;
     if (this._style instanceof Style) {
-      checkMaybe(stroke, Stroke);
+      check(stroke, maybe(Stroke));
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore // bug in ol
       this._style.setStroke(stroke);
@@ -346,7 +347,7 @@ class VectorStyleItem extends StyleItem {
   }
 
   set label(label: string | undefined) {
-    checkMaybe(label, String);
+    check(label, maybe(String));
     if (!label) {
       this._label = undefined;
     } else {
@@ -363,7 +364,7 @@ class VectorStyleItem extends StyleItem {
 
   set text(text: OLText | undefined) {
     if (this._style instanceof Style) {
-      checkMaybe(text, OLText);
+      check(text, maybe(OLText));
       this._text = text;
       this._text?.setText?.(this._label);
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -381,7 +382,7 @@ class VectorStyleItem extends StyleItem {
   set image(image: OLImage | undefined) {
     this.exclude.image = false;
     if (this._style instanceof Style) {
-      checkMaybe(image, OLImage);
+      check(image, maybe(OLImage));
       this._image = image;
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore // bug in ol
@@ -397,7 +398,7 @@ class VectorStyleItem extends StyleItem {
   }
 
   set style(style: Style | StyleFunction) {
-    checkMaybe(style, [Style, Function]);
+    check(style, maybe(oneOf(Style, Function)));
     if (style instanceof Style) {
       this._stroke = style.getStroke();
       this._fill = style.getFill();
@@ -816,7 +817,7 @@ class VectorStyleItem extends StyleItem {
    * @param  section - one of fill, stroke, image
    */
   unset(section: keyof VectorStyleItemExclusion): void {
-    check(section, Object.keys(this.exclude));
+    check(section, oneOf(...Object.keys(this.exclude)));
     if (section === 'fill') {
       this.fillColor = undefined;
     } else {

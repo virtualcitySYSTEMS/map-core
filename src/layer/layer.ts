@@ -1,4 +1,4 @@
-import { check, checkMaybe } from '@vcsuite/check';
+import { check, maybe, oneOf, recordOf } from '@vcsuite/check';
 import { parseBoolean, parseInteger } from '@vcsuite/parsers';
 import VcsObject, { VcsObjectOptions } from '../vcsObject.js';
 import Extent, { type ExtentOptions } from '../util/extent.js';
@@ -254,7 +254,7 @@ class Layer<
   }
 
   set url(url: string | Record<string, string>) {
-    check(url, [String, Object]);
+    check(url, oneOf(String, recordOf(String)));
 
     if (this._url !== url) {
       const currentValue = this._url;
@@ -285,7 +285,7 @@ class Layer<
   }
 
   setGlobalHider(globalHider?: GlobalHider): void {
-    checkMaybe(globalHider, GlobalHider);
+    check(globalHider, maybe(GlobalHider));
 
     if (globalHider && this.active) {
       globalHider.hideObjects(this.hiddenObjectIds);
@@ -308,7 +308,7 @@ class Layer<
   }
 
   set exclusiveGroups(groups: (string | symbol)[]) {
-    check(groups, [[String, Symbol]]);
+    check(groups, [oneOf(String, Symbol)]);
 
     if (
       groups.length !== this._exclusiveGroups.length ||

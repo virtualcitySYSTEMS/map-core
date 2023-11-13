@@ -1,4 +1,4 @@
-import { is, check } from '@vcsuite/check';
+import { is, check, oneOf } from '@vcsuite/check';
 import { getLogger, type Logger } from '@vcsuite/logger';
 import OverrideClassRegistry from './overrideClassRegistry.js';
 import type Layer from './layer/layer.js';
@@ -119,7 +119,7 @@ export function getObjectFromClassRegistry<T extends Ctor<T>>(
   ...args: unknown[]
 ): InstanceType<T> | null {
   // move to classReg
-  if (!is(classRegistry, [ClassRegistry, OverrideClassRegistry])) {
+  if (!is(classRegistry, oneOf(ClassRegistry, OverrideClassRegistry))) {
     logger().error(
       `ObjectCreation failed: no class registry provided for ${String(
         options.type,

@@ -1,6 +1,6 @@
 import Style, { type StyleFunction } from 'ol/style/Style.js';
 
-import { check } from '@vcsuite/check';
+import { check, oneOf } from '@vcsuite/check';
 import { parseInteger } from '@vcsuite/parsers';
 import { SplitDirection } from '@vcmap-cesium/engine';
 import Layer, {
@@ -176,7 +176,7 @@ class FeatureLayer<
    * Sets the style based on a styleName on a layer
    */
   setStyle(style: Style | StyleFunction | StyleItem, silent?: boolean): void {
-    check(style, [Style, StyleItem, Function]);
+    check(style, oneOf(Style, StyleItem, Function));
 
     if (style instanceof StyleItem) {
       this._style = style;

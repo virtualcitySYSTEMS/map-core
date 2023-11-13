@@ -1,4 +1,4 @@
-import { check } from '@vcsuite/check';
+import { check, ofEnum } from '@vcsuite/check';
 import { Circle, Fill, Style, Stroke } from 'ol/style.js';
 import type { Feature } from 'ol/index.js';
 import { createSync } from '../../layer/vectorSymbols.js';
@@ -298,7 +298,7 @@ function startSelectFeaturesSession(
       return currentSelectionMode;
     },
     setMode(newMode: SelectionMode): void {
-      check(newMode, Object.values(SelectionMode));
+      check(newMode, ofEnum(SelectionMode));
 
       createSelectInteraction(newMode);
       modeChanged.raiseEvent(currentSelectionMode);

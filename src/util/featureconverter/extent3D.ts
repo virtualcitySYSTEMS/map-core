@@ -13,7 +13,7 @@ class Extent3D {
   static fromArray(
     array: [number, number, number, number, number, number],
   ): Extent3D {
-    check(array, [Number]);
+    check(array as [number, number, number, number, number, number], [Number]);
     check(array.length, 6);
     return new Extent3D(
       array[0],

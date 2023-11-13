@@ -1,4 +1,4 @@
-import { check } from '@vcsuite/check';
+import { check, ofEnum } from '@vcsuite/check';
 import { Feature } from 'ol';
 import type { Geometry } from 'ol/geom.js';
 import VcsEvent from '../../vcsEvent.js';
@@ -94,7 +94,7 @@ function startCreateFeatureSession<T extends GeometryType>(
 ): CreateFeatureSession<T> {
   check(app, VcsApp);
   check(layer, VectorLayer);
-  check(geometryType, Object.values(GeometryType));
+  check(geometryType, ofEnum(GeometryType));
 
   const {
     interactionChain,

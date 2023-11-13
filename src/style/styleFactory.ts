@@ -1,4 +1,4 @@
-import { is } from '@vcsuite/check';
+import { is, oneOf } from '@vcsuite/check';
 import StyleItem, { StyleItemOptions } from './styleItem.js';
 import {
   DeclarativeStyleItemOptions,
@@ -15,7 +15,7 @@ export function getStyleOrDefaultStyle(
     | StyleItem,
   defaultStyle?: StyleItem,
 ): StyleItem {
-  if (is(styleOptions, [StyleItem, { type: String }])) {
+  if (is(styleOptions, oneOf(StyleItem, { type: String }))) {
     if (styleOptions instanceof StyleItem) {
       return styleOptions;
     } else {

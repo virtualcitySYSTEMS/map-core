@@ -1,4 +1,4 @@
-import { checkMaybe } from '@vcsuite/check';
+import { check, maybe, oneOf } from '@vcsuite/check';
 // eslint-disable-next-line import/no-named-default
 import type { default as OLStyle, StyleFunction } from 'ol/style/Style.js';
 import CesiumTilesetLayer, {
@@ -80,7 +80,7 @@ class PointCloudLayer extends CesiumTilesetLayer {
   }
 
   set pointSize(size: string | number | undefined) {
-    checkMaybe(size, [Number, String]);
+    check(size, maybe(oneOf(Number, String)));
     this._pointSize = size;
     (this.style as DeclarativeStyleItem).pointSize = size?.toString();
   }

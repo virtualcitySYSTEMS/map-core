@@ -3,6 +3,7 @@
 - added `setShadowMap()` and `shadowMapChanged` event on CesiumMap.
 - added `hiddenObjects` to `VcsModuleConfig` and to `VcsApp` to globally hide objects from a config.
 - introduces `Flight`, a way to define a camera path and then play an animation.
+- update check library to v2.
 
 ### 5.0.3
 
