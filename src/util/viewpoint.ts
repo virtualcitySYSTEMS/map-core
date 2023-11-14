@@ -1,4 +1,5 @@
 import type { Coordinate } from 'ol/coordinate.js';
+import { containsCoordinate } from 'ol/extent.js';
 import { EasingFunction } from '@vcmap-cesium/engine';
 import { parseBoolean, parseNumber } from '@vcsuite/parsers';
 import Projection, { wgs84Projection } from './projection.js';
@@ -159,12 +160,27 @@ class Viewpoint extends VcsObject {
    */
   easingFunctionName: string | undefined;
 
+  static getDefaultOptions(): ViewpointOptions {
+    return {
+      cameraPosition: undefined,
+      groundPosition: undefined,
+      distance: 1000,
+      heading: 0,
+      pitch: -90,
+      roll: 0,
+      animate: false,
+      duration: undefined,
+      easingFunctionName: undefined,
+    };
+  }
+
   /**
    * @param  options
    */
   constructor(options: ViewpointOptions) {
     super(options);
 
+    const defaultOptions = Viewpoint.getDefaultOptions();
     this.cameraPosition = null;
     if (
       Array.isArray(options.cameraPosition) &&
@@ -179,12 +195,12 @@ class Viewpoint extends VcsObject {
     }
     this.distance = parseNumber(
       options.distance,
-      this.cameraPosition ? this.cameraPosition[2] : 1000,
+      this.cameraPosition ? this.cameraPosition[2] : defaultOptions.distance,
     );
-    this.heading = parseNumber(options.heading, 0);
-    this.pitch = parseNumber(options.pitch, -90);
-    this.roll = parseNumber(options.roll, 0);
-    this.animate = parseBoolean(options.animate, false);
+    this.heading = parseNumber(options.heading, defaultOptions.heading);
+    this.pitch = parseNumber(options.pitch, defaultOptions.pitch);
+    this.roll = parseNumber(options.roll, defaultOptions.roll);
+    this.animate = parseBoolean(options.animate, defaultOptions.animate);
     this.duration = parseNumber(options.duration);
     this.easingFunctionName = options.easingFunctionName;
   }
@@ -341,13 +357,17 @@ class Viewpoint extends VcsObject {
       this.cameraPosition &&
       Array.isArray(this.cameraPosition) &&
       this.cameraPosition.length === 3 &&
-      this.cameraPosition.every((position) => Number.isFinite(position));
+      this.cameraPosition.every((position) => Number.isFinite(position)) &&
+      containsCoordinate(Extent.WGS_84_EXTENT, this.cameraPosition);
+
     const hasGround =
       this.groundPosition &&
       Array.isArray(this.groundPosition) &&
       this.groundPosition.length > 1 &&
       this.groundPosition.length < 4 &&
-      this.groundPosition.every((position) => Number.isFinite(position));
+      this.groundPosition.every((position) => Number.isFinite(position)) &&
+      containsCoordinate(Extent.WGS_84_EXTENT, this.groundPosition);
+
     if (!hasGround && !hasCamera) {
       return false;
     }

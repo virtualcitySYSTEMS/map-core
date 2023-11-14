@@ -4,6 +4,8 @@
 - added `hiddenObjects` to `VcsModuleConfig` and to `VcsApp` to globally hide objects from a config.
 - introduces `Flight`, a way to define a camera path and then play an animation.
 - update check library to v2.
+- `Viewpoint` now has `getDefaultOptions` and is only valid, if the positions are
+  within the WGS84 bounds.
 
 ### 5.0.3
 
