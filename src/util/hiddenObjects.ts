@@ -3,9 +3,11 @@ import makeOverrideCollection, {
   OverrideCollection,
 } from './overrideCollection.js';
 import Collection from './collection.js';
+import { moduleIdSymbol } from '../moduleIdSymbol.js';
 
 export type HiddenObject = {
   id: string;
+  [moduleIdSymbol]?: string;
 };
 
 export function createHiddenObjectsCollection(
