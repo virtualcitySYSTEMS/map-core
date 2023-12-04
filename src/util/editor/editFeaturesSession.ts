@@ -77,7 +77,7 @@ function clearAllowPicking(
   }
 }
 
-export type EditFeaturesSession = EditorSession & {
+export type EditFeaturesSession = EditorSession<SessionType.EDIT_FEATURES> & {
   readonly mode: TransformationMode;
   /**
    * Function for rotating features. Takes angle in radians as parameter.

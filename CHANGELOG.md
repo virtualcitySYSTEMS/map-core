@@ -6,6 +6,12 @@
 - update check library to v2.
 - `Viewpoint` now has `getDefaultOptions` and is only valid, if the positions are
   within the WGS84 bounds.
+- Fixes multiple bugs on flights:
+  - FlightInstanceOptions now extend VcsObjectOptions
+  - Fixes bug where FlightPlayer stopped with disabled input
+  - Fixes bug where removing an anchor crashed flightInstance
+  - Fixes a bug where first anchor was not visualized on creation
+  - Adds an API to access active flight Player `getActiveFlightPlayer(app)`
 
 ### 5.0.3
 

@@ -555,6 +555,7 @@ export { default as TranslateVertexInteraction } from './src/util/editor/interac
 export {
   getDefaultHighlightStyle,
   default as startSelectFeaturesSession,
+  SelectFeaturesSession,
 } from './src/util/editor/selectFeaturesSession.js';
 export { default as create2DHandlers } from './src/util/editor/transformation/create2DHandlers.js';
 export { default as create3DHandlers } from './src/util/editor/transformation/create3DHandlers.js';
@@ -745,6 +746,7 @@ export {
   FlightPlayer,
   FlightPlayerState,
   createFlightPlayer,
+  getActiveFlightPlayer,
 } from './src/util/flight/flightPlayer.js';
 export {
   exportFlightAsGeoJson,

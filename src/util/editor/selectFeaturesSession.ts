@@ -117,7 +117,7 @@ export function getDefaultHighlightStyle(): Style {
   });
 }
 
-type SelectFeaturesSession = EditorSession & {
+export type SelectFeaturesSession = EditorSession<SessionType.SELECT> & {
   currentFeatures: Feature[];
   firstFeature: Feature | null;
   featuresChanged: VcsEvent<Feature[]>;

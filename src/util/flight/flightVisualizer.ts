@@ -81,9 +81,6 @@ export async function createFlightVisualization(
   const setFeatures = (): void => {
     layer.removeAllFeatures();
     primitives.removeAll();
-    if (!instance.isValid()) {
-      return;
-    }
 
     const features: Feature<Point | LineString>[] = [];
     for (const anchor of instance.anchors) {
@@ -115,14 +112,17 @@ export async function createFlightVisualization(
       );
     }
 
-    const pathCoordinates = getFlightPathCoordinatesFromInstance(instance);
+    if (instance.isValid()) {
+      const pathCoordinates = getFlightPathCoordinatesFromInstance(instance);
 
-    const flightPath = new Feature({
-      geometry: new LineString(pathCoordinates, 'XYZ'),
-    });
-    flightPath.setId('flightPathGeom');
+      const flightPath = new Feature({
+        geometry: new LineString(pathCoordinates, 'XYZ'),
+      });
+      flightPath.setId('flightPathGeom');
 
-    features.push(flightPath);
+      features.push(flightPath);
+    }
+
     layer.addFeatures(features);
     const mercatorExtent = layer.getSource().getExtent();
     extent = mercatorToWgs84Transformer(mercatorExtent, mercatorExtent, 2);

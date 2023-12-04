@@ -21,12 +21,13 @@ import geometryIsValid from './validateGeoemetry.js';
 import ObliqueMap from '../../map/obliqueMap.js';
 import { cursorMap } from './interactions/editGeometryMouseOverInteraction.js';
 
-export type CreateFeatureSession<T extends GeometryType> = EditorSession & {
-  geometryType: T;
-  featureCreated: VcsEvent<Feature<GeometryToType<T>>>;
-  creationFinished: VcsEvent<Feature<GeometryToType<T>> | null>;
-  finish(): void;
-};
+export type CreateFeatureSession<T extends GeometryType> =
+  EditorSession<SessionType.CREATE> & {
+    geometryType: T;
+    featureCreated: VcsEvent<Feature<GeometryToType<T>>>;
+    creationFinished: VcsEvent<Feature<GeometryToType<T>> | null>;
+    finish(): void;
+  };
 
 type InteractionOfGeometryType<T extends GeometryType> =
   T extends GeometryType.Point

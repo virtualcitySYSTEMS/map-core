@@ -22,8 +22,8 @@ export enum SessionType {
  * event handler.
  * A stopped session will be destroyed and can no longer be used.
  */
-export type EditorSession = {
-  type: SessionType;
+export type EditorSession<T extends SessionType = SessionType> = {
+  type: T;
   stop(): void;
   stopped: VcsEvent<void>;
 };

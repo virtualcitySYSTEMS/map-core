@@ -1,7 +1,7 @@
 import type { FeatureCollection, Point as GeojsonPoint } from 'geojson';
 import { parseBoolean, parseNumber } from '@vcsuite/parsers';
 import { check, oneOf } from '@vcsuite/check';
-import VcsObject from '../../vcsObject.js';
+import VcsObject, { VcsObjectOptions } from '../../vcsObject.js';
 import VcsEvent from '../../vcsEvent.js';
 import { parseFlightOptionsFromGeoJson } from './flightHelpers.js';
 import { requestJson } from '../fetch.js';
@@ -16,8 +16,7 @@ import { destroyCollection } from '../../vcsModuleHelpers.js';
 
 export type FlightInterpolation = 'spline' | 'linear';
 
-export type FlightInstanceMeta = {
-  name?: string;
+export type FlightInstanceMeta = VcsObjectOptions & {
   multiplier?: number;
   interpolation?: FlightInterpolation;
   loop?: boolean;

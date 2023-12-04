@@ -43,7 +43,16 @@ export type FlightPlayer = {
   destroy(): void;
 };
 
-const flightPlayerSymbol = Symbol('flightPlayer');
+function getDefaultFlightPlayerClock(): FlightPlayerClock {
+  return {
+    startTime: 0,
+    endTime: 0,
+    currentTime: 0,
+    times: [],
+  };
+}
+
+export const flightPlayerSymbol = Symbol('flightPlayer');
 export async function createFlightPlayer(
   instance: FlightInstance,
   app: VcsApp & { [flightPlayerSymbol]?: FlightPlayer },
@@ -65,12 +74,7 @@ export async function createFlightPlayer(
     otherPlayer.destroy();
   }
 
-  const clock: FlightPlayerClock = {
-    startTime: 0,
-    endTime: 0,
-    currentTime: 0,
-    times: [],
-  };
+  const clock: FlightPlayerClock = getDefaultFlightPlayerClock();
 
   let playerState: FlightPlayerState = 'stopped';
 
@@ -110,12 +114,17 @@ export async function createFlightPlayer(
   };
 
   const updateSplines = (): void => {
-    const splines = getSplineAndTimesForInstance(instance);
+    if (!instance.isValid()) {
+      stop();
+      Object.assign(clock, getDefaultFlightPlayerClock());
+    } else {
+      const splines = getSplineAndTimesForInstance(instance);
 
-    ({ destinationSpline, quaternionSpline } = splines);
-    const { times } = splines;
-    clock.endTime = times[times.length - 1];
-    clock.times = times;
+      ({ destinationSpline, quaternionSpline } = splines);
+      const { times } = splines;
+      clock.endTime = times[times.length - 1];
+      clock.times = times;
+    }
   };
   updateSplines();
 
@@ -173,8 +182,10 @@ export async function createFlightPlayer(
       ),
     };
     scene.camera.setView(view);
-    if (screenSpaceCameraController) {
-      screenSpaceCameraController.enableInputs = false;
+    if (playerState === 'playing') {
+      if (screenSpaceCameraController) {
+        screenSpaceCameraController.enableInputs = false;
+      }
     }
   };
 
@@ -318,4 +329,10 @@ export async function createFlightPlayer(
 
   app[flightPlayerSymbol] = player;
   return player;
+}
+
+export function getActiveFlightPlayer(
+  app: VcsApp & { [flightPlayerSymbol]?: FlightPlayer },
+): FlightPlayer | undefined {
+  return app?.[flightPlayerSymbol];
 }

@@ -31,7 +31,7 @@ import MapInteractionController from './interactions/mapInteractionController.js
 import type VectorLayer from '../../layer/vectorLayer.js';
 import type VcsApp from '../../vcsApp.js';
 
-export type EditGeometrySession = EditorSession & {
+export type EditGeometrySession = EditorSession<SessionType.EDIT_GEOMETRY> & {
   setFeature(feature: Feature): void;
   feature: Feature | null;
 };
