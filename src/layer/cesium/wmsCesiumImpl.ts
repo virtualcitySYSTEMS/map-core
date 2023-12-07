@@ -3,6 +3,7 @@ import {
   Rectangle,
   WebMercatorTilingScheme,
   WebMapServiceImageryProvider,
+  Resource,
 } from '@vcmap-cesium/engine';
 import type { Size } from 'ol/size.js';
 
@@ -61,6 +62,12 @@ class WmsCesiumImpl extends RasterLayerCesiumImpl {
     }
     if (this.tilingSchema === 'mercator') {
       options.tilingScheme = new WebMercatorTilingScheme();
+    }
+    if (this.headers) {
+      options.url = new Resource({
+        url: this.url!,
+        headers: this.headers,
+      });
     }
 
     const imageryProvider = new WebMapServiceImageryProvider(options);

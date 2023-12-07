@@ -8,6 +8,8 @@ import { mercatorProjection, wgs84Projection } from '../util/projection.js';
 import { isSameOrigin } from '../util/urlHelpers.js';
 import type Extent from '../util/extent.js';
 import { TilingScheme } from './rasterLayer.js';
+import { ImageTile } from 'ol';
+import TileState from 'ol/TileState.js';
 
 export type WMSSourceOptions = {
   url: string;
@@ -18,6 +20,7 @@ export type WMSSourceOptions = {
   extent?: Extent;
   parameters: Record<string, string>;
   version: string;
+  headers: Record<string, string> | undefined;
 };
 
 // eslint-disable-next-line import/prefer-default-export
@@ -68,5 +71,31 @@ export function getWMSSource(options: WMSSourceOptions): TileWMS {
   } else {
     sourceOptions.projection = 'EPSG:3857';
   }
+
+  if (options.headers) {
+    sourceOptions.tileLoadFunction = function tileLoadFunction(
+      imageTile,
+      src,
+    ): void {
+      const image = (imageTile as ImageTile).getImage() as HTMLImageElement;
+      const init: RequestInit = {
+        headers: options.headers,
+      };
+      fetch(src, init)
+        .then((response) => response.blob())
+        .then((blob) => {
+          const url = URL.createObjectURL(blob);
+
+          image.src = url;
+          image.onload = (): void => {
+            URL.revokeObjectURL(url);
+          };
+        })
+        .catch(() => {
+          imageTile.setState(TileState.ERROR);
+        });
+    };
+  }
+
   return new TileWMS(sourceOptions);
 }

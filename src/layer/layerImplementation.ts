@@ -19,10 +19,13 @@ class LayerImplementation<M extends VcsMap> extends VcsObject {
 
   private _initialized = false;
 
+  headers: Record<string, string> | undefined;
+
   constructor(map: M, options: LayerImplementationOptions) {
     super(options);
     this._map = map;
     this.url = options.url;
+    this.headers = options.headers;
   }
 
   get map(): M {

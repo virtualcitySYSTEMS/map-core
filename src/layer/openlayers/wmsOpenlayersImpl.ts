@@ -39,6 +39,7 @@ class WmsOpenlayersImpl extends RasterLayerOpenlayersImpl {
         minLevel: this.minLevel,
         maxLevel: this.maxLevel,
         tilingSchema: this.tilingSchema,
+        headers: this.headers,
       }),
       opacity: this.opacity,
     });

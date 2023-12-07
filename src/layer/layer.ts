@@ -1,4 +1,4 @@
-import { check, maybe, oneOf, recordOf } from '@vcsuite/check';
+import { check, maybe, oneOf, optional, recordOf } from '@vcsuite/check';
 import { parseBoolean, parseInteger } from '@vcsuite/parsers';
 import VcsObject, { VcsObjectOptions } from '../vcsObject.js';
 import Extent, { type ExtentOptions } from '../util/extent.js';
@@ -50,11 +50,17 @@ export type LayerOptions = VcsObjectOptions & {
    * to other sources of data.
    */
   datasourceId?: string;
+
+  /**
+   * Optional Request Headers which will be send with each request.
+   */
+  headers?: Record<string, string>;
 };
 
 export type LayerImplementationOptions = {
   name: string;
   url: string;
+  headers: Record<string, string> | undefined;
 };
 
 /**
@@ -82,6 +88,7 @@ class Layer<
       hiddenObjectIds: [],
       copyright: undefined,
       datasourceId: undefined,
+      headers: undefined,
     };
   }
 
@@ -144,6 +151,8 @@ class Layer<
   featureProvider: AbstractFeatureProvider | undefined;
 
   private _locale: string;
+
+  protected _headers: Record<string, string> | undefined;
 
   /**
    * Optional Id to synchronize with the vcPublisher Datasources. This can also be used to track a connection
@@ -208,6 +217,8 @@ class Layer<
     this._locale = 'en';
 
     this.datasourceId = options.datasourceId || defaultOptions.datasourceId;
+
+    this._headers = options.headers;
   }
 
   /**
@@ -332,6 +343,23 @@ class Layer<
     }
   }
 
+  get headers(): Record<string, string> | undefined {
+    return this._headers;
+  }
+
+  /**
+   *
+   * @param value
+   */
+  set headers(value: Record<string, string> | undefined) {
+    check(value, optional(recordOf(String)));
+    if (this._headers !== value) {
+      this._headers = value;
+      // eslint-disable-next-line no-void
+      void this.reload();
+    }
+  }
+
   /**
    * returns the currently set locale. Can be used to provide locale specific URLs.
    */
@@ -397,6 +425,7 @@ class Layer<
     return {
       name: this.name,
       url: this.url,
+      headers: this.headers,
     };
   }
 
@@ -650,6 +679,10 @@ class Layer<
 
     if (this.datasourceId !== defaultOptions.datasourceId) {
       config.datasourceId = this.datasourceId;
+    }
+
+    if (this._headers !== defaultOptions.headers) {
+      config.headers = this._headers;
     }
 
     return config;
