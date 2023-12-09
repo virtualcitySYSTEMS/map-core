@@ -1,6 +1,6 @@
 import type { GeoJSONFeature } from 'ol/format/GeoJSON.js';
 import { FeatureCollection } from 'geojson';
-
+import { TrustedServers } from '@vcmap-cesium/engine';
 import VectorLayer, { VectorOptions } from './vectorLayer.js';
 import { parseGeoJSON, writeGeoJSONFeature } from './geojsonHelpers.js';
 import Projection, { wgs84Projection } from '../util/projection.js';
@@ -86,7 +86,14 @@ class GeoJSONLayer extends VectorLayer {
     }
 
     if (this.url) {
-      this._dataFetchedPromise = requestJson(this.url)
+      const init: RequestInit = {};
+      if (this.headers) {
+        init.headers = this.headers;
+      }
+      if (TrustedServers.contains(this.url)) {
+        init.credentials = 'include';
+      }
+      this._dataFetchedPromise = requestJson(this.url, init)
         .then((data) => this._parseGeojsonData(data as FeatureCollection))
         .catch((err) => {
           this.getLogger().warning(
