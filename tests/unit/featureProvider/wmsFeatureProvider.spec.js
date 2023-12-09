@@ -138,7 +138,7 @@ describe('WMSFeatureProvider', () => {
   describe('getting the config', () => {
     describe('of a default feature provider', () => {
       it('should return the type, url and parameters', () => {
-        const provider = new WMSFeatureProvider('test', {});
+        const provider = new WMSFeatureProvider('test', { url: 'example.com' });
         const config = provider.toJSON();
         expect(config).to.have.all.keys(['type', 'url', 'parameters']);
         provider.destroy();
