@@ -68,6 +68,7 @@ class WmsCesiumImpl extends RasterLayerCesiumImpl {
         url: this.url!,
         headers: this.headers,
       });
+      options.url.request;
     }
 
     const imageryProvider = new WebMapServiceImageryProvider(options);

@@ -55,6 +55,9 @@ export type LayerOptions = VcsObjectOptions & {
    * Optional Request Headers which will be send with each request.
    */
   headers?: Record<string, string>;
+
+  useCredentials: // use cesium TrustedServers...
+
 };
 
 export type LayerImplementationOptions = {
