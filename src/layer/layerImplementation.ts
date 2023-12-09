@@ -19,7 +19,7 @@ class LayerImplementation<M extends VcsMap> extends VcsObject {
 
   private _initialized = false;
 
-  headers: Record<string, string> | undefined;
+  headers?: Record<string, string>;
 
   constructor(map: M, options: LayerImplementationOptions) {
     super(options);

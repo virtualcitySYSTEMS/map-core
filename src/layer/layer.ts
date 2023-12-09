@@ -152,7 +152,7 @@ class Layer<
 
   private _locale: string;
 
-  protected _headers: Record<string, string> | undefined;
+  protected _headers?: Record<string, string>;
 
   /**
    * Optional Id to synchronize with the vcPublisher Datasources. This can also be used to track a connection
@@ -218,7 +218,7 @@ class Layer<
 
     this.datasourceId = options.datasourceId || defaultOptions.datasourceId;
 
-    this._headers = options.headers;
+    this._headers = structuredClone(options.headers);
   }
 
   /**
@@ -349,12 +349,12 @@ class Layer<
 
   /**
    *
-   * @param value
+   * @param headers
    */
-  set headers(value: Record<string, string> | undefined) {
-    check(value, optional(recordOf(String)));
-    if (this._headers !== value) {
-      this._headers = value;
+  set headers(headers: Record<string, string> | undefined) {
+    check(headers, optional(recordOf(String)));
+    if (this._headers !== headers) {
+      this._headers = headers;
       // eslint-disable-next-line no-void
       void this.reload();
     }
@@ -682,7 +682,7 @@ class Layer<
     }
 
     if (this._headers !== defaultOptions.headers) {
-      config.headers = this._headers;
+      config.headers = structuredClone(this._headers);
     }
 
     return config;

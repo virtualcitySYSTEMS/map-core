@@ -12,6 +12,10 @@
   - Fixes bug where removing an anchor crashed flightInstance
   - Fixes a bug where first anchor was not visualized on creation
   - Adds an API to access active flight Player `getActiveFlightPlayer(app)`
+- added headers option to all layers. The configured headers will be send if requests are done.
+- requests from openlayers and @vcmap/core will now take Cesium.TrustedServers into account and will send:
+  - `credentials` `include` if its an xhr request and
+  - `crossorigin` `use-credentials` if its an img request
 
 ### 5.0.3
 
