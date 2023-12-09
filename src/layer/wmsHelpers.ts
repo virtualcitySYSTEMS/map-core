@@ -10,6 +10,7 @@ import type Extent from '../util/extent.js';
 import { TilingScheme } from './rasterLayer.js';
 import { ImageTile } from 'ol';
 import TileState from 'ol/TileState.js';
+import { TrustedServers } from '@vcmap-cesium/engine';
 
 export type WMSSourceOptions = {
   url: string;
@@ -20,7 +21,7 @@ export type WMSSourceOptions = {
   extent?: Extent;
   parameters: Record<string, string>;
   version: string;
-  headers: Record<string, string> | undefined;
+  headers?: Record<string, string>;
 };
 
 // eslint-disable-next-line import/prefer-default-export
@@ -59,7 +60,9 @@ export function getWMSSource(options: WMSSourceOptions): TileWMS {
     tileGrid: new TileGrid(tilingOptions),
     params: options.parameters,
   };
-  if (!isSameOrigin(options.url)) {
+  if (TrustedServers.contains(options.url)) {
+    sourceOptions.crossOrigin = 'use-credentials';
+  } else if (!isSameOrigin(options.url)) {
     sourceOptions.crossOrigin = 'anonymous';
   }
   if (options.tilingSchema === 'geographic') {
@@ -81,6 +84,9 @@ export function getWMSSource(options: WMSSourceOptions): TileWMS {
       const init: RequestInit = {
         headers: options.headers,
       };
+      if (TrustedServers.contains(src)) {
+        init.credentials = 'include';
+      }
       fetch(src, init)
         .then((response) => response.blob())
         .then((blob) => {
@@ -96,6 +102,5 @@ export function getWMSSource(options: WMSSourceOptions): TileWMS {
         });
     };
   }
-
   return new TileWMS(sourceOptions);
 }
