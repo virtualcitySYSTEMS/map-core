@@ -1,4 +1,5 @@
 import ImageLayer from 'ol/layer/Image.js';
+import { TrustedServers } from '@vcmap-cesium/engine';
 import ImageStatic, {
   type Options as ImageStaticOptions,
 } from 'ol/source/ImageStatic.js';
@@ -33,8 +34,42 @@ class SingleImageOpenlayersImpl extends RasterLayerOpenlayersImpl {
       projection: 'EPSG:4326',
       imageExtent: this.extent.getCoordinatesInProjection(wgs84Projection),
     };
-    if (!isSameOrigin(this.url as string)) {
+    if (TrustedServers.contains(options.url)) {
+      options.crossOrigin = 'use-credentials';
+    } else if (!isSameOrigin(this.url as string)) {
       options.crossOrigin = 'anonymous';
+    }
+
+    if (this.headers) {
+      options.imageLoadFunction = (imageWrapper, src): void => {
+        const init: RequestInit = {
+          headers: this.headers,
+        };
+        if (TrustedServers.contains(src)) {
+          init.credentials = 'include';
+        }
+        fetch(src, init)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error('Not 2xx response', { cause: response });
+            }
+            return response.blob();
+          })
+          .then((blob) => {
+            const url = URL.createObjectURL(blob);
+            const image = imageWrapper.getImage() as HTMLImageElement;
+            image.src = url;
+            image.onload = (): void => {
+              URL.revokeObjectURL(url);
+            };
+          })
+          .catch(() => {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call,no-underscore-dangle
+            imageWrapper.handleImageError_();
+          });
+      };
     }
 
     return new ImageLayer({

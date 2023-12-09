@@ -88,7 +88,12 @@ export function getWMSSource(options: WMSSourceOptions): TileWMS {
         init.credentials = 'include';
       }
       fetch(src, init)
-        .then((response) => response.blob())
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error('not 2xx response', { cause: response });
+          }
+          return response.blob();
+        })
         .then((blob) => {
           const url = URL.createObjectURL(blob);
 
