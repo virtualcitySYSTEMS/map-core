@@ -759,3 +759,4 @@ export {
   FlightVisualization,
   createFlightVisualization,
 } from './src/util/flight/flightVisualizer.js';
+export { getTileLoadFunction } from './src/layer/openlayers/loadFunctionHelpers.js';
