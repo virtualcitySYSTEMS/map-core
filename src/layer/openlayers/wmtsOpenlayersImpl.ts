@@ -1,3 +1,4 @@
+import { TrustedServers } from '@vcmap-cesium/engine';
 import { getTopLeft, getWidth } from 'ol/extent.js';
 import WMTSTileGrid, {
   type Options as WMTSTileGridOptions,
@@ -12,7 +13,6 @@ import { isSameOrigin } from '../../util/urlHelpers.js';
 import type { WMTSImplementationOptions } from '../wmtsLayer.js';
 import type OpenlayersMap from '../../map/openlayersMap.js';
 import { getTileLoadFunction } from './loadFunctionHelpers.js';
-import { TrustedServers } from '@vcmap-cesium/engine';
 
 /**
  * WmtsLayer implementation for {@link OpenlayersMap}.
