@@ -2,8 +2,6 @@ import { TrustedServers } from '@vcmap-cesium/engine';
 import type { Size } from 'ol/size.js';
 import TileWMS, { type Options as TileWMSOptions } from 'ol/source/TileWMS.js';
 import { getTopLeft, getWidth } from 'ol/extent.js';
-import TileState from 'ol/TileState.js';
-import type { ImageTile } from 'ol';
 import TileGrid, {
   type Options as TileGridOptions,
 } from 'ol/tilegrid/TileGrid.js';
@@ -11,6 +9,7 @@ import { mercatorProjection, wgs84Projection } from '../util/projection.js';
 import { isSameOrigin } from '../util/urlHelpers.js';
 import type Extent from '../util/extent.js';
 import { TilingScheme } from './rasterLayer.js';
+import { getTileLoadFunction } from './openlayers/loadFunctionHelpers.js';
 
 export type WMSSourceOptions = {
   url: string;
@@ -74,38 +73,8 @@ export function getWMSSource(options: WMSSourceOptions): TileWMS {
   } else {
     sourceOptions.projection = 'EPSG:3857';
   }
-
   if (options.headers) {
-    sourceOptions.tileLoadFunction = function tileLoadFunction(
-      imageTile,
-      src,
-    ): void {
-      const image = (imageTile as ImageTile).getImage() as HTMLImageElement;
-      const init: RequestInit = {
-        headers: options.headers,
-      };
-      if (TrustedServers.contains(src)) {
-        init.credentials = 'include';
-      }
-      fetch(src, init)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error('not 2xx response', { cause: response });
-          }
-          return response.blob();
-        })
-        .then((blob) => {
-          const url = URL.createObjectURL(blob);
-
-          image.src = url;
-          image.onload = (): void => {
-            URL.revokeObjectURL(url);
-          };
-        })
-        .catch(() => {
-          imageTile.setState(TileState.ERROR);
-        });
-    };
+    sourceOptions.tileLoadFunction = getTileLoadFunction(options.headers);
   }
   return new TileWMS(sourceOptions);
 }

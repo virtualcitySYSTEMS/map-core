@@ -2,6 +2,7 @@ import {
   Rectangle,
   WebMapTileServiceImageryProvider,
   ImageryLayer as CesiumImageryLayer,
+  Resource,
 } from '@vcmap-cesium/engine';
 import type { Size } from 'ol/size.js';
 import RasterLayerCesiumImpl from './rasterLayerCesiumImpl.js';
@@ -50,10 +51,18 @@ class WmtsCesiumImpl extends RasterLayerCesiumImpl {
   getCesiumLayer(): Promise<CesiumImageryLayer> {
     const currentUrl = this.url as string;
     // This is a bug in Cesium, they cant cope with {Layer} placeholder..
-    const url =
+    let url: string | Resource =
       currentUrl.indexOf('{Layer}') !== -1
         ? currentUrl.replace('{Layer}', this.layer)
         : currentUrl;
+
+    if (this.headers) {
+      url = new Resource({
+        url,
+        headers: this.headers,
+      });
+    }
+
     const extent = this.extent!.getCoordinatesInProjection(wgs84Projection);
     const options: WebMapTileServiceImageryProvider.ConstructorOptions = {
       url,

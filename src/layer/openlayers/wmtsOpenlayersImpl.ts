@@ -11,6 +11,8 @@ import { TilingScheme } from '../rasterLayer.js';
 import { isSameOrigin } from '../../util/urlHelpers.js';
 import type { WMTSImplementationOptions } from '../wmtsLayer.js';
 import type OpenlayersMap from '../../map/openlayersMap.js';
+import { getTileLoadFunction } from './loadFunctionHelpers.js';
+import { TrustedServers } from '@vcmap-cesium/engine';
 
 /**
  * WmtsLayer implementation for {@link OpenlayersMap}.
@@ -106,12 +108,17 @@ class WmtsOpenlayersImpl extends RasterLayerOpenlayersImpl {
       url: this.url,
     };
 
-    if (!isSameOrigin(this.url as string)) {
+    if (TrustedServers.contains(this.url as string)) {
+      wmtsOptions.crossOrigin = 'use-credentials';
+    } else if (!isSameOrigin(this.url as string)) {
       wmtsOptions.crossOrigin = 'anonymous';
     }
 
     if (this.tilingSchema === TilingScheme.GEOGRAPHIC) {
       wmtsOptions.projection = 'EPSG:4326';
+    }
+    if (this.headers) {
+      wmtsOptions.tileLoadFunction = getTileLoadFunction(this.headers);
     }
 
     Object.assign(wmtsOptions, this.openlayersOptions);
