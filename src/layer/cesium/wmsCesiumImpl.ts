@@ -3,7 +3,6 @@ import {
   Rectangle,
   WebMercatorTilingScheme,
   WebMapServiceImageryProvider,
-  Resource,
 } from '@vcmap-cesium/engine';
 import type { Size } from 'ol/size.js';
 
@@ -11,6 +10,7 @@ import RasterLayerCesiumImpl from './rasterLayerCesiumImpl.js';
 import { wgs84Projection } from '../../util/projection.js';
 import type { WMSImplementationOptions } from '../wmsLayer.js';
 import type CesiumMap from '../../map/cesiumMap.js';
+import { getResourceOrUrl } from './resourceHelper.js';
 
 /**
  * represents a specific Cesium WmsCesiumImpl Layer class.
@@ -40,7 +40,7 @@ class WmsCesiumImpl extends RasterLayerCesiumImpl {
       parameters.height = String(this.tileSize[1] * 2);
     }
     const options: WebMapServiceImageryProvider.ConstructorOptions = {
-      url: this.url as string,
+      url: getResourceOrUrl(this.url!, this.headers),
       layers: parameters.LAYERS,
       minimumLevel: this.minLevel,
       maximumLevel: this.maxLevel,
@@ -62,12 +62,6 @@ class WmsCesiumImpl extends RasterLayerCesiumImpl {
     }
     if (this.tilingSchema === 'mercator') {
       options.tilingScheme = new WebMercatorTilingScheme();
-    }
-    if (this.headers) {
-      options.url = new Resource({
-        url: this.url!,
-        headers: this.headers,
-      });
     }
 
     const imageryProvider = new WebMapServiceImageryProvider(options);

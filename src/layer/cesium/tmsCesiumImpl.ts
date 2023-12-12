@@ -9,6 +9,7 @@ import { wgs84Projection } from '../../util/projection.js';
 import { TilingScheme } from '../rasterLayer.js';
 import type CesiumMap from '../../map/cesiumMap.js';
 import type { TMSImplementationOptions } from '../tmsLayer.js';
+import { getResourceOrUrl } from './resourceHelper.js';
 
 /**
  * TmsLayer implementation for {@link CesiumMap}.
@@ -48,7 +49,7 @@ class TmsCesiumImpl extends RasterLayerCesiumImpl {
       options.tilingScheme = new GeographicTilingScheme();
     }
     const imageryProvider = await TileMapServiceImageryProvider.fromUrl(
-      this.url!,
+      getResourceOrUrl(this.url!, this.headers),
       options,
     );
     const layerOptions = {

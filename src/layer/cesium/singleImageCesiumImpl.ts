@@ -2,12 +2,12 @@ import {
   Rectangle,
   SingleTileImageryProvider,
   ImageryLayer,
-  Resource,
 } from '@vcmap-cesium/engine';
 import RasterLayerCesiumImpl from './rasterLayerCesiumImpl.js';
 import { wgs84Projection } from '../../util/projection.js';
 import type { SingleImageImplementationOptions } from '../singleImageLayer.js';
 import type CesiumMap from '../../map/cesiumMap.js';
+import { getResourceOrUrl } from './resourceHelper.js';
 
 /**
  * represents a specific Cesium SingleTileImagery Layer class.
@@ -38,16 +38,9 @@ class SingleImageCesiumImpl extends RasterLayerCesiumImpl {
         extent[3],
       );
     }
-    let url: string | Resource = this.url!;
-    if (this.headers) {
-      url = new Resource({
-        url: this.url!,
-        headers: this.headers,
-      });
-    }
 
     const imageryProvider = await SingleTileImageryProvider.fromUrl(
-      url,
+      getResourceOrUrl(this.url!, this.headers),
       options,
     );
     const layerOptions = {

@@ -2,7 +2,6 @@ import {
   Rectangle,
   WebMapTileServiceImageryProvider,
   ImageryLayer as CesiumImageryLayer,
-  Resource,
 } from '@vcmap-cesium/engine';
 import type { Size } from 'ol/size.js';
 import RasterLayerCesiumImpl from './rasterLayerCesiumImpl.js';
@@ -10,6 +9,7 @@ import { wgs84Projection } from '../../util/projection.js';
 import { getTilingScheme } from '../rasterLayer.js';
 import type { WMTSImplementationOptions } from '../wmtsLayer.js';
 import type CesiumMap from '../../map/cesiumMap.js';
+import { getResourceOrUrl } from './resourceHelper.js';
 
 /**
  * represents a specific WmtsLayer Implementation for {@link CesiumMap}.
@@ -51,21 +51,14 @@ class WmtsCesiumImpl extends RasterLayerCesiumImpl {
   getCesiumLayer(): Promise<CesiumImageryLayer> {
     const currentUrl = this.url as string;
     // This is a bug in Cesium, they cant cope with {Layer} placeholder..
-    let url: string | Resource =
+    const url: string =
       currentUrl.indexOf('{Layer}') !== -1
         ? currentUrl.replace('{Layer}', this.layer)
         : currentUrl;
 
-    if (this.headers) {
-      url = new Resource({
-        url,
-        headers: this.headers,
-      });
-    }
-
     const extent = this.extent!.getCoordinatesInProjection(wgs84Projection);
     const options: WebMapTileServiceImageryProvider.ConstructorOptions = {
-      url,
+      url: getResourceOrUrl(url, this.headers),
       layer: this.layer,
       style: this.style,
       format: this.format,
