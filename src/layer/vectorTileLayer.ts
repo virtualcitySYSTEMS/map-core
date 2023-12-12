@@ -185,6 +185,9 @@ class VectorTileLayer extends FeatureLayer<
     if (this.tileProvider) {
       this.tileProvider.locale = this.locale;
     }
+    if (this.tileProvider && !this.tileProvider.headers) {
+      this.tileProvider.headers = this.headers;
+    }
 
     this._maxLevel = parseInteger(options.maxLevel, defaultOptions.maxLevel);
     this._minLevel = parseInteger(options.minLevel, defaultOptions.minLevel);
