@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import RBush from 'rbush';
-import { check } from '@vcsuite/check';
+import { check, optional, recordOf } from '@vcsuite/check';
 import {
   Rectangle,
   Math as CesiumMath,
@@ -85,6 +85,11 @@ export type TileProviderOptions = VcsObjectOptions & {
    * allows aggregation of tiles if requested minLevel is lower than provided baseLevels ( if true, allows for aggregating up to two levels (16 child tiles) into a tile)
    */
   allowTileAggregation?: boolean;
+
+  /**
+   * Optional Request Headers which will be send with each request.
+   */
+  headers?: Record<string, string>;
 };
 
 export type TileLoadedEvent = {
@@ -109,6 +114,7 @@ class TileProvider extends VcsObject {
       baseLevels: [15],
       trackFeaturesToTiles: true,
       allowTileAggregation: true,
+      headers: undefined,
     };
   }
 
@@ -147,6 +153,8 @@ class TileProvider extends VcsObject {
 
   private _locale = 'en';
 
+  protected _headers?: Record<string, string>;
+
   constructor(options: TileProviderOptions) {
     super(options);
     const defaultOptions = TileProvider.getDefaultOptions();
@@ -176,6 +184,25 @@ class TileProvider extends VcsObject {
       options.allowTileAggregation,
       defaultOptions.allowTileAggregation,
     );
+
+    this._headers = structuredClone(options.headers);
+  }
+
+  get headers(): Record<string, string> | undefined {
+    return this._headers;
+  }
+
+  /**
+   *
+   * @param headers
+   */
+  set headers(headers: Record<string, string> | undefined) {
+    check(headers, optional(recordOf(String)));
+    if (this._headers !== headers) {
+      this._headers = headers;
+      // eslint-disable-next-line no-void
+      void this.clearCache();
+    }
   }
 
   /**
@@ -589,6 +616,11 @@ class TileProvider extends VcsObject {
     if (defaultOptions.allowTileAggregation !== this.allowTileAggregation) {
       config.allowTileAggregation = this.allowTileAggregation;
     }
+
+    if (this._headers !== defaultOptions.headers) {
+      config.headers = structuredClone(this._headers);
+    }
+
     return config;
   }
 

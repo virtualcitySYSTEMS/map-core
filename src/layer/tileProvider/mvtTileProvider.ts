@@ -1,3 +1,4 @@
+import { TrustedServers } from '@vcmap-cesium/engine';
 import MVT from 'ol/format/MVT.js';
 import Feature from 'ol/Feature.js';
 import { getCenter } from 'ol/extent.js';
@@ -73,7 +74,14 @@ class MVTTileProvider extends TileProvider {
     const url = getURL(this.url, x, y, z, rectangle, this.locale);
     const extent = rectangleToExtent(rectangle);
     const center = getCenter(extent);
-    const data = await requestArrayBuffer(url);
+    const init: RequestInit = {};
+    if (this.headers) {
+      init.headers = this.headers;
+    }
+    if (TrustedServers.contains(this.url)) {
+      init.credentials = 'include';
+    }
+    const data = await requestArrayBuffer(url, init);
     const features = this._MVTFormat.readFeatures(data) as Feature[];
     const sx = (extent[2] - extent[0]) / 4096;
     const sy = -((extent[3] - extent[1]) / 4096);

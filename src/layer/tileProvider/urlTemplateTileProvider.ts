@@ -1,5 +1,9 @@
 import type { GeoJSONObject } from 'ol/format/GeoJSON.js';
-import { Math as CesiumMath, Rectangle } from '@vcmap-cesium/engine';
+import {
+  Math as CesiumMath,
+  Rectangle,
+  TrustedServers,
+} from '@vcmap-cesium/engine';
 import type { Feature } from 'ol/index.js';
 import { parseGeoJSON } from '../geojsonHelpers.js';
 import TileProvider, { TileProviderOptions } from './tileProvider.js';
@@ -97,7 +101,14 @@ class URLTemplateTileProvider extends TileProvider {
   async loader(x: number, y: number, z: number): Promise<Feature[]> {
     const rectangle = this.tilingScheme.tileXYToRectangle(x, y, z);
     const url = getURL(this.url, x, y, z, rectangle, this.locale);
-    const data = await requestJson<GeoJSONObject>(url);
+    const init: RequestInit = {};
+    if (this.headers) {
+      init.headers = this.headers;
+    }
+    if (TrustedServers.contains(this.url)) {
+      init.credentials = 'include';
+    }
+    const data = await requestJson<GeoJSONObject>(url, init);
     const { features } = parseGeoJSON(data, { dynamicStyle: true });
     return features;
   }
