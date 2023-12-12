@@ -1,3 +1,4 @@
+import { TrustedServers } from '@vcmap-cesium/engine';
 import WFSFormat from 'ol/format/WFS.js';
 import VectorLayer, { VectorOptions } from './vectorLayer.js';
 import Projection from '../util/projection.js';
@@ -125,13 +126,20 @@ class WFSLayer extends VectorLayer {
         ...this.getFeaturesOptions,
       });
       const postData = new XMLSerializer().serializeToString(requestDocument);
-      this._dataFetchedPromise = requestUrl(this.url, {
+      const init: RequestInit = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/text+xml',
         },
         body: postData,
-      })
+      };
+      if (this.headers) {
+        init.headers = this.headers;
+      }
+      if (TrustedServers.contains(this.url)) {
+        init.credentials = 'include';
+      }
+      this._dataFetchedPromise = requestUrl(this.url, init)
         .then((response) => response.text())
         .then((data) => this._parseWFSData(data))
         .catch((err) => {
