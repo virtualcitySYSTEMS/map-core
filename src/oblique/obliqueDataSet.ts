@@ -174,6 +174,7 @@ class ObliqueDataSet {
       this._terrainProvider = await getTerrainProviderForUrl(
         this._terrainProviderOptions.url,
         terrainProviderOptions,
+        this._terrainProviderOptions.headers,
       );
     }
     this._parseMetaData(json);

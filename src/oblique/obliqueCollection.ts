@@ -64,6 +64,7 @@ export type ObliqueVersion = {
 
 export type ObliqueDataSetTerrainProviderOptions = TerrainProviderOptions & {
   url: string;
+  headers?: Record<string, string>;
 };
 
 export type ObliqueCollectionOptions = VcsObjectOptions & {

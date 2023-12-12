@@ -29,11 +29,12 @@ class TerrainCesiumImpl extends LayerImplementation<CesiumMap> {
   async initialize(): Promise<void> {
     if (!this.initialized) {
       this.terrainProvider = await getTerrainProviderForUrl(
-        this.url as string,
+        this.url!,
         {
           requestVertexNormals: this.requestVertexNormals,
           requestWaterMask: this.requestWaterMask,
         },
+        this.headers,
       );
       this.terrainProvider[vcsLayerName] = this.name;
     }

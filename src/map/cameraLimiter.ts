@@ -27,6 +27,10 @@ export type CameraLimiterOptions = {
    */
   terrainUrl?: string;
   /**
+   * if mode is distance this can be used to send headers with each request to the terrainUrl
+   */
+  terrainRequestHeaders?: Record<string, string>;
+  /**
    * @default 'height'
    */
   mode?: CameraLimiterMode;
@@ -53,6 +57,7 @@ class CameraLimiter {
     return {
       mode: CameraLimiterMode.HEIGHT,
       terrainUrl: undefined,
+      terrainRequestHeaders: undefined,
       limit: 200,
       level: 12,
     };
@@ -79,6 +84,8 @@ class CameraLimiter {
    * last checked camera position
    */
   lastCheckedPosition = new Cartographic();
+
+  terrainRequestHeaders?: Record<string, string>;
 
   /**
    * last updated terrain height
@@ -124,6 +131,7 @@ class CameraLimiter {
     const terrainProvider = await getTerrainProviderForUrl(
       this.terrainUrl as string,
       {},
+      this.terrainRequestHeaders,
     );
     if (
       this.level &&
@@ -140,6 +148,7 @@ class CameraLimiter {
     const terrainProvider = await getTerrainProviderForUrl(
       this.terrainUrl as string,
       {},
+      this.terrainRequestHeaders,
     );
     return sampleTerrainMostDetailed(terrainProvider, [cameraCartographic]);
   }
