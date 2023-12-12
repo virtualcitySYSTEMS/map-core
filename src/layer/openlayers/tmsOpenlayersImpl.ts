@@ -1,3 +1,4 @@
+import { TrustedServers } from '@vcmap-cesium/engine';
 import XYZ, { type Options as XYZOptions } from 'ol/source/XYZ.js';
 import Tile from 'ol/layer/Tile.js';
 import { type Options as TileOptions } from 'ol/layer/BaseTile.js';
@@ -8,6 +9,7 @@ import { TilingScheme } from '../rasterLayer.js';
 import { isSameOrigin } from '../../util/urlHelpers.js';
 import type { TMSImplementationOptions } from '../tmsLayer.js';
 import type OpenlayersMap from '../../map/openlayersMap.js';
+import { getTileLoadFunction } from './loadFunctionHelpers.js';
 
 /**
  * TmsLayer implementation for {@link OpenlayersMap}.
@@ -43,11 +45,16 @@ class TmsOpenlayersImpl extends RasterLayerOpenlayersImpl {
       maxZoom: this.maxLevel,
       wrapX: false,
     };
-    if (!isSameOrigin(this.url as string)) {
+    if (TrustedServers.contains(this.url as string)) {
+      sourceOptions.crossOrigin = 'use-credentials';
+    } else if (!isSameOrigin(this.url as string)) {
       sourceOptions.crossOrigin = 'anonymous';
     }
     if (this.tilingSchema === TilingScheme.GEOGRAPHIC) {
       sourceOptions.projection = 'EPSG:4326';
+    }
+    if (this.headers) {
+      sourceOptions.tileLoadFunction = getTileLoadFunction(this.headers);
     }
 
     const tileOptions: TileOptions<XYZ> = {
