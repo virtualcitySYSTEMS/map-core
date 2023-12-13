@@ -727,6 +727,7 @@ export {
 } from './src/vcsModuleHelpers.js';
 export { default as VcsObject, VcsObjectOptions } from './src/vcsObject.js';
 export { moduleIdSymbol } from './src/moduleIdSymbol.js';
+export { default as FlightCollection } from './src/util/flight/flightCollection.js';
 export {
   default as FlightInstance,
   FlightInstanceOptions,
@@ -746,7 +747,6 @@ export {
   FlightPlayer,
   FlightPlayerState,
   createFlightPlayer,
-  getActiveFlightPlayer,
 } from './src/util/flight/flightPlayer.js';
 export {
   exportFlightAsGeoJson,

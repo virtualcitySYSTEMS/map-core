@@ -11,7 +11,7 @@
   - Fixes bug where FlightPlayer stopped with disabled input
   - Fixes bug where removing an anchor crashed flightInstance
   - Fixes a bug where first anchor was not visualized on creation
-  - Adds an API to access active flight Player `getActiveFlightPlayer(app)`
+  - Adds new class `FlightCollection`, which has an API to set and access active flight Player
 
 ### 5.0.3
 

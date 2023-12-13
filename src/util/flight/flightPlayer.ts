@@ -26,6 +26,7 @@ export type FlightPlayerClock = {
 export type FlightPlayerState = 'playing' | 'paused' | 'stopped';
 
 export type FlightPlayer = {
+  readonly flightInstanceName: string;
   readonly state: FlightPlayerState;
   readonly stateChanged: VcsEvent<FlightPlayerState>;
   readonly destroyed: VcsEvent<void>;
@@ -52,10 +53,9 @@ function getDefaultFlightPlayerClock(): FlightPlayerClock {
   };
 }
 
-export const flightPlayerSymbol = Symbol('flightPlayer');
 export async function createFlightPlayer(
   instance: FlightInstance,
-  app: VcsApp & { [flightPlayerSymbol]?: FlightPlayer },
+  app: VcsApp,
 ): Promise<FlightPlayer> {
   check(instance, FlightInstance);
   check(app, VcsApp);
@@ -68,11 +68,6 @@ export async function createFlightPlayer(
     throw new Error('Cannot start a flight player without a cesium map');
   }
   await instance.initialize();
-  const otherPlayer = app[flightPlayerSymbol];
-  if (otherPlayer) {
-    otherPlayer.stop();
-    otherPlayer.destroy();
-  }
 
   const clock: FlightPlayerClock = getDefaultFlightPlayerClock();
 
@@ -258,7 +253,6 @@ export async function createFlightPlayer(
       cb();
     });
     stateChanged.destroy();
-    delete app[flightPlayerSymbol];
     destroyed.raiseEvent();
     destroyed.destroy();
   };
@@ -276,8 +270,11 @@ export async function createFlightPlayer(
     }),
   );
 
-  const player: FlightPlayer = {
+  return {
     clock,
+    get flightInstanceName(): string {
+      return instance.name;
+    },
     get state(): FlightPlayerState {
       return playerState;
     },
@@ -326,13 +323,4 @@ export async function createFlightPlayer(
     },
     destroy,
   };
-
-  app[flightPlayerSymbol] = player;
-  return player;
-}
-
-export function getActiveFlightPlayer(
-  app: VcsApp & { [flightPlayerSymbol]?: FlightPlayer },
-): FlightPlayer | undefined {
-  return app?.[flightPlayerSymbol];
 }

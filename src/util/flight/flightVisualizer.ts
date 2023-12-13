@@ -42,7 +42,7 @@ export async function createFlightVisualization(
 ): Promise<FlightVisualization> {
   check(instance, FlightInstance);
   if (instance[flightVisualizationSymbol]) {
-    instance[flightVisualizationSymbol]?.destroy();
+    return instance[flightVisualizationSymbol];
   }
   await instance.initialize();
   let extent = createEmpty();

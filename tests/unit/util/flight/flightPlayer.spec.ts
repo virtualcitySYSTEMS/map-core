@@ -1,6 +1,6 @@
-import sinon, { SinonFakeTimers } from 'sinon';
+import sinon from 'sinon';
 import { expect } from 'chai';
-import { CesiumWidget, Scene } from '@vcmap-cesium/engine';
+import { Scene } from '@vcmap-cesium/engine';
 import getDummyFlight from './getDummyFlightInstance.js';
 import { getVcsEventSpy, setCesiumMap } from '../../helpers/cesiumHelpers.js';
 import {
@@ -215,12 +215,6 @@ describe('FlightPlayer', () => {
       FP = await createFlightPlayer(flight, app);
       const spy = getVcsEventSpy(FP.destroyed, sandbox);
       app.flights.remove(flight);
-      expect(spy).to.have.been.called;
-    });
-
-    it('should destroy the player when starting a new player on the same app', async () => {
-      const spy = getVcsEventSpy(FP.destroyed, sandbox);
-      FP = await createFlightPlayer(flight, app);
       expect(spy).to.have.been.called;
     });
   });

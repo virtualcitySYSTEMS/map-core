@@ -49,6 +49,7 @@ import {
 import FlightInstance, {
   FlightInstanceOptions,
 } from './util/flight/flightInstance.js';
+import FlightCollection from './util/flight/flightCollection.js';
 
 function getLogger(): Logger {
   return getLoggerByName('init');
@@ -113,7 +114,7 @@ class VcsApp {
 
   private _hiddenObjects: OverrideCollection<HiddenObject>;
 
-  private _flights: OverrideCollection<FlightInstance>;
+  private _flights: OverrideCollection<FlightInstance, FlightCollection>;
 
   private _categoryClassRegisty: OverrideClassRegistry<typeof Category>;
 
@@ -203,7 +204,7 @@ class VcsApp {
     );
 
     this._flights = makeOverrideCollection(
-      new Collection(),
+      new FlightCollection(this),
       getDynamicModuleId,
       undefined,
       (flightOptions: FlightInstanceOptions) =>
@@ -290,7 +291,7 @@ class VcsApp {
     return this._hiddenObjects;
   }
 
-  get flights(): OverrideCollection<FlightInstance> {
+  get flights(): OverrideCollection<FlightInstance, FlightCollection> {
     return this._flights;
   }
 
@@ -361,7 +362,7 @@ class VcsApp {
 
     await this._styles.parseItems(config.styles, module._id);
     await this._layers.parseItems(config.layers, module._id);
-    // TODO add flights & ade here
+    // TODO add ade here
 
     await this._obliqueCollections.parseItems(
       config.obliqueCollections,

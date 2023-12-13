@@ -131,7 +131,7 @@ describe('FlightVisualizer', () => {
         expect(spy).to.have.been.called;
       });
 
-      it('should not raise state changed, when calling deactiveate on an inactive visualization', () => {
+      it('should not raise state changed, when calling deactivate on an inactive visualization', () => {
         const spy = getVcsEventSpy(FV.stateChanged);
         FV.deactivate();
         expect(spy).to.not.have.been.called;
@@ -178,10 +178,10 @@ describe('FlightVisualizer', () => {
       expect(spy).to.have.been.called;
     });
 
-    it('should destroy the visualization when visualizing the same flight twice', async () => {
+    it('should return the existing visualization when visualizing the same flight twice', async () => {
       const spy = getVcsEventSpy(FV.destroyed);
       FV = await createFlightVisualization(flight, app);
-      expect(spy).to.have.been.called;
+      expect(spy).to.not.have.been.called;
     });
   });
 });
