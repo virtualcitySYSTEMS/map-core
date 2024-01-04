@@ -182,7 +182,7 @@ class VectorObliqueImpl
     }
   }
 
-  private addFeature(originalFeature: Feature): Promise<void> {
+  private async addFeature(originalFeature: Feature): Promise<void> {
     if (!this.active) {
       this.fetchedFeaturesForImageName = null;
     }
@@ -196,7 +196,7 @@ class VectorObliqueImpl
         return Promise.resolve();
       }
 
-      if (this.obliqueSource.getFeatureById(id)) {
+      if (this.obliqueSource.getFeatureById(id) || this._updatingOblique[id]) {
         return Promise.resolve();
       }
       const obliqueFeature = new Feature({});
@@ -207,11 +207,8 @@ class VectorObliqueImpl
 
       this._setFeatureListeners(originalFeature, obliqueFeature);
 
-      return this._convertToOblique(originalFeature, obliqueFeature).then(
-        () => {
-          this.obliqueSource.addFeature(obliqueFeature);
-        },
-      );
+      await this._convertToOblique(originalFeature, obliqueFeature);
+      this.obliqueSource.addFeature(obliqueFeature);
     }
     return Promise.resolve();
   }
@@ -308,8 +305,9 @@ class VectorObliqueImpl
     const vectorGeometry = originalFeature.getGeometry() as Geometry;
     const imageGeometry = obliqueFeature.getGeometry() as Geometry;
     this._updatingOblique[id] = true;
+    let promise: Promise<unknown>;
     if (!vectorGeometry[alreadyTransformedToImage]) {
-      await mercatorGeometryToImageGeometry(
+      promise = mercatorGeometryToImageGeometry(
         vectorGeometry,
         imageGeometry,
         this.map.currentImage as ObliqueImage,
@@ -318,7 +316,10 @@ class VectorObliqueImpl
       obliqueFeature
         .getGeometry()!
         .setCoordinates(vectorGeometry.getCoordinates());
+      // we MUST wait for a promise, otherwise this is sync and you can add a feature twice
+      promise = Promise.resolve();
     }
+    await promise;
     this._updatingOblique[id] = null;
   }
 
