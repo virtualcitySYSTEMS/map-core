@@ -244,6 +244,29 @@ describe('VectorObliqueImpl', () => {
       const shadowFeature = OVL.obliqueSource.getFeatureById(id);
       expect(shadowFeature).to.equal(doNotTransformFeature);
     });
+
+    it('should not add a feature with the same id twice, even if calling addFeature sync', async () => {
+      const clone = originalFeature.clone();
+      clone.setId(uuidv4());
+      OVL.addFeature(clone);
+      await OVL.addFeature(clone);
+      expect(clone[obliqueGeometry]).to.equal(
+        OVL.obliqueSource.getFeatureById(clone.getId())?.getGeometry(),
+      );
+    });
+
+    it('should not add a feature with the same id twice, even if calling addFeature sync & the feature is already transformed to image', async () => {
+      const clone = originalFeature.clone();
+      clone.setId(uuidv4());
+      const geom = new Point([0, 0, 0]);
+      geom[alreadyTransformedToImage] = true;
+      clone.setGeometry(geom);
+      OVL.addFeature(clone);
+      await OVL.addFeature(clone);
+      expect(clone[obliqueGeometry]).to.equal(
+        OVL.obliqueSource.getFeatureById(clone.getId())?.getGeometry(),
+      );
+    });
   });
 
   describe('removing a feature from the implementation', () => {

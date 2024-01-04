@@ -1,3 +1,7 @@
+### 5.0.4
+
+- fixes bug in vectorObliqueImpl, where same features were added twice to obliqueSource. Caused issues in editor.
+
 ### 5.0.3
 
 - Fixes a type bug. Augmentation to openlayers & cesium are now properly exported.
