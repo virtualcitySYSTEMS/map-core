@@ -12,6 +12,7 @@
   - Fixes bug where removing an anchor crashed flightInstance
   - Fixes a bug where first anchor was not visualized on creation
   - Adds new class `FlightCollection`, which has an API to set and access active flight Player
+- Possibility to load WMS as single image.
 
 ### 5.0.4
 

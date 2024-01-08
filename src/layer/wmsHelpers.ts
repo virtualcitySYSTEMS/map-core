@@ -1,5 +1,9 @@
 import type { Size } from 'ol/size.js';
 import TileWMS, { type Options as TileWMSOptions } from 'ol/source/TileWMS.js';
+import ImageWMS, {
+  type Options as ImageWMSOptions,
+} from 'ol/source/ImageWMS.js';
+
 import { getTopLeft, getWidth } from 'ol/extent.js';
 import TileGrid, {
   type Options as TileGridOptions,
@@ -20,7 +24,20 @@ export type WMSSourceOptions = {
   version: string;
 };
 
-// eslint-disable-next-line import/prefer-default-export
+export function getProjectionFromWMSSourceOptions(
+  tilingSchema: TilingScheme,
+  version: string,
+): string {
+  if (tilingSchema === 'geographic') {
+    if (version === '1.3.0') {
+      return 'CRS:84';
+    } else {
+      return 'EPSG:4326';
+    }
+  }
+  return 'EPSG:3857';
+}
+
 export function getWMSSource(options: WMSSourceOptions): TileWMS {
   const projection =
     options.tilingSchema === 'geographic'
@@ -55,18 +72,36 @@ export function getWMSSource(options: WMSSourceOptions): TileWMS {
     url: options.url,
     tileGrid: new TileGrid(tilingOptions),
     params: options.parameters,
+    projection: getProjectionFromWMSSourceOptions(
+      options.tilingSchema,
+      options.version,
+    ),
   };
+
   if (!isSameOrigin(options.url)) {
     sourceOptions.crossOrigin = 'anonymous';
   }
-  if (options.tilingSchema === 'geographic') {
-    if (options.version === '1.3.0') {
-      sourceOptions.projection = 'CRS:84';
-    } else {
-      sourceOptions.projection = 'EPSG:4326';
-    }
-  } else {
-    sourceOptions.projection = 'EPSG:3857';
-  }
   return new TileWMS(sourceOptions);
+}
+
+export function getImageWMSSource(options: {
+  url: string;
+  parameters: Record<string, string>;
+  tilingSchema: TilingScheme;
+  version: string;
+}): ImageWMS {
+  const sourceOptions: ImageWMSOptions = {
+    url: options.url,
+    params: options.parameters,
+    projection: getProjectionFromWMSSourceOptions(
+      options.tilingSchema,
+      options.version,
+    ),
+  };
+
+  if (!isSameOrigin(options.url)) {
+    sourceOptions.crossOrigin = 'anonymous';
+  }
+
+  return new ImageWMS(sourceOptions);
 }

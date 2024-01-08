@@ -22,6 +22,7 @@ export type WMSImplementationOptions = RasterLayerImplementationOptions & {
   highResolution: boolean;
   tileSize: import('ol/size.js').Size;
   version: string;
+  singleImage2d: boolean;
 };
 
 export type WMSOptions = RasterLayerOptions & {
@@ -50,6 +51,10 @@ export type WMSOptions = RasterLayerOptions & {
    * use higher resolution images (sofar only in 3D)
    */
   highResolution?: boolean;
+  /**
+   * Use a single image in 2D
+   */
+  singleImage2d?: boolean;
 };
 
 /**
@@ -80,6 +85,8 @@ class WMSLayer extends RasterLayer<WmsCesiumImpl | WmsOpenlayersImpl> {
   tileSize: Size;
 
   highResolution: boolean;
+
+  singleImage2d: boolean;
 
   private _featureInfoOptions: Partial<WMSFeatureProviderOptions> | undefined;
 
@@ -127,6 +134,7 @@ class WMSLayer extends RasterLayer<WmsCesiumImpl | WmsOpenlayersImpl> {
     this._featureInfoOptions =
       options.featureInfo || defaultOptions.featureInfo;
     this._supportedMaps = [CesiumMap.className, OpenlayersMap.className];
+    this.singleImage2d = parseBoolean(options.singleImage2d, false);
   }
 
   initialize(): Promise<void> {
@@ -171,6 +179,7 @@ class WMSLayer extends RasterLayer<WmsCesiumImpl | WmsOpenlayersImpl> {
       parameters: this.parameters,
       highResolution: this.highResolution,
       tileSize: this.tileSize,
+      singleImage2d: this.singleImage2d,
     };
   }
 
