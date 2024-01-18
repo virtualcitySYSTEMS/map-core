@@ -14,6 +14,7 @@
   - Adds new class `FlightCollection`, which has an API to set and access active flight Player
 - Possibility to load WMS as single image.
 - Fixes vectorProperties.ts `getValuesForfeatures()` if feature array is empty
+- Introduces a `replace` API for `OverrideCollection` to replace items in place without having to remove and re-add the item.
 
 ### 5.0.4
 

@@ -33,6 +33,224 @@ describe('override collections', () => {
     });
   });
 
+  describe('replacing an object of a collection', () => {
+    describe('if no object with said name exists', () => {
+      let item;
+      let returnedItem;
+      let collection;
+      let replaced = false;
+
+      before(() => {
+        collection = makeOverrideCollection(new Collection(), getModuleId);
+        collection.replaced.addEventListener(() => {
+          replaced = true;
+        });
+
+        item = new VcsObject({ name: 'foo' });
+        item[moduleIdSymbol] = 'foo';
+        returnedItem = collection.replace(item);
+      });
+
+      after(() => {
+        destroyCollection(collection);
+      });
+
+      it('should return null', () => {
+        expect(returnedItem).to.be.null;
+      });
+
+      it('should not add the object to the collection', () => {
+        expect(collection.has(item)).to.be.false;
+      });
+
+      it('should not call replaced', () => {
+        expect(replaced).to.be.false;
+      });
+    });
+
+    describe('if an object with said name exists, but the existing item does not belong to the dynamic module', () => {
+      let item;
+      let existingItem;
+      let collection;
+      let replaced = false;
+      let returnedItem;
+
+      before(() => {
+        collection = makeOverrideCollection(
+          new Collection(),
+          getModuleId,
+          null,
+          (option) => new VcsObject(option),
+        );
+        collection.replaced.addEventListener(() => {
+          replaced = true;
+        });
+
+        existingItem = new VcsObject({ name: 'foo' });
+        existingItem[moduleIdSymbol] = 'foo';
+        collection.add(existingItem);
+
+        item = new VcsObject({ name: 'foo' });
+        returnedItem = collection.replace(item);
+      });
+
+      after(() => {
+        destroyCollection(collection);
+      });
+
+      it('should return null', () => {
+        expect(returnedItem).to.be.null;
+      });
+
+      it('should not add the object to the collection', () => {
+        expect(collection.has(item)).to.be.false;
+      });
+
+      it('should not call replaced', () => {
+        expect(replaced).to.be.false;
+      });
+    });
+
+    describe('if an object with said name exists and the existing item belongs to the dynamic module', () => {
+      let item;
+      let existingItem;
+      let collection;
+      let replacementEvent = null;
+      let returnedItem;
+
+      before(() => {
+        collection = makeOverrideCollection(
+          new Collection(),
+          getModuleId,
+          null,
+          (option) => new VcsObject(option),
+        );
+        collection.replaced.addEventListener((event) => {
+          replacementEvent = event;
+        });
+
+        existingItem = new VcsObject({ name: 'foo' });
+        existingItem[moduleIdSymbol] = getModuleId();
+        collection.add(existingItem);
+
+        item = new VcsObject({ name: 'foo' });
+        returnedItem = collection.replace(item);
+      });
+
+      after(() => {
+        destroyCollection(collection);
+      });
+
+      it('should add the object to the collection', () => {
+        expect(collection.has(item)).to.be.true;
+      });
+
+      it('should return the item', () => {
+        expect(returnedItem).to.equal(item);
+      });
+
+      it('should call the replaced event with the new and old object', () => {
+        expect(replacementEvent.new).to.equal(item);
+        expect(replacementEvent.old).to.equal(existingItem);
+      });
+    });
+
+    describe('if the collection is an indexed collection', () => {
+      let item;
+      let collection;
+      let existingItem;
+      let replacedEvent = null;
+      let returnedItem;
+      let currentIndex;
+
+      before(() => {
+        collection = makeOverrideCollection(
+          new IndexedCollection(),
+          getModuleId,
+          null,
+          (option) => new VcsObject(option),
+        );
+        collection.replaced.addEventListener((event) => {
+          replacedEvent = event;
+        });
+
+        const placeHolderBefore = new VcsObject({ name: 'placeHolderBefore' });
+        placeHolderBefore[moduleIdSymbol] = getModuleId();
+        collection.add(placeHolderBefore);
+
+        existingItem = new VcsObject({ name: 'foo' });
+        existingItem[moduleIdSymbol] = getModuleId();
+        collection.add(existingItem);
+
+        const placeHolderAfter = new VcsObject({ name: 'placeHolderAfter' });
+        placeHolderAfter[moduleIdSymbol] = getModuleId();
+        collection.add(placeHolderAfter);
+
+        currentIndex = collection.indexOf(existingItem);
+
+        item = new VcsObject({ name: 'foo' });
+        returnedItem = collection.replace(item);
+      });
+
+      after(() => {
+        destroyCollection(collection);
+      });
+
+      it('should add the object to the collection', () => {
+        expect(collection.has(item)).to.be.true;
+      });
+
+      it('should maintain the objects index', () => {
+        expect(collection.indexOf(item)).to.equal(currentIndex);
+      });
+
+      it('should return the item', () => {
+        expect(returnedItem).to.equal(item);
+      });
+
+      it('should call the replaced event with the replacement object', () => {
+        expect(replacedEvent.new).to.equal(item);
+        expect(replacedEvent.old).to.equal(existingItem);
+      });
+    });
+
+    describe('if an object of said uniqueKey exists, and the collections unique key is not the default', () => {
+      let item;
+      let returnedItem;
+      let collection;
+      let uniqueSymbol;
+
+      before(() => {
+        uniqueSymbol = Symbol('unique');
+        collection = makeOverrideCollection(
+          new Collection(uniqueSymbol),
+          getModuleId,
+        );
+
+        const existingItem = new VcsObject({ name: 'foo' });
+        existingItem[uniqueSymbol] = 'foo';
+        existingItem[moduleIdSymbol] = getModuleId();
+        collection.add(existingItem);
+
+        item = new VcsObject({ name: 'foo' });
+        item[uniqueSymbol] = 'foo';
+        returnedItem = collection.replace(item);
+      });
+
+      after(() => {
+        destroyCollection(collection);
+      });
+
+      it('should add the object to the collection', () => {
+        expect(collection.has(item)).to.be.true;
+      });
+
+      it('should return the object', () => {
+        expect(returnedItem).to.equal(item);
+      });
+    });
+  });
+
   describe('overriding an object of a collection', () => {
     describe('if no object with said name exists', () => {
       let item;

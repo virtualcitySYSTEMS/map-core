@@ -27,14 +27,19 @@ export type OverrideCollectionItem = {
 /**
  * The override collection adds the ability to override a unique item and re-creating it, should the override
  * be removed. This does change some flow of called events. 1) if you override an item, removed is not called for the
- * removed current item. 2) added can be called more the once for the same unique id. 3) replaced is called for items
- * which where replaced. replaced is called after added has been called for the item.
+ * removed current item. 2) replaced is called for items which where replaced. 3) added can be called more the once for the same unique id.
+ * Replaced is called before added has been called for the item.
  */
 export type OverrideCollectionInterface<T> = {
   /**
-   * replaced is called after added
+   * replaced is called before added
    */
   replaced: VcsEvent<ReplacedEvent<T>>;
+  /**
+   * Replacement is only supported for items of the dynamic module. For other items you may use override instead.
+   * Returns the replaced item or null if the item could not be inserted
+   */
+  replace: (item: T) => T | null;
   shadowMap: Map<string, (object & { [moduleIdSymbol]?: string })[]>;
   /**
    * returns the overriden item or null if the item could not be inserted (this would be the result of a race condition)
@@ -103,6 +108,24 @@ function makeOverrideCollection<
     ): number | null | undefined => currentIndex);
 
   overrideCollection.shadowMap = new Map();
+
+  overrideCollection.replace = function replace(item: T): T | null {
+    const itemId = item[overrideCollection.uniqueKey] as string;
+    const old = overrideCollection.getByKey(itemId);
+    if (old?.[moduleIdSymbol] === getDynamicModuleId()) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      // eslint-disable-next-line no-underscore-dangle
+      const index = overrideCollection._remove(old);
+      overrideCollection.replaced.raiseEvent({ old, new: item });
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      if ((overrideCollection.add(item, index) as number) >= 0) {
+        return item;
+      }
+    }
+    return null;
+  };
 
   overrideCollection.override = function override(item: T): T | null {
     let shadow;
