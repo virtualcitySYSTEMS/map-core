@@ -1283,10 +1283,14 @@ class VectorProperties {
   /**
    * The common vector properties for the input features.
    * @param features Features for which the vector property values should be returned.
-   * @returns The common vector properties for the features. When a/all feature(s) does not has a property set, the layer or, if not set, the default value is returned. If features have different values for a property, the property key is not added to the returned obeject.
+   * @returns The common vector properties for the features. When a/all feature(s) does not has a property set, the layer or, if not set, the default value is returned. If features have different values for a property, the property key is not added to the returned obeject. If feature array is empty, an empty object is returned.
    */
   getValuesForFeatures(features: Feature[]): VectorPropertiesOptions {
     const values: VectorPropertiesOptions = {};
+
+    if (!features.length) {
+      return values;
+    }
 
     /**
      * Checks if all the values of the array are equal using fast-deep-equal.

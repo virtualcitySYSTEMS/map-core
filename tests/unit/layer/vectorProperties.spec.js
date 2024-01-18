@@ -1060,6 +1060,13 @@ describe('VectorProperties', () => {
             .and.to.have.property('bar', true);
         });
       });
+
+      describe('no features', () => {
+        it('should return empty object', () => {
+          const featureValues = vectorProperties.getValuesForFeatures([]);
+          expect(featureValues).to.be.empty;
+        });
+      });
     });
 
     describe('setting values on features', () => {
