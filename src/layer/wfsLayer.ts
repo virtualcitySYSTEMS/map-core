@@ -2,7 +2,7 @@ import WFSFormat from 'ol/format/WFS.js';
 import VectorLayer, { VectorOptions } from './vectorLayer.js';
 import Projection from '../util/projection.js';
 import { layerClassRegistry } from '../classRegistry.js';
-import { requestUrl } from '../util/fetch.js';
+import { getInitForUrl, requestUrl } from '../util/fetch.js';
 
 export type WFSOptions = VectorOptions & {
   /**
@@ -125,13 +125,16 @@ class WFSLayer extends VectorLayer {
         ...this.getFeaturesOptions,
       });
       const postData = new XMLSerializer().serializeToString(requestDocument);
-      this._dataFetchedPromise = requestUrl(this.url, {
-        method: 'POST',
-        headers: {
+      const init = getInitForUrl(this.url, this.headers);
+      init.method = 'POST';
+      init.body = postData;
+      init.headers = {
+        ...init.headers,
+        ...{
           'Content-Type': 'application/text+xml',
         },
-        body: postData,
-      })
+      };
+      this._dataFetchedPromise = requestUrl(this.url, init)
         .then((response) => response.text())
         .then((data) => this._parseWFSData(data))
         .catch((err) => {

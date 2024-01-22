@@ -32,6 +32,7 @@ import type CesiumMap from '../../map/cesiumMap.js';
 import type { FeatureLayerImplementation } from '../featureLayer.js';
 import type StyleItem from '../../style/styleItem.js';
 import GlobalHider from '../globalHider.js';
+import { getResourceOrUrl } from './resourceHelper.js';
 
 export const cesiumTilesetLastUpdated: unique symbol = Symbol(
   'cesiumTilesetLastUpdated',
@@ -127,10 +128,13 @@ class CesiumTilesetCesiumImpl
 
   async initialize(): Promise<void> {
     if (!this._initializedPromise) {
-      this._initializedPromise = Cesium3DTileset.fromUrl(this.url as string, {
-        ...this.tilesetOptions,
-        show: false, // show is handled by activate
-      });
+      this._initializedPromise = Cesium3DTileset.fromUrl(
+        getResourceOrUrl(this.url!, this.headers),
+        {
+          ...this.tilesetOptions,
+          show: false, // show is handled by activate
+        },
+      );
       this.cesium3DTileset = await this._initializedPromise;
       if (this.isDestroyed) {
         this.cesium3DTileset.destroy();

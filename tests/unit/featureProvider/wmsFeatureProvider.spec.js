@@ -47,7 +47,8 @@ describe('WMSFeatureProvider', () => {
       };
       scope = nock('http://myWmsFeatureProvider')
         .get(/\/wms\?(\S)*/)
-        .reply(() => {
+        // eslint-disable-next-line
+        .reply(function () {
           return [200, testGeojson, { 'Content-Type': 'application/json' }];
         });
 
@@ -80,6 +81,69 @@ describe('WMSFeatureProvider', () => {
 
     after(() => {
       scope.done();
+      provider.destroy();
+    });
+  });
+
+  describe('requestHeaders with getFeaturesByCoordinate', () => {
+    let scope;
+    let testGeojson;
+    let provider;
+    let requestHeaders;
+
+    before(async () => {
+      testGeojson = {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            geometry: null,
+            properties: {
+              foo: 'bar',
+            },
+          },
+          {
+            type: 'Feature',
+            geometry: {
+              type: 'Point',
+              coordinates: [1, 1, 2],
+            },
+            properties: {
+              foo: 'baz',
+            },
+          },
+        ],
+      };
+
+      provider = new WMSFeatureProvider('test', {
+        url: 'http://myWmsFeatureProvider/wms',
+        parameters: {
+          LAYERS: 'one',
+        },
+        responseType: 'application/json',
+        projection: mercatorProjection.toJSON(),
+      });
+    });
+
+    it('should send configured Headers to the Server', async () => {
+      scope = nock('http://myWmsFeatureProvider')
+        .get(/\/wms\?(\S)*/)
+        .reply(function nockReply() {
+          requestHeaders = this.req.headers;
+          return [200, testGeojson, { 'Content-Type': 'application/json' }];
+        });
+      await provider.getFeaturesByCoordinate([0, 0, 0], 2, {
+        testheader: 'test',
+      });
+      expect(requestHeaders).to.have.property('testheader', 'test');
+    });
+
+    afterEach(() => {
+      scope.done();
+      requestHeaders = null;
+    });
+
+    after(() => {
       provider.destroy();
     });
   });
@@ -138,7 +202,7 @@ describe('WMSFeatureProvider', () => {
   describe('getting the config', () => {
     describe('of a default feature provider', () => {
       it('should return the type, url and parameters', () => {
-        const provider = new WMSFeatureProvider('test', {});
+        const provider = new WMSFeatureProvider('test', { url: 'example.com' });
         const config = provider.toJSON();
         expect(config).to.have.all.keys(['type', 'url', 'parameters']);
         provider.destroy();

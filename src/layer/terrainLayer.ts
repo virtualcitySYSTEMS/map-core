@@ -78,10 +78,14 @@ class TerrainLayer extends Layer<TerrainCesiumImpl> {
   async getHeightForWGS84Coordinates(
     coords: Coordinate[],
   ): Promise<Coordinate[]> {
-    const terrainProvider = await getTerrainProviderForUrl(this.url, {
-      requestVertexNormals: this.requestVertexNormals,
-      requestWaterMask: this.requestWaterMask,
-    });
+    const terrainProvider = await getTerrainProviderForUrl(
+      this.url,
+      {
+        requestVertexNormals: this.requestVertexNormals,
+        requestWaterMask: this.requestWaterMask,
+      },
+      this.headers,
+    );
     return getHeightFromTerrainProvider(
       terrainProvider,
       coords,

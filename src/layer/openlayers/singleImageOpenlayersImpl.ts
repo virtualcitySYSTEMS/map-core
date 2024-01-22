@@ -1,4 +1,5 @@
 import ImageLayer from 'ol/layer/Image.js';
+import { TrustedServers } from '@vcmap-cesium/engine';
 import ImageStatic, {
   type Options as ImageStaticOptions,
 } from 'ol/source/ImageStatic.js';
@@ -7,6 +8,7 @@ import { wgs84Projection } from '../../util/projection.js';
 import { isSameOrigin } from '../../util/urlHelpers.js';
 import type { SingleImageImplementationOptions } from '../singleImageLayer.js';
 import type OpenlayersMap from '../../map/openlayersMap.js';
+import { getInitForUrl, requestObjectUrl } from '../../util/fetch.js';
 
 /**
  * represents a specific OpenLayers SingleImageLayer Layer class.
@@ -33,8 +35,30 @@ class SingleImageOpenlayersImpl extends RasterLayerOpenlayersImpl {
       projection: 'EPSG:4326',
       imageExtent: this.extent.getCoordinatesInProjection(wgs84Projection),
     };
-    if (!isSameOrigin(this.url as string)) {
+    if (TrustedServers.contains(options.url)) {
+      options.crossOrigin = 'use-credentials';
+    } else if (!isSameOrigin(this.url as string)) {
       options.crossOrigin = 'anonymous';
+    }
+
+    if (this.headers) {
+      options.imageLoadFunction = (imageWrapper, src): void => {
+        const init = getInitForUrl(src, this.headers);
+        requestObjectUrl(src, init)
+          .then((blobUrl) => {
+            const image = imageWrapper.getImage() as HTMLImageElement;
+            image.src = blobUrl;
+            image.onload = (): void => {
+              URL.revokeObjectURL(blobUrl);
+            };
+          })
+          .catch(() => {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call,no-underscore-dangle
+            imageWrapper.handleImageError_();
+          });
+      };
     }
 
     return new ImageLayer({

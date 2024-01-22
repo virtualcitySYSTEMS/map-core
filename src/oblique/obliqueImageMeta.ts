@@ -17,6 +17,7 @@ export type ObliqueImageMetaOptions = {
   terrainProvider?: CesiumTerrainProvider;
   name: string;
   format?: string;
+  headers?: Record<string, string>;
 };
 
 class ObliqueImageMeta {
@@ -64,6 +65,8 @@ class ObliqueImageMeta {
 
   format: string;
 
+  headers?: Record<string, string>;
+
   constructor(options: ObliqueImageMetaOptions) {
     this.name = options.name;
     this.principalPoint = options['principal-point'];
@@ -78,6 +81,7 @@ class ObliqueImageMeta {
     this.url = options.url;
     this.terrainProvider = options.terrainProvider;
     this.format = options.format || 'jpg';
+    this.headers = options.headers;
   }
 
   /**

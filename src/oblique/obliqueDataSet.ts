@@ -13,7 +13,7 @@ import {
 import VcsEvent from '../vcsEvent.js';
 import { getTerrainProviderForUrl } from '../layer/terrainHelpers.js';
 import Projection, { ProjectionOptions } from '../util/projection.js';
-import { requestJson } from '../util/fetch.js';
+import { getInitForUrl, requestJson } from '../util/fetch.js';
 import type ObliqueImage from './obliqueImage.js';
 import type {
   ObliqueDataSetTerrainProviderOptions,
@@ -31,6 +31,7 @@ export type ObliqueDataSetOptions = {
   url: string;
   projection?: ProjectionOptions;
   terrainProvider?: ObliqueDataSetTerrainProviderOptions;
+  headers?: Record<string, string>;
 };
 
 export enum DataState {
@@ -85,12 +86,15 @@ class ObliqueDataSet {
 
   private _loadingPromise: Promise<void> | undefined = undefined;
 
+  private _headers?: Record<string, string>;
+
   copyright: CopyrightOptions | undefined = undefined;
 
   constructor(
     url: string,
     projection?: Projection | ProjectionOptions,
     terrainProviderOptions?: ObliqueDataSetTerrainProviderOptions,
+    headers?: Record<string, string>,
   ) {
     this.url = url;
     if (!/\.json$/.test(this.url)) {
@@ -108,6 +112,8 @@ class ObliqueDataSet {
     this._terrainProviderOptions = terrainProviderOptions
       ? { ...terrainProviderOptions }
       : undefined;
+
+    this._headers = structuredClone(headers);
   }
 
   /**
@@ -131,7 +137,8 @@ class ObliqueDataSet {
   async load(): Promise<void> {
     if (!this._loadingPromise) {
       this._state = DataState.LOADING;
-      this._loadingPromise = requestJson<ObliqueImageJson>(this.url)
+      const init = getInitForUrl(this.url, this._headers);
+      this._loadingPromise = requestJson<ObliqueImageJson>(this.url, init)
         .then((data) => {
           return this._initialize(data);
         })
@@ -174,6 +181,7 @@ class ObliqueDataSet {
       this._terrainProvider = await getTerrainProviderForUrl(
         this._terrainProviderOptions.url,
         terrainProviderOptions,
+        this._terrainProviderOptions.headers,
       );
     }
     this._parseMetaData(json);
@@ -186,6 +194,7 @@ class ObliqueDataSet {
       this.baseUrl,
       this.projection,
       this._terrainProvider,
+      this._headers,
     );
     const { version, buildNumber } = getVersionFromImageJson(json);
 
@@ -304,8 +313,10 @@ class ObliqueDataSet {
     }
 
     this._tiles.set(stringTileCoordinates, DataState.LOADING);
+    const init = getInitForUrl(this.url, this._headers);
     const promise = requestJson<ObliqueImageJson>(
       `${this.baseUrl}/${stringTileCoordinates}.json`,
+      init,
     )
       .then((data) => {
         const images = parseImageData(data, this._imageMetas);
@@ -365,6 +376,9 @@ class ObliqueDataSet {
     }
     if (this._terrainProviderOptions) {
       config.terrainProvider = { ...this._terrainProviderOptions };
+    }
+    if (this._headers) {
+      config.headers = this._headers;
     }
     return config;
   }

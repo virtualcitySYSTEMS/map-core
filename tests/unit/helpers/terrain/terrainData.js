@@ -7,8 +7,8 @@ const fileName = getFileNameFromUrl(
   import.meta.url,
   '../../../../data/terrain/layer.json',
 );
-const layerJson = await importJSON(fileName);
-const terrainFiles = {
+export const layerJson = await importJSON(fileName);
+export const terrainFiles = {
   1388006485: './tests/data/terrain/13/8800/6485.terrain',
   1388006486: './tests/data/terrain/13/8800/6486.terrain',
   1388016485: './tests/data/terrain/13/8801/6485.terrain',

@@ -145,11 +145,13 @@ class AbstractFeatureProvider extends VcsObject {
    * to handle your feature is called: (e.g. <code>return features.map(f => this.getProviderFeature(f)</code>);
    * @param coordinate - in mercator
    * @param resolution - meters per pixel for the given location
+   * @param headers - headers optional request headers to be sent with the server request
    */
   // eslint-disable-next-line no-unused-vars,class-methods-use-this
   getFeaturesByCoordinate(
     _coordinate: Coordinate,
     _resolution: number,
+    _headers?: Record<string, string>,
   ): Promise<Feature[]> {
     return Promise.resolve([]);
   }

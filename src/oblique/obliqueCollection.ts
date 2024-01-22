@@ -64,6 +64,7 @@ export type ObliqueVersion = {
 
 export type ObliqueDataSetTerrainProviderOptions = TerrainProviderOptions & {
   url: string;
+  headers?: Record<string, string>;
 };
 
 export type ObliqueCollectionOptions = VcsObjectOptions & {
@@ -280,6 +281,7 @@ class ObliqueCollection extends VcsObject {
         dataSetOptions.url,
         dataSetOptions.projection,
         dataSetOptions.terrainProvider,
+        dataSetOptions.headers,
       );
     }
     dataSet.imagesLoaded.addEventListener(({ images, tileCoordinate }) => {

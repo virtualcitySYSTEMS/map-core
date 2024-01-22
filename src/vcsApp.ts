@@ -116,7 +116,7 @@ class VcsApp {
 
   private _flights: OverrideCollection<FlightInstance, FlightCollection>;
 
-  private _categoryClassRegisty: OverrideClassRegistry<typeof Category>;
+  private _categoryClassRegistry: OverrideClassRegistry<typeof Category>;
 
   private _categories: CategoryCollection;
 
@@ -126,11 +126,11 @@ class VcsApp {
 
   private _categoryItemClassRegistry: OverrideClassRegistry<Ctor<any>>;
 
-  private _tileProviderClassRegsitry: OverrideClassRegistry<
+  private _tileProviderClassRegistry: OverrideClassRegistry<
     typeof TileProvider
   >;
 
-  private _featureProviderClassRegsitry: OverrideClassRegistry<
+  private _featureProviderClassRegistry: OverrideClassRegistry<
     typeof AbstractFeatureProvider
   >;
 
@@ -211,7 +211,7 @@ class VcsApp {
         new FlightInstance(flightOptions),
     );
 
-    this._categoryClassRegisty = new OverrideClassRegistry(
+    this._categoryClassRegistry = new OverrideClassRegistry(
       categoryClassRegistry,
     );
     this._categories = new CategoryCollection(this);
@@ -220,10 +220,10 @@ class VcsApp {
     this._categoryItemClassRegistry = new OverrideClassRegistry(
       new ClassRegistry(),
     );
-    this._tileProviderClassRegsitry = new OverrideClassRegistry(
+    this._tileProviderClassRegistry = new OverrideClassRegistry(
       tileProviderClassRegistry,
     );
-    this._featureProviderClassRegsitry = new OverrideClassRegistry(
+    this._featureProviderClassRegistry = new OverrideClassRegistry(
       featureProviderClassRegistry,
     );
 
@@ -332,7 +332,7 @@ class VcsApp {
   }
 
   get categoryClassRegistry(): OverrideClassRegistry<typeof Category> {
-    return this._categoryClassRegisty;
+    return this._categoryClassRegistry;
   }
 
   get categoryItemClassRegistry(): OverrideClassRegistry<Ctor<any>> {
@@ -340,13 +340,13 @@ class VcsApp {
   }
 
   get tileProviderClassRegistry(): OverrideClassRegistry<typeof TileProvider> {
-    return this._tileProviderClassRegsitry;
+    return this._tileProviderClassRegistry;
   }
 
   get featureProviderClassRegistry(): OverrideClassRegistry<
     typeof AbstractFeatureProvider
   > {
-    return this._featureProviderClassRegsitry;
+    return this._featureProviderClassRegistry;
   }
 
   getModuleById(id: string): VcsModule | undefined {
@@ -540,10 +540,10 @@ class VcsApp {
     this._mapClassRegistry.destroy();
     this._layerClassRegistry.destroy();
     this._styleClassRegistry.destroy();
-    this._categoryClassRegisty.destroy();
+    this._categoryClassRegistry.destroy();
     this._categoryItemClassRegistry.destroy();
-    this._tileProviderClassRegsitry.destroy();
-    this._featureProviderClassRegsitry.destroy();
+    this._tileProviderClassRegistry.destroy();
+    this._featureProviderClassRegistry.destroy();
     this.destroyed.raiseEvent();
     this.destroyed.destroy();
     this.localeChanged.destroy();

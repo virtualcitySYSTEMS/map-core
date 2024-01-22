@@ -7,6 +7,7 @@ import {
 import type { Coordinate } from 'ol/coordinate.js';
 import { getTransform } from 'ol/proj.js';
 import Projection, { wgs84Projection } from '../util/projection.js';
+import { getResourceOrUrl } from './cesium/resourceHelper.js';
 
 export type TerrainProviderOptions = {
   requestVertexNormals?: boolean;
@@ -15,16 +16,16 @@ export type TerrainProviderOptions = {
 
 const terrainProviders: Record<string, CesiumTerrainProvider> = {};
 
-/**
- * @param  url
- * @param  options
- */
 export async function getTerrainProviderForUrl(
   url: string,
   options: TerrainProviderOptions,
+  headers?: Record<string, string>,
 ): Promise<CesiumTerrainProvider> {
   if (!terrainProviders[url]) {
-    terrainProviders[url] = await CesiumTerrainProvider.fromUrl(url, options);
+    terrainProviders[url] = await CesiumTerrainProvider.fromUrl(
+      getResourceOrUrl(url, headers),
+      options,
+    );
     return terrainProviders[url];
   }
   let terrainProvider = terrainProviders[url];
@@ -34,10 +35,22 @@ export async function getTerrainProviderForUrl(
     (options.requestWaterMask !== undefined &&
       terrainProvider.requestWaterMask !== options.requestWaterMask)
   ) {
-    terrainProviders[url] = await CesiumTerrainProvider.fromUrl(url, options);
+    terrainProviders[url] = await CesiumTerrainProvider.fromUrl(
+      getResourceOrUrl(url, headers),
+      options,
+    );
     terrainProvider = terrainProviders[url];
   }
   return terrainProvider;
+}
+
+/**
+ * cleans the terrainProvider Cache, used for testing
+ */
+export function cleanCachedTerrainProviders(): void {
+  Object.keys(terrainProviders).forEach((key) => {
+    delete terrainProviders[key];
+  });
 }
 
 /**

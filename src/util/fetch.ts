@@ -1,3 +1,5 @@
+import { TrustedServers } from '@vcmap-cesium/engine';
+
 export async function requestUrl(
   url: string,
   init?: RequestInit,
@@ -25,4 +27,27 @@ export async function requestArrayBuffer(
 ): Promise<ArrayBuffer> {
   const response = await requestUrl(url, init);
   return response.arrayBuffer();
+}
+
+export async function requestObjectUrl(
+  url: string,
+  init?: RequestInit,
+): Promise<string> {
+  const response = await requestUrl(url, init);
+  const blob = await response.blob();
+  return URL.createObjectURL(blob);
+}
+
+export function getInitForUrl(
+  url: string,
+  headers?: Record<string, string>,
+): RequestInit {
+  const init: RequestInit = {};
+  if (headers) {
+    init.headers = headers;
+  }
+  if (TrustedServers.contains(url)) {
+    init.credentials = 'include';
+  }
+  return init;
 }

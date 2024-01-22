@@ -7,7 +7,7 @@ import TileProvider, {
   TileProviderOptions,
 } from './tileProvider.js';
 import { getURL } from './urlTemplateTileProvider.js';
-import { requestArrayBuffer } from '../../util/fetch.js';
+import { getInitForUrl, requestArrayBuffer } from '../../util/fetch.js';
 import { tileProviderClassRegistry } from '../../classRegistry.js';
 
 export type MVTTileProviderOptions = TileProviderOptions & {
@@ -68,12 +68,18 @@ class MVTTileProvider extends TileProvider {
     }
   }
 
-  async loader(x: number, y: number, z: number): Promise<Feature[]> {
+  async loader(
+    x: number,
+    y: number,
+    z: number,
+    headers?: Record<string, string>,
+  ): Promise<Feature[]> {
     const rectangle = this.tilingScheme.tileXYToRectangle(x, y, z);
     const url = getURL(this.url, x, y, z, rectangle, this.locale);
     const extent = rectangleToExtent(rectangle);
     const center = getCenter(extent);
-    const data = await requestArrayBuffer(url);
+    const init = getInitForUrl(this.url, headers);
+    const data = await requestArrayBuffer(url, init);
     const features = this._MVTFormat.readFeatures(data) as Feature[];
     const sx = (extent[2] - extent[0]) / 4096;
     const sy = -((extent[3] - extent[1]) / 4096);

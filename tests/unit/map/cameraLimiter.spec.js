@@ -1,13 +1,19 @@
 import { Cartographic, Ellipsoid } from '@vcmap-cesium/engine';
 import nock from 'nock';
+import fs from 'fs';
 import { setCesiumMap } from '../helpers/cesiumHelpers.js';
 import VcsApp from '../../../src/vcsApp.js';
 import CameraLimiter, {
   CameraLimiterMode,
 } from '../../../src/map/cameraLimiter.js';
-import { setTerrainServer } from '../helpers/terrain/terrainData.js';
+import {
+  layerJson,
+  setTerrainServer,
+  terrainFiles,
+} from '../helpers/terrain/terrainData.js';
 import Projection from '../../../src/util/projection.js';
 import { mercatorCoordinates } from '../helpers/obliqueHelpers.js';
+import { cleanCachedTerrainProviders } from '../../../src/layer/terrainHelpers.js';
 
 describe('maps.CameraLimiter', () => {
   let sandbox;
@@ -61,6 +67,10 @@ describe('maps.CameraLimiter', () => {
       );
     });
 
+    after(() => {
+      nock.cleanAll();
+    });
+
     it('should clamp the height, if the terrain provider is null', async () => {
       cameraLimiter.limit = 1300;
       cameraLimiter.terrainUrl = null;
@@ -98,6 +108,59 @@ describe('maps.CameraLimiter', () => {
       expect(Cartographic.fromCartesian(camera.position))
         .to.have.property('height')
         .and.to.be.closeTo(2300, 0.00001);
+    });
+  });
+
+  describe('DISTANCE mode handling headers', () => {
+    /** @type {import("@vcmap/core").CameraLimiter} */
+    let cameraLimiter;
+    let requestHeaders;
+
+    before(() => {
+      cleanCachedTerrainProviders();
+      scope = nock('http://localhost');
+      scope
+        .get('/terrain/layer.json')
+        .reply(function nockReply() {
+          requestHeaders = this.req.headers;
+          return [200, layerJson, { 'Content-Type': 'application/json' }];
+        })
+        .get(/terrain\/(\d{2})\/(\d{4})\/(\d{4})\.terrain.*/)
+        .reply(function nockReply(uri) {
+          requestHeaders = this.req.headers;
+          const [x, y] = uri.match(/(\d{4})/g);
+          const terrainFile = terrainFiles[`13${x}${y}`];
+          const res = terrainFile
+            ? fs.createReadStream(terrainFiles[`13${x}${y}`])
+            : Buffer.from('');
+          return [
+            200,
+            res,
+            { 'Content-Type': 'application/vnd.quantized-mesh' },
+          ];
+        })
+        .persist();
+      cameraLimiter = new CameraLimiter({
+        mode: CameraLimiterMode.DISTANCE,
+        terrainUrl: 'http://localhost/terrain/',
+        terrainRequestHeaders: { testheader: 't6' },
+      });
+      const position = Projection.mercatorToWgs84(mercatorCoordinates);
+      const cameraCartographic = Cartographic.fromDegrees(...position);
+      Cartographic.toCartesian(
+        cameraCartographic,
+        Ellipsoid.WGS84,
+        camera.position,
+      );
+    });
+
+    after(() => {
+      nock.cleanAll();
+    });
+
+    it('should send headers on terrainRequests', async () => {
+      await cameraLimiter.limitCamera(camera);
+      expect(requestHeaders).to.have.property('testheader', 't6');
     });
   });
 

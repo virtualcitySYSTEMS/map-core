@@ -44,6 +44,7 @@ class FeatureProviderInteraction extends AbstractInteraction {
                 l.featureProvider?.getFeaturesByCoordinate?.(
                   event.position as Coordinate,
                   resolution,
+                  l.headers,
                 ),
             ),
           )

@@ -363,6 +363,7 @@ class TileProvider extends VcsObject {
   private async _getRtreeForBaseTile(
     baseLevel: number,
     tileCenter: Cartographic,
+    headers?: Record<string, string>,
   ): Promise<TileProviderRtree | null> {
     const baseTile = this.tilingScheme.positionToTileXY(tileCenter, baseLevel);
     const baseTileCacheKey = this.getCacheKey(
@@ -372,7 +373,12 @@ class TileProvider extends VcsObject {
     );
     if (this.cache.has(baseLevel)) {
       if (!this.cache.get(baseLevel)!.containsKey(baseTileCacheKey)) {
-        const featuresPromise = this.loader(baseTile.x, baseTile.y, baseLevel);
+        const featuresPromise = this.loader(
+          baseTile.x,
+          baseTile.y,
+          baseLevel,
+          headers,
+        );
         // eslint-disable-next-line no-void
         void this._addTilePromiseToCache(
           featuresPromise,
@@ -388,12 +394,14 @@ class TileProvider extends VcsObject {
   /**
    * returns the features intersecting this coordinate. Depending on the resolution a buffer around the coordinate is requested.
    * The Buffer has the size of the resolution.
-   * @param  coordinate in mercator
-   * @param  resolution in m per pixel
+   * @param coordinate in mercator
+   * @param resolution in m per pixel
+   * @param headers optional request headers to be sent with the server request
    */
   async getFeaturesByCoordinate(
     coordinate: Coordinate,
     resolution: number,
+    headers?: Record<string, string>,
   ): Promise<Feature[]> {
     const extent = createOrUpdateFromCoordinate(coordinate);
     buffer(extent, resolution, extent);
@@ -406,7 +414,11 @@ class TileProvider extends VcsObject {
       resolution,
       cartographic.latitude,
     );
-    const rtree = await this._getRtreeForBaseTile(baseLevel, cartographic);
+    const rtree = await this._getRtreeForBaseTile(
+      baseLevel,
+      cartographic,
+      headers,
+    );
     if (rtree) {
       const features = rtree
         .search({
@@ -423,20 +435,26 @@ class TileProvider extends VcsObject {
 
   /**
    * returns features for the requested Tile.
-   * @param  x
-   * @param  y
-   * @param  level - if the level is not a base level, will use the closest match
+   * @param x
+   * @param y
+   * @param level - if the level is not a base level, will use the closest match
+   * @param headers optional request headers to be sent with the server request
    */
   async getFeaturesForTile(
     x: number,
     y: number,
     level: number,
+    headers?: Record<string, string>,
   ): Promise<Feature[]> {
     const rectangle = this.tilingScheme.tileXYToRectangle(x, y, level);
     const tileCenter = Rectangle.center(rectangle);
     const baseLevel = this.getBaseLevel(level);
     if (baseLevel != null) {
-      const rtree = await this._getRtreeForBaseTile(baseLevel, tileCenter);
+      const rtree = await this._getRtreeForBaseTile(
+        baseLevel,
+        tileCenter,
+        headers,
+      );
       if (rtree) {
         if (level === baseLevel) {
           return rtree.all().map((item) => item.value);
@@ -462,21 +480,29 @@ class TileProvider extends VcsObject {
       const childNorth = x * 2;
       const childWest = y * 2;
       return [
-        ...(await this.getFeaturesForTile(childNorth, childWest, childLevel)),
+        ...(await this.getFeaturesForTile(
+          childNorth,
+          childWest,
+          childLevel,
+          headers,
+        )),
         ...(await this.getFeaturesForTile(
           childNorth + 1,
           childWest,
           childLevel,
+          headers,
         )),
         ...(await this.getFeaturesForTile(
           childNorth + 1,
           childWest + 1,
           childLevel,
+          headers,
         )),
         ...(await this.getFeaturesForTile(
           childNorth,
           childWest + 1,
           childLevel,
+          headers,
         )),
       ];
     }
@@ -485,12 +511,14 @@ class TileProvider extends VcsObject {
 
   /**
    * Retrieves all features which intersect the given extent. Will load all intersecting tiles.
-   * @param  extent
-   * @param  level - Optional level to request. Will use highest level if omitted. If the provided level is not a base level, will use the closest match.
+   * @param extent
+   * @param level - Optional level to request. Will use highest level if omitted. If the provided level is not a base level, will use the closest match.
+   * @param headers Optional request headers to be sent with the server request
    */
   async getFeaturesForExtent(
     extent: Extent,
     level?: number,
+    headers?: Record<string, string>,
   ): Promise<Feature[]> {
     let usedLevel = level != null ? level : this.baseLevels[0];
     usedLevel = this.getBaseLevel(usedLevel) as number;
@@ -512,7 +540,9 @@ class TileProvider extends VcsObject {
     }
 
     const features = await Promise.all(
-      tileCoordinates.map(([x, y]) => this.getFeaturesForTile(x, y, usedLevel)),
+      tileCoordinates.map(([x, y]) =>
+        this.getFeaturesForTile(x, y, usedLevel, headers),
+      ),
     );
     const mercatorExtent =
       extent.getCoordinatesInProjection(mercatorProjection);
@@ -559,7 +589,12 @@ class TileProvider extends VcsObject {
    *   });
    */
   // eslint-disable-next-line class-methods-use-this,no-unused-vars
-  loader(_x: number, _y: number, _z: number): Promise<Feature[]> {
+  loader(
+    _x: number,
+    _y: number,
+    _z: number,
+    _headers?: Record<string, string>,
+  ): Promise<Feature[]> {
     return Promise.resolve([]);
   }
 
@@ -589,6 +624,7 @@ class TileProvider extends VcsObject {
     if (defaultOptions.allowTileAggregation !== this.allowTileAggregation) {
       config.allowTileAggregation = this.allowTileAggregation;
     }
+
     return config;
   }
 

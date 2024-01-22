@@ -67,6 +67,7 @@ class VectorTileOpenlayersImpl
           tile.tileCoord[1],
           tile.tileCoord[2],
           tile.tileCoord[0],
+          this.headers,
         );
         if (features.length > 0) {
           tile.setFeatures(features);

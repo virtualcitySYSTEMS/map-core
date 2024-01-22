@@ -1,4 +1,5 @@
-import { check, maybe, oneOf, recordOf } from '@vcsuite/check';
+import deepEqual from 'fast-deep-equal';
+import { check, maybe, oneOf, optional, recordOf } from '@vcsuite/check';
 import { parseBoolean, parseInteger } from '@vcsuite/parsers';
 import VcsObject, { VcsObjectOptions } from '../vcsObject.js';
 import Extent, { type ExtentOptions } from '../util/extent.js';
@@ -50,11 +51,17 @@ export type LayerOptions = VcsObjectOptions & {
    * to other sources of data.
    */
   datasourceId?: string;
+
+  /**
+   * Optional Request Headers which will be sent with each request.
+   */
+  headers?: Record<string, string>;
 };
 
 export type LayerImplementationOptions = {
   name: string;
   url: string;
+  headers?: Record<string, string>;
 };
 
 /**
@@ -82,6 +89,7 @@ class Layer<
       hiddenObjectIds: [],
       copyright: undefined,
       datasourceId: undefined,
+      headers: undefined,
     };
   }
 
@@ -144,6 +152,8 @@ class Layer<
   featureProvider: AbstractFeatureProvider | undefined;
 
   private _locale: string;
+
+  protected _headers?: Record<string, string>;
 
   /**
    * Optional Id to synchronize with the vcPublisher Datasources. This can also be used to track a connection
@@ -208,6 +218,8 @@ class Layer<
     this._locale = 'en';
 
     this.datasourceId = options.datasourceId || defaultOptions.datasourceId;
+
+    this._headers = structuredClone(options.headers);
   }
 
   /**
@@ -333,6 +345,26 @@ class Layer<
   }
 
   /**
+   * directly manipulating the headers Object will not trigger a reload. Reload the data via layer.reload() manually.
+   */
+  get headers(): Record<string, string> | undefined {
+    return this._headers;
+  }
+
+  /**
+   *
+   * @param headers
+   */
+  set headers(headers: Record<string, string> | undefined) {
+    check(headers, optional(recordOf(String)));
+    if (!deepEqual(this._headers, headers)) {
+      this._headers = structuredClone(headers);
+      // eslint-disable-next-line no-void
+      void this.reload();
+    }
+  }
+
+  /**
    * returns the currently set locale. Can be used to provide locale specific URLs.
    */
   get locale(): string {
@@ -397,6 +429,7 @@ class Layer<
     return {
       name: this.name,
       url: this.url,
+      headers: this.headers,
     };
   }
 
@@ -650,6 +683,10 @@ class Layer<
 
     if (this.datasourceId !== defaultOptions.datasourceId) {
       config.datasourceId = this.datasourceId;
+    }
+
+    if (!deepEqual(this._headers, defaultOptions.headers)) {
+      config.headers = structuredClone(this._headers);
     }
 
     return config;

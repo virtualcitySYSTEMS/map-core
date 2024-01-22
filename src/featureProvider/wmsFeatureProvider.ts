@@ -24,7 +24,7 @@ import Projection, {
 import type { WMSSourceOptions } from '../layer/wmsHelpers.js';
 import { getWMSSource } from '../layer/wmsHelpers.js';
 import Extent, { ExtentOptions } from '../util/extent.js';
-import { requestJson } from '../util/fetch.js';
+import { getInitForUrl, requestJson } from '../util/fetch.js';
 import { featureProviderClassRegistry } from '../classRegistry.js';
 import { TilingScheme } from '../layer/rasterLayer.js';
 
@@ -239,6 +239,7 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
   async getFeaturesByCoordinate(
     coordinate: Coordinate,
     resolution: number,
+    headers?: Record<string, string>,
   ): Promise<Feature[]> {
     const projection = this.wmsSource.getProjection() as OLProjection;
     let coords = coordinate;
@@ -257,9 +258,10 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
     );
 
     if (url) {
+      const init = getInitForUrl(url, headers);
       let data: GeoJSONObject;
       try {
-        data = await requestJson<GeoJSONObject>(url);
+        data = await requestJson<GeoJSONObject>(url, init);
       } catch (ex) {
         this.getLogger().error(`Failed fetching WMS FeatureInfo ${url}`);
         return [];

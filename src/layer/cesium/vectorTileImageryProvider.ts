@@ -96,6 +96,7 @@ export function getCanvasFromFeatures(
 export type VectorTileImageryProviderOptions = {
   tileProvider: TileProvider;
   tileSize: Size;
+  headers?: Record<string, string>;
 };
 
 /**
@@ -109,6 +110,8 @@ class VectorTileImageryProvider {
   private _tileSize: Size;
 
   private _errorEvent = new CesiumEvent();
+
+  headers?: Record<string, string>;
 
   emptyCanvas: HTMLCanvasElement;
 
@@ -127,6 +130,7 @@ class VectorTileImageryProvider {
     this.emptyCanvas = document.createElement('canvas');
     this.emptyCanvas.width = this.tileWidth;
     this.emptyCanvas.height = this.tileHeight;
+    this.headers = options.headers;
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -204,7 +208,12 @@ class VectorTileImageryProvider {
     y: number,
     level: number,
   ): Promise<HTMLImageElement | HTMLCanvasElement> {
-    const features = await this.tileProvider.getFeaturesForTile(x, y, level);
+    const features = await this.tileProvider.getFeaturesForTile(
+      x,
+      y,
+      level,
+      this.headers,
+    );
     if (features.length === 0) {
       return this.emptyCanvas;
     }

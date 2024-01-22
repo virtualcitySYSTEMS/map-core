@@ -32,10 +32,12 @@ class TileProviderFeatureProvider extends AbstractFeatureProvider {
   async getFeaturesByCoordinate(
     coordinate: Coordinate,
     resolution: number,
+    headers?: Record<string, string>,
   ): Promise<Feature[]> {
     const features = await this.tileProvider.getFeaturesByCoordinate(
       coordinate,
       resolution,
+      headers,
     );
     const checkShow = (feature: Feature): boolean =>
       this.style ? !!this.style.cesiumStyle.show.evaluate(feature) : true;

@@ -1,5 +1,6 @@
 /* eslint no-underscore-dangle: ["error", { "allow": ["_listeners", "_scopes", "_toRemove"] }] */
 /* eslint-disable no-continue */
+import { getLogger } from '@vcsuite/logger';
 import {
   boundingExtent,
   getBottomLeft,
@@ -18,6 +19,7 @@ import Projection, {
   wgs84Projection,
 } from '../util/projection.js';
 import type ObliqueImage from './obliqueImage.js';
+import { isSameOrigin } from '../util/urlHelpers.js';
 
 let scratchCartesian2A = new Cartesian2();
 let scratchCartesian2B = new Cartesian2();
@@ -423,7 +425,7 @@ export type ImageTransformationOptions = {
  * Always returns a Promise. When the input coordinates contain a height, it will use this height to compute the image coordinates
  * When not, it will try to get the terrainHeight in case a terrain is defined and use the height from there, to compute the image coordinates
  * @param  image
- * @param  worldCoordinate if not in web mercatpr, specify data-projection in options
+ * @param  worldCoordinate if not in web mercator, specify data-projection in options
  * @param  options
  */
 export function transformToImage(
@@ -614,16 +616,6 @@ export async function transformFromImage(
 }
 
 export function hasSameOrigin(url: string): boolean {
-  const windowUrl = new URL(window.location.href);
-  const parsedUrl = new URL(url, window.location.href);
-
-  if (parsedUrl.protocol === 'data:') {
-    return true;
-  }
-
-  return (
-    windowUrl.origin === parsedUrl.origin &&
-    windowUrl.port === parsedUrl.port &&
-    windowUrl.protocol === parsedUrl.protocol
-  );
+  getLogger('hasSameOrigin').deprecate('hasSameOrigin', 'isSameOrigin');
+  return isSameOrigin(url);
 }

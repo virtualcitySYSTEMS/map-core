@@ -4,6 +4,7 @@ import DataSourceLayer from './dataSourceLayer.js';
 import { vcsLayerName } from './layerSymbols.js';
 import { layerClassRegistry } from '../classRegistry.js';
 import type { LayerOptions } from './layer.js';
+import { getResourceOrUrl } from './cesium/resourceHelper.js';
 
 export type CzmlOptions = LayerOptions & {
   sourceUri?: string;
@@ -82,7 +83,7 @@ class CzmlLayer extends DataSourceLayer {
 
   private async _loadData(): Promise<void> {
     await this.dataSource.load(
-      this.url,
+      getResourceOrUrl(this.url, this.headers),
       this.sourceUri ? { sourceUri: this.sourceUri } : undefined,
     );
 

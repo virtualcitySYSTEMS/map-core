@@ -1,5 +1,4 @@
 import nock from 'nock';
-import Feature from 'ol/Feature.js';
 import URLTemplateTileProvider, {
   getURL,
 } from '../../../../src/layer/tileProvider/urlTemplateTileProvider.js';
@@ -45,23 +44,26 @@ describe('URLTemplateTileProvider', () => {
 
   describe('loader', () => {
     let scope;
-    let loaded;
+    let requestHeaders;
 
-    before(() => {
+    beforeEach(() => {
       scope = nock('http://myFeatureSource')
         .get('/layer/getFeatures')
         .query({ x: 1, y: 2, level: 3 })
-        .reply(200, response);
+        .reply(function nockReply() {
+          requestHeaders = this.req.headers;
+          return [200, response];
+        });
     });
 
-    after(() => {
+    afterEach(() => {
       scope.done();
+      requestHeaders = null;
     });
 
-    it('should load response data', async () => {
-      loaded = await tileProvider.loader(...xyz);
-      expect(loaded).to.have.length(1);
-      expect(loaded[0]).to.be.instanceOf(Feature);
+    it('should send headers', async () => {
+      await tileProvider.loader(...xyz, { testheader: 't4' });
+      expect(requestHeaders).to.have.property('testheader', 't4');
     });
   });
 

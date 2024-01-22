@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import { TrustedServers } from '@vcmap-cesium/engine';
 import type { ImageTile } from 'ol';
 import type { Size } from 'ol/size.js';
 import OLProjection from 'ol/proj/Projection.js';
@@ -8,8 +9,9 @@ import TileImage, {
   type Options as TileImageOptions,
 } from 'ol/source/TileImage.js';
 import Tile from 'ol/layer/Tile.js';
-import { hasSameOrigin } from './helpers.js';
 import type ObliqueImageMeta from './obliqueImageMeta.js';
+import { isSameOrigin } from '../util/urlHelpers.js';
+import { getTileLoadFunction } from '../layer/openlayers/loadFunctionHelpers.js';
 
 let defaultImage = '';
 function getDefaultImage(): string {
@@ -61,6 +63,8 @@ class ObliqueView {
 
   private _layer: Tile<TileImage> | undefined;
 
+  private _headers?: Record<string, string>;
+
   constructor(imageMeta: ObliqueImageMeta, options: ObliqueViewOptions) {
     this.size = imageMeta.size;
     this.url = imageMeta.url;
@@ -69,6 +73,7 @@ class ObliqueView {
     this.minZoom = options.minZoom;
     this.maxZoom = options.maxZoom;
     this.scaleFactor = options.scaleFactor;
+    this._headers = imageMeta.headers;
     const { tileResolution } = imageMeta;
     this.tileResolution = tileResolution.slice(
       0,
@@ -106,8 +111,13 @@ class ObliqueView {
         tileSize: this.tileSize,
       }),
     };
-    if (!hasSameOrigin(this.url)) {
+    if (TrustedServers.contains(this.url)) {
+      tileImageOptions.crossOrigin = 'use-credentials';
+    } else if (!isSameOrigin(this.url)) {
       tileImageOptions.crossOrigin = 'anonymous';
+    }
+    if (this._headers) {
+      tileImageOptions.tileLoadFunction = getTileLoadFunction(this._headers);
     }
 
     this._tileImageSource = new TileImage(tileImageOptions);

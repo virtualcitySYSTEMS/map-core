@@ -47,6 +47,7 @@ class VectorRasterTileCesiumImpl extends RasterLayerCesiumImpl {
     this.imageryProvider = new VectorTileImageryProvider({
       tileProvider: this.tileProvider,
       tileSize: this.tileSize,
+      headers: this.headers,
     });
 
     const layerOptions: CesiumImageryLayer.ConstructorOptions = {

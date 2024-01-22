@@ -1,3 +1,4 @@
+import deepEqual from 'fast-deep-equal';
 import {
   Camera,
   Cartographic,
@@ -27,6 +28,10 @@ export type CameraLimiterOptions = {
    */
   terrainUrl?: string;
   /**
+   * if mode is distance this can be used to send headers with each request to the terrainUrl
+   */
+  terrainRequestHeaders?: Record<string, string>;
+  /**
    * @default 'height'
    */
   mode?: CameraLimiterMode;
@@ -53,6 +58,7 @@ class CameraLimiter {
     return {
       mode: CameraLimiterMode.HEIGHT,
       terrainUrl: undefined,
+      terrainRequestHeaders: undefined,
       limit: 200,
       level: 12,
     };
@@ -80,6 +86,8 @@ class CameraLimiter {
    */
   lastCheckedPosition = new Cartographic();
 
+  terrainRequestHeaders?: Record<string, string>;
+
   /**
    * last updated terrain height
    */
@@ -101,6 +109,7 @@ class CameraLimiter {
       options.level === null
         ? null
         : parseInteger(options.level, defaultOptions.level as number);
+    this.terrainRequestHeaders = options.terrainRequestHeaders;
   }
 
   /**
@@ -124,6 +133,7 @@ class CameraLimiter {
     const terrainProvider = await getTerrainProviderForUrl(
       this.terrainUrl as string,
       {},
+      this.terrainRequestHeaders,
     );
     if (
       this.level &&
@@ -140,6 +150,7 @@ class CameraLimiter {
     const terrainProvider = await getTerrainProviderForUrl(
       this.terrainUrl as string,
       {},
+      this.terrainRequestHeaders,
     );
     return sampleTerrainMostDetailed(terrainProvider, [cameraCartographic]);
   }
@@ -221,6 +232,14 @@ class CameraLimiter {
 
     if (this.level !== defaultOptions.level) {
       config.level = this.level;
+    }
+    if (
+      !deepEqual(
+        this.terrainRequestHeaders,
+        defaultOptions.terrainRequestHeaders,
+      )
+    ) {
+      config.terrainRequestHeaders = this.terrainRequestHeaders;
     }
     return config;
   }

@@ -47,16 +47,18 @@ export function getVersionFromImageJson(json: {
 }
 
 /**
- * @param  json
- * @param  url
- * @param  projection
- * @param  terrainProvider
+ * @param json
+ * @param url
+ * @param projection
+ * @param terrainProvider
+ * @param headers
  */
 export function parseImageMeta(
   json: ObliqueImageJson,
   url: string,
   projection?: Projection,
   terrainProvider?: CesiumTerrainProvider,
+  headers?: Record<string, string>,
 ): ImageMeta[] {
   let size: Size = [0, 0];
   if (json.generalImageInfo.width && json.generalImageInfo.height) {
@@ -84,6 +86,7 @@ export function parseImageMeta(
     projection: imageProjection,
     url,
     terrainProvider,
+    headers,
   };
 
   if (json.generalImageInfo.cameraParameter) {

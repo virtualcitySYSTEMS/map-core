@@ -3,7 +3,7 @@ import { Math as CesiumMath, Rectangle } from '@vcmap-cesium/engine';
 import type { Feature } from 'ol/index.js';
 import { parseGeoJSON } from '../geojsonHelpers.js';
 import TileProvider, { TileProviderOptions } from './tileProvider.js';
-import { requestJson } from '../../util/fetch.js';
+import { getInitForUrl, requestJson } from '../../util/fetch.js';
 import { tileProviderClassRegistry } from '../../classRegistry.js';
 
 export type URLTemplateTileProviderOptions = TileProviderOptions & {
@@ -94,10 +94,17 @@ class URLTemplateTileProvider extends TileProvider {
     }
   }
 
-  async loader(x: number, y: number, z: number): Promise<Feature[]> {
+  async loader(
+    x: number,
+    y: number,
+    z: number,
+    headers?: Record<string, string>,
+  ): Promise<Feature[]> {
     const rectangle = this.tilingScheme.tileXYToRectangle(x, y, z);
     const url = getURL(this.url, x, y, z, rectangle, this.locale);
-    const data = await requestJson<GeoJSONObject>(url);
+
+    const init = getInitForUrl(this.url, headers);
+    const data = await requestJson<GeoJSONObject>(url, init);
     const { features } = parseGeoJSON(data, { dynamicStyle: true });
     return features;
   }

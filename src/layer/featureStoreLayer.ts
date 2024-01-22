@@ -264,7 +264,9 @@ class FeatureStoreLayer extends VectorLayer {
     const { twoDim } = this.staticRepresentation;
     if (!this._twoDimLoaded) {
       this._twoDimLoaded = (async (): Promise<void> => {
-        const data = await requestJson<GeoJSONObject>(twoDim);
+        const data = await requestJson<GeoJSONObject>(twoDim, {
+          headers: this.headers,
+        });
         const { features } = parseGeoJSON(data, {
           targetProjection: mercatorProjection,
           dynamicStyle: true,
@@ -330,6 +332,7 @@ class FeatureStoreLayer extends VectorLayer {
           featureVisibility: this._staticFeatureVisibility,
           globalHider: this.globalHider,
           splitDirection: SplitDirection.NONE,
+          headers: this.headers,
         }),
       );
     } else if (this.staticRepresentation && this.staticRepresentation.twoDim) {

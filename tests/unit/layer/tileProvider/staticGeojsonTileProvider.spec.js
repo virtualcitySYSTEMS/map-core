@@ -31,21 +31,30 @@ describe('StaticGeoJSONTileProvider', () => {
   describe('loader', () => {
     let scope;
     let loaded;
+    let requestHeaders;
 
-    before(() => {
+    beforeEach(() => {
       scope = nock('http://myStaticGeojsonTileProvider')
         .get('/tile.json')
-        .reply(200, testGeoJSON.featureCollection);
+        .reply(function nockReply() {
+          requestHeaders = this.req.headers;
+          return [200, testGeoJSON.featureCollection];
+        });
     });
 
-    after(() => {
+    afterEach(() => {
       scope.done();
+      requestHeaders = null;
     });
 
     it('should return parsed features', async () => {
       loaded = await tileProvider.loader(1, 2, 3);
       expect(loaded).to.have.lengthOf(2);
       expect(loaded[0]).to.be.instanceOf(Feature);
+    });
+    it('should send headers', async () => {
+      await tileProvider.loader(1, 2, 3, { myheader: 't2' });
+      expect(requestHeaders).to.have.property('myheader', 't2');
     });
   });
 

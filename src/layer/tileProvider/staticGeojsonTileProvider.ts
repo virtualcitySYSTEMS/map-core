@@ -2,7 +2,7 @@ import type { GeoJSONObject } from 'ol/format/GeoJSON.js';
 import type { Feature } from 'ol/index.js';
 import { parseGeoJSON } from '../geojsonHelpers.js';
 import TileProvider, { TileProviderOptions } from './tileProvider.js';
-import { requestJson } from '../../util/fetch.js';
+import { getInitForUrl, requestJson } from '../../util/fetch.js';
 import { tileProviderClassRegistry } from '../../classRegistry.js';
 
 export type StaticGeoJSONTileProviderOptions = TileProviderOptions & {
@@ -36,8 +36,14 @@ class StaticGeoJSONTileProvider extends TileProvider {
   }
 
   // eslint-disable-next-line no-unused-vars
-  async loader(_x: number, _y: number, _z: number): Promise<Feature[]> {
-    const data = await requestJson<GeoJSONObject>(this.url);
+  async loader(
+    _x: number,
+    _y: number,
+    _z: number,
+    headers?: Record<string, string>,
+  ): Promise<Feature[]> {
+    const init = getInitForUrl(this.url, headers);
+    const data = await requestJson<GeoJSONObject>(this.url, init);
     const { features } = parseGeoJSON(data, { dynamicStyle: true });
     return features;
   }

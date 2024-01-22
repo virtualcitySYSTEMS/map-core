@@ -9,6 +9,7 @@ import { wgs84Projection } from '../../util/projection.js';
 import { getTilingScheme } from '../rasterLayer.js';
 import type { WMTSImplementationOptions } from '../wmtsLayer.js';
 import type CesiumMap from '../../map/cesiumMap.js';
+import { getResourceOrUrl } from './resourceHelper.js';
 
 /**
  * represents a specific WmtsLayer Implementation for {@link CesiumMap}.
@@ -50,13 +51,14 @@ class WmtsCesiumImpl extends RasterLayerCesiumImpl {
   getCesiumLayer(): Promise<CesiumImageryLayer> {
     const currentUrl = this.url as string;
     // This is a bug in Cesium, they cant cope with {Layer} placeholder..
-    const url =
+    const url: string =
       currentUrl.indexOf('{Layer}') !== -1
         ? currentUrl.replace('{Layer}', this.layer)
         : currentUrl;
+
     const extent = this.extent!.getCoordinatesInProjection(wgs84Projection);
     const options: WebMapTileServiceImageryProvider.ConstructorOptions = {
-      url,
+      url: getResourceOrUrl(url, this.headers),
       layer: this.layer,
       style: this.style,
       format: this.format,

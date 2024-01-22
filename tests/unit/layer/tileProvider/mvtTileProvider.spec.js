@@ -59,6 +59,31 @@ describe('MVTTileProvider', () => {
     });
   });
 
+  describe('loader with headers', () => {
+    let scope;
+    let requestHeaders;
+
+    beforeEach(async () => {
+      scope = nock('http://localhost')
+        .get('/layer/getFeatures')
+        .query({ x: 17, y: 10, level: 5 })
+        .reply(function nockReply() {
+          requestHeaders = this.req.headers;
+          return [200, fs.createReadStream('./tests/data/tile.pbf')];
+        });
+    });
+
+    afterEach(async () => {
+      await tileProvider.clearCache();
+      scope.done();
+    });
+
+    it('should send request headers', async () => {
+      await tileProvider.loader(17, 10, 5, { myheader: 't3' });
+      expect(requestHeaders).to.have.property('myheader', 't3');
+    });
+  });
+
   describe('serialization', () => {
     describe('of a default tile provider', () => {
       it('should only return type and name', () => {

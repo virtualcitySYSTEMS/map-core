@@ -1,3 +1,5 @@
+import { TrustedServers } from '@vcmap-cesium/engine';
+import { getLogger } from '@vcsuite/logger';
 import type { Size } from 'ol/size.js';
 import TileWMS, { type Options as TileWMSOptions } from 'ol/source/TileWMS.js';
 import ImageWMS, {
@@ -12,6 +14,8 @@ import { mercatorProjection, wgs84Projection } from '../util/projection.js';
 import { isSameOrigin } from '../util/urlHelpers.js';
 import type Extent from '../util/extent.js';
 import { TilingScheme } from './rasterLayer.js';
+import { getTileLoadFunction } from './openlayers/loadFunctionHelpers.js';
+import { getInitForUrl, requestObjectUrl } from '../util/fetch.js';
 
 export type WMSSourceOptions = {
   url: string;
@@ -22,6 +26,7 @@ export type WMSSourceOptions = {
   extent?: Extent;
   parameters: Record<string, string>;
   version: string;
+  headers?: Record<string, string>;
 };
 
 export function getProjectionFromWMSSourceOptions(
@@ -78,8 +83,13 @@ export function getWMSSource(options: WMSSourceOptions): TileWMS {
     ),
   };
 
-  if (!isSameOrigin(options.url)) {
+  if (TrustedServers.contains(options.url)) {
+    sourceOptions.crossOrigin = 'use-credentials';
+  } else if (!isSameOrigin(options.url)) {
     sourceOptions.crossOrigin = 'anonymous';
+  }
+  if (options.headers) {
+    sourceOptions.tileLoadFunction = getTileLoadFunction(options.headers);
   }
   return new TileWMS(sourceOptions);
 }
@@ -89,6 +99,7 @@ export function getImageWMSSource(options: {
   parameters: Record<string, string>;
   tilingSchema: TilingScheme;
   version: string;
+  headers?: Record<string, string>;
 }): ImageWMS {
   const sourceOptions: ImageWMSOptions = {
     url: options.url,
@@ -99,8 +110,30 @@ export function getImageWMSSource(options: {
     ),
   };
 
-  if (!isSameOrigin(options.url)) {
+  if (TrustedServers.contains(options.url)) {
+    sourceOptions.crossOrigin = 'use-credentials';
+  } else if (!isSameOrigin(options.url)) {
     sourceOptions.crossOrigin = 'anonymous';
+  }
+
+  if (options.headers) {
+    sourceOptions.imageLoadFunction = function imageLoadFunction(
+      image,
+      src,
+    ): void {
+      const img = image.getImage() as HTMLImageElement;
+      const init = getInitForUrl(src, options.headers);
+      requestObjectUrl(src, init)
+        .then((blobUrl) => {
+          img.src = blobUrl;
+          img.onload = (): void => {
+            URL.revokeObjectURL(blobUrl);
+          };
+        })
+        .catch(() => {
+          getLogger('ImageWMSSource').error(`Could not load image: ${src}`);
+        });
+    };
   }
 
   return new ImageWMS(sourceOptions);
