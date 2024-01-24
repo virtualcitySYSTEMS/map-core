@@ -21,10 +21,17 @@
 - requests from openlayers and @vcmap/core will now take Cesium.TrustedServers into account and will send:
   - `credentials` `include` if its an xhr request and
   - `crossorigin` `use-credentials` if its an img request
+- requests to Icons will now set crossOrigin anonymous or use-credentials depending on the url.
 - Deprecated `hasSameOrigin` helper function, use `isSameOrigin`
 - Possibility to load WMS as single image.
 - Fixes vectorProperties.ts `getValuesForfeatures()` if feature array is empty
 - Introduces a `replace` API for `OverrideCollection` to replace items in place without having to remove and re-add the item.
+- Fixed a bug where the featureConverter did not take the groundlevel into account for linestrings
+- Fixed a bug where the featureConverter did not calculate the correct outlineGeometry for Polygons
+- Changed CesiumTilesetLayer url behaviour. The url will only be postfixed with tileset.json if the original Url could not be loaded.
+  - This makes it possible to load datasets from a rest endpoint like http://domain.com/api/
+- Fixed a Bug where the featureConverter did not take the height into account for point Features rendered as Primitives on AltitudeMode RELATIVE_TO_GROUND
+- Changed behaviour of failing layers, they will not be removed from the layers collection on module load
 
 ### 5.0.4
 

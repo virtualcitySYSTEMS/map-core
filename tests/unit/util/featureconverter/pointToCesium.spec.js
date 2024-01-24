@@ -537,10 +537,10 @@ describe('util.featureConverter.pointToCesium', () => {
           Projection.mercatorToWgs84(coord),
         );
         coordinatesCartesian3 = coordinatesWGS84.map((coord) =>
-          Cartesian3.fromDegrees(coord[0], coord[1], 10),
+          Cartesian3.fromDegrees(coord[0], coord[1], 14),
         );
         heightInfo = {
-          extruded: false,
+          extruded: true,
           storeysAboveGround: 2,
           storeysBelowGround: 2,
           storeyHeightsAboveGround: [1, 2],

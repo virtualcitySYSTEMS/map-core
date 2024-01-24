@@ -90,9 +90,6 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
     super(options);
     this._supportedMaps = [CesiumMap.className];
     const defaultOptions = CesiumTilesetLayer.getDefaultOptions();
-    if (this.url && !/\.json$/.test(this.url)) {
-      this.url = `${this.url.replace(/\/$/, '')}/tileset.json`;
-    }
 
     this.highlightStyle = null;
     if (options.highlightStyle) {

@@ -1,6 +1,6 @@
 /* eslint-disable no-template-curly-in-string,@typescript-eslint/ban-ts-comment */
 import Stroke, { Options as StrokeOptions } from 'ol/style/Stroke.js';
-import { Color, VerticalOrigin } from '@vcmap-cesium/engine';
+import { Color, TrustedServers, VerticalOrigin } from '@vcmap-cesium/engine';
 import Icon, { type Options as IconOptions } from 'ol/style/Icon.js';
 import Style, { type StyleFunction } from 'ol/style/Style.js';
 import OLText from 'ol/style/Text.js';
@@ -32,6 +32,7 @@ import {
 } from './styleHelpers.js';
 import { getShapeFromOptions } from './shapesCategory.js';
 import { styleClassRegistry } from '../classRegistry.js';
+import { isSameOrigin } from '../util/urlHelpers.js';
 
 export type ColorType = OLColor | OLColorLike;
 export type VectorStyleItemPattern = {
@@ -148,9 +149,19 @@ class VectorStyleItem extends StyleItem {
     this._cesiumColor = new Color();
     this._image = undefined;
     if (options.image) {
-      this._image = options.image.radius
-        ? getShapeFromOptions({ ...options.image })
-        : new Icon(options.image as IconOptions);
+      if (options.image.radius) {
+        this._image = getShapeFromOptions({ ...options.image });
+      } else {
+        const iconOptions: IconOptions = { ...(options.image as IconOptions) };
+        if (iconOptions.src) {
+          if (TrustedServers.contains(iconOptions.src)) {
+            iconOptions.crossOrigin = 'use-credentials';
+          } else if (!isSameOrigin(iconOptions.src)) {
+            iconOptions.crossOrigin = 'anonymous';
+          }
+        }
+        this._image = new Icon(iconOptions);
+      }
     }
 
     this._style = new Style({

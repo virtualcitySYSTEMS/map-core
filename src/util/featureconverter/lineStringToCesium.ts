@@ -185,6 +185,7 @@ export function createLineGeometries(
   style: Style,
 ): PolylineGeometry[] {
   const width = parseNumber(style.getStroke().getWidth(), 1.0);
+
   return [
     new PolylineGeometry({
       ...options,
@@ -197,16 +198,22 @@ export function createLineGeometries(
  * Creates the positions array for PolylineGeometry
  * @param  geometry
  * @param  positionHeightAdjustment
+ * @param  perPositionHeight
+ * @param  groundLevelOrMinHeight
  * @private
  */
 export function getGeometryOptions(
   geometry: LineString,
   positionHeightAdjustment: number,
+  perPositionHeight: boolean,
+  groundLevelOrMinHeight: number,
 ): LineGeometryOptions {
   const coords = geometry.getCoordinates();
   const positions = coords.map((coord) => {
     const wgs84Coords = Projection.mercatorToWgs84(coord);
-    if (wgs84Coords[2] != null) {
+    if (!perPositionHeight && groundLevelOrMinHeight) {
+      wgs84Coords[2] = groundLevelOrMinHeight;
+    } else if (wgs84Coords[2] != null) {
       wgs84Coords[2] += positionHeightAdjustment;
     }
     return Cartesian3.fromDegrees(

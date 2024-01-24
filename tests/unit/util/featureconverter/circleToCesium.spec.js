@@ -348,5 +348,104 @@ describe('util.featureConverter.circleToCesium', () => {
       );
       altitudeModeVectorProperties.destroy();
     });
+
+    describe('groundLevel', () => {
+      let groundLevelVectorProperties;
+      afterEach(() => {
+        groundLevelVectorProperties?.destroy();
+      });
+      it('should use GroundLevel for for FillStyles', () => {
+        groundLevelVectorProperties = new VectorProperties({
+          altitudeMode: 'absolute',
+          groundLevel: 50,
+        });
+        const fillStyle = new Style({ fill: new Fill({}) });
+        circleToCesium(
+          feature,
+          fillStyle,
+          geometries,
+          groundLevelVectorProperties,
+          scene,
+          context,
+        );
+        expect(context.primitives.length).to.be.equal(1);
+        const center =
+          context.primitives.get(0).geometryInstances[0].geometry
+            ._ellipseGeometry._center;
+        const wgs84Height = Cartographic.fromCartesian(center).height;
+        expect(wgs84Height).to.be.closeTo(50, 0.00001);
+      });
+      it('should use GroundLevel with Height Above Ground for for fillStyles', () => {
+        groundLevelVectorProperties = new VectorProperties({
+          altitudeMode: 'relativeToGround',
+          heightAboveGround: 10,
+          groundLevel: 50,
+        });
+        const fillStyle = new Style({ fill: new Fill({}) });
+        circleToCesium(
+          feature,
+          fillStyle,
+          geometries,
+          groundLevelVectorProperties,
+          scene,
+          context,
+        );
+        expect(context.primitives.length).to.be.equal(1);
+        const center =
+          context.primitives.get(0).geometryInstances[0].geometry
+            ._ellipseGeometry._center;
+        const wgs84Height = Cartographic.fromCartesian(center).height;
+        expect(wgs84Height).to.be.closeTo(60, 0.00001);
+      });
+      it('should take GroundLevel into Account for stroke Styles', () => {
+        groundLevelVectorProperties = new VectorProperties({
+          altitudeMode: 'absolute',
+          groundLevel: 50,
+        });
+        const strokeStyle = new Style({ stroke: new Stroke({}) });
+        circleToCesium(
+          feature,
+          strokeStyle,
+          geometries,
+          groundLevelVectorProperties,
+          scene,
+          context,
+        );
+        expect(context.primitives.length).to.be.equal(1);
+        const positions =
+          context.primitives.get(0).geometryInstances[0].geometry._positions;
+        const wgs84Heights = positions.map(
+          (p) => Cartographic.fromCartesian(p).height,
+        );
+        wgs84Heights.forEach((height) => {
+          expect(height).to.be.closeTo(50, 0.00001);
+        });
+      });
+      it('should use GroundLevel with Height Above Ground for stroke styles', () => {
+        groundLevelVectorProperties = new VectorProperties({
+          altitudeMode: 'relativeToGround',
+          heightAboveGround: 10,
+          groundLevel: 50,
+        });
+        const fillStyle = new Style({ stroke: new Stroke({}) });
+        circleToCesium(
+          feature,
+          fillStyle,
+          geometries,
+          groundLevelVectorProperties,
+          scene,
+          context,
+        );
+        expect(context.primitives.length).to.be.equal(1);
+        const positions =
+          context.primitives.get(0).geometryInstances[0].geometry._positions;
+        const wgs84Heights = positions.map(
+          (p) => Cartographic.fromCartesian(p).height,
+        );
+        wgs84Heights.forEach((height) => {
+          expect(height).to.be.closeTo(60, 0.00001);
+        });
+      });
+    });
   });
 });

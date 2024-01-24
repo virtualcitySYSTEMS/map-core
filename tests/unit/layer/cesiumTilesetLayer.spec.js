@@ -44,22 +44,6 @@ describe('CesiumTilesetLayer', () => {
     app.destroy();
   });
 
-  describe('constructor', () => {
-    it('should add tileset.json to a url not ending on .json', () => {
-      const cesiumTileset1 = new CesiumTilesetLayer({ url: 'test' });
-      expect(cesiumTileset1).to.have.property('url', 'test/tileset.json');
-      cesiumTileset1.destroy();
-    });
-
-    it('should not tileset.json to an url ending on .json', () => {
-      const cesiumTileset1 = new CesiumTilesetLayer({
-        url: 'test/tileset2.json',
-      });
-      expect(cesiumTileset1).to.have.property('url', 'test/tileset2.json');
-      cesiumTileset1.destroy();
-    });
-  });
-
   describe('modelMatrix', () => {
     let matrix;
 

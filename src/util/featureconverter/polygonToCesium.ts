@@ -7,7 +7,6 @@ import {
   PolygonHierarchy,
   PolylineGeometry,
   type Scene,
-  Cartographic,
 } from '@vcmap-cesium/engine';
 import type { Style } from 'ol/style.js';
 import type { Polygon } from 'ol/geom.js';
@@ -74,7 +73,6 @@ export function createFillGeometries(
 export function getLineGeometryOptions(
   options: PolygonGeometryOptions,
   style: Style,
-  groundLevel?: number,
 ): PolylineGeometryOptions[] {
   const width = parseNumber(style.getStroke().getWidth(), 1.0);
   const geometryOptions: PolylineGeometryOptions[] = [];
@@ -90,16 +88,6 @@ export function getLineGeometryOptions(
       width,
     });
   });
-
-  if (groundLevel) {
-    geometryOptions.forEach((polylineOptions) => {
-      polylineOptions.positions = polylineOptions.positions.map((c) => {
-        const geographic = Cartographic.fromCartesian(c);
-        geographic.height = groundLevel;
-        return Cartographic.toCartesian(geographic);
-      });
-    });
-  }
   return geometryOptions;
 }
 
@@ -114,9 +102,8 @@ export function createGroundLineGeometries(
 export function createLineGeometries(
   options: PolygonGeometryOptions,
   style: Style,
-  groundLevel?: number,
 ): PolylineGeometry[] {
-  return getLineGeometryOptions(options, style, groundLevel).map((option) => {
+  return getLineGeometryOptions(options, style).map((option) => {
     return new PolylineGeometry(option);
   });
 }
@@ -124,6 +111,8 @@ export function createLineGeometries(
 export function getGeometryOptions(
   geometry: Polygon,
   positionHeightAdjustment: number,
+  perPositionHeight: boolean,
+  groundLevelOrMinHeight: number,
 ): PolygonGeometryOptions {
   let hieraryPositions;
   const holes = [];
@@ -132,7 +121,9 @@ export function getGeometryOptions(
     const coords = rings[i].getCoordinates();
     const positions = coords.map((coord) => {
       const wgs84Coords = Projection.mercatorToWgs84(coord);
-      if (wgs84Coords[2] != null) {
+      if (!perPositionHeight && groundLevelOrMinHeight) {
+        wgs84Coords[2] = groundLevelOrMinHeight;
+      } else if (wgs84Coords[2] != null) {
         wgs84Coords[2] += positionHeightAdjustment;
       }
       return Cartesian3.fromDegrees(

@@ -520,6 +520,8 @@ export function addPrimitivesToContext(
     const geometryOptions = geometryFactory.getGeometryOptions(
       geometry,
       heightInfo.heightAboveGroundAdjustment,
+      heightInfo.perPositionHeight,
+      heightInfo.groundLevel,
     );
     const storeyOptions = getStoreyOptions(
       heightInfo.storeyHeightsAboveGround,
@@ -609,11 +611,7 @@ export function addPrimitivesToContext(
           );
         } else {
           lineGeometries.push(
-            ...geometryFactory.createLineGeometries(
-              geometryOptions,
-              style,
-              heightInfo.groundLevel,
-            ),
+            ...geometryFactory.createLineGeometries(geometryOptions, style),
           );
         }
       }

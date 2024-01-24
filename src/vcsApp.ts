@@ -393,8 +393,6 @@ class VcsApp {
               `Failed to activate active on startup layer ${l.name}`,
             );
             getLogger().error(String(err));
-            this._layers.remove(l);
-            l.destroy();
           });
         }
       });

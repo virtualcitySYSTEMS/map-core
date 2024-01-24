@@ -507,5 +507,124 @@ describe('util.featureConverter.polygonToCesium', () => {
       expect(context.primitives.length).to.be.equal(1);
       expect(context.primitives.get(0)).to.be.instanceOf(GroundPrimitive);
     });
+
+    describe('GroundLevel', () => {
+      let groundLevelVectorProperties;
+      before(() => {
+        geometries = [
+          new Polygon([
+            [
+              [1, 1, 1],
+              [1, 2, 1],
+              [2, 2, 1],
+              [1, 1, 1],
+            ],
+          ]),
+        ];
+      });
+      afterEach(() => {
+        groundLevelVectorProperties?.destroy();
+      });
+      it('should use GroundLevel for for FillStyles', () => {
+        groundLevelVectorProperties = new VectorProperties({
+          altitudeMode: 'absolute',
+          groundLevel: 50,
+        });
+        const fillStyle = new Style({ fill: new Fill({}) });
+        polygonToCesium(
+          feature,
+          fillStyle,
+          geometries,
+          groundLevelVectorProperties,
+          scene,
+          context,
+        );
+        expect(context.primitives.length).to.be.equal(1);
+        const { positions } =
+          context.primitives.get(0).geometryInstances[0].geometry
+            ._polygonHierarchy;
+        const wgs84Heights = positions.map(
+          (p) => Cartographic.fromCartesian(p).height,
+        );
+        wgs84Heights.forEach((height) => {
+          expect(height).to.be.closeTo(50, 0.00001);
+        });
+      });
+      it('should use GroundLevel with Height Above Ground for for fillStyles', () => {
+        groundLevelVectorProperties = new VectorProperties({
+          altitudeMode: 'relativeToGround',
+          heightAboveGround: 10,
+          groundLevel: 50,
+        });
+        const fillStyle = new Style({ fill: new Fill({}) });
+        polygonToCesium(
+          feature,
+          fillStyle,
+          geometries,
+          groundLevelVectorProperties,
+          scene,
+          context,
+        );
+        expect(context.primitives.length).to.be.equal(1);
+        const { positions } =
+          context.primitives.get(0).geometryInstances[0].geometry
+            ._polygonHierarchy;
+        const wgs84Heights = positions.map(
+          (p) => Cartographic.fromCartesian(p).height,
+        );
+        wgs84Heights.forEach((height) => {
+          expect(height).to.be.closeTo(60, 0.00001);
+        });
+      });
+      it('should use GroundLevel for for stroke styles', () => {
+        groundLevelVectorProperties = new VectorProperties({
+          altitudeMode: 'absolute',
+          groundLevel: 50,
+        });
+        const fillStyle = new Style({ stroke: new Stroke({}) });
+        polygonToCesium(
+          feature,
+          fillStyle,
+          geometries,
+          groundLevelVectorProperties,
+          scene,
+          context,
+        );
+        expect(context.primitives.length).to.be.equal(1);
+        const positions =
+          context.primitives.get(0).geometryInstances[0].geometry._positions;
+        const wgs84Heights = positions.map(
+          (p) => Cartographic.fromCartesian(p).height,
+        );
+        wgs84Heights.forEach((height) => {
+          expect(height).to.be.closeTo(50, 0.00001);
+        });
+      });
+      it('should use GroundLevel with Height Above Ground for stroke styles', () => {
+        groundLevelVectorProperties = new VectorProperties({
+          altitudeMode: 'relativeToGround',
+          heightAboveGround: 10,
+          groundLevel: 50,
+        });
+        const fillStyle = new Style({ stroke: new Stroke({}) });
+        polygonToCesium(
+          feature,
+          fillStyle,
+          geometries,
+          groundLevelVectorProperties,
+          scene,
+          context,
+        );
+        expect(context.primitives.length).to.be.equal(1);
+        const positions =
+          context.primitives.get(0).geometryInstances[0].geometry._positions;
+        const wgs84Heights = positions.map(
+          (p) => Cartographic.fromCartesian(p).height,
+        );
+        wgs84Heights.forEach((height) => {
+          expect(height).to.be.closeTo(60, 0.00001);
+        });
+      });
+    });
   });
 });

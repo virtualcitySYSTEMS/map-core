@@ -228,7 +228,7 @@ export function getCartesian3AndWGS84FromCoordinates(
     wgs84Positions[index] = Projection.mercatorToWgs84(coord, true);
     let height = null;
     if (heightInfo.heightReference === HeightReference.RELATIVE_TO_GROUND) {
-      height = heightInfo.heightAboveGroundAdjustment;
+      height = heightValue + heightInfo.heightAboveGroundAdjustment;
     } else {
       height = heightValue;
     }

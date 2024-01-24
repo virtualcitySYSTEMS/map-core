@@ -440,6 +440,62 @@ describe('util.featureConverter.lineStringToCesium', () => {
       altitudeModeVectorProperties.destroy();
     });
 
+    describe('groundLevel', () => {
+      it('line Geometries', async () => {
+        const groundLevelVectorProperties = new VectorProperties({
+          altitudeMode: 'absolute',
+          groundLevel: 50,
+        });
+        const strokeStyle = new Style({ stroke: new Stroke({}) });
+        await lineStringToCesium(
+          feature,
+          strokeStyle,
+          geometries,
+          groundLevelVectorProperties,
+          scene,
+          context,
+        );
+        expect(context.primitives.length).to.be.equal(1);
+        expect(context.primitives.get(0)).to.be.instanceOf(Primitive);
+        const positions =
+          context.primitives.get(0).geometryInstances[0].geometry._positions;
+        const wgs84Heights = positions.map(
+          (p) => Cartographic.fromCartesian(p).height,
+        );
+        wgs84Heights.forEach((height) => {
+          expect(height).to.be.closeTo(50, 0.00001);
+        });
+        groundLevelVectorProperties.destroy();
+      });
+      it('line Geometries with relativeToGround AltitudeMode', async () => {
+        const groundLevelVectorProperties = new VectorProperties({
+          altitudeMode: 'relativeToGround',
+          heightAboveGround: 10,
+          groundLevel: 50,
+        });
+        const strokeStyle = new Style({ stroke: new Stroke({}) });
+        await lineStringToCesium(
+          feature,
+          strokeStyle,
+          geometries,
+          groundLevelVectorProperties,
+          scene,
+          context,
+        );
+        expect(context.primitives.length).to.be.equal(1);
+        expect(context.primitives.get(0)).to.be.instanceOf(Primitive);
+        const positions =
+          context.primitives.get(0).geometryInstances[0].geometry._positions;
+        const wgs84Heights = positions.map(
+          (p) => Cartographic.fromCartesian(p).height,
+        );
+        wgs84Heights.forEach((height) => {
+          expect(height).to.be.closeTo(60, 0.00001);
+        });
+        groundLevelVectorProperties.destroy();
+      });
+    });
+
     describe('arrow style', () => {
       let arrowStyle;
 

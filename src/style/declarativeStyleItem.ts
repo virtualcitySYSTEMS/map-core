@@ -4,12 +4,13 @@ import {
   ConditionsExpression,
   Expression,
   Cesium3DTileStyle,
+  TrustedServers,
 } from '@vcmap-cesium/engine';
 import { is } from '@vcsuite/check';
 
 import Style, { type StyleFunction } from 'ol/style/Style.js';
 import Stroke from 'ol/style/Stroke.js';
-import Icon from 'ol/style/Icon.js';
+import Icon, { type Options as IconOptions } from 'ol/style/Icon.js';
 import Circle, { type Options as CircleOptions } from 'ol/style/Circle.js';
 import OLText from 'ol/style/Text.js';
 import Fill from 'ol/style/Fill.js';
@@ -23,6 +24,7 @@ import {
 } from './styleHelpers.js';
 import { originalFeatureSymbol } from '../layer/vectorSymbols.js';
 import { styleClassRegistry } from '../classRegistry.js';
+import { isSameOrigin } from '../util/urlHelpers.js';
 
 type DeclarativeStyleItemConditions = {
   conditions: Array<string[] | string>;
@@ -300,7 +302,13 @@ class DeclarativeStyleItem extends StyleItem {
     if (this.cesiumStyle.image) {
       const src = this.cesiumStyle.image.evaluate(feature);
       if (src) {
-        style.setImage(new Icon({ src }));
+        const iconOptions: IconOptions = { src };
+        if (TrustedServers.contains(src)) {
+          iconOptions.crossOrigin = 'use-credentials';
+        } else if (!isSameOrigin(src)) {
+          iconOptions.crossOrigin = 'anonymous';
+        }
+        style.setImage(new Icon(iconOptions));
       }
     } else {
       const color =

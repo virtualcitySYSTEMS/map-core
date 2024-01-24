@@ -3,12 +3,12 @@ import Fill, { type Options as FillOptions } from 'ol/style/Fill.js';
 import Stroke, { type Options as StrokeOptions } from 'ol/style/Stroke.js';
 import OLText, { type Options as TextOptions } from 'ol/style/Text.js';
 import Style from 'ol/style/Style.js';
-import { Color } from '@vcmap-cesium/engine';
+import { Color, TrustedServers } from '@vcmap-cesium/engine';
 import type { Color as OLColor } from 'ol/color.js';
 import type { Size } from 'ol/size.js';
 import ImageStyle from 'ol/style/Image.js';
 import Circle from 'ol/style/Circle.js';
-import Icon from 'ol/style/Icon.js';
+import Icon, { type Options as IconOptions } from 'ol/style/Icon.js';
 import RegularShape from 'ol/style/RegularShape.js';
 import { getLogger as getLoggerByName, type Logger } from '@vcsuite/logger';
 import type {
@@ -17,6 +17,7 @@ import type {
   VectorStyleItemOptions,
   VectorStyleItemText,
 } from './vectorStyleItem.js';
+import { isSameOrigin } from '../util/urlHelpers.js';
 
 function getLogger(): Logger {
   return getLoggerByName('StyleHelpers');
@@ -535,13 +536,21 @@ export function getImageStyleFromOptions(
       });
     }
   } else {
-    return new Icon({
+    const iconOptions: IconOptions = {
       src: options.src,
       scale: options.scale,
       opacity: options.opacity,
       color: options.color,
       anchor: options.anchor,
-    });
+    };
+    if (options.src) {
+      if (TrustedServers.contains(options.src)) {
+        iconOptions.crossOrigin = 'use-credentials';
+      } else if (!isSameOrigin(options.src)) {
+        iconOptions.crossOrigin = 'anonymous';
+      }
+    }
+    return new Icon(iconOptions);
   }
 }
 

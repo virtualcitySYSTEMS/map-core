@@ -78,7 +78,12 @@ export type VectorOptions = FeatureLayerOptions & {
 
 export type VectorGeometryFactoryType = {
   getCoordinates(geom: SimpleGeometry[]): Coordinate[];
-  getGeometryOptions(geom: SimpleGeometry, num: number): unknown;
+  getGeometryOptions(
+    geom: SimpleGeometry,
+    num: number,
+    perPositionHeight: boolean,
+    groundLevelOrMinHeight: number,
+  ): unknown;
   createSolidGeometries(
     obj: unknown,
     num: number,
@@ -101,11 +106,6 @@ export type VectorGeometryFactoryType = {
     style: Style,
   ): GroundPolylineGeometry[];
   createLineGeometries(obj: unknown, style: Style): PolylineGeometry[];
-  createLineGeometries(
-    obj: unknown,
-    style: Style,
-    groundLevel?: number,
-  ): PolylineGeometry[];
 };
 
 export type VectorHeightInfo = {

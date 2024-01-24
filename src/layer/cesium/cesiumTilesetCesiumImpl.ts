@@ -135,7 +135,26 @@ class CesiumTilesetCesiumImpl
           show: false, // show is handled by activate
         },
       );
-      this.cesium3DTileset = await this._initializedPromise;
+
+      // if url could not be loaded, we have a fallback and try again with a prefixed tileset.json.
+      try {
+        this.cesium3DTileset = await this._initializedPromise;
+      } catch (e) {
+        if (this.url && !/\.json$/.test(this.url)) {
+          this.url = `${this.url.replace(/\/$/, '')}/tileset.json`;
+          this._initializedPromise = Cesium3DTileset.fromUrl(
+            getResourceOrUrl(this.url, this.headers),
+            {
+              ...this.tilesetOptions,
+              show: false, // show is handled by activate
+            },
+          );
+          this.cesium3DTileset = await this._initializedPromise;
+        } else {
+          throw e;
+        }
+      }
+
       if (this.isDestroyed) {
         this.cesium3DTileset.destroy();
         return;

@@ -76,6 +76,15 @@ describe('CesiumTilesetCesiumImpl', () => {
   });
 
   describe('initialize', () => {
+    it('should try again with a prefixed tileset.json, if the url could not be loaded', async () => {
+      cesiumTileset = new CesiumTilesetLayer({
+        url: 'http://test.com/',
+      });
+      [cesiumTilesetCesium] = cesiumTileset.getImplementationsForMap(cesiumMap);
+      await cesiumTilesetCesium.initialize();
+      expect(cesiumTilesetCesium.cesium3DTileset).to.exist;
+    });
+
     it('creates a new cesium 3DTileset, adding vcsLayerName', async () => {
       await cesiumTilesetCesium.initialize();
       expect(cesiumTilesetCesium)

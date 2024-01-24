@@ -105,19 +105,25 @@ export function createLineGeometries(
  * extracts the center and radius from the CircleGeometry and converts it to Cartesian3/radius in m
  * @param  geometry
  * @param  positionHeightAdjustment
- * @returns }
+ * @param  perPositionHeight
+ * @param  groundLevelOrMinHeight
+ * @returns
  * @private
  */
 export function getGeometryOptions(
   geometry: Circle,
   positionHeightAdjustment: number,
+  perPositionHeight: boolean,
+  groundLevelOrMinHeight: number,
 ): ConstructorParameters<typeof CircleGeometry>[0] {
   // olCoordinates of center and radius in WGS84
   const olCenter = geometry.getCenter();
   const olPoint = olCenter.slice();
   olPoint[0] += geometry.getRadius();
   const wgs84Center = Projection.mercatorToWgs84(olCenter, true);
-  if (wgs84Center[2] != null) {
+  if (!perPositionHeight && groundLevelOrMinHeight) {
+    wgs84Center[2] = groundLevelOrMinHeight;
+  } else if (wgs84Center[2] != null) {
     wgs84Center[2] += positionHeightAdjustment;
   }
 

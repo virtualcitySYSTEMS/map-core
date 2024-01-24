@@ -33,10 +33,14 @@ export function getGeometryOptions(
   coords: Coordinate[],
   _geometry: LineString,
   positionHeightAdjustment: number,
+  perPositionHeight: boolean,
+  groundLevelOrMinHeight: number,
 ): { positions: Cartesian3[]; arcType: ArcType } {
   const positions = coords.map((coord) => {
     const wgs84Coords = Projection.mercatorToWgs84(coord);
-    if (wgs84Coords[2] != null) {
+    if (!perPositionHeight && groundLevelOrMinHeight) {
+      wgs84Coords[2] = groundLevelOrMinHeight;
+    } else if (wgs84Coords[2] != null) {
       wgs84Coords[2] += positionHeightAdjustment;
     }
     return Cartesian3.fromDegrees(
