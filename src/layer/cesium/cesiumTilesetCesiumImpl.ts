@@ -10,6 +10,7 @@ import {
   type SplitDirection,
   Cesium3DTile,
   Cesium3DTileContent,
+  type CustomShader,
 } from '@vcmap-cesium/engine';
 import { createEmpty, Extent as OLExtent } from 'ol/extent.js';
 import type { Coordinate } from 'ol/coordinate.js';
@@ -112,6 +113,8 @@ class CesiumTilesetCesiumImpl
 
   private _onStyleChangeRemover: (() => void) | null = null;
 
+  private _customShader: CustomShader | undefined;
+
   constructor(map: CesiumMap, options: CesiumTilesetImplementationOptions) {
     super(map, options);
 
@@ -124,6 +127,11 @@ class CesiumTilesetCesiumImpl
     this.tilesetProperties = options.tilesetProperties;
     this.modelMatrix = options.modelMatrix;
     this.offset = options.offset;
+    this._customShader = options.customShader;
+  }
+
+  get customShader(): CustomShader | undefined {
+    return this._customShader;
   }
 
   async initialize(): Promise<void> {
@@ -155,6 +163,7 @@ class CesiumTilesetCesiumImpl
         }
       }
 
+      this.cesium3DTileset.customShader = this._customShader;
       if (this.isDestroyed) {
         this.cesium3DTileset.destroy();
         return;
@@ -235,6 +244,13 @@ class CesiumTilesetCesiumImpl
   updateOffset(offset?: Coordinate): void {
     this.offset = offset;
     this._calculateOffset();
+  }
+
+  updateCustomShader(shader?: CustomShader): void {
+    this._customShader = shader;
+    if (this.cesium3DTileset) {
+      this.cesium3DTileset.customShader = this._customShader;
+    }
   }
 
   async activate(): Promise<void> {

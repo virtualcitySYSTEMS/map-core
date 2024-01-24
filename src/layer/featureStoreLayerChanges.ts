@@ -1,19 +1,23 @@
 import { unByKey } from 'ol/Observable.js';
 import Feature from 'ol/Feature.js';
 import { EventsKey } from 'ol/events.js';
-import { GeoJSONFeature } from 'ol/format/GeoJSON.js';
 import type { VectorSourceEvent } from 'ol/source/Vector.js';
-
+import type {
+  Feature as GeojsonFeature,
+  LineString,
+  MultiLineString,
+  MultiPoint,
+  MultiPolygon,
+  Point,
+  Polygon,
+} from 'geojson';
 import { check } from '@vcsuite/check';
-import {
-  FeatureStoreLayerState,
-  featureStoreStateSymbol,
-} from './featureStoreLayerState.js';
+import { featureStoreStateSymbol } from './featureStoreLayerState.js';
 import { parseGeoJSON, writeGeoJSONFeature } from './geojsonHelpers.js';
 import VcsObject from '../vcsObject.js';
-import { requestJson } from '../util/fetch.js';
 
 import type FeatureStoreLayer from './featureStoreLayer.js';
+import VcsEvent from '../vcsEvent.js';
 
 export type FeatureStoreTrackResults = {
   add: Feature[];
@@ -27,13 +31,25 @@ export type FeatureStoreChangesListeners = {
   removefeature: EventsKey | EventsKey[] | null;
 };
 
-export type FeatureStoreChangesValues = {
-  changed: boolean;
+export type FeatureStoreGeojsonGeometry =
+  | Point
+  | MultiPoint
+  | LineString
+  | MultiLineString
+  | Polygon
+  | MultiPolygon;
+
+export type FeatureStoreGeojsonFeature<
+  G extends FeatureStoreGeojsonGeometry = FeatureStoreGeojsonGeometry,
+  P extends Record<string, unknown> = Record<string, unknown>,
+> = Omit<GeojsonFeature<G, P>, 'id'> & {
+  _id?: string;
+  id?: string;
 };
 
 type CommitAction = {
-  action: string;
-  feature: GeoJSONFeature | { _id: string | number | undefined };
+  action: 'add' | 'edit' | 'remove';
+  feature: FeatureStoreGeojsonFeature | { _id: string };
   original: Feature;
   success(opt?: string): void;
 };
@@ -45,28 +61,32 @@ export function createCommitActions(
 ): CommitAction[] {
   const actions: CommitAction[] = [];
   added.forEach((f) => {
-    const feature = writeGeoJSONFeature(f, { writeStyle: true });
+    const feature = writeGeoJSONFeature(f, {
+      writeStyle: true,
+    }) as FeatureStoreGeojsonFeature;
     actions.push({
       action: 'add',
       feature,
       original: f,
       success(data) {
         f.setId(data);
-        f[featureStoreStateSymbol] = FeatureStoreLayerState.DYNAMIC;
+        f[featureStoreStateSymbol] = 'dynamic';
       },
     });
   });
 
   edited.forEach((f) => {
-    const feature = writeGeoJSONFeature(f, { writeStyle: true });
-    feature._id = f.getId();
+    const feature = writeGeoJSONFeature(f, {
+      writeStyle: true,
+    }) as FeatureStoreGeojsonFeature;
+    feature._id = f.getId() as string;
     actions.push({
       action: 'edit',
       original: f,
       feature,
       success() {
-        if (f[featureStoreStateSymbol] === FeatureStoreLayerState.STATIC) {
-          f[featureStoreStateSymbol] = FeatureStoreLayerState.EDITED;
+        if (f[featureStoreStateSymbol] === 'static') {
+          f[featureStoreStateSymbol] = 'edited';
         }
       },
     });
@@ -76,7 +96,7 @@ export function createCommitActions(
     actions.push({
       original: f,
       action: 'remove',
-      feature: { _id: f.getId() },
+      feature: { _id: f.getId() as string },
       success() {},
     });
   });
@@ -108,9 +128,7 @@ class FeatureStoreLayerChanges extends VcsObject {
 
   private _convertedFeatures: Set<Feature> = new Set();
 
-  values: FeatureStoreChangesValues = {
-    changed: false,
-  };
+  changed = new VcsEvent<void>();
 
   constructor(layer: FeatureStoreLayer) {
     super({});
@@ -166,12 +184,24 @@ class FeatureStoreLayerChanges extends VcsObject {
     };
   }
 
+  hasChanges(): boolean {
+    return (
+      this._addedFeatures.size !== 0 ||
+      this._editedFeatures.size !== 0 ||
+      this._removedFeatures.size !== 0
+    );
+  }
+
   /**
    * commits the changes to the provided url. url should contain accessTokens and point to a featureStore layers bulk operation endpoint
    */
   async commitChanges(
-    url: string,
-    headers: Record<string, string> = {},
+    postCallback: (
+      body: Pick<CommitAction, 'action' | 'feature'>[],
+    ) => Promise<{
+      failedActions: { index: number; error: string }[];
+      insertedIds: { _id: string }[];
+    }>,
   ): Promise<void> {
     const actions: (CommitAction | null)[] = createCommitActions(
       this._addedFeatures,
@@ -179,19 +209,9 @@ class FeatureStoreLayerChanges extends VcsObject {
       this._removedFeatures,
     );
     if (actions.length > 0) {
-      const data = await requestJson<{
-        failedActions: { index: number; error: string }[];
-        insertedIds: { _id: string }[];
-      }>(url.toString(), {
-        method: 'POST',
-        headers: {
-          ...headers,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(
-          actions.map((a) => ({ action: a!.action, feature: a!.feature })),
-        ),
-      });
+      const data = await postCallback(
+        actions.map((a) => ({ action: a!.action, feature: a!.feature })),
+      );
 
       const failures = data.failedActions.map(({ index, error }) => {
         const action = actions[index] as CommitAction;
@@ -259,7 +279,7 @@ class FeatureStoreLayerChanges extends VcsObject {
       return Promise.resolve();
     }
 
-    if (feature[featureStoreStateSymbol] === FeatureStoreLayerState.STATIC) {
+    if (feature[featureStoreStateSymbol] === 'static') {
       this.layer.resetStaticFeature(featureId);
       return Promise.resolve();
     }
@@ -284,7 +304,6 @@ class FeatureStoreLayerChanges extends VcsObject {
     this._editedFeatures.clear();
     this._removedFeatures.clear();
     this._convertedFeatures.clear();
-    this.values.changed = false;
   }
 
   /**
@@ -316,12 +335,10 @@ class FeatureStoreLayerChanges extends VcsObject {
     if (feature) {
       if (!feature[featureStoreStateSymbol]) {
         this._addedFeatures.add(feature);
-        this.values.changed = true;
-      } else if (
-        feature[featureStoreStateSymbol] === FeatureStoreLayerState.STATIC
-      ) {
+        this.changed.raiseEvent();
+      } else if (feature[featureStoreStateSymbol] === 'static') {
         this._convertedFeatures.add(feature);
-        this.values.changed = true;
+        this.changed.raiseEvent();
       }
     }
   }
@@ -334,7 +351,7 @@ class FeatureStoreLayerChanges extends VcsObject {
       if (feature[featureStoreStateSymbol]) {
         this._convertedFeatures.delete(feature);
         this._editedFeatures.add(feature);
-        this.values.changed = true;
+        this.changed.raiseEvent();
       }
     }
   }
@@ -348,7 +365,7 @@ class FeatureStoreLayerChanges extends VcsObject {
         this._removedFeatures.add(feature);
         this._editedFeatures.delete(feature);
         this._convertedFeatures.delete(feature);
-        this.values.changed = true;
+        this.changed.raiseEvent();
       } else {
         this._addedFeatures.delete(feature);
       }
@@ -385,6 +402,7 @@ class FeatureStoreLayerChanges extends VcsObject {
   destroy(): void {
     this.unTrack();
     this._layer = undefined;
+    this.changed.destroy();
     super.destroy();
   }
 }

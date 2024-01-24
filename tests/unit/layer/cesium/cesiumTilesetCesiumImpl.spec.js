@@ -10,6 +10,7 @@ import {
   Math as CesiumMath,
   Resource,
   Color,
+  CustomShader,
 } from '@vcmap-cesium/engine';
 import CesiumTilesetLayer from '../../../../src/layer/cesiumTilesetLayer.js';
 import DeclarativeStyleItem from '../../../../src/style/declarativeStyleItem.js';
@@ -410,6 +411,47 @@ describe('CesiumTilesetCesiumImpl', () => {
             Matrix4.IDENTITY,
           ),
         ).to.be.true;
+      });
+    });
+  });
+
+  describe('updating the custom shader', () => {
+    let customShader;
+
+    before(() => {
+      customShader = new CustomShader({});
+    });
+
+    beforeEach(async () => {
+      await cesiumTilesetCesium.initialize();
+    });
+
+    it('should set the customShader', () => {
+      cesiumTilesetCesium.updateCustomShader(customShader);
+      expect(cesiumTilesetCesium.customShader).to.equal(customShader);
+    });
+
+    it('should set the customShader on the cesium3DTileset', () => {
+      cesiumTilesetCesium.updateCustomShader(customShader);
+      expect(cesiumTilesetCesium.cesium3DTileset.customShader).to.equal(
+        customShader,
+      );
+    });
+
+    describe('with undefined', () => {
+      beforeEach(() => {
+        cesiumTilesetCesium.updateCustomShader(customShader);
+      });
+
+      it('should unset the customShader', () => {
+        cesiumTilesetCesium.updateCustomShader();
+        expect(cesiumTilesetCesium.customShader).to.be.undefined;
+      });
+
+      it('should unset the custom shader on the tileset', () => {
+        cesiumTilesetCesium.updateCustomShader();
+        expect(cesiumTilesetCesium.cesium3DTileset.customShader).to.be
+          .undefined;
       });
     });
   });

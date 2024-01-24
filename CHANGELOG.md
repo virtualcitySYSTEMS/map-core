@@ -32,6 +32,7 @@
   - This makes it possible to load datasets from a rest endpoint like http://domain.com/api/
 - Fixed a Bug where the featureConverter did not take the height into account for point Features rendered as Primitives on AltitudeMode RELATIVE_TO_GROUND
 - Changed behaviour of failing layers, they will not be removed from the layers collection on module load
+- Custom shader API on `CesiumTilesetLayer` to provide custom shaders for specific layers.
 
 ### 5.0.4
 

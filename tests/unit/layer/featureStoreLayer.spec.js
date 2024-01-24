@@ -12,13 +12,14 @@ import VectorStyleItem, {
   vectorStyleSymbol,
   defaultVectorStyle,
 } from '../../../src/style/vectorStyleItem.js';
-import {
-  FeatureStoreLayerState,
-  featureStoreStateSymbol,
-} from '../../../src/layer/featureStoreLayerState.js';
+import { featureStoreStateSymbol } from '../../../src/layer/featureStoreLayerState.js';
 import DeclarativeStyleItem from '../../../src/style/declarativeStyleItem.js';
 import '../../../src/layer/cesium/cesiumTilesetCesiumImpl.js';
-import { createTilesetServer, setCesiumMap } from '../helpers/cesiumHelpers.js';
+import {
+  createTilesetServer,
+  getVcsEventSpy,
+  setCesiumMap,
+} from '../helpers/cesiumHelpers.js';
 import { setOpenlayersMap } from '../helpers/openlayersHelpers.js';
 import { vcsLayerName } from '../../../src/layer/layerSymbols.js';
 import Extent from '../../../src/util/extent.js';
@@ -191,8 +192,9 @@ describe('FeatureStoreLayer', () => {
 
     it('should set the changes to true', () => {
       FS.changeTracker.track();
+      const spy = getVcsEventSpy(FS.changeTracker.changed, sandbox);
       FS.setStyle(new VectorStyleItem({}));
-      expect(FS.changeTracker.values.changed).to.be.true;
+      expect(spy).to.have.been.calledOnce;
     });
 
     it('should set the features style, if the style on the feature is not the features style', () => {
@@ -472,10 +474,7 @@ describe('FeatureStoreLayer', () => {
       const feature = FS.changeTracker._removedFeatures.values().next().value;
       expect(feature).to.be.an.instanceOf(Feature);
       expect(feature.getId()).to.equal('test');
-      expect(feature).to.have.property(
-        featureStoreStateSymbol,
-        FeatureStoreLayerState.STATIC,
-      );
+      expect(feature).to.have.property(featureStoreStateSymbol, 'static');
     });
   });
 

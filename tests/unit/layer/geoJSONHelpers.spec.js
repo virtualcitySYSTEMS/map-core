@@ -13,10 +13,7 @@ import Projection, {
   mercatorProjection,
   wgs84Projection,
 } from '../../../src/util/projection.js';
-import {
-  FeatureStoreLayerState,
-  featureStoreStateSymbol,
-} from '../../../src/layer/featureStoreLayerState.js';
+import { featureStoreStateSymbol } from '../../../src/layer/featureStoreLayerState.js';
 import importJSON from '../helpers/importJSON.js';
 import { alreadyTransformedToMercator } from '../../../src/layer/vectorSymbols.js';
 
@@ -131,10 +128,7 @@ describe('GeoJSONLayer', () => {
       };
       const fArray = parseGeoJSON(featureObj).features;
       expect(fArray).to.have.length(1);
-      expect(fArray[0]).to.have.property(
-        featureStoreStateSymbol,
-        FeatureStoreLayerState.DYNAMIC,
-      );
+      expect(fArray[0]).to.have.property(featureStoreStateSymbol, 'dynamic');
     });
 
     it('should exclude features without a geometry', () => {

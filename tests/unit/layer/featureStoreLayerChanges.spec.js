@@ -3,10 +3,8 @@ import Feature from 'ol/Feature.js';
 import Point from 'ol/geom/Point.js';
 import FeatureStoreLayer from '../../../src/layer/featureStoreLayer.js';
 import { createCommitActions } from '../../../src/layer/featureStoreLayerChanges.js';
-import {
-  FeatureStoreLayerState,
-  featureStoreStateSymbol,
-} from '../../../src/layer/featureStoreLayerState.js';
+import { featureStoreStateSymbol } from '../../../src/layer/featureStoreLayerState.js';
+import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
 
 function createDummyOlFeature(index) {
   return [...new Array(index).keys()].map((k) => {
@@ -119,7 +117,7 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
 
     it('should unbind the listener for the event', () => {
       const feature1 = new Feature();
-      feature1[featureStoreStateSymbol] = FeatureStoreLayerState.DYNAMIC;
+      feature1[featureStoreStateSymbol] = 'dynamic';
       FSC.pauseTracking('addfeature');
       FSL.addFeatures([feature1]);
       feature1.changed();
@@ -145,9 +143,10 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
       expect(FSC._addedFeatures.has(feature)).to.be.true;
     });
 
-    it('should set the values.changed to true', () => {
+    it('should raise changed', () => {
+      const spy = getVcsEventSpy(FSC.changed, sandbox);
       FSL.addFeatures([feature]);
-      expect(FSC.values.changed).to.be.true;
+      expect(spy).to.have.been.calledOnce;
     });
 
     it('should not add an existing server feature', () => {
@@ -245,6 +244,21 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
     let actions;
     let features;
     let changes;
+    let postChanges;
+
+    before(() => {
+      postChanges = async (body) => {
+        const resp = await fetch('http://myFeatureStore/commitChanges', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(body),
+        });
+
+        return resp.json();
+      };
+    });
 
     afterEach(() => {
       // it should always clear the values;
@@ -252,7 +266,6 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
       Object.values(changes).forEach((array) => {
         expect(array).to.be.empty;
       });
-      expect(FSC.values.changed).to.be.false;
     });
 
     after(() => nock.cleanAll());
@@ -261,13 +274,13 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
       features = createDummyOlFeature(1);
       FSC._convertedFeatures.add(features[0]);
       const resetFeature = sandbox.spy(FSC, '_resetFeature');
-      await FSC.commitChanges('test');
+      await FSC.commitChanges(postChanges);
       expect(resetFeature).to.have.been.calledWith(features[0]);
       expect(FSC._convertedFeatures).to.be.empty;
     });
 
     it('should not call post, if there are no actions', async () => {
-      const request = await FSC.commitChanges('test');
+      const request = await FSC.commitChanges(postChanges);
       expect(request).to.be.undefined;
     });
 
@@ -287,7 +300,7 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
           FSC._editedFeatures,
           FSC._removedFeatures,
         );
-        await FSC.commitChanges('http://myFeatureStore/commitChanges');
+        await FSC.commitChanges(postChanges);
       });
 
       after(() => scope.done());
@@ -308,10 +321,7 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
 
       it('should set the features type to dynamic', () => {
         features.forEach((f) => {
-          expect(f).to.have.property(
-            featureStoreStateSymbol,
-            FeatureStoreLayerState.DYNAMIC,
-          );
+          expect(f).to.have.property(featureStoreStateSymbol, 'dynamic');
         });
       });
     });
@@ -327,22 +337,19 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
         features = createDummyOlFeature(2);
         FSC._editedFeatures.add(features[0]);
         FSC._editedFeatures.add(features[1]);
-        features[0][featureStoreStateSymbol] = FeatureStoreLayerState.STATIC;
+        features[0][featureStoreStateSymbol] = 'static';
         actions = createCommitActions(
           FSC._addedFeatures,
           FSC._editedFeatures,
           FSC._removedFeatures,
         );
-        await FSC.commitChanges('http://myFeatureStore/commitChanges');
+        await FSC.commitChanges(postChanges);
       });
 
       after(() => scope.done());
 
       it('should set the state symbol for static features to edited', () => {
-        expect(features[0]).to.have.property(
-          featureStoreStateSymbol,
-          FeatureStoreLayerState.EDITED,
-        );
+        expect(features[0]).to.have.property(featureStoreStateSymbol, 'edited');
       });
 
       it('should append the feature id as _id', () => {
@@ -373,7 +380,7 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
           FSC._editedFeatures,
           FSC._removedFeatures,
         );
-        await FSC.commitChanges('http://myFeatureStore/commitChanges');
+        await FSC.commitChanges(postChanges);
       });
 
       after(() => scope.done());
@@ -406,28 +413,22 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
             ],
           });
         features = createDummyOlFeature(6);
-        features[2][featureStoreStateSymbol] = FeatureStoreLayerState.STATIC;
-        features[3][featureStoreStateSymbol] = FeatureStoreLayerState.STATIC;
+        features[2][featureStoreStateSymbol] = 'static';
+        features[3][featureStoreStateSymbol] = 'static';
         FSC._addedFeatures.add(features[0]);
         FSC._addedFeatures.add(features[1]);
         FSC._editedFeatures.add(features[2]);
         FSC._editedFeatures.add(features[3]);
         FSC._removedFeatures.add(features[4]);
         FSC._removedFeatures.add(features[5]);
-        await FSC.commitChanges('http://myFeatureStore/commitChanges');
+        await FSC.commitChanges(postChanges);
       });
 
       it('should only succeed non-failed features', () => {
         expect(features[0].getId()).to.equal('id0');
         expect(features[1].getId()).to.equal('test1');
-        expect(features[2]).to.have.property(
-          featureStoreStateSymbol,
-          FeatureStoreLayerState.STATIC,
-        );
-        expect(features[3]).to.have.property(
-          featureStoreStateSymbol,
-          FeatureStoreLayerState.EDITED,
-        );
+        expect(features[2]).to.have.property(featureStoreStateSymbol, 'static');
+        expect(features[3]).to.have.property(featureStoreStateSymbol, 'edited');
       });
 
       it('should reset failed features', () => {
@@ -461,13 +462,8 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
     });
 
     it('should reset the values', () => {
-      FSC.values.changed = true;
       return FSC.reset().then(() => {
-        const changes = FSC.getChanges();
-        Object.values(changes).forEach((array) => {
-          expect(array).to.be.empty;
-        });
-        expect(FSC.values.changed).to.be.false;
+        expect(FSC.hasChanges()).to.be.false;
       });
     });
   });
@@ -486,7 +482,7 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
 
     describe('static features - aka freshly edited', () => {
       beforeEach(() => {
-        feature[featureStoreStateSymbol] = FeatureStoreLayerState.STATIC;
+        feature[featureStoreStateSymbol] = 'static';
         FSC.layer.hiddenStaticFeatureIds.add(feature.getId());
       });
 
@@ -504,7 +500,7 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
 
     describe('edited features', () => {
       beforeEach(() => {
-        feature[featureStoreStateSymbol] = FeatureStoreLayerState.EDITED;
+        feature[featureStoreStateSymbol] = 'edited';
       });
 
       it('should reset the feature on the layer', () =>

@@ -1,4 +1,8 @@
-import { type Cesium3DTileset, Matrix4 } from '@vcmap-cesium/engine';
+import {
+  type Cesium3DTileset,
+  type CustomShader,
+  Matrix4,
+} from '@vcmap-cesium/engine';
 
 import { check, maybe } from '@vcsuite/check';
 import { parseInteger } from '@vcsuite/parsers';
@@ -50,6 +54,7 @@ export type CesiumTilesetImplementationOptions =
     tilesetProperties?: CesiumTilesetTilesetProperties[];
     modelMatrix?: Matrix4;
     offset?: Coordinate;
+    customShader?: CustomShader;
   };
 
 /**
@@ -85,6 +90,8 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
   private _offset: Coordinate | undefined;
 
   protected _supportedMaps = [CesiumMap.className];
+
+  private _customShader: CustomShader | undefined = undefined;
 
   constructor(options: CesiumTilesetOptions) {
     super(options);
@@ -159,12 +166,26 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
     });
   }
 
+  get customShader(): CustomShader | undefined {
+    return this._customShader;
+  }
+
+  set customShader(shader: CustomShader | undefined) {
+    if (this._customShader !== shader) {
+      this._customShader = shader;
+      this.getImplementations().forEach((impl) => {
+        impl.updateCustomShader(shader);
+      });
+    }
+  }
+
   getImplementationOptions(): CesiumTilesetImplementationOptions {
     return {
       ...super.getImplementationOptions(),
       tilesetOptions: this.tilesetOptions,
       modelMatrix: this.modelMatrix,
       offset: this.offset,
+      customShader: this.customShader,
     };
   }
 

@@ -10,6 +10,7 @@ const distDir = joinPath(rootDir, 'dist');
 const augmentations = [
   joinPath(rootDir, 'src', 'cesium', 'cesium.d.ts'),
   joinPath(rootDir, 'src', 'ol', 'ol.d.ts'),
+  joinPath(rootDir, 'src', 'ol', 'geojson.d.ts'),
 ];
 
 async function moveAugmentation(filePath) {

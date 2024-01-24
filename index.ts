@@ -117,8 +117,8 @@ export {
 export {
   default as FeatureStoreLayerChanges,
   FeatureStoreTrackResults,
-  FeatureStoreChangesValues,
   FeatureStoreChangesListeners,
+  FeatureStoreGeojsonFeature,
 } from './src/layer/featureStoreLayerChanges.js';
 export {
   featureStoreStateSymbol,

@@ -29,6 +29,7 @@ import type { FlightInstanceMeta } from '../util/flight/flightInstance.js';
 function getLogger(): Logger {
   return getLoggerByName('VectorProperties');
 }
+
 export enum PrimitiveOptionsType {
   CYLINDER = 'cylinder',
   SPHERE = 'sphere',
@@ -73,11 +74,18 @@ export function vectorPropertiesOfType<T extends PrimitiveOptionsType>(
   return options.type === type;
 }
 
+export type AltitudeModeType =
+  | 'absolute'
+  | 'relativeToGround'
+  | 'clampToGround';
+
+export type ClassificationTypeType = 'both' | 'terrain' | 'cesium3DTile';
+
 export type VectorPropertiesOptions = {
   /**
    * (3D) Either "relativeToGround", "clampToGround" or 'absolute'
    */
-  altitudeMode?: string;
+  altitudeMode?: AltitudeModeType;
   /**
    * if the features are pickable
    */
@@ -85,7 +93,7 @@ export type VectorPropertiesOptions = {
   /**
    * (3D) the cesium classification type for this layer. one of 'both', 'terrain' or 'cesium3DTile'
    */
-  classificationType?: string;
+  classificationType?: ClassificationTypeType;
   /**
    * (3D) Array with 4 numbers by which features are being scaled based on distance see <a href="https://cesium.com/docs/cesiumjs-ref-doc/Billboard.html#scaleByDistance"> here </a>
    */
@@ -182,13 +190,16 @@ export type VectorPropertiesPrimitive = VectorPropertiesBaseOptions & {
  */
 export const vcsMetaVersion = '2.1';
 
-export const AltitudeModeCesium = {
+export const AltitudeModeCesium: Record<AltitudeModeType, HeightReference> = {
   clampToGround: HeightReference.CLAMP_TO_GROUND,
   absolute: HeightReference.NONE,
   relativeToGround: HeightReference.RELATIVE_TO_GROUND,
 };
 
-export const ClassificationTypeCesium = {
+export const ClassificationTypeCesium: Record<
+  ClassificationTypeType,
+  ClassificationType
+> = {
   both: ClassificationType.BOTH,
   cesium3DTile: ClassificationType.CESIUM_3D_TILE,
   terrain: ClassificationType.TERRAIN,
@@ -247,19 +258,27 @@ export function parseStoreyHeights(
   return defaultStoreyHeights;
 }
 
-export function getAltitudeModeOptions(altitudeMode: HeightReference): string {
-  for (const [key, mode] of Object.entries(AltitudeModeCesium)) {
+export function getAltitudeModeOptions(
+  altitudeMode: HeightReference,
+): AltitudeModeType {
+  for (const [key, mode] of Object.entries(AltitudeModeCesium) as [
+    AltitudeModeType,
+    HeightReference,
+  ][]) {
     if (mode === altitudeMode) {
       return key;
     }
   }
-  throw new Error(`Unkown altitude mode ${altitudeMode}`);
+  throw new Error(`Unknown altitude mode ${altitudeMode}`);
 }
 
 export function getClassificationTypeOptions(
   classificationType?: ClassificationType,
-): string | undefined {
-  for (const [key, mode] of Object.entries(ClassificationTypeCesium)) {
+): ClassificationTypeType | undefined {
+  for (const [key, mode] of Object.entries(ClassificationTypeCesium) as [
+    ClassificationTypeType,
+    ClassificationType,
+  ][]) {
     if (mode === classificationType) {
       return key;
     }

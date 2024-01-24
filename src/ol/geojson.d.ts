@@ -11,8 +11,7 @@ declare module 'geojson' {
     G extends Geometry | null = Geometry,
     P = GeoJsonProperties,
   > {
-    _id?: string | number;
-    id?: string | number;
+    _id?: string;
     radius?: G extends Point ? number : never;
     vcsMeta?: VcsMeta;
     state?: FeatureStoreLayerState;

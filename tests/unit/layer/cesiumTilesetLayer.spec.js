@@ -4,6 +4,7 @@ import {
   Cartesian3,
   Math as CesiumMath,
   Rectangle,
+  CustomShader,
 } from '@vcmap-cesium/engine';
 import Circle from 'ol/geom/Circle.js';
 import CesiumTilesetLayer from '../../../src/layer/cesiumTilesetLayer.js';
@@ -79,6 +80,25 @@ describe('CesiumTilesetLayer', () => {
       const [impl] = cesiumTileset.getImplementationsForMap(cesiumMap);
       cesiumTileset.offset = offset;
       expect(impl.offset).to.equal(offset);
+    });
+  });
+
+  describe('customShader', () => {
+    let customShader;
+
+    before(() => {
+      customShader = new CustomShader({});
+    });
+
+    it('should return the customShader', () => {
+      cesiumTileset.customShader = customShader;
+      expect(cesiumTileset.customShader).to.equal(customShader);
+    });
+
+    it('should update the customShader of its implementations', () => {
+      const [impl] = cesiumTileset.getImplementationsForMap(cesiumMap);
+      cesiumTileset.customShader = customShader;
+      expect(impl.customShader).to.equal(customShader);
     });
   });
 

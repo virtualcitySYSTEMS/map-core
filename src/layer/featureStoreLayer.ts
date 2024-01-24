@@ -10,10 +10,7 @@ import VectorLayer, {
   VectorImplementationOptions,
   VectorOptions,
 } from './vectorLayer.js';
-import {
-  featureStoreStateSymbol,
-  FeatureStoreLayerState,
-} from './featureStoreLayerState.js';
+import { featureStoreStateSymbol } from './featureStoreLayerState.js';
 import { parseGeoJSON } from './geojsonHelpers.js';
 import { mercatorProjection } from '../util/projection.js';
 import FeatureStoreLayerChanges from './featureStoreLayerChanges.js';
@@ -206,7 +203,7 @@ class FeatureStoreLayer extends VectorLayer {
 
     this._removeVectorPropertiesChangeHandler =
       this.vectorProperties.propertyChanged.addEventListener(() => {
-        this.changeTracker.values.changed = true;
+        this.changeTracker.changed.raiseEvent();
       });
 
     this.injectedFetchDynamicFeatureFunc =
@@ -409,7 +406,7 @@ class FeatureStoreLayer extends VectorLayer {
     });
     if (changeTrackerActive) {
       this.changeTracker.track();
-      this.changeTracker.values.changed = true;
+      this.changeTracker.changed.raiseEvent();
     }
   }
 
@@ -554,7 +551,7 @@ class FeatureStoreLayer extends VectorLayer {
     this.hiddenStaticFeatureIds.add(featureId);
     const feature = new Feature();
     feature.setId(featureId);
-    feature[featureStoreStateSymbol] = FeatureStoreLayerState.STATIC;
+    feature[featureStoreStateSymbol] = 'static';
     this.changeTracker.removeFeature(feature);
   }
 
