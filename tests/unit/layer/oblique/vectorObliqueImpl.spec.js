@@ -209,7 +209,8 @@ describe('VectorObliqueImpl', () => {
       originalFeature.setId(id);
       style = new Style({ fill: new Fill({ color: '#ff0000' }) });
       originalFeature.setStyle(style);
-      await OVL.addFeature(originalFeature);
+      VL.addFeatures([originalFeature]);
+      await timeout(1);
       obliqueFeature = OVL.obliqueSource.getFeatureById(id);
     });
 
@@ -224,7 +225,8 @@ describe('VectorObliqueImpl', () => {
     it('should not add a feature with the same id twice', async () => {
       const clone = originalFeature.clone();
       clone.setId(originalFeature.getId());
-      await OVL.addFeature(clone);
+      VL.addFeatures([clone]);
+      await timeout(1);
       expect(OVL.obliqueSource.getFeatureById(clone.getId())).to.equal(
         obliqueFeature,
       );
@@ -240,7 +242,8 @@ describe('VectorObliqueImpl', () => {
       doNotTransformFeature.getGeometry()[
         VectorLayer.alreadyTransformedToImage
       ] = true;
-      await OVL.addFeature(doNotTransformFeature);
+      VL.addFeatures([doNotTransformFeature]);
+      await timeout(1);
       const shadowFeature = OVL.obliqueSource.getFeatureById(id);
       expect(shadowFeature).to.equal(doNotTransformFeature);
     });
@@ -248,8 +251,8 @@ describe('VectorObliqueImpl', () => {
     it('should not add a feature with the same id twice, even if calling addFeature sync', async () => {
       const clone = originalFeature.clone();
       clone.setId(uuidv4());
-      OVL.addFeature(clone);
-      await OVL.addFeature(clone);
+      VL.addFeatures([clone]);
+      await timeout(1);
       expect(clone[obliqueGeometry]).to.equal(
         OVL.obliqueSource.getFeatureById(clone.getId())?.getGeometry(),
       );
@@ -261,11 +264,57 @@ describe('VectorObliqueImpl', () => {
       const geom = new Point([0, 0, 0]);
       geom[alreadyTransformedToImage] = true;
       clone.setGeometry(geom);
-      OVL.addFeature(clone);
-      await OVL.addFeature(clone);
+      VL.addFeatures([clone]);
+      VL.addFeatures([clone]);
+      await timeout(1);
       expect(clone[obliqueGeometry]).to.equal(
         OVL.obliqueSource.getFeatureById(clone.getId())?.getGeometry(),
       );
+    });
+  });
+
+  describe('adding and directly removing a feature from the implementation', () => {
+    let originalFeature;
+    let style;
+    let obliqueFeature;
+
+    before(async () => {
+      await VL.activate();
+      originalFeature = new Feature({
+        geometry: new Point([1489084, 6892790, 0]),
+      });
+      const id = uuidv4();
+      originalFeature.setId(id);
+      style = new Style({ fill: new Fill({ color: '#ff0000' }) });
+      originalFeature.setStyle(style);
+    });
+
+    it('should only add the obliqueFeature after the conversion is done', async () => {
+      VL.addFeatures([originalFeature]);
+      obliqueFeature = OVL.obliqueSource.getFeatureById(
+        originalFeature.getId(),
+      );
+      expect(obliqueFeature).to.be.null;
+      await timeout(1);
+      obliqueFeature = OVL.obliqueSource.getFeatureById(
+        originalFeature.getId(),
+      );
+      expect(obliqueFeature).to.not.be.null;
+      VL.removeAllFeatures();
+      await timeout(1);
+    });
+    it('should only add the obliqueFeature after the conversion is done', async () => {
+      VL.addFeatures([originalFeature]);
+      obliqueFeature = OVL.obliqueSource.getFeatureById(
+        originalFeature.getId(),
+      );
+      expect(obliqueFeature).to.be.null;
+      VL.removeAllFeatures();
+      await timeout(1);
+      obliqueFeature = OVL.obliqueSource.getFeatureById(
+        originalFeature.getId(),
+      );
+      expect(obliqueFeature).to.be.null;
     });
   });
 
@@ -284,9 +333,10 @@ describe('VectorObliqueImpl', () => {
       originalFeature.setId(id);
       style = new Style({ fill: new Fill({ color: '#ff0000' }) });
       originalFeature.setStyle(style);
-      await OVL.addFeature(originalFeature);
+      VL.addFeatures([originalFeature]);
+      await timeout(1);
       obliqueFeature = OVL.obliqueSource.getFeatureById(id);
-      OVL.removeFeature(originalFeature);
+      VL.removeFeaturesById([originalFeature.getId()]);
     });
 
     it('should remove the feature from the oblique source', () => {
@@ -328,7 +378,8 @@ describe('VectorObliqueImpl', () => {
       });
       id = uuidv4();
       originalFeature.setId(id);
-      await OVL.addFeature(originalFeature);
+      VL.addFeatures([originalFeature]);
+      await timeout(1);
       obliqueFeature = OVL.obliqueSource.getFeatureById(id);
       clock = sandbox.useFakeTimers(1);
     });
@@ -459,8 +510,8 @@ describe('VectorObliqueImpl', () => {
       });
       id = uuidv4();
       originalFeature.setId(id);
-      await OVL.addFeature(originalFeature);
-      await timeout(0);
+      VL.addFeatures([originalFeature]);
+      await timeout(1);
       obliqueFeature = OVL.obliqueSource.getFeatureById(id);
       unByKey(Object.values(OVL._featureListeners[id])); // otherwise feature listeners are triggered
       clock = sandbox.useFakeTimers(1);
@@ -530,7 +581,8 @@ describe('VectorObliqueImpl', () => {
       });
       id = uuidv4();
       originalFeature.setId(id);
-      await OVL.addFeature(originalFeature);
+      VL.addFeatures([originalFeature]);
+      await timeout(1);
       obliqueFeature = OVL.obliqueSource.getFeatureById(id);
       unByKey(Object.values(OVL._featureListeners[id])); // otherwise feature listeners are triggered
       clock = sandbox.useFakeTimers(1);

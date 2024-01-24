@@ -208,7 +208,10 @@ class VectorObliqueImpl
       this._setFeatureListeners(originalFeature, obliqueFeature);
 
       await this._convertToOblique(originalFeature, obliqueFeature);
-      this.obliqueSource.addFeature(obliqueFeature);
+      if (this.source.hasFeature(originalFeature)) {
+        // if not in source, feature has been removed in between.
+        this.obliqueSource.addFeature(obliqueFeature);
+      }
     }
     return Promise.resolve();
   }
@@ -430,11 +433,13 @@ class VectorObliqueImpl
   }
 
   private removeFeature(feature: Feature): void {
-    const feat = this.obliqueSource.getFeatureById(
-      feature.getId() as number | string,
-    );
+    const id = feature.getId() as number | string;
+    const feat = this.obliqueSource.getFeatureById(id);
+    if (this._updatingOblique[id] != null) {
+      clearTimeout(this._updatingOblique[id] as number);
+      this._updatingOblique[id] = null;
+    }
     if (feat) {
-      const id = feat.getId() as string;
       const listeners = this._featureListeners[id];
       if (listeners) {
         unByKey(Object.values(listeners));
