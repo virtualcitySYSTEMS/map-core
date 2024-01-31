@@ -44,8 +44,7 @@ class TMSLayer extends RasterLayer<TmsCesiumImpl | TmsOpenlayersImpl> {
 
   constructor(options: TMSOptions) {
     const defaultOptions = TMSLayer.getDefaultOptions();
-    options.tilingSchema = options.tilingSchema || defaultOptions.tilingSchema;
-    super(options);
+    super({ tilingSchema: defaultOptions.tilingSchema, ...options });
 
     this._supportedMaps = [OpenlayersMap.className, CesiumMap.className];
 

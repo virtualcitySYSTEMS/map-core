@@ -29,8 +29,7 @@ class StaticGeoJSONTileProvider extends TileProvider {
 
   constructor(options: StaticGeoJSONTileProviderOptions) {
     const defaultOptions = StaticGeoJSONTileProvider.getDefaultOptions();
-    options.baseLevels = defaultOptions.baseLevels;
-    super(options);
+    super({ ...options, baseLevels: defaultOptions.baseLevels });
 
     this.url = options.url || defaultOptions.url;
   }

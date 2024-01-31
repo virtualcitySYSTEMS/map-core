@@ -90,6 +90,7 @@ class Layer<
       copyright: undefined,
       datasourceId: undefined,
       headers: undefined,
+      zIndex: 0,
     };
   }
 
@@ -189,7 +190,7 @@ class Layer<
 
     this._url = options.url;
 
-    this._zIndex = parseInteger(options.zIndex, 0);
+    this._zIndex = parseInteger(options.zIndex, defaultOptions.zIndex);
 
     this.zIndexChanged = new VcsEvent();
 
@@ -687,6 +688,10 @@ class Layer<
 
     if (!deepEqual(this._headers, defaultOptions.headers)) {
       config.headers = structuredClone(this._headers);
+    }
+
+    if (this._zIndex !== defaultOptions.zIndex) {
+      config.zIndex = this._zIndex;
     }
 
     return config;

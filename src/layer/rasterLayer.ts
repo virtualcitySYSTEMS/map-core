@@ -198,8 +198,7 @@ class RasterLayer<
    * @param  options
    */
   constructor(options: RasterLayerOptions) {
-    options.url = options.url || '';
-    super(options);
+    super({ url: '', ...options });
     const defaultOptions = RasterLayer.getDefaultOptions();
     this.extent = options.extent ? new Extent(options.extent) : new Extent();
     this.tilingSchema = parseEnumValue(

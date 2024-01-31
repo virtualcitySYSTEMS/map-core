@@ -37,9 +37,10 @@ class GeoJSONLayer extends VectorLayer {
 
   constructor(options: GeoJSONOptions) {
     const defaultOptions = GeoJSONLayer.getDefaultOptions();
-    options.projection = options.projection || defaultOptions.projection;
-
-    super(options);
+    super({
+      projection: defaultOptions.projection,
+      ...options,
+    });
     this._featuresToLoad = options.features || defaultOptions.features;
   }
 

@@ -65,8 +65,7 @@ class WFSLayer extends VectorLayer {
         (proj.epsg as string).match(/\d+/)?.[0] as string
       }`,
     ];
-    options.projection = proj;
-    super(options);
+    super({ ...options, projection: proj });
 
     this.featureType = Array.isArray(options.featureType)
       ? options.featureType

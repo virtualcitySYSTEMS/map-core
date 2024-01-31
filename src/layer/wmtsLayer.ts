@@ -106,8 +106,7 @@ class WMTSLayer extends RasterLayer<WmtsCesiumImpl | WmtsOpenlayersImpl> {
 
   constructor(options: WMTSOptions) {
     const defaultOptions = WMTSLayer.getDefaultOptions();
-    options.tilingSchema = options.tilingSchema || defaultOptions.tilingSchema;
-    super(options);
+    super({ tilingSchema: defaultOptions.tilingSchema, ...options });
 
     this._supportedMaps = [OpenlayersMap.className, CesiumMap.className];
 

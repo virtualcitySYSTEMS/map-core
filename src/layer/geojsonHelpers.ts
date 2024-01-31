@@ -415,7 +415,7 @@ export function writeGeoJSONFeature(
     coordinates.forEach((ring) => {
       enforceEndingVertex(ring);
     });
-    geometry.setCoordinates(coordinates);
+    geometry = new Polygon(coordinates, geometry.getLayout());
   } else if (geometry instanceof MultiPolygon) {
     const coordinates = geometry.getCoordinates();
     coordinates.forEach((poly) => {
@@ -423,7 +423,7 @@ export function writeGeoJSONFeature(
         enforceEndingVertex(ring);
       });
     });
-    geometry.setCoordinates(coordinates);
+    geometry = new MultiPolygon(coordinates, geometry.getLayout());
   }
 
   const geojsonGeometry = getFormat().writeGeometryObject(geometry, {
