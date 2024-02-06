@@ -1,15 +1,44 @@
+import { expect } from 'chai';
 import { Feature } from 'ol';
 import { Point } from 'ol/geom.js';
+import sinon from 'sinon';
+import { Cartesian2 } from '@vcmap-cesium/engine';
 import {
+  emptyStyle,
+  EventAfterEventHandler,
   EventType,
+  ModificationKeyType,
+  OpenlayersMap,
+  PointerEventType,
+  PointerKeyType,
   TranslateVertexInteraction,
   vertexSymbol,
 } from '../../../../../index.js';
 
 describe('TranslateVertexInteraction', () => {
+  let map: OpenlayersMap;
+  let baseEvent: Omit<EventAfterEventHandler, 'feature' | 'type'>;
+
+  before(() => {
+    map = new OpenlayersMap({});
+    baseEvent = {
+      key: ModificationKeyType.NONE,
+      position: [0, 0, 1],
+      map,
+      pointer: PointerKeyType.LEFT,
+      pointerEvent: PointerEventType.DOWN,
+      positionOrPixel: [0, 0, 1],
+      windowPosition: new Cartesian2(0, 0),
+    };
+  });
+
+  after(() => {
+    map.destroy();
+  });
+
   describe('starting vertex translation', () => {
-    let vertex;
-    let event;
+    let vertex: Feature<Point>;
+    let event: EventAfterEventHandler;
 
     before(async () => {
       vertex = new Feature({ geometry: new Point([0, 0, 0]) });
@@ -18,6 +47,7 @@ describe('TranslateVertexInteraction', () => {
       event = {
         feature: vertex,
         type: EventType.DRAGSTART,
+        ...baseEvent,
       };
 
       await interaction.pipe(event);
@@ -34,8 +64,8 @@ describe('TranslateVertexInteraction', () => {
   });
 
   describe('dragging the vertex', () => {
-    let vertex;
-    let vertexChangedListener;
+    let vertex: Feature<Point>;
+    let vertexChangedListener: () => void;
 
     before(async () => {
       vertex = new Feature({ geometry: new Point([0, 0, 0]) });
@@ -46,22 +76,25 @@ describe('TranslateVertexInteraction', () => {
       await interaction.pipe({
         feature: vertex,
         type: EventType.DRAGSTART,
+        ...baseEvent,
       });
       await interaction.pipe({
+        feature: vertex,
+        type: EventType.DRAG,
+        ...baseEvent,
         positionOrPixel: [1, 1, 0],
-        feature: vertex,
-        type: EventType.DRAG,
       });
       await interaction.pipe({
-        positionOrPixel: [2, 1, 0],
         feature: vertex,
         type: EventType.DRAG,
+        ...baseEvent,
+        positionOrPixel: [2, 1, 0],
       });
       interaction.destroy();
     });
 
     it('should set the vertex geometry to the position of the event', () => {
-      expect(vertex.getGeometry().getCoordinates()).to.have.ordered.members([
+      expect(vertex.getGeometry()!.getCoordinates()).to.have.ordered.members([
         2, 1, 0,
       ]);
     });
@@ -70,11 +103,15 @@ describe('TranslateVertexInteraction', () => {
       expect(vertexChangedListener).to.have.been.calledTwice;
       expect(vertexChangedListener).to.have.been.calledWithExactly(vertex);
     });
+
+    it('should set the vertex style to be the empty style', () => {
+      expect(vertex.getStyle()).to.equal(emptyStyle);
+    });
   });
 
   describe('finish dragging the vertex', () => {
-    let vertex;
-    let vertexChangedListener;
+    let vertex: Feature<Point>;
+    let vertexChangedListener: () => void;
 
     before(async () => {
       vertex = new Feature({ geometry: new Point([0, 0, 0]) });
@@ -85,27 +122,31 @@ describe('TranslateVertexInteraction', () => {
       await interaction.pipe({
         feature: vertex,
         type: EventType.DRAGSTART,
+        ...baseEvent,
       });
       await interaction.pipe({
+        feature: vertex,
+        type: EventType.DRAG,
+        ...baseEvent,
         positionOrPixel: [1, 1, 0],
-        feature: vertex,
-        type: EventType.DRAG,
       });
       await interaction.pipe({
-        positionOrPixel: [2, 1, 0],
         feature: vertex,
         type: EventType.DRAG,
+        ...baseEvent,
+        positionOrPixel: [2, 1, 0],
       });
       await interaction.pipe({
-        positionOrPixel: [2, 1, 0],
         feature: vertex,
         type: EventType.DRAGEND,
+        ...baseEvent,
+        positionOrPixel: [2, 1, 0],
       });
       interaction.destroy();
     });
 
     it('should set the vertex geometry to the position of the event', () => {
-      expect(vertex.getGeometry().getCoordinates()).to.have.ordered.members([
+      expect(vertex.getGeometry()!.getCoordinates()).to.have.ordered.members([
         2, 1, 0,
       ]);
     });
@@ -117,6 +158,10 @@ describe('TranslateVertexInteraction', () => {
 
     it('should reset the vertex style', () => {
       expect(vertex.get('olcs_allowPicking')).to.be.undefined;
+    });
+
+    it('should reset the vertex style', () => {
+      expect(vertex.getStyle()).to.be.undefined;
     });
   });
 });

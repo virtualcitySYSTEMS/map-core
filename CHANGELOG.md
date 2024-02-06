@@ -37,6 +37,8 @@
 - Fixes a bug, where zIndex was not inlcuded in toJSON of layers.
 - Options passed to Layers are no longer mutated.
 - Polygon and MultiPolygon geometries serialized using geojson helpers are no longer mutated.
+- Adds altitude mode awareness to the editor sessions. You can now set the altitude mode of the geometries being created. The
+  editor will also react to changes on the feature or the layer.
 
 ### 5.0.4
 

@@ -1,8 +1,10 @@
 import { check, ofEnum } from '@vcsuite/check';
 import { Feature } from 'ol';
 import type { Geometry } from 'ol/geom.js';
+import { unByKey } from 'ol/Observable.js';
 import VcsEvent from '../../vcsEvent.js';
 import {
+  createPickingBehavior,
   EditorSession,
   GeometryToType,
   GeometryType,
@@ -20,10 +22,12 @@ import { createSync } from '../../layer/vectorSymbols.js';
 import geometryIsValid from './validateGeoemetry.js';
 import ObliqueMap from '../../map/obliqueMap.js';
 import { cursorMap } from './interactions/editGeometryMouseOverInteraction.js';
+import { AltitudeModeType } from '../../layer/vectorProperties.js';
 
 export type CreateFeatureSession<T extends GeometryType> =
   EditorSession<SessionType.CREATE> & {
     geometryType: T;
+    featureAltitudeMode: AltitudeModeType | undefined;
     featureCreated: VcsEvent<Feature<GeometryToType<T>>>;
     creationFinished: VcsEvent<Feature<GeometryToType<T>> | null>;
     finish(): void;
@@ -86,12 +90,14 @@ export interface CreateInteraction<T extends Geometry> {
  * @param  app
  * @param  layer
  * @param  geometryType
+ * @param initialAltitudeMode - whether to use the layers altitude mode or set this on the feature
  * @group Editor
  */
 function startCreateFeatureSession<T extends GeometryType>(
   app: VcsApp,
   layer: VectorLayer,
   geometryType: T,
+  initialAltitudeMode?: AltitudeModeType,
 ): CreateFeatureSession<T> {
   check(app, VcsApp);
   check(layer, VectorLayer);
@@ -116,8 +122,31 @@ function startCreateFeatureSession<T extends GeometryType>(
    */
   let isOblique = false;
 
+  let featureAltitudeMode = initialAltitudeMode;
+  const pickingBehavior = createPickingBehavior(app);
+
+  const altitudeModeChanged = (): void => {
+    const altitudeModeFeature =
+      currentFeature ?? new Feature({ olcs_altitudeMode: featureAltitudeMode });
+    const altitudeModeInUse =
+      layer.vectorProperties.getAltitudeMode(altitudeModeFeature);
+
+    pickingBehavior.setForAltitudeMode(altitudeModeInUse);
+  };
+
+  const vectorPropertiesListener =
+    layer.vectorProperties.propertyChanged.addEventListener((properties) => {
+      if (properties.includes('altitudeMode') && !featureAltitudeMode) {
+        altitudeModeChanged();
+      }
+    });
+
+  altitudeModeChanged();
+
+  let currentFeatureListener = (): void => {};
   let interactionListeners: (() => void)[] = [];
   const destroyCurrentInteraction = (): void => {
+    currentFeatureListener();
     if (currentInteraction) {
       interactionChain.removeInteraction(currentInteraction);
       currentInteraction.destroy();
@@ -142,6 +171,20 @@ function startCreateFeatureSession<T extends GeometryType>(
           GeometryToType<T>
         >;
         currentFeature[createSync] = true;
+        if (featureAltitudeMode) {
+          currentFeature.set('olcs_altitudeMode', featureAltitudeMode);
+        }
+        const propChangeListener = currentFeature.on(
+          'propertychange',
+          (event) => {
+            if (event.key === 'olcs_altitudeMode') {
+              altitudeModeChanged();
+            }
+          },
+        );
+        currentFeatureListener = (): void => {
+          unByKey(propChangeListener);
+        };
         layer.addFeatures([currentFeature]);
         featureCreated.raiseEvent(currentFeature);
       }),
@@ -161,8 +204,9 @@ function startCreateFeatureSession<T extends GeometryType>(
             ]);
             currentFeature = null;
           }
+          currentFeatureListener();
         }
-
+        altitudeModeChanged();
         creationFinished.raiseEvent(currentFeature);
         currentFeature = null;
         if (!isStopped) {
@@ -218,6 +262,10 @@ function startCreateFeatureSession<T extends GeometryType>(
     }
     destroyCurrentInteraction();
     destroyInteractionChain();
+    currentFeatureListener();
+    vectorPropertiesListener();
+    pickingBehavior.reset();
+
     stopped.raiseEvent();
     stopped.destroy();
     featureCreated.destroy();
@@ -227,6 +275,23 @@ function startCreateFeatureSession<T extends GeometryType>(
   return {
     type: SessionType.CREATE,
     geometryType,
+    get featureAltitudeMode(): AltitudeModeType | undefined {
+      return featureAltitudeMode;
+    },
+    set featureAltitudeMode(value) {
+      if (featureAltitudeMode !== value) {
+        featureAltitudeMode = value;
+        if (currentFeature) {
+          if (featureAltitudeMode) {
+            currentFeature.set('olcs_altitudeMode', featureAltitudeMode);
+          } else {
+            currentFeature.unset('olcs_altitudeMode');
+          }
+        } else {
+          altitudeModeChanged();
+        }
+      }
+    },
     featureCreated,
     creationFinished,
     stopped,

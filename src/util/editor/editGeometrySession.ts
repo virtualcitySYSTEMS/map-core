@@ -11,6 +11,7 @@ import type {
 } from 'ol/geom.js';
 import { EventsKey } from 'ol/events.js';
 import {
+  createPickingBehavior,
   EditorSession,
   GeometryType,
   SessionType,
@@ -21,7 +22,12 @@ import InteractionChain from '../../interaction/interactionChain.js';
 import VcsEvent from '../../vcsEvent.js';
 import TranslateVertexInteraction from './interactions/translateVertexInteraction.js';
 import RemoveVertexInteraction from './interactions/removeVertexInteraction.js';
-import { createVertex, geometryChangeKeys } from './editorHelpers.js';
+import {
+  createVertex,
+  geometryChangeKeys,
+  getOlcsPropsFromFeature,
+  vectorPropertyChangeKeys,
+} from './editorHelpers.js';
 import InsertVertexInteraction from './interactions/insertVertexInteraction.js';
 import EditGeometryMouseOverInteraction from './interactions/editGeometryMouseOverInteraction.js';
 import { cartesian2DDistance, modulo } from '../math.js';
@@ -30,9 +36,14 @@ import geometryIsValid from './validateGeoemetry.js';
 import MapInteractionController from './interactions/mapInteractionController.js';
 import type VectorLayer from '../../layer/vectorLayer.js';
 import type VcsApp from '../../vcsApp.js';
+import type {
+  // eslint-disable-next-line import/no-named-default
+  default as VectorProperties,
+  PropertyChangedKey,
+} from '../../layer/vectorProperties.js';
 
 export type EditGeometrySession = EditorSession<SessionType.EDIT_GEOMETRY> & {
-  setFeature(feature: Feature): void;
+  setFeature(feature?: Feature): void;
   feature: Feature | null;
 };
 
@@ -40,6 +51,13 @@ type EditGeometryInteraction = {
   interactionChain: InteractionChain;
   destroy(): void;
 };
+
+function assignVectorProperty<
+  K extends PropertyChangedKey,
+  V extends VectorProperties[K],
+>(props: VectorProperties, key: K, value: V): void {
+  props[key] = value;
+}
 
 /**
  * Create the editing interaction for a feature with a line geometry
@@ -53,7 +71,10 @@ function createEditLineStringGeometryInteraction(
 ): EditGeometryInteraction {
   const geometry =
     feature[obliqueGeometry] ?? (feature.getGeometry() as LineString);
-  const vertices = geometry.getCoordinates().map(createVertex);
+  const olcsProps = getOlcsPropsFromFeature(feature);
+  const vertices = geometry
+    .getCoordinates()
+    .map((c) => createVertex(c, olcsProps));
   scratchLayer.addFeatures(vertices);
   const resetGeometry = (): void => {
     geometry.setCoordinates(
@@ -103,7 +124,10 @@ function createEditCircleGeometryInteraction(
 ): EditGeometryInteraction {
   const geometry =
     feature[obliqueGeometry] ?? (feature.getGeometry() as Circle);
-  const vertices = geometry.getCoordinates().map(createVertex);
+  const olcsProps = getOlcsPropsFromFeature(feature);
+  const vertices = geometry
+    .getCoordinates()
+    .map((c) => createVertex(c, olcsProps));
   scratchLayer.addFeatures(vertices);
 
   const translateVertex = new TranslateVertexInteraction();
@@ -150,7 +174,11 @@ function createEditBBoxGeometryInteraction(
 ): EditGeometryInteraction {
   const geometry =
     feature[obliqueGeometry] ?? (feature.getGeometry() as Polygon);
-  const vertices = geometry.getCoordinates()[0].map(createVertex);
+  const olcsProps = getOlcsPropsFromFeature(feature);
+  const vertices = geometry
+    .getCoordinates()[0]
+    .map((c) => createVertex(c, olcsProps));
+
   scratchLayer.addFeatures(vertices);
   let suspend = false;
   const translateVertex = new TranslateVertexInteraction();
@@ -226,7 +254,11 @@ function createEditSimplePolygonInteraction(
   const geometry =
     feature[obliqueGeometry] ?? (feature.getGeometry() as Polygon);
   const linearRing = geometry.getLinearRing(0) as LinearRing;
-  const vertices = linearRing.getCoordinates().map(createVertex);
+  const olcsProps = getOlcsPropsFromFeature(feature);
+
+  const vertices = linearRing
+    .getCoordinates()
+    .map((c) => createVertex(c, olcsProps));
   scratchLayer.addFeatures(vertices);
   const resetGeometry = (): void => {
     const coordinates = vertices.map((f) => f.getGeometry()!.getCoordinates());
@@ -279,7 +311,9 @@ function createEditPointInteraction(
   layer: VectorLayer,
 ): EditGeometryInteraction {
   const geometry = feature[obliqueGeometry] ?? (feature.getGeometry() as Point);
-  const vertex = createVertex(geometry.getCoordinates());
+  const olcsProps = getOlcsPropsFromFeature(feature);
+
+  const vertex = createVertex(geometry.getCoordinates(), olcsProps);
   const featureIdArray = [feature.getId() as string];
   layer.featureVisibility.hideObjects(featureIdArray);
   vertex[createSync] = true;
@@ -345,6 +379,38 @@ function startEditGeometrySession(
    */
   let currentFeature: Feature | null = null;
 
+  const pickingBehavior = createPickingBehavior(app);
+  const altitudeModeChanged = (): void => {
+    const altitudeMode = currentFeature
+      ? layer.vectorProperties.getAltitudeMode(currentFeature)
+      : layer.vectorProperties.altitudeMode;
+    pickingBehavior.setForAltitudeMode(altitudeMode);
+  };
+  altitudeModeChanged();
+  vectorPropertyChangeKeys.forEach((key) => {
+    assignVectorProperty(
+      scratchLayer.vectorProperties,
+      key,
+      layer.vectorProperties[key],
+    );
+  });
+
+  const vectorPropertiesChangedListener =
+    layer.vectorProperties.propertyChanged.addEventListener((props) => {
+      vectorPropertyChangeKeys.forEach((key) => {
+        if (props.includes(key)) {
+          assignVectorProperty(
+            scratchLayer.vectorProperties,
+            key,
+            layer.vectorProperties[key],
+          );
+          if (key === 'altitudeMode') {
+            altitudeModeChanged();
+          }
+        }
+      });
+    });
+
   const destroyCurrentInteractionSet = (): void => {
     if (currentInteractionSet) {
       interactionChain.removeInteraction(
@@ -359,8 +425,10 @@ function startEditGeometrySession(
       if (!geometryIsValid(currentFeature.getGeometry())) {
         layer.removeFeaturesById([currentFeature.getId() as string | number]);
       }
+      currentFeature.unset('olcs_allowPicking');
     }
     currentFeature = null;
+    altitudeModeChanged();
   };
 
   let featureListener: EventsKey | undefined;
@@ -374,6 +442,7 @@ function startEditGeometrySession(
     if (featureListener) {
       unByKey(featureListener);
     }
+
     if (feature) {
       featureListener = feature.on('propertychange', ({ key }) => {
         if (geometryChangeKeys.includes(key)) {
@@ -419,6 +488,8 @@ function startEditGeometrySession(
 
       if (currentInteractionSet) {
         interactionChain.addInteraction(currentInteractionSet.interactionChain);
+        currentFeature.set('olcs_allowPicking', false);
+        altitudeModeChanged();
       } else {
         getLogger('EditGeometrySession').warning(
           `Geometry of type ${geometryType} is currently not supported`,
@@ -448,6 +519,8 @@ function startEditGeometrySession(
     mouseOverInteraction.reset();
     destroyCurrentInteractionSet();
     destroyInteractionChain();
+    vectorPropertiesChangedListener();
+    pickingBehavior.reset();
     stopped.raiseEvent();
     stopped.destroy();
   };
@@ -457,7 +530,7 @@ function startEditGeometrySession(
     type: SessionType.EDIT_GEOMETRY,
     stopped,
     stop,
-    setFeature(feature: Feature): void {
+    setFeature(feature?: Feature): void {
       createCurrentInteractionSet(feature);
     },
     get feature(): Feature | null {

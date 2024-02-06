@@ -1,13 +1,18 @@
 import { expect } from 'chai';
 import { Feature } from 'ol';
+import sinon from 'sinon';
 import { Circle, LineString, MultiPoint, Point, Polygon } from 'ol/geom.js';
+import { Cartesian2, HeightReference } from '@vcmap-cesium/engine';
 import {
+  createSync,
+  EditGeometrySession,
   EventType,
+  MapEvent,
   ModificationKeyType,
   ObliqueMap,
   OpenlayersMap,
+  PointerEventType,
   PointerKeyType,
-  createSync,
   startEditGeometrySession,
 } from '../../../../index.js';
 import VcsApp from '../../../../src/vcsApp.js';
@@ -16,10 +21,11 @@ import InteractionChain from '../../../../src/interaction/interactionChain.js';
 import { createFeatureWithId } from './transformation/setupTransformationHandler.js';
 
 describe('EditGeometrySession', () => {
-  let app;
-  let layer;
-  let defaultMap;
-  let obliqueMap;
+  let app: VcsApp;
+  let layer: VectorLayer;
+  let defaultMap: OpenlayersMap;
+  let obliqueMap: ObliqueMap;
+  let mapEvent: Pick<MapEvent, 'map' | 'windowPosition' | 'pointerEvent'>;
 
   before(async () => {
     defaultMap = new OpenlayersMap({});
@@ -30,6 +36,11 @@ describe('EditGeometrySession', () => {
     await app.maps.setActiveMap(defaultMap.name);
     layer = new VectorLayer({});
     app.layers.add(layer);
+    mapEvent = {
+      map: defaultMap,
+      windowPosition: new Cartesian2(0, 0),
+      pointerEvent: PointerEventType.UP,
+    };
   });
 
   after(() => {
@@ -37,7 +48,7 @@ describe('EditGeometrySession', () => {
   });
 
   describe('starting a session', () => {
-    let session;
+    let session: EditGeometrySession;
 
     beforeEach(() => {
       session = startEditGeometrySession(app, layer);
@@ -54,7 +65,8 @@ describe('EditGeometrySession', () => {
     });
 
     describe('setting a feature', () => {
-      let feature;
+      let feature: Feature<Point>;
+
       beforeEach(() => {
         feature = createFeatureWithId(new Point([0, 0, 0]));
         layer.addFeatures([feature]);
@@ -69,22 +81,30 @@ describe('EditGeometrySession', () => {
         expect(feature).to.have.property(createSync, true);
       });
 
+      it('should set the feature to not be pickable', () => {
+        expect(feature.get('olcs_allowPicking')).to.be.false;
+      });
+
       describe('unsetting feature', () => {
         beforeEach(() => {
-          session.setFeature(null);
+          session.setFeature();
         });
 
         it('should remove createSync', () => {
           expect(feature).to.not.have.property(createSync);
         });
+
+        it('should unse the feature picking', () => {
+          expect(feature.get('olcs_allowPicking')).to.be.undefined;
+        });
       });
     });
 
     describe('line string editing', () => {
-      let feature;
-      let vertices;
+      let feature: Feature<LineString>;
+      let vertices: Feature<Point>[];
 
-      beforeEach(async () => {
+      beforeEach(() => {
         feature = new Feature({
           geometry: new LineString([
             [0, 0, 0],
@@ -92,8 +112,10 @@ describe('EditGeometrySession', () => {
           ]),
         });
         layer.addFeatures([feature]);
-        await session.setFeature(feature);
-        vertices = [...app.layers].pop().getFeatures();
+        session.setFeature(feature);
+        vertices = (
+          [...app.layers].pop()! as VectorLayer
+        ).getFeatures() as Feature<Point>[];
       });
 
       it('should add vertices to the scratch layer', () => {
@@ -105,30 +127,31 @@ describe('EditGeometrySession', () => {
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAGSTART,
           feature: vertex,
           positionOrPixel: [0, 0, 0],
+          ...mapEvent,
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAG,
           feature: vertex,
           positionOrPixel: [1, 0, 0],
+          ...mapEvent,
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAGEND,
           feature: vertex,
           positionOrPixel: [1, 0, 0],
+          ...mapEvent,
         });
+
         expect(
-          feature.getGeometry().getCoordinates(),
-        ).to.have.ordered.deep.members([
+          feature.getGeometry()!.getCoordinates(),
+        ).to.have.deep.ordered.members([
           [1, 0, 0],
           [1, 1, 0],
         ]);
@@ -139,28 +162,29 @@ describe('EditGeometrySession', () => {
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.SHIFT,
-          map: defaultMap,
           type: EventType.CLICK,
           feature: vertex,
           positionOrPixel: [0, 0, 0],
+          ...mapEvent,
         });
         expect(
-          feature.getGeometry().getCoordinates(),
-        ).to.have.ordered.deep.members([[1, 1, 0]]);
+          feature.getGeometry()!.getCoordinates(),
+        ).to.have.deep.ordered.members([[1, 1, 0]]);
       });
 
       it('should update the feature, on insert of a vertex', async () => {
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.CLICK,
           feature,
           positionOrPixel: [0.5, 0.5, 0],
+          ...mapEvent,
         });
+
         expect(
-          feature.getGeometry().getCoordinates(),
-        ).to.have.ordered.deep.members([
+          feature.getGeometry()!.getCoordinates(),
+        ).to.have.deep.ordered.members([
           [0, 0, 0],
           [0.5, 0.5, 0],
           [1, 1, 0],
@@ -169,10 +193,10 @@ describe('EditGeometrySession', () => {
     });
 
     describe('polygon editing', () => {
-      let feature;
-      let vertices;
+      let feature: Feature<Polygon>;
+      let vertices: Feature<Point>[];
 
-      beforeEach(async () => {
+      beforeEach(() => {
         feature = new Feature({
           geometry: new Polygon([
             [
@@ -183,8 +207,10 @@ describe('EditGeometrySession', () => {
           ]),
         });
         layer.addFeatures([feature]);
-        await session.setFeature(feature);
-        vertices = [...app.layers].pop().getFeatures();
+        session.setFeature(feature);
+        vertices = (
+          [...app.layers].pop()! as VectorLayer
+        ).getFeatures() as Feature<Point>[];
       });
 
       it('should add vertices to the scratch layer', () => {
@@ -196,30 +222,30 @@ describe('EditGeometrySession', () => {
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAGSTART,
           feature: vertex,
           positionOrPixel: [0, 0, 0],
+          ...mapEvent,
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAG,
           feature: vertex,
           positionOrPixel: [1, 0, 0],
+          ...mapEvent,
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAGEND,
           feature: vertex,
           positionOrPixel: [1, 0, 0],
+          ...mapEvent,
         });
         expect(
-          feature.getGeometry().getCoordinates(),
-        ).to.have.ordered.deep.members([
+          feature.getGeometry()!.getCoordinates(),
+        ).to.have.deep.ordered.members([
           [
             [1, 0, 0],
             [1, 1, 0],
@@ -233,14 +259,15 @@ describe('EditGeometrySession', () => {
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.SHIFT,
-          map: defaultMap,
           type: EventType.CLICK,
           feature: vertex,
           positionOrPixel: [0, 0, 0],
+          ...mapEvent,
         });
+
         expect(
-          feature.getGeometry().getCoordinates(),
-        ).to.have.ordered.deep.members([
+          feature.getGeometry()!.getCoordinates(),
+        ).to.have.deep.ordered.members([
           [
             [1, 1, 0],
             [0, 1, 0],
@@ -252,14 +279,14 @@ describe('EditGeometrySession', () => {
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.CLICK,
           feature,
           positionOrPixel: [0.5, 0.5, 0],
+          ...mapEvent,
         });
         expect(
-          feature.getGeometry().getCoordinates(),
-        ).to.have.ordered.deep.members([
+          feature.getGeometry()!.getCoordinates(),
+        ).to.have.deep.ordered.members([
           [
             [0, 0, 0],
             [0.5, 0.5, 0],
@@ -271,14 +298,16 @@ describe('EditGeometrySession', () => {
     });
 
     describe('point editing', () => {
-      let feature;
-      let vertices;
+      let feature: Feature<Point>;
+      let vertices: Feature<Point>[];
 
-      beforeEach(async () => {
+      beforeEach(() => {
         feature = new Feature({ geometry: new Point([0, 0, 0]) });
         layer.addFeatures([feature]);
-        await session.setFeature(feature);
-        vertices = [...app.layers].pop().getFeatures();
+        session.setFeature(feature);
+        vertices = (
+          [...app.layers].pop()! as VectorLayer
+        ).getFeatures() as Feature<Point>[];
       });
 
       it('should add vertices to the scratch layer', () => {
@@ -290,42 +319,44 @@ describe('EditGeometrySession', () => {
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAGSTART,
           feature: vertex,
           positionOrPixel: [0, 0, 0],
+          ...mapEvent,
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAG,
           feature: vertex,
           positionOrPixel: [1, 0, 0],
+          ...mapEvent,
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAGEND,
           feature: vertex,
           positionOrPixel: [1, 0, 0],
+          ...mapEvent,
         });
-        expect(feature.getGeometry().getCoordinates()).to.have.ordered.members([
-          1, 0, 0,
-        ]);
+        expect(feature.getGeometry()!.getCoordinates()).to.have.ordered.members(
+          [1, 0, 0],
+        );
       });
     });
 
     describe('circle editing', () => {
-      let feature;
-      let vertices;
+      let feature: Feature<Circle>;
+      let vertices: Feature<Point>[];
 
-      beforeEach(async () => {
+      beforeEach(() => {
         feature = new Feature({ geometry: new Circle([0, 0, 0], 1, 'XYZ') });
         layer.addFeatures([feature]);
-        await session.setFeature(feature);
-        vertices = [...app.layers].pop().getFeatures();
+        session.setFeature(feature);
+        vertices = (
+          [...app.layers].pop()! as VectorLayer
+        ).getFeatures() as Feature<Point>[];
       });
 
       it('should add vertices to the scratch layer', () => {
@@ -337,31 +368,31 @@ describe('EditGeometrySession', () => {
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAGSTART,
           feature: vertex,
           positionOrPixel: [0, 0, 0],
+          ...mapEvent,
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAG,
           feature: vertex,
           positionOrPixel: [1, 0, 0],
+          ...mapEvent,
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAGEND,
           feature: vertex,
           positionOrPixel: [1, 0, 0],
+          ...mapEvent,
         });
-        expect(feature.getGeometry().getCenter()).to.have.ordered.members([
+        expect(feature.getGeometry()!.getCenter()).to.have.ordered.members([
           1, 0, 0,
         ]);
-        expect(feature.getGeometry().getRadius()).to.equal(1);
+        expect(feature.getGeometry()!.getRadius()).to.equal(1);
       });
 
       it('should translate the circle radius, if moving the outer vertex', async () => {
@@ -369,39 +400,39 @@ describe('EditGeometrySession', () => {
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAGSTART,
           feature: vertex,
           positionOrPixel: [1, 0, 0],
+          ...mapEvent,
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAG,
           feature: vertex,
           positionOrPixel: [2, 0, 0],
+          ...mapEvent,
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAGEND,
           feature: vertex,
           positionOrPixel: [2, 0, 0],
+          ...mapEvent,
         });
-        expect(feature.getGeometry().getCenter()).to.have.ordered.members([
+        expect(feature.getGeometry()!.getCenter()).to.have.ordered.members([
           0, 0, 0,
         ]);
-        expect(feature.getGeometry().getRadius()).to.equal(2);
+        expect(feature.getGeometry()!.getRadius()).to.equal(2);
       });
     });
 
     describe('bbox editing', () => {
-      let feature;
-      let vertices;
+      let feature: Feature<Polygon>;
+      let vertices: Feature<Point>[];
 
-      beforeEach(async () => {
+      beforeEach(() => {
         const geometry = new Polygon([
           [
             [0, 0, 0],
@@ -413,8 +444,10 @@ describe('EditGeometrySession', () => {
         geometry.set('_vcsGeomType', 'BBox');
         feature = new Feature({ geometry });
         layer.addFeatures([feature]);
-        await session.setFeature(feature);
-        vertices = [...app.layers].pop().getFeatures();
+        session.setFeature(feature);
+        vertices = (
+          [...app.layers].pop()! as VectorLayer
+        ).getFeatures() as Feature<Point>[];
       });
 
       it('should add vertices to the scratch layer', () => {
@@ -426,30 +459,30 @@ describe('EditGeometrySession', () => {
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAGSTART,
           feature: vertex,
           positionOrPixel: [0, 0, 0],
+          ...mapEvent,
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAG,
           feature: vertex,
           positionOrPixel: [-1, -1, 0],
+          ...mapEvent,
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAGEND,
           feature: vertex,
           positionOrPixel: [-1, -1, 0],
+          ...mapEvent,
         });
         expect(
-          feature.getGeometry().getCoordinates(),
-        ).to.have.ordered.deep.members([
+          feature.getGeometry()!.getCoordinates(),
+        ).to.have.deep.ordered.members([
           [
             [-1, -1, 0],
             [1, -1, 0],
@@ -464,30 +497,30 @@ describe('EditGeometrySession', () => {
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAGSTART,
           feature: vertex,
           positionOrPixel: [1, 0, 0],
+          ...mapEvent,
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAG,
           feature: vertex,
           positionOrPixel: [2, -1, 0],
+          ...mapEvent,
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAGEND,
           feature: vertex,
           positionOrPixel: [2, -1, 0],
+          ...mapEvent,
         });
         expect(
-          feature.getGeometry().getCoordinates(),
-        ).to.have.ordered.deep.members([
+          feature.getGeometry()!.getCoordinates(),
+        ).to.have.deep.ordered.members([
           [
             [0, -1, 0],
             [2, -1, 0],
@@ -502,30 +535,30 @@ describe('EditGeometrySession', () => {
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAGSTART,
           feature: vertex,
           positionOrPixel: [1, 1, 0],
+          ...mapEvent,
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAG,
           feature: vertex,
           positionOrPixel: [2, 2, 0],
+          ...mapEvent,
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAGEND,
           feature: vertex,
           positionOrPixel: [2, 2, 0],
+          ...mapEvent,
         });
         expect(
-          feature.getGeometry().getCoordinates(),
-        ).to.have.ordered.deep.members([
+          feature.getGeometry()!.getCoordinates(),
+        ).to.have.deep.ordered.members([
           [
             [0, 0, 0],
             [2, 0, 0],
@@ -540,30 +573,30 @@ describe('EditGeometrySession', () => {
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAGSTART,
           feature: vertex,
           positionOrPixel: [0, 1, 0],
+          ...mapEvent,
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAG,
           feature: vertex,
           positionOrPixel: [-1, 2, 0],
+          ...mapEvent,
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAGEND,
           feature: vertex,
           positionOrPixel: [-1, 2, 0],
+          ...mapEvent,
         });
         expect(
-          feature.getGeometry().getCoordinates(),
-        ).to.have.ordered.deep.members([
+          feature.getGeometry()!.getCoordinates(),
+        ).to.have.deep.ordered.members([
           [
             [-1, 0, 0],
             [1, 0, 0],
@@ -578,28 +611,28 @@ describe('EditGeometrySession', () => {
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAGSTART,
           feature: vertex,
           positionOrPixel: [0, 0, 0],
+          ...mapEvent,
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAG,
           feature: vertex,
           positionOrPixel: [1, 1, 0],
+          ...mapEvent,
         });
         await app.maps.eventHandler.interactions[3].pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
-          map: defaultMap,
           type: EventType.DRAGEND,
           feature: vertex,
           positionOrPixel: [1, 1, 0],
+          ...mapEvent,
         });
-        const newVertexCoordinates = vertex.getGeometry().getCoordinates();
+        const newVertexCoordinates = vertex.getGeometry()!.getCoordinates();
         expect(newVertexCoordinates).to.not.have.ordered.members([1, 1, 0]);
         expect(
           newVertexCoordinates.map((c) => Math.round(c)),
@@ -631,46 +664,131 @@ describe('EditGeometrySession', () => {
     });
 
     describe('setting olcs properties on a set feature', () => {
-      /** @type {import("ol").Feature} */
-      let feature;
+      let feature: Feature<Point>;
+      let scratchLayer: VectorLayer;
+      let scratchFeatures: Feature[];
 
       beforeEach(() => {
         feature = createFeatureWithId(new Point([0, 0, 0]));
         session.setFeature(feature);
-      });
-
-      after(() => {
-        session.stop();
+        scratchLayer = [...app.layers].pop() as VectorLayer;
+        scratchFeatures = scratchLayer.getFeatures();
       });
 
       it('should recalculate the handlers, when changing altitude mode', () => {
-        const scratchLayer = [...app.layers].pop();
-        const scratchFeatures = scratchLayer.getFeatures();
-        expect(scratchFeatures[0]).to.exist;
         feature.set('olcs_altitudeMode', 'absolute');
-        expect(scratchLayer.getFeatures()[0]).to.not.equal(scratchFeatures[0]);
+        expect(scratchLayer.getFeatures()[0]).to.not.equal(scratchFeatures[0])
+          .and.to.not.be.undefined;
+      });
+
+      it('should set the altitude mode on the vertex', () => {
+        feature.set('olcs_altitudeMode', 'absolute');
+        expect(scratchLayer.getFeatures()[0].get('olcs_altitudeMode')).to.equal(
+          'absolute',
+        );
       });
 
       it('should recalculate the handlers, when changing ground level', () => {
-        const scratchLayer = [...app.layers].pop();
-        const scratchFeatures = scratchLayer.getFeatures();
-        expect(scratchFeatures[0]).to.exist;
         feature.set('olcs_groundLevel', 2);
-        expect(scratchLayer.getFeatures()[0]).to.not.equal(scratchFeatures[0]);
+        expect(scratchLayer.getFeatures()[0]).to.not.equal(scratchFeatures[0])
+          .and.to.not.be.undefined;
+      });
+
+      it('should set the ground level on the vertex', () => {
+        feature.set('olcs_groundLevel', 2);
+        expect(scratchLayer.getFeatures()[0].get('olcs_groundLevel')).to.equal(
+          2,
+        );
       });
 
       it('should recalculate the handlers, when changing height above ground', () => {
-        const scratchLayer = [...app.layers].pop();
-        const scratchFeatures = scratchLayer.getFeatures();
-        expect(scratchFeatures[0]).to.exist;
         feature.set('olcs_heightAboveGround', 20);
-        expect(scratchLayer.getFeatures()[0]).to.not.equal(scratchFeatures[0]);
+        expect(scratchLayer.getFeatures()[0]).to.not.equal(scratchFeatures[0])
+          .and.to.not.be.undefined;
+      });
+
+      it('should set the height above ground on the vertex', () => {
+        feature.set('olcs_heightAboveGround', 2);
+        expect(
+          scratchLayer.getFeatures()[0].get('olcs_heightAboveGround'),
+        ).to.equal(2);
+      });
+    });
+
+    describe('setting vector properties on the layer', () => {
+      let scratchLayer: VectorLayer;
+      let initialAltitudeMode: HeightReference;
+      let initialHeightAboveGround: number;
+      let initialGroundLevel: number | undefined;
+
+      before(() => {
+        initialAltitudeMode = layer.vectorProperties.altitudeMode;
+        initialGroundLevel = layer.vectorProperties.groundLevel;
+        initialHeightAboveGround = layer.vectorProperties.heightAboveGround;
+        scratchLayer = [...app.layers].pop() as VectorLayer;
+      });
+
+      afterEach(() => {
+        layer.vectorProperties.altitudeMode = initialAltitudeMode;
+        layer.vectorProperties.groundLevel = initialGroundLevel;
+        layer.vectorProperties.heightAboveGround = initialHeightAboveGround;
+      });
+
+      it('should set the altitude mode on the scratchLayer', () => {
+        layer.vectorProperties.altitudeMode = HeightReference.NONE;
+        expect(scratchLayer.vectorProperties.altitudeMode).to.equal(
+          HeightReference.NONE,
+        );
+      });
+
+      it('should set the ground level on the scratch layer', () => {
+        layer.vectorProperties.groundLevel = 12;
+        expect(scratchLayer.vectorProperties.groundLevel).to.equal(12);
+      });
+
+      it('should set the height above ground on the scratch layer', () => {
+        layer.vectorProperties.heightAboveGround = 12;
+        expect(scratchLayer.vectorProperties.heightAboveGround).to.equal(12);
       });
     });
   });
 
+  describe('starting a session with changed olcs properties on the layer', () => {
+    let session: EditGeometrySession;
+    let scratchLayer: VectorLayer;
+    let initialAltitudeMode: HeightReference;
+    let initialHeightAboveGround: number;
+    let initialGroundLevel: number | undefined;
+
+    before(() => {
+      initialAltitudeMode = layer.vectorProperties.altitudeMode;
+      initialGroundLevel = layer.vectorProperties.groundLevel;
+      initialHeightAboveGround = layer.vectorProperties.heightAboveGround;
+      layer.vectorProperties.altitudeMode = HeightReference.NONE;
+      layer.vectorProperties.groundLevel = 12;
+      layer.vectorProperties.heightAboveGround = 12;
+      session = startEditGeometrySession(app, layer);
+      scratchLayer = [...app.layers].pop() as VectorLayer;
+    });
+
+    after(() => {
+      session.stop();
+      layer.vectorProperties.altitudeMode = initialAltitudeMode;
+      layer.vectorProperties.groundLevel = initialGroundLevel;
+      layer.vectorProperties.heightAboveGround = initialHeightAboveGround;
+    });
+
+    it('should carry over vector properties already set on the layer onto the scratch layer', () => {
+      expect(scratchLayer.vectorProperties.altitudeMode).to.equal(
+        HeightReference.NONE,
+      );
+      expect(scratchLayer.vectorProperties.groundLevel).to.equal(12);
+      expect(scratchLayer.vectorProperties.heightAboveGround).to.equal(12);
+    });
+  });
+
   describe('stopping a session', () => {
-    let session;
+    let session: EditGeometrySession;
 
     beforeEach(() => {
       session = startEditGeometrySession(app, layer);
@@ -691,7 +809,7 @@ describe('EditGeometrySession', () => {
   });
 
   describe('forcefully removing a session', () => {
-    let session;
+    let session: EditGeometrySession;
 
     beforeEach(() => {
       session = startEditGeometrySession(app, layer);
@@ -702,6 +820,162 @@ describe('EditGeometrySession', () => {
       session.stopped.addEventListener(spy);
       app.maps.eventHandler.removeExclusive();
       expect(spy).to.have.been.called;
+    });
+  });
+
+  describe('altitude mode handling', () => {
+    describe('setting the altitude mode on the feature currently being edited', () => {
+      let session: EditGeometrySession;
+      let feature: Feature<Point>;
+
+      beforeEach(() => {
+        session = startEditGeometrySession(app, layer);
+        feature = new Feature({ geometry: new Point([0, 0, 0]) });
+        layer.addFeatures([feature]);
+        session.setFeature(feature);
+      });
+
+      afterEach(() => {
+        session.stop();
+      });
+
+      it('should no longer change picking behavior once deselected', () => {
+        session.setFeature();
+        feature.set('olcs_altitudeMode', 'absolute');
+        expect(app.maps.eventHandler.featureInteraction.pickPosition).to.equal(
+          EventType.NONE,
+        );
+      });
+
+      it('should change the picking behavior while editing', () => {
+        feature.set('olcs_altitudeMode', 'absolute');
+        expect(app.maps.eventHandler.featureInteraction.pickPosition).to.equal(
+          EventType.CLICKMOVE | EventType.DRAGEVENTS,
+        );
+      });
+
+      it('should change the picking behavior, if selecting a feature with a change altitude mode', () => {
+        const otherFeature = new Feature({
+          geometry: new Point([0, 0, 0]),
+          olcs_altitudeMode: 'absolute',
+        });
+        layer.addFeatures([otherFeature]);
+        session.setFeature(otherFeature);
+        expect(app.maps.eventHandler.featureInteraction.pickPosition).to.equal(
+          EventType.CLICKMOVE | EventType.DRAGEVENTS,
+        );
+      });
+
+      it('should revert picking behavior after editing is finished', () => {
+        feature?.set('olcs_altitudeMode', 'absolute');
+        session.setFeature();
+        expect(app.maps.eventHandler.featureInteraction.pickPosition).to.equal(
+          EventType.NONE,
+        );
+      });
+    });
+
+    describe('changing the layer vector properties altitude mode', () => {
+      let session: EditGeometrySession;
+      let currentAltitudeMode: HeightReference;
+      let feature: Feature<Point>;
+
+      beforeEach(() => {
+        currentAltitudeMode = layer.vectorProperties.altitudeMode;
+        session = startEditGeometrySession(app, layer);
+        feature = new Feature({ geometry: new Point([0, 0, 0]) });
+        layer.addFeatures([feature]);
+      });
+
+      afterEach(() => {
+        session.stop();
+        layer.vectorProperties.altitudeMode = currentAltitudeMode;
+      });
+
+      it('should not change the picking behavior if a set feature has a picking behavior', () => {
+        feature.set('olcs_altitudeMode', 'clampToGround');
+        session.setFeature(feature);
+        layer.vectorProperties.altitudeMode = HeightReference.NONE;
+        expect(app.maps.eventHandler.featureInteraction.pickPosition).to.equal(
+          EventType.NONE,
+        );
+      });
+
+      it("should change picking behavior, 'without an altitude mode set anywhere else", () => {
+        layer.vectorProperties.altitudeMode = HeightReference.NONE;
+        expect(app.maps.eventHandler.featureInteraction.pickPosition).to.equal(
+          EventType.CLICKMOVE | EventType.DRAGEVENTS,
+        );
+      });
+
+      it("should change picking behavior, 'without an altitude mode set anywhere else", () => {
+        session.setFeature(feature);
+        layer.vectorProperties.altitudeMode = HeightReference.NONE;
+        expect(app.maps.eventHandler.featureInteraction.pickPosition).to.equal(
+          EventType.CLICKMOVE | EventType.DRAGEVENTS,
+        );
+      });
+    });
+
+    describe('stopping a session with a feature altitude mode of absolute', () => {
+      let currentAltitudeMode: HeightReference;
+      let feature: Feature<Point>;
+
+      beforeEach(() => {
+        currentAltitudeMode = layer.vectorProperties.altitudeMode;
+        const session = startEditGeometrySession(app, layer);
+        feature = new Feature({ geometry: new Point([0, 0, 0]) });
+        layer.addFeatures([feature]);
+        session.setFeature(feature);
+        session.stop();
+      });
+
+      afterEach(() => {
+        layer.vectorProperties.altitudeMode = currentAltitudeMode;
+      });
+
+      it('should reset picking', () => {
+        expect(app.maps.eventHandler.featureInteraction.pickPosition).to.equal(
+          EventType.CLICK,
+        );
+      });
+
+      it('should no longer listen to feature changes', () => {
+        feature?.set('olcs_altitudeMode', 'clampToGround');
+        feature?.set('olcs_altitudeMode', 'absolute');
+        expect(app.maps.eventHandler.featureInteraction.pickPosition).to.equal(
+          EventType.CLICK,
+        );
+      });
+
+      it('should no longer listen to layer vector property changes', () => {
+        layer.vectorProperties.altitudeMode = HeightReference.NONE;
+        expect(app.maps.eventHandler.featureInteraction.pickPosition).to.equal(
+          EventType.CLICK,
+        );
+      });
+    });
+
+    describe('starting a session with a layer with absolute altitude mode', () => {
+      let session: EditGeometrySession;
+      let initialAltitudeMode: HeightReference;
+
+      beforeEach(() => {
+        initialAltitudeMode = layer.vectorProperties.altitudeMode;
+        layer.vectorProperties.altitudeMode = HeightReference.NONE;
+        session = startEditGeometrySession(app, layer);
+      });
+
+      afterEach(() => {
+        session.stop();
+        layer.vectorProperties.altitudeMode = initialAltitudeMode;
+      });
+
+      it('should change the picking', () => {
+        expect(app.maps.eventHandler.featureInteraction.pickPosition).to.equal(
+          EventType.CLICKMOVE | EventType.DRAGEVENTS,
+        );
+      });
     });
   });
 });

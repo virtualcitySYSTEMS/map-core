@@ -28,6 +28,7 @@ import {
 } from '../../layer/vectorSymbols.js';
 import type VectorLayer from '../../layer/vectorLayer.js';
 import type VcsMap from '../../map/vcsMap.js';
+import { PropertyChangedKey } from '../../layer/vectorProperties.js';
 
 export type Vertex = Feature<Point>;
 
@@ -46,14 +47,35 @@ export const geometryChangeKeys = [
   'olcs_heightAboveGround',
 ];
 
-/**
- * @param  coordinate
- */
-export function createVertex(coordinate: Coordinate): Vertex {
+export const vectorPropertyChangeKeys: PropertyChangedKey[] = [
+  'altitudeMode',
+  'groundLevel',
+  'heightAboveGround',
+];
+
+export function getOlcsPropsFromFeature(
+  feature: Feature,
+): Record<string, number | string> {
+  const props: Record<string, number> = {};
+  geometryChangeKeys.forEach((key) => {
+    const value = feature.get(key) as number | undefined;
+    if (value != null) {
+      props[key] = value;
+    }
+  });
+
+  return props;
+}
+
+export function createVertex(
+  coordinate: Coordinate,
+  olcsProps: Record<string, number | string>,
+): Vertex {
   const geometry = new Point(coordinate);
   geometry[alreadyTransformedToImage] = true;
   const vertex = new Feature({
     geometry,
+    ...olcsProps,
   });
   vertex[vertexSymbol] = true;
   vertex[doNotTransform] = true;

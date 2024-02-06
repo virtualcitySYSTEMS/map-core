@@ -153,6 +153,11 @@ export type VectorPropertiesOptions = {
   baseUrl?: string;
 };
 
+export type PropertyChangedKey = Exclude<
+  keyof VectorProperties,
+  'propertyChanged'
+>;
+
 export type VcsMeta = VectorPropertiesOptions & {
   /**
    * The version of the schema
@@ -387,7 +392,7 @@ class VectorProperties {
    * Event raised when properties change. is passed an array of keys for the changed properties.
    * @readonly
    */
-  readonly propertyChanged: VcsEvent<string[]>;
+  readonly propertyChanged: VcsEvent<PropertyChangedKey[]>;
 
   /**
    * @param  options
@@ -1028,7 +1033,7 @@ class VectorProperties {
    */
   setValues(options: VectorPropertiesOptions): void {
     const defaultValues = VectorProperties.getDefaultOptions();
-    const changedProperties = [];
+    const changedProperties: PropertyChangedKey[] = [];
     // check if key exists in options, to also set undefined values
     if ('altitudeMode' in options) {
       const defaultAltitudeMode = parseEnumKey(

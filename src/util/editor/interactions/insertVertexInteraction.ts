@@ -10,6 +10,7 @@ import {
 import { cartesian2DDistance } from '../../math.js';
 import {
   createVertex,
+  getOlcsPropsFromFeature,
   pointOnLine2D,
   pointOnLine3D,
   type Vertex,
@@ -74,7 +75,10 @@ class InsertVertexInteraction extends AbstractInteraction {
           index = 0;
         }
         this.vertexInserted.raiseEvent({
-          vertex: createVertex(closestCoord),
+          vertex: createVertex(
+            closestCoord,
+            getOlcsPropsFromFeature(this._feature),
+          ),
           index,
         });
       }

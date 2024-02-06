@@ -537,7 +537,7 @@ describe('util.featureConverter.pointToCesium', () => {
           Projection.mercatorToWgs84(coord),
         );
         coordinatesCartesian3 = coordinatesWGS84.map((coord) =>
-          Cartesian3.fromDegrees(coord[0], coord[1], 14),
+          Cartesian3.fromDegrees(coord[0], coord[1], 4),
         );
         heightInfo = {
           extruded: true,
@@ -549,7 +549,7 @@ describe('util.featureConverter.pointToCesium', () => {
           skirt: 1,
           perPositionHeight: 1,
           heightReference: HeightReference.RELATIVE_TO_GROUND,
-          heightAboveGroundAdjustment: 10,
+          heightAboveGroundAdjustment: 1,
         };
         ({ wgs84Positions, positions } = getCartesian3AndWGS84FromCoordinates(
           coordinates.slice(),
