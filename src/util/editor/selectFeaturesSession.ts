@@ -18,6 +18,7 @@ import { vcsLayerName } from '../../layer/layerSymbols.js';
 import type VectorLayer from '../../layer/vectorLayer.js';
 import type VcsApp from '../../vcsApp.js';
 import type VcsMap from '../../map/vcsMap.js';
+import { type HighlightStyleType } from '../../layer/featureVisibility.js';
 
 type SelectionHighlightManager = {
   highlightedFeatures: Feature[];
@@ -36,7 +37,7 @@ type SelectionHighlightManager = {
  */
 function createHighlightManager(
   layer: VectorLayer,
-  highlightStyle: Style,
+  highlightStyle: HighlightStyleType,
 ): SelectionHighlightManager {
   const currentFeaturesMap: Map<string | number, Feature> = new Map();
 
@@ -144,7 +145,7 @@ function startSelectFeaturesSession(
   layer: VectorLayer,
   interactionId?: string,
   initialMode = SelectionMode.MULTI,
-  highlightStyle = getDefaultHighlightStyle(),
+  highlightStyle: HighlightStyleType = getDefaultHighlightStyle(),
 ): SelectFeaturesSession {
   const stopped = new VcsEvent<void>();
   const modeChanged = new VcsEvent<SelectionMode>();
@@ -246,15 +247,15 @@ function startSelectFeaturesSession(
   const mapChanged = (map: VcsMap): void => {
     obliqueImageChangedListener();
     if (map instanceof ObliqueMap) {
-      currentSelectInteraction!.clear();
+      currentSelectInteraction?.clear();
       obliqueImageChangedListener =
         map.imageChanged?.addEventListener(() => {
-          currentSelectInteraction!.clear();
+          currentSelectInteraction?.clear();
         }) ?? ((): void => {});
       obliqueMap = map;
     } else {
       if (obliqueMap) {
-        currentSelectInteraction!.clear();
+        currentSelectInteraction?.clear();
       }
       obliqueMap = null;
       obliqueImageChangedListener = (): void => {};

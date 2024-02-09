@@ -4,8 +4,9 @@ import {
   Cesium3DTilePointFeature,
   Entity as CesiumEntity,
 } from '@vcmap-cesium/engine';
+import { is } from '@vcsuite/check';
 import Feature from 'ol/Feature.js';
-import Style from 'ol/style/Style.js';
+import Style, { StyleFunction } from 'ol/style/Style.js';
 
 import VectorStyleItem, { fromCesiumColor } from '../style/vectorStyleItem.js';
 import VcsEvent from '../vcsEvent.js';
@@ -59,6 +60,12 @@ export type FeatureVisibilityEvent = {
   action: FeatureVisibilityAction;
   ids: (string | number)[];
 };
+
+export type HighlightStyleType =
+  | VectorStyleItem
+  | Color
+  | Style
+  | StyleFunction;
 
 export function featureExists(
   feature: Cesium3DTileFeature | Cesium3DTilePointFeature,
@@ -229,9 +236,7 @@ class FeatureVisibility {
   /**
    * highlights a number of features by ID (import("@vcmap-cesium/engine").Cesium3DTileFeature|ol/Feature) with the given color.
    */
-  highlight(
-    toHighlight: Record<string, VectorStyleItem | Color | Style>,
-  ): void {
+  highlight(toHighlight: Record<string, HighlightStyleType>): void {
     const updatedIds: string[] = [];
     Object.entries(toHighlight).forEach(([id, style]) => {
       let usedStyle: VectorStyleItem;
@@ -247,6 +252,9 @@ class FeatureVisibility {
           // getText can return a rich Text string[] We do not support this at the moment.
           usedStyle.label = String(style.getText().getText());
         }
+        usedStyle.style = style;
+      } else if (is(style, Function)) {
+        usedStyle = new VectorStyleItem({});
         usedStyle.style = style;
       } else {
         usedStyle = style;

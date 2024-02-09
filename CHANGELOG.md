@@ -1,6 +1,10 @@
 ### 5.1.1
 
 - Fixes a bug in VcsApp where modules with the same id could be loaded more than once.
+- changed the featureVisibility.highlight function to also allow Stylefunctions.
+- changed the type of the parameter `highlightStyle` in `startSelectFeaturesSession` from Style to HightlightStyle.
+- Fixed a bug in selectFeatureSession where on change to oblique a not existing selection was cleared.
+- Changed the behaviour of `VcsEvent.raiseEvent`, will now check if the listener is still in the collection.
 
 ### 5.1.0
 
