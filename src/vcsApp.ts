@@ -431,7 +431,7 @@ class VcsApp {
     check(module, VcsModule);
 
     this._moduleMutationPromise = this._moduleMutationPromise.then(async () => {
-      if (this._modules.has(module)) {
+      if (this._modules.hasKey(module._id)) {
         getLogger().info(`module with id ${module._id} already loaded`);
         return;
       }

@@ -1,3 +1,7 @@
+### 5.1.1
+
+- Fixes a bug in VcsApp where modules with the same id could be loaded more than once.
+
 ### 5.1.0
 
 - added `setShadowMap()` and `shadowMapChanged` event on CesiumMap.
