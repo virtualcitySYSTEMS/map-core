@@ -109,12 +109,13 @@ class ClippingObjectManager {
     if (this.hasClippingObject(clippingObject)) {
       throw new Error('ClippingObject already managed, remove it first');
     }
-    clippingObject.setLayerCollection(this._layerCollection);
-
-    this._defaultClippingObjects.add(clippingObject);
     if (this._activeMap instanceof CesiumMap) {
       clippingObject.handleMapChanged(this._activeMap);
     }
+
+    clippingObject.setLayerCollection(this._layerCollection);
+
+    this._defaultClippingObjects.add(clippingObject);
 
     this._listenersMap.set(clippingObject, [
       clippingObject.targetsUpdated.addEventListener(this._update.bind(this)),
@@ -181,11 +182,12 @@ class ClippingObjectManager {
     this._exclusiveRemovedCb = removedCb;
     this._exclusiveClippingObjects = clippingObjects;
     this._exclusiveClippingObjects.forEach((clippingObject) => {
-      clippingObject.setLayerCollection(this._layerCollection);
-
       if (this._activeMap instanceof CesiumMap) {
         clippingObject.handleMapChanged(this._activeMap);
       }
+
+      clippingObject.setLayerCollection(this._layerCollection);
+
       this._listenersMap.set(clippingObject, [
         clippingObject.targetsUpdated.addEventListener(this._update.bind(this)),
         clippingObject.clippingPlaneUpdated.addEventListener(

@@ -1,6 +1,7 @@
 ### 5.1.2
 
 - Fixes a bug where anchors from flight GeoJSON files were not added correctly.
+- Fixed a bug in `clippingObject`, that made it necessary to call `handleMapChanged()` before `setlayerCollection()`
 
 ### 5.1.1
 

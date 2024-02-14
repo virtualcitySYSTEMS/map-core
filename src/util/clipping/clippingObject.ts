@@ -14,9 +14,10 @@ import { getLogger as getLoggerByName, type Logger } from '@vcsuite/logger';
 import CesiumMap from '../../map/cesiumMap.js';
 import VcsEvent from '../../vcsEvent.js';
 import LayerCollection from '../layerCollection.js';
-import type FeatureStoreLayer from '../../layer/featureStoreLayer.js';
+import FeatureStoreLayer from '../../layer/featureStoreLayer.js';
 import type VcsMap from '../../map/vcsMap.js';
 import type Layer from '../../layer/layer.js';
+import CesiumTilesetLayer from '../../layer/cesiumTilesetLayer.js';
 
 export type ClippingObjectEntityOption = {
   layerName: string;
@@ -83,7 +84,8 @@ class ClippingObject {
    */
   clippingPlaneUpdated = new VcsEvent<void>();
 
-  private _cachedFeatureStoreLayers: Set<FeatureStoreLayer> = new Set();
+  private _cachedLayers: Set<FeatureStoreLayer | CesiumTilesetLayer> =
+    new Set();
 
   private _activeMap: VcsMap | null = null;
 
@@ -231,14 +233,13 @@ class ClippingObject {
       }
     } else if (
       this.layerNames.includes(layer.name) &&
-      layer.className === 'FeatureStoreLayer'
+      (layer instanceof FeatureStoreLayer ||
+        layer instanceof CesiumTilesetLayer)
     ) {
       if (layer.active) {
-        this._cachedFeatureStoreLayers.add(layer as FeatureStoreLayer);
-      } else if (
-        this._cachedFeatureStoreLayers.has(layer as FeatureStoreLayer)
-      ) {
-        this._cachedFeatureStoreLayers.delete(layer as FeatureStoreLayer);
+        this._cachedLayers.add(layer);
+      } else if (this._cachedLayers.has(layer)) {
+        this._cachedLayers.delete(layer);
       }
     }
   }
@@ -259,11 +260,11 @@ class ClippingObject {
         this.targetsUpdated.raiseEvent();
       }
 
-      if (this._cachedFeatureStoreLayers.size > 0) {
-        this._cachedFeatureStoreLayers.forEach((layer) => {
+      if (this._cachedLayers.size > 0) {
+        this._cachedLayers.forEach((layer) => {
           this.handleLayerChanged(layer);
         });
-        this._cachedFeatureStoreLayers.clear();
+        this._cachedLayers.clear();
       }
     }
     this._activeMap = map;
