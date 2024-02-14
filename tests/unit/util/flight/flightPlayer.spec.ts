@@ -53,6 +53,12 @@ describe('FlightPlayer', () => {
   });
 
   describe('play', () => {
+    it('should not play invalid flight', async () => {
+      const invalidFP = await createFlightPlayer(new FlightInstance({}), app);
+      invalidFP.play();
+      expect(FP.state).to.equal('stopped');
+    });
+
     it('should set the state to playing', () => {
       FP.play();
       expect(FP.state).to.equal('playing');

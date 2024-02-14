@@ -1,3 +1,7 @@
+### 5.1.2
+
+- Fixes a bug where anchors from flight GeoJSON files were not added correctly.
+
 ### 5.1.1
 
 - Fixes a bug in VcsApp where modules with the same id could be loaded more than once.
