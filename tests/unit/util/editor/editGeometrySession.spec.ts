@@ -81,10 +81,6 @@ describe('EditGeometrySession', () => {
         expect(feature).to.have.property(createSync, true);
       });
 
-      it('should set the feature to not be pickable', () => {
-        expect(feature.get('olcs_allowPicking')).to.be.false;
-      });
-
       describe('unsetting feature', () => {
         beforeEach(() => {
           session.setFeature();
@@ -92,10 +88,6 @@ describe('EditGeometrySession', () => {
 
         it('should remove createSync', () => {
           expect(feature).to.not.have.property(createSync);
-        });
-
-        it('should unse the feature picking', () => {
-          expect(feature.get('olcs_allowPicking')).to.be.undefined;
         });
       });
     });

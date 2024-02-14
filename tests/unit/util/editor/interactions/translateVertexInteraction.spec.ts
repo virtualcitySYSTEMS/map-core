@@ -39,11 +39,14 @@ describe('TranslateVertexInteraction', () => {
   describe('starting vertex translation', () => {
     let vertex: Feature<Point>;
     let event: EventAfterEventHandler;
+    let feature: Feature;
 
     before(async () => {
       vertex = new Feature({ geometry: new Point([0, 0, 0]) });
       vertex[vertexSymbol] = true;
-      const interaction = new TranslateVertexInteraction();
+      feature = new Feature();
+
+      const interaction = new TranslateVertexInteraction(feature);
       event = {
         feature: vertex,
         type: EventType.DRAGSTART,
@@ -66,12 +69,15 @@ describe('TranslateVertexInteraction', () => {
   describe('dragging the vertex', () => {
     let vertex: Feature<Point>;
     let vertexChangedListener: () => void;
+    let feature: Feature;
 
     before(async () => {
       vertex = new Feature({ geometry: new Point([0, 0, 0]) });
       vertex[vertexSymbol] = true;
       vertexChangedListener = sinon.spy();
-      const interaction = new TranslateVertexInteraction();
+      feature = new Feature();
+
+      const interaction = new TranslateVertexInteraction(feature);
       interaction.vertexChanged.addEventListener(vertexChangedListener);
       await interaction.pipe({
         feature: vertex,
@@ -107,17 +113,24 @@ describe('TranslateVertexInteraction', () => {
     it('should set the vertex style to be the empty style', () => {
       expect(vertex.getStyle()).to.equal(emptyStyle);
     });
+
+    it('should not allow picking of the feature', () => {
+      expect(feature.get('olcs_allowPicking')).to.be.false;
+    });
   });
 
   describe('finish dragging the vertex', () => {
     let vertex: Feature<Point>;
     let vertexChangedListener: () => void;
+    let feature: Feature;
 
     before(async () => {
       vertex = new Feature({ geometry: new Point([0, 0, 0]) });
       vertex[vertexSymbol] = true;
       vertexChangedListener = sinon.spy();
-      const interaction = new TranslateVertexInteraction();
+      feature = new Feature();
+
+      const interaction = new TranslateVertexInteraction(feature);
       interaction.vertexChanged.addEventListener(vertexChangedListener);
       await interaction.pipe({
         feature: vertex,
@@ -162,6 +175,10 @@ describe('TranslateVertexInteraction', () => {
 
     it('should reset the vertex style', () => {
       expect(vertex.getStyle()).to.be.undefined;
+    });
+
+    it('should unset allow picking of the feature', () => {
+      expect(feature.get('olcs_allowPicking')).to.be.undefined;
     });
   });
 });
