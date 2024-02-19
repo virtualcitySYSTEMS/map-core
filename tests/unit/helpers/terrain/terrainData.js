@@ -37,7 +37,7 @@ export function setTerrainServer(scope) {
 
 /**
  * @param {Scope} scope
- * @returns {Promise<cesium/CesiumTerrainProvider>}
+ * @returns {Promise<import("@vcmap-cesium/engine").CesiumTerrainProvider>}
  */
 export async function getTerrainProvider(scope) {
   setTerrainServer(scope);

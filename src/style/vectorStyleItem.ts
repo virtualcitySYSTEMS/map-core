@@ -33,6 +33,7 @@ import {
 import { getShapeFromOptions } from './shapesCategory.js';
 import { styleClassRegistry } from '../classRegistry.js';
 import { isSameOrigin } from '../util/urlHelpers.js';
+import ModelFill from './modelFill.js';
 
 export type ColorType = OLColor | OLColorLike;
 export type VectorStyleItemPattern = {
@@ -45,6 +46,12 @@ export type VectorStyleItemPattern = {
 export type VectorStyleItemFill = {
   color: ColorType;
   pattern?: VectorStyleItemPattern;
+  type?: 'fill' | 'modelFill';
+};
+
+export type VectorStyleItemStroke = {
+  width?: number;
+  color?: ColorType;
 };
 
 export type VectorStyleItemImage = {
@@ -87,7 +94,7 @@ export enum OlcsGeometryType {
 
 export type VectorStyleItemOptions = StyleItemOptions & {
   fill?: VectorStyleItemFill | false;
-  stroke?: StrokeOptions | false;
+  stroke?: StrokeOptions | VectorStyleItemStroke | false;
   image?: VectorStyleItemImage | false;
   text?: VectorStyleItemText;
   label?: string;
@@ -104,7 +111,7 @@ export const vectorStyleSymbol: unique symbol = Symbol('VcsVectorStyleItem');
  * @group Style
  */
 class VectorStyleItem extends StyleItem {
-  static get className(): string {
+  static get className(): 'VectorStyleItem' {
     return 'VectorStyleItem';
   }
 
@@ -171,7 +178,7 @@ class VectorStyleItem extends StyleItem {
     });
 
     if (options.fill) {
-      this._fillOptions = options.fill;
+      this._fillOptions = structuredClone(options.fill);
       this._setFill();
     } else {
       this.updateCesiumStyle();
@@ -446,7 +453,10 @@ class VectorStyleItem extends StyleItem {
       if (this._fill) {
         this._fill.setColor(color);
       } else {
-        this._fill = new Fill({ color });
+        this._fill =
+          this._fillOptions?.type === 'modelFill'
+            ? new ModelFill({ color })
+            : new Fill({ color });
         this._style.setFill(this._fill);
       }
 

@@ -1,3 +1,4 @@
+import { expect } from 'chai';
 import DeclarativeStyleItem from '../../../src/style/declarativeStyleItem.js';
 import VectorStyleItem, {
   defaultVectorStyle,
@@ -6,7 +7,7 @@ import { getStyleOrDefaultStyle } from '../../../src/style/styleFactory.js';
 
 describe('getStyleOrDefaultStyle', () => {
   it('should return an empty declarative style', () => {
-    const style = getStyleOrDefaultStyle();
+    const style = getStyleOrDefaultStyle(undefined);
     expect(style).to.be.an.instanceOf(DeclarativeStyleItem);
     expect(style).to.have.property('show', 'true');
   });
@@ -15,32 +16,38 @@ describe('getStyleOrDefaultStyle', () => {
     const style = getStyleOrDefaultStyle({
       type: VectorStyleItem.className,
       stroke: { width: 5, color: '#FF00FF' },
-    });
+      name: 'foo',
+    }) as VectorStyleItem;
     expect(style).to.be.an.instanceOf(VectorStyleItem);
     expect(style).to.have.property('stroke');
-    expect(style.stroke.getWidth()).to.equal(5);
+    expect(style.name).to.equal('foo');
+    expect(style.stroke?.getWidth()).to.equal(5);
   });
 
   it('should return a passed defaultStyle', () => {
     const style = getStyleOrDefaultStyle(defaultVectorStyle.clone());
     expect(style)
       .to.have.property('fillColor')
-      .to.have.members(defaultVectorStyle.fillColor);
+      .to.have.members(defaultVectorStyle.fillColor!);
   });
 
-  it('should return an assigned to a passed default style', () => {
+  it('should return a cloned, assigned to a passed default style', () => {
+    const defaultStyle = defaultVectorStyle.clone();
     const style = getStyleOrDefaultStyle(
       {
         type: VectorStyleItem.className,
         stroke: { width: 5, color: '#FF00FF' },
+        name: 'foo',
       },
-      defaultVectorStyle.clone(),
-    );
+      defaultStyle,
+    ) as VectorStyleItem;
     expect(style)
       .to.have.property('fillColor')
-      .to.have.members(defaultVectorStyle.fillColor);
+      .to.have.members(defaultVectorStyle.fillColor!);
     expect(style).to.have.property('stroke');
-    expect(style.stroke.getWidth()).to.equal(5);
+    expect(style).to.not.equal(defaultStyle);
+    expect(style.name).to.equal('foo');
+    expect(style.stroke?.getWidth()).to.equal(5);
   });
 
   it('should return a new declarative style item', () => {

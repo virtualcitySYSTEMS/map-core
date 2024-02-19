@@ -1,5 +1,5 @@
 import { check, ofEnum } from '@vcsuite/check';
-import { Circle, Fill, Style, Stroke } from 'ol/style.js';
+import { Circle, Style, Stroke } from 'ol/style.js';
 import type { Feature } from 'ol/index.js';
 import { createSync } from '../../layer/vectorSymbols.js';
 import {
@@ -19,6 +19,7 @@ import type VectorLayer from '../../layer/vectorLayer.js';
 import type VcsApp from '../../vcsApp.js';
 import type VcsMap from '../../map/vcsMap.js';
 import { type HighlightStyleType } from '../../layer/featureVisibility.js';
+import ModelFill from '../../style/modelFill.js';
 
 type SelectionHighlightManager = {
   highlightedFeatures: Feature[];
@@ -104,7 +105,7 @@ function createHighlightManager(
 }
 
 export function getDefaultHighlightStyle(): Style {
-  const fill = new Fill({ color: 'rgba(76,175,80,0.2)' });
+  const fill = new ModelFill({ color: 'rgba(76,175,80,0.2)' });
   const stroke = new Stroke({ color: '#4CAF50', width: 2 });
 
   return new Style({

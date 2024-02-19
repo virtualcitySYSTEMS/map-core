@@ -62,6 +62,7 @@ declare module '@vcmap-cesium/engine' {
 
   interface Model {
     olFeature?: import('ol').Feature<import('ol/geom.js').Geometry>;
+    allowPicking?: boolean;
     [scaleSymbol]?: number;
   }
 
