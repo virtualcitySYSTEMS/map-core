@@ -3,6 +3,7 @@
 - Introduces `ModelFill`, an extension of `Fill`. When set on a `Style`, the color
   will also be applied to models which are added via the `olcs_modelUrl` property.
 - `getStyleOrDefaultStyle` no longer mutates default style when passing in a vector default style.
+- Fixes a bug where the point geometry editor was updating the wrong geometry in the oblique map.
 
 ### 5.1.2
 

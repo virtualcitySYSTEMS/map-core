@@ -322,9 +322,7 @@ function createEditPointInteraction(
   let suspend = false;
   translateVertex.vertexChanged.addEventListener(() => {
     suspend = true;
-    feature
-      .getGeometry()!
-      .setCoordinates(vertex.getGeometry()!.getCoordinates());
+    geometry.setCoordinates(vertex.getGeometry()!.getCoordinates());
     suspend = false;
   });
 
