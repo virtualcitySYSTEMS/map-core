@@ -3,6 +3,7 @@
 - Fixes an issue, where all IDs would be returned from `VectorLayer.addFeatures`, even
   if the features with said ID where not added.
 - Fixes an issue, where the WMSLayer.toJSON function did not add the option `singleImage2d`
+- FeatureStore now has FeatureStoreFeatureVisibility which takes care of change tracking & highlighting.
 
 ### 5.1.3
 
