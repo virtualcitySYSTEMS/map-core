@@ -1,3 +1,8 @@
+### 5.1.4
+
+- Fixes an issue, where all IDs would be returned from `VectorLayer.addFeatures`, even
+  if the features with said ID where not added.
+
 ### 5.1.3
 
 - Introduces `ModelFill`, an extension of `Fill`. When set on a `Style`, the color

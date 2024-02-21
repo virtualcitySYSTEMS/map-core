@@ -436,7 +436,10 @@ class VectorLayer
   /**
    * add features to the vector layer and return an array with their ids.
    * The geometry will be mutated and transformed to EPSG 3857 mercator coordinate system
+   * features will be added an id, if they do not already have one.
    *
+   * returns the ids of the added features. if a feature has an id and the same id is alread in the
+   * layer, it will not be added.
    * @todo mechanism to enforce XYZ coordinate layout for internal usage
    */
   addFeatures(features: Feature[]): (string | number)[] {
@@ -475,7 +478,7 @@ class VectorLayer
       .filter((f) => f) as Feature[];
 
     this.source.addFeatures(toAdd);
-    return features.map((f) => f.getId()) as (string | number)[];
+    return toAdd.map((f) => f.getId()) as (string | number)[];
   }
 
   /**
