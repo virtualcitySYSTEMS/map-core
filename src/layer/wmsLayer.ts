@@ -39,6 +39,7 @@ export type WMSOptions = RasterLayerOptions & {
    * key value pair of additional WMS parameters, url query notation possible
    */
   parameters?: Record<string, string> | string;
+
   /**
    * whether this layer should send getFeatureInfo requests to the service when objects are clicked.
    */
@@ -75,6 +76,7 @@ class WMSLayer extends RasterLayer<WmsCesiumImpl | WmsOpenlayersImpl> {
       tileSize: [256, 256],
       highResolution: false,
       layers: '',
+      singleImage2d: false,
     };
   }
 
@@ -134,7 +136,10 @@ class WMSLayer extends RasterLayer<WmsCesiumImpl | WmsOpenlayersImpl> {
     this._featureInfoOptions =
       options.featureInfo || defaultOptions.featureInfo;
     this._supportedMaps = [CesiumMap.className, OpenlayersMap.className];
-    this.singleImage2d = parseBoolean(options.singleImage2d, false);
+    this.singleImage2d = parseBoolean(
+      options.singleImage2d,
+      defaultOptions.singleImage2d,
+    );
   }
 
   initialize(): Promise<void> {
@@ -250,6 +255,10 @@ class WMSLayer extends RasterLayer<WmsCesiumImpl | WmsOpenlayersImpl> {
       this.tileSize[1] !== defaultOptions.tileSize[1]
     ) {
       config.tileSize = this.tileSize.slice();
+    }
+
+    if (this.singleImage2d !== defaultOptions.singleImage2d) {
+      config.singleImage2d = this.singleImage2d;
     }
 
     if (
