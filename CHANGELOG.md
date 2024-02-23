@@ -1,3 +1,7 @@
+### 5.1.5
+
+- Fixes an issue in oblique, where geometries could have the wrong symbol flag after an update.
+
 ### 5.1.4
 
 - Fixes an issue, where all IDs would be returned from `VectorLayer.addFeatures`, even

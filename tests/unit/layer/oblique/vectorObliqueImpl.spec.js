@@ -658,6 +658,116 @@ describe('VectorObliqueImpl', () => {
     });
   });
 
+  describe('updating original geometry which already transformed to image', () => {
+    let originalFeature;
+    let obliqueFeature;
+    let id;
+    let clock;
+
+    before(async () => {
+      await VL.activate();
+    });
+
+    beforeEach(async () => {
+      const geometry = new Point([2682.558409466228, 6487.261329634799, 0]);
+      geometry[alreadyTransformedToImage] = true;
+      originalFeature = new Feature({
+        geometry,
+      });
+      id = uuidv4();
+      originalFeature.setId(id);
+      VL.addFeatures([originalFeature]);
+      await timeout(1);
+      obliqueFeature = OVL.obliqueSource.getFeatureById(id);
+      unByKey(Object.values(OVL._featureListeners[id])); // otherwise feature listeners are triggered
+      clock = sandbox.useFakeTimers(1);
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it('should update the oblique geometry after 200ms', (done) => {
+      const spy = sandbox.spy();
+      originalFeature.getGeometry().on('change', spy);
+      obliqueFeature.getGeometry().translate(1, 1);
+      OVL.updateMercatorGeometry(originalFeature, obliqueFeature);
+      clock.tick(debounceTimeout);
+      clock.restore();
+      setTimeout(() => {
+        expect(spy).to.have.been.calledOnce;
+        done();
+      });
+    });
+
+    it('after updating, the geometry should no longer be already transformed to image', (done) => {
+      const spy = sandbox.spy();
+      originalFeature.getGeometry().on('change', spy);
+      obliqueFeature.getGeometry().translate(1, 1);
+      OVL.updateMercatorGeometry(originalFeature, obliqueFeature);
+      clock.tick(debounceTimeout);
+      clock.restore();
+      setTimeout(() => {
+        expect(originalFeature.getGeometry()).to.not.have.property(
+          alreadyTransformedToImage,
+        );
+        done();
+      });
+    });
+
+    it('should clear a previously updating geometry call, resetting the debounce timer, if called again', (done) => {
+      const spy = sandbox.spy();
+      originalFeature.getGeometry().on('change', spy);
+      obliqueFeature.getGeometry().translate(1, 1);
+      OVL.updateMercatorGeometry(originalFeature, obliqueFeature);
+      clock.tick(debounceTimeout / 2);
+      obliqueFeature.getGeometry().translate(1, 1);
+      OVL.updateMercatorGeometry(originalFeature, obliqueFeature);
+      clock.tick(debounceTimeout);
+      clock.restore();
+      setTimeout(() => {
+        expect(spy).to.have.been.calledOnce;
+        done();
+      });
+    });
+
+    it('should not update oblique, if updating mercator', (done) => {
+      OVL._updatingOblique[id] = true;
+      const spy = sandbox.spy();
+      originalFeature.getGeometry().on('change', spy);
+      obliqueFeature.getGeometry().translate(1, 1);
+      OVL.updateMercatorGeometry(originalFeature, obliqueFeature);
+      clock.tick(debounceTimeout);
+      clock.restore();
+      setTimeout(() => {
+        expect(spy).to.not.have.been.called;
+        done();
+      });
+    });
+
+    it('should reset the original geometry, if its actually a circle', (done) => {
+      originalFeature.setGeometry(new Circle([1489084, 6892790, 0], 20));
+      obliqueFeature.setGeometry(
+        new Polygon([
+          [
+            [1, 1, 0],
+            [1, 0, 0],
+            [0, 0, 0],
+          ],
+        ]),
+      );
+      OVL.updateMercatorGeometry(originalFeature, obliqueFeature);
+      clock.tick(debounceTimeout);
+      clock.restore();
+      setTimeout(() => {
+        const geometry = originalFeature.getGeometry();
+        expect(geometry).to.have.property(actuallyIsCircle);
+        expect(geometry).to.be.an.instanceof(Polygon);
+        done();
+      });
+    });
+  });
+
   describe('handling of image changes', () => {
     describe('while the implementation is active', () => {
       let startingFeature;

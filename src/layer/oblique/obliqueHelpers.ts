@@ -163,6 +163,7 @@ export function imageGeometryToMercatorGeometry(
     }),
   );
   return Promise.all(promises).then(() => {
+    delete destinationGeometry[alreadyTransformedToImage];
     destinationGeometry.setCoordinates(coordinates);
     return destinationGeometry;
   });
