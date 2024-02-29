@@ -98,7 +98,7 @@ class VcsModule {
    * @param  app
    */
   setConfigFromApp(app: VcsApp): void {
-    this._config = app.serializeModule(this._uuid);
+    this._config = { ...this.config, ...app.serializeModule(this._uuid) };
   }
 
   toJSON(): VcsModuleConfig {

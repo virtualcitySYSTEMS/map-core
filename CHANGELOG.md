@@ -1,3 +1,8 @@
+### 5.1.6
+
+- Fixes a bug where WMS featureinfo could only handle GeoJSON.
+- Fixed a bug where vcsModule was loosing config entries on setConfigFromApp.
+
 ### 5.1.5
 
 - Fixes an issue in oblique, where geometries could have the wrong symbol flag after an update.

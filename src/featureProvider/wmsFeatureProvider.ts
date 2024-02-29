@@ -1,10 +1,7 @@
 import GML2 from 'ol/format/GML2.js';
 import type { Options as GMLOptions } from 'ol/format/GMLBase.js';
 import WFS from 'ol/format/WFS.js';
-import GeoJSON, {
-  type GeoJSONObject,
-  type Options as GeoJSONOptions,
-} from 'ol/format/GeoJSON.js';
+import GeoJSON, { type Options as GeoJSONOptions } from 'ol/format/GeoJSON.js';
 import GML3 from 'ol/format/GML3.js';
 import Point from 'ol/geom/Point.js';
 import { getTransform, type Projection as OLProjection } from 'ol/proj.js';
@@ -24,7 +21,7 @@ import Projection, {
 import type { WMSSourceOptions } from '../layer/wmsHelpers.js';
 import { getWMSSource } from '../layer/wmsHelpers.js';
 import Extent, { ExtentOptions } from '../util/extent.js';
-import { getInitForUrl, requestJson } from '../util/fetch.js';
+import { getInitForUrl, requestUrl } from '../util/fetch.js';
 import { featureProviderClassRegistry } from '../classRegistry.js';
 import { TilingScheme } from '../layer/rasterLayer.js';
 
@@ -206,7 +203,7 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
   }
 
   featureResponseCallback(
-    data: GeoJSONObject,
+    data: Document | Element | ArrayBuffer | any | string,
     coordinate: Coordinate,
   ): Feature[] {
     let features: Feature[];
@@ -259,9 +256,10 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
 
     if (url) {
       const init = getInitForUrl(url, headers);
-      let data: GeoJSONObject;
+      let data: string;
       try {
-        data = await requestJson<GeoJSONObject>(url, init);
+        const response = await requestUrl(url, init);
+        data = await response.text();
       } catch (ex) {
         this.getLogger().error(`Failed fetching WMS FeatureInfo ${url}`);
         return [];
