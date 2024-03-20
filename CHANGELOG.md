@@ -1,3 +1,39 @@
+### 5.1.6
+
+- Fixes a bug where WMS featureinfo could only handle GeoJSON.
+- Fixed a bug where vcsModule was loosing config entries on setConfigFromApp.
+
+### 5.1.5
+
+- Fixes an issue in oblique, where geometries could have the wrong symbol flag after an update.
+
+### 5.1.4
+
+- Fixes an issue, where all IDs would be returned from `VectorLayer.addFeatures`, even
+  if the features with said ID where not added.
+- Fixes an issue, where the WMSLayer.toJSON function did not add the option `singleImage2d`
+- FeatureStore now has FeatureStoreFeatureVisibility which takes care of change tracking & highlighting.
+
+### 5.1.3
+
+- Introduces `ModelFill`, an extension of `Fill`. When set on a `Style`, the color
+  will also be applied to models which are added via the `olcs_modelUrl` property.
+- `getStyleOrDefaultStyle` no longer mutates default style when passing in a vector default style.
+- Fixes a bug where the point geometry editor was updating the wrong geometry in the oblique map.
+
+### 5.1.2
+
+- Fixes a bug where anchors from flight GeoJSON files were not added correctly.
+- Fixed a bug in `clippingObject`, that made it necessary to call `handleMapChanged()` before `setlayerCollection()`
+
+### 5.1.1
+
+- Fixes a bug in VcsApp where modules with the same id could be loaded more than once.
+- changed the featureVisibility.highlight function to also allow Stylefunctions.
+- changed the type of the parameter `highlightStyle` in `startSelectFeaturesSession` from Style to HightlightStyle.
+- Fixed a bug in selectFeatureSession where on change to oblique a not existing selection was cleared.
+- Changed the behaviour of `VcsEvent.raiseEvent`, will now check if the listener is still in the collection.
+
 ### 5.1.0
 
 - added `setShadowMap()` and `shadowMapChanged` event on CesiumMap.

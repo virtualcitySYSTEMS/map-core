@@ -147,7 +147,7 @@ export function anchorFromGeojsonFeature(
 ): FlightAnchor | undefined {
   const options = {
     ...feature.properties,
-    name: String(feature.id) || uuidv4(),
+    name: feature.id ? String(feature.id) : uuidv4(),
     coordinate: feature.geometry.coordinates,
   };
   if (isOptions(options)) {

@@ -216,13 +216,13 @@ describe('util.clipping.ClippingObject', () => {
       it('should cache activated TiledLayers if activated in 2D', () => {
         tiledLayer._state = LayerState.ACTIVE;
         CO.handleLayerChanged(tiledLayer);
-        expect(CO._cachedFeatureStoreLayers.has(tiledLayer)).to.be.true;
+        expect(CO._cachedLayers.has(tiledLayer)).to.be.true;
       });
 
       it('should remove a cached TiledLayer if deactivated in 2D', () => {
-        CO._cachedFeatureStoreLayers.add(tiledLayer);
+        CO._cachedLayers.add(tiledLayer);
         CO.handleLayerChanged(tiledLayer);
-        expect(CO._cachedFeatureStoreLayers).to.be.empty;
+        expect(CO._cachedLayers).to.be.empty;
       });
     });
 
@@ -328,7 +328,7 @@ describe('util.clipping.ClippingObject', () => {
 
       beforeEach(() => {
         tiledLayer = new FeatureStoreLayer({});
-        CO._cachedFeatureStoreLayers.add(tiledLayer);
+        CO._cachedLayers.add(tiledLayer);
       });
 
       it('should call handleLayerChanged for each cached TiledLayer', () => {
@@ -339,7 +339,7 @@ describe('util.clipping.ClippingObject', () => {
 
       it('should clear the cached tiled layers', () => {
         CO.handleMapChanged(cesiumMap);
-        expect(CO._cachedFeatureStoreLayers).to.be.empty;
+        expect(CO._cachedLayers).to.be.empty;
       });
     });
   });

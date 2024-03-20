@@ -1,7 +1,9 @@
+import { expect } from 'chai';
 import Feature from 'ol/Feature.js';
 import Point from 'ol/geom/Point.js';
 import Circle from 'ol/geom/Circle.js';
 import Polygon from 'ol/geom/Polygon.js';
+import type { Geometry } from 'ol/geom.js';
 import {
   actuallyIsCircle,
   alreadyTransformedToImage,
@@ -14,8 +16,8 @@ import {
 
 describe('Helpers', () => {
   describe('setting a new geometry on an oblique feature', () => {
-    let originalFeature;
-    let obliqueFeature;
+    let originalFeature: Feature;
+    let obliqueFeature: Feature;
 
     beforeEach(() => {
       originalFeature = new Feature();
@@ -41,7 +43,7 @@ describe('Helpers', () => {
     });
 
     describe('if geometry already transformed to image', () => {
-      let geom;
+      let geom: Circle;
 
       beforeEach(() => {
         geom = new Circle([1, 1, 0], 20);
@@ -51,7 +53,7 @@ describe('Helpers', () => {
 
       it('should not convert to polygon', () => {
         setNewGeometry(originalFeature, obliqueFeature);
-        const obliqueGeom = obliqueFeature.getGeometry();
+        const obliqueGeom = obliqueFeature.getGeometry() as Circle;
         expect(obliqueGeom).to.be.an.instanceof(Circle);
         expect(obliqueGeom.getCenter()).to.have.members([1, 1, 0]);
         expect(obliqueGeom.getRadius()).to.equal(20);
@@ -61,7 +63,7 @@ describe('Helpers', () => {
       it('should copy any properties on the geometry to the oblique geometry', () => {
         geom.set('test', true);
         setNewGeometry(originalFeature, obliqueFeature);
-        const obliqueGeom = originalFeature[obliqueGeometry];
+        const obliqueGeom = originalFeature[obliqueGeometry]!;
         expect(obliqueGeom.get('test')).to.be.true;
       });
     });
@@ -69,8 +71,8 @@ describe('Helpers', () => {
 
   describe('getting a polygonized geometry', () => {
     describe('for a circle', () => {
-      let feature;
-      let convertedGeometry;
+      let feature: Feature;
+      let convertedGeometry: Geometry;
 
       before(() => {
         feature = new Feature();
@@ -88,8 +90,8 @@ describe('Helpers', () => {
     });
 
     describe('for a bbox', () => {
-      let feature;
-      let convertedGeometry;
+      let feature: Feature;
+      let convertedGeometry: Geometry;
 
       before(() => {
         feature = new Feature();
@@ -117,8 +119,8 @@ describe('Helpers', () => {
 
   describe('getting a polygonized geometry retaining rectangle', () => {
     describe('for a circle', () => {
-      let feature;
-      let convertedGeometry;
+      let feature: Feature;
+      let convertedGeometry: Geometry;
 
       before(() => {
         feature = new Feature();
@@ -136,8 +138,8 @@ describe('Helpers', () => {
     });
 
     describe('for a bbox', () => {
-      let feature;
-      let convertedGeometry;
+      let feature: Feature;
+      let convertedGeometry: Geometry;
 
       before(() => {
         feature = new Feature();

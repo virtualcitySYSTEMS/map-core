@@ -38,22 +38,25 @@ class VcsEvent<T> {
   }
 
   /**
-   * Raise the event, calling all listeners
-   * @param  event
+   * Raise the event, calling all listeners, if a listener is removed in between calling listeners, the listener is not
+   * called.
+   * @param event
    */
   raiseEvent(event: T): void {
     [...this._listeners].forEach((cb) => {
-      // eslint-disable-next-line no-void
-      void cb(event);
+      if (this._listeners.has(cb)) {
+        // eslint-disable-next-line no-void
+        void cb(event);
+      }
     });
   }
 
   async awaitRaisedEvent(event: T): Promise<void> {
-    const promises = new Array(this._listeners.size);
-    let i = 0;
+    const promises: (void | Promise<void>)[] = [];
     [...this._listeners].forEach((cb) => {
-      promises[i] = cb(event);
-      i += 1;
+      if (this._listeners.has(cb)) {
+        promises.push(cb(event));
+      }
     });
     await Promise.all(promises);
   }

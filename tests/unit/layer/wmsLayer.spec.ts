@@ -1,7 +1,10 @@
-import WMSLayer from '../../../src/layer/wmsLayer.js';
+import { expect } from 'chai';
+import sinon, { type SinonSandbox } from 'sinon';
+import { type Size } from 'ol/size.js';
+import WMSLayer, { WMSOptions } from '../../../src/layer/wmsLayer.js';
 
 describe('WMSLayer', () => {
-  let sandbox;
+  let sandbox: SinonSandbox;
 
   before(() => {
     sandbox = sinon.createSandbox();
@@ -21,7 +24,7 @@ describe('WMSLayer', () => {
     });
 
     describe('setting of layers', () => {
-      let layer;
+      let layer: WMSLayer;
       beforeEach(() => {
         layer = new WMSLayer({});
       });
@@ -58,16 +61,16 @@ describe('WMSLayer', () => {
     });
 
     describe('of a configured layer', () => {
-      let inputConfig;
-      let outputConfig;
-      let configuredLayer;
+      let inputConfig: WMSOptions;
+      let outputConfig: WMSOptions;
+      let configuredLayer: WMSLayer;
 
       before(() => {
         inputConfig = {
           layers: 'one,two',
           version: '1.3.0',
           parameters: {
-            TEST: true,
+            TEST: 'true',
           },
           highResolution: true,
           tileSize: [512, 512],
@@ -75,6 +78,7 @@ describe('WMSLayer', () => {
             type: 'WMSFeatureProvider',
             responseType: 'application/json',
           },
+          singleImage2d: true,
         };
         configuredLayer = new WMSLayer(inputConfig);
         outputConfig = configuredLayer.toJSON();
@@ -99,16 +103,23 @@ describe('WMSLayer', () => {
         );
       });
 
+      it('should configure singleImage2d', () => {
+        expect(outputConfig).to.have.property(
+          'singleImage2d',
+          inputConfig.singleImage2d,
+        );
+      });
+
       it('should configure parameters', () => {
         expect(outputConfig)
           .to.have.property('parameters')
-          .and.to.have.property('TEST', true);
+          .and.to.have.property('TEST', 'true');
       });
 
       it('should configure tileSize', () => {
         expect(outputConfig)
           .to.have.property('tileSize')
-          .and.to.have.members(inputConfig.tileSize);
+          .and.to.have.members(inputConfig.tileSize as Size);
       });
 
       it('should configure feature info', () => {
@@ -119,9 +130,9 @@ describe('WMSLayer', () => {
     });
 
     describe('when overloading the feature info provider', () => {
-      let inputConfig;
-      let outputConfig;
-      let configuredLayer;
+      let inputConfig: WMSOptions;
+      let outputConfig: WMSOptions;
+      let configuredLayer: WMSLayer;
 
       before(async () => {
         inputConfig = {

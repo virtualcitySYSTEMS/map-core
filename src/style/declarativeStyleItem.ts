@@ -95,7 +95,7 @@ function addCustomProperty(
  * @group Style
  */
 class DeclarativeStyleItem extends StyleItem {
-  static get className(): string {
+  static get className(): 'DeclarativeStyleItem' {
     return 'DeclarativeStyleItem';
   }
 

@@ -20,9 +20,9 @@ import {
 } from '../classRegistry.js';
 import OverrideClassRegistry from '../overrideClassRegistry.js';
 import VcsEvent from '../vcsEvent.js';
-import type VectorStyleItem from '../style/vectorStyleItem.js';
 import type VcsApp from '../vcsApp.js';
 import { markVolatile } from '../vcsModule.js';
+import type VectorStyleItem from '../style/vectorStyleItem.js';
 
 export type CategoryOptions<T extends VcsObject | object> = VcsObjectOptions & {
   title?: string;

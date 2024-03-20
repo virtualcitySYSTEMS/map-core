@@ -66,9 +66,12 @@ Feature.prototype.getStyleFunction = function getStyleFunction(
   }
 
   if (this[highlighted]) {
-    return ((): (StyleLike | undefined)[] => [
-      this[highlighted]?.style,
-    ]) as StyleFunction;
+    return ((feature, res) => {
+      if (typeof this[highlighted]?.style === 'function') {
+        return this[highlighted]?.style(feature, res);
+      }
+      return [this[highlighted]?.style];
+    }) as StyleFunction;
   }
   return originalStyleFunction.bind(this)();
 };

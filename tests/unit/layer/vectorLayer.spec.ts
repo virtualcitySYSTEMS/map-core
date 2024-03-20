@@ -1,4 +1,6 @@
 import { ClassificationType, HeightReference } from '@vcmap-cesium/engine';
+import sinon, { SinonSandbox } from 'sinon';
+import { expect } from 'chai';
 import Feature from 'ol/Feature.js';
 import { fromExtent } from 'ol/geom/Polygon.js';
 import Point from 'ol/geom/Point.js';
@@ -17,10 +19,11 @@ import {
 } from '../../../src/layer/vectorProperties.js';
 import { setOpenlayersMap } from '../helpers/openlayersHelpers.js';
 import Extent from '../../../src/util/extent.js';
+import { OpenlayersMap } from '../../../index.js';
 
 describe('VectorLayer', () => {
-  let VL;
-  let sandbox;
+  let VL: VectorLayer;
+  let sandbox: SinonSandbox;
 
   before(() => {
     sandbox = sinon.createSandbox();
@@ -42,7 +45,7 @@ describe('VectorLayer', () => {
         new Feature({ geometry: fromExtent(polygonExtent) }),
       );
       const extent = VL.getZoomToExtent();
-      expect(extent.extent).to.have.ordered.members(polygonExtent);
+      expect(extent?.extent).to.have.ordered.members(polygonExtent);
     });
 
     it('should return null, if the source is empty', () => {
@@ -60,7 +63,7 @@ describe('VectorLayer', () => {
         coordinates: [2, 2, 5, 5],
       });
       const extent = VL.getZoomToExtent();
-      expect(extent.extent).to.have.ordered.members([2, 2, 5, 5]);
+      expect(extent?.extent).to.have.ordered.members([2, 2, 5, 5]);
     });
   });
 
@@ -80,16 +83,19 @@ describe('VectorLayer', () => {
 
     it('should always remove the previous styleChanged handler', () => {
       const onStyleChangeRemover = sandbox.spy();
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       VL._onStyleChangeRemover = onStyleChangeRemover;
       VL.setStyle(VL.defaultStyle);
       expect(onStyleChangeRemover).to.have.been.called;
     });
 
     describe('onStyleChanged', () => {
-      let features = null;
+      let features: [Feature, Feature];
+
       beforeEach(() => {
         features = [new Feature(), new Feature()];
-        features[0][vectorStyleSymbol] = true;
+        features[0][vectorStyleSymbol] = new VectorStyleItem({});
         VL.addFeatures(features);
       });
 
@@ -115,7 +121,8 @@ describe('VectorLayer', () => {
     });
 
     describe('Setting Declarative Style', () => {
-      let dedicatedFeature;
+      let dedicatedFeature: Feature;
+
       beforeEach(() => {
         dedicatedFeature = new Feature();
         VL.addFeatures([dedicatedFeature]);
@@ -131,13 +138,13 @@ describe('VectorLayer', () => {
       it('should set the features dedicated style, if the layer style is not declarative and the feature has no set style', () => {
         VL.setStyle(new VectorStyleItem({}));
         expect(dedicatedFeature.getStyle()).to.equal(
-          dedicatedFeature[vectorStyleSymbol].style,
+          dedicatedFeature[vectorStyleSymbol]?.style,
         );
       });
 
       it('should update the originalStyle of the feature to undefined, it the layer style is dedicated', () => {
         dedicatedFeature[originalStyle] =
-          dedicatedFeature[vectorStyleSymbol].style;
+          dedicatedFeature[vectorStyleSymbol]?.style;
         VL.setStyle(new DeclarativeStyleItem({}));
         expect(dedicatedFeature[originalStyle]).to.be.undefined;
       });
@@ -146,7 +153,7 @@ describe('VectorLayer', () => {
         dedicatedFeature[originalStyle] = undefined;
         VL.setStyle(new VectorStyleItem({}));
         expect(dedicatedFeature[originalStyle]).to.equal(
-          dedicatedFeature[vectorStyleSymbol].style,
+          dedicatedFeature[vectorStyleSymbol]?.style,
         );
       });
     });
@@ -185,7 +192,7 @@ describe('VectorLayer', () => {
 
     it('should write the style, if the default style has changed', () => {
       VL.setStyle(VL.defaultStyle);
-      VL.style.fillColor = '#FF00FF';
+      (VL.style as VectorStyleItem).fillColor = '#FF00FF';
       const meta = VL.getVcsMeta({ writeStyle: true });
       expect(meta).to.have.property('style');
       expect(meta.style)
@@ -197,30 +204,30 @@ describe('VectorLayer', () => {
 
   describe('setVcsMeta', () => {
     it('should set/remove the skirts', () => {
-      VL.setVcsMeta({ skirt: 5 });
+      VL.setVcsMeta({ skirt: 5, version: vcsMetaVersion });
       expect(VL.vectorProperties).to.have.property('skirt', 5);
-      VL.setVcsMeta({});
+      VL.setVcsMeta({ version: vcsMetaVersion });
       expect(VL.vectorProperties).to.have.property('skirt').and.to.equal(0);
     });
 
     it('should set/remove the classificationType', () => {
-      VL.setVcsMeta({ classificationType: 'both' });
+      VL.setVcsMeta({ classificationType: 'both', version: vcsMetaVersion });
       expect(VL.vectorProperties).to.have.property(
         'classificationType',
         ClassificationTypeCesium.both,
       );
-      VL.setVcsMeta({});
+      VL.setVcsMeta({ version: vcsMetaVersion });
       expect(VL.vectorProperties).to.have.property('classificationType').and.to
         .be.undefined;
     });
 
     it('should set but not remove the altitudeMode', () => {
-      VL.setVcsMeta({ altitudeMode: 'absolute' });
+      VL.setVcsMeta({ altitudeMode: 'absolute', version: vcsMetaVersion });
       expect(VL.vectorProperties).to.have.property(
         'altitudeMode',
         AltitudeModeCesium.absolute,
       );
-      VL.setVcsMeta({});
+      VL.setVcsMeta({ version: vcsMetaVersion });
       expect(VL.vectorProperties).to.have.property(
         'altitudeMode',
         AltitudeModeCesium.absolute,
@@ -238,6 +245,19 @@ describe('VectorLayer', () => {
       VL.addFeatures([withId]);
       expect(VL).to.have.property('hasFeatureUUID', true);
     });
+
+    it('should only return ids for features actually added', () => {
+      const geometry = new Point([1, 1, 0]);
+      const feature = new Feature({ geometry });
+      feature.setId('foo');
+      const ids = VL.addFeatures([feature]);
+      expect(ids).to.have.lengthOf(1);
+
+      const clone = feature.clone();
+      clone.setId('foo');
+      const cloneIds = VL.addFeatures([clone]);
+      expect(cloneIds).to.be.empty;
+    });
   });
 
   describe('destroy', () => {
@@ -254,8 +274,9 @@ describe('VectorLayer', () => {
   });
 
   describe('layer visibility', () => {
-    let app;
-    let map;
+    let app: VcsApp;
+    let map: OpenlayersMap;
+
     before(async () => {
       app = new VcsApp();
       map = await setOpenlayersMap(app);

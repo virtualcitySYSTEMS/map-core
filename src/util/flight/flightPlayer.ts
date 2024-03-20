@@ -138,6 +138,27 @@ export async function createFlightPlayer(
     }),
   ];
 
+  const getView = (
+    time: number,
+  ):
+    | {
+        destination: Cartesian3;
+        orientation: HeadingPitchRoll;
+      }
+    | undefined => {
+    if (destinationSpline && quaternionSpline) {
+      return {
+        destination: destinationSpline.evaluate(time) as Cartesian3,
+        orientation: HeadingPitchRoll.fromQuaternion(
+          quaternionSpline.evaluate(time),
+        ),
+      };
+    } else {
+      getLogger('FlightPlayer').error('cannot evaluate spline');
+    }
+    return undefined;
+  };
+
   const cesiumPostRender = (scene: Scene): void => {
     const time = Date.now() / 1000;
     if (!clock.currentSystemTime) {
@@ -170,13 +191,11 @@ export async function createFlightPlayer(
       }
     }
 
-    const view = {
-      destination: destinationSpline!.evaluate(clock.currentTime) as Cartesian3,
-      orientation: HeadingPitchRoll.fromQuaternion(
-        quaternionSpline!.evaluate(clock.currentTime),
-      ),
-    };
-    scene.camera.setView(view);
+    const view = getView(clock.currentTime);
+    if (view) {
+      scene.camera.setView(view);
+    }
+
     if (playerState === 'playing') {
       if (screenSpaceCameraController) {
         screenSpaceCameraController.enableInputs = false;
@@ -185,6 +204,12 @@ export async function createFlightPlayer(
   };
 
   const play = (): void => {
+    if (!instance.isValid()) {
+      getLogger('FlightPlayer').error(
+        `cannot play invalid flight ${instance.name}`,
+      );
+      return;
+    }
     if (playerState === 'playing') {
       return;
     }
@@ -215,6 +240,12 @@ export async function createFlightPlayer(
   };
 
   const goToTime = (time: number): void => {
+    if (!instance.isValid()) {
+      getLogger('FlightPlayer').error(
+        `cannot goToTime of invalid flight ${instance.name}`,
+      );
+      return;
+    }
     if (time > clock.endTime) {
       getLogger('FlightPlayer').warning(`time: ${time} out of range`);
       return;
@@ -222,15 +253,10 @@ export async function createFlightPlayer(
     clock.currentTime = time;
     clock.currentSystemTime = undefined;
     if (playerState !== 'playing') {
-      const view = {
-        destination: destinationSpline!.evaluate(
-          clock.currentTime,
-        ) as Cartesian3,
-        orientation: HeadingPitchRoll.fromQuaternion(
-          quaternionSpline!.evaluate(clock.currentTime),
-        ),
-      };
-      cesiumMap.getScene()?.camera.setView(view);
+      const view = getView(clock.currentTime);
+      if (view) {
+        cesiumMap.getScene()?.camera.setView(view);
+      }
     }
   };
   const destroyed = new VcsEvent<void>();

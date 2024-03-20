@@ -27,7 +27,7 @@ export function getStyleOrDefaultStyle(
           styleItem instanceof VectorStyleItem &&
           defaultStyle instanceof VectorStyleItem
         ) {
-          return defaultStyle.assign(styleItem);
+          return styleItem.assign(defaultStyle.clone().assign(styleItem));
         }
         return styleItem;
       }

@@ -81,7 +81,7 @@ function createEditLineStringGeometryInteraction(
       vertices.map((f) => f.getGeometry()!.getCoordinates()),
     );
   };
-  const translateVertex = new TranslateVertexInteraction();
+  const translateVertex = new TranslateVertexInteraction(feature);
   translateVertex.vertexChanged.addEventListener(resetGeometry);
 
   const insertVertex = new InsertVertexInteraction(feature, geometry);
@@ -130,7 +130,7 @@ function createEditCircleGeometryInteraction(
     .map((c) => createVertex(c, olcsProps));
   scratchLayer.addFeatures(vertices);
 
-  const translateVertex = new TranslateVertexInteraction();
+  const translateVertex = new TranslateVertexInteraction(feature);
   let suspend = false;
   translateVertex.vertexChanged.addEventListener((vertex) => {
     suspend = true;
@@ -181,7 +181,7 @@ function createEditBBoxGeometryInteraction(
 
   scratchLayer.addFeatures(vertices);
   let suspend = false;
-  const translateVertex = new TranslateVertexInteraction();
+  const translateVertex = new TranslateVertexInteraction(feature);
   translateVertex.vertexChanged.addEventListener((vertex) => {
     const vertexIndex = vertices.indexOf(vertex);
     const originIndex = modulo(vertexIndex + 2, 4);
@@ -268,7 +268,7 @@ function createEditSimplePolygonInteraction(
     ]); // update actual geometry, since linear ring is a clone and not a ref
   };
 
-  const translateVertex = new TranslateVertexInteraction();
+  const translateVertex = new TranslateVertexInteraction(feature);
   translateVertex.vertexChanged.addEventListener(resetGeometry);
 
   const insertVertex = new InsertVertexInteraction(feature, linearRing);
@@ -318,13 +318,11 @@ function createEditPointInteraction(
   layer.featureVisibility.hideObjects(featureIdArray);
   vertex[createSync] = true;
   scratchLayer.addFeatures([vertex]);
-  const translateVertex = new TranslateVertexInteraction();
+  const translateVertex = new TranslateVertexInteraction(feature);
   let suspend = false;
   translateVertex.vertexChanged.addEventListener(() => {
     suspend = true;
-    feature
-      .getGeometry()!
-      .setCoordinates(vertex.getGeometry()!.getCoordinates());
+    geometry.setCoordinates(vertex.getGeometry()!.getCoordinates());
     suspend = false;
   });
 
@@ -425,7 +423,6 @@ function startEditGeometrySession(
       if (!geometryIsValid(currentFeature.getGeometry())) {
         layer.removeFeaturesById([currentFeature.getId() as string | number]);
       }
-      currentFeature.unset('olcs_allowPicking');
     }
     currentFeature = null;
     altitudeModeChanged();
@@ -488,7 +485,6 @@ function startEditGeometrySession(
 
       if (currentInteractionSet) {
         interactionChain.addInteraction(currentInteractionSet.interactionChain);
-        currentFeature.set('olcs_allowPicking', false);
         altitudeModeChanged();
       } else {
         getLogger('EditGeometrySession').warning(

@@ -1,5 +1,5 @@
 import { check, ofEnum } from '@vcsuite/check';
-import { Circle, Fill, Style, Stroke } from 'ol/style.js';
+import { Circle, Style, Stroke } from 'ol/style.js';
 import type { Feature } from 'ol/index.js';
 import { createSync } from '../../layer/vectorSymbols.js';
 import {
@@ -18,6 +18,8 @@ import { vcsLayerName } from '../../layer/layerSymbols.js';
 import type VectorLayer from '../../layer/vectorLayer.js';
 import type VcsApp from '../../vcsApp.js';
 import type VcsMap from '../../map/vcsMap.js';
+import { type HighlightStyleType } from '../../layer/featureVisibility.js';
+import ModelFill from '../../style/modelFill.js';
 
 type SelectionHighlightManager = {
   highlightedFeatures: Feature[];
@@ -36,7 +38,7 @@ type SelectionHighlightManager = {
  */
 function createHighlightManager(
   layer: VectorLayer,
-  highlightStyle: Style,
+  highlightStyle: HighlightStyleType,
 ): SelectionHighlightManager {
   const currentFeaturesMap: Map<string | number, Feature> = new Map();
 
@@ -103,7 +105,7 @@ function createHighlightManager(
 }
 
 export function getDefaultHighlightStyle(): Style {
-  const fill = new Fill({ color: 'rgba(76,175,80,0.2)' });
+  const fill = new ModelFill({ color: 'rgba(76,175,80,0.2)' });
   const stroke = new Stroke({ color: '#4CAF50', width: 2 });
 
   return new Style({
@@ -144,7 +146,7 @@ function startSelectFeaturesSession(
   layer: VectorLayer,
   interactionId?: string,
   initialMode = SelectionMode.MULTI,
-  highlightStyle = getDefaultHighlightStyle(),
+  highlightStyle: HighlightStyleType = getDefaultHighlightStyle(),
 ): SelectFeaturesSession {
   const stopped = new VcsEvent<void>();
   const modeChanged = new VcsEvent<SelectionMode>();
@@ -246,15 +248,15 @@ function startSelectFeaturesSession(
   const mapChanged = (map: VcsMap): void => {
     obliqueImageChangedListener();
     if (map instanceof ObliqueMap) {
-      currentSelectInteraction!.clear();
+      currentSelectInteraction?.clear();
       obliqueImageChangedListener =
         map.imageChanged?.addEventListener(() => {
-          currentSelectInteraction!.clear();
+          currentSelectInteraction?.clear();
         }) ?? ((): void => {});
       obliqueMap = map;
     } else {
       if (obliqueMap) {
-        currentSelectInteraction!.clear();
+        currentSelectInteraction?.clear();
       }
       obliqueMap = null;
       obliqueImageChangedListener = (): void => {};

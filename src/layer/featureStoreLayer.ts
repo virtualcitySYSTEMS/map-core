@@ -45,6 +45,7 @@ import { vcsLayerName } from './layerSymbols.js';
 import StyleItem from '../style/styleItem.js';
 import VcsMap from '../map/vcsMap.js';
 import VectorCesiumImpl from './cesium/vectorCesiumImpl.js';
+import FeatureStoreFeatureVisibility from './featureStoreFeatureVisibility.js';
 
 export type FeatureStoreStaticRepresentation = {
   /**
@@ -57,7 +58,10 @@ export type FeatureStoreStaticRepresentation = {
   twoDim?: string;
 };
 
-export type FeatureStoreLayerSchema = VectorOptions & {
+export type FeatureStoreLayerSchema = Omit<
+  VectorOptions,
+  'featureVisibility'
+> & {
   /**
    * layer mongo id
    */
@@ -91,6 +95,8 @@ export type FeatureStoreOptions = FeatureStoreLayerSchema & {
    * injected function for fetching dynamic features from a remote FeatureStoreLayer server
    */
   injectedFetchDynamicFeatureFunc?: FetchDynamicFeatureCallback;
+
+  featureVisibility?: FeatureStoreFeatureVisibility;
 };
 
 export const isTiledFeature: unique symbol = Symbol('isTiledFeature');
@@ -112,6 +118,7 @@ class FeatureStoreLayer extends VectorLayer {
       featureType: 'simple',
       features: [],
       ...VectorLayer.getDefaultOptions(),
+      featureVisibility: undefined,
       projection: mercatorProjection.toJSON(),
       staticRepresentation: {},
       hiddenStaticFeatureIds: [],
@@ -141,6 +148,8 @@ class FeatureStoreLayer extends VectorLayer {
   screenSpaceErrorMobile: number | undefined;
 
   screenSpaceError: number | undefined;
+
+  featureVisibility: FeatureStoreFeatureVisibility;
 
   private _removeVectorPropertiesChangeHandler: () => void;
 
@@ -209,6 +218,10 @@ class FeatureStoreLayer extends VectorLayer {
     this.injectedFetchDynamicFeatureFunc =
       options.injectedFetchDynamicFeatureFunc ??
       this.injectedFetchDynamicFeatureFunc;
+
+    this.featureVisibility =
+      options.featureVisibility ??
+      new FeatureStoreFeatureVisibility(this.changeTracker);
 
     this._featureVisibilitySyncListeners = [
       synchronizeFeatureVisibility(
@@ -571,7 +584,7 @@ class FeatureStoreLayer extends VectorLayer {
   }
 
   toJSON(): FeatureStoreOptions {
-    const config: Partial<FeatureStoreOptions> = super.toJSON();
+    const config = super.toJSON() as Partial<FeatureStoreOptions>;
     const defaultOptions = FeatureStoreLayer.getDefaultOptions();
 
     delete config.projection;

@@ -1,14 +1,17 @@
-import { Color } from '@vcmap-cesium/engine';
+import { Cesium3DTileFeature, Color } from '@vcmap-cesium/engine';
 import Fill from 'ol/style/Fill.js';
-import Style from 'ol/style/Style.js';
+import Style, { StyleFunction, StyleLike } from 'ol/style/Style.js';
 import OpenlayersText from 'ol/style/Text.js';
 import Feature from 'ol/Feature.js';
 import { expect } from 'chai';
+import sinon, { SinonFakeTimers, type SinonSandbox } from 'sinon';
 import FeatureVisibility, {
   FeatureVisibilityAction,
   globalHidden,
   hidden,
+  HighlightableFeature,
   highlighted,
+  HighlightStyleType,
   originalStyle,
   synchronizeFeatureVisibility,
 } from '../../../src/layer/featureVisibility.js';
@@ -21,12 +24,11 @@ import {
 } from '../helpers/cesiumHelpers.js';
 
 describe('FeatureVisibility', () => {
-  /** @type {import("@vcmap/core").FeatureVisibility} */
-  let featureVisibility;
-  let highlightStyle;
-  let sandbox;
+  let featureVisibility: FeatureVisibility;
+  let highlightStyle: VectorStyleItem;
+  let sandbox: SinonSandbox;
 
-  before(async () => {
+  before(() => {
     highlightStyle = new VectorStyleItem({ fill: { color: [0, 255, 0, 1] } });
     sandbox = sinon.createSandbox();
   });
@@ -41,10 +43,8 @@ describe('FeatureVisibility', () => {
   });
 
   describe('synchronizeFeatureVisibility', () => {
-    /** @type {import("@vcmap/core").FeatureVisibility} */
-    let source;
-    /** @type {import("@vcmap/core").FeatureVisibility} */
-    let destination;
+    let source: FeatureVisibility;
+    let destination: FeatureVisibility;
 
     before(() => {
       source = new FeatureVisibility();
@@ -133,6 +133,21 @@ describe('FeatureVisibility', () => {
       ).to.have.members([255, 0, 255, 1]);
     });
 
+    it('should convert a StyleFunction to a VectorStyleItem', () => {
+      const styleFunction: StyleFunction = () => {
+        return new Style({ fill: new Fill({ color: '#FF00FF' }) });
+      };
+      featureVisibility.highlight({
+        test: styleFunction,
+      });
+      expect(featureVisibility.highlightedObjects)
+        .to.have.property('test')
+        .and.to.have.property('style');
+      expect(featureVisibility.highlightedObjects.test.style.style).to.equal(
+        styleFunction,
+      );
+    });
+
     it('should convert an ol.style.Style to a style object with text', () => {
       const style = new Style({
         fill: new Fill({ color: '#FF00FF' }),
@@ -166,7 +181,8 @@ describe('FeatureVisibility', () => {
       });
 
       it('should update the color on any features already highlighted', () => {
-        const feature = createDummyCesium3DTileFeature();
+        const feature: Cesium3DTileFeature =
+          createDummyCesium3DTileFeature() as Cesium3DTileFeature;
         featureVisibility.addHighlightFeature('test', feature);
         const newColor = Color.fromBytes(255, 0, 255, 255);
         featureVisibility.highlight({ test: newColor });
@@ -175,8 +191,8 @@ describe('FeatureVisibility', () => {
     });
 
     describe('lastUpdated & event handling', () => {
-      let clock;
-      let now;
+      let clock: SinonFakeTimers;
+      let now: number;
 
       before(() => {
         now = Date.now();
@@ -237,7 +253,8 @@ describe('FeatureVisibility', () => {
   describe('unHighlight', () => {
     it('should delete the entry in the highlightedObjects map', () => {
       featureVisibility.highlightedObjects.test = {
-        features: new Set(),
+        features: new Set<HighlightableFeature>(),
+        style: new VectorStyleItem({}),
       };
       featureVisibility.unHighlight(['test']);
       expect(featureVisibility.highlightedObjects).to.not.have.property('test');
@@ -245,9 +262,9 @@ describe('FeatureVisibility', () => {
 
     it('should set the originalCesiumColor color on features, if they still exist', () => {
       featureVisibility.highlight({ test: Color.BLUE });
-      const features = [
-        [createDummyCesium3DTileFeature(), Color.GREEN],
-        [createDummyCesium3DTileFeature(), Color.BLUE],
+      const features: [Cesium3DTileFeature, Color][] = [
+        [createDummyCesium3DTileFeature() as Cesium3DTileFeature, Color.GREEN],
+        [createDummyCesium3DTileFeature() as Cesium3DTileFeature, Color.BLUE],
       ];
       features.forEach(([feat, color]) => {
         feat.color = color;
@@ -263,13 +280,13 @@ describe('FeatureVisibility', () => {
     it('should return original style for ol.Features', () => {
       featureVisibility.highlight({ test: Color.BLUE });
       const styles = [new Style(), new Style()];
-      const features = [
+      const features: [Feature, Style][] = [
         [new Feature(), styles[0]],
         [new Feature(), styles[1]],
       ];
       features.forEach(([feat, style]) => {
         feat.setStyle(style);
-        featureVisibility.addHighlightFeature('test', feat, style);
+        featureVisibility.addHighlightFeature('test', feat);
       });
       featureVisibility.unHighlight(['test']);
       features.forEach(([feat, style]) => {
@@ -284,7 +301,7 @@ describe('FeatureVisibility', () => {
       feature.setStyle(style);
       featureVisibility.addHighlightFeature('test', feature);
       featureVisibility.unHighlight(['test']);
-      expect(feature.getStyleFunction()?.()).to.eql([style]);
+      expect(feature.getStyleFunction()?.(feature, 0)).to.eql([style]);
     });
 
     it('should not reset the style for hidden ol.Features', () => {
@@ -345,7 +362,7 @@ describe('FeatureVisibility', () => {
 
   describe('highlighting of features', () => {
     describe('adding of ol.Features to highlighting', () => {
-      let feature;
+      let feature: Feature;
       beforeEach(() => {
         feature = new Feature({});
         featureVisibility.highlight({ test: highlightStyle });
@@ -366,7 +383,9 @@ describe('FeatureVisibility', () => {
         const style = new Style();
         feature.setStyle(style);
         featureVisibility.addHighlightFeature('test', feature);
-        expect(feature.getStyleFunction()()[0]).to.equal(highlightStyle.style);
+        expect(
+          (feature?.getStyleFunction()?.(feature, 0) as [Style])[0],
+        ).to.equal(highlightStyle.style);
       });
 
       it('should set the highlight symbol', () => {
@@ -384,16 +403,16 @@ describe('FeatureVisibility', () => {
       it('should not reset the originalStyle symbol', () => {
         const style = new Style({});
         feature.setStyle(style);
-        feature[originalStyle] = null;
+        feature[originalStyle] = undefined;
         featureVisibility.addHighlightFeature('test', feature);
-        expect(feature).to.have.property(originalStyle).and.to.be.null;
+        expect(feature).to.have.property(originalStyle).and.to.be.undefined;
       });
     });
 
     describe('adding of CesiumTilesetFeature to highlighting', () => {
-      let feature;
+      let feature: Cesium3DTileFeature;
       beforeEach(() => {
-        feature = createDummyCesium3DTileFeature();
+        feature = createDummyCesium3DTileFeature() as Cesium3DTileFeature;
         featureVisibility.highlight({ test: highlightStyle });
         featureVisibility.addHighlightFeature('test', feature);
       });
@@ -427,8 +446,8 @@ describe('FeatureVisibility', () => {
   });
 
   describe('hideObjects', () => {
-    let clock;
-    let now;
+    let clock: SinonFakeTimers;
+    let now: number;
 
     before(() => {
       now = Date.now();
@@ -505,9 +524,9 @@ describe('FeatureVisibility', () => {
     });
 
     it('should set the Cesium3DTileFeature features show to true, if it exists', () => {
-      const features = [
-        createDummyCesium3DTileFeature(),
-        createDummyCesium3DTileFeature(),
+      const features: Cesium3DTileFeature[] = [
+        createDummyCesium3DTileFeature() as Cesium3DTileFeature,
+        createDummyCesium3DTileFeature() as Cesium3DTileFeature,
       ];
       features.forEach((f) => {
         featureVisibility.addHiddenFeature('test', f);
@@ -571,8 +590,8 @@ describe('FeatureVisibility', () => {
     });
 
     describe('show highlighted ol.Features', () => {
-      let style;
-      let feature;
+      let style: VectorStyleItem;
+      let feature: Feature;
 
       beforeEach(() => {
         style = new VectorStyleItem({});
@@ -601,7 +620,7 @@ describe('FeatureVisibility', () => {
 
   describe('hiding of features', () => {
     describe('adding of ol.Features to hiding', () => {
-      let feature;
+      let feature: Feature;
       beforeEach(() => {
         feature = new Feature({});
         featureVisibility.hideObjects(['test']);
@@ -613,7 +632,7 @@ describe('FeatureVisibility', () => {
       });
 
       it('should return an empty style clone as style', () => {
-        const empty = feature.getStyle();
+        const empty = feature.getStyle() as Style;
         expect(empty.getFill()).to.be.null;
         expect(empty.getText()).to.be.null;
         expect(empty.getImage()).to.be.null;
@@ -621,7 +640,10 @@ describe('FeatureVisibility', () => {
       });
 
       it('should have style function which returns empty array', () => {
-        const styleFunctionResult = feature.getStyleFunction()();
+        const styleFunctionResult = feature.getStyleFunction()?.(
+          new Feature({}),
+          0,
+        );
         expect(
           Array.isArray(styleFunctionResult) &&
             styleFunctionResult.length === 0,
@@ -645,9 +667,9 @@ describe('FeatureVisibility', () => {
     });
 
     describe('adding of CesiumTilesetFeature to highlighting', () => {
-      let feature;
+      let feature: Cesium3DTileFeature;
       beforeEach(() => {
-        feature = createDummyCesium3DTileFeature();
+        feature = createDummyCesium3DTileFeature() as Cesium3DTileFeature;
         featureVisibility.hideObjects(['test']);
         featureVisibility.addHiddenFeature('test', feature);
       });
@@ -673,7 +695,7 @@ describe('FeatureVisibility', () => {
       it('should not reset the originalStyle symbol', () => {
         const color = Color.RED.clone();
         feature[originalStyle] = color;
-        feature.color = highlightStyle.cesiumFillColor;
+        feature.color = highlightStyle.cesiumFillColor as Color;
         featureVisibility.addHiddenFeature('test', feature);
         expect(feature).to.have.property(originalStyle, color);
       });

@@ -28,6 +28,7 @@ import {
 import type { Feature } from 'ol/index.js';
 import type { Coordinate } from 'ol/coordinate.js';
 import { RegularShape, type Style } from 'ol/style.js';
+import { asColorLike } from 'ol/colorlike.js';
 import { createSync } from '../../layer/vectorSymbols.js';
 import VectorProperties, {
   PrimitiveOptionsType,
@@ -37,6 +38,7 @@ import VectorProperties, {
   VectorPropertiesPrimitiveOptions,
 } from '../../layer/vectorProperties.js';
 import { getCesiumColor } from '../../style/styleHelpers.js';
+import ModelFill from '../../style/modelFill.js';
 
 function makeOffsetAutoScalePrimitive(
   primitive: Primitive | Model,
@@ -124,6 +126,7 @@ export async function getModelOptions(
   positions: Cartesian3[],
   vectorProperties: VectorProperties,
   scene: Scene,
+  style?: Style,
 ): Promise<null | {
   primitives: Model[];
   options: VectorPropertiesModelOptions;
@@ -139,6 +142,15 @@ export async function getModelOptions(
     options.roll,
   );
   const allowPicking = vectorProperties.getAllowPicking(feature);
+  const fill = style?.getFill();
+  let color: Color | undefined;
+  if (fill instanceof ModelFill) {
+    const olColor = fill.getColor();
+    if (olColor) {
+      color = Color.fromCssColorString(asColorLike(olColor) as string);
+    }
+  }
+
   const primitives = await Promise.all(
     positions.map(async (position, index) => {
       const modelMatrix = Matrix4.multiply(
@@ -154,6 +166,7 @@ export async function getModelOptions(
         url: options.url,
         modelMatrix,
         allowPicking,
+        color,
         ...additionalModelOptions,
       });
 

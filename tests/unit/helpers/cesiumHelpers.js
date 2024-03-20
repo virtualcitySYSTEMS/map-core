@@ -121,6 +121,9 @@ export function getVcsEventSpy(event, sandbox) {
   return spy;
 }
 
+/**
+ * @returns {import("@vcmap-cesium/engine").Scene}
+ */
 export function getMockScene() {
   const scene = {
     screenSpaceCameraController: {

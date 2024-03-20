@@ -760,3 +760,4 @@ export {
   createFlightVisualization,
 } from './src/util/flight/flightVisualizer.js';
 export { getTileLoadFunction } from './src/layer/openlayers/loadFunctionHelpers.js';
+export { default as ModelFill } from './src/style/modelFill.js';

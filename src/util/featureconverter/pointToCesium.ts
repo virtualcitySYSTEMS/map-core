@@ -301,6 +301,7 @@ export default async function pointToCesium(
       positions,
       vectorProperties,
       scene,
+      style,
     );
   } else if (feature.get('olcs_primitiveOptions')) {
     modelOrPrimitiveOptions = await getPrimitiveOptions(
@@ -319,6 +320,7 @@ export default async function pointToCesium(
         positions,
         vectorProperties,
         scene,
+        style,
       )) ??
       (await getPrimitiveOptions(
         feature,

@@ -1,3 +1,4 @@
+import Feature from 'ol/Feature.js';
 import AbstractInteraction, {
   EventAfterEventHandler,
 } from '../../../interaction/abstractInteraction.js';
@@ -16,8 +17,11 @@ class TranslateVertexInteraction extends AbstractInteraction {
 
   private _vertex: Vertex | null = null;
 
-  constructor() {
+  private _feature: Feature;
+
+  constructor(feature: Feature) {
     super(EventType.DRAGEVENTS);
+    this._feature = feature;
     this.setActive();
   }
 
@@ -28,6 +32,7 @@ class TranslateVertexInteraction extends AbstractInteraction {
 
       if (event.type & EventType.DRAGEND) {
         this._vertex.unset('olcs_allowPicking');
+        this._feature.unset('olcs_allowPicking');
         this._vertex.setStyle(undefined);
         this._vertex = null;
       }
@@ -39,6 +44,7 @@ class TranslateVertexInteraction extends AbstractInteraction {
     ) {
       this._vertex = event.feature as Vertex;
       this._vertex.set('olcs_allowPicking', false);
+      this._feature.set('olcs_allowPicking', false);
       this._vertex.setStyle(emptyStyle);
       event.stopPropagation = true;
     }
