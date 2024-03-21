@@ -19,6 +19,7 @@ import {
   setupScratchLayer,
 } from './editorSessionHelpers.js';
 import InteractionChain from '../../interaction/interactionChain.js';
+import type AbstractInteraction from '../../interaction/abstractInteraction.js';
 import VcsEvent from '../../vcsEvent.js';
 import TranslateVertexInteraction from './interactions/translateVertexInteraction.js';
 import RemoveVertexInteraction from './interactions/removeVertexInteraction.js';
@@ -59,6 +60,11 @@ function assignVectorProperty<
   props[key] = value;
 }
 
+type EditGeometrySessionOptions = {
+  denyInsertion?: boolean;
+  denyRemoval?: boolean;
+};
+
 /**
  * Create the editing interaction for a feature with a line geometry
  * @param  feature
@@ -68,6 +74,7 @@ function assignVectorProperty<
 function createEditLineStringGeometryInteraction(
   feature: Feature<LineString>,
   scratchLayer: VectorLayer,
+  options: EditGeometrySessionOptions,
 ): EditGeometryInteraction {
   const geometry =
     feature[obliqueGeometry] ?? (feature.getGeometry() as LineString);
@@ -84,28 +91,32 @@ function createEditLineStringGeometryInteraction(
   const translateVertex = new TranslateVertexInteraction(feature);
   translateVertex.vertexChanged.addEventListener(resetGeometry);
 
-  const insertVertex = new InsertVertexInteraction(feature, geometry);
-  insertVertex.vertexInserted.addEventListener(({ vertex, index }) => {
-    scratchLayer.addFeatures([vertex]);
-    vertices.splice(index, 0, vertex);
-    resetGeometry();
-  });
+  const interactions: AbstractInteraction[] = [translateVertex];
 
-  const removeVertex = new RemoveVertexInteraction();
-  removeVertex.vertexRemoved.addEventListener((vertex) => {
-    scratchLayer.removeFeaturesById([vertex.getId() as string]);
-    const index = vertices.indexOf(vertex);
-    if (index > -1) {
-      vertices.splice(index, 1);
+  if (!options.denyInsertion) {
+    const insertVertex = new InsertVertexInteraction(feature, geometry);
+    insertVertex.vertexInserted.addEventListener(({ vertex, index }) => {
+      scratchLayer.addFeatures([vertex]);
+      vertices.splice(index, 0, vertex);
       resetGeometry();
-    }
-  });
+    });
+    interactions.push(insertVertex);
+  }
 
-  const interactionChain = new InteractionChain([
-    translateVertex,
-    insertVertex,
-    removeVertex,
-  ]);
+  if (!options.denyRemoval) {
+    const removeVertex = new RemoveVertexInteraction();
+    removeVertex.vertexRemoved.addEventListener((vertex) => {
+      scratchLayer.removeFeaturesById([vertex.getId() as string]);
+      const index = vertices.indexOf(vertex);
+      if (index > -1) {
+        vertices.splice(index, 1);
+        resetGeometry();
+      }
+    });
+    interactions.push(removeVertex);
+  }
+
+  const interactionChain = new InteractionChain(interactions);
 
   return {
     interactionChain,
@@ -250,6 +261,7 @@ function createEditBBoxGeometryInteraction(
 function createEditSimplePolygonInteraction(
   feature: Feature<Polygon>,
   scratchLayer: VectorLayer,
+  options: EditGeometrySessionOptions,
 ): EditGeometryInteraction {
   const geometry =
     feature[obliqueGeometry] ?? (feature.getGeometry() as Polygon);
@@ -271,28 +283,32 @@ function createEditSimplePolygonInteraction(
   const translateVertex = new TranslateVertexInteraction(feature);
   translateVertex.vertexChanged.addEventListener(resetGeometry);
 
-  const insertVertex = new InsertVertexInteraction(feature, linearRing);
-  insertVertex.vertexInserted.addEventListener(({ vertex, index }) => {
-    scratchLayer.addFeatures([vertex]);
-    vertices.splice(index, 0, vertex);
-    resetGeometry();
-  });
+  const interactions: AbstractInteraction[] = [translateVertex];
 
-  const removeVertex = new RemoveVertexInteraction();
-  removeVertex.vertexRemoved.addEventListener((vertex) => {
-    scratchLayer.removeFeaturesById([vertex.getId() as string]);
-    const index = vertices.indexOf(vertex);
-    if (index > -1) {
-      vertices.splice(index, 1);
+  if (!options.denyInsertion) {
+    const insertVertex = new InsertVertexInteraction(feature, linearRing);
+    insertVertex.vertexInserted.addEventListener(({ vertex, index }) => {
+      scratchLayer.addFeatures([vertex]);
+      vertices.splice(index, 0, vertex);
       resetGeometry();
-    }
-  });
+    });
+    interactions.push(insertVertex);
+  }
 
-  const interactionChain = new InteractionChain([
-    translateVertex,
-    insertVertex,
-    removeVertex,
-  ]);
+  if (!options.denyRemoval) {
+    const removeVertex = new RemoveVertexInteraction();
+    removeVertex.vertexRemoved.addEventListener((vertex) => {
+      scratchLayer.removeFeaturesById([vertex.getId() as string]);
+      const index = vertices.indexOf(vertex);
+      if (index > -1) {
+        vertices.splice(index, 1);
+        resetGeometry();
+      }
+    });
+    interactions.push(removeVertex);
+  }
+
+  const interactionChain = new InteractionChain(interactions);
 
   return {
     interactionChain,
@@ -350,11 +366,13 @@ function createEditPointInteraction(
  * @param  app
  * @param  layer
  * @param  [interactionId] id for registering mutliple exclusive interaction. Needed to run a selection session at the same time as a edit features session.
+ * @param  [editVertexOptions={}]
  */
 function startEditGeometrySession(
   app: VcsApp,
   layer: VectorLayer,
   interactionId?: string,
+  editVertexOptions: EditGeometrySessionOptions = {},
 ): EditGeometrySession {
   const {
     interactionChain,
@@ -367,7 +385,9 @@ function startEditGeometrySession(
   const mapInteractionController = new MapInteractionController();
   interactionChain.addInteraction(mapInteractionController);
 
-  const mouseOverInteraction = new EditGeometryMouseOverInteraction();
+  const mouseOverInteraction = new EditGeometryMouseOverInteraction(
+    editVertexOptions.denyRemoval,
+  );
   interactionChain.addInteraction(mouseOverInteraction);
 
   const stopped = new VcsEvent<void>();
@@ -463,12 +483,14 @@ function startEditGeometrySession(
           currentInteractionSet = createEditSimplePolygonInteraction(
             feature as Feature<Polygon>,
             scratchLayer,
+            editVertexOptions,
           );
         }
       } else if (geometryType === GeometryType.LineString) {
         currentInteractionSet = createEditLineStringGeometryInteraction(
           feature as Feature<LineString>,
           scratchLayer,
+          editVertexOptions,
         );
       } else if (geometryType === GeometryType.Point) {
         currentInteractionSet = createEditPointInteraction(

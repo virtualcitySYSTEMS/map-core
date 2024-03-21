@@ -1,3 +1,7 @@
+### 5.2.0
+
+- Adds parameter to `createEditGeometrySession` for disabling removal and insertion of vertices.
+
 ### 5.1.6
 
 - Fixes a bug where WMS featureinfo could only handle GeoJSON.

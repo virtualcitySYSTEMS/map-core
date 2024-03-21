@@ -43,8 +43,13 @@ class EditGeometryMouseOverInteraction extends AbstractInteraction {
 
   cursorStyle: CSSStyleDeclaration | undefined;
 
-  constructor() {
-    super(EventType.MOVE, ModificationKeyType.NONE | ModificationKeyType.SHIFT);
+  constructor(denyRemoval?: boolean) {
+    super(
+      EventType.MOVE,
+      denyRemoval
+        ? ModificationKeyType.NONE
+        : ModificationKeyType.NONE | ModificationKeyType.SHIFT,
+    );
 
     this.setActive();
   }

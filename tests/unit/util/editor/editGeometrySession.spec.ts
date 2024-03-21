@@ -970,4 +970,69 @@ describe('EditGeometrySession', () => {
       });
     });
   });
+  describe('starting a session with disabled insertion and removal of vertices', () => {
+    let session: EditGeometrySession;
+    let feature: Feature<LineString>;
+    let vertices: Feature<Point>[];
+
+    beforeEach(() => {
+      session = startEditGeometrySession(app, layer, undefined, {
+        denyInsertion: true,
+        denyRemoval: true,
+      });
+      feature = new Feature({
+        geometry: new LineString([
+          [0, 0, 0],
+          [1, 1, 0],
+        ]),
+      });
+      layer.addFeatures([feature]);
+      session.setFeature(feature);
+      vertices = (
+        [...app.layers].pop()! as VectorLayer
+      ).getFeatures() as Feature<Point>[];
+    });
+
+    afterEach(() => {
+      session.stop();
+    });
+
+    it('should not insert a vertex', async () => {
+      await app.maps.eventHandler.interactions[3].pipe({
+        pointer: PointerKeyType.LEFT,
+        key: ModificationKeyType.NONE,
+        type: EventType.CLICK,
+        feature,
+        positionOrPixel: [0.5, 0.5, 0],
+        ...mapEvent,
+      });
+
+      expect(
+        feature.getGeometry()!.getCoordinates(),
+      ).to.have.deep.ordered.members([
+        [0, 0, 0],
+        [1, 1, 0],
+      ]);
+    });
+
+    it('should not remove a vertex', async () => {
+      const vertex = vertices[0];
+
+      await app.maps.eventHandler.interactions[3].pipe({
+        pointer: PointerKeyType.LEFT,
+        key: ModificationKeyType.SHIFT,
+        type: EventType.CLICK,
+        feature: vertex,
+        positionOrPixel: [0, 0, 0],
+        ...mapEvent,
+      });
+
+      expect(
+        feature.getGeometry()!.getCoordinates(),
+      ).to.have.deep.ordered.members([
+        [0, 0, 0],
+        [1, 1, 0],
+      ]);
+    });
+  });
 });
