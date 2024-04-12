@@ -399,11 +399,12 @@ export function setClippingPlanes(
 }
 
 /**
- * Creates a new feature at the given coordinate, which can be set on a .
+ * Creates a new feature at the given coordinate, which can then be used to create a clippingPlaneCollection.
  * @param  coordinate - in WGS84
  * @param  camera
  * @param  [vertical=false]
  * @param  [offsetDistance=25] - the offset from the coordinate to use for the size of the geometry
+ * @param  [rotate=0] - rotation of clipping plane in radians. 0 means vertical plane is parallel to camera.heading and horizontal feature is aligned with axes.
  * @returns  - the features geometry is in web mercator
  */
 export function createClippingFeature(
@@ -411,6 +412,7 @@ export function createClippingFeature(
   camera: Camera,
   vertical = false,
   offsetDistance = 25,
+  rotate = 0,
 ): Feature {
   check(coordinate, [Number]);
   check(vertical, Boolean);
@@ -418,18 +420,18 @@ export function createClippingFeature(
 
   let geometry;
   if (vertical) {
-    const p1 = offset(coordinate, -offsetDistance, camera.heading);
-    const p2 = offset(coordinate, offsetDistance, camera.heading);
+    const p1 = offset(coordinate, -offsetDistance, camera.heading + rotate);
+    const p2 = offset(coordinate, offsetDistance, camera.heading + rotate);
     geometry = new LineString(
       [
-        [p1[0], p1[1], coordinate[2]],
-        [p2[0], p2[1], coordinate[2]],
+        [p1[0], p1[1], coordinate[2] - offsetDistance],
+        [p2[0], p2[1], coordinate[2] - offsetDistance],
       ],
       'XYZ',
     );
   } else {
     geometry = new Polygon([[]], 'XYZ');
-    let bearing = 2 * Math.PI - Math.PI / 4; // Bearing NW
+    let bearing = 2 * Math.PI - Math.PI / 4 + rotate; // Bearing NW
     const coordinates = [...(new Array(4) as undefined[])].map(() => {
       const newPoint = offset(coordinate, offsetDistance, bearing);
       bearing -= Math.PI / 2;

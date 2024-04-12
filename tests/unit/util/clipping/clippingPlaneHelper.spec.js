@@ -517,6 +517,10 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
   describe('createClippingFeature', () => {
     let app;
     let cesiumMap;
+    function bearing(p1, p2) {
+      return Math.atan2(p2[0] - p1[0], p2[1] - p1[1]);
+    }
+
     before(async () => {
       app = new VcsApp();
       cesiumMap = await setCesiumMap(app);
@@ -558,6 +562,19 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
         );
         expect(roundedSize).to.have.members([1, 1]);
       });
+
+      it('should rotate polygone clockwise', () => {
+        const rotationAngle = Math.PI / 2;
+        const feature = createClippingFeature(
+          [0, 0],
+          cesiumMap.getScene().camera,
+          false,
+          1,
+          rotationAngle,
+        );
+        const coords = feature.getGeometry().getCoordinates();
+        expect(bearing(coords[0][1], coords[0][0])).to.equal(rotationAngle);
+      });
     });
 
     describe('line', () => {
@@ -591,6 +608,34 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
           1,
         );
         expect(feature.get('olcs_extrudedHeight')).to.equal(2);
+      });
+
+      it('should offset the line in -z direction by the passed offset', () => {
+        const feature = createClippingFeature(
+          [0, 0, 0],
+          cesiumMap.getScene().camera,
+          true,
+          1,
+        );
+        expect(feature.getGeometry().getCoordinates()[0][2]).to.equal(-1);
+        expect(feature.getGeometry().getCoordinates()[1][2]).to.equal(-1);
+      });
+
+      it('should rotate the line clockwise', () => {
+        const rotationAngle = Math.PI / 2;
+        const { camera } = cesiumMap.getScene();
+        const feature = createClippingFeature(
+          [0, 0],
+          camera,
+          true,
+          1,
+          rotationAngle,
+        );
+        const lineCoords = feature.getGeometry().getCoordinates();
+
+        expect(bearing(lineCoords[0], lineCoords[1])).to.equal(
+          (camera.heading + rotationAngle) % (2 * Math.PI),
+        );
       });
     });
   });

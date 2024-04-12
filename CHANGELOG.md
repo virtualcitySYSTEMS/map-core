@@ -2,6 +2,7 @@
 
 - Adds parameter to `createEditGeometrySession` for disabling removal and insertion of vertices.
 - Adds exclusiveMapControls API to `mapCollection`. Deprecates `movementDisabled` getter and setter and replaces it with more specific getters for keyEvents, pointerEvents and API calls.
+- Changes `createClippingFeature` to make sure feature is also centered when vertical. Adds additional parameter to rotate feature.
 
 ### 5.1.6
 
