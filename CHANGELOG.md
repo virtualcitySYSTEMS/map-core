@@ -1,6 +1,7 @@
 ### 5.2.0
 
 - Adds parameter to `createEditGeometrySession` for disabling removal and insertion of vertices.
+- Adds exclusiveMapControls API to `mapCollection`. Deprecates `movementDisabled` getter and setter and replaces it with more specific getters for keyEvents, pointerEvents and API calls.
 
 ### 5.1.6
 

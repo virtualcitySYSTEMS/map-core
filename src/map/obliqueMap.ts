@@ -280,7 +280,7 @@ class ObliqueMap extends BaseOLMap {
   ): Promise<void> {
     check(obliqueCollection, ObliqueCollection);
 
-    if (this.movementDisabled) {
+    if (this.movementApiCallsDisabled) {
       return;
     }
 
@@ -329,7 +329,7 @@ class ObliqueMap extends BaseOLMap {
     imageName: string,
     optCenter?: Coordinate,
   ): Promise<void> {
-    if (this.movementDisabled || !this.initializedPromise) {
+    if (this.movementApiCallsDisabled || !this.initializedPromise) {
       return;
     }
     await this.initializedPromise;
@@ -414,7 +414,7 @@ class ObliqueMap extends BaseOLMap {
 
   async gotoViewpoint(viewpoint: Viewpoint): Promise<void> {
     if (
-      this.movementDisabled ||
+      this.movementApiCallsDisabled ||
       !this.olMap ||
       !this._obliqueProvider ||
       !viewpoint.isValid()

@@ -1,9 +1,10 @@
+import { getLogger as getLoggerByName, Logger } from '@vcsuite/logger';
 import { v4 as uuidv4 } from 'uuid';
 import type { MapEvent as OLMapEvent } from 'ol';
 import type { Layer as OLLayer } from 'ol/layer.js';
 import type { Coordinate } from 'ol/coordinate.js';
 
-import { check, maybe, oneOf } from '@vcsuite/check';
+import { check, is, maybe, oneOf } from '@vcsuite/check';
 import VcsObject, { VcsObjectOptions } from '../vcsObject.js';
 import LayerCollection from '../util/layerCollection.js';
 import MapState from './mapState.js';
@@ -15,6 +16,11 @@ import { CesiumVisualisationType } from './cesiumMap.js';
 import type Viewpoint from '../util/viewpoint.js';
 import type Layer from '../layer/layer.js';
 import type { MapEvent } from '../interaction/abstractInteraction.js';
+import type { DisableMapControlOptions } from '../util/mapCollection.js';
+
+function getLogger(): Logger {
+  return getLoggerByName('vcMap');
+}
 
 export type VcsMapOptions = VcsObjectOptions & {
   /**
@@ -76,10 +82,11 @@ class VcsMap<
 
   initialized: boolean;
 
-  /**
-   * if true, no movements should occur
-   */
-  movementDisabled: boolean;
+  private _movementApiCallsDisabled = false;
+
+  private _movementKeyEventsDisabled = false;
+
+  private _movementPointerEventsDisabled = false;
 
   /**
    * The name of a map to fall back on, if this map cant show a viewpoint
@@ -134,8 +141,6 @@ class VcsMap<
 
     this.initialized = false;
 
-    this.movementDisabled = false;
-
     this.fallbackMap = options.fallbackMap || null;
 
     this._visualizations = new Map();
@@ -170,6 +175,44 @@ class VcsMap<
    */
   get target(): HTMLElement | null {
     return this._target;
+  }
+
+  set movementDisabled(prevent: boolean) {
+    this._movementApiCallsDisabled = prevent;
+    this._movementKeyEventsDisabled = prevent;
+    this._movementPointerEventsDisabled = prevent;
+
+    getLogger().deprecate('movementDisabled', 'disableMovement');
+  }
+
+  /**
+   * @deprecated use disableMovement() for setting and movementApiCallsDisabled, movementKeyEventsDisabled and movementPointerEventsDisabled getter
+   */
+  get movementDisabled(): boolean {
+    getLogger().deprecate(
+      'movementDisabled',
+      'use the following getters: "movementApiCallsDisabled", "movementKeyEventsDisabled", "movementPointerEventsDisabled"',
+    );
+    return (
+      this._movementApiCallsDisabled &&
+      this._movementKeyEventsDisabled &&
+      this._movementPointerEventsDisabled
+    );
+  }
+
+  /** Whether api calls like gotoViewpoint & setting of oblique images are disabled */
+  get movementApiCallsDisabled(): boolean {
+    return this._movementApiCallsDisabled;
+  }
+
+  /** Whether movement related key events like the arrow keys for navigating in map are disabled. */
+  get movementKeyEventsDisabled(): boolean {
+    return this._movementKeyEventsDisabled;
+  }
+
+  /** Whether movement related pointer events for navigating in map are disabled. */
+  get movementPointerEventsDisabled(): boolean {
+    return this._movementPointerEventsDisabled;
   }
 
   /**
@@ -396,10 +439,20 @@ class VcsMap<
   }
 
   /**
-   * prevent all movement, including navigation controls, gotoViewpoint & setting of oblique images
+   * prevent all movement, including api calls (gotoViewpoint, setting oblique images), key and pointer events.
    */
-  disableMovement(prevent: boolean): void {
-    this.movementDisabled = prevent;
+  disableMovement(prevent: boolean | DisableMapControlOptions): void {
+    const disable: DisableMapControlOptions = is(prevent, Boolean)
+      ? {
+          apiCalls: prevent,
+          pointerEvents: prevent,
+          keyEvents: prevent,
+        }
+      : prevent;
+
+    this._movementApiCallsDisabled = disable.apiCalls;
+    this._movementKeyEventsDisabled = disable.keyEvents;
+    this._movementPointerEventsDisabled = disable.pointerEvents;
   }
 
   /**

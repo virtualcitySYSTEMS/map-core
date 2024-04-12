@@ -57,6 +57,7 @@ import { mapClassRegistry } from '../classRegistry.js';
 import type LayerCollection from '../util/layerCollection.js';
 import type Layer from '../layer/layer.js';
 import VcsEvent from '../vcsEvent.js';
+import { DisableMapControlOptions } from '../util/mapCollection.js';
 
 export type CesiumMapOptions = VcsMapOptions & {
   /**
@@ -850,7 +851,11 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
     viewpoint: Viewpoint,
     optMaximumHeight?: number,
   ): Promise<void> {
-    if (this.movementDisabled || !viewpoint.isValid() || !this._cesiumWidget) {
+    if (
+      this.movementApiCallsDisabled ||
+      !viewpoint.isValid() ||
+      !this._cesiumWidget
+    ) {
       return;
     }
 
@@ -980,10 +985,12 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
     );
   }
 
-  disableMovement(bool: boolean): void {
-    super.disableMovement(bool);
+  disableMovement(prevent: boolean | DisableMapControlOptions): void {
+    super.disableMovement(prevent);
+
     if (this._cesiumWidget) {
-      this._cesiumWidget.scene.screenSpaceCameraController.enableInputs = !bool;
+      this._cesiumWidget.scene.screenSpaceCameraController.enableInputs =
+        !this.movementPointerEventsDisabled;
     }
   }
 

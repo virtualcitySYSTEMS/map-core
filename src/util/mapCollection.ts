@@ -17,6 +17,12 @@ export type MapCollectionInitializationError = {
   map: VcsMap;
 };
 
+export type DisableMapControlOptions = {
+  apiCalls: boolean;
+  pointerEvents: boolean;
+  keyEvents: boolean;
+};
+
 async function setCesiumToOLViewpoint(
   cesiumMap: CesiumMap,
   olMap: OpenlayersMap,
@@ -118,6 +124,10 @@ class MapCollection extends Collection<VcsMap> {
 
   // eslint-disable-next-line class-methods-use-this
   private _postRenderListener: () => void = () => {};
+
+  /** Callback function that is passed when calling requestExclusiveMapControls and called when exclusive map controls are forcefully removed. */
+  // eslint-disable-next-line class-methods-use-this
+  private _exclusiveMapControlsRemoved: () => void = () => {};
 
   constructor() {
     super();
@@ -342,6 +352,7 @@ class MapCollection extends Collection<VcsMap> {
       }
     }
 
+    const previousMap = this._activeMap;
     this._activeMap = map;
     await this._activeMap.activate();
     this._setActiveMapCSSClass();
@@ -349,6 +360,14 @@ class MapCollection extends Collection<VcsMap> {
     if (viewpoint) {
       await this._activeMap.gotoViewpoint(viewpoint);
     }
+
+    const disableMapControlOptions: DisableMapControlOptions = {
+      apiCalls: !!previousMap?.movementApiCallsDisabled,
+      keyEvents: !!previousMap?.movementKeyEventsDisabled,
+      pointerEvents: !!previousMap?.movementPointerEventsDisabled,
+    };
+    map.disableMovement(disableMapControlOptions);
+    previousMap?.disableMovement(false);
 
     this.clippingObjectManager.mapActivated(map);
     this._postRenderListener();
@@ -366,6 +385,34 @@ class MapCollection extends Collection<VcsMap> {
    */
   getByType(type: string): VcsMap[] {
     return this._array.filter((m) => m.className === type);
+  }
+
+  /**
+   * Manages the disabling of map navigation controls. By calling this function the map navigation controls passed in the options are disabled. The remove function passed by the previous caller is executed.
+   * @param options - which of the movement controls should be disabled.
+   * @param removed - the callback for when the interaction is forcefully removed.
+   * @returns function to reset map controls.
+   */
+  requestExclusiveMapControls(
+    options: DisableMapControlOptions,
+    removed: () => void,
+  ): () => void {
+    this._exclusiveMapControlsRemoved();
+    if (this._activeMap) {
+      this._activeMap.disableMovement(options);
+    }
+
+    this._exclusiveMapControlsRemoved = removed;
+
+    return () => {
+      // only reset if this function is called by the current exclusiveMapControls owner.
+      if (removed === this._exclusiveMapControlsRemoved) {
+        this._exclusiveMapControlsRemoved = (): void => {};
+        if (this._activeMap) {
+          this._activeMap.disableMovement(false);
+        }
+      }
+    };
   }
 
   destroy(): void {

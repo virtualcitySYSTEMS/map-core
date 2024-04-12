@@ -106,7 +106,7 @@ class OpenlayersMap extends BaseOLMap {
   }
 
   gotoViewpoint(viewpoint: Viewpoint): Promise<void> {
-    if (this.movementDisabled || !viewpoint.isValid() || !this.olMap) {
+    if (this.movementApiCallsDisabled || !viewpoint.isValid() || !this.olMap) {
       return Promise.resolve();
     }
     let { heading } = viewpoint;

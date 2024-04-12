@@ -510,4 +510,83 @@ describe('MapCollection', () => {
       });
     });
   });
+  describe('requestExclusiveMapControls', () => {
+    /** @type {import("@vcmap/core").MapCollection} */
+    let mapCollection;
+    let openlayers;
+    let cesiumMap;
+    const disableMovementOptions = {
+      apiCalls: true,
+      keyEvents: true,
+      pointerEvents: true,
+    };
+
+    beforeEach(async () => {
+      openlayers = await getOpenlayersMap();
+      cesiumMap = await getCesiumMap();
+      mapCollection = MapCollection.from([openlayers, cesiumMap]);
+      mapCollection.setTarget(target);
+      await mapCollection.setActiveMap(cesiumMap.name);
+    });
+
+    afterEach(() => {
+      openlayers.destroy();
+      cesiumMap.destroy();
+      mapCollection.destroy();
+    });
+
+    it('should pass options to activeMap.disableMovement', async () => {
+      mapCollection.requestExclusiveMapControls(
+        disableMovementOptions,
+        () => {},
+      );
+      expect(mapCollection.activeMap.movementApiCallsDisabled).to.be.true;
+      expect(mapCollection.activeMap.movementKeyEventsDisabled).to.be.true;
+      expect(mapCollection.activeMap.movementPointerEventsDisabled).to.be.true;
+    });
+
+    it('should listen to active map changes and reset prev map', async () => {
+      mapCollection.requestExclusiveMapControls(
+        disableMovementOptions,
+        () => {},
+      );
+      expect(openlayers.movementApiCallsDisabled).to.be.false;
+      expect(cesiumMap.movementApiCallsDisabled).to.be.true;
+      await mapCollection.setActiveMap(openlayers.name);
+      expect(openlayers.movementApiCallsDisabled).to.be.true;
+      expect(cesiumMap.movementApiCallsDisabled).to.be.false;
+    });
+
+    it('should reset after calling return function', async () => {
+      const reset = mapCollection.requestExclusiveMapControls(
+        disableMovementOptions,
+        () => {},
+      );
+      reset();
+      expect(cesiumMap.movementApiCallsDisabled).to.be.false;
+    });
+
+    it('should call removed callback when removed by another exclusive map control', async () => {
+      const spy = sinon.spy();
+      mapCollection.requestExclusiveMapControls(disableMovementOptions, spy);
+      mapCollection.requestExclusiveMapControls(
+        disableMovementOptions,
+        () => {},
+      );
+      expect(spy).to.have.been.called;
+    });
+
+    it('should not reset if not exclusiveMapControls owner', async () => {
+      const reset1 = mapCollection.requestExclusiveMapControls(
+        disableMovementOptions,
+        () => {},
+      );
+      mapCollection.requestExclusiveMapControls(
+        disableMovementOptions,
+        () => {},
+      );
+      reset1();
+      expect(cesiumMap.movementApiCallsDisabled).to.be.true;
+    });
+  });
 });

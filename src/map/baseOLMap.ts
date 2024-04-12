@@ -17,6 +17,7 @@ import {
 import { mapClassRegistry } from '../classRegistry.js';
 import type LayerCollection from '../util/layerCollection.js';
 import type Layer from '../layer/layer.js';
+import { DisableMapControlOptions } from '../util/mapCollection.js';
 
 export function ensureLayerInCollection(
   layers: OLCollection<OLLayer>,
@@ -204,11 +205,11 @@ class BaseOLMap extends VcsMap<OLLayer> {
     }
   }
 
-  disableMovement(prevent: boolean): void {
+  disableMovement(prevent: boolean | DisableMapControlOptions): void {
     super.disableMovement(prevent);
     if (this._olMap) {
       this._olMap.getInteractions().forEach((i) => {
-        i.setActive(!prevent);
+        i.setActive(!this.movementPointerEventsDisabled);
       });
     }
   }
