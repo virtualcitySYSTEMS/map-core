@@ -117,9 +117,11 @@ describe('FlightPlayer', () => {
       expect(FP.clock).to.have.property('currentTime', flight.multiplier);
     });
 
-    it('should disable inputs on the screenSpaceController', () => {
+    it('should disable inputs on CesiumMap', () => {
       raisePostRender(cesiumMap);
-      expect(scene.screenSpaceCameraController.enableInputs).to.be.false;
+      expect(cesiumMap.movementPointerEventsDisabled).to.be.true;
+      expect(cesiumMap.movementKeyEventsDisabled).to.be.true;
+      expect(cesiumMap.movementApiCallsDisabled).to.be.true;
     });
 
     it('should set the view on the camera', () => {
@@ -200,10 +202,12 @@ describe('FlightPlayer', () => {
         expect(FP.clock).to.have.property('currentTime', 0);
       });
 
-      it('should enable input on the screen space controller', () => {
+      it('should enable input on CesiumMap', () => {
         clock.tick(1000);
         raisePostRender(cesiumMap);
-        expect(scene.screenSpaceCameraController.enableInputs).to.be.true;
+        expect(cesiumMap.movementPointerEventsDisabled).to.be.false;
+        expect(cesiumMap.movementKeyEventsDisabled).to.be.false;
+        expect(cesiumMap.movementApiCallsDisabled).to.be.false;
       });
     });
   });
@@ -230,13 +234,11 @@ describe('FlightPlayer', () => {
       FP.play();
     });
 
-    it('should enable input on the screenSpaceCamerController', () => {
-      scene.screenSpaceCameraController.enableInputs = false;
+    it('should enable input on CesiumMap', () => {
       FP.stop();
-      expect(scene.screenSpaceCameraController).to.have.property(
-        'enableInputs',
-        true,
-      );
+      expect(cesiumMap.movementPointerEventsDisabled).to.be.false;
+      expect(cesiumMap.movementKeyEventsDisabled).to.be.false;
+      expect(cesiumMap.movementApiCallsDisabled).to.be.false;
     });
 
     it('should change the state', () => {

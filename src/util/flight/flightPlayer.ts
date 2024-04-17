@@ -5,7 +5,6 @@ import {
   LinearSpline,
   QuaternionSpline,
   Scene,
-  ScreenSpaceCameraController,
 } from '@vcmap-cesium/engine';
 import { getLogger } from '@vcsuite/logger';
 import { check } from '@vcsuite/check';
@@ -86,9 +85,9 @@ export async function createFlightPlayer(
 
   let postRenderListener: (() => void) | undefined;
 
-  let backedBeforeTimeout: number | undefined;
+  let resetMapControls: (() => void) | undefined;
 
-  let screenSpaceCameraController: ScreenSpaceCameraController | undefined;
+  let backedBeforeTimeout: number | undefined;
 
   const stop = (): void => {
     if (playerState !== 'stopped') {
@@ -97,8 +96,9 @@ export async function createFlightPlayer(
         postRenderListener = undefined;
       }
 
-      if (screenSpaceCameraController) {
-        screenSpaceCameraController.enableInputs = true;
+      if (resetMapControls) {
+        resetMapControls();
+        resetMapControls = undefined;
       }
 
       setState('stopped');
@@ -167,8 +167,9 @@ export async function createFlightPlayer(
     const seconds = time - clock.currentSystemTime;
     clock.currentSystemTime = time;
     if (playerState === 'paused') {
-      if (screenSpaceCameraController) {
-        screenSpaceCameraController.enableInputs = true;
+      if (resetMapControls) {
+        resetMapControls();
+        resetMapControls = undefined;
       }
       return;
     }
@@ -196,10 +197,11 @@ export async function createFlightPlayer(
       scene.camera.setView(view);
     }
 
-    if (playerState === 'playing') {
-      if (screenSpaceCameraController) {
-        screenSpaceCameraController.enableInputs = false;
-      }
+    if (playerState === 'playing' && !resetMapControls) {
+      resetMapControls = app.maps.requestExclusiveMapControls(
+        { apiCalls: true, keyEvents: true, pointerEvents: true },
+        stop,
+      );
     }
   };
 
@@ -228,11 +230,15 @@ export async function createFlightPlayer(
       postRenderListener = undefined;
     }
 
+    if (resetMapControls) {
+      resetMapControls();
+      resetMapControls = undefined;
+    }
+
     const scene = cesiumMap.getScene();
     if (!scene) {
       return;
     }
-    ({ screenSpaceCameraController } = scene);
     postRenderListener = scene.postRender.addEventListener(cesiumPostRender);
     clock.currentSystemTime = undefined;
 
@@ -266,9 +272,9 @@ export async function createFlightPlayer(
       postRenderListener = undefined;
     }
 
-    if (screenSpaceCameraController) {
-      screenSpaceCameraController.enableInputs = true;
-      screenSpaceCameraController = undefined;
+    if (resetMapControls) {
+      resetMapControls();
+      resetMapControls = undefined;
     }
 
     if (backedBeforeTimeout != null) {
