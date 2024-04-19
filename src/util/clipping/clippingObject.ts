@@ -245,10 +245,19 @@ class ClippingObject {
   }
 
   handleMapChanged(map: VcsMap | null): void {
+    // clear old destroyed targets
+    this.targets.forEach((target, key) => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      if (target.isDestroyed && target.isDestroyed()) {
+        this.targets.delete(key);
+      }
+    });
     if (map instanceof CesiumMap) {
       const { globe } = map.getScene() as Scene;
       let raise = false;
-      if (this._terrain && !this.targets.has(globeSymbol)) {
+      if (this._terrain && !(this.targets.get(globeSymbol) === globe)) {
         this.targets.set(globeSymbol, globe);
         raise = true;
       } else if (!this._terrain && this.targets.has(globeSymbol)) {

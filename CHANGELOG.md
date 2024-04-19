@@ -4,6 +4,7 @@
 - Adds exclusiveMapControls API to `mapCollection`. Deprecates `movementDisabled` getter and setter and replaces it with more specific getters for keyEvents, pointerEvents and API calls.
 - Use new exclusiveMapControls in flightPlayer to disable movement during flight playing
 - Changes `createClippingFeature` to make sure feature is also centered when vertical. Adds additional parameter to rotate feature.
+- Fixed a bug where Clippingplanes would throw errors if the map was unloaded and loaded again.
 
 ### 5.1.6
 

@@ -233,6 +233,12 @@ class ClippingObjectManager {
 
     const setTargets = (clippingObject: ClippingObject): void => {
       clippingObject.targets.forEach((target) => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        if (target.isDestroyed && target.isDestroyed()) {
+          return;
+        }
         this._targetsMap.set(target, clippingObject);
         currentTargets.delete(target);
       });

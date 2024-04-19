@@ -266,6 +266,12 @@ export function copyClippingPlanesToCollection(
 export function clearClippingPlanes(
   target: Globe | Cesium3DTileset | Entity,
 ): void {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+  if (target.isDestroyed && target.isDestroyed()) {
+    return;
+  }
   if (target instanceof Entity) {
     if (target.model) {
       if (target.model.clippingPlanes) {
