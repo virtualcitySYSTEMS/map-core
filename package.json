@@ -1,6 +1,6 @@
 {
   "name": "@vcmap/core",
-  "version": "5.2.0-rc.0",
+  "version": "5.2.0",
   "description": "",
   "main": "dist/index.js",
   "type": "module",
