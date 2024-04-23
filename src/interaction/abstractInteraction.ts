@@ -15,6 +15,7 @@ import {
   PointerKeyType,
 } from './interactionType.js';
 import type VcsMap from '../map/vcsMap.js';
+import VcsEvent from '../vcsEvent.js';
 
 export type MapEvent = {
   pointerEvent: PointerEventType;
@@ -70,6 +71,10 @@ export type InteractionEvent = MapEvent & {
    * whether the position is exact, eg with translucentDepthPicking on
    */
   exactPosition?: boolean;
+  /**
+   * called when the event chain has ended in which this event was fired.
+   */
+  chainEnded?: VcsEvent<void>;
 };
 
 export type EventAfterEventHandler = Omit<

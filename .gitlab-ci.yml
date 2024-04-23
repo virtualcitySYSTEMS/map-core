@@ -1,5 +1,5 @@
 default:
-  image: gitlab.virtualcitysystems.de:5050/vcsuite/devops/gitlabrunner/node:18-bullseye
+  image: gitlab.virtualcitysystems.de:5050/vcsuite/devops/gitlabrunner/node:20-bullseye
 
 variables:
   GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_PROJECT_PATH_SLUG/$CI_COMMIT_REF_SLUG

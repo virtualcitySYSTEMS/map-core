@@ -2,9 +2,13 @@ import { Cartesian2 } from '@vcmap-cesium/engine';
 import EventHandler from '../../../src/interaction/eventHandler.js';
 import AbstractInteraction from '../../../src/interaction/abstractInteraction.js';
 import InteractionChain from '../../../src/interaction/interactionChain.js';
-import { EventType } from '../../../src/interaction/interactionType.js';
-import { ModificationKeyType } from '../../../index.js';
+import {
+  EventType,
+  ModificationKeyType,
+} from '../../../src/interaction/interactionType.js';
 import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
+import { timeout } from '../helpers/helpers.js';
+import VcsEvent from '../../../src/vcsEvent.js';
 
 describe('EventHandler', () => {
   let sinonBox;
@@ -216,6 +220,7 @@ describe('EventHandler', () => {
       expect(chainPipe).to.have.been.calledWith({
         windowPosition,
         type: EventType.CLICK,
+        chainEnded: new VcsEvent(),
       });
     });
 
@@ -232,6 +237,7 @@ describe('EventHandler', () => {
       expect(chainPipe).to.have.been.calledWith({
         windowPosition,
         type: EventType.CLICK,
+        chainEnded: new VcsEvent(),
       });
 
       EH._mouseDown({ windowPosition });
@@ -245,6 +251,7 @@ describe('EventHandler', () => {
       expect(chainPipe).to.have.been.calledWith({
         windowPosition,
         type: EventType.DBLCLICK,
+        chainEnded: new VcsEvent(),
       });
     });
 
@@ -260,6 +267,7 @@ describe('EventHandler', () => {
       expect(chainPipe).to.have.been.calledWith({
         windowPosition,
         type: EventType.CLICK,
+        chainEnded: new VcsEvent(),
       });
 
       EH._mouseDown({ windowPosition });
@@ -273,6 +281,7 @@ describe('EventHandler', () => {
       expect(chainPipe).to.have.been.calledWith({
         windowPosition,
         type: EventType.CLICK,
+        chainEnded: new VcsEvent(),
       });
     });
 
@@ -288,6 +297,7 @@ describe('EventHandler', () => {
       expect(chainPipe).to.have.been.calledWith({
         windowPosition,
         type: EventType.CLICK,
+        chainEnded: new VcsEvent(),
       });
     });
 
@@ -304,6 +314,7 @@ describe('EventHandler', () => {
         time: 1,
         key: 'test',
         pointer: 'test',
+        chainEnded: new VcsEvent(),
       });
       EH._mouseMove({ windowPosition });
       expect(chainPipe).to.have.been.calledWith({
@@ -311,6 +322,7 @@ describe('EventHandler', () => {
         type: EventType.DRAG,
         key: 'test',
         pointer: 'test',
+        chainEnded: new VcsEvent(),
       });
       EH._mouseUp({ windowPosition });
     });
@@ -330,6 +342,7 @@ describe('EventHandler', () => {
       expect(chainPipe).to.have.been.calledWith({
         windowPosition,
         type: EventType.CLICK,
+        chainEnded: new VcsEvent(),
       });
     });
   });
@@ -341,20 +354,14 @@ describe('EventHandler', () => {
       chainPipe.returns(Promise.resolve());
     });
 
-    it('check if start and endChain have been called', (done) => {
+    it('check if startChain has been called', () => {
       const startChain = sinonBox.spy(EH, '_startChain');
-      const endChain = sinonBox.spy(EH, '_endChain');
       EH._mouseDown({ windowPosition });
       EH._mouseUp({ windowPosition });
       expect(startChain).to.have.been.calledOnce;
-      setTimeout(() => {
-        expect(endChain).to.have.been.calledOnce;
-        done();
-      }, 1);
     });
-    it('check if events are queued and processed', (done) => {
+    it('check if events are queued and processed', async () => {
       const startChain = sinonBox.spy(EH, '_startChain');
-      const endChain = sinonBox.spy(EH, '_endChain');
       EH._mouseDown({ windowPosition });
       EH._mouseUp({ windowPosition });
       EH._mouseDown({ windowPosition });
@@ -367,27 +374,19 @@ describe('EventHandler', () => {
           expect(value).to.have.length(1);
           return true;
         });
-      setTimeout(() => {
-        expect(endChain).to.have.been.calledTwice;
-        done();
-      }, 1);
+      await timeout(1);
+      expect(EH._eventQueue).to.be.empty;
     });
-    it('mousemove events are discarded if an event is running', (done) => {
+    it('mousemove events are discarded if an event is running', async () => {
       const startChain = sinonBox.spy(EH, '_startChain');
-      const endChain = sinonBox.spy(EH, '_endChain');
       EH._mouseDown({ windowPosition });
       EH._mouseUp({ windowPosition });
       EH._mouseMove({ windowPosition });
       expect(startChain).to.have.been.calledTwice;
       expect(EH).to.have.property('_running', true);
-      setTimeout(() => {
-        expect(endChain).to.have.been.calledOnce;
-        EH._mouseMove({ windowPosition });
-        setTimeout(() => {
-          expect(endChain).to.have.been.calledTwice;
-          done();
-        }, 1);
-      }, 1);
+      expect(EH._eventQueue).to.have.lengthOf(0);
+      await timeout(1);
+      expect(EH).to.have.property('_running', false);
     });
   });
 
@@ -560,6 +559,33 @@ describe('EventHandler', () => {
       expect(modifierChangedEventSpy).to.have.been.calledWith(
         ModificationKeyType.SHIFT,
       );
+    });
+  });
+  describe('event chainEnded Event', () => {
+    it('interaction event should have a chainEnded Event', async () => {
+      const chainPipe = sinonBox.stub(EH, '_startChain');
+      const interaction = new AbstractInteraction(EventType.CLICK);
+      const removeInteraction = EH.addExclusiveInteraction(
+        interaction,
+        () => {},
+      );
+      EH._mouseDown({ windowPosition });
+      EH._mouseUp({ windowPosition });
+      const event = chainPipe.getCall(0).args[0];
+      expect(event?.chainEnded).to.be.an.instanceOf(VcsEvent);
+      removeInteraction();
+    });
+
+    it('interaction event should trigger chainEnded Event', async () => {
+      const spy = sinonBox.spy();
+      const event = {
+        windowPosition,
+        chainEnded: new VcsEvent(),
+      };
+      event.chainEnded.addEventListener(spy);
+      EH._startChain(event);
+      await timeout(1);
+      expect(spy).to.have.been.calledOnce;
     });
   });
 });

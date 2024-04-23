@@ -6,7 +6,8 @@
   "type": "module",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "tsc -b tests && node -e \"require('fs').cpSync('tests/data', '.tests/tests/data', { recursive: true })\" && mocha --exit --require .tests/tests/setupJsdom.js --require .tests/tests/setup.js --file .tests/tests/vcs.js \".tests/**/*.spec.js\"",
+    "pretest": "tsc -b tests && node -e \"require('fs').cpSync('tests/data', '.tests/tests/data', { recursive: true })\"",
+    "test": "mocha --exit --require .tests/tests/setupJsdom.js --require .tests/tests/setup.js --file .tests/tests/vcs.js \".tests/**/*.spec.js\"",
     "lint:js": "eslint . --ext .vue,.js,.cjs,.mjs,.ts",
     "lint:prettier": "prettier --check .",
     "lint": "npm run lint:js && npm run lint:prettier",

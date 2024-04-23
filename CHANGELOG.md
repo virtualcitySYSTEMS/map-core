@@ -4,6 +4,9 @@
 - Adds exclusiveMapControls API to `mapCollection`. Deprecates `movementDisabled` getter and setter and replaces it with more specific getters for keyEvents, pointerEvents and API calls.
 - Use new exclusiveMapControls in flightPlayer to disable movement during flight playing
 - Changes `createClippingFeature` to make sure feature is also centered when vertical. Adds additional parameter to rotate feature.
+- Added a new `chainEnded` property to an `InteractionEvent` ThisEvent will be triggered after the current InteractionChain is finished.
+- if an EditFeatureSession is active, a right click on the selected feature is now allowed.
+- `EditFeaturesSession` now will set `createSync` on the currently edited Features for faster Visual Feedback.
 - Fixed a bug where Clippingplanes would throw errors if the map was unloaded and loaded again.
 
 ### 5.1.6

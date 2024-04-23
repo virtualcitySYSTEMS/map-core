@@ -25,7 +25,7 @@ import MapInteractionController from './interactions/mapInteractionController.js
 import TranslateInteraction from './transformation/translateInteraction.js';
 import RotateInteraction from './transformation/rotateInteraction.js';
 import ScaleInteraction from './transformation/scaleInteraction.js';
-import { obliqueGeometry } from '../../layer/vectorSymbols.js';
+import { createSync, obliqueGeometry } from '../../layer/vectorSymbols.js';
 import ExtrudeInteraction from './transformation/extrudeInteraction.js';
 import ObliqueMap from '../../map/obliqueMap.js';
 import { ensureFeatureAbsolute, geometryChangeKeys } from './editorHelpers.js';
@@ -36,6 +36,7 @@ import { ModificationKeyType } from '../../interaction/interactionType.js';
 import type VcsApp from '../../vcsApp.js';
 import type VectorLayer from '../../layer/vectorLayer.js';
 import type VcsMap from '../../map/vcsMap.js';
+import RightClickInteraction from './interactions/rightClickInteraction.js';
 
 /**
  * Saves the original allowPicking settings and sets them to false if CTRL is not pressed.
@@ -75,6 +76,37 @@ function clearAllowPicking(
   } else {
     feature.unset('olcs_allowPicking');
   }
+}
+
+/**
+ * Saves the original createSync State of the feature, and sets createSync to true.
+ * @param feature
+ * @param originalCreateSyncMap
+ */
+function setCreateSync(
+  feature: Feature,
+  originalCreateSyncMap: Map<string | number, boolean>,
+): void {
+  const id = feature.getId() as string | number;
+  const hasCreateSync = !!feature[createSync];
+  originalCreateSyncMap.set(id, hasCreateSync);
+  feature[createSync] = true;
+}
+
+/**
+ * Restores the original createSync State of the feature, and removes createSync if it was not set.
+ * @param feature
+ * @param originalCreateSyncMap
+ */
+function clearCreateSync(
+  feature: Feature,
+  originalCreateSyncMap: Map<string | number, boolean>,
+): void {
+  const id = feature.getId() as string | number;
+  if (!originalCreateSyncMap.get(id)) {
+    delete feature[createSync];
+  }
+  originalCreateSyncMap.delete(id);
 }
 
 export type EditFeaturesSession = EditorSession<SessionType.EDIT_FEATURES> & {
@@ -127,6 +159,21 @@ function startEditFeaturesSession(
       });
     });
 
+  const rightClickStart = new RightClickInteraction();
+  rightClickStart.rightClicked.addEventListener(() => {
+    // we allow picking the Feature on rightClick, for this we add the RightClickInteraction
+    currentFeatures.forEach((feature) => {
+      feature.set('olcs_allowPicking', true);
+    });
+  });
+  rightClickStart.eventChainFinished.addEventListener(() => {
+    // reset olcs_allowPicking after rightClick
+    const allowPicking = modificationKey === ModificationKeyType.CTRL;
+    currentFeatures.forEach((feature) => {
+      feature.set('olcs_allowPicking', allowPicking);
+    });
+  });
+
   const scratchLayer = setupScratchLayer(app.layers);
 
   const {
@@ -134,6 +181,14 @@ function startEditFeaturesSession(
     removed: interactionRemoved,
     destroy: destroyInteractionChain,
   } = setupInteractionChain(app.maps.eventHandler, interactionId);
+
+  const { exclusiveInteractionId } = app.maps.eventHandler;
+  const removeRightClickStart = app.maps.eventHandler.addExclusiveInteraction(
+    rightClickStart,
+    () => interactionRemoved.raiseEvent(),
+    0,
+    exclusiveInteractionId,
+  );
 
   const mouseOverInteraction = new EditFeaturesMouseOverInteraction();
   interactionChain.addInteraction(mouseOverInteraction);
@@ -308,6 +363,8 @@ function startEditFeaturesSession(
     );
   };
 
+  const originalCreateSyncMap = new Map<string | number, boolean>();
+
   const stop = (): void => {
     destroyTransformation();
     destroyInteractionChain();
@@ -315,12 +372,15 @@ function startEditFeaturesSession(
     mapChangedListener();
     modifierChangedListener();
     unByKey(featureListeners);
-    currentFeatures.forEach((feature) =>
-      clearAllowPicking(feature, allowPickingMap),
-    );
+    currentFeatures.forEach((feature) => {
+      clearAllowPicking(feature, allowPickingMap);
+      clearCreateSync(feature, originalCreateSyncMap);
+    });
     allowPickingMap.clear();
     app.layers.remove(scratchLayer);
     modeChanged.destroy();
+    removeRightClickStart();
+    rightClickStart.destroy();
     stopped.raiseEvent();
     stopped.destroy();
   };
@@ -340,14 +400,16 @@ function startEditFeaturesSession(
     translate,
     scale,
     setFeatures(features: Feature[]): void {
-      currentFeatures.forEach((feature) =>
-        clearAllowPicking(feature, allowPickingMap),
-      );
+      currentFeatures.forEach((feature) => {
+        clearAllowPicking(feature, allowPickingMap);
+        clearCreateSync(feature, originalCreateSyncMap);
+      });
       currentFeatures.length = 0;
       currentFeatures.push(...features);
-      currentFeatures.forEach((feature) =>
-        setAllowPicking(feature, allowPickingMap, modificationKey),
-      );
+      currentFeatures.forEach((feature) => {
+        setAllowPicking(feature, allowPickingMap, modificationKey);
+        setCreateSync(feature, originalCreateSyncMap);
+      });
       setFeatureListeners();
       transformationHandler?.setFeatures(features);
     },

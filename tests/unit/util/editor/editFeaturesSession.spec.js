@@ -1,14 +1,20 @@
 import { expect } from 'chai';
+import sinon from 'sinon';
+
 import { Cartesian2, Math as CesiumMath } from '@vcmap-cesium/engine';
 import { Point } from 'ol/geom.js';
 import Feature from 'ol/Feature.js';
+import { unByKey } from 'ol/Observable.js';
+
 import {
   AxisAndPlanes,
+  createSync,
   EventType,
   mercatorToCartesian,
   ModificationKeyType,
   ObliqueMap,
   OpenlayersMap,
+  PointerEventType,
   PointerKeyType,
   startEditFeaturesSession,
   TransformationMode,
@@ -22,6 +28,7 @@ import {
   patchPickRay,
 } from './transformation/setupTransformationHandler.js';
 import { getVcsEventSpy, getCesiumMap } from '../../helpers/cesiumHelpers.js';
+import { timeout } from '../../helpers/helpers.js';
 
 describe('startEditFeaturesSession', () => {
   let app;
@@ -75,6 +82,10 @@ describe('startEditFeaturesSession', () => {
       );
     });
 
+    it('should set createSync on the feature', async () => {
+      expect(feature[createSync]).to.exist;
+    });
+
     describe('changing features', () => {
       let newFeature;
 
@@ -92,6 +103,10 @@ describe('startEditFeaturesSession', () => {
           'olcs_allowPicking',
         );
       });
+
+      it('should clear createSync for previous features', () => {
+        expect(feature[createSync]).to.not.exist;
+      });
     });
 
     describe('removing all features', () => {
@@ -105,17 +120,61 @@ describe('startEditFeaturesSession', () => {
     });
   });
 
-  describe('removing a feature with allowPicking set', () => {
-    it('should maintain allowPicking', async () => {
+  describe('removing features should restore original allowPicking and createSync values', () => {
+    it('should maintain allowPicking', () => {
       const feature = createFeatureWithId(new Point([0, 0, 0]));
       feature.set('olcs_allowPicking', true);
       layer.addFeatures([feature]);
 
       const session = startEditFeaturesSession(app, layer);
-      await session.setFeatures([feature]);
+      session.setFeatures([feature]);
       expect(feature.get('olcs_allowPicking')).to.be.false;
       session.setFeatures([]);
       expect(feature.get('olcs_allowPicking')).to.be.true;
+    });
+
+    it('should maintain createSync', () => {
+      const feature = createFeatureWithId(new Point([0, 0, 0]));
+      layer.addFeatures([feature]);
+
+      feature[createSync] = true;
+      const session = startEditFeaturesSession(app, layer);
+      session.setFeatures([feature]);
+      expect(feature[createSync]).to.exist;
+      session.setFeatures([]);
+      expect(feature[createSync]).to.exist;
+    });
+  });
+
+  describe('right clicking a feature', () => {
+    it('should allow picking during the event', async () => {
+      const feature = createFeatureWithId(new Point([0, 0, 0]));
+      layer.addFeatures([feature]);
+      const session = startEditFeaturesSession(app, layer);
+      session.setFeatures([feature]);
+
+      const propertyChanged = sinon.spy();
+      const listener = feature.on('propertychange', propertyChanged);
+
+      app.maps.eventHandler.handleMapEvent({
+        map: defaultMap,
+        windowPosition: Cartesian2.ONE,
+        pointerEvent: PointerEventType.DOWN,
+        pointer: PointerKeyType.RIGHT,
+        key: ModificationKeyType.NONE,
+      });
+      await timeout(20);
+      app.maps.eventHandler.handleMapEvent({
+        map: defaultMap,
+        windowPosition: Cartesian2.ONE,
+        pointerEvent: PointerEventType.UP,
+        pointer: PointerKeyType.RIGHT,
+        key: ModificationKeyType.NONE,
+      });
+
+      await timeout(20);
+      unByKey(listener);
+      expect(propertyChanged).to.have.been.calledTwice;
     });
   });
 
@@ -127,7 +186,7 @@ describe('startEditFeaturesSession', () => {
     });
 
     it('should remove the interaction', () => {
-      const interaction = app.maps.eventHandler.interactions[3];
+      const interaction = app.maps.eventHandler.interactions[4];
       session.stop();
       expect(app.maps.eventHandler.interactions).to.not.include(interaction);
     });
@@ -144,6 +203,13 @@ describe('startEditFeaturesSession', () => {
       session.setFeatures([feature]);
       session.stop();
       expect(feature.getProperties()).to.not.have.property('olcs_allowPicking');
+    });
+
+    it('should unset createSync false', async () => {
+      const feature = createFeatureWithId(new Point([0, 0, 0]));
+      session.setFeatures([feature]);
+      session.stop();
+      expect(feature[createSync]).to.not.exist;
     });
   });
 
@@ -169,7 +235,7 @@ describe('startEditFeaturesSession', () => {
     });
 
     it('should add a an exclusive listener to the event handler', () => {
-      expect(app.maps.eventHandler.interactions[3]).to.be.an.instanceof(
+      expect(app.maps.eventHandler.interactions[4]).to.be.an.instanceof(
         InteractionChain,
       );
     });
@@ -178,7 +244,7 @@ describe('startEditFeaturesSession', () => {
       const point = new Point([1, 1, 1]);
       await session.setFeatures([createFeatureWithId(point)]);
       const feature = createHandlerFeature(AxisAndPlanes.X);
-      await app.maps.eventHandler.interactions[3].pipe({
+      await app.maps.eventHandler.interactions[4].pipe({
         map: app.maps.activeMap,
         feature,
         positionOrPixel: [2, 1, 1],
@@ -186,7 +252,7 @@ describe('startEditFeaturesSession', () => {
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
       });
-      await app.maps.eventHandler.interactions[3].pipe({
+      await app.maps.eventHandler.interactions[4].pipe({
         map: app.maps.activeMap,
         feature,
         positionOrPixel: [3, 1, 1],
@@ -194,7 +260,7 @@ describe('startEditFeaturesSession', () => {
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
       });
-      await app.maps.eventHandler.interactions[3].pipe({
+      await app.maps.eventHandler.interactions[4].pipe({
         map: app.maps.activeMap,
         feature,
         positionOrPixel: [3, 1, 1],
@@ -228,7 +294,7 @@ describe('startEditFeaturesSession', () => {
     });
 
     it('should add a an exclusive listener to the event handler', () => {
-      expect(app.maps.eventHandler.interactions[3]).to.be.an.instanceof(
+      expect(app.maps.eventHandler.interactions[4]).to.be.an.instanceof(
         InteractionChain,
       );
     });
@@ -241,7 +307,7 @@ describe('startEditFeaturesSession', () => {
         createFeatureWithId(point2),
       ]);
       const feature = createHandlerFeature(AxisAndPlanes.X);
-      await app.maps.eventHandler.interactions[3].pipe({
+      await app.maps.eventHandler.interactions[4].pipe({
         map: app.maps.activeMap,
         feature,
         positionOrPixel: [0.5, 0.5, 1],
@@ -249,7 +315,7 @@ describe('startEditFeaturesSession', () => {
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
       });
-      await app.maps.eventHandler.interactions[3].pipe({
+      await app.maps.eventHandler.interactions[4].pipe({
         map: app.maps.activeMap,
         feature,
         positionOrPixel: [-0.5, -0.5, 1],
@@ -257,7 +323,7 @@ describe('startEditFeaturesSession', () => {
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
       });
-      await app.maps.eventHandler.interactions[3].pipe({
+      await app.maps.eventHandler.interactions[4].pipe({
         map: app.maps.activeMap,
         feature,
         positionOrPixel: [-0.5, -0.5, 1],
@@ -296,7 +362,7 @@ describe('startEditFeaturesSession', () => {
     });
 
     it('should add a an exclusive listener to the event handler', () => {
-      expect(app.maps.eventHandler.interactions[3]).to.be.an.instanceof(
+      expect(app.maps.eventHandler.interactions[4]).to.be.an.instanceof(
         InteractionChain,
       );
     });
@@ -309,7 +375,7 @@ describe('startEditFeaturesSession', () => {
         createFeatureWithId(point2),
       ]);
       const feature = createHandlerFeature(AxisAndPlanes.X);
-      await app.maps.eventHandler.interactions[3].pipe({
+      await app.maps.eventHandler.interactions[4].pipe({
         map: app.maps.activeMap,
         feature,
         positionOrPixel: [0.5, 0.5, 1],
@@ -317,7 +383,7 @@ describe('startEditFeaturesSession', () => {
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
       });
-      await app.maps.eventHandler.interactions[3].pipe({
+      await app.maps.eventHandler.interactions[4].pipe({
         map: app.maps.activeMap,
         feature,
         positionOrPixel: [-0.5, -0.5, 1],
@@ -325,7 +391,7 @@ describe('startEditFeaturesSession', () => {
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
       });
-      await app.maps.eventHandler.interactions[3].pipe({
+      await app.maps.eventHandler.interactions[4].pipe({
         map: app.maps.activeMap,
         feature,
         positionOrPixel: [-0.5, -0.5, 1],
@@ -366,7 +432,7 @@ describe('startEditFeaturesSession', () => {
     });
 
     it('should add a an exclusive listener to the event handler', () => {
-      expect(app.maps.eventHandler.interactions[3]).to.be.an.instanceof(
+      expect(app.maps.eventHandler.interactions[4]).to.be.an.instanceof(
         InteractionChain,
       );
     });
@@ -395,7 +461,7 @@ describe('startEditFeaturesSession', () => {
         await session.setFeatures([feature]);
         const handlerFeature = createHandlerFeature(AxisAndPlanes.Z);
 
-        await app.maps.eventHandler.interactions[3].pipe({
+        await app.maps.eventHandler.interactions[4].pipe({
           map: app.maps.activeMap,
           feature: handlerFeature,
           positionOrPixel: [1, 1, 1],
@@ -404,7 +470,7 @@ describe('startEditFeaturesSession', () => {
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await app.maps.eventHandler.interactions[4].pipe({
           map: app.maps.activeMap,
           feature: handlerFeature,
           positionOrPixel: [1, 1, 4],
@@ -413,7 +479,7 @@ describe('startEditFeaturesSession', () => {
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await app.maps.eventHandler.interactions[4].pipe({
           map: app.maps.activeMap,
           feature: handlerFeature,
           positionOrPixel: [1, 1, 4],

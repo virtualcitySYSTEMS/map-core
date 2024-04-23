@@ -147,6 +147,14 @@ class EventHandler {
   }
 
   /**
+   * if an exclusive Interaction is set, this will return the id of the exclusive Interaction
+   * This can be used to add another Interaction to the same Id
+   */
+  get exclusiveInteractionId(): string | undefined {
+    return this._exclusiveInteraction?.id;
+  }
+
+  /**
    * Add a dynamic interaction to the interaction chain. This is the default methodology for
    * user map interactions, such as drawing or measuring. If another exclusive interaction is added,
    * this interaction is removed and a provided callback is called. Use the id parameter to add multiple interactions
@@ -296,7 +304,10 @@ class EventHandler {
       return;
     }
 
-    const actualEvent: Partial<InteractionEvent> & MapEvent = event;
+    const actualEvent: Partial<InteractionEvent> & MapEvent = {
+      ...event,
+      chainEnded: new VcsEvent(),
+    };
     if (this._dragging) {
       actualEvent.type = EventType.DRAGEND;
       actualEvent.key = this._dragging.key;
@@ -328,7 +339,10 @@ class EventHandler {
   }
 
   private _mouseMove(event: MapEvent): void {
-    let actualEvent: Partial<InteractionEvent> & MapEvent = event;
+    let actualEvent: Partial<InteractionEvent> & MapEvent = {
+      ...event,
+      chainEnded: new VcsEvent(),
+    };
     if (this._lastDown) {
       if (this._dragging) {
         actualEvent.type = EventType.DRAG;
@@ -339,7 +353,11 @@ class EventHandler {
         !this._dragging &&
         Date.now() - (this._lastDown.time as number) > this.dragDuration
       ) {
-        actualEvent = { type: EventType.DRAGSTART, ...this._lastDown };
+        actualEvent = {
+          type: EventType.DRAGSTART,
+          ...this._lastDown,
+          chainEnded: new VcsEvent(),
+        };
         this._dragging = actualEvent;
         this._startChain(actualEvent as InteractionEvent, true);
       }
@@ -399,19 +417,18 @@ class EventHandler {
       this._running = true;
       this._interactionChain
         .pipe(event)
-        .then(this._endChain.bind(this))
         .catch((error) => {
           getLogger().error((error as Error).message);
-          this._endChain();
+        })
+        .finally(() => {
+          event.chainEnded?.raiseEvent();
+          event.chainEnded?.destroy();
+          this._running = false;
+          const nextEvent = this._eventQueue.shift();
+          if (nextEvent) {
+            this._startChain(nextEvent);
+          }
         });
-    }
-  }
-
-  private _endChain(): void {
-    this._running = false;
-    const nextEvent = this._eventQueue.shift();
-    if (nextEvent) {
-      this._startChain(nextEvent);
     }
   }
 
