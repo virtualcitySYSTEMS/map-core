@@ -410,12 +410,13 @@ class VcsApp {
         config.startingObliqueCollectionName,
       );
       if (startingObliqueCollection) {
-        [...this._maps]
-          .filter((m) => m instanceof ObliqueMap)
-          .forEach((m) => {
-            // eslint-disable-next-line no-void
-            void (m as ObliqueMap).setCollection(startingObliqueCollection);
-          });
+        await Promise.all(
+          [...this._maps]
+            .filter((m) => m instanceof ObliqueMap)
+            .map((m) => {
+              return (m as ObliqueMap).setCollection(startingObliqueCollection);
+            }),
+        );
       }
     }
 
