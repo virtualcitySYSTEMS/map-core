@@ -122,7 +122,15 @@ class VcsApp {
 
   private _destroyed: VcsEvent<void>;
 
-  private _moduleMutationPromise: Promise<void>;
+  private _moduleMutationChain: {
+    running: boolean;
+    items: Array<{
+      moduleId: string;
+      mutation: () => Promise<void>;
+      resolve: () => void;
+      reject: (reason?: any) => void;
+    }>;
+  };
 
   private _categoryItemClassRegistry: OverrideClassRegistry<Ctor<any>>;
 
@@ -216,7 +224,7 @@ class VcsApp {
     );
     this._categories = new CategoryCollection(this);
     this._destroyed = new VcsEvent();
-    this._moduleMutationPromise = Promise.resolve();
+    this._moduleMutationChain = { running: false, items: [] };
     this._categoryItemClassRegistry = new OverrideClassRegistry(
       new ClassRegistry(),
     );
@@ -427,20 +435,61 @@ class VcsApp {
     }
   }
 
-  addModule(module: VcsModule): Promise<void> {
+  /**
+   * When adding multiple modules, adding of previous modules are awaited.
+   * If an invalid module is added an error is thrown and already added items of invalid module are removed.
+   * @param module
+   */
+  async addModule(module: VcsModule): Promise<void> {
     check(module, VcsModule);
 
-    this._moduleMutationPromise = this._moduleMutationPromise.then(async () => {
-      if (this._modules.hasKey(module._id)) {
-        getLogger().info(`module with id ${module._id} already loaded`);
-        return;
-      }
+    const mutation = async (): Promise<void> => {
+      try {
+        if (this._modules.hasKey(module._id)) {
+          getLogger().info(`module with id ${module._id} already loaded`);
+          return;
+        }
 
-      await this._parseModule(module);
-      await this._setModuleState(module);
-      this._modules.add(module);
+        await this._parseModule(module);
+        await this._setModuleState(module);
+        this._modules.add(module);
+      } catch (err) {
+        await this._removeModule(module._id);
+        throw err;
+      }
+    };
+    return new Promise((resolve, reject) => {
+      this._moduleMutationChain.items.push({
+        moduleId: module._id,
+        mutation,
+        resolve,
+        reject,
+      });
+      this._startModuleMutationChain();
     });
-    return this._moduleMutationPromise;
+  }
+
+  _startModuleMutationChain(): void {
+    if (!this._moduleMutationChain.running) {
+      const item = this._moduleMutationChain.items.shift();
+      if (item) {
+        try {
+          this._moduleMutationChain.running = true;
+          item
+            .mutation()
+            .then(() => item.resolve())
+            .catch((err) => item.reject(err))
+            .finally(() => {
+              this._moduleMutationChain.running = false;
+              this._startModuleMutationChain();
+            });
+        } catch (err) {
+          item.reject(err);
+          this._moduleMutationChain.running = false;
+          this._startModuleMutationChain();
+        }
+      }
+    }
   }
 
   serializeModule(moduleId: string): VcsModuleConfig {
@@ -503,8 +552,8 @@ class VcsApp {
     ]);
   }
 
-  removeModule(moduleId: string): Promise<void> {
-    this._moduleMutationPromise = this._moduleMutationPromise.then(async () => {
+  async removeModule(moduleId: string): Promise<void> {
+    const mutation = async (): Promise<void> => {
       const module = this._modules.getByKey(moduleId);
       if (!module) {
         getLogger().info(`module with id ${moduleId} has already been removed`);
@@ -512,16 +561,25 @@ class VcsApp {
       }
       await this._removeModule(moduleId);
       this._modules.remove(module);
+    };
+    return new Promise((resolve, reject) => {
+      this._moduleMutationChain.items.push({
+        moduleId,
+        mutation,
+        resolve,
+        reject,
+      });
+      this._startModuleMutationChain();
     });
-
-    return this._moduleMutationPromise;
   }
 
   /**
    * Destroys the app and all its collections, their content and ui managers.
    */
   destroy(): void {
-    Object.defineProperty(this, '_moduleMutationPromise', {
+    this._moduleMutationChain.running = false;
+    this._moduleMutationChain.items.splice(0);
+    Object.defineProperty(this, '_moduleMutationChain', {
       get() {
         throw new Error('VcsApp was destroyed');
       },

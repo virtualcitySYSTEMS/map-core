@@ -1,3 +1,7 @@
+### 5.2.1
+
+- Fixes a bug, when adding invalid modules to the app
+
 ### 5.2.0
 
 - Adds parameter to `createEditGeometrySession` for disabling removal and insertion of vertices.
