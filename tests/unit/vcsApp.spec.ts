@@ -319,6 +319,48 @@ describe('vcsApp', () => {
         expect(vp?.equals(startingVp, 10e-8)).to.be.true;
       });
     });
+
+    describe('adding an invalid module', () => {
+      let module: VcsModule;
+      let app: VcsApp;
+
+      before(() => {
+        module = new VcsModule({
+          maps: [new OpenlayersMap({ name: 'foo' }).toJSON()],
+          projection: {
+            epsg: '11111',
+          },
+        });
+        app = new VcsApp();
+      });
+
+      after(() => {
+        app.destroy();
+      });
+
+      it('should throw an error', () => {
+        expect(app.addModule(module)).to.throw;
+      });
+      it('should remove already added items of the invalid module', async () => {
+        try {
+          await app.addModule(module);
+        } catch (err) {
+          console.error(err);
+        }
+        expect(app.maps.hasKey('foo')).to.be.false;
+      });
+      it('should add second module, if first crashes', async () => {
+        const secondModule = new VcsModule({ name: 'second' });
+        try {
+          // eslint-disable-next-line no-void
+          void app.addModule(new VcsModule(module.config));
+          await app.addModule(secondModule);
+        } catch (err) {
+          console.error(err);
+        }
+        expect(app.getModuleById(secondModule._id)).to.equal(secondModule);
+      });
+    });
   });
 
   describe('removing a module', () => {

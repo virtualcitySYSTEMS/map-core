@@ -1,3 +1,8 @@
+### 5.2.1
+
+- Fixes a bug, when adding invalid modules to the app
+- Fixes a bug, where not awaiting set oblique collection lead to unexpected state
+
 ### 5.2.0
 
 - Adds parameter to `createEditGeometrySession` for disabling removal and insertion of vertices.
