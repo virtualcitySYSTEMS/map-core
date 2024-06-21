@@ -1,6 +1,7 @@
 ### 5.3.0
 
 - added an API to vcsApp to control the display quality for 3D map
+- Adds `movementDisabledChanged` event to `vcsMap` that emits when `disableMovement` is called.
 
 ### 5.2.1
 

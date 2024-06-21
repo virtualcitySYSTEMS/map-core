@@ -88,6 +88,8 @@ class VcsMap<
 
   private _movementPointerEventsDisabled = false;
 
+  movementDisabledChanged: VcsEvent<DisableMapControlOptions>;
+
   /**
    * The name of a map to fall back on, if this map cant show a viewpoint
    */
@@ -140,6 +142,8 @@ class VcsMap<
     this._setLayerCollectionListeners();
 
     this.initialized = false;
+
+    this.movementDisabledChanged = new VcsEvent();
 
     this.fallbackMap = options.fallbackMap || null;
 
@@ -453,6 +457,8 @@ class VcsMap<
     this._movementApiCallsDisabled = disable.apiCalls;
     this._movementKeyEventsDisabled = disable.keyEvents;
     this._movementPointerEventsDisabled = disable.pointerEvents;
+
+    this.movementDisabledChanged.raiseEvent(disable);
   }
 
   /**
