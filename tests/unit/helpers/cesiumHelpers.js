@@ -15,6 +15,7 @@ import {
   Cesium3DTileFeature,
   TweenCollection,
   ContextLimits,
+  Fog,
 } from '@vcmap-cesium/engine';
 import CesiumTilesetLayer from '../../../src/layer/cesiumTilesetLayer.js';
 import DataSourceLayer from '../../../src/layer/dataSourceLayer.js';
@@ -145,6 +146,7 @@ export function getMockScene() {
     terrainProvider: {
       readyPromise: Promise.resolve(),
     },
+    fog: new Fog(),
     frameState: {
       mode: undefined,
       context: {

@@ -485,6 +485,11 @@ export {
   getClippingOptions,
   ClippingPlaneCreationOptions,
 } from './src/util/clipping/clippingPlaneHelper.js';
+export {
+  default as DisplayQuality,
+  DisplayQualityLevel,
+  DisplayQualityOptions,
+} from './src/util/displayQuality/displayQuality.js';
 export { default as Collection } from './src/util/collection.js';
 export {
   default as startCreateFeatureSession,

@@ -50,6 +50,7 @@ import FlightInstance, {
   FlightInstanceOptions,
 } from './util/flight/flightInstance.js';
 import FlightCollection from './util/flight/flightCollection.js';
+import DisplayQuality from './util/displayQuality/displayQuality.js';
 
 function getLogger(): Logger {
   return getLoggerByName('init');
@@ -119,6 +120,8 @@ class VcsApp {
   private _categoryClassRegistry: OverrideClassRegistry<typeof Category>;
 
   private _categories: CategoryCollection;
+
+  private _displayQuality: DisplayQuality;
 
   private _destroyed: VcsEvent<void>;
 
@@ -223,6 +226,7 @@ class VcsApp {
       categoryClassRegistry,
     );
     this._categories = new CategoryCollection(this);
+    this._displayQuality = new DisplayQuality(this);
     this._destroyed = new VcsEvent();
     this._moduleMutationChain = { running: false, items: [] };
     this._categoryItemClassRegistry = new OverrideClassRegistry(
@@ -301,6 +305,10 @@ class VcsApp {
 
   get flights(): OverrideCollection<FlightInstance, FlightCollection> {
     return this._flights;
+  }
+
+  get displayQuality(): DisplayQuality {
+    return this._displayQuality;
   }
 
   get destroyed(): VcsEvent<void> {
@@ -601,6 +609,7 @@ class VcsApp {
     this._categoryItemClassRegistry.destroy();
     this._tileProviderClassRegistry.destroy();
     this._featureProviderClassRegistry.destroy();
+    this._displayQuality.destroy();
     this.destroyed.raiseEvent();
     this.destroyed.destroy();
     this.localeChanged.destroy();

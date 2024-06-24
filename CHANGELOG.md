@@ -1,3 +1,7 @@
+### 5.3.0
+
+- added an API to vcsApp to control the display quality for 3D map
+
 ### 5.2.1
 
 - Fixes a bug, when adding invalid modules to the app
