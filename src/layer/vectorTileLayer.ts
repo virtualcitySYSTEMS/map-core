@@ -2,7 +2,7 @@ import Style, { type StyleFunction } from 'ol/style/Style.js';
 import type { Feature } from 'ol/index.js';
 import type { Size } from 'ol/size.js';
 
-import { parseInteger } from '@vcsuite/parsers';
+import { parseBoolean, parseInteger } from '@vcsuite/parsers';
 import CesiumMap from '../map/cesiumMap.js';
 import VectorRasterTileCesiumImpl from './cesium/vectorRasterTileCesiumImpl.js';
 import OpenlayersMap from '../map/openlayersMap.js';
@@ -85,6 +85,10 @@ export type VectorTileOptions = FeatureLayerOptions & {
    * used to restrict the zoom level visibility
    */
   maxLevel?: number;
+  /**
+   * used to forward declutter option to openlayers VectorTileLayer
+   */
+  declutter?: boolean;
 };
 
 export type VectorTileImplementationOptions =
@@ -94,6 +98,7 @@ export type VectorTileImplementationOptions =
     minLevel: number;
     maxLevel: number;
     extent?: Extent;
+    declutter: boolean;
   };
 
 export interface VectorTileImplementation extends FeatureLayerImplementation {
@@ -121,6 +126,7 @@ class VectorTileLayer extends FeatureLayer<
       vectorProperties: {},
       minLevel: undefined,
       maxLevel: undefined,
+      declutter: true,
     };
   }
 
@@ -138,6 +144,8 @@ class VectorTileLayer extends FeatureLayer<
   private _maxLevel: number;
 
   private _minLevel: number;
+
+  private _declutter: boolean;
 
   private _featureVisibilityListeners: (() => void)[] = [];
 
@@ -188,6 +196,7 @@ class VectorTileLayer extends FeatureLayer<
 
     this._maxLevel = parseInteger(options.maxLevel, defaultOptions.maxLevel);
     this._minLevel = parseInteger(options.minLevel, defaultOptions.minLevel);
+    this._declutter = parseBoolean(options.declutter, defaultOptions.declutter);
   }
 
   /**
@@ -378,6 +387,7 @@ class VectorTileLayer extends FeatureLayer<
       minLevel: this._minLevel,
       maxLevel: this._maxLevel,
       extent: this.extent ?? new Extent(),
+      declutter: this._declutter,
     };
   }
 
@@ -470,6 +480,10 @@ class VectorTileLayer extends FeatureLayer<
 
     if (this.tileProvider) {
       config.tileProvider = this.tileProvider.toJSON();
+    }
+
+    if (this._declutter !== defaultOptions.declutter) {
+      config.declutter = this._declutter;
     }
 
     return config;

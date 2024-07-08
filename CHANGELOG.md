@@ -1,3 +1,8 @@
+### 5.3.1
+
+- added an IconCache for DeclarativeStyle icons to fix flickering icons in 2D
+- added `declutter` option to VectorTileLayer, which is forwarded to the openlayers Implementation
+
 ### 5.3.0
 
 - added an API to vcsApp to control the display quality for 3D map
