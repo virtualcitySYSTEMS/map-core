@@ -1,3 +1,7 @@
+### 6.0.0-rc.0
+
+- Add new `changed` event to FlightPlayerClock
+
 ### 5.3.0
 
 - added an API to vcsApp to control the display quality for 3D map

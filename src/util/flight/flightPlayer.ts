@@ -15,21 +15,26 @@ import VcsEvent from '../../vcsEvent.js';
 import VcsApp from '../../vcsApp.js';
 
 export type FlightPlayerClock = {
-  startTime: number;
-  endTime: number;
-  currentTime: number;
-  times: number[];
-  currentSystemTime?: number;
+  readonly startTime: number;
+  readonly endTime: number;
+  readonly currentTime: number;
+  readonly times: number[];
+  currentSystemTime: undefined | number;
+  readonly changed: VcsEvent<FlightPlayerClock>;
+  setCurrentTime(this: FlightPlayerClock, time: number): number;
+  reset(this: FlightPlayerClock): void;
+  setTimes(this: FlightPlayerClock, times: number[]): void;
+  destroy(this: FlightPlayerClock): void;
 };
 
 export type FlightPlayerState = 'playing' | 'paused' | 'stopped';
 
 export type FlightPlayer = {
   readonly flightInstanceName: string;
+  readonly clock: FlightPlayerClock;
   readonly state: FlightPlayerState;
   readonly stateChanged: VcsEvent<FlightPlayerState>;
   readonly destroyed: VcsEvent<void>;
-  clock: FlightPlayerClock;
   play(): void;
   stop(): void;
   pause(): void;
@@ -43,12 +48,47 @@ export type FlightPlayer = {
   destroy(): void;
 };
 
-function getDefaultFlightPlayerClock(): FlightPlayerClock {
+function createFlightPlayerClock(): FlightPlayerClock {
+  let currentTime = 0;
+  let startTime = 0;
+  let endTime = 0;
+  let times: number[] = [];
+
   return {
-    startTime: 0,
-    endTime: 0,
-    currentTime: 0,
-    times: [],
+    get startTime(): number {
+      return startTime;
+    },
+    get endTime(): number {
+      return endTime;
+    },
+    get currentTime(): number {
+      return currentTime;
+    },
+    get times(): number[] {
+      return times;
+    },
+    currentSystemTime: undefined,
+    changed: new VcsEvent<FlightPlayerClock>(),
+    setCurrentTime(time: number): number {
+      currentTime = time;
+      this.changed.raiseEvent(this);
+      return this.currentTime;
+    },
+    reset(): void {
+      currentTime = 0;
+      startTime = 0;
+      endTime = 0;
+      times = [];
+      this.changed.raiseEvent(this);
+    },
+    setTimes(newTimes: number[]): void {
+      times = newTimes.slice();
+      endTime = times[times.length - 1];
+      this.changed.raiseEvent(this);
+    },
+    destroy(): void {
+      this.changed.destroy();
+    },
   };
 }
 
@@ -68,7 +108,7 @@ export async function createFlightPlayer(
   }
   await instance.initialize();
 
-  const clock: FlightPlayerClock = getDefaultFlightPlayerClock();
+  const clock: FlightPlayerClock = createFlightPlayerClock();
 
   let playerState: FlightPlayerState = 'stopped';
 
@@ -103,22 +143,21 @@ export async function createFlightPlayer(
 
       setState('stopped');
 
-      clock.currentTime = 0;
       clock.currentSystemTime = undefined;
+      clock.setCurrentTime(0);
     }
   };
 
   const updateSplines = (): void => {
     if (!instance.isValid()) {
       stop();
-      Object.assign(clock, getDefaultFlightPlayerClock());
+      clock.reset();
     } else {
       const splines = getSplineAndTimesForInstance(instance);
 
       ({ destinationSpline, quaternionSpline } = splines);
       const { times } = splines;
-      clock.endTime = times[times.length - 1];
-      clock.times = times;
+      clock.setTimes(times);
     }
   };
   updateSplines();
@@ -174,20 +213,20 @@ export async function createFlightPlayer(
       return;
     }
 
-    clock.currentTime += seconds * instance.multiplier;
+    clock.setCurrentTime(clock.currentTime + seconds * instance.multiplier);
     if (clock.currentTime > clock.endTime) {
       if (instance.loop && clock.endTime > 0) {
         while (clock.currentTime > clock.endTime) {
-          clock.currentTime -= clock.endTime;
+          clock.setCurrentTime(clock.currentTime - clock.endTime);
         }
       } else {
         stop();
       }
     } else if (clock.currentTime < clock.startTime) {
       if (instance.loop) {
-        clock.currentTime = clock.endTime + clock.currentTime;
+        clock.setCurrentTime(clock.endTime + clock.currentTime);
       } else {
-        clock.currentTime = clock.startTime;
+        clock.setCurrentTime(clock.startTime);
         return;
       }
     }
@@ -256,8 +295,8 @@ export async function createFlightPlayer(
       getLogger('FlightPlayer').warning(`time: ${time} out of range`);
       return;
     }
-    clock.currentTime = time;
     clock.currentSystemTime = undefined;
+    clock.setCurrentTime(time);
     if (playerState !== 'playing') {
       const view = getView(clock.currentTime);
       if (view) {
@@ -284,6 +323,7 @@ export async function createFlightPlayer(
     listeners.forEach((cb) => {
       cb();
     });
+    clock.destroy();
     stateChanged.destroy();
     destroyed.raiseEvent();
     destroyed.destroy();
@@ -303,9 +343,11 @@ export async function createFlightPlayer(
   );
 
   return {
-    clock,
     get flightInstanceName(): string {
       return instance.name;
+    },
+    get clock(): FlightPlayerClock {
+      return clock;
     },
     get state(): FlightPlayerState {
       return playerState;

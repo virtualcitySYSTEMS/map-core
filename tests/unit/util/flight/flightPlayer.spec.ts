@@ -94,6 +94,12 @@ describe('FlightPlayer', () => {
       FP.play();
     });
 
+    it('should emit clock changed event', () => {
+      const spy = getVcsEventSpy(FP.clock.changed, sandbox);
+      raisePostRender(cesiumMap);
+      expect(spy).to.have.been.calledOnceWith(FP.clock);
+    });
+
     it('should set the current system time to the seconds of day', () => {
       raisePostRender(cesiumMap);
       expect(FP.clock).to.have.property('currentSystemTime', 10);
@@ -157,7 +163,7 @@ describe('FlightPlayer', () => {
       beforeEach(() => {
         FP.play();
         raisePostRender(cesiumMap);
-        FP.clock.currentTime = -1;
+        FP.clock.setCurrentTime(-1);
       });
 
       it('should set the start time as the current time', () => {
@@ -181,6 +187,14 @@ describe('FlightPlayer', () => {
 
       it('should set the state to pauses', () => {
         expect(FP.state).to.equal('paused');
+      });
+
+      it('should not emit clock changed event', () => {
+        FP.play();
+        const spy = getVcsEventSpy(FP.clock.changed, sandbox);
+        FP.pause();
+        raisePostRender(cesiumMap);
+        expect(spy).to.not.have.been.called;
       });
 
       it('should emit stateChanged', () => {
@@ -241,6 +255,12 @@ describe('FlightPlayer', () => {
       expect(cesiumMap.movementApiCallsDisabled).to.be.false;
     });
 
+    it('should emit clock changed event', () => {
+      const spy = getVcsEventSpy(FP.clock.changed, sandbox);
+      FP.stop();
+      expect(spy).to.have.been.calledOnceWith(FP.clock);
+    });
+
     it('should change the state', () => {
       FP.stop();
       expect(FP.state).to.equal('stopped');
@@ -261,16 +281,28 @@ describe('FlightPlayer', () => {
 
     it('should reset the clock', () => {
       FP.clock.currentSystemTime = Date.now();
-      FP.clock.currentTime = 10;
+      FP.clock.setCurrentTime(10);
       FP.stop();
       expect(FP.clock).to.have.property('currentSystemTime', undefined);
       expect(FP.clock).to.have.property('currentTime', 0);
+    });
+
+    it('should emit the clock changed event', () => {
+      const spy = getVcsEventSpy(FP.clock.changed, sandbox);
+      FP.stop();
+      expect(spy).to.have.been.calledOnceWith(FP.clock);
     });
   });
 
   describe('goToTime', () => {
     beforeEach(() => {
       FP.play();
+    });
+
+    it('should emit clock changed event', () => {
+      const spy = getVcsEventSpy(FP.clock.changed, sandbox);
+      FP.goToTime(2);
+      expect(spy).to.have.been.calledOnceWith(FP.clock);
     });
 
     it('should set the clocks currentTime to the time', () => {
@@ -316,7 +348,7 @@ describe('FlightPlayer', () => {
     });
 
     it('should set the last, if no time is found', () => {
-      FP.clock.currentTime = FP.clock.times[4];
+      FP.clock.setCurrentTime(FP.clock.times[4]);
       FP.forward();
       expect(FP.clock.currentTime).to.equal(FP.clock.times[4]);
     });
@@ -324,14 +356,14 @@ describe('FlightPlayer', () => {
 
   describe('backward', () => {
     it('should find the previous time', () => {
-      FP.clock.currentTime = 10;
+      FP.clock.setCurrentTime(10);
       FP.backward();
       expect(FP.clock.currentTime).to.equal(0);
     });
 
     it('should set a timeout, skipping back one more index', () => {
       sandbox.useFakeTimers(10);
-      FP.clock.currentTime = FP.clock.times[4];
+      FP.clock.setCurrentTime(FP.clock.times[4]);
       FP.backward();
       FP.backward();
       expect(FP.clock.currentTime).to.equal(FP.clock.times[1]);
@@ -339,7 +371,7 @@ describe('FlightPlayer', () => {
 
     it('should not skip back twice, if the timeout has passed', () => {
       const clock = sandbox.useFakeTimers(10);
-      FP.clock.currentTime = FP.clock.times[4];
+      FP.clock.setCurrentTime(FP.clock.times[4]);
       FP.backward();
       clock.tick(800);
       FP.backward();
