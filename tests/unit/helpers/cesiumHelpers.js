@@ -174,6 +174,8 @@ export function getMockScene() {
       this.globe.destroy();
       this.canvas = null;
     },
+    updateHeight() {},
+    getHeight() {},
   };
   const camera = new Camera(scene);
   const originalFlyTo = camera.flyTo;

@@ -65,7 +65,7 @@
     "typescript": "^5.0.4"
   },
   "peerDependencies": {
-    "@vcmap-cesium/engine": "^4.0.3",
+    "@vcmap-cesium/engine": "^10.0.1",
     "ol": "^7.5.2"
   },
   "eslintConfig": {
