@@ -102,6 +102,7 @@ class DeclarativeStyleItem extends StyleItem {
   private _styleOptions: DeclarativeStyleOptions;
 
   private _circleCache: Map<string, Circle> = new Map();
+  private _iconCache: Map<string, Icon> = new Map();
 
   /**
    * @param  options
@@ -126,6 +127,7 @@ class DeclarativeStyleItem extends StyleItem {
     // XXX is this even still needed?
     this._styleOptions = declarativeStyle;
     this._circleCache = new Map();
+    this._iconCache = new Map();
   }
 
   get styleOptions(): DeclarativeStyleOptions {
@@ -308,7 +310,11 @@ class DeclarativeStyleItem extends StyleItem {
         } else if (!isSameOrigin(src)) {
           iconOptions.crossOrigin = 'anonymous';
         }
-        style.setImage(new Icon(iconOptions));
+        const iconCacheKey = `${src}${iconOptions.crossOrigin}`;
+        if (!this._iconCache.has(iconCacheKey)) {
+          this._iconCache.set(iconCacheKey, new Icon(iconOptions));
+        }
+        style.setImage(this._iconCache.get(iconCacheKey)!);
       }
     } else {
       const color =

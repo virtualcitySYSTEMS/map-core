@@ -44,6 +44,8 @@ class VectorTileOpenlayersImpl
 
   extent: Extent | undefined;
 
+  declutter: boolean;
+
   constructor(map: OpenlayersMap, options: VectorTileImplementationOptions) {
     super(map, options);
 
@@ -52,6 +54,7 @@ class VectorTileOpenlayersImpl
     this.minLevel = options.minLevel;
     this.maxLevel = options.maxLevel;
     this.extent = options.extent;
+    this.declutter = options.declutter;
   }
 
   getOLLayer(): OLVectorTileLayer {
@@ -91,7 +94,7 @@ class VectorTileOpenlayersImpl
       source: this.source,
       renderBuffer: 200,
       renderMode: 'hybrid',
-      declutter: true,
+      declutter: this.declutter,
       extent,
       minZoom,
       maxZoom,
