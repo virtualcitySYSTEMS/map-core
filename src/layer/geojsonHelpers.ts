@@ -248,16 +248,10 @@ function readFeature(
 
   if (featureObj.radius && geometry instanceof Point) {
     const coordinates = geometry.getCoordinates();
-    if (coordinates.length === 2) {
-      coordinates.push(0);
-    }
-    geometry = new Circle(coordinates, featureObj.radius, 'XYZ');
+    geometry = new Circle(coordinates, featureObj.radius);
   }
   if (radius && geometry instanceof Point) {
     const coordinates = geometry.getCoordinates();
-    if (coordinates.length === 2) {
-      coordinates.push(0);
-    }
     geometry = circleFromCenterRadius(coordinates, radius);
   }
   if (String(options.formatOptions?.featureProjection) === 'EPSG:3857') {
@@ -467,23 +461,26 @@ export function writeGeoJSONFeature(
 /**
  * Writes all the features of the current layer to GeojsonLayer
  */
-export function writeGeoJSON(
+export function writeGeoJSON<O extends GeoJSONwriteOptions>(
   data: GeoJSONData,
-  options: GeoJSONwriteOptions = {},
-): string | FeatureCollection {
+  options?: O,
+): O['asObject'] extends true ? FeatureCollection : string {
   // how to handel embedded icons when they are not set on the vcsMeta but options is true?
   const vcsMeta = data.vcsMeta || { version: vcsMetaVersion };
   vcsMeta.version = vcsMetaVersion;
   const featureObjs = data.features.map((feature) =>
     writeGeoJSONFeature(feature, options, vcsMeta.embeddedIcons),
   );
+
   const obj: FeatureCollection = {
     type: 'FeatureCollection',
     features: featureObjs,
     vcsMeta,
   };
 
-  return options.asObject
+  const returnValue = options?.asObject
     ? obj
-    : JSON.stringify(obj, undefined, options.prettyPrint ? 2 : undefined);
+    : JSON.stringify(obj, undefined, options?.prettyPrint ? 2 : undefined);
+
+  return returnValue as O['asObject'] extends true ? FeatureCollection : string;
 }

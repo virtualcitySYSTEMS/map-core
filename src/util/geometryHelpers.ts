@@ -94,7 +94,7 @@ export function circleFromCenterRadius(
   const dx2 = dx * dx;
   const dy2 = dy * dy;
   const radiusProjected = Math.sqrt(dx2 + dy2);
-  return new Circle(center, radiusProjected, 'XYZ');
+  return new Circle(center, radiusProjected);
 }
 
 export function convertGeometryToPolygon(geometry: Geometry): Geometry {

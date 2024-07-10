@@ -10,6 +10,7 @@ import {
   convertGeometryToPolygon,
   getFlatCoordinatesFromGeometry,
   getFlatCoordinatesFromSimpleGeometry,
+  circleFromCenterRadius,
 } from '../../../src/util/geometryHelpers.js';
 
 describe('util.geometryHelpers', () => {
@@ -311,6 +312,18 @@ describe('util.geometryHelpers', () => {
         const flats = getFlatCoordinatesFromGeometry(geometries[key], coords);
         expect(flats).to.have.deep.members(flatCoordinates[key]);
       });
+    });
+  });
+
+  describe('circleFromCenterRadius', () => {
+    it('should create an XYZ circle', () => {
+      const circle = circleFromCenterRadius([0, 0, 0], 10);
+      expect(circle.getCenter()).to.have.members([0, 0, 0]);
+    });
+
+    it('should create an XY circle', () => {
+      const circle = circleFromCenterRadius([0, 0], 10);
+      expect(circle.getCenter()).to.have.members([0, 0]);
     });
   });
 });

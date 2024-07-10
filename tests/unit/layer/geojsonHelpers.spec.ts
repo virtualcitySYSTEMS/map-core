@@ -3,6 +3,16 @@ import Circle from 'ol/geom/Circle.js';
 import Feature from 'ol/Feature.js';
 import Polygon from 'ol/geom/Polygon.js';
 import {
+  Feature as GeoJSONFeature,
+  FeatureCollection,
+  Geometry as GeoJSONGeometry,
+  GeometryCollection as GeoJSONGeometryCollection,
+  Point as GeoJSONPoint,
+  Polygon as GeojSONPolygon,
+} from 'geojson';
+import { expect } from 'chai';
+
+import {
   getEPSGCodeFromGeojson,
   parseGeoJSON,
   writeGeoJSON,
@@ -17,10 +27,16 @@ import { featureStoreStateSymbol } from '../../../src/layer/featureStoreLayerSta
 import importJSON from '../helpers/importJSON.js';
 import { alreadyTransformedToMercator } from '../../../src/layer/vectorSymbols.js';
 
-const testGeoJSON = await importJSON('./tests/data/testGeoJSON.json');
+const testGeoJSON = (await importJSON('./tests/data/testGeoJSON.json')) as {
+  geometries: Exclude<GeoJSONGeometry, GeoJSONGeometryCollection>[];
+  feature: GeoJSONFeature;
+  circle: GeoJSONFeature<GeoJSONPoint> & { radius: number };
+  featureCollection: FeatureCollection;
+};
 
 describe('GeoJSONLayer', () => {
-  let features;
+  let features: Feature[];
+
   beforeEach(() => {
     features = [
       new Feature({
@@ -58,7 +74,7 @@ describe('GeoJSONLayer', () => {
             }),
           );
         }
-        expect(geometry.getCoordinates()).to.have.deep.members(testCoords);
+        expect(geometry?.getCoordinates()).to.have.deep.members(testCoords);
       });
     });
 
@@ -72,7 +88,7 @@ describe('GeoJSONLayer', () => {
       expect(feature.getId()).to.equal('test');
       const geometry = feature.getGeometry();
       expect(geometry).to.be.an.instanceOf(Point);
-      expect(geometry.getCoordinates()).to.have.members([1, 1, 1]);
+      expect(geometry?.getCoordinates()).to.have.members([1, 1, 1]);
     });
 
     it('should read geometry in Mercator if no targetProjection is given, also should set alreadyTransformed Symbol', () => {
@@ -81,8 +97,8 @@ describe('GeoJSONLayer', () => {
       ).features;
       const geometry = feature.getGeometry();
       expect(geometry).to.be.an.instanceOf(Point);
-      expect(geometry[alreadyTransformedToMercator]).to.be.true;
-      expect(geometry.getCoordinates()).to.have.members([
+      expect(geometry?.[alreadyTransformedToMercator]).to.be.true;
+      expect(geometry?.getCoordinates()).to.have.members([
         111319.49079327358, 111325.14286638486, 1,
       ]);
     });
@@ -91,18 +107,18 @@ describe('GeoJSONLayer', () => {
       const [feature] = parseGeoJSON(JSON.stringify(testGeoJSON.circle), {
         targetProjection: wgs84Projection,
       }).features;
-      const geometry = feature.getGeometry();
+      const geometry = feature.getGeometry() as Circle;
       expect(geometry).to.be.an.instanceOf(Circle);
       expect(geometry.getRadius()).to.equal(testGeoJSON.circle.radius);
     });
 
     it('should read a circle, forceing XYZ layout', () => {
-      const twoDCircle = JSON.parse(JSON.stringify(testGeoJSON.circle));
+      const twoDCircle = structuredClone(testGeoJSON.circle);
       twoDCircle.geometry.coordinates.pop();
       const [feature] = parseGeoJSON(JSON.stringify(twoDCircle), {
         targetProjection: wgs84Projection,
       }).features;
-      const geometry = feature.getGeometry();
+      const geometry = feature.getGeometry() as Circle;
       expect(geometry).to.be.an.instanceOf(Circle);
       expect(geometry.getRadius()).to.equal(testGeoJSON.circle.radius);
     });
@@ -118,12 +134,13 @@ describe('GeoJSONLayer', () => {
     });
 
     it('should set the featureStore state on feature store objects', () => {
-      const featureObj = {
+      const featureObj: GeoJSONFeature = {
         type: 'Feature',
         geometry: {
           type: 'Point',
           coordinates: [0, 0, 1],
         },
+        properties: {},
         state: 'dynamic',
       };
       const fArray = parseGeoJSON(featureObj).features;
@@ -132,26 +149,26 @@ describe('GeoJSONLayer', () => {
     });
 
     it('should exclude features without a geometry', () => {
-      const options = {
-        type: 'FeatureCollection',
-        features: [
-          JSON.parse(JSON.stringify(testGeoJSON.feature)),
-          {
-            type: 'Feature',
-            properties: {
-              test: true,
-            },
-          },
-        ],
+      const withoutGeometry = {
+        type: 'Feature',
+        properties: {
+          test: true,
+        },
       };
+      const options: FeatureCollection = {
+        type: 'FeatureCollection',
+        features: [structuredClone(testGeoJSON.feature)],
+      };
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      options.features.push(structuredClone(withoutGeometry));
       const feats = parseGeoJSON(options).features;
       expect(feats).to.have.length(1);
       expect(feats[0].get('foo')).to.equal(1);
 
-      const feat = parseGeoJSON({
-        type: 'Feature',
-        properties: { test: true },
-      }).features;
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const feat = parseGeoJSON(withoutGeometry).features;
       expect(feat).to.be.an('array').and.to.be.empty;
     });
 
@@ -193,7 +210,7 @@ describe('GeoJSONLayer', () => {
   describe('~writeGeoJSON', () => {
     it('should write features to a string', () => {
       const string = writeGeoJSON({ features });
-      const json = JSON.parse(string);
+      const json = JSON.parse(string) as FeatureCollection;
       expect(json).to.have.property('type', 'FeatureCollection');
       expect(json).to.have.property('features').and.to.have.length(2);
 
@@ -204,11 +221,11 @@ describe('GeoJSONLayer', () => {
           .to.have.property('geometry')
           .and.to.have.property('type', 'Point');
 
-        if (f.properties.name === 'circle') {
+        if (f.properties?.name === 'circle') {
           expect(f)
             .to.have.property('geometry')
-            .and.to.have.property('olcs_radius');
-          expect(f.geometry.olcs_radius).to.be.closeTo(20, 0.001);
+            .and.to.have.property('olcs_radius')
+            .and.to.be.closeTo(20, 0.001);
         }
       });
     });
@@ -249,7 +266,7 @@ describe('GeoJSONLayer', () => {
       expect(featureCollection.features[0])
         .to.have.property('geometry')
         .and.to.have.property('coordinates')
-        .and.to.have.deep.members(polygon.coordinates);
+        .and.to.have.deep.members(polygon!.coordinates);
     });
 
     it('should write feature styles');
@@ -269,21 +286,21 @@ describe('GeoJSONLayer', () => {
         expect(f.get('name')).to.equal(original.get('name'));
         const geom = f.getGeometry();
         const originalGeom = original.getGeometry();
-        expect(geom.getType()).to.equal(originalGeom.getType());
-        if (geom.getType() !== 'Circle') {
+        expect(geom?.getType()).to.equal(originalGeom?.getType());
+        if (geom?.getType() !== 'Circle') {
           expect(
-            geom.getCoordinates().map((c) => Math.round(c)),
+            (geom as Point).getCoordinates().map((c) => Math.round(c)),
           ).to.have.deep.members(
-            originalGeom.getCoordinates().map((c) => Math.round(c)),
+            (originalGeom as Point).getCoordinates().map((c) => Math.round(c)),
           );
         } else {
           expect(
-            geom.getCenter().map((c) => Math.round(c)),
+            (geom as Circle).getCenter().map((c) => Math.round(c)),
           ).to.have.deep.members(
-            originalGeom.getCenter().map((c) => Math.round(c)),
+            (originalGeom as Circle).getCenter().map((c) => Math.round(c)),
           );
-          expect(geom.getRadius()).to.be.closeTo(
-            originalGeom.getRadius(),
+          expect((geom as Circle).getRadius()).to.be.closeTo(
+            (originalGeom as Circle).getRadius(),
             0.00001,
           );
         }
@@ -293,24 +310,28 @@ describe('GeoJSONLayer', () => {
 
   describe('getEPSGCodeFromGeojson', () => {
     it('should parse crs from old 0.8 geojson', () => {
-      const geojson = {
+      const geojson: FeatureCollection = {
+        type: 'FeatureCollection',
         crs: {
           type: 'name',
           properties: {
             name: 'EPSG:25832',
           },
         },
+        features: [],
       };
       expect(getEPSGCodeFromGeojson(geojson)).to.equal('EPSG:25832');
     });
     it('should parse crs from old 0.8 geojson if only epsg code is set', () => {
-      const geojson = {
+      const geojson: FeatureCollection = {
+        type: 'FeatureCollection',
         crs: {
           type: 'EPSG',
           properties: {
             code: '25832',
           },
         },
+        features: [],
       };
       expect(getEPSGCodeFromGeojson(geojson)).to.equal('EPSG:25832');
     });
@@ -320,6 +341,8 @@ describe('GeoJSONLayer', () => {
           notvalid: true,
         },
       };
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       expect(getEPSGCodeFromGeojson(geojson)).to.equal(null);
     });
   });
@@ -371,6 +394,99 @@ describe('GeoJSONLayer', () => {
       expect(feature.get('olcs_altitudeMode')).to.equal('absolute');
       expect(feature.get('olcs_extrudedHeight')).to.equal(10);
       expect(feature.get('olcs_skirt')).to.equal(5);
+    });
+  });
+
+  describe('XY layout data', () => {
+    describe('parsing of XY layout data', () => {
+      it('should parse a geojson feature', () => {
+        const geojsonFeature: GeoJSONFeature = {
+          type: 'Feature',
+          properties: {},
+          geometry: {
+            type: 'Point',
+            coordinates: [0, 0],
+          },
+        };
+        const [olFeature] = parseGeoJSON(geojsonFeature).features;
+        expect(olFeature.getGeometry()?.getLayout()).to.equal('XY');
+      });
+
+      it('should parse a geojson circle', () => {
+        const geojsonFeature: GeoJSONFeature = {
+          type: 'Feature',
+          properties: {},
+          geometry: {
+            type: 'Point',
+            coordinates: [0, 0],
+            olcs_radius: 12,
+          },
+        };
+        const [olFeature] = parseGeoJSON(geojsonFeature).features;
+        expect(olFeature.getGeometry()).to.be.an.instanceOf(Circle);
+        expect(olFeature.getGeometry()?.getLayout()).to.equal('XY');
+      });
+    });
+
+    describe('writing of XY layout data', () => {
+      it('should write ol feature', () => {
+        const feature = new Feature({
+          geometry: new Point([0, 0], 'XY'),
+        });
+        const string = writeGeoJSON({ features: [feature] });
+        const fc = JSON.parse(string) as FeatureCollection;
+        expect(fc.features).to.have.lengthOf(1);
+        expect(
+          (fc.features[0] as GeoJSONFeature<GeoJSONPoint>).geometry
+            ?.coordinates,
+        ).to.have.members([0, 0]);
+      });
+
+      it('should write a circle', () => {
+        const feature = new Feature({
+          geometry: new Circle([0, 0], 12),
+        });
+        const string = writeGeoJSON({ features: [feature] });
+        const fc = JSON.parse(string) as FeatureCollection;
+        expect(fc.features).to.have.lengthOf(1);
+        expect(
+          (fc.features[0] as GeoJSONFeature<GeoJSONPoint>).geometry
+            ?.coordinates,
+        ).to.have.members([0, 0]);
+        expect(fc.features).to.have.lengthOf(1);
+        expect((fc.features[0] as GeoJSONFeature<GeoJSONPoint>).geometry)
+          .to.have.property('olcs_radius')
+          .and.to.be.closeTo(12, 0.1);
+      });
+
+      it('should write a polygon', () => {
+        const feature = new Feature({
+          geometry: new Polygon(
+            [
+              [
+                [0, 0],
+                [1, 0],
+                [1, 1],
+              ].map((c) => Projection.wgs84ToMercator(c)),
+            ],
+            'XY',
+          ),
+        });
+        const string = writeGeoJSON({ features: [feature] });
+        const fc = JSON.parse(string) as FeatureCollection;
+        expect(fc.features).to.have.lengthOf(1);
+        expect(
+          (fc.features[0] as GeoJSONFeature<GeojSONPolygon>).geometry
+            .coordinates,
+        ).to.have.deep.members([
+          [
+            [0, 0],
+            [1, 0],
+            [1, 1],
+            [0, 0],
+          ],
+        ]);
+      });
     });
   });
 });
