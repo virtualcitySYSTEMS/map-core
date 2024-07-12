@@ -288,7 +288,12 @@ function makeOverrideCollection<
         const itemId = item[overrideCollection.uniqueKey] as string;
         if (overrideCollection.shadowMap.has(itemId)) {
           const array = overrideCollection.shadowMap.get(itemId);
-          return array!.find((i) => i[moduleIdSymbol] === moduleId);
+          const shadowItem = array!.find((i) => i[moduleIdSymbol] === moduleId);
+          if (shadowItem) {
+            const clonedItem = structuredClone(shadowItem);
+            delete clonedItem[moduleIdSymbol];
+            return clonedItem;
+          }
         }
         return null;
       })
