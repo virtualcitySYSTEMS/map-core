@@ -39,6 +39,7 @@ import VectorProperties, {
 } from '../../layer/vectorProperties.js';
 import { getCesiumColor } from '../../style/styleHelpers.js';
 import ModelFill from '../../style/modelFill.js';
+import { ColorType } from '../../style/vectorStyleItem.js';
 
 function makeOffsetAutoScalePrimitive(
   primitive: Primitive | Model,
@@ -295,7 +296,10 @@ export async function getPrimitiveOptions(
   }
   let fillColor: Color | undefined;
   if (fill) {
-    fillColor = getCesiumColor(fill.getColor(), [255, 255, 255, 0.4]);
+    fillColor = getCesiumColor(
+      fill.getColor() as ColorType,
+      [255, 255, 255, 0.4],
+    ); // XXX PatternDescriptor;
   }
   let strokeColor: Color | undefined;
   if (stroke) {

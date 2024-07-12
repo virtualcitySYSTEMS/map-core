@@ -29,6 +29,7 @@ import { getModelOptions, getPrimitiveOptions } from './pointHelpers.js';
 import VectorProperties from '../../layer/vectorProperties.js';
 import type { VectorHeightInfo } from '../../layer/vectorLayer.js';
 import { AsyncCesiumVectorContext } from '../../layer/cesium/vectorContext.js';
+import type { ColorType } from '../../style/vectorStyleItem.js';
 
 export function getCoordinates(geometries: Point[]): Coordinate[] {
   return geometries.map((point) => {
@@ -112,7 +113,7 @@ export function getLabelOptions(
 ): LabelOptions | null {
   const textStyle = style.getText();
   const text = textStyle ? textStyle.getText() : null;
-  if (text) {
+  if (text && textStyle) {
     const options: LabelOptions = {};
 
     options.text = text as string;
@@ -134,7 +135,10 @@ export function getLabelOptions(
 
     let labelStyle;
     if (fill) {
-      options.fillColor = getCesiumColor(fill.getColor(), [0, 0, 0, 1]);
+      options.fillColor = getCesiumColor(
+        fill.getColor() as ColorType, // XXX PatternDescriptor
+        [0, 0, 0, 1],
+      );
       labelStyle = LabelStyle.FILL;
     }
     if (stroke) {
@@ -273,7 +277,7 @@ export default async function pointToCesium(
   scene: Scene,
   context: AsyncCesiumVectorContext,
 ): Promise<void> {
-  if (!style.getImage() && !(style.getText() && style.getText().getText())) {
+  if (!style.getImage() && !style.getText()?.getText()) {
     return;
   }
   const validGeometries = geometries.filter((point) => validatePoint(point));

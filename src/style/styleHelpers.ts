@@ -401,8 +401,8 @@ export function getStrokeOptions(stroke: Stroke): StrokeOptions {
 export function getTextOptions(text: OLText): VectorStyleItemText {
   return {
     font: text.getFont(),
-    fill: text.getFill() ? getFillOptions(text.getFill()) : undefined,
-    stroke: text.getStroke() ? getStrokeOptions(text.getStroke()) : undefined,
+    fill: text.getFill() ? getFillOptions(text.getFill()!) : undefined,
+    stroke: text.getStroke() ? getStrokeOptions(text.getStroke()!) : undefined,
     textBaseline: text.getTextBaseline(),
     offsetY: text.getOffsetY(),
     offsetX: text.getOffsetX(),
@@ -469,13 +469,13 @@ export function getImageStyleOptions(image: ImageStyle): ImageStyleOptions {
       scale: image.getScale(),
     };
     if (image.getFill()) {
-      options.fill = getFillOptions(image.getFill());
+      options.fill = getFillOptions(image.getFill()!);
     }
     if (image.getRadius() != null) {
       options.radius = image.getRadius();
     }
     if (image.getStroke()) {
-      options.stroke = getStrokeOptions(image.getStroke());
+      options.stroke = getStrokeOptions(image.getStroke()!);
     }
     return options;
   } else if (image instanceof RegularShape) {
@@ -483,7 +483,7 @@ export function getImageStyleOptions(image: ImageStyle): ImageStyleOptions {
       scale: image.getScale(),
     };
     if (image.getFill()) {
-      options.fill = getFillOptions(image.getFill());
+      options.fill = getFillOptions(image.getFill()!);
     }
     if (image.getPoints()) {
       options.points = image.getPoints();
@@ -501,7 +501,7 @@ export function getImageStyleOptions(image: ImageStyle): ImageStyleOptions {
       options.radius2 = image.getRadius2();
     }
     if (image.getStroke()) {
-      options.stroke = getStrokeOptions(image.getStroke());
+      options.stroke = getStrokeOptions(image.getStroke()!);
     }
     return options;
   }
@@ -572,12 +572,14 @@ export function getStyleFromOptions(options: StyleOptions): Style {
 
 export function getStyleOptions(style: Style): StyleOptions {
   return {
-    fill: style.getFill() ? getFillOptions(style.getFill()) : undefined,
-    stroke: style.getStroke() ? getStrokeOptions(style.getStroke()) : undefined,
-    image: style.getImage()
-      ? getImageStyleOptions(style.getImage())
+    fill: style.getFill() ? getFillOptions(style.getFill()!) : undefined,
+    stroke: style.getStroke()
+      ? getStrokeOptions(style.getStroke()!)
       : undefined,
-    text: style.getText() ? getTextOptions(style.getText()) : undefined,
+    image: style.getImage()
+      ? getImageStyleOptions(style.getImage()!)
+      : undefined,
+    text: style.getText() ? getTextOptions(style.getText()!) : undefined,
   };
 }
 
@@ -592,14 +594,14 @@ export function getCssStyleFromTextStyle(textStyle: OLText): {
     color: undefined,
   };
   if (textStyle.getStroke()) {
-    let width = textStyle.getStroke().getWidth() as number;
+    let width = textStyle.getStroke()!.getWidth() as number;
     width = width > 1 ? 1 : width;
-    const color = olColorToHex(parseColor(textStyle.getStroke().getColor()));
+    const color = olColorToHex(parseColor(textStyle.getStroke()!.getColor()));
     style.textShadow = `-${width}px ${width}px 0 ${color},${width}px ${width}px 0 ${color},${width}px -${width}px 0 ${color},-${width}px -${width}px 0 ${color}`;
   }
   if (textStyle.getFill()) {
     style.color = olColorToHex(
-      parseColor(textStyle.getFill().getColor() as ColorType),
+      parseColor(textStyle.getFill()!.getColor() as ColorType),
     );
   }
   return style;

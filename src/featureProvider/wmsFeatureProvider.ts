@@ -212,7 +212,7 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
       features = this.featureFormat!.readFeatures(data, {
         dataProjection: this.projection ? this.projection.proj : undefined,
         featureProjection: mercatorProjection.proj,
-      }) as Feature[];
+      });
     } catch (ex) {
       this.getLogger().warning(
         'Features could not be read, please verify the featureInfoResponseType with the capabilities from the server',

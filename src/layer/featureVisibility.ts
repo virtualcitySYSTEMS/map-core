@@ -244,13 +244,10 @@ class FeatureVisibility {
         usedStyle = fromCesiumColor(style);
       } else if (style instanceof Style) {
         usedStyle = new VectorStyleItem({});
-        if (
-          style.getText() &&
-          style.getText().getText() &&
-          !Array.isArray(style.getText().getText())
-        ) {
+        const text = style.getText()?.getText();
+        if (text && !Array.isArray(text)) {
           // getText can return a rich Text string[] We do not support this at the moment.
-          usedStyle.label = String(style.getText().getText());
+          usedStyle.label = String(text);
         }
         usedStyle.style = style;
       } else if (is(style, Function)) {

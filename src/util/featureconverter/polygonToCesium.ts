@@ -74,7 +74,7 @@ export function getLineGeometryOptions(
   options: PolygonGeometryOptions,
   style: Style,
 ): PolylineGeometryOptions[] {
-  const width = parseNumber(style.getStroke().getWidth(), 1.0);
+  const width = parseNumber(style.getStroke()?.getWidth(), 1.0);
   const geometryOptions: PolylineGeometryOptions[] = [];
 
   geometryOptions.push({

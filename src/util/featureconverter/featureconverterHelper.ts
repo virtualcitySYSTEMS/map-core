@@ -38,6 +38,7 @@ import type {
   VectorHeightInfo,
 } from '../../layer/vectorLayer.js';
 import type { AsyncCesiumVectorContext } from '../../layer/cesium/vectorContext.js';
+import { ColorType } from '../../style/vectorStyleItem.js';
 
 export function getMaterialAppearance(
   scene: Scene,
@@ -136,7 +137,10 @@ export function createPrimitive(
     if (!ClassificationPrimitive.isSupported(scene)) {
       return null;
     }
-    const color = getCesiumColor(style.getFill()!.getColor(), [0, 0, 0, 1]);
+    const color = getCesiumColor(
+      style.getFill()!.getColor() as ColorType, // XXX PatternDescriptor
+      [0, 0, 0, 1],
+    );
     primitive = createClassificationPrimitive(
       options,
       geometries,
@@ -151,7 +155,7 @@ export function createPrimitive(
         }),
     );
     options.geometryInstances = instances;
-    const appearance = getMaterialAppearance(scene, style.getFill(), feature);
+    const appearance = getMaterialAppearance(scene, style.getFill()!, feature);
     options.appearance = appearance;
     if (groundPrimitive) {
       if (!GroundPrimitive.isSupported(scene)) {
@@ -175,7 +179,7 @@ export function createOutlinePrimitive(
   geometries: (PolygonGeometry | CircleGeometry | WallGeometry)[],
   style: Style,
 ): Primitive {
-  const color = getCesiumColor(style.getStroke().getColor(), [0, 0, 0, 1]);
+  const color = getCesiumColor(style.getStroke()!.getColor(), [0, 0, 0, 1]);
   const instances = geometries.map(
     (geometry) =>
       new GeometryInstance({
@@ -223,9 +227,9 @@ export function createLinePrimitive(
       }),
   );
 
-  const color = getCesiumColor(style.getStroke().getColor(), [0, 0, 0, 1]);
+  const color = getCesiumColor(style.getStroke()!.getColor(), [0, 0, 0, 1]);
   let material;
-  if (style.getStroke().getLineDash()) {
+  if (style.getStroke()?.getLineDash()) {
     material = Material.fromType('Stripe', {
       horizontal: false,
       repeat: 500,

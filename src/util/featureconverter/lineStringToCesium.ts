@@ -171,7 +171,7 @@ export function createGroundLineGeometries(
   options: LineGeometryOptions,
   style: Style,
 ): GroundPolylineGeometry[] {
-  const width = parseNumber(style.getStroke().getWidth(), 1.0);
+  const width = parseNumber(style.getStroke()!.getWidth(), 1.0);
   return [
     new GroundPolylineGeometry({
       ...options,
@@ -184,7 +184,7 @@ export function createLineGeometries(
   options: LineGeometryOptions,
   style: Style,
 ): PolylineGeometry[] {
-  const width = parseNumber(style.getStroke().getWidth(), 1.0);
+  const width = parseNumber(style.getStroke()!.getWidth(), 1.0);
 
   return [
     new PolylineGeometry({

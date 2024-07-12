@@ -189,22 +189,22 @@ class ArrowStyle extends Style {
    * Same as getStroke().getWidth() / getStroke().setWidth()
    */
   get width(): number | undefined {
-    return this.getStroke().getWidth();
+    return this.getStroke()?.getWidth();
   }
 
   set width(width: number | undefined) {
-    this.getStroke().setWidth(width);
+    this.getStroke()?.setWidth(width);
   }
 
   /**
    * The color of the stroke and icon styles. Setting the color will not re-apply the icons color.
    */
   get color(): ColorType {
-    return this.getStroke().getColor();
+    return this.getStroke()?.getColor() ?? [255, 255, 255, 1];
   }
 
   set color(color: ColorType) {
-    this.getStroke().setColor(color);
+    this.getStroke()?.setColor(color);
   }
 
   private _drawArrow(
@@ -214,7 +214,7 @@ class ArrowStyle extends Style {
     pixelRatio: number,
   ): void {
     ctx.save();
-    let scale = this.getImage().getScale();
+    let scale = this.getImage()?.getScale() ?? 1;
     scale = Array.isArray(scale) ? scale : [scale, scale];
     ctx.setTransform(
       scale[0],
@@ -225,7 +225,7 @@ class ArrowStyle extends Style {
       imagePosition[1],
     );
     ctx.rotate(Math.PI - rotation);
-    const image = this.getImage().getImage(pixelRatio);
+    const image = this.getImage()!.getImage(pixelRatio);
     ctx.translate(0, Math.floor(image.height / 2));
     ctx.drawImage(image, -image.width / 2, -image.height / 2);
     ctx.restore();
@@ -290,7 +290,7 @@ class ArrowStyle extends Style {
     return {
       color: this.color,
       width: this.width,
-      arrowIcon: this.getImage().clone(),
+      arrowIcon: this.getImage()!.clone(),
       zIndex: this.getZIndex(),
     };
   }

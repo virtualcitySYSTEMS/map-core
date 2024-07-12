@@ -78,7 +78,7 @@ class VectorObliqueImpl
 
   featureVisibility: FeatureVisibility;
 
-  olLayer: OLVectorLayer<VectorSource> | null = null;
+  olLayer: OLVectorLayer | null = null;
 
   private _imageChangedListener: (() => void) | null | undefined = null;
 
@@ -91,7 +91,7 @@ class VectorObliqueImpl
     this.featureVisibility = options.featureVisibility;
   }
 
-  getOLLayer(): OLVectorLayer<VectorSource> {
+  getOLLayer(): OLVectorLayer {
     return new OLVectorLayer({
       visible: false,
       source: this.obliqueSource,

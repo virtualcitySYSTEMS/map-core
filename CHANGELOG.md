@@ -1,3 +1,16 @@
+### 6.0.0-rc.3
+
+- Updates openlayers to 9.5.2-dev.
+
+### 6.0.0-rc.2
+
+- Dev dependency updates
+- Fixes an issue where override collections would hand out shadow objects directly when serializing. These are now properly cloned.
+
+### 6.0.0-rc.1
+
+- Update cesium to 1.119
+
 ### 6.0.0-rc.0
 
 - Add new `changed` event to FlightPlayerClock

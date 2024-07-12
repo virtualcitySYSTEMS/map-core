@@ -32,7 +32,7 @@ class VectorOpenlayersImpl
 
   private _featureVisibilityListeners: (() => void)[] = [];
 
-  olLayer: OLVectorLayer<VectorSource> | null = null;
+  olLayer: OLVectorLayer | null = null;
 
   globalHider: GlobalHider;
 
@@ -54,7 +54,7 @@ class VectorOpenlayersImpl
     }
   }
 
-  getOLLayer(): OLVectorLayer<VectorSource> {
+  getOLLayer(): OLVectorLayer {
     const olLayer = new OLVectorLayer({
       visible: false,
       source: this.source,

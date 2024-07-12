@@ -41,7 +41,7 @@ class MVTTileProvider extends TileProvider {
 
   idProperty: string | undefined;
 
-  private _MVTFormat = new MVT({ featureClass: Feature });
+  private _MVTFormat = new MVT<Feature>({ featureClass: Feature });
 
   constructor(options: MVTTileProviderOptions) {
     const defaultOptions = MVTTileProvider.getDefaultOptions();
@@ -80,7 +80,7 @@ class MVTTileProvider extends TileProvider {
     const center = getCenter(extent);
     const init = getInitForUrl(this.url, headers);
     const data = await requestArrayBuffer(url, init);
-    const features = this._MVTFormat.readFeatures(data) as Feature[];
+    const features = this._MVTFormat.readFeatures(data);
     const sx = (extent[2] - extent[0]) / 4096;
     const sy = -((extent[3] - extent[1]) / 4096);
     features.forEach((feature) => {

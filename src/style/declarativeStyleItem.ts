@@ -276,7 +276,7 @@ class DeclarativeStyleItem extends StyleItem {
             scratchColor,
           );
           if (textColor) {
-            textStyle.getFill().setColor(cesiumColorToColor(textColor));
+            textStyle.getFill()!.setColor(cesiumColorToColor(textColor));
           }
         }
         if (this.cesiumStyle.labelOutlineColor) {
@@ -364,7 +364,7 @@ class DeclarativeStyleItem extends StyleItem {
     if (this.cesiumStyle.scale && style.getImage()) {
       const scale = this.cesiumStyle.scale.evaluate<number>(feature);
       if (scale && Number.isFinite(scale)) {
-        style.getImage().setScale(scale);
+        style.getImage()!.setScale(scale);
       }
     }
 

@@ -245,6 +245,7 @@ describe('point helpers', () => {
           image: new RegularShape({
             fill: new Fill({ color: '#FF00FF' }),
             points: 5,
+            radius: 5,
           }),
         });
         [primitive] = (await getPrimitiveOptions(
@@ -293,6 +294,7 @@ describe('point helpers', () => {
           image: new RegularShape({
             fill: new Fill({ color: '#FF00FF' }),
             points: 5,
+            radius: 5,
           }),
         });
         const scene2 = getMockScene();
@@ -354,6 +356,7 @@ describe('point helpers', () => {
             fill: new Fill({ color: '#FF00FF' }),
             stroke: new Stroke({ color: '#FF00FF', width: 1 }),
             points: 0,
+            radius: 5,
           }),
         });
         [primitive, outline] = (await getPrimitiveOptions(
@@ -438,6 +441,7 @@ describe('point helpers', () => {
           image: new RegularShape({
             stroke: new Stroke({ color: '#FF00FF', width: 1 }),
             points: 5,
+            radius: 5,
           }),
         });
         [outline] = (await getPrimitiveOptions(
@@ -506,6 +510,7 @@ describe('point helpers', () => {
           image: new RegularShape({
             stroke: new Stroke({ color: '#FF00FF', width: 1 }),
             points: 5,
+            radius: 5,
           }),
         });
         [primitive, outline] = (await getPrimitiveOptions(
@@ -657,6 +662,7 @@ describe('point helpers', () => {
           image: new RegularShape({
             fill: new Fill({ color: '#FF00FF' }),
             points: 5,
+            radius: 5,
           }),
         });
         [primitive] = (await getPrimitiveOptions(
@@ -730,6 +736,7 @@ describe('point helpers', () => {
           image: new RegularShape({
             fill: new Fill({ color: '#FF00FF' }),
             points: 5,
+            radius: 5,
           }),
         });
         [primitive] = (await getPrimitiveOptions(
@@ -822,6 +829,7 @@ describe('point helpers', () => {
           image: new RegularShape({
             fill: new Fill({ color: '#FF00FF' }),
             points: 5,
+            radius: 5,
           }),
         });
         [primitive] = (await getPrimitiveOptions(
@@ -912,6 +920,7 @@ describe('point helpers', () => {
           image: new RegularShape({
             fill: new Fill({ color: '#FF00FF' }),
             points: 5,
+            radius: 5,
           }),
         });
         [primitive] = (await getPrimitiveOptions(

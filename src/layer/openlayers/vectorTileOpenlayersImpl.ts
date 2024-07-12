@@ -3,6 +3,7 @@ import VectorTileSource from 'ol/source/VectorTile.js';
 import TileState from 'ol/TileState.js';
 import type { Size } from 'ol/size.js';
 import type VectorTile from 'ol/VectorTile.js';
+import { Feature } from 'ol';
 import LayerOpenlayersImpl from './layerOpenlayersImpl.js';
 import { mercatorProjection } from '../../util/projection.js';
 import type {
@@ -62,22 +63,25 @@ class VectorTileOpenlayersImpl
       minZoom: 0,
       maxZoom: 26,
       tileSize: this.tileSize,
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      tileLoadFunction: async (tile: VectorTile): Promise<void> => {
-        const features = await this.tileProvider.getFeaturesForTile(
-          tile.tileCoord[1],
-          tile.tileCoord[2],
-          tile.tileCoord[0],
-          this.headers,
-        );
-        if (features.length > 0) {
-          tile.setFeatures(features);
-        } else {
-          tile.setFeatures([]);
-          tile.setState(TileState.EMPTY);
-        }
+      tileLoadFunction: (tile): void => {
+        this.tileProvider
+          .getFeaturesForTile(
+            tile.tileCoord[1],
+            tile.tileCoord[2],
+            tile.tileCoord[0],
+            this.headers,
+          )
+          .then((features) => {
+            if (features.length > 0) {
+              (tile as VectorTile<Feature>).setFeatures(features);
+            } else {
+              (tile as VectorTile<Feature>).setFeatures([]);
+              tile.setState(TileState.EMPTY);
+            }
+          })
+          .catch((err) => {
+            this.getLogger().error((err as Error).message);
+          });
       },
       // url needs to be set for the tileLoadFunction to work.
       url: '/{z}/{x}/{y}',
@@ -120,7 +124,7 @@ class VectorTileOpenlayersImpl
               const tCache = this.source.tileCache;
               if (tCache.containsKey(tileId)) {
                 // change of key of tile (will trigger a reload)
-                const tile = tCache.get(tileId) as VectorTile;
+                const tile = tCache.get(tileId) as VectorTile<Feature>;
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 tile.key = false;

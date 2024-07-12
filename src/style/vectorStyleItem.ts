@@ -261,7 +261,7 @@ class VectorStyleItem extends StyleItem {
           options.image.radius = 5;
         }
         if ((options.image.fill as FillOptions)?.color) {
-          checkColor(options.image.fill as FillOptions);
+          checkColor(options.image.fill as { color: ColorType }); // XXX PatternDescriptor
         }
         if ((options.image.stroke as StrokeOptions)?.color) {
           checkStroke(options.image.stroke as StrokeOptions);
@@ -418,10 +418,10 @@ class VectorStyleItem extends StyleItem {
   set style(style: Style | StyleFunction) {
     check(style, maybe(oneOf(Style, Function)));
     if (style instanceof Style) {
-      this._stroke = style.getStroke();
-      this._fill = style.getFill();
-      this._text = style.getText();
-      this._image = style.getImage();
+      this._stroke = style.getStroke() ?? undefined;
+      this._fill = style.getFill() ?? undefined;
+      this._text = style.getText() ?? undefined;
+      this._image = style.getImage() ?? undefined;
     } else {
       this._stroke = undefined;
       this._fill = undefined;
@@ -485,7 +485,7 @@ class VectorStyleItem extends StyleItem {
     if (this._image instanceof Circle && this._image.getFill()) {
       colorConditions.splice(1, 0, [
         `\${olcs_geometryType}===${OlcsGeometryType.POINT}`,
-        getStringColor(this._image.getFill().getColor() as OLColor),
+        getStringColor(this._image.getFill()!.getColor() as OLColor),
       ]);
     }
     if (this.fillColor) {
@@ -538,13 +538,13 @@ class VectorStyleItem extends StyleItem {
         const stroke = this._image.getStroke();
         let size = this._image.getRadius() * 2;
         if (stroke) {
-          if (this._image.getStroke().getColor()) {
+          if (this._image.getStroke()?.getColor()) {
             pointOutlineColorConditions.splice(1, 1, [
               'true',
-              getStringColor(this._image.getStroke().getColor()),
+              getStringColor(this._image.getStroke()!.getColor()),
             ]);
           }
-          const width = this._image.getStroke().getWidth() as number;
+          const width = this._image.getStroke()!.getWidth() as number;
           pointOutlineWidthConditions.splice(1, 1, ['true', `${width}`]);
           size -= width;
         }
@@ -620,21 +620,21 @@ class VectorStyleItem extends StyleItem {
           `'${String(this._text.getText())}'`,
         ]);
       }
-      if (this._text.getFill() && this._text.getFill().getColor()) {
+      if (this._text.getFill()?.getColor()) {
         labelColorConditions.splice(1, 1, [
           'true',
-          getStringColor(this._text.getFill().getColor() as OLColor),
+          getStringColor(this._text.getFill()!.getColor() as OLColor),
         ]);
       }
 
-      if (this._text.getStroke() && this._text.getStroke().getColor()) {
+      if (this._text.getStroke()?.getColor()) {
         labelOutlineColorConditions.splice(1, 1, [
           'true',
-          getStringColor(this._text.getStroke().getColor()),
+          getStringColor(this._text.getStroke()!.getColor()),
         ]);
         labelOutlineWidthConditions.splice(1, 1, [
           'true',
-          `${this._text.getStroke().getWidth() || 1.25}`,
+          `${this._text.getStroke()!.getWidth() || 1.25}`,
         ]);
       }
     }

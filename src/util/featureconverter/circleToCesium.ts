@@ -65,7 +65,7 @@ export function getLineGeometryOptions(
   options: ConstructorParameters<typeof CircleGeometry>[0],
   style: Style,
 ): { width: number; positions: Cartesian3[] } {
-  const width = parseNumber(style.getStroke().getWidth(), 1.0);
+  const width = parseNumber(style.getStroke()?.getWidth(), 1.0);
   const { center, radius } = options;
   const cartographic = Cartographic.fromCartesian(center);
   const wgs84Center = [
