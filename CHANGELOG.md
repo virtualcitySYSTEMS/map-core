@@ -1,6 +1,7 @@
 ### 6.0.0-rc.3
 
 - Updates openlayers to 9.5.2-dev.
+- Adds isDestroyed() to `VcsCameraPrimitive`
 
 ### 6.0.0-rc.2
 

@@ -156,6 +156,11 @@ class VcsCameraPrimitive {
     }
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  isDestroyed(): boolean {
+    return false;
+  }
+
   destroy(): void {
     const { length } = this._planesPrimitives;
     for (let i = 0; i < length; ++i) {
