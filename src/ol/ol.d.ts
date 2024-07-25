@@ -45,7 +45,10 @@ import {
 declare module 'ol/geom.js' {
   interface Geometry {
     getCoordinates(): any;
-    setCoordinates(coordinates: any, layout?: any): void;
+    setCoordinates(
+      coordinates: any,
+      layout?: import('ol/geom/Geometry.js').GeometryLayout,
+    ): void;
     getFlatCoordinates(): number[];
     getLayout(): import('ol/geom/Geometry.js').GeometryLayout;
     [alreadyTransformedToMercator]?: boolean;
@@ -67,13 +70,17 @@ declare module 'ol/geom.js' {
         | Array<Array<import('ol/coordinate.js').Coordinate>>
         | Array<Array<Array<import('ol/coordinate.js').Coordinate>>>
       >,
+      layout?: import('ol/geom/Geometry.js').GeometryLayout,
     ): void;
     getLayout(): import('ol/geom/Geometry.js').GeometryLayout;
   }
 
   interface Circle {
     getCoordinates(): import('ol/coordinate.js').Coordinate[];
-    setCoordinates(coordinates: import('ol/coordinate.js').Coordinate[]): void;
+    setCoordinates(
+      coordinates: import('ol/coordinate.js').Coordinate[],
+      layout?: import('ol/geom/Geometry.js').GeometryLayout,
+    ): void;
     rotate(angle: number, anchor: import('ol/coordinate.js').Coordinate): void;
   }
 }

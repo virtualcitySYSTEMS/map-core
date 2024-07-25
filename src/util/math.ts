@@ -126,6 +126,19 @@ export function mercatorToCartesian(
   );
 }
 
+export function mercatorToCartographic(
+  mercatorCoordinates: Coordinate,
+  result?: Cartographic,
+): Cartographic {
+  const wgs84Coords = Projection.mercatorToWgs84(mercatorCoordinates);
+  return Cartographic.fromDegrees(
+    wgs84Coords[0],
+    wgs84Coords[1],
+    wgs84Coords[2],
+    result ?? new Cartographic(),
+  );
+}
+
 export function cartesianToMercator(cartesian: Cartesian3): Coordinate {
   const cartographic = Cartographic.fromCartesian(cartesian);
   const wgs84 = cartographicToWgs84(cartographic);

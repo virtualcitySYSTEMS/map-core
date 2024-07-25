@@ -654,6 +654,9 @@ export {
   removeEndingVertex,
   removeEndingVertexFromGeometry,
   enforceRightHand,
+  is2DLayout,
+  from2Dto3DLayout,
+  from3Dto2DLayout,
 } from './src/util/geometryHelpers.js';
 export { default as IndexedCollection } from './src/util/indexedCollection.js';
 export { isMobile } from './src/util/isMobile.js';

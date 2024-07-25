@@ -1,19 +1,26 @@
+import {
+  HeightReference,
+  sampleTerrainMostDetailed,
+  Scene,
+} from '@vcmap-cesium/engine';
 import { offset as offsetSphere } from 'ol/sphere.js';
 import type { Coordinate } from 'ol/coordinate.js';
 import { fromCircle } from 'ol/geom/Polygon.js';
+import { GeometryLayout } from 'ol/geom/Geometry.js';
 import {
-  SimpleGeometry,
+  Circle,
   type Geometry,
   GeometryCollection,
-  MultiPolygon,
+  LineString,
   MultiLineString,
   MultiPoint,
+  MultiPolygon,
   Point,
-  Circle,
   Polygon,
-  LineString,
+  SimpleGeometry,
 } from 'ol/geom.js';
 import Projection from './projection.js';
+import { mercatorToCartographic } from './math.js';
 
 export function getFlatCoordinatesFromSimpleGeometry(
   geometry: SimpleGeometry,
@@ -167,4 +174,71 @@ export function enforceRightHand(ring: Coordinate[]): Coordinate[] {
   }
 
   return ring;
+}
+
+/**
+ * determines if a layout has only 2D coordinate values (XY or XYM)
+ * @param layout
+ */
+export function is2DLayout(layout: GeometryLayout): boolean {
+  return layout === 'XY' || layout === 'XYM';
+}
+
+/**
+ * Will convert a 3D layout (XYZ or XYZM) to XY (or XYM). This changes the geometry in place. will not apply any changes,
+ * if the layout is already a 2D layout
+ * @param geometry
+ */
+export function from3Dto2DLayout(geometry: Geometry): void {
+  const layout = geometry.getLayout();
+  if (is2DLayout(layout)) {
+    return;
+  }
+  const coordinates = geometry.getCoordinates() as any[];
+  const flatCoordinates = getFlatCoordinatesFromGeometry(geometry, coordinates);
+  flatCoordinates.forEach((coordinate) => {
+    if (layout === 'XYZM') {
+      coordinate[2] = coordinate.pop()!;
+    } else {
+      coordinate.pop();
+    }
+  });
+  geometry.setCoordinates(coordinates, layout === 'XYZM' ? 'XYM' : 'XY');
+}
+
+/**
+ * Wil transform a 2D geometry (layout XY XYM) in place to 3D (XYZ XYZM) using the provided scene & height reference.
+ * will no apply anything, if the layout is already 3D
+ * @param geometry
+ * @param scene
+ * @param heightReference
+ */
+export async function from2Dto3DLayout(
+  geometry: Geometry,
+  scene: Scene,
+  heightReference:
+    | HeightReference.CLAMP_TO_GROUND
+    | HeightReference.CLAMP_TO_TERRAIN,
+): Promise<void> {
+  const layout = geometry.getLayout();
+  if (!is2DLayout(layout)) {
+    return;
+  }
+  const coordinates = geometry.getCoordinates() as any[];
+  const flatCoordinates = getFlatCoordinatesFromGeometry(geometry, coordinates);
+  const cartographics = flatCoordinates.map((c) => mercatorToCartographic(c));
+  if (heightReference === HeightReference.CLAMP_TO_GROUND) {
+    await scene.sampleHeightMostDetailed(cartographics);
+  } else {
+    await sampleTerrainMostDetailed(scene.terrainProvider, cartographics);
+  }
+  cartographics.forEach((c, index) => {
+    if (layout === 'XYM') {
+      flatCoordinates[index][3] = flatCoordinates[index][2];
+      flatCoordinates[index][2] = c.height;
+    } else {
+      flatCoordinates[index][2] = c.height;
+    }
+  });
+  geometry.setCoordinates(coordinates, layout === 'XYM' ? 'XYZM' : 'XYZ');
 }

@@ -10,6 +10,7 @@
 
 - Updates openlayers to 9.5.2-dev.
 - Adds isDestroyed() to `VcsCameraPrimitive`
+- Adds new helpers to change geometry layouts from XY to XYZ.
 
 ### 6.0.0-rc.2
 
