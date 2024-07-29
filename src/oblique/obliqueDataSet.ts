@@ -207,7 +207,7 @@ class ObliqueDataSet {
       let images: ObliqueImage[] = [];
       if (version >= 3.5 || (version === 3.4 && buildNumber > 36)) {
         images = parseImageData(json, this._imageMetas);
-      } else if (version >= 3.1 || version === null) {
+      } else if (version >= 3.1 || version === undefined) {
         images = parseLegacyImageData(json, this._imageMetas);
       }
       if (images.length > 0) {

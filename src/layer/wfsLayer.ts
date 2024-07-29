@@ -156,12 +156,15 @@ class WFSLayer extends VectorLayer {
 
   toJSON(): WFSOptions {
     const config: Partial<WFSOptions> = super.toJSON();
-
+    const defaultOptions = WFSLayer.getDefaultOptions();
     config.featureType = this.featureType.slice();
     config.featureNS = this.featureNS;
     config.featurePrefix = this.featurePrefix;
     if (Object.keys(this.getFeaturesOptions).length > 0) {
       config.getFeatureOptions = this.getFeaturesOptions;
+    }
+    if (this.version !== defaultOptions.version) {
+      config.version = this.version;
     }
     return config as WFSOptions;
   }

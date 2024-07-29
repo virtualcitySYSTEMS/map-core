@@ -1,3 +1,8 @@
+### 5.3.2
+
+- fixed a Bug where legacy Oblique Datasets could not be read
+- fixed a Bug where `WFSLayer.toJSON` did not serialize the `version`
+
 ### 5.3.1
 
 - added an IconCache for DeclarativeStyle icons to fix flickering icons in 2D
