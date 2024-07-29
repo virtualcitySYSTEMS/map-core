@@ -1,3 +1,7 @@
+### 6.0.0-rc.4
+
+- Updates openlayers to 10.0.0.
+
 ### 6.0.0-rc.3
 
 - Updates openlayers to 9.5.2-dev.
