@@ -295,23 +295,91 @@ describe('ObliqueMap', () => {
     });
 
     describe('while the map is not initialized', () => {
+      /**
+       * @type {ObliqueMap}
+       */
+      let uninitializedMap;
+
+      beforeEach(() => {
+        uninitializedMap = new ObliqueMap({});
+      });
+
+      afterEach(() => {
+        uninitializedMap.destroy();
+      });
+
       it('should set the collection after initialization', async () => {
-        const newMap = new ObliqueMap({});
-        await newMap.setCollection(obliqueCollection2);
-        await newMap.initialize();
-        expect(newMap.collection).to.equal(obliqueCollection2);
-        newMap.destroy();
+        await uninitializedMap.setCollection(obliqueCollection2);
+        await uninitializedMap.initialize();
+        expect(uninitializedMap.collection).to.equal(obliqueCollection2);
+      });
+
+      it('should still set the collection, even if it cannot show the viewpoint', async () => {
+        sandbox
+          .stub(obliqueCollection2, 'hasImageAtCoordinate')
+          .resolves(false);
+        uninitializedMap.maintainViewpointOnCollectionChange = true;
+        const spy = getVcsEventSpy(
+          uninitializedMap.failedToSetCollection,
+          sandbox,
+        );
+        await uninitializedMap.setCollection(
+          obliqueCollection2,
+          new Viewpoint({}),
+        );
+        await uninitializedMap.initialize();
+        expect(uninitializedMap.collection).to.equal(obliqueCollection2);
+        expect(spy).to.not.have.been.called;
       });
     });
 
     describe('while the map is initializing', () => {
+      let uninitializedMap;
+
+      beforeEach(() => {
+        uninitializedMap = new ObliqueMap({});
+      });
+
+      afterEach(() => {
+        uninitializedMap.destroy();
+      });
+
       it('should set the collection after initialization', async () => {
-        const newMap = new ObliqueMap({});
-        newMap.initialize();
-        await newMap.setCollection(obliqueCollection2);
-        expect(newMap.initialized).to.be.true;
-        expect(newMap.collection).to.equal(obliqueCollection2);
-        newMap.destroy();
+        uninitializedMap.initialize();
+        await uninitializedMap.setCollection(obliqueCollection2);
+        expect(uninitializedMap.initialized).to.be.true;
+        expect(uninitializedMap.collection).to.equal(obliqueCollection2);
+      });
+    });
+
+    describe('maintaining viewpoint', () => {
+      beforeEach(async () => {
+        await map.setCollection(obliqueCollection1);
+        map.maintainViewpointOnCollectionChange = true;
+        sandbox
+          .stub(obliqueCollection2, 'hasImageAtCoordinate')
+          .resolves(false);
+      });
+
+      after(() => {
+        map.maintainViewpointOnCollectionChange = false;
+      });
+
+      it('should not set a new collection, if it cannot show the given viewpoint and viewpoint should be maintained', async () => {
+        await map.setCollection(obliqueCollection2, new Viewpoint({}));
+        expect(map.collection).to.equal(obliqueCollection1);
+      });
+
+      it('should not raise the collection changed event', async () => {
+        const spy = getVcsEventSpy(map.collectionChanged, sandbox);
+        await map.setCollection(obliqueCollection2, new Viewpoint({}));
+        expect(spy).to.not.have.been.called;
+      });
+
+      it('should raise the failed to set collection event', async () => {
+        const spy = getVcsEventSpy(map.failedToSetCollection, sandbox);
+        await map.setCollection(obliqueCollection2, new Viewpoint({}));
+        expect(spy).to.have.been.calledOnceWith(obliqueCollection2);
       });
     });
   });
