@@ -1,5 +1,7 @@
 /* eslint-disable no-self-assign */
 import Feature from 'ol/Feature.js';
+import { expect } from 'chai';
+import sinon, { type SinonSandbox } from 'sinon';
 import {
   ClassificationType,
   HeightReference,
@@ -11,12 +13,13 @@ import VectorProperties, {
   parseNearFarScalar,
   parseStoreyHeights,
   getClassificationTypeOptions,
+  VectorPropertiesPrimitiveOptions,
 } from '../../../src/layer/vectorProperties.js';
 import { PrimitiveOptionsType } from '../../../index.js';
 
 describe('VectorProperties', () => {
   describe('parseNearFarScalar', () => {
-    let defaultValue;
+    let defaultValue: NearFarScalar;
 
     before(() => {
       defaultValue = new NearFarScalar(0, 0, 1, 0);
@@ -44,10 +47,10 @@ describe('VectorProperties', () => {
       const nearFarScalar = parseNearFarScalar([1, 2, 3, 4], defaultValue);
       expect(nearFarScalar).to.not.be.equal(defaultValue);
       expect(nearFarScalar).to.be.a.instanceOf(NearFarScalar);
-      expect(nearFarScalar.near).to.be.equal(1);
-      expect(nearFarScalar.nearValue).to.be.equal(2);
-      expect(nearFarScalar.far).to.be.equal(3);
-      expect(nearFarScalar.farValue).to.be.equal(4);
+      expect(nearFarScalar?.near).to.be.equal(1);
+      expect(nearFarScalar?.nearValue).to.be.equal(2);
+      expect(nearFarScalar?.far).to.be.equal(3);
+      expect(nearFarScalar?.farValue).to.be.equal(4);
     });
 
     it('should return a valid NearFarScalar value on parsable Strings', () => {
@@ -57,15 +60,15 @@ describe('VectorProperties', () => {
       );
       expect(nearFarScalar).to.not.be.equal(defaultValue);
       expect(nearFarScalar).to.be.a.instanceOf(NearFarScalar);
-      expect(nearFarScalar.near).to.be.equal(1);
-      expect(nearFarScalar.nearValue).to.be.equal(2);
-      expect(nearFarScalar.far).to.be.equal(3);
-      expect(nearFarScalar.farValue).to.be.equal(4);
+      expect(nearFarScalar?.near).to.be.equal(1);
+      expect(nearFarScalar?.nearValue).to.be.equal(2);
+      expect(nearFarScalar?.far).to.be.equal(3);
+      expect(nearFarScalar?.farValue).to.be.equal(4);
     });
   });
 
   describe('parseCartesian3', () => {
-    let defaultValue;
+    let defaultValue: Cartesian3;
 
     before(() => {
       defaultValue = new Cartesian3(1, 1, 0);
@@ -77,15 +80,12 @@ describe('VectorProperties', () => {
     });
 
     it('return the default value if value has the wrong array size', () => {
-      const cartesian = parseNearFarScalar([12, 12], defaultValue);
+      const cartesian = parseCartesian3([12, 12], defaultValue);
       expect(cartesian).to.be.equal(defaultValue);
     });
 
     it('return the default value if array values ar not parsable', () => {
-      const cartesian = parseNearFarScalar(
-        ['212', 'a12', 12, 23],
-        defaultValue,
-      );
+      const cartesian = parseCartesian3(['a12', 12, 23], defaultValue);
       expect(cartesian).to.be.equal(defaultValue);
     });
 
@@ -93,18 +93,18 @@ describe('VectorProperties', () => {
       const cartesian = parseCartesian3([1, 2, 3], defaultValue);
       expect(cartesian).to.not.be.equal(defaultValue);
       expect(cartesian).to.be.a.instanceOf(Cartesian3);
-      expect(cartesian.x).to.be.equal(1);
-      expect(cartesian.y).to.be.equal(2);
-      expect(cartesian.z).to.be.equal(3);
+      expect(cartesian?.x).to.be.equal(1);
+      expect(cartesian?.y).to.be.equal(2);
+      expect(cartesian?.z).to.be.equal(3);
     });
 
     it('should return a valid Cartesian3 value if values are parsable', () => {
       const cartesian = parseCartesian3(['1', '2', '3'], defaultValue);
       expect(cartesian).to.not.be.equal(defaultValue);
       expect(cartesian).to.be.a.instanceOf(Cartesian3);
-      expect(cartesian.x).to.be.equal(1);
-      expect(cartesian.y).to.be.equal(2);
-      expect(cartesian.z).to.be.equal(3);
+      expect(cartesian?.x).to.be.equal(1);
+      expect(cartesian?.y).to.be.equal(2);
+      expect(cartesian?.z).to.be.equal(3);
     });
   });
 
@@ -136,9 +136,9 @@ describe('VectorProperties', () => {
   });
 
   describe('VectorProperties', () => {
-    let vectorProperties;
-    let sandbox;
-    let eventListener;
+    let vectorProperties: VectorProperties;
+    let sandbox: SinonSandbox;
+    let eventListener: (event: any) => void;
 
     before(() => {
       sandbox = sinon.createSandbox();
@@ -907,7 +907,7 @@ describe('VectorProperties', () => {
     });
 
     describe('getting model', () => {
-      let feature;
+      let feature: Feature;
 
       beforeEach(() => {
         feature = new Feature({});
@@ -962,7 +962,7 @@ describe('VectorProperties', () => {
     });
 
     describe('getting a primitive', () => {
-      let feature;
+      let feature: Feature;
 
       beforeEach(() => {
         feature = new Feature({});
@@ -992,13 +992,13 @@ describe('VectorProperties', () => {
       it('should not return a primitive if geometryOptions is missing', () => {
         vectorProperties.primitiveOptions = {
           type: PrimitiveOptionsType.SPHERE,
-        };
+        } as unknown as VectorPropertiesPrimitiveOptions;
         const primitiveOptions = vectorProperties.getPrimitive(feature);
         expect(primitiveOptions).to.be.null;
       });
     });
     describe('getting values from features', () => {
-      let features;
+      let features: Feature[];
 
       describe('single feature', () => {
         beforeEach(() => {
@@ -1070,7 +1070,7 @@ describe('VectorProperties', () => {
     });
 
     describe('setting values on features', () => {
-      let features;
+      let features: Feature[];
 
       beforeEach(() => {
         features = [new Feature({})];
@@ -1096,6 +1096,243 @@ describe('VectorProperties', () => {
           features,
         );
         expect(features[0].get('olcs_altitudeMode')).to.equal(altitudeMode);
+      });
+    });
+  });
+
+  describe('renderAs', () => {
+    let feature: Feature;
+
+    beforeEach(() => {
+      feature = new Feature();
+    });
+
+    describe('if nothing is defined on vector properties', () => {
+      let vectorProperties: VectorProperties;
+
+      before(() => {
+        vectorProperties = new VectorProperties({});
+      });
+
+      after(() => {
+        vectorProperties.destroy();
+      });
+
+      it('should render as geometry, if nothing is defined on the feature', () => {
+        const renderAs = vectorProperties.renderAs(feature);
+        expect(renderAs).to.equal('geometry');
+      });
+
+      it('should render as a model, if model url is defined', () => {
+        feature.set('olcs_modelUrl', '/foo.glb');
+        const renderAs = vectorProperties.renderAs(feature);
+        expect(renderAs).to.equal('model');
+      });
+
+      it('should render as primitive, if primitive options is defined and geometryOptions too', () => {
+        feature.set('olcs_primitiveOptions', {
+          geometryOptions: {
+            type: 'sphere',
+            radius: 1,
+          },
+        });
+        const renderAs = vectorProperties.renderAs(feature);
+        expect(renderAs).to.equal('primitive');
+      });
+
+      it('should render as geometry, if primitive options are invalid', () => {
+        feature.set('olcs_primitiveOptions', {});
+        const renderAs = vectorProperties.renderAs(feature);
+        expect(renderAs).to.equal('geometry');
+      });
+
+      it('should render as a model, if model url & primitive options are defined', () => {
+        feature.set('olcs_modelUrl', '/foo.glb');
+        feature.set('olcs_primitiveOptions', {
+          geometryOptions: {
+            type: 'sphere',
+            radius: 1,
+          },
+        });
+
+        const renderAs = vectorProperties.renderAs(feature);
+        expect(renderAs).to.equal('model');
+      });
+    });
+
+    describe('if model url is defined', () => {
+      let vectorProperties: VectorProperties;
+
+      before(() => {
+        vectorProperties = new VectorProperties({
+          modelUrl: 'foo.glb',
+        });
+      });
+
+      after(() => {
+        vectorProperties.destroy();
+      });
+
+      it('should render as model, if nothing is defined on the feature', () => {
+        const renderAs = vectorProperties.renderAs(feature);
+        expect(renderAs).to.equal('model');
+      });
+
+      it('should render as a model, if model url is defined', () => {
+        feature.set('olcs_modelUrl', '/foo.glb');
+        const renderAs = vectorProperties.renderAs(feature);
+        expect(renderAs).to.equal('model');
+      });
+
+      it('should render as primitive, if primitive options is defined and geometryOptions too', () => {
+        feature.set('olcs_primitiveOptions', {
+          geometryOptions: {
+            type: 'sphere',
+            radius: 1,
+          },
+        });
+        const renderAs = vectorProperties.renderAs(feature);
+        expect(renderAs).to.equal('primitive');
+      });
+
+      it('should render as model, if primitive options are invalid', () => {
+        feature.set('olcs_primitiveOptions', {});
+        const renderAs = vectorProperties.renderAs(feature);
+        expect(renderAs).to.equal('model');
+      });
+
+      it('should render as a model, if model url & primitive options are defined', () => {
+        feature.set('olcs_modelUrl', '/foo.glb');
+        feature.set('olcs_primitiveOptions', {
+          geometryOptions: {
+            type: 'sphere',
+            radius: 1,
+          },
+        });
+
+        const renderAs = vectorProperties.renderAs(feature);
+        expect(renderAs).to.equal('model');
+      });
+    });
+
+    describe('if primitive options is defined', () => {
+      let vectorProperties: VectorProperties;
+
+      before(() => {
+        vectorProperties = new VectorProperties({
+          primitiveOptions: {
+            type: PrimitiveOptionsType.SPHERE,
+            geometryOptions: {
+              radius: 1,
+            },
+          },
+        });
+      });
+
+      after(() => {
+        vectorProperties.destroy();
+      });
+
+      it('should render as primitive, if nothing is defined on the feature', () => {
+        const renderAs = vectorProperties.renderAs(feature);
+        expect(renderAs).to.equal('primitive');
+      });
+
+      it('should render as a model, if model url is defined', () => {
+        feature.set('olcs_modelUrl', '/foo.glb');
+        const renderAs = vectorProperties.renderAs(feature);
+        expect(renderAs).to.equal('model');
+      });
+
+      it('should render as primitive, if primitive options is defined and geometryOptions too', () => {
+        feature.set('olcs_primitiveOptions', {
+          type: PrimitiveOptionsType.SPHERE,
+          geometryOptions: {
+            radius: 1,
+          },
+        });
+        const renderAs = vectorProperties.renderAs(feature);
+        expect(renderAs).to.equal('primitive');
+      });
+
+      it('should render as model, if primitive options are invalid', () => {
+        feature.set('olcs_primitiveOptions', {});
+        const renderAs = vectorProperties.renderAs(feature);
+        expect(renderAs).to.equal('primitive');
+      });
+
+      it('should render as a model, if model url & primitive options are defined', () => {
+        feature.set('olcs_modelUrl', '/foo.glb');
+        feature.set('olcs_primitiveOptions', {
+          type: PrimitiveOptionsType.SPHERE,
+          geometryOptions: {
+            radius: 1,
+          },
+        });
+
+        const renderAs = vectorProperties.renderAs(feature);
+        expect(renderAs).to.equal('model');
+      });
+    });
+
+    describe('if model url & primitive options is defined', () => {
+      let vectorProperties: VectorProperties;
+
+      before(() => {
+        vectorProperties = new VectorProperties({
+          primitiveOptions: {
+            type: PrimitiveOptionsType.SPHERE,
+            geometryOptions: {
+              radius: 1,
+            },
+          },
+          modelUrl: 'foo.glb',
+        });
+      });
+
+      after(() => {
+        vectorProperties.destroy();
+      });
+
+      it('should render as primitive, if nothing is defined on the feature', () => {
+        const renderAs = vectorProperties.renderAs(feature);
+        expect(renderAs).to.equal('model');
+      });
+
+      it('should render as a model, if model url is defined', () => {
+        feature.set('olcs_modelUrl', '/foo.glb');
+        const renderAs = vectorProperties.renderAs(feature);
+        expect(renderAs).to.equal('model');
+      });
+
+      it('should render as primitive, if primitive options is defined and geometryOptions too', () => {
+        feature.set('olcs_primitiveOptions', {
+          type: PrimitiveOptionsType.SPHERE,
+          geometryOptions: {
+            radius: 1,
+          },
+        });
+        const renderAs = vectorProperties.renderAs(feature);
+        expect(renderAs).to.equal('primitive');
+      });
+
+      it('should render as model, if primitive options are invalid', () => {
+        feature.set('olcs_primitiveOptions', {});
+        const renderAs = vectorProperties.renderAs(feature);
+        expect(renderAs).to.equal('model');
+      });
+
+      it('should render as a model, if model url & primitive options are defined', () => {
+        feature.set('olcs_modelUrl', '/foo.glb');
+        feature.set('olcs_primitiveOptions', {
+          type: PrimitiveOptionsType.SPHERE,
+          geometryOptions: {
+            radius: 1,
+          },
+        });
+
+        const renderAs = vectorProperties.renderAs(feature);
+        expect(renderAs).to.equal('model');
       });
     });
   });

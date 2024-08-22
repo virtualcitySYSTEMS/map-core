@@ -77,7 +77,11 @@ export function vectorPropertiesOfType<T extends PrimitiveOptionsType>(
 export type AltitudeModeType =
   | 'absolute'
   | 'relativeToGround'
-  | 'clampToGround';
+  | 'relativeToTerrain'
+  | 'relativeTo3DTiles'
+  | 'clampToGround'
+  | 'clampToTerrain'
+  | 'clampTo3DTiles';
 
 export type ClassificationTypeType = 'both' | 'terrain' | 'cesium3DTile';
 
@@ -197,8 +201,12 @@ export const vcsMetaVersion = '2.1';
 
 export const AltitudeModeCesium: Record<AltitudeModeType, HeightReference> = {
   clampToGround: HeightReference.CLAMP_TO_GROUND,
+  clampTo3DTiles: HeightReference.CLAMP_TO_3D_TILE,
+  clampToTerrain: HeightReference.CLAMP_TO_TERRAIN,
   absolute: HeightReference.NONE,
   relativeToGround: HeightReference.RELATIVE_TO_GROUND,
+  relativeTo3DTiles: HeightReference.RELATIVE_TO_3D_TILE,
+  relativeToTerrain: HeightReference.RELATIVE_TO_TERRAIN,
 };
 
 export const ClassificationTypeCesium: Record<
@@ -318,7 +326,7 @@ class VectorProperties {
       classificationType: undefined,
       scaleByDistance: undefined,
       eyeOffset: undefined,
-      heightAboveGround: 0,
+      heightAboveGround: undefined,
       skirt: 0,
       groundLevel: undefined,
       extrudedHeight: 0,
@@ -350,7 +358,7 @@ class VectorProperties {
 
   private _eyeOffset: Cartesian3 | undefined;
 
-  private _heightAboveGround: number;
+  private _heightAboveGround: number | undefined;
 
   private _skirt: number;
 
@@ -608,13 +616,13 @@ class VectorProperties {
     return parseCartesian3(featureValue, this.eyeOffset);
   }
 
-  get heightAboveGround(): number {
+  get heightAboveGround(): number | undefined {
     return this._heightAboveGround;
   }
 
-  set heightAboveGround(value: number) {
+  set heightAboveGround(value: number | undefined) {
     if (value !== this._heightAboveGround) {
-      check(value, Number);
+      check(value, maybe(Number));
       this._heightAboveGround = value;
       this.propertyChanged.raiseEvent(['heightAboveGround']);
     }
@@ -1011,6 +1019,34 @@ class VectorProperties {
       ...this._getBaseOptions(feature),
       url,
     };
+  }
+
+  /**
+   * Determines if a feature (in general with a point geometry) should be rendered as a geometry (billboard & label etc) or a model or a primitive
+   * @param feature
+   */
+  renderAs(feature: Feature): 'geometry' | 'model' | 'primitive' {
+    if (feature.get('olcs_modelUrl')) {
+      return 'model';
+    }
+
+    const primitiveOptions = feature.get('olcs_primitiveOptions') as
+      | VectorPropertiesPrimitiveOptions
+      | undefined;
+
+    if (primitiveOptions?.geometryOptions) {
+      return 'primitive';
+    }
+
+    if (this.modelUrl) {
+      return 'model';
+    }
+
+    if (this.primitiveOptions?.geometryOptions) {
+      return 'primitive';
+    }
+
+    return 'geometry';
   }
 
   /**

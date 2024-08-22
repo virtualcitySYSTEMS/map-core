@@ -5,6 +5,7 @@ import RegularShape from 'ol/style/RegularShape.js';
 import Fill from 'ol/style/Fill.js';
 import Stroke from 'ol/style/Stroke.js';
 import Icon from 'ol/style/Icon.js';
+import { Point } from 'ol/geom.js';
 import {
   Cartesian3,
   Cartographic,
@@ -26,9 +27,10 @@ import {
   getModelOptions,
   getPrimitiveOptions,
 } from '../../../../src/util/featureconverter/pointHelpers.js';
-import { getTerrainProvider } from '../../helpers/terrain/terrainData.js';
 import { getMockScene } from '../../helpers/cesiumHelpers.js';
-import { ModelFill } from '../../../../index.js';
+import { getHeightInfo, ModelFill } from '../../../../index.js';
+import { ConvertedItem } from '../../../../src/util/featureconverter/convert.js';
+import { getTerrainProvider } from '../../helpers/terrain/terrainData.js';
 
 describe('point helpers', () => {
   after(() => {
@@ -37,9 +39,9 @@ describe('point helpers', () => {
 
   describe('getModelOptions', () => {
     let feature: Feature;
-    let positions: Cartesian3[];
+    let position: Cartesian3;
     let vectorProperties: VectorProperties;
-    let model: Model;
+    let model: ConvertedItem<'primitive'>;
     let scene: Scene;
 
     before(async () => {
@@ -51,23 +53,27 @@ describe('point helpers', () => {
         olcs_modelUrl: 'http://localhost/test.glb',
         olcs_allowPicking: false,
       });
-      const coordinates = [[1, 1, 2]];
+      const coordinate = [1, 1, 2];
       scene = getMockScene();
-      positions = coordinates.map((pos) =>
-        Cartesian3.fromDegrees(pos[0], pos[1], pos[2]),
+      position = Cartesian3.fromDegrees(
+        coordinate[0],
+        coordinate[1],
+        coordinate[2],
       );
       vectorProperties = new VectorProperties({
         modelScaleX: 2,
         modelScaleY: 4,
         modelScaleZ: 8,
       });
-      [model] = (await getModelOptions(
+
+      model = (await getModelOptions(
         feature,
-        coordinates,
-        positions,
+        position,
+        coordinate,
         vectorProperties,
         scene,
-      ))!.primitives;
+        getHeightInfo(feature, new Point(coordinate), vectorProperties),
+      ))!;
     });
 
     after(() => {
@@ -77,15 +83,18 @@ describe('point helpers', () => {
     });
 
     it('should create a model with the feature modelUrl', () => {
-      expect(model).to.be.an.instanceOf(Model);
+      expect(model.item).to.be.an.instanceOf(Model);
     });
 
     it('should apply allow picking', () => {
-      expect(model.allowPicking).to.be.false;
+      expect(model.item.allowPicking).to.be.false;
     });
 
     it('should apply the scale to the models matrix', () => {
-      const scale = Matrix4.getScale(model.modelMatrix, new Cartesian3());
+      const scale = Matrix4.getScale(
+        (model.item as Model).modelMatrix,
+        new Cartesian3(),
+      );
       expect(scale.x).to.closeTo(2, CesiumMath.EPSILON8);
       expect(scale.y).to.closeTo(4, CesiumMath.EPSILON8);
       expect(scale.z).to.closeTo(8, CesiumMath.EPSILON8);
@@ -97,15 +106,18 @@ describe('point helpers', () => {
       scope
         .get('/test.glb')
         .reply(200, {}, { 'Content-Type': 'application/json' });
-      scene2.globe.terrainProvider = await getTerrainProvider(scope);
-      const twoD = [[13.374517914005413, 52.501750770534045, 0]];
-      const [twoDModel] = (await getModelOptions(
+      scene2.getHeight = (): number => {
+        return 33;
+      };
+      const twoD = [13.374517914005413, 52.501750770534045];
+      const twoDModel = (await getModelOptions(
         feature,
-        twoD,
-        twoD.map((pos) => Cartesian3.fromDegrees(pos[0], pos[1], pos[2])),
+        Cartesian3.fromDegrees(twoD[0], twoD[1]),
+        [...twoD, 0],
         vectorProperties,
         scene2,
-      ))!.primitives;
+        getHeightInfo(feature, new Point(twoD), vectorProperties),
+      ))!.item as Model;
       const { modelMatrix } = twoDModel;
       const cartographic = Cartographic.fromCartesian(
         Matrix4.getTranslation(modelMatrix, new Cartesian3()),
@@ -115,13 +127,10 @@ describe('point helpers', () => {
 
     describe('of a scaled autoScale model', () => {
       let autoscaleVectorProperties: VectorProperties;
-      let autoscaleModel: Model;
+      let autoscaleModel: ConvertedItem<'primitive'>;
 
       before(async () => {
-        const coordinates = [[1, 1, 2]];
-        positions = coordinates.map((pos) =>
-          Cartesian3.fromDegrees(pos[0], pos[1], pos[2]),
-        );
+        const coordinate = [1, 1, 2];
         autoscaleVectorProperties = new VectorProperties({
           modelScaleX: 2,
           modelScaleY: 4,
@@ -129,13 +138,14 @@ describe('point helpers', () => {
           modelAutoScale: true,
         });
 
-        [autoscaleModel] = (await getModelOptions(
+        autoscaleModel = (await getModelOptions(
           feature,
-          coordinates,
-          positions,
+          Cartesian3.fromDegrees(coordinate[0], coordinate[1], coordinate[2]),
+          coordinate,
           autoscaleVectorProperties,
           scene,
-        ))!.primitives;
+          getHeightInfo(feature, new Point(coordinate), vectorProperties),
+        ))!;
       });
 
       after(() => {
@@ -143,12 +153,12 @@ describe('point helpers', () => {
       });
 
       it('should create a model', () => {
-        expect(autoscaleModel).to.be.an.instanceOf(Model);
+        expect(autoscaleModel.item).to.be.an.instanceOf(Model);
       });
 
       it('should apply the scale to the models model matrix', () => {
         const scale = Matrix4.getScale(
-          autoscaleModel.modelMatrix,
+          (autoscaleModel.item as Model).modelMatrix,
           new Cartesian3(),
         );
         expect(scale.x).to.closeTo(2, CesiumMath.EPSILON8);
@@ -157,25 +167,25 @@ describe('point helpers', () => {
       });
 
       it('should reset the scale, if setting a new modelMatrix', () => {
-        const modelMatrix = autoscaleModel.modelMatrix.clone();
-        autoscaleModel.modelMatrix = Matrix4.setScale(
+        const modelMatrix = (autoscaleModel.item as Model).modelMatrix.clone();
+        (autoscaleModel.item as Model).modelMatrix = Matrix4.setScale(
           modelMatrix,
           new Cartesian3(2, 2, 2),
           new Matrix4(),
         );
         const scale = Matrix4.getScale(
-          autoscaleModel.modelMatrix,
+          (autoscaleModel.item as Model).modelMatrix,
           new Cartesian3(),
         );
         expect(scale.x).to.closeTo(4, CesiumMath.EPSILON8);
         expect(scale.y).to.closeTo(8, CesiumMath.EPSILON8);
         expect(scale.z).to.closeTo(16, CesiumMath.EPSILON8);
-        autoscaleModel.modelMatrix = Matrix4.setScale(
+        (autoscaleModel.item as Model).modelMatrix = Matrix4.setScale(
           modelMatrix,
           Cartesian3.ONE,
           new Matrix4(),
         );
-        Matrix4.getScale(autoscaleModel.modelMatrix, scale);
+        Matrix4.getScale((autoscaleModel.item as Model).modelMatrix, scale);
         expect(scale.x).to.closeTo(2, CesiumMath.EPSILON8);
         expect(scale.y).to.closeTo(4, CesiumMath.EPSILON8);
         expect(scale.z).to.closeTo(8, CesiumMath.EPSILON8);
@@ -184,33 +194,36 @@ describe('point helpers', () => {
 
     describe('color handling', () => {
       it('should set the color if passing a style with ModelFill', async () => {
-        const [filledModel] = (await getModelOptions(
+        const filledModel = (await getModelOptions(
           feature,
-          [[1, 1, 2]],
-          positions,
+          Cartesian3.ONE,
+          [1, 1, 2],
           vectorProperties,
           scene,
+          getHeightInfo(feature, new Point([1, 1, 2]), vectorProperties),
           new Style({
             fill: new ModelFill({ color: Color.RED.toCssColorString() }),
           }),
-        ))!.primitives;
+        ))!;
 
-        expect(Color.equals(filledModel.color, Color.RED)).to.be.true;
+        expect(Color.equals((filledModel.item as Model).color, Color.RED)).to.be
+          .true;
       });
 
       it('should not set the color if passing a style with a normal Fill', async () => {
-        const [notFilledModel] = (await getModelOptions(
+        const notFilledModel = (await getModelOptions(
           feature,
-          [[1, 1, 2]],
-          positions,
+          Cartesian3.ONE,
+          [1, 1, 2],
           vectorProperties,
           scene,
+          getHeightInfo(feature, new Point([1, 1, 2]), vectorProperties),
           new Style({
             fill: new Fill({ color: Color.RED.toCssColorString() }),
           }),
-        ))!.primitives;
+        ))!;
 
-        expect(notFilledModel.color).to.be.undefined;
+        expect((notFilledModel.item as Model).color).to.be.undefined;
       });
     });
   });
@@ -218,12 +231,12 @@ describe('point helpers', () => {
   describe('getPrimitiveOptions', () => {
     describe('of a normal primitive', () => {
       let feature: Feature;
-      let positions: Cartesian3[];
+      let position: Cartesian3;
       let vectorProperties: VectorProperties;
       let primitive: Primitive;
       let scene: Scene;
 
-      before(async () => {
+      before(() => {
         feature = new Feature({
           olcs_primitiveOptions: {
             type: PrimitiveOptionsType.SPHERE,
@@ -231,10 +244,12 @@ describe('point helpers', () => {
           },
           olcs_allowPicking: false,
         });
-        const coordinates = [[1, 1, 2]];
+        const coordinates = [1, 1, 2];
         scene = getMockScene();
-        positions = coordinates.map((pos) =>
-          Cartesian3.fromDegrees(pos[0], pos[1], pos[2]),
+        position = Cartesian3.fromDegrees(
+          coordinates[0],
+          coordinates[1],
+          coordinates[2],
         );
         vectorProperties = new VectorProperties({
           modelScaleX: 2,
@@ -248,14 +263,15 @@ describe('point helpers', () => {
             radius: 5,
           }),
         });
-        [primitive] = (await getPrimitiveOptions(
+        primitive = getPrimitiveOptions(
           feature,
           style,
+          position,
           coordinates,
-          positions,
           vectorProperties,
           scene,
-        ))!.primitives;
+          getHeightInfo(feature, new Point(coordinates), vectorProperties),
+        )[0].item as Primitive;
       });
 
       after(() => {
@@ -284,7 +300,7 @@ describe('point helpers', () => {
     });
 
     describe('of an elevation less primitive', () => {
-      it('should set a 2D point onto the terrain', async () => {
+      it('should set a 2D point onto the terrain', () => {
         const vectorProperties = new VectorProperties({
           modelScaleX: 2,
           modelScaleY: 4,
@@ -298,9 +314,8 @@ describe('point helpers', () => {
           }),
         });
         const scene2 = getMockScene();
-        const scope = nock('http://localhost');
-        scene2.globe.terrainProvider = await getTerrainProvider(scope);
-        const twoD = [[13.374517914005413, 52.501750770534045, 0]];
+        scene2.getHeight = (): number => 2;
+        const twoD = [13.374517914005413, 52.501750770534045];
         const feature = new Feature({
           olcs_primitiveOptions: {
             type: PrimitiveOptionsType.SPHERE,
@@ -308,14 +323,15 @@ describe('point helpers', () => {
           },
           olcs_allowPicking: false,
         });
-        const [primitive] = (await getPrimitiveOptions(
+        const primitive = getPrimitiveOptions(
           feature,
           style,
-          twoD,
-          twoD.map((pos) => Cartesian3.fromDegrees(pos[0], pos[1], pos[2])),
+          Cartesian3.fromDegrees(twoD[0], twoD[1]),
+          [...twoD, 0],
           vectorProperties,
           scene2,
-        ))!.primitives;
+          getHeightInfo(feature, new Point(twoD), vectorProperties),
+        )[0].item as Primitive;
         vectorProperties.destroy();
         const { modelMatrix } = primitive;
         const cartographic = Cartographic.fromCartesian(
@@ -327,13 +343,12 @@ describe('point helpers', () => {
 
     describe('of an outlined primitive', () => {
       let feature: Feature;
-      let positions: Cartesian3[];
       let vectorProperties: VectorProperties;
       let primitive: Primitive;
       let scene: Scene;
       let outline: Primitive;
 
-      before(async () => {
+      before(() => {
         feature = new Feature({
           olcs_primitiveOptions: {
             type: PrimitiveOptionsType.SPHERE,
@@ -341,10 +356,12 @@ describe('point helpers', () => {
           },
           olcs_allowPicking: false,
         });
-        const coordinates = [[1, 1, 2]];
+        const coordinates = [1, 1, 2];
         scene = getMockScene();
-        positions = coordinates.map((pos) =>
-          Cartesian3.fromDegrees(pos[0], pos[1], pos[2]),
+        const position = Cartesian3.fromDegrees(
+          coordinates[0],
+          coordinates[1],
+          coordinates[2],
         );
         vectorProperties = new VectorProperties({
           modelScaleX: 2,
@@ -359,14 +376,15 @@ describe('point helpers', () => {
             radius: 5,
           }),
         });
-        [primitive, outline] = (await getPrimitiveOptions(
+        [primitive, outline] = getPrimitiveOptions(
           feature,
           style,
+          position,
           coordinates,
-          positions,
           vectorProperties,
           scene,
-        ))!.primitives;
+          getHeightInfo(feature, new Point(coordinates), vectorProperties),
+        ).map((i) => i.item as Primitive);
       });
 
       after(() => {
@@ -419,7 +437,7 @@ describe('point helpers', () => {
       let scene: Scene;
       let outline: Primitive;
 
-      before(async () => {
+      before(() => {
         feature = new Feature({
           olcs_primitiveOptions: {
             type: PrimitiveOptionsType.SPHERE,
@@ -427,10 +445,12 @@ describe('point helpers', () => {
           },
           olcs_allowPicking: false,
         });
-        const coordinates = [[1, 1, 2]];
+        const coordinates = [1, 1, 2];
         scene = getMockScene();
-        positions = coordinates.map((pos) =>
-          Cartesian3.fromDegrees(pos[0], pos[1], pos[2]),
+        const position = Cartesian3.fromDegrees(
+          coordinates[0],
+          coordinates[1],
+          coordinates[2],
         );
         vectorProperties = new VectorProperties({
           modelScaleX: 2,
@@ -444,14 +464,15 @@ describe('point helpers', () => {
             radius: 5,
           }),
         });
-        [outline] = (await getPrimitiveOptions(
+        outline = getPrimitiveOptions(
           feature,
           style,
+          position,
           coordinates,
-          positions,
           vectorProperties,
           scene,
-        ))!.primitives;
+          getHeightInfo(feature, new Point(coordinates), vectorProperties),
+        )[0].item as Primitive;
       });
 
       after(() => {
@@ -481,13 +502,12 @@ describe('point helpers', () => {
 
     describe('of an only outlined primitive with a depthFailColor', () => {
       let feature: Feature;
-      let positions: Cartesian3[];
       let vectorProperties: VectorProperties;
       let primitive: Primitive;
       let scene: Scene;
       let outline: Primitive;
 
-      before(async () => {
+      before(() => {
         feature = new Feature({
           olcs_primitiveOptions: {
             type: PrimitiveOptionsType.SPHERE,
@@ -496,10 +516,12 @@ describe('point helpers', () => {
           },
           olcs_allowPicking: false,
         });
-        const coordinates = [[1, 1, 2]];
+        const coordinates = [1, 1, 2];
         scene = getMockScene();
-        positions = coordinates.map((pos) =>
-          Cartesian3.fromDegrees(pos[0], pos[1], pos[2]),
+        const position = Cartesian3.fromDegrees(
+          coordinates[0],
+          coordinates[1],
+          coordinates[2],
         );
         vectorProperties = new VectorProperties({
           modelScaleX: 2,
@@ -513,14 +535,15 @@ describe('point helpers', () => {
             radius: 5,
           }),
         });
-        [primitive, outline] = (await getPrimitiveOptions(
+        [primitive, outline] = getPrimitiveOptions(
           feature,
           style,
+          position,
           coordinates,
-          positions,
           vectorProperties,
           scene,
-        ))!.primitives;
+          getHeightInfo(feature, new Point(coordinates), vectorProperties),
+        ).map((i) => i.item as Primitive);
       });
 
       after(() => {
@@ -568,12 +591,11 @@ describe('point helpers', () => {
 
     describe('of an icon primitive', () => {
       let feature: Feature;
-      let positions: Cartesian3[];
       let vectorProperties: VectorProperties;
       let primitive: Primitive;
       let scene: Scene;
 
-      before(async () => {
+      before(() => {
         feature = new Feature({
           olcs_primitiveOptions: {
             type: PrimitiveOptionsType.SPHERE,
@@ -581,10 +603,12 @@ describe('point helpers', () => {
           },
           olcs_allowPicking: false,
         });
-        const coordinates = [[1, 1, 2]];
+        const coordinates = [1, 1, 2];
         scene = getMockScene();
-        positions = coordinates.map((pos) =>
-          Cartesian3.fromDegrees(pos[0], pos[1], pos[2]),
+        const position = Cartesian3.fromDegrees(
+          coordinates[0],
+          coordinates[1],
+          coordinates[2],
         );
         vectorProperties = new VectorProperties({
           modelScaleX: 2,
@@ -597,14 +621,15 @@ describe('point helpers', () => {
             src: '/icon.png',
           }),
         });
-        [primitive] = (await getPrimitiveOptions(
+        primitive = getPrimitiveOptions(
           feature,
           style,
+          position,
           coordinates,
-          positions,
           vectorProperties,
           scene,
-        ))!.primitives;
+          getHeightInfo(feature, new Point(coordinates), vectorProperties),
+        )[0].item as Primitive;
       });
 
       after(() => {
@@ -634,12 +659,11 @@ describe('point helpers', () => {
 
     describe('of an offset primitive', () => {
       let feature: Feature;
-      let positions: Cartesian3[];
       let vectorProperties: VectorProperties;
       let primitive: Primitive;
       let scene: Scene;
 
-      before(async () => {
+      before(() => {
         feature = new Feature({
           olcs_primitiveOptions: {
             type: PrimitiveOptionsType.SPHERE,
@@ -648,10 +672,12 @@ describe('point helpers', () => {
           },
           olcs_allowPicking: false,
         });
-        const coordinates = [[1, 1, 2]];
+        const coordinates = [1, 1, 2];
         scene = getMockScene();
-        positions = coordinates.map((pos) =>
-          Cartesian3.fromDegrees(pos[0], pos[1], pos[2]),
+        const position = Cartesian3.fromDegrees(
+          coordinates[0],
+          coordinates[1],
+          coordinates[2],
         );
         vectorProperties = new VectorProperties({
           modelScaleX: 2,
@@ -665,14 +691,15 @@ describe('point helpers', () => {
             radius: 5,
           }),
         });
-        [primitive] = (await getPrimitiveOptions(
+        primitive = getPrimitiveOptions(
           feature,
           style,
+          position,
           coordinates,
-          positions,
           vectorProperties,
           scene,
-        ))!.primitives;
+          getHeightInfo(feature, new Point(coordinates), vectorProperties),
+        )[0].item as Primitive;
       });
 
       after(() => {
@@ -716,7 +743,7 @@ describe('point helpers', () => {
       let primitive: Primitive;
       let scene: Scene;
 
-      before(async () => {
+      before(() => {
         feature = new Feature({
           olcs_primitiveOptions: {
             type: PrimitiveOptionsType.SPHERE,
@@ -726,10 +753,12 @@ describe('point helpers', () => {
           olcs_modelAutoScale: true,
           olcs_allowPicking: false,
         });
-        const coordinates = [[1, 1, 2]];
+        const coordinates = [1, 1, 2];
         scene = getMockScene();
-        positions = coordinates.map((pos) =>
-          Cartesian3.fromDegrees(pos[0], pos[1], pos[2]),
+        const position = Cartesian3.fromDegrees(
+          coordinates[0],
+          coordinates[1],
+          coordinates[2],
         );
         vectorProperties = new VectorProperties({});
         const style = new Style({
@@ -739,14 +768,15 @@ describe('point helpers', () => {
             radius: 5,
           }),
         });
-        [primitive] = (await getPrimitiveOptions(
+        primitive = getPrimitiveOptions(
           feature,
           style,
+          position,
           coordinates,
-          positions,
           vectorProperties,
           scene,
-        ))!.primitives;
+          getHeightInfo(feature, new Point(coordinates), vectorProperties),
+        )[0].item as Primitive;
       });
 
       after(() => {
@@ -806,7 +836,7 @@ describe('point helpers', () => {
       let primitive: Primitive;
       let scene: Scene;
 
-      before(async () => {
+      before(() => {
         feature = new Feature({
           olcs_primitiveOptions: {
             type: PrimitiveOptionsType.SPHERE,
@@ -815,10 +845,12 @@ describe('point helpers', () => {
           olcs_modelAutoScale: true,
           olcs_allowPicking: false,
         });
-        const coordinates = [[1, 1, 2]];
+        const coordinates = [1, 1, 2];
         scene = getMockScene();
-        positions = coordinates.map((pos) =>
-          Cartesian3.fromDegrees(pos[0], pos[1], pos[2]),
+        const position = Cartesian3.fromDegrees(
+          coordinates[0],
+          coordinates[1],
+          coordinates[2],
         );
         vectorProperties = new VectorProperties({
           modelScaleX: 2,
@@ -832,14 +864,15 @@ describe('point helpers', () => {
             radius: 5,
           }),
         });
-        [primitive] = (await getPrimitiveOptions(
+        primitive = getPrimitiveOptions(
           feature,
           style,
+          position,
           coordinates,
-          positions,
           vectorProperties,
           scene,
-        ))!.primitives;
+          getHeightInfo(feature, new Point(coordinates), vectorProperties),
+        )[0].item as Primitive;
       });
 
       after(() => {
@@ -896,7 +929,7 @@ describe('point helpers', () => {
       let primitive: Primitive;
       let scene: Scene;
 
-      before(async () => {
+      before(() => {
         feature = new Feature({
           olcs_primitiveOptions: {
             type: PrimitiveOptionsType.SPHERE,
@@ -906,10 +939,12 @@ describe('point helpers', () => {
           olcs_modelAutoScale: true,
           olcs_allowPicking: false,
         });
-        const coordinates = [[1, 1, 2]];
+        const coordinates = [1, 1, 2];
         scene = getMockScene();
-        positions = coordinates.map((pos) =>
-          Cartesian3.fromDegrees(pos[0], pos[1], pos[2]),
+        const position = Cartesian3.fromDegrees(
+          coordinates[0],
+          coordinates[1],
+          coordinates[2],
         );
         vectorProperties = new VectorProperties({
           modelScaleX: 2,
@@ -923,14 +958,15 @@ describe('point helpers', () => {
             radius: 5,
           }),
         });
-        [primitive] = (await getPrimitiveOptions(
+        primitive = getPrimitiveOptions(
           feature,
           style,
+          position,
           coordinates,
-          positions,
           vectorProperties,
           scene,
-        ))!.primitives;
+          getHeightInfo(feature, new Point(coordinates), vectorProperties),
+        )[0].item as Primitive;
       });
 
       after(() => {
@@ -1007,15 +1043,17 @@ describe('point helpers', () => {
       });
     });
 
-    describe('returning null', () => {
-      it('should return null, if no primitive can be created', async () => {
+    describe('returning an empty array', () => {
+      it('should return null, if no primitive can be created', () => {
         const feature = new Feature({
           olcs_allowPicking: false,
         });
-        const coordinates = [[1, 1, 2]];
+        const coordinates = [1, 1, 2];
         const scene = getMockScene();
-        const positions = coordinates.map((pos) =>
-          Cartesian3.fromDegrees(pos[0], pos[1], pos[2]),
+        const position = Cartesian3.fromDegrees(
+          coordinates[0],
+          coordinates[1],
+          coordinates[2],
         );
         const vectorProperties = new VectorProperties({
           modelScaleX: 2,
@@ -1028,19 +1066,20 @@ describe('point helpers', () => {
             src: '/icon.png',
           }),
         });
-        const primitive = await getPrimitiveOptions(
+        const primitive = getPrimitiveOptions(
           feature,
           style,
+          position,
           coordinates,
-          positions,
           vectorProperties,
           scene,
+          getHeightInfo(feature, new Point(coordinates), vectorProperties),
         );
         vectorProperties.destroy();
-        expect(primitive).to.be.null;
+        expect(primitive).to.be.empty;
       });
 
-      it('should return null, if there is no image style', async () => {
+      it('should return null, if there is no image style', () => {
         const feature = new Feature({
           olcs_primitiveOptions: {
             type: PrimitiveOptionsType.SPHERE,
@@ -1048,10 +1087,12 @@ describe('point helpers', () => {
           },
           olcs_allowPicking: false,
         });
-        const coordinates = [[1, 1, 2]];
+        const coordinates = [1, 1, 2];
         const scene = getMockScene();
-        const positions = coordinates.map((pos) =>
-          Cartesian3.fromDegrees(pos[0], pos[1], pos[2]),
+        const position = Cartesian3.fromDegrees(
+          coordinates[0],
+          coordinates[1],
+          coordinates[2],
         );
         const vectorProperties = new VectorProperties({
           modelScaleX: 2,
@@ -1061,16 +1102,17 @@ describe('point helpers', () => {
         const style = new Style({
           fill: new Fill({ color: '#FF00FF' }),
         });
-        const primitive = await getPrimitiveOptions(
+        const primitive = getPrimitiveOptions(
           feature,
           style,
+          position,
           coordinates,
-          positions,
           vectorProperties,
           scene,
+          getHeightInfo(feature, new Point(coordinates), vectorProperties),
         );
         vectorProperties.destroy();
-        expect(primitive).to.be.null;
+        expect(primitive).to.be.empty;
       });
     });
   });

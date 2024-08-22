@@ -1,3 +1,39 @@
+
+### 6.0.0-rc.5
+
+- Adds new helpers to change geometry layouts from XY to XYZ.
+- Feature converter refactoring. Most of these are _breaking_ if you rely on any feature converter APIs directly, make sure to follow up on the docs:
+  - New VectorHeightInfo types. VectorHeightInfo now only exposes properties required
+    for the specified height reference. Changed the way `create*Primitive` helpers work and renamed to `create*PrimitiveItem`. These are
+    now more specific and return `ConvertedItem` instead of just the primitive.
+  - Removed multiple no longer needed feature converter helpers: `getHeightAboveGround`, `getMinHeightOrGroundLevel` & `addPrimitivesToContext`
+  - CesiumVectorContext changes.
+    - The context is no longer passed to the feature converter.
+    - The CesiumVectorContext has a new, clearer interface and now exposes async `addFeature` & `removeFeature`.
+    - There is no more feature cache, since the new async API made this obsolete.
+    - VectorContextHelpers `removeArrayFromCollection`, `removeFeatureFromMap` & `addPrimitiveToContext` have been removed.
+  - VectorProperties changes:
+    - VectorProperties has been extended to handle new cesium altitude modes. The new
+      modes are: `relativeToTerrain`, `relativeTo3DTiles`, `clampToTerrain` & `clampTo3DTiles`.
+    - `heightAboveGround` may now be `undefined` to handle new `relativeTo*` altitude modes.
+    - Introduced a `renderAs(feature: Feature): 'geometry' | 'model' | 'primitive'` API for
+      point features.
+  - Changed the VectorGeometryFactory types drastically. You now also have access to
+    the geometry factory APIs: `getArcGeometryFactory`, `getCircleGeometryFactory`, `getArcGeometryFactory`
+    `getLineStringGeometryFactory` & `getPolygonGeometryFactory` respectively. All `*ToCesium` functions
+    have been completely removed. If you relied on this API, just use convert directly.
+  - Since points do not expose a geometry factory, a new `getPointPrimitives` API has been
+    introduced, replacing what `pointToCesium` used to do.
+  - Changed the way `convert` works. The new async API does not rely on sideeffects on VectorContext,
+    but instead resolves to an array of `ConvertedItem`s.
+  - Introduced `setupClampedPrimitive`, an API to clamp a primitive to the scene based on a
+    height reference (used internally to create `relativeTo*` primitives).
+  - Changed the way coordinates are transformed to be used with a specific height info.
+    `getCartesian3AndWGS84FromCoordinates` has been removed, two new helpers have been introduced instead:
+    `mercatorToWgs84TransformerForHeightInfo` & `mercatorToCartesianTransformerForHeightInfo` and
+    specifically for points: `getWgs84CoordinatesForPoint`.
+  - Fixed a bug, where relative geometries where rendered absolute.
+  
 ### 6.0.0-rc.4
 
 - Updates openlayers to 10.0.0.
@@ -8,9 +44,8 @@
 
 ### 6.0.0-rc.3
 
-- Updates openlayers to 9.5.2-dev.
+- Updates openlayers to 10.0.0.
 - Adds isDestroyed() to `VcsCameraPrimitive`
-- Adds new helpers to change geometry layouts from XY to XYZ.
 
 ### 6.0.0-rc.2
 

@@ -1,10 +1,14 @@
+import { expect } from 'chai';
 import Point from 'ol/geom/Point.js';
 import LineString from 'ol/geom/LineString.js';
 import Polygon from 'ol/geom/Polygon.js';
 import Circle from 'ol/geom/Circle.js';
 import MultiPolygon from 'ol/geom/MultiPolygon.js';
 import GeometryCollection from 'ol/geom/GeometryCollection.js';
+import { Coordinate } from 'ol/coordinate.js';
+import { HeightReference } from '@vcmap-cesium/engine';
 import Extent3D from '../../../../src/util/featureconverter/extent3D.js';
+import { VectorHeightInfo } from '../../../../src/util/featureconverter/vectorHeightInfo.js';
 
 describe('Extent3D', () => {
   describe('createEmpty', () => {
@@ -84,8 +88,8 @@ describe('Extent3D', () => {
   });
 
   describe('extendWithGeometry', () => {
-    let point1;
-    let point2;
+    let point1: Coordinate;
+    let point2: Coordinate;
 
     before(() => {
       point1 = [10, 11, 12];
@@ -147,12 +151,16 @@ describe('Extent3D', () => {
   });
 
   describe('extendHeightInfo', () => {
-    let heightInfo;
+    let heightInfo: VectorHeightInfo<HeightReference.NONE>;
 
     before(() => {
       heightInfo = {
+        perPositionHeight: false,
+        skirt: 0,
+        heightReference: HeightReference.NONE,
+        layout: 'XYZ',
         extruded: true,
-        groundLevel: 10,
+        groundLevelOrMinHeight: 10,
         storeyHeightsAboveGround: [2, 3, 5],
         storeyHeightsBelowGround: [2, 3, 5],
       };

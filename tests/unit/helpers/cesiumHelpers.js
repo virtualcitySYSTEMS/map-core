@@ -174,7 +174,9 @@ export function getMockScene() {
       this.globe.destroy();
       this.canvas = null;
     },
-    updateHeight() {},
+    updateHeight() {
+      return () => {};
+    },
     getHeight() {},
   };
   const camera = new Camera(scene);

@@ -1,19 +1,6 @@
 import VectorSource from 'ol/source/Vector.js';
 import Style, { type StyleFunction } from 'ol/style/Style.js';
 import Feature from 'ol/Feature.js';
-import type { SimpleGeometry } from 'ol/geom.js';
-import type { Coordinate } from 'ol/coordinate.js';
-import type {
-  CircleGeometry,
-  CircleOutlineGeometry,
-  GroundPolylineGeometry,
-  HeightReference,
-  PolygonGeometry,
-  PolygonOutlineGeometry,
-  PolylineGeometry,
-  WallGeometry,
-  WallOutlineGeometry,
-} from '@vcmap-cesium/engine';
 
 import { v4 as uuidv4 } from 'uuid';
 import { check, oneOf } from '@vcsuite/check';
@@ -74,64 +61,6 @@ export type VectorOptions = FeatureLayerOptions & {
    */
   isDynamic?: boolean;
   vectorProperties?: VectorPropertiesOptions;
-};
-
-export type VectorGeometryFactoryType = {
-  getCoordinates(geom: SimpleGeometry[]): Coordinate[];
-  getGeometryOptions(
-    geom: SimpleGeometry,
-    num: number,
-    perPositionHeight: boolean,
-    groundLevelOrMinHeight: number,
-  ): unknown;
-  createSolidGeometries(
-    obj: unknown,
-    num: number,
-    bool: boolean,
-    num2?: number,
-  ): (PolygonGeometry | CircleGeometry | WallGeometry)[];
-  createOutlineGeometries(
-    obj: unknown,
-    num: number,
-    bool: boolean,
-    num2?: number,
-  ): (CircleOutlineGeometry | WallOutlineGeometry | PolygonOutlineGeometry)[];
-  createFillGeometries(
-    obj: unknown,
-    num: number,
-    bool: boolean,
-  ): (CircleGeometry | PolygonGeometry)[];
-  createGroundLineGeometries(
-    obj: unknown,
-    style: Style,
-  ): GroundPolylineGeometry[];
-  createLineGeometries(obj: unknown, style: Style): PolylineGeometry[];
-};
-
-export type VectorHeightInfo = {
-  /**
-   *  if the object is extruded
-   */
-  extruded: boolean;
-  /**
-   * storey heights above ground, list has the same length as storeysAboveGround
-   */
-  storeyHeightsAboveGround: number[];
-  /**
-   * storey heights below ground, list has the same length as storeysBelowGround
-   */
-  storeyHeightsBelowGround: number[];
-  /**
-   * the level above or below mean sea level (minZ value or ground_level or 0)
-   */
-  groundLevel: number;
-  /**
-   * a negative height to <i>push</i> the geometry visually into the ground
-   */
-  skirt: number;
-  perPositionHeight: boolean;
-  heightReference: HeightReference;
-  heightAboveGroundAdjustment: number;
 };
 
 export type VectorImplementationOptions = FeatureLayerImplementationOptions & {

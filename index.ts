@@ -72,13 +72,9 @@ export { default as TmsCesiumImpl } from './src/layer/cesium/tmsCesiumImpl.js';
 export { default as VectorCesiumImpl } from './src/layer/cesium/vectorCesiumImpl.js';
 export {
   setReferenceForPicking,
-  removeArrayFromCollection,
-  removeFeatureFromMap,
-  addPrimitiveToContext,
   setSplitDirectionOnPrimitives,
   setupScalingPrimitiveCollection,
   default as VectorContext,
-  VectorContextFeatureCache,
   CesiumVectorContext,
 } from './src/layer/cesium/vectorContext.js';
 export { default as VectorRasterTileCesiumImpl } from './src/layer/cesium/vectorRasterTileCesiumImpl.js';
@@ -260,8 +256,6 @@ export {
   default as VectorLayer,
   VectorOptions,
   VectorImplementationOptions,
-  VectorGeometryFactoryType,
-  VectorHeightInfo,
 } from './src/layer/vectorLayer.js';
 export {
   PrimitiveOptionsType,
@@ -591,55 +585,80 @@ export {
 export { default as geometryIsValid } from './src/util/editor/validateGeoemetry.js';
 export { default as ExclusiveManager } from './src/util/exclusiveManager.js';
 export { default as Extent, ExtentOptions } from './src/util/extent.js';
-export { default as arcToCesium } from './src/util/featureconverter/arcToCesium.js';
+export { getArcGeometryFactory } from './src/util/featureconverter/arcToCesium.js';
 export {
   validateCircle,
-  default as circleToCesium,
+  getCircleGeometryFactory,
 } from './src/util/featureconverter/circleToCesium.js';
+export { setupClampedPrimitive } from './src/util/featureconverter/clampedPrimitive.js';
 export {
   getStylesArray,
   default as convert,
+  PrimitiveType,
+  ConvertedItemType,
+  ConvertedItem,
 } from './src/util/featureconverter/convert.js';
-export { default as Extent3D } from './src/util/featureconverter/extent3D.js';
 export {
-  getMaterialAppearance,
-  createClassificationPrimitive,
-  createPrimitive,
-  createOutlinePrimitive,
-  createLinePrimitive,
-  getMinHeightOrGroundLevel,
-  getStoreyHeights,
-  validateStoreys,
-  getHeightAboveGround,
-  getHeightInfo,
-  getStoreyOptions,
-  addPrimitivesToContext,
-} from './src/util/featureconverter/featureconverterHelper.js';
-export {
-  addArrowsToContext,
+  getArrowHeadPrimitives,
   validateLineString,
-  default as lineStringToCesium,
-  LineGeometryOptions,
+  getLineStringGeometryFactory,
 } from './src/util/featureconverter/lineStringToCesium.js';
 export {
   getModelOptions,
   getPrimitiveOptions,
+  getModelOrPointPrimitiveOptions,
 } from './src/util/featureconverter/pointHelpers.js';
 export {
   getBillboardOptions,
   getLabelOptions,
   validatePoint,
-  getCartesian3AndWGS84FromCoordinates,
-  default as pointToCesium,
+  getWgs84CoordinatesForPoint,
   BillboardOptions,
   LabelOptions,
+  getPointPrimitives,
 } from './src/util/featureconverter/pointToCesium.js';
 export {
   validatePolygon,
-  default as polygonToCesium,
-  PolylineGeometryOptions,
-  PolygonGeometryOptions,
+  getPolygonGeometryFactory,
 } from './src/util/featureconverter/polygonToCesium.js';
+export {
+  VectorHeightInfo,
+  RelativeHeightReference,
+  ClampedHeightReference,
+  ExtrusionHeightInfo,
+  getHeightInfo,
+  getMinHeight,
+  getClampOrigin,
+  getExtrusionHeightInfo,
+  getRelativeEquivalent,
+  isRelativeHeightReference,
+  isClampedHeightReference,
+  isAbsoluteHeightReference,
+  mercatorToWgs84TransformerForHeightInfo,
+  mercatorToCartesianTransformerForHeightInfo,
+} from './src/util/featureconverter/vectorHeightInfo.js';
+export {
+  PolygonGeometryOptions,
+  PolylineGeometryOptions,
+  CircleGeometryOptions,
+  GeometryFactoryType,
+  VectorGeometryFactory,
+  getMaterialAppearance,
+  createClassificationPrimitiveItem,
+  createSolidPrimitiveItem,
+  createOutlinePrimitiveItem,
+  createLinePrimitiveItem,
+  createGroundLinePrimitiveItem,
+  createGroundPrimitiveItem,
+  getCesiumGeometriesOptions,
+} from './src/util/featureconverter/vectorGeometryFactory.js';
+export { default as Extent3D } from './src/util/featureconverter/extent3D.js';
+export {
+  getStoreyHeights,
+  validateStoreys,
+  getStoreyOptions,
+  StoreyOptions,
+} from './src/util/featureconverter/storeyHelpers.js';
 export {
   requestUrl,
   requestJson,

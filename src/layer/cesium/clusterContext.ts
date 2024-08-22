@@ -1,122 +1,110 @@
-import type {
+import {
   CustomDataSource,
   EntityCollection,
   Entity,
-  Cartesian3,
   SplitDirection,
+  Scene,
 } from '@vcmap-cesium/engine';
+import { StyleLike } from 'ol/style/Style.js';
 import type { Feature } from 'ol/index.js';
 import {
-  ClassificationPrimitive,
-  GroundPolylinePrimitive,
-  GroundPrimitive,
-  Model,
-  Primitive,
-} from '@vcmap-cesium/engine';
-import {
-  removeFeatureFromMap,
-  addPrimitiveToContext,
-  removeArrayFromCollection,
-  VectorContextFeatureCache,
   CesiumVectorContext,
+  setReferenceForPicking,
 } from './vectorContext.js';
+import VectorProperties from '../vectorProperties.js';
+import convert, { ConvertedItem } from '../../util/featureconverter/convert.js';
 
 class ClusterContext implements CesiumVectorContext {
   entities: EntityCollection;
 
-  featureToBillboardMap: Map<Feature, Array<Entity>> = new Map();
+  private _featureItems = new Map<Feature, (() => void)[]>();
 
-  featureToLabelMap: Map<Feature, Array<Entity>> = new Map();
+  private _convertingFeatures: Map<Feature, () => void> = new Map();
 
   constructor(dataSource: CustomDataSource) {
     this.entities = dataSource.entities;
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  addPrimitives(
-    _primitives: (
-      | Primitive
-      | GroundPrimitive
-      | GroundPolylinePrimitive
-      | ClassificationPrimitive
-      | Model
-    )[],
-    _feature: Feature,
-    _allowPicking: boolean,
-  ): void {}
-
-  // eslint-disable-next-line class-methods-use-this
-  addScaledPrimitives(
-    _primitives: (
-      | Primitive
-      | GroundPrimitive
-      | GroundPolylinePrimitive
-      | ClassificationPrimitive
-      | Model
-    )[],
-    _feature: Feature,
-    _allowPicking: boolean,
-  ): void {}
-
-  addBillboards(
-    billboardOptions: object[],
+  private _addConvertedItems(
     feature: Feature,
-    allowPicking = false,
+    allowPicking: boolean,
+    items: ConvertedItem[],
   ): void {
-    addPrimitiveToContext(
-      billboardOptions.map((billboard) => ({
-        billboard,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        position: billboard.position as Cartesian3,
-      })),
-      feature,
-      allowPicking,
-      this.entities,
-      this.featureToBillboardMap,
-    );
+    const removeItems = items
+      .map((item) => {
+        let instance: Entity | undefined;
+        let removeItem: (() => void) | undefined;
+        if (item.type === 'billboard') {
+          instance = this.entities.add({
+            billboard: item.item,
+            position: item.item.position,
+          });
+        } else if (item.type === 'label') {
+          instance = this.entities.add({
+            label: item.item,
+            position: item.item.position,
+          });
+        }
+
+        if (instance) {
+          removeItem = (): void => {
+            this.entities.remove(instance as Entity);
+          };
+        }
+
+        if (instance) {
+          if (allowPicking) {
+            setReferenceForPicking(feature, instance);
+          }
+        }
+        return removeItem;
+      })
+      .filter((i): i is () => void => i != null);
+
+    this._featureItems.set(feature, removeItems);
   }
 
-  addLabels(
-    labelOptions: object[],
+  async addFeature(
     feature: Feature,
-    allowPicking = false,
-  ): void {
-    addPrimitiveToContext(
-      labelOptions.map((label) => ({
-        label,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        position: label.position,
-      })),
+    style: StyleLike,
+    vectorProperties: VectorProperties,
+    scene: Scene,
+  ): Promise<void> {
+    this._convertingFeatures.get(feature)?.();
+    let deleted = false;
+    this._convertingFeatures.set(feature, () => {
+      deleted = true;
+    });
+
+    const convertedItems = await convert(
       feature,
-      allowPicking,
-      this.entities,
-      this.featureToLabelMap,
+      style,
+      vectorProperties,
+      scene,
     );
+
+    this._featureItems.get(feature)?.forEach((removeItem) => removeItem());
+
+    if (deleted) {
+      convertedItems.forEach((item) => {
+        if (item.type === 'primitive') {
+          item.item.destroy();
+        }
+      });
+    } else {
+      this._addConvertedItems(
+        feature,
+        vectorProperties.getAllowPicking(feature),
+        convertedItems,
+      );
+    }
   }
 
   removeFeature(feature: Feature): void {
-    removeFeatureFromMap(feature, this.featureToBillboardMap, this.entities);
-    removeFeatureFromMap(feature, this.featureToLabelMap, this.entities);
-  }
-
-  /**
-   * Caches the current cesium resources for a feature, removing them from the feature map
-   */
-  createFeatureCache(feature: Feature): VectorContextFeatureCache {
-    const cache: VectorContextFeatureCache = {};
-    cache.billboards = this.featureToBillboardMap.get(feature);
-    this.featureToBillboardMap.delete(feature);
-    cache.labels = this.featureToLabelMap.get(feature);
-    this.featureToLabelMap.delete(feature);
-    return cache;
-  }
-
-  clearFeatureCache(cache: VectorContextFeatureCache): void {
-    removeArrayFromCollection(this.entities, cache.billboards);
-    removeArrayFromCollection(this.entities, cache.labels);
+    this._convertingFeatures.get(feature)?.();
+    this._convertingFeatures.delete(feature);
+    this._featureItems.get(feature)?.forEach((removeItem) => removeItem());
+    this._featureItems.delete(feature);
   }
 
   // eslint-disable-next-line class-methods-use-this,no-unused-vars
@@ -124,8 +112,11 @@ class ClusterContext implements CesiumVectorContext {
 
   clear(): void {
     this.entities.removeAll();
-    this.featureToBillboardMap.clear();
-    this.featureToLabelMap.clear();
+    this._featureItems.clear();
+    this._convertingFeatures.forEach((destroy) => {
+      destroy();
+    });
+    this._convertingFeatures.clear();
   }
 
   destroy(): void {

@@ -6,10 +6,9 @@ import {
   Cartesian2,
   LabelStyle,
   HorizontalOrigin,
-  type BillboardGraphics,
-  type LabelGraphics,
-  type PolylineGeometry,
   type Scene,
+  Billboard,
+  Label,
 } from '@vcmap-cesium/engine';
 import { Icon, type Style } from 'ol/style.js';
 import type { Coordinate } from 'ol/coordinate.js';
@@ -18,33 +17,28 @@ import type { Feature } from 'ol/index.js';
 import type { Point } from 'ol/geom.js';
 
 import { parseNumber } from '@vcsuite/parsers';
-import {
-  createLinePrimitive,
-  getHeightInfo,
-} from './featureconverterHelper.js';
-import Projection from '../projection.js';
 import { createLineGeometries } from './lineStringToCesium.js';
 import { getCesiumColor } from '../../style/styleHelpers.js';
-import { getModelOptions, getPrimitiveOptions } from './pointHelpers.js';
+import { getModelOrPointPrimitiveOptions } from './pointHelpers.js';
 import VectorProperties from '../../layer/vectorProperties.js';
-import type { VectorHeightInfo } from '../../layer/vectorLayer.js';
-import { AsyncCesiumVectorContext } from '../../layer/cesium/vectorContext.js';
 import type { ColorType } from '../../style/vectorStyleItem.js';
+import { ConvertedItem } from './convert.js';
+import {
+  isClampedHeightReference,
+  mercatorToWgs84TransformerForHeightInfo,
+  RelativeHeightReference,
+  VectorHeightInfo,
+} from './vectorHeightInfo.js';
+import { CesiumGeometryOption } from './vectorGeometryFactory.js';
 
-export function getCoordinates(geometries: Point[]): Coordinate[] {
-  return geometries.map((point) => {
-    return point.getCoordinates();
-  });
-}
-
-export type BillboardOptions = BillboardGraphics.ConstructorOptions;
+export type BillboardOptions = Billboard.ConstructorOptions;
 
 export function getBillboardOptions(
   feature: Feature,
   style: Style,
   heightReference: HeightReference,
   vectorProperties: VectorProperties,
-): BillboardOptions | null {
+): Partial<BillboardOptions> | null {
   const imageStyle = style.getImage();
   if (imageStyle) {
     // ImageStyles should always have an opacity value between 0 and 1, default white Color
@@ -74,10 +68,7 @@ export function getBillboardOptions(
     if (!image) {
       image = imageStyle.getImage(1);
     }
-    const options: BillboardOptions = {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      image,
+    const options: Partial<BillboardOptions> = {
       color,
       scale: imageStyle.getScaleArray()[0],
       heightReference,
@@ -85,9 +76,12 @@ export function getBillboardOptions(
       id: feature.getId(),
     };
 
+    // @ts-expect-error: cesium types are wrong here
+    options.image = image;
+
     options.eyeOffset = vectorProperties.getEyeOffset(feature);
     options.scaleByDistance = vectorProperties.getScaleByDistance(feature);
-    if (heightReference === HeightReference.CLAMP_TO_GROUND) {
+    if (isClampedHeightReference(heightReference)) {
       options.disableDepthTestDistance = Number.POSITIVE_INFINITY;
     }
 
@@ -96,7 +90,7 @@ export function getBillboardOptions(
   return null;
 }
 
-export type LabelOptions = LabelGraphics.ConstructorOptions;
+export type LabelOptions = Label.ConstructorOptions;
 /**
  * extracts cesium label options from a feature and style
  * @param  feature
@@ -110,11 +104,11 @@ export function getLabelOptions(
   style: Style,
   heightReference: HeightReference,
   vectorProperties: VectorProperties,
-): LabelOptions | null {
+): Partial<LabelOptions> | null {
   const textStyle = style.getText();
   const text = textStyle ? textStyle.getText() : null;
   if (text && textStyle) {
-    const options: LabelOptions = {};
+    const options: Partial<LabelOptions> = {};
 
     options.text = text as string;
 
@@ -189,7 +183,7 @@ export function getLabelOptions(
     options.eyeOffset = vectorProperties.getEyeOffset(feature);
     options.scaleByDistance = vectorProperties.getScaleByDistance(feature);
 
-    if (heightReference === HeightReference.CLAMP_TO_GROUND) {
+    if (isClampedHeightReference(heightReference)) {
       options.disableDepthTestDistance = Number.POSITIVE_INFINITY;
     }
     return options;
@@ -211,193 +205,135 @@ export function validatePoint(point: Point): boolean {
   return false;
 }
 
-/**
- * returns positions (cartesian3) and WGS84 coordinates
- * @param  coordinates
- * @param  heightInfo
- */
-export function getCartesian3AndWGS84FromCoordinates(
-  coordinates: Coordinate[],
-  heightInfo: VectorHeightInfo,
-): { positions: Cartesian3[]; wgs84Positions: Coordinate[] } {
-  const wgs84Positions = new Array(coordinates.length);
-  const positions = new Array(coordinates.length);
-  const heightValue =
-    heightInfo.groundLevel +
-    heightInfo.storeyHeightsAboveGround.reduce(
-      (sum, currentValue) => sum + currentValue,
-      0,
-    );
-  coordinates.forEach((coord, index) => {
-    wgs84Positions[index] = Projection.mercatorToWgs84(coord, true);
-    positions[index] = Cartesian3.fromDegrees(coord[0], coord[1], heightValue);
-  });
-  return {
-    positions,
-    wgs84Positions,
-  };
-}
-
 export function getLineGeometries(
-  wgs84Positions: Coordinate[],
-  heightInfo: VectorHeightInfo,
-  positions: Cartesian3[],
+  heightInfo: VectorHeightInfo<RelativeHeightReference | HeightReference.NONE>,
+  position: Cartesian3,
+  wgs84Coords: Coordinate,
   style: Style,
-): PolylineGeometry[] {
-  const lineGeometries = [];
+): CesiumGeometryOption<'line'>[] {
   const heightValueCorrection =
     heightInfo.skirt +
     heightInfo.storeyHeightsBelowGround.reduce(
       (sum, currentValue) => sum + currentValue,
       0,
+    ) +
+    heightInfo.storeyHeightsAboveGround.reduce(
+      (sum, currentValue) => sum + currentValue,
+      0,
     );
-  for (let i = 0; i < wgs84Positions.length; i++) {
-    const pointPosition = wgs84Positions[i];
-    let heightValue =
-      pointPosition[2] != null ? pointPosition[2] : heightInfo.groundLevel;
-    heightValue -= heightValueCorrection;
-    const secondPoint = Cartesian3.fromDegrees(
-      pointPosition[0],
-      pointPosition[1],
-      heightValue,
-    );
-    const linePositions = [positions[i], secondPoint];
-    lineGeometries.push(
-      ...createLineGeometries({ positions: linePositions }, style),
-    );
-  }
-  return lineGeometries;
+
+  const secondPoint = Cartesian3.fromDegrees(
+    wgs84Coords[0],
+    wgs84Coords[1],
+    wgs84Coords[2] - heightValueCorrection,
+  );
+  const linePositions = [position, secondPoint];
+  return createLineGeometries({ positions: linePositions }, heightInfo, style);
 }
 
-export default async function pointToCesium(
+/**
+ * Sets the correct height on the wgs84Coords depending on the height info
+ * @param geometry
+ * @param heightInfo
+ */
+export function getWgs84CoordinatesForPoint(
+  geometry: Point,
+  heightInfo: VectorHeightInfo,
+): Coordinate {
+  const transformer = mercatorToWgs84TransformerForHeightInfo(heightInfo);
+  const wgs84Coords = transformer(geometry.getCoordinates());
+  if (!isClampedHeightReference(heightInfo.heightReference)) {
+    // points get rendered at the top of the extrusion. we must add this to the Z value
+    const extrusionHeight = (
+      heightInfo as VectorHeightInfo<
+        RelativeHeightReference | HeightReference.NONE
+      >
+    ).storeyHeightsAboveGround.reduce(
+      (sum, currentValue) => sum + currentValue,
+      0,
+    );
+
+    if (extrusionHeight) {
+      wgs84Coords[2] += extrusionHeight;
+    }
+  }
+
+  return wgs84Coords;
+}
+
+export async function getPointPrimitives(
   feature: Feature,
+  geometry: Point,
   style: Style,
-  geometries: Point[],
   vectorProperties: VectorProperties,
   scene: Scene,
-  context: AsyncCesiumVectorContext,
-): Promise<void> {
-  if (!style.getImage() && !style.getText()?.getText()) {
-    return;
-  }
-  const validGeometries = geometries.filter((point) => validatePoint(point));
-
-  // no geometries, so early escape
-  if (!validGeometries.length) {
-    return;
-  }
-
-  const coordinates = getCoordinates(validGeometries);
-  const heightInfo = getHeightInfo(feature, vectorProperties, coordinates);
-  let { heightReference } = heightInfo;
-  const allowPicking = vectorProperties.getAllowPicking(feature);
-
-  const { positions, wgs84Positions } = getCartesian3AndWGS84FromCoordinates(
-    coordinates,
-    heightInfo,
+  heightInfo: VectorHeightInfo,
+): Promise<(CesiumGeometryOption | ConvertedItem)[]> {
+  const wgs84Coords = getWgs84CoordinatesForPoint(geometry, heightInfo);
+  const position = Cartesian3.fromDegrees(
+    wgs84Coords[0],
+    wgs84Coords[1],
+    wgs84Coords[2],
   );
-
-  let modelOrPrimitiveOptions = null;
-  if (feature.get('olcs_modelUrl')) {
-    modelOrPrimitiveOptions = await getModelOptions(
-      feature,
-      wgs84Positions,
-      positions,
-      vectorProperties,
-      scene,
-      style,
-    );
-  } else if (feature.get('olcs_primitiveOptions')) {
-    modelOrPrimitiveOptions = await getPrimitiveOptions(
+  const pointPrimitives: (CesiumGeometryOption | ConvertedItem)[] =
+    await getModelOrPointPrimitiveOptions(
       feature,
       style,
-      wgs84Positions,
-      positions,
+      position,
+      wgs84Coords,
       vectorProperties,
-      scene,
-    );
-  } else {
-    modelOrPrimitiveOptions =
-      (await getModelOptions(
-        feature,
-        wgs84Positions,
-        positions,
-        vectorProperties,
-        scene,
-        style,
-      )) ??
-      (await getPrimitiveOptions(
-        feature,
-        style,
-        wgs84Positions,
-        positions,
-        vectorProperties,
-        scene,
-      ));
-  }
-
-  if (heightInfo.extruded && style.getStroke()) {
-    const lineGeometries = getLineGeometries(
-      wgs84Positions,
       heightInfo,
-      positions,
-      style,
+      scene,
     );
-    if (lineGeometries.length) {
-      heightReference = HeightReference.NONE;
-      const linePrimitive = createLinePrimitive(
-        scene,
-        vectorProperties,
-        allowPicking,
-        feature,
-        lineGeometries,
-        style,
-        false,
-      );
-      if (linePrimitive) {
-        context.addPrimitives([linePrimitive], feature, allowPicking);
-      }
-    }
-  }
-  if (modelOrPrimitiveOptions) {
-    if (modelOrPrimitiveOptions.options.autoScale) {
-      context.addScaledPrimitives(
-        modelOrPrimitiveOptions.primitives,
-        feature,
-        allowPicking,
-      );
-    } else {
-      context.addPrimitives(
-        modelOrPrimitiveOptions.primitives,
-        feature,
-        allowPicking,
-      );
-    }
-  } else {
+
+  if (pointPrimitives.length === 0) {
     const bbOptions = getBillboardOptions(
       feature,
       style,
-      heightReference,
+      heightInfo.heightReference,
       vectorProperties,
     );
     if (bbOptions) {
-      const bbOptionsperPosition = positions.map((position) => {
-        return { ...bbOptions, position };
+      pointPrimitives.push({
+        type: 'billboard',
+        item: { ...bbOptions, position },
       });
-      context.addBillboards(bbOptionsperPosition, feature, allowPicking);
     }
 
     const labelOptions = getLabelOptions(
       feature,
       style,
-      heightReference,
+      heightInfo.heightReference,
       vectorProperties,
     );
     if (labelOptions) {
-      const labelOptionsPerPosition = positions.map((position) => {
-        return { ...labelOptions, position };
+      pointPrimitives.push({
+        type: 'label',
+        item: { ...labelOptions, position },
       });
-      context.addLabels(labelOptionsPerPosition, feature, allowPicking);
     }
   }
+
+  if (
+    !isClampedHeightReference(heightInfo.heightReference) &&
+    (
+      heightInfo as VectorHeightInfo<
+        RelativeHeightReference | HeightReference.NONE
+      >
+    ).extruded &&
+    style.getStroke()
+  ) {
+    pointPrimitives.push(
+      ...getLineGeometries(
+        heightInfo as VectorHeightInfo<
+          RelativeHeightReference | HeightReference.NONE
+        >,
+        position,
+        wgs84Coords,
+        style,
+      ),
+    );
+  }
+
+  return pointPrimitives;
 }

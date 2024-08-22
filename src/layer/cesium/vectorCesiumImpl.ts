@@ -7,7 +7,6 @@ import {
 import type VectorSource from 'ol/source/Vector.js';
 import type { EventsKey } from 'ol/events.js';
 import type { Feature } from 'ol/index.js';
-import VectorContext from './vectorContext.js';
 import { vcsLayerName } from '../layerSymbols.js';
 import LayerImplementation from '../layerImplementation.js';
 import { synchronizeFeatureVisibilityWithSource } from '../vectorHelpers.js';
@@ -18,6 +17,7 @@ import type VectorProperties from '../vectorProperties.js';
 import type StyleItem from '../../style/styleItem.js';
 import type FeatureVisibility from '../featureVisibility.js';
 import type GlobalHider from '../globalHider.js';
+import VectorContext from './vectorContext.js';
 
 /**
  * represents a specific vector layer for cesium.
@@ -77,7 +77,9 @@ class VectorCesiumImpl
   private _addListeners(): void {
     this._olListeners.push(
       this.source.on('addfeature', (event) => {
-        this._addFeature(event.feature as Feature);
+        this._addFeature(event.feature as Feature).catch(() => {
+          this.getLogger().error('failed to convert feature');
+        });
       }),
     );
 
@@ -89,7 +91,9 @@ class VectorCesiumImpl
 
     this._olListeners.push(
       this.source.on('changefeature', (event) => {
-        this._featureChanged(event.feature as Feature);
+        this._featureChanged(event.feature as Feature).catch(() => {
+          this.getLogger().error('failed to convert feature');
+        });
       }),
     );
 
@@ -123,18 +127,22 @@ class VectorCesiumImpl
     }
   }
 
-  _addFeatures(features: Feature[]): void {
+  private _addFeatures(features: Feature[]): void {
     // TODO we should make this non-blocking to better handle larger data sets check in RIWA Impl
-    features.forEach((f) => this._addFeature(f));
+    features.forEach((f) => {
+      this._addFeature(f).catch(() => {
+        this.getLogger().error('failed to convert feature');
+      });
+    });
   }
 
   /**
    * converts a feature and adds the associated primitives to the collection of primitives
    */
-  private _addFeature(feature: Feature): void {
+  private async _addFeature(feature: Feature): Promise<void> {
     if (this.active) {
       // XXX cluster check here? or on init?
-      this._context!.convertFeature(
+      await this._context!.addFeature(
         feature,
         this.style.style,
         this.vectorProperties,
@@ -164,11 +172,9 @@ class VectorCesiumImpl
   /**
    * called when a features property have changed
    */
-  private _featureChanged(feature: Feature): void {
-    const cache = this._context!.createFeatureCache(feature);
+  private async _featureChanged(feature: Feature): Promise<void> {
     this._featureToAdd.delete(feature);
-    this._addFeature(feature);
-    this._context!.clearFeatureCache(cache);
+    await this._addFeature(feature);
   }
 
   async activate(): Promise<void> {

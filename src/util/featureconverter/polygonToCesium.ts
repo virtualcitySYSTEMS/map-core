@@ -6,34 +6,27 @@ import {
   GroundPolylineGeometry,
   PolygonHierarchy,
   PolylineGeometry,
-  type Scene,
 } from '@vcmap-cesium/engine';
 import type { Style } from 'ol/style.js';
 import type { Polygon } from 'ol/geom.js';
-import type { Coordinate } from 'ol/coordinate.js';
-import type { Feature } from 'ol/index.js';
 import { parseNumber } from '@vcsuite/parsers';
-import { addPrimitivesToContext } from './featureconverterHelper.js';
-import Projection from '../projection.js';
-import { getFlatCoordinatesFromSimpleGeometry } from '../geometryHelpers.js';
-import type { VectorGeometryFactoryType } from '../../layer/vectorLayer.js';
-import type VectorProperties from '../../layer/vectorProperties.js';
-import type { AsyncCesiumVectorContext } from '../../layer/cesium/vectorContext.js';
+import {
+  mercatorToCartesianTransformerForHeightInfo,
+  VectorHeightInfo,
+} from './vectorHeightInfo.js';
+import {
+  CesiumGeometryOption,
+  PolygonGeometryOptions,
+  PolylineGeometryOptions,
+  VectorGeometryFactory,
+} from './vectorGeometryFactory.js';
 
-export type PolygonGeometryOptions = ConstructorParameters<
-  typeof PolygonGeometry
->[0];
-
-export type PolylineGeometryOptions = ConstructorParameters<
-  typeof PolylineGeometry
->[0];
-
-export function createSolidGeometries(
+function createPolygonGeometry(
   options: PolygonGeometryOptions,
   height: number,
   perPositionHeight: boolean,
   extrudedHeight?: number,
-): PolygonGeometry[] {
+): PolygonGeometry {
   const polygonOptions: PolygonGeometryOptions = {
     ...options,
     perPositionHeight,
@@ -42,35 +35,69 @@ export function createSolidGeometries(
   if (!perPositionHeight) {
     polygonOptions.height = height;
   }
-  return [new PolygonGeometry(polygonOptions)];
+
+  return new PolygonGeometry(polygonOptions);
 }
 
-export function createOutlineGeometries(
+function createSolidGeometries(
   options: PolygonGeometryOptions,
+  heightInfo: VectorHeightInfo,
   height: number,
   perPositionHeight: boolean,
   extrudedHeight?: number,
-): PolygonOutlineGeometry[] {
+): CesiumGeometryOption<'solid'>[] {
   return [
-    new PolygonOutlineGeometry({
-      ...options,
-      height: perPositionHeight ? undefined : height,
-      extrudedHeight,
-      perPositionHeight,
-      vertexFormat: PerInstanceColorAppearance.FLAT_VERTEX_FORMAT,
-    }),
+    {
+      type: 'solid',
+      geometry: createPolygonGeometry(
+        options,
+        height,
+        perPositionHeight,
+        extrudedHeight,
+      ),
+      heightInfo,
+    },
   ];
 }
 
-export function createFillGeometries(
+function createOutlineGeometries(
   options: PolygonGeometryOptions,
+  heightInfo: VectorHeightInfo,
   height: number,
   perPositionHeight: boolean,
-): PolygonGeometry[] {
-  return createSolidGeometries(options, height, perPositionHeight, undefined);
+  extrudedHeight?: number,
+): CesiumGeometryOption<'outline'>[] {
+  return [
+    {
+      type: 'outline',
+      geometry: new PolygonOutlineGeometry({
+        ...options,
+        height: perPositionHeight ? undefined : height,
+        extrudedHeight,
+        perPositionHeight,
+        vertexFormat: PerInstanceColorAppearance.FLAT_VERTEX_FORMAT,
+      }),
+      heightInfo,
+    },
+  ];
 }
 
-export function getLineGeometryOptions(
+function createFillGeometries(
+  options: PolygonGeometryOptions,
+  heightInfo: VectorHeightInfo,
+  height: number,
+  perPositionHeight: boolean,
+): CesiumGeometryOption<'fill'>[] {
+  return [
+    {
+      type: 'fill',
+      geometry: createPolygonGeometry(options, height, perPositionHeight),
+      heightInfo,
+    },
+  ];
+}
+
+function getLineGeometryOptions(
   options: PolygonGeometryOptions,
   style: Style,
 ): PolylineGeometryOptions[] {
@@ -91,47 +118,43 @@ export function getLineGeometryOptions(
   return geometryOptions;
 }
 
-export function createGroundLineGeometries(
+function createGroundLineGeometries(
   options: PolygonGeometryOptions,
+  heightInfo: VectorHeightInfo,
   style: Style,
-): GroundPolylineGeometry[] {
-  return getLineGeometryOptions(options, style).map((option) => {
-    return new GroundPolylineGeometry(option);
-  });
-}
-export function createLineGeometries(
-  options: PolygonGeometryOptions,
-  style: Style,
-): PolylineGeometry[] {
-  return getLineGeometryOptions(options, style).map((option) => {
-    return new PolylineGeometry(option);
-  });
+): CesiumGeometryOption<'groundLine'>[] {
+  return getLineGeometryOptions(options, style).map((option) => ({
+    type: 'groundLine',
+    geometry: new GroundPolylineGeometry(option),
+    heightInfo,
+  }));
 }
 
-export function getGeometryOptions(
+function createLineGeometries(
+  options: PolygonGeometryOptions,
+  heightInfo: VectorHeightInfo,
+  style: Style,
+): CesiumGeometryOption<'line'>[] {
+  return getLineGeometryOptions(options, style).map((option) => ({
+    type: 'line',
+    geometry: new PolylineGeometry(option),
+    heightInfo,
+  }));
+}
+
+function getGeometryOptions(
   geometry: Polygon,
-  positionHeightAdjustment: number,
-  perPositionHeight: boolean,
-  groundLevelOrMinHeight: number,
+  heightInfo: VectorHeightInfo,
 ): PolygonGeometryOptions {
   let hieraryPositions;
   const holes = [];
   const rings = geometry.getLinearRings();
+
+  const coordinateTransformer =
+    mercatorToCartesianTransformerForHeightInfo(heightInfo);
   for (let i = 0; i < rings.length; i++) {
     const coords = rings[i].getCoordinates();
-    const positions = coords.map((coord) => {
-      const wgs84Coords = Projection.mercatorToWgs84(coord);
-      if (!perPositionHeight && groundLevelOrMinHeight) {
-        wgs84Coords[2] = groundLevelOrMinHeight;
-      } else if (wgs84Coords[2] != null) {
-        wgs84Coords[2] += positionHeightAdjustment;
-      }
-      return Cartesian3.fromDegrees(
-        wgs84Coords[0],
-        wgs84Coords[1],
-        wgs84Coords[2],
-      );
-    });
+    const positions = coords.map(coordinateTransformer);
     // make sure the last and first vertex is identical.
     if (!Cartesian3.equals(positions[0], positions[positions.length - 1])) {
       positions.push(positions[0]);
@@ -145,31 +168,6 @@ export function getGeometryOptions(
   return {
     polygonHierarchy: new PolygonHierarchy(hieraryPositions, holes),
   };
-}
-
-export function getCoordinates(geometries: Polygon[]): Coordinate[] {
-  const coordinates: Coordinate[] = [];
-  geometries.forEach((polygon) => {
-    coordinates.push(...getFlatCoordinatesFromSimpleGeometry(polygon));
-  });
-  return coordinates;
-}
-
-let geometryFactory: VectorGeometryFactoryType | null = null;
-
-function getGeometryFactory(): VectorGeometryFactoryType {
-  if (!geometryFactory) {
-    geometryFactory = {
-      getCoordinates,
-      getGeometryOptions,
-      createSolidGeometries,
-      createOutlineGeometries,
-      createFillGeometries,
-      createGroundLineGeometries,
-      createLineGeometries,
-    };
-  }
-  return geometryFactory;
 }
 
 /**
@@ -204,37 +202,20 @@ export function validatePolygon(polygon: Polygon): boolean {
   return false;
 }
 
-/**
- * converts a polygon to a a cesium primitive, with optional labels
- * @param  feature
- * @param  style
- * @param  geometries
- * @param  vectorProperties
- * @param  scene
- * @param  context
- */
-export default function polygonToCesium(
-  feature: Feature,
-  style: Style,
-  geometries: Polygon[],
-  vectorProperties: VectorProperties,
-  scene: Scene,
-  context: AsyncCesiumVectorContext,
-): void {
-  if (!style.getFill() && !style.getStroke()) {
-    return;
+let geometryFactory: VectorGeometryFactory<'polygon'> | undefined;
+
+export function getPolygonGeometryFactory(): VectorGeometryFactory<'polygon'> {
+  if (!geometryFactory) {
+    geometryFactory = {
+      type: 'polygon',
+      getGeometryOptions,
+      createSolidGeometries,
+      createOutlineGeometries,
+      createFillGeometries,
+      createGroundLineGeometries,
+      createLineGeometries,
+      validateGeometry: validatePolygon,
+    };
   }
-  const polygonGeometryFactory = getGeometryFactory();
-  const validGeometries = geometries.filter((polygon) =>
-    validatePolygon(polygon),
-  );
-  addPrimitivesToContext(
-    feature,
-    style,
-    validGeometries,
-    vectorProperties,
-    scene,
-    polygonGeometryFactory,
-    context,
-  );
+  return geometryFactory;
 }

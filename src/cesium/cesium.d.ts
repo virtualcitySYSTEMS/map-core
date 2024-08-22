@@ -7,6 +7,8 @@ import {
   Cartesian3,
   Cartesian4,
   Color,
+  Cartographic,
+  HeightReference,
 } from '@vcmap-cesium/engine';
 import { StyleLike } from 'ol/style/Style.js';
 import VectorStyleItem from '../style/vectorStyleItem.js';
@@ -31,6 +33,15 @@ declare module '@vcmap-cesium/engine' {
     render(): void;
     frameState: FrameState;
     context: Context;
+    updateHeight(
+      cartographic: Cartographic,
+      callback: (cartographic: Cartographic) => void,
+      heightReference: HeightReference,
+    ): () => void;
+    getHeight(
+      cartographic: Cartographic,
+      heightReference: HeightReference,
+    ): number | undefined;
   }
 
   interface TileBoundingVolume {

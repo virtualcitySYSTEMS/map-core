@@ -1,27 +1,20 @@
 import { Math as CesiumMath } from '@vcmap-cesium/engine';
+import { expect } from 'chai';
 
 /**
  * helper function to wait for a timeout use: await timeout(1);
- * @param {number} ms
- * @returns {Promise<void>}
  */
-// eslint-disable-next-line import/prefer-default-export
-export function timeout(ms) {
+export function timeout(ms: number): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
 }
 
-/**
- * @param {Array<number>} numbers
- * @param {Array<number>} expectedNumbers
- * @param {number} [epsilon=CesiumMath.EPSILON8]
- */
-export function arrayCloseTo(
-  numbers,
-  expectedNumbers,
+export function arrayCloseTo<T extends number[]>(
+  numbers: T,
+  expectedNumbers: T,
   epsilon = CesiumMath.EPSILON8,
-) {
+): void {
   numbers.forEach((c, index) => {
     expect(c).to.be.closeTo(
       expectedNumbers[index],

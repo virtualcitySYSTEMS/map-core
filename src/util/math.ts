@@ -112,6 +112,18 @@ export function cartographicToWgs84(cartographic: Cartographic): number[] {
   ];
 }
 
+export function wgs84ToCartographic(
+  wgs84Coordinates: Coordinate,
+  result?: Cartographic,
+): Cartographic {
+  return Cartographic.fromDegrees(
+    wgs84Coordinates[0],
+    wgs84Coordinates[1],
+    wgs84Coordinates[2],
+    result,
+  );
+}
+
 export function mercatorToCartesian(
   mercatorCoordinates: Coordinate,
   result?: Cartesian3,
@@ -131,12 +143,7 @@ export function mercatorToCartographic(
   result?: Cartographic,
 ): Cartographic {
   const wgs84Coords = Projection.mercatorToWgs84(mercatorCoordinates);
-  return Cartographic.fromDegrees(
-    wgs84Coords[0],
-    wgs84Coords[1],
-    wgs84Coords[2],
-    result ?? new Cartographic(),
-  );
+  return wgs84ToCartographic(wgs84Coords, result);
 }
 
 export function cartesianToMercator(cartesian: Cartesian3): Coordinate {

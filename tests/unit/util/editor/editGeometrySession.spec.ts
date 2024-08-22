@@ -710,7 +710,7 @@ describe('EditGeometrySession', () => {
     describe('setting vector properties on the layer', () => {
       let scratchLayer: VectorLayer;
       let initialAltitudeMode: HeightReference;
-      let initialHeightAboveGround: number;
+      let initialHeightAboveGround: number | undefined;
       let initialGroundLevel: number | undefined;
 
       before(() => {
@@ -749,7 +749,7 @@ describe('EditGeometrySession', () => {
     let session: EditGeometrySession;
     let scratchLayer: VectorLayer;
     let initialAltitudeMode: HeightReference;
-    let initialHeightAboveGround: number;
+    let initialHeightAboveGround: number | undefined;
     let initialGroundLevel: number | undefined;
 
     before(() => {

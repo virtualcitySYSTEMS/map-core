@@ -7,7 +7,9 @@ import type {
 } from 'ol/geom.js';
 import type { Extent } from 'ol/extent.js';
 import type { Coordinate } from 'ol/coordinate.js';
-import { VectorHeightInfo } from '../../layer/vectorLayer.js';
+import { HeightReference } from '@vcmap-cesium/engine';
+
+import { VectorHeightInfo } from './vectorHeightInfo.js';
 
 class Extent3D {
   static fromArray(
@@ -34,7 +36,9 @@ class Extent3D {
   /**
    * @param  heightInfo
    */
-  static fromHeightInfo(heightInfo: VectorHeightInfo): Extent3D {
+  static fromHeightInfo(
+    heightInfo: VectorHeightInfo<HeightReference.NONE>,
+  ): Extent3D {
     const extent = new Extent3D();
     extent.extendWithHeightInfo(heightInfo);
     return extent;
@@ -102,10 +106,12 @@ class Extent3D {
     }
   }
 
-  extendWithHeightInfo(heightInfo: VectorHeightInfo): void {
+  extendWithHeightInfo(
+    heightInfo: VectorHeightInfo<HeightReference.NONE>,
+  ): void {
     if (heightInfo.extruded) {
       const calculatedFeatureMaxHeight =
-        heightInfo.groundLevel +
+        heightInfo.groundLevelOrMinHeight +
         heightInfo.storeyHeightsAboveGround.reduce(
           (accumulator, currentValue) => {
             return accumulator + currentValue;
@@ -114,7 +120,7 @@ class Extent3D {
         );
       this.extendZ(calculatedFeatureMaxHeight);
       const calculatedFeatureMinHeight =
-        heightInfo.groundLevel -
+        heightInfo.groundLevelOrMinHeight -
         heightInfo.storeyHeightsBelowGround.reduce(
           (accumulator, currentValue) => {
             return accumulator + currentValue;
