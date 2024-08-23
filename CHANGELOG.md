@@ -1,6 +1,7 @@
 ### 6.0.0-rc.4
 
 - Updates openlayers to 10.0.0.
+- layer now support referencing of `highlightStyle` from styles collection as it already has been supported for `style`
 
 ### 6.0.0-rc.3
 

@@ -20,6 +20,7 @@ function getLogger(): Logger {
 
 export type ModuleLayerOptions = LayerOptions & {
   style?: string | StyleItemOptions;
+  highlightStyle?: string | StyleItemOptions;
   tileProvider?: TileProviderOptions;
   featureProvider?: AbstractFeatureProviderOptions;
 };
@@ -60,7 +61,18 @@ export function deserializeLayer(
         layerConfig.style,
       );
     }
-  } // TODO highlightStyle
+  }
+  let highlightStyle: StyleItem | undefined | null;
+  if (layerConfig.highlightStyle) {
+    if (typeof layerConfig.highlightStyle === 'string') {
+      highlightStyle = vcsApp.styles.getByKey(layerConfig.highlightStyle);
+    } else {
+      highlightStyle = getObjectFromClassRegistry(
+        vcsApp.styleClassRegistry,
+        layerConfig.highlightStyle,
+      );
+    }
+  }
 
   let tileProvider;
   if (layerConfig.tileProvider) {
@@ -81,6 +93,7 @@ export function deserializeLayer(
   return getObjectFromClassRegistry(vcsApp.layerClassRegistry, {
     ...layerConfig,
     style,
+    highlightStyle,
     tileProvider,
     featureProvider,
   });
@@ -99,7 +112,17 @@ export function serializeLayer(
     vcsApp.styles.hasKey((serializedLayer.style as StyleItemOptions).name)
   ) {
     serializedLayer.style = (serializedLayer.style as StyleItemOptions).name;
-  } // TODO highlightStyle
+  }
+  if (
+    (serializedLayer?.highlightStyle as StyleItemOptions)?.name &&
+    vcsApp.styles.hasKey(
+      (serializedLayer.highlightStyle as StyleItemOptions).name,
+    )
+  ) {
+    serializedLayer.highlightStyle = (
+      serializedLayer.highlightStyle as StyleItemOptions
+    ).name;
+  }
   return serializedLayer;
 }
 
