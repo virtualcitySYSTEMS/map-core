@@ -13,6 +13,7 @@ import {
 } from '../../../layer/vectorSymbols.js';
 import ObliqueMap from '../../../map/obliqueMap.js';
 import type { CreateInteraction } from '../createFeatureSession.js';
+import { is2DLayout } from '../../geometryHelpers.js';
 
 /**
  * Offset to prevent bbox from collapsing
@@ -31,6 +32,8 @@ class CreateBBoxInteraction
   private _origin: Coordinate | null = null;
 
   private _lastCoordinate: Coordinate | null = null;
+
+  private _is3D = false;
 
   finished = new VcsEvent<Polygon | null>();
 
@@ -56,27 +59,32 @@ class CreateBBoxInteraction
         this._lastCoordinate[1] += precisionOffset;
       }
 
-      this._lastCoordinate[2] = this._origin[2];
-      let ringCoordinates;
+      if (this._is3D) {
+        this._lastCoordinate[2] = this._origin[2];
+      }
+
+      let lowerRight: Coordinate;
+      let upperLeft: Coordinate;
+
       if (
         (originXHigher && originYHigher) ||
         (!originXHigher && !originYHigher)
       ) {
-        ringCoordinates = [
-          this._origin,
-          [this._lastCoordinate[0], this._origin[1], this._origin[2]],
-          this._lastCoordinate,
-          [this._origin[0], this._lastCoordinate[1], this._origin[2]],
-        ];
+        lowerRight = [this._lastCoordinate[0], this._origin[1]];
+        upperLeft = [this._origin[0], this._lastCoordinate[1]];
       } else {
-        ringCoordinates = [
-          this._origin,
-          [this._origin[0], this._lastCoordinate[1], this._origin[2]],
-          this._lastCoordinate,
-          [this._lastCoordinate[0], this._origin[1], this._origin[2]],
-        ];
+        lowerRight = [this._origin[0], this._lastCoordinate[1]];
+        upperLeft = [this._lastCoordinate[0], this._origin[1]];
       }
-      this._geometry.setCoordinates([ringCoordinates]);
+
+      if (this._is3D) {
+        lowerRight.push(this._origin[2]);
+        upperLeft.push(this._origin[2]);
+      }
+
+      this._geometry.setCoordinates([
+        [this._origin, lowerRight, this._lastCoordinate, upperLeft],
+      ]);
     }
   }
 
@@ -94,8 +102,9 @@ class CreateBBoxInteraction
       if (this._geometry) {
         this.finish();
       } else {
-        this._geometry = new Polygon([[event.positionOrPixel.slice()]], 'XYZ');
+        this._geometry = new Polygon([[event.positionOrPixel.slice()]]);
         this._geometry.set('_vcsGeomType', GeometryType.BBox);
+        this._is3D = !is2DLayout(this._geometry.getLayout());
         if (event.map instanceof ObliqueMap) {
           this._geometry[alreadyTransformedToImage] = true;
         } else {

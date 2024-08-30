@@ -501,6 +501,7 @@ export {
 } from './src/util/editor/editGeometrySession.js';
 export {
   createVertex,
+  getCoordinatesAndLayoutFromVertices,
   getClosestPointOn2DLine,
   pointOnLine3D,
   pointOnLine2D,
@@ -509,8 +510,6 @@ export {
   getCartographicFromPlane,
   drapeGeometryOnTerrain,
   placeGeometryOnTerrain,
-  ensureFeatureAbsolute,
-  clampFeature,
   Vertex,
   SelectableFeatureType,
   SelectFeatureInteraction,

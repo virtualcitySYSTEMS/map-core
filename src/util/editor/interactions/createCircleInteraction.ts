@@ -60,7 +60,7 @@ class CreateCircleInteraction
       if (this._geometry) {
         this.finish();
       } else {
-        this._geometry = new Circle(event.positionOrPixel, 20, 'XYZ');
+        this._geometry = new Circle(event.positionOrPixel, 20);
         this._geometry[actuallyIsCircle] = event.map instanceof ObliqueMap;
         if (event.map instanceof ObliqueMap) {
           this._geometry[alreadyTransformedToImage] = true;

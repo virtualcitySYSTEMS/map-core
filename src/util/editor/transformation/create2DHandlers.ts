@@ -30,16 +30,16 @@ function createAxisPositions(
 ): Coordinate[] {
   if (axis === AxisAndPlanes.X) {
     return [
-      [extent[0], center[1], center[2]],
-      [center[0], center[1], center[2]],
-      [extent[2], center[1], center[2]],
+      [extent[0], center[1]],
+      [center[0], center[1]],
+      [extent[2], center[1]],
     ];
   }
 
   return [
-    [center[0], extent[1], center[2]],
-    [center[0], center[1], center[2]],
-    [center[0], extent[3], center[2]],
+    [center[0], extent[1]],
+    [center[0], center[1]],
+    [center[0], extent[3]],
   ];
 }
 
@@ -122,15 +122,15 @@ function createLineAxisFeatures(
   if (axis === AxisAndPlanes.X) {
     color = Color.RED.toCssColorString();
     coordinates = [
-      [0, 0, 0],
-      [1, 0, 0],
+      [0, 0],
+      [1, 0],
     ];
     rotation = Math.PI / 2;
   } else {
     color = Color.GREEN.toCssColorString();
     coordinates = [
-      [0, 0, 0],
-      [0, 1, 0],
+      [0, 0],
+      [0, 1],
     ];
   }
   color = colorOverride ?? color;
@@ -176,11 +176,11 @@ function createPlaneFeature(colorOverride?: string): Feature<Polygon> {
   const feature = new Feature({
     geometry: new Polygon([
       [
-        [0.2, 0.2, 0],
-        [0.2, 0.4, 0],
-        [0.4, 0.4, 0],
-        [0.4, 0.2, 0],
-        [0.2, 0.2, 0],
+        [0.2, 0.2],
+        [0.2, 0.4],
+        [0.4, 0.4],
+        [0.4, 0.2],
+        [0.2, 0.2],
       ],
     ]),
     axis: AxisAndPlanes.XY,
@@ -220,12 +220,15 @@ function createShowShadowFeatures(
       }
       features.forEach((f) => {
         f.getGeometry()!.applyTransform(
-          (input: number[], output: number[] | undefined): number[] => {
+          (
+            input: number[],
+            output: number[] | undefined,
+            stride = 2,
+          ): number[] => {
             const inputLength = input.length;
-            for (let i = 0; i < inputLength; i += 3) {
+            for (let i = 0; i < inputLength; i += stride) {
               output![i] = input[i] * scale + center[0];
               output![i + 1] = input[i + 1] * scale + center[1];
-              output![i + 2] = 0;
             }
             return output as number[];
           },
@@ -249,7 +252,7 @@ export default function create2DHandlers(
   scratchLayer: VectorLayer,
   mode: TransformationMode,
 ): Handlers {
-  let center = [0, 0, 0];
+  let center = [0, 0];
   let scale = 1;
   let features: Feature[] = [];
   if (
@@ -283,19 +286,22 @@ export default function create2DHandlers(
   });
 
   const postRenderListenerKey = map.olMap!.on('postrender', () => {
-    if (!(center[0] === 0 && center[1] === 0 && center[2] === 0)) {
+    if (!(center[0] === 0 && center[1] === 0)) {
       const res = map.getCurrentResolution(center) * 60;
       const factor = res / scale;
       if (factor !== 1) {
         features.forEach((f) => {
           f.getGeometry()!.applyTransform(
-            (input: number[], output: number[] | undefined): number[] => {
+            (
+              input: number[],
+              output: number[] | undefined,
+              stride = 2,
+            ): number[] => {
               const inputLength = input.length;
-              for (let i = 0; i < inputLength; i += 3) {
+              for (let i = 0; i < inputLength; i += stride) {
                 output![i] = (input[i] - center[0]) * factor + center[0];
                 output![i + 1] =
                   (input[i + 1] - center[1]) * factor + center[1];
-                output![i + 2] = 0;
               }
               return output as number[];
             },
@@ -343,12 +349,18 @@ export default function create2DHandlers(
       const dy = newCenter[1] - center[1];
       features.forEach((f) => {
         f.getGeometry()!.applyTransform(
-          (input: number[], output: number[] | undefined): number[] => {
+          (
+            input: number[],
+            output: number[] | undefined,
+            stride = 2,
+          ): number[] => {
             const inputLength = input.length;
-            for (let i = 0; i < inputLength; i += 3) {
+            for (let i = 0; i < inputLength; i += stride) {
               output![i] = input[i] + dx;
               output![i + 1] = input[i + 1] + dy;
-              output![i + 2] = input[i + 2];
+              if (stride > 2) {
+                output![i + 2] = input[i + 2];
+              }
             }
             return output as number[];
           },

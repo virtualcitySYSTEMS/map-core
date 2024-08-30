@@ -60,7 +60,7 @@ class CreatePolygonInteraction
 
     if (event.type & EventType.CLICK) {
       if (!this._geometry) {
-        this._geometry = new Polygon([[event.positionOrPixel.slice()]], 'XYZ');
+        this._geometry = new Polygon([[event.positionOrPixel.slice()]]);
         if (event.map instanceof ObliqueMap) {
           this._geometry[alreadyTransformedToImage] = true;
         } else {

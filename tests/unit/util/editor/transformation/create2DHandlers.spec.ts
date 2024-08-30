@@ -1,19 +1,25 @@
+import { expect } from 'chai';
+import sinon from 'sinon';
 import { LineString, Polygon } from 'ol/geom.js';
+import { Extent as OLExtent } from 'ol/extent.js';
+import Feature from 'ol/Feature.js';
 import { getOpenlayersMap } from '../../../helpers/openlayersHelpers.js';
 import {
   AxisAndPlanes,
   create2DHandlers,
+  Handlers,
   handlerSymbol,
   mercatorProjection,
+  OpenlayersMap,
   TransformationMode,
   VectorLayer,
 } from '../../../../../index.js';
 
 describe('create2DHandlers', () => {
   describe('showing handlers', () => {
-    let map;
-    let scratchLayer;
-    let handlers;
+    let map: OpenlayersMap;
+    let scratchLayer: VectorLayer;
+    let handlers: Handlers;
 
     before(async () => {
       map = await getOpenlayersMap({});
@@ -58,9 +64,9 @@ describe('create2DHandlers', () => {
   });
 
   describe('hiding handlers', () => {
-    let map;
-    let scratchLayer;
-    let handlers;
+    let map: OpenlayersMap;
+    let scratchLayer: VectorLayer;
+    let handlers: Handlers;
 
     before(async () => {
       map = await getOpenlayersMap({});
@@ -88,9 +94,9 @@ describe('create2DHandlers', () => {
   });
 
   describe('setting the center', () => {
-    let map;
-    let scratchLayer;
-    let handlers;
+    let map: OpenlayersMap;
+    let scratchLayer: VectorLayer;
+    let handlers: Handlers;
 
     before(async () => {
       map = await getOpenlayersMap({});
@@ -104,7 +110,7 @@ describe('create2DHandlers', () => {
         TransformationMode.TRANSLATE,
       );
       handlers.show = true;
-      handlers.setCenter([1, 1, 0]);
+      handlers.setCenter([1, 1]);
     });
 
     after(() => {
@@ -120,10 +126,10 @@ describe('create2DHandlers', () => {
           (f) =>
             f[handlerSymbol] === AxisAndPlanes.X &&
             f.getGeometry() instanceof LineString,
-        );
+        ) as Feature<LineString>;
       expect(handler).to.exist;
-      expect(handler.getGeometry().getFirstCoordinate()).to.have.members([
-        1, 1, 0,
+      expect(handler.getGeometry()?.getFirstCoordinate()).to.have.members([
+        1, 1,
       ]);
     });
 
@@ -134,27 +140,27 @@ describe('create2DHandlers', () => {
           (f) =>
             f[handlerSymbol] === AxisAndPlanes.Y &&
             f.getGeometry() instanceof LineString,
-        );
+        ) as Feature<LineString>;
       expect(handler).to.exist;
-      expect(handler.getGeometry().getFirstCoordinate()).to.have.members([
-        1, 1, 0,
+      expect(handler.getGeometry()?.getFirstCoordinate()).to.have.members([
+        1, 1,
       ]);
     });
 
     it('should create an XY plane handler', () => {
       const handler = scratchLayer
         .getFeatures()
-        .find((f) => f[handlerSymbol] === AxisAndPlanes.XY);
-      const extent = handler.getGeometry().getExtent();
+        .find((f) => f[handlerSymbol] === AxisAndPlanes.XY) as Feature<Polygon>;
+      const extent = handler.getGeometry()!.getExtent();
       expect(extent[0]).to.equal(1.2);
       expect(extent[1]).to.equal(1.2);
     });
   });
 
   describe('post render scaling', () => {
-    let map;
-    let scratchLayer;
-    let handlers;
+    let map: OpenlayersMap;
+    let scratchLayer: VectorLayer;
+    let handlers: Handlers;
 
     before(async () => {
       map = await getOpenlayersMap({});
@@ -167,9 +173,9 @@ describe('create2DHandlers', () => {
         TransformationMode.TRANSLATE,
       );
       handlers.show = true;
-      handlers.setCenter([1, 1, 0]);
+      handlers.setCenter([1, 1]);
       sinon.stub(map, 'getCurrentResolution').returns(1 / 30);
-      map.olMap.renderSync();
+      map.olMap!.renderSync();
     });
 
     after(() => {
@@ -185,10 +191,10 @@ describe('create2DHandlers', () => {
           (f) =>
             f[handlerSymbol] === AxisAndPlanes.X &&
             f.getGeometry() instanceof LineString,
-        );
+        ) as Feature<LineString>;
       expect(handler).to.exist;
-      expect(handler.getGeometry().getLastCoordinate()).to.have.members([
-        3, 1, 0,
+      expect(handler.getGeometry()?.getLastCoordinate()).to.have.members([
+        3, 1,
       ]);
     });
 
@@ -199,34 +205,34 @@ describe('create2DHandlers', () => {
           (f) =>
             f[handlerSymbol] === AxisAndPlanes.Y &&
             f.getGeometry() instanceof LineString,
-        );
+        ) as Feature<LineString>;
       expect(handler).to.exist;
-      expect(handler.getGeometry().getLastCoordinate()).to.have.members([
-        1, 3, 0,
+      expect(handler.getGeometry()?.getLastCoordinate()).to.have.members([
+        1, 3,
       ]);
     });
 
     it('should create an XY plane handler', () => {
       const handler = scratchLayer
         .getFeatures()
-        .find((f) => f[handlerSymbol] === AxisAndPlanes.XY);
-      const extent = handler.getGeometry().getExtent();
+        .find((f) => f[handlerSymbol] === AxisAndPlanes.XY) as Feature<Polygon>;
+      const extent = handler.getGeometry()!.getExtent();
       expect(extent[2]).to.be.closeTo(1.8, 0.0001);
       expect(extent[3]).to.be.closeTo(1.8, 0.0001);
     });
   });
 
   describe('creating shadows', () => {
-    let mercatorExtent;
+    let mercatorExtent: OLExtent;
 
     before(() => {
       mercatorExtent = mercatorProjection.proj.getExtent();
     });
 
     describe('creating X axis shadows', () => {
-      let map;
-      let scratchLayer;
-      let handlers;
+      let map: OpenlayersMap;
+      let scratchLayer: VectorLayer;
+      let handlers: Handlers;
 
       before(async () => {
         map = await getOpenlayersMap({});
@@ -240,7 +246,7 @@ describe('create2DHandlers', () => {
         );
         handlers.show = true;
         handlers.showAxis = AxisAndPlanes.X;
-        handlers.setCenter([1, 1, 0]);
+        handlers.setCenter([1, 1]);
       });
 
       after(() => {
@@ -257,32 +263,32 @@ describe('create2DHandlers', () => {
       });
 
       it('should highlight the X axis', () => {
-        const axis = scratchLayer.getFeatures().find((f) => !f[handlerSymbol]);
-        expect(axis.getGeometry().getFirstCoordinate()).to.have.ordered.members(
-          [mercatorExtent[0], 0, 0],
+        const axis = scratchLayer
+          .getFeatures()
+          .find((f) => !f[handlerSymbol]) as Feature<LineString>;
+        expect(
+          axis.getGeometry()?.getFirstCoordinate(),
+        ).to.have.ordered.members([mercatorExtent[0], 0]);
+        expect(axis.getGeometry()?.getLastCoordinate()).to.have.ordered.members(
+          [mercatorExtent[2], 0],
         );
-        expect(axis.getGeometry().getLastCoordinate()).to.have.ordered.members([
-          mercatorExtent[2],
-          0,
-          0,
-        ]);
       });
 
       it('should set the X axis shadow to the original center center', () => {
         const handler = scratchLayer
           .getFeatures()
           .reverse()
-          .find((f) => !f[handlerSymbol]);
-        expect(handler.getGeometry().getFirstCoordinate()).to.have.members([
-          0, 0, 0,
+          .find((f) => !f[handlerSymbol]) as Feature<LineString>;
+        expect(handler.getGeometry()?.getFirstCoordinate()).to.have.members([
+          0, 0,
         ]);
       });
     });
 
     describe('creating Y axis shadows', () => {
-      let map;
-      let scratchLayer;
-      let handlers;
+      let map: OpenlayersMap;
+      let scratchLayer: VectorLayer;
+      let handlers: Handlers;
 
       before(async () => {
         map = await getOpenlayersMap({});
@@ -296,7 +302,7 @@ describe('create2DHandlers', () => {
         );
         handlers.show = true;
         handlers.showAxis = AxisAndPlanes.Y;
-        handlers.setCenter([1, 1, 0]);
+        handlers.setCenter([1, 1]);
       });
 
       after(() => {
@@ -313,34 +319,35 @@ describe('create2DHandlers', () => {
       });
 
       it('should highlight the Y axis', () => {
-        const axis = scratchLayer.getFeatures().find((f) => !f[handlerSymbol]);
-        expect(axis.getGeometry().getFirstCoordinate()).to.have.ordered.members(
-          [0, mercatorExtent[1], 0],
+        const axis = scratchLayer
+          .getFeatures()
+          .find((f) => !f[handlerSymbol]) as Feature<LineString>;
+        expect(
+          axis.getGeometry()?.getFirstCoordinate(),
+        ).to.have.ordered.members([0, mercatorExtent[1]]);
+        expect(axis.getGeometry()?.getLastCoordinate()).to.have.ordered.members(
+          [0, mercatorExtent[3]],
         );
-        expect(axis.getGeometry().getLastCoordinate()).to.have.ordered.members([
-          0,
-          mercatorExtent[3],
-          0,
-        ]);
       });
 
       it('should set the Y axis shadow to the original center center', () => {
-        const handler = scratchLayer.getFeatures().find(
-          (f) =>
-            !f[handlerSymbol] &&
-            f
-              .getGeometry()
-              .getFirstCoordinate()
-              .every((c) => c === 0),
-        );
+        const handler = scratchLayer
+          .getFeatures()
+          .find(
+            (f) =>
+              !f[handlerSymbol] &&
+              (f.getGeometry() as LineString)
+                .getFirstCoordinate()
+                .every((c) => c === 0),
+          );
         expect(handler).to.exist;
       });
     });
 
     describe('creating XY axis shadows', () => {
-      let map;
-      let scratchLayer;
-      let handlers;
+      let map: OpenlayersMap;
+      let scratchLayer: VectorLayer;
+      let handlers: Handlers;
 
       before(async () => {
         map = await getOpenlayersMap({});
@@ -354,7 +361,7 @@ describe('create2DHandlers', () => {
         );
         handlers.show = true;
         handlers.showAxis = AxisAndPlanes.XY;
-        handlers.setCenter([1, 1, 0]);
+        handlers.setCenter([1, 1]);
       });
 
       after(() => {
@@ -374,18 +381,18 @@ describe('create2DHandlers', () => {
         const handler = scratchLayer
           .getFeatures()
           .reverse()
-          .find((f) => !f[handlerSymbol]);
+          .find((f) => !f[handlerSymbol]) as Feature<Polygon>;
         expect(handler).to.exist;
-        const extent = handler.getGeometry().getExtent();
+        const extent = handler.getGeometry()!.getExtent();
         expect(extent[0]).to.equal(0.2);
         expect(extent[1]).to.equal(0.2);
       });
     });
 
     describe('creating axis shadows on a scaled map', () => {
-      let map;
-      let scratchLayer;
-      let handlers;
+      let map: OpenlayersMap;
+      let scratchLayer: VectorLayer;
+      let handlers: Handlers;
 
       before(async () => {
         map = await getOpenlayersMap({});
@@ -398,12 +405,12 @@ describe('create2DHandlers', () => {
           TransformationMode.TRANSLATE,
         );
         handlers.show = true;
-        handlers.setCenter([1, 1, 0]);
+        handlers.setCenter([1, 1]);
         sinon.stub(map, 'getCurrentResolution').returns(1 / 30);
-        map.olMap.renderSync();
+        map.olMap!.renderSync();
 
         handlers.showAxis = AxisAndPlanes.X;
-        handlers.setCenter([2, 2, 0]);
+        handlers.setCenter([2, 2]);
       });
 
       after(() => {
@@ -422,10 +429,10 @@ describe('create2DHandlers', () => {
       it('should set the X axis shadow to the original center center', () => {
         const handler = scratchLayer.getFeatures().find((f) => {
           if (!f[handlerSymbol]) {
-            const coordinate = f.getGeometry().getFirstCoordinate();
-            return (
-              coordinate[0] === 1 && coordinate[1] === 1 && coordinate[2] === 0
-            );
+            const coordinate = (
+              f.getGeometry() as LineString
+            ).getFirstCoordinate();
+            return coordinate[0] === 1 && coordinate[1] === 1;
           }
           return false;
         });
@@ -435,10 +442,10 @@ describe('create2DHandlers', () => {
       it('should properly apply scaling', () => {
         const handler = scratchLayer.getFeatures().find((f) => {
           if (!f[handlerSymbol]) {
-            const coordinate = f.getGeometry().getLastCoordinate();
-            return (
-              coordinate[0] === 3 && coordinate[1] === 1 && coordinate[2] === 0
-            );
+            const coordinate = (
+              f.getGeometry() as LineString
+            ).getLastCoordinate();
+            return coordinate[0] === 3 && coordinate[1] === 1;
           }
           return false;
         });

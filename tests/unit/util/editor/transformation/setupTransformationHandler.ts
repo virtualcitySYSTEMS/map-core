@@ -68,7 +68,7 @@ export function createHandlerFeature(axis: AxisAndPlanes): Feature {
 
 export function patchPickRay(
   calls: Cartesian3[],
-  sandbox: sinon.SinonSandbox,
+  sandbox?: sinon.SinonSandbox,
 ): () => void {
   const stub = (sandbox ?? sinon).stub(IntersectionTests, 'rayPlane');
   calls.forEach((value, index) => {

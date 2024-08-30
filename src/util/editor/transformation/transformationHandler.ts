@@ -1,12 +1,12 @@
 import type { Feature } from 'ol/index.js';
 import type { SimpleGeometry } from 'ol/geom.js';
 import type { Coordinate } from 'ol/coordinate.js';
-import { HeightReference } from '@vcmap-cesium/engine';
 import {
   createEmpty as createEmptyExtent,
   extend as extendExtent,
   getCenter as getExtentCenter,
 } from 'ol/extent.js';
+import { HeightReference } from '@vcmap-cesium/engine';
 import Extent3D from '../../featureconverter/extent3D.js';
 import CesiumMap from '../../../map/cesiumMap.js';
 import BaseOLMap from '../../../map/baseOLMap.js';
@@ -21,11 +21,19 @@ import {
   TransformationMode,
 } from './transformationTypes.js';
 import type VcsMap from '../../../map/vcsMap.js';
+import {
+  isAbsoluteHeightReference,
+  isClampedHeightReference,
+  isRelativeHeightReference,
+} from '../../featureconverter/vectorHeightInfo.js';
+import { mercatorToCartographic } from '../../math.js';
+import { is2DLayout } from '../../geometryHelpers.js';
 
 type FeatureCenterInfo = {
   center: import('ol/coordinate.js').Coordinate;
-  someClamped: boolean;
-  someNoTerrain: boolean;
+  greyOutZ: boolean;
+  calculateHeight: boolean;
+  offsetHeight: boolean;
 };
 
 function getCenterFromFeatures3D(
@@ -33,32 +41,39 @@ function getCenterFromFeatures3D(
   features: Feature[],
 ): FeatureCenterInfo {
   const extent3D = new Extent3D();
-  let someClamped = false;
-  let someNoTerrain = false;
-  const layerIsClamped =
-    layer.vectorProperties.altitudeMode === HeightReference.CLAMP_TO_GROUND;
+  let calculateHeight = false;
+  let greyOutZ = false;
+  let offsetHeight: boolean | undefined;
 
   features.forEach((f) => {
     const geometry = f.getGeometry() as SimpleGeometry;
     extent3D.extendWithGeometry(geometry);
-    if (!someNoTerrain) {
-      const firstCoordinates = geometry.getFirstCoordinate();
-      if (!firstCoordinates[2]) {
-        someNoTerrain = true;
-      }
+    calculateHeight = calculateHeight || is2DLayout(geometry.getLayout());
+    const heightReference = layer.vectorProperties.getAltitudeMode(f);
+    if (offsetHeight !== false) {
+      const isRelative = isRelativeHeightReference(heightReference);
+      offsetHeight = isRelative;
+      calculateHeight = calculateHeight || isRelative;
     }
+    calculateHeight =
+      calculateHeight || isClampedHeightReference(heightReference);
 
-    if (!someClamped) {
-      const altitudeMode = f.get('olcs_altitudeMode') as string;
-      someClamped =
-        altitudeMode === 'clampToGround' || (!altitudeMode && layerIsClamped);
-    }
+    greyOutZ =
+      greyOutZ ||
+      is2DLayout(geometry.getLayout()) ||
+      isClampedHeightReference(heightReference) ||
+      (isRelativeHeightReference(heightReference) &&
+        layer.vectorProperties.getHeightAboveGround(f) != null) ||
+      (isAbsoluteHeightReference(heightReference) &&
+        layer.vectorProperties.getGroundLevel(f) != null);
   });
   const center = extent3D.getCenter();
+
   return {
     center,
-    someClamped,
-    someNoTerrain,
+    calculateHeight,
+    greyOutZ,
+    offsetHeight: !!offsetHeight,
   };
 }
 
@@ -71,9 +86,10 @@ function getCenterFromFeatures2D(features: Feature[]): FeatureCenterInfo {
   });
 
   return {
-    center: [...getExtentCenter(extent), 0],
-    someClamped: false,
-    someNoTerrain: false,
+    center: [...getExtentCenter(extent)],
+    calculateHeight: false,
+    greyOutZ: false,
+    offsetHeight: false,
   };
 }
 
@@ -102,33 +118,40 @@ export default function createTransformationHandler(
   let getCenterFromFeatures: (features: Feature[]) => FeatureCenterInfo;
   let cesiumMap: CesiumMap | null = null;
 
-  let cancelAsyncSetting = (): void => {};
-  const setFeatures = async (features: Feature[]): Promise<void> => {
-    cancelAsyncSetting();
+  const setFeatures = (features: Feature[]): void => {
     const show = features.length > 0;
     if (show) {
       const {
         center: newCenter,
-        someClamped,
-        someNoTerrain,
+        calculateHeight,
+        greyOutZ,
+        offsetHeight,
       } = getCenterFromFeatures(features);
       center = newCenter;
-      if (!cesiumMap || !someNoTerrain) {
+      handlerFeatures.greyOutZ = greyOutZ;
+      if (!cesiumMap || !calculateHeight) {
         // only set center sync, if updating will not change it too drastically (to avoid jumps)
         handlerFeatures.show = true;
         handlerFeatures.setCenter(center);
       }
-      handlerFeatures.greyOutZ = someClamped;
-      if (cesiumMap && (someClamped || someNoTerrain)) {
-        let cancel = false;
-        cancelAsyncSetting = (): void => {
-          cancel = true;
-        };
-        await cesiumMap.getHeightFromTerrain([center]);
-        if (!cancel) {
-          handlerFeatures.show = true;
-          handlerFeatures.setCenter(center);
+      if (cesiumMap && calculateHeight) {
+        const height = cesiumMap
+          .getScene()!
+          .getHeight(
+            mercatorToCartographic(center),
+            HeightReference.CLAMP_TO_GROUND,
+          );
+
+        if (height) {
+          if (offsetHeight) {
+            center[2] += height;
+          } else {
+            center[2] = height;
+          }
         }
+
+        handlerFeatures.show = true;
+        handlerFeatures.setCenter(center);
       }
     } else {
       handlerFeatures.show = false;
@@ -163,10 +186,8 @@ export default function createTransformationHandler(
       center[2] += dz;
       handlerFeatures.setCenter(center);
     },
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     setFeatures,
     destroy(): void {
-      cancelAsyncSetting();
       handlerFeatures.destroy();
       scratchLayer.removeAllFeatures();
     },

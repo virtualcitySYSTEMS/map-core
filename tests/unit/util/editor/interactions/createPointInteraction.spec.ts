@@ -1,32 +1,55 @@
+import sinon, { SinonSpy } from 'sinon';
+import { expect } from 'chai';
 import { Point } from 'ol/geom.js';
+import { Cartesian2 } from '@vcmap-cesium/engine';
 import CreatePointInteraction from '../../../../../src/util/editor/interactions/createPointInteraction.js';
 import { alreadyTransformedToImage } from '../../../../../src/layer/vectorSymbols.js';
 import OpenlayersMap from '../../../../../src/map/openlayersMap.js';
 import ObliqueMap from '../../../../../src/map/obliqueMap.js';
 import {
   alreadyTransformedToMercator,
+  CesiumMap,
   EventType,
+  ModificationKeyType,
+  PointerEventType,
+  PointerKeyType,
 } from '../../../../../index.js';
+import { getCesiumMap } from '../../../helpers/cesiumHelpers.js';
 
 describe('CreatPointInteraction', () => {
-  let openlayersMap;
-  let obliqueMap;
+  let openlayersMap: OpenlayersMap;
+  let obliqueMap: ObliqueMap;
+  let cesiumMap: CesiumMap;
+  let eventBase: {
+    key: ModificationKeyType;
+    pointer: PointerKeyType;
+    pointerEvent: PointerEventType;
+    windowPosition: Cartesian2;
+  };
 
   before(() => {
+    eventBase = {
+      key: ModificationKeyType.NONE,
+      pointer: PointerKeyType.ALL,
+      pointerEvent: PointerEventType.UP,
+      windowPosition: new Cartesian2(0, 0),
+    };
     openlayersMap = new OpenlayersMap({});
     obliqueMap = new ObliqueMap({});
+    cesiumMap = getCesiumMap({});
   });
 
   after(() => {
     openlayersMap.destroy();
     obliqueMap.destroy();
+    cesiumMap.destroy();
   });
 
   describe('handling click events', () => {
-    describe('if the current map is not oblique', () => {
-      let interaction;
-      let geometry;
-      let finished;
+    describe('if the current map is an openlayers map', () => {
+      let interaction: CreatePointInteraction;
+      let geometry: Point;
+      let finished: SinonSpy;
 
       before(async () => {
         interaction = new CreatePointInteraction();
@@ -36,9 +59,62 @@ describe('CreatPointInteraction', () => {
         });
         interaction.finished.addEventListener(finished);
         await interaction.pipe({
+          ...eventBase,
+          type: EventType.CLICK,
+          position: [1, 2],
+          positionOrPixel: [1, 2],
+          map: openlayersMap,
+        });
+      });
+
+      after(() => {
+        interaction.destroy();
+      });
+
+      it('should call finished a point', () => {
+        expect(finished).to.have.been.called;
+        expect(finished.getCall(0).args[0]).to.be.an.instanceOf(Point);
+      });
+
+      it('should call created with a point', () => {
+        expect(geometry).to.be.an.instanceOf(Point);
+      });
+
+      it('should set already transformed on the point to false', () => {
+        expect(geometry).to.have.property(alreadyTransformedToMercator, true);
+      });
+
+      it('should set the geometry to be a point at positionOrPixel', () => {
+        expect(geometry.getCoordinates()).to.have.ordered.members([1, 2]);
+      });
+
+      it('should set itself to inactive', () => {
+        expect(interaction.active).to.equal(EventType.NONE);
+      });
+
+      it('should have an XY layout', () => {
+        expect(geometry.getLayout()).to.equal('XY');
+      });
+    });
+
+    describe('if the current map is an cesium map', () => {
+      let interaction: CreatePointInteraction;
+      let geometry: Point;
+      let finished: SinonSpy;
+
+      before(async () => {
+        interaction = new CreatePointInteraction();
+        finished = sinon.spy();
+        interaction.created.addEventListener((g) => {
+          geometry = g;
+        });
+        interaction.finished.addEventListener(finished);
+        await interaction.pipe({
+          ...eventBase,
+          type: EventType.CLICK,
           position: [1, 2, 0],
           positionOrPixel: [1, 2, 3],
-          map: openlayersMap,
+          map: cesiumMap,
         });
       });
 
@@ -66,12 +142,16 @@ describe('CreatPointInteraction', () => {
       it('should set itself to inactive', () => {
         expect(interaction.active).to.equal(EventType.NONE);
       });
+
+      it('should have an XYZ layout', () => {
+        expect(geometry.getLayout()).to.equal('XYZ');
+      });
     });
 
     describe('if the current map is oblique', () => {
-      let interaction;
-      let geometry;
-      let finished;
+      let interaction: CreatePointInteraction;
+      let geometry: Point;
+      let finished: SinonSpy;
 
       before(async () => {
         interaction = new CreatePointInteraction();
@@ -81,8 +161,10 @@ describe('CreatPointInteraction', () => {
         });
         interaction.finished.addEventListener(finished);
         await interaction.pipe({
-          position: [1, 1, 0],
-          positionOrPixel: [1, 1, 1],
+          ...eventBase,
+          type: EventType.CLICK,
+          position: [1, 1],
+          positionOrPixel: [1, 1],
           map: obliqueMap,
         });
       });
@@ -101,7 +183,7 @@ describe('CreatPointInteraction', () => {
       });
 
       it('should set the geometry to be a point at positionOrPixel', () => {
-        expect(geometry.getCoordinates()).to.have.ordered.members([1, 1, 1]);
+        expect(geometry.getCoordinates()).to.have.ordered.members([1, 1]);
       });
 
       it('should set already transformed on the point', () => {
@@ -111,13 +193,17 @@ describe('CreatPointInteraction', () => {
       it('should set itself to inactive', () => {
         expect(interaction.active).to.equal(EventType.NONE);
       });
+
+      it('should have an XY layout', () => {
+        expect(geometry.getLayout()).to.equal('XY');
+      });
     });
   });
 
   describe('finishing the interaction before the first click', () => {
-    let interaction;
-    let created;
-    let finished;
+    let interaction: CreatePointInteraction;
+    let created: SinonSpy;
+    let finished: SinonSpy;
 
     before(() => {
       interaction = new CreatePointInteraction();
@@ -146,8 +232,8 @@ describe('CreatPointInteraction', () => {
   });
 
   describe('finishing the interaction twice', () => {
-    let interaction;
-    let finished;
+    let interaction: CreatePointInteraction;
+    let finished: SinonSpy;
 
     before(() => {
       interaction = new CreatePointInteraction();

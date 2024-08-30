@@ -381,7 +381,7 @@ describe('TranslateInteraction', () => {
       map = await getOpenlayersMap({});
       setup = await setupTransformationHandler(map, TransformationMode.SCALE);
       await setup.transformationHandler.setFeatures([
-        new Feature({ geometry: new Point([0, 0, 0]) }),
+        new Feature({ geometry: new Point([0, 0]) }),
       ]);
       interaction = new TranslateInteraction(setup.transformationHandler);
     });
@@ -399,28 +399,28 @@ describe('TranslateInteraction', () => {
         map,
         feature,
         type: EventType.DRAGSTART,
-        positionOrPixel: [0, 0, 0],
+        positionOrPixel: [0, 0],
         windowPosition: [0, 0],
       });
       await interaction.pipe({
         map,
         feature,
         type: EventType.DRAG,
-        positionOrPixel: [1, 2, 0],
+        positionOrPixel: [1, 2],
         windowPosition: [0, 0],
       });
       await interaction.pipe({
         map,
         feature,
         type: EventType.DRAG,
-        positionOrPixel: [1, 4, 0],
+        positionOrPixel: [1, 4],
         windowPosition: [0, 0],
       });
       await interaction.pipe({
         map,
         feature,
         type: EventType.DRAGEND,
-        positionOrPixel: [1, 4, 0],
+        positionOrPixel: [1, 4],
         windowPosition: [0, 0],
       });
 
@@ -444,28 +444,28 @@ describe('TranslateInteraction', () => {
         map,
         feature,
         type: EventType.DRAGSTART,
-        positionOrPixel: [0, 0, 0],
+        positionOrPixel: [0, 0],
         windowPosition: [0, 0],
       });
       await interaction.pipe({
         map,
         feature,
         type: EventType.DRAG,
-        positionOrPixel: [1, 2, 0],
+        positionOrPixel: [1, 2],
         windowPosition: [0, 0],
       });
       await interaction.pipe({
         map,
         feature,
         type: EventType.DRAG,
-        positionOrPixel: [1, 4, 0],
+        positionOrPixel: [1, 4],
         windowPosition: [0, 0],
       });
       await interaction.pipe({
         map,
         feature,
         type: EventType.DRAGEND,
-        positionOrPixel: [1, 4, 0],
+        positionOrPixel: [1, 4],
         windowPosition: [0, 0],
       });
 
@@ -489,28 +489,28 @@ describe('TranslateInteraction', () => {
         map,
         feature,
         type: EventType.DRAGSTART,
-        positionOrPixel: [0, 0, 0],
+        positionOrPixel: [0, 0],
         windowPosition: [0, 0],
       });
       await interaction.pipe({
         map,
         feature,
         type: EventType.DRAG,
-        positionOrPixel: [1, 2, 0],
+        positionOrPixel: [1, 2],
         windowPosition: [0, 0],
       });
       await interaction.pipe({
         map,
         feature,
         type: EventType.DRAG,
-        positionOrPixel: [1, 4, 0],
+        positionOrPixel: [1, 4],
         windowPosition: [0, 0],
       });
       await interaction.pipe({
         map,
         feature,
         type: EventType.DRAGEND,
-        positionOrPixel: [1, 4, 0],
+        positionOrPixel: [1, 4],
         windowPosition: [0, 0],
       });
 

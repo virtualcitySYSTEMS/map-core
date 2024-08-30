@@ -190,10 +190,11 @@ class Extent3D {
     if (this.isEmpty()) {
       return [0, 0, 0];
     }
+    const minZ = this.minZ + (this.maxZ - this.minZ) / 2;
     return [
       this.minX + (this.maxX - this.minX) / 2,
       this.minY + (this.maxY - this.minY) / 2,
-      this.minZ + (this.maxZ - this.minZ) / 2,
+      Number.isFinite(minZ) ? minZ : 0,
     ];
   }
 

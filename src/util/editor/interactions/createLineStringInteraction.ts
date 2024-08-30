@@ -57,7 +57,7 @@ class CreateLineStringInteraction
 
     if (event.type & EventType.CLICK) {
       if (!this._geometry) {
-        this._geometry = new LineString([event.positionOrPixel], 'XYZ');
+        this._geometry = new LineString([event.positionOrPixel]);
         if (event.map instanceof ObliqueMap) {
           this._geometry[alreadyTransformedToImage] = true;
         } else {

@@ -31,7 +31,7 @@ class CreatePointInteraction
   }
 
   pipe(event: EventAfterEventHandler): Promise<EventAfterEventHandler> {
-    this._geometry = new Point(event.positionOrPixel, 'XYZ');
+    this._geometry = new Point(event.positionOrPixel);
     if (event.map instanceof ObliqueMap) {
       this._geometry[alreadyTransformedToImage] = true;
     } else {

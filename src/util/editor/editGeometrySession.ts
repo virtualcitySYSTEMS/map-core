@@ -26,6 +26,7 @@ import RemoveVertexInteraction from './interactions/removeVertexInteraction.js';
 import {
   createVertex,
   geometryChangeKeys,
+  getCoordinatesAndLayoutFromVertices,
   getOlcsPropsFromFeature,
   vectorPropertyChangeKeys,
 } from './editorHelpers.js';
@@ -74,6 +75,7 @@ type EditGeometrySessionOptions = {
 function createEditLineStringGeometryInteraction(
   feature: Feature<LineString>,
   scratchLayer: VectorLayer,
+  vectorProperties: VectorProperties,
   options: EditGeometrySessionOptions,
 ): EditGeometryInteraction {
   const geometry =
@@ -84,9 +86,9 @@ function createEditLineStringGeometryInteraction(
     .map((c) => createVertex(c, olcsProps));
   scratchLayer.addFeatures(vertices);
   const resetGeometry = (): void => {
-    geometry.setCoordinates(
-      vertices.map((f) => f.getGeometry()!.getCoordinates()),
-    );
+    const { coordinates, layout } =
+      getCoordinatesAndLayoutFromVertices(vertices);
+    geometry.setCoordinates(coordinates, layout);
   };
   const translateVertex = new TranslateVertexInteraction(feature);
   translateVertex.vertexChanged.addEventListener(resetGeometry);
@@ -94,7 +96,11 @@ function createEditLineStringGeometryInteraction(
   const interactions: AbstractInteraction[] = [translateVertex];
 
   if (!options.denyInsertion) {
-    const insertVertex = new InsertVertexInteraction(feature, geometry);
+    const insertVertex = new InsertVertexInteraction(
+      feature,
+      geometry,
+      vectorProperties,
+    );
     insertVertex.vertexInserted.addEventListener(({ vertex, index }) => {
       scratchLayer.addFeatures([vertex]);
       vertices.splice(index, 0, vertex);
@@ -151,8 +157,13 @@ function createEditCircleGeometryInteraction(
       const newRadius = cartesian2DDistance(coords[0], coords[1]);
       geometry.setRadius(newRadius);
     } else {
-      geometry.setCenter(vertex.getGeometry()!.getCoordinates());
-      vertices[1].getGeometry()!.setCoordinates(geometry.getCoordinates()[1]);
+      const { coordinates, layout } = getCoordinatesAndLayoutFromVertices([
+        vertex,
+      ]);
+      geometry.setCenterAndRadius(coordinates[0], geometry.getRadius(), layout);
+      vertices[1]
+        .getGeometry()!
+        .setCoordinates(geometry.getCoordinates()[1], layout);
     }
     suspend = false;
   });
@@ -231,16 +242,17 @@ function createEditBBoxGeometryInteraction(
     updateOtherVertex(leftOfIndex);
 
     suspend = true;
-    geometry.setCoordinates([
-      vertices.map((f) => f.getGeometry()!.getCoordinates()),
-    ]);
+    const { coordinates, layout } =
+      getCoordinatesAndLayoutFromVertices(vertices);
+    geometry.setCoordinates([coordinates], layout);
     suspend = false;
   });
 
   const geometryListener = geometry.on('change', () => {
     if (!suspend) {
+      const layout = geometry.getLayout();
       geometry.getCoordinates()[0].forEach((c, index) => {
-        vertices[index].getGeometry()!.setCoordinates(c);
+        vertices[index].getGeometry()!.setCoordinates(c, layout);
       });
     }
   });
@@ -261,6 +273,7 @@ function createEditBBoxGeometryInteraction(
 function createEditSimplePolygonInteraction(
   feature: Feature<Polygon>,
   scratchLayer: VectorLayer,
+  vectorProperties: VectorProperties,
   options: EditGeometrySessionOptions,
 ): EditGeometryInteraction {
   const geometry =
@@ -273,11 +286,10 @@ function createEditSimplePolygonInteraction(
     .map((c) => createVertex(c, olcsProps));
   scratchLayer.addFeatures(vertices);
   const resetGeometry = (): void => {
-    const coordinates = vertices.map((f) => f.getGeometry()!.getCoordinates());
-    linearRing.setCoordinates(coordinates); // update linear ring for proper vertex insertion
-    geometry.setCoordinates([
-      vertices.map((f) => f.getGeometry()!.getCoordinates()),
-    ]); // update actual geometry, since linear ring is a clone and not a ref
+    const { coordinates, layout } =
+      getCoordinatesAndLayoutFromVertices(vertices);
+    linearRing.setCoordinates(coordinates, layout); // update linear ring for proper vertex insertion
+    geometry.setCoordinates([coordinates], layout); // update actual geometry, since linear ring is a clone and not a ref
   };
 
   const translateVertex = new TranslateVertexInteraction(feature);
@@ -286,7 +298,11 @@ function createEditSimplePolygonInteraction(
   const interactions: AbstractInteraction[] = [translateVertex];
 
   if (!options.denyInsertion) {
-    const insertVertex = new InsertVertexInteraction(feature, linearRing);
+    const insertVertex = new InsertVertexInteraction(
+      feature,
+      linearRing,
+      vectorProperties,
+    );
     insertVertex.vertexInserted.addEventListener(({ vertex, index }) => {
       scratchLayer.addFeatures([vertex]);
       vertices.splice(index, 0, vertex);
@@ -338,13 +354,18 @@ function createEditPointInteraction(
   let suspend = false;
   translateVertex.vertexChanged.addEventListener(() => {
     suspend = true;
-    geometry.setCoordinates(vertex.getGeometry()!.getCoordinates());
+    const { coordinates, layout } = getCoordinatesAndLayoutFromVertices([
+      vertex,
+    ]);
+    geometry.setCoordinates(coordinates[0], layout);
     suspend = false;
   });
 
   const geometryListener = geometry.on('change', () => {
     if (!suspend) {
-      vertex.getGeometry()!.setCoordinates(geometry.getCoordinates());
+      vertex
+        .getGeometry()!
+        .setCoordinates(geometry.getCoordinates(), geometry.getLayout());
     }
   });
 
@@ -483,6 +504,7 @@ function startEditGeometrySession(
           currentInteractionSet = createEditSimplePolygonInteraction(
             feature as Feature<Polygon>,
             scratchLayer,
+            layer.vectorProperties,
             editVertexOptions,
           );
         }
@@ -490,6 +512,7 @@ function startEditGeometrySession(
         currentInteractionSet = createEditLineStringGeometryInteraction(
           feature as Feature<LineString>,
           scratchLayer,
+          layer.vectorProperties,
           editVertexOptions,
         );
       } else if (geometryType === GeometryType.Point) {

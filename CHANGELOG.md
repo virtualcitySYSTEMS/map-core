@@ -2,6 +2,7 @@
 ### 6.0.0-rc.5
 
 - Adds new helpers to change geometry layouts from XY to XYZ.
+- InteractionEvents position & pixelOrPosition may return 2D coordinates (if emitted from a 2D map). This may be breaking, if you rely on a Z coordiante.
 - Feature converter refactoring. Most of these are _breaking_ if you rely on any feature converter APIs directly, make sure to follow up on the docs:
   - New VectorHeightInfo types. VectorHeightInfo now only exposes properties required
     for the specified height reference. Changed the way `create*Primitive` helpers work and renamed to `create*PrimitiveItem`. These are
@@ -33,6 +34,10 @@
     `mercatorToWgs84TransformerForHeightInfo` & `mercatorToCartesianTransformerForHeightInfo` and
     specifically for points: `getWgs84CoordinatesForPoint`.
   - Fixed a bug, where relative geometries where rendered absolute.
+- Changes to the editor:
+  - removed helpers: `ensureFeatureAbsolute` & `clampFeature`.
+  - vertices may have 2D coordinate layouts.
+  - added a helper to handle mixed 2D & 3D vertices: `getCoordinatesAndLayoutFromVertices`.
   
 ### 6.0.0-rc.4
 

@@ -28,7 +28,7 @@ import ScaleInteraction from './transformation/scaleInteraction.js';
 import { createSync, obliqueGeometry } from '../../layer/vectorSymbols.js';
 import ExtrudeInteraction from './transformation/extrudeInteraction.js';
 import ObliqueMap from '../../map/obliqueMap.js';
-import { ensureFeatureAbsolute, geometryChangeKeys } from './editorHelpers.js';
+import { geometryChangeKeys } from './editorHelpers.js';
 import CesiumMap from '../../map/cesiumMap.js';
 import EnsureHandlerSelectionInteraction from './interactions/ensureHandlerSelectionInteraction.js';
 import EditFeaturesMouseOverInteraction from './interactions/editFeaturesMouseOverInteraction.js';
@@ -204,16 +204,22 @@ function startEditFeaturesSession(
   let destroyTransformation = (): void => {};
   let transformationHandler: TransformationHandler | undefined;
   const translate = (dx: number, dy: number, dz: number): void => {
-    transformationHandler?.translate?.(dx, dy, dz);
+    transformationHandler?.translate?.(dx, dy, dz); // XXX should we changes this in 2D to change the layout to XY?
     currentFeatures.forEach((f) => {
       const geometry = f[obliqueGeometry] ?? f.getGeometry(); // XXX wont work in oblqiue
       geometry!.applyTransform(
-        (input: number[], output: number[] | undefined): number[] => {
+        (
+          input: number[],
+          output: number[] | undefined,
+          stride = 2,
+        ): number[] => {
           const inputLength = input.length;
-          for (let i = 0; i < inputLength; i += 3) {
+          for (let i = 0; i < inputLength; i += stride) {
             output![i] = input[i] + dx;
             output![i + 1] = input[i + 1] + dy;
-            output![i + 2] = input[i + 2] + dz;
+            if (stride > 2) {
+              output![i + 2] = input[i + 2] + dz;
+            }
           }
           return output!;
         },
@@ -281,8 +287,6 @@ function startEditFeaturesSession(
       interaction = new ExtrudeInteraction(transformationHandler);
       interaction.extruded.addEventListener((dz) => {
         currentFeatures.forEach((f) => {
-          // eslint-disable-next-line no-void
-          void ensureFeatureAbsolute(f, layer, app.maps.activeMap as CesiumMap);
           let extrudedHeight =
             (f.get('olcs_extrudedHeight') as number | undefined) ?? 0;
           extrudedHeight += dz;

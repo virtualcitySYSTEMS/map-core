@@ -2,6 +2,7 @@ import Point from 'ol/geom/Point.js';
 import Feature from 'ol/Feature.js';
 import type { Coordinate } from 'ol/coordinate.js';
 import type { Geometry } from 'ol/geom.js';
+import { GeometryLayout } from 'ol/geom/Geometry.js';
 
 import {
   Cartesian2,
@@ -11,7 +12,6 @@ import {
   Ray,
   IntersectionTests,
   Cartographic,
-  HeightReference,
   Cesium3DTileFeature,
   type Scene,
   type Camera,
@@ -26,7 +26,6 @@ import {
   createSync,
   doNotTransform,
 } from '../../layer/vectorSymbols.js';
-import type VectorLayer from '../../layer/vectorLayer.js';
 import type VcsMap from '../../map/vcsMap.js';
 import { PropertyChangedKey } from '../../layer/vectorProperties.js';
 
@@ -81,6 +80,35 @@ export function createVertex(
   vertex[doNotTransform] = true;
   vertex[createSync] = true;
   return vertex;
+}
+
+export function getCoordinatesAndLayoutFromVertices(vertices: Vertex[]): {
+  coordinates: Coordinate[];
+  layout: GeometryLayout;
+} {
+  let is2D = false;
+  const flatCoordinates = new Array<number>(vertices.length * 3);
+  vertices.forEach((v, i) => {
+    const vertexCoordinates = v.getGeometry()!.getCoordinates();
+    is2D = is2D || vertexCoordinates.length === 2;
+    flatCoordinates[i * 3] = vertexCoordinates[0];
+    flatCoordinates[i * 3 + 1] = vertexCoordinates[1];
+    flatCoordinates[i * 3 + 2] = vertexCoordinates[2];
+  });
+
+  const coordinates = new Array<Coordinate>(vertices.length);
+  for (let i = 0; i < vertices.length; i++) {
+    const coordinate = [flatCoordinates[i * 3], flatCoordinates[i * 3 + 1]];
+    if (!is2D) {
+      coordinate[2] = flatCoordinates[i * 3 + 2];
+    }
+    coordinates[i] = coordinate;
+  }
+
+  return {
+    coordinates,
+    layout: is2D ? 'XY' : 'XYZ',
+  };
 }
 
 let scratchCartesian21 = new Cartesian2();
@@ -297,7 +325,7 @@ export async function drapeGeometryOnTerrain(
     const coordinates = geometry.getCoordinates() as any[];
     const flats = getFlatCoordinatesFromGeometry(geometry, coordinates);
     await map.getHeightFromTerrain(flats);
-    geometry.setCoordinates(coordinates);
+    geometry.setCoordinates(coordinates, 'XYZ');
   }
 }
 
@@ -323,28 +351,6 @@ export async function placeGeometryOnTerrain(
     flats.forEach((coord) => {
       coord[2] = minHeight;
     });
-    geometry.setCoordinates(coordinates);
+    geometry.setCoordinates(coordinates, 'XYZ');
   }
-}
-
-export async function ensureFeatureAbsolute(
-  feature: Feature,
-  layer: VectorLayer,
-  cesiumMap: CesiumMap,
-): Promise<void> {
-  // XXX this does not ensure 3D coordinates
-  const layerIsClamped =
-    layer.vectorProperties.altitudeMode === HeightReference.CLAMP_TO_GROUND;
-  const altitudeMode = feature.get('olcs_altitudeMode') as string;
-  if (altitudeMode === 'clampToGround' || (!altitudeMode && layerIsClamped)) {
-    feature.set('olcs_altitudeMode', 'absolute', true);
-    const geometry = feature.getGeometry();
-    if (geometry) {
-      await placeGeometryOnTerrain(geometry, cesiumMap);
-    }
-  }
-}
-
-export function clampFeature(feature: import('ol').Feature): void {
-  feature.set('olcs_altitudeMode', 'clampToGround');
 }

@@ -1,24 +1,28 @@
+import sinon, { SinonStub } from 'sinon';
+import { expect } from 'chai';
 import { LineString } from 'ol/geom.js';
+import { Coordinate } from 'ol/coordinate.js';
 import { getCesiumMap } from '../../helpers/cesiumHelpers.js';
 import {
   drapeGeometryOnTerrain,
   placeGeometryOnTerrain,
 } from '../../../../src/util/editor/editorHelpers.js';
+import { CesiumMap } from '../../../../index.js';
 
 describe('editorHelpers', () => {
   describe('drapeGeometryOnTerrain', () => {
-    let cesiumMap;
-    let stub;
+    let cesiumMap: CesiumMap;
+    let stub: SinonStub;
 
     before(() => {
       cesiumMap = getCesiumMap();
       stub = sinon
         .stub(cesiumMap, 'getHeightFromTerrain')
-        .callsFake(async (coords) => {
+        .callsFake((coords: Coordinate[]): Promise<Coordinate[]> => {
           coords.forEach((c, i) => {
             c[2] = i;
           });
-          return coords;
+          return Promise.resolve(coords);
         });
     });
 
@@ -27,7 +31,7 @@ describe('editorHelpers', () => {
       cesiumMap.destroy();
     });
 
-    it('should place each coordinate onto the terrain', async () => {
+    it('should place each coordinate of a XYZ layout onto the terrain', async () => {
       const geometry = new LineString([
         [0, 0, 0],
         [0, 1, 0],
@@ -40,21 +44,35 @@ describe('editorHelpers', () => {
         expect(coord[2]).to.equal(i);
       });
     });
+
+    it('should place each coordinate of a XY layout onto the terrain', async () => {
+      const geometry = new LineString([
+        [0, 0],
+        [0, 1],
+        [0, 2],
+        [0, 3],
+        [0, 4],
+      ]);
+      await drapeGeometryOnTerrain(geometry, cesiumMap);
+      geometry.getCoordinates().forEach((coord, i) => {
+        expect(coord[2]).to.equal(i);
+      });
+    });
   });
 
   describe('placeGeometryOnTerrain', () => {
-    let cesiumMap;
-    let stub;
+    let cesiumMap: CesiumMap;
+    let stub: SinonStub;
 
     before(() => {
       cesiumMap = getCesiumMap();
       stub = sinon
         .stub(cesiumMap, 'getHeightFromTerrain')
-        .callsFake(async (coords) => {
+        .callsFake((coords: Coordinate[]): Promise<Coordinate[]> => {
           coords.forEach((c, i) => {
             c[2] = i + 1;
           });
-          return coords;
+          return Promise.resolve(coords);
         });
     });
 
@@ -63,13 +81,27 @@ describe('editorHelpers', () => {
       cesiumMap.destroy();
     });
 
-    it('should place each coordinate at the lowest coordinate', async () => {
+    it('should place each coordinate of an XYZ coordinate at the lowest coordinate', async () => {
       const geometry = new LineString([
         [0, 0, 0],
         [0, 1, 0],
         [0, 2, 0],
         [0, 3, 0],
         [0, 4, 0],
+      ]);
+      await placeGeometryOnTerrain(geometry, cesiumMap);
+      geometry.getCoordinates().forEach((coord) => {
+        expect(coord[2]).to.equal(1);
+      });
+    });
+
+    it('should place each coordinate of an XY coordinate at the lowest coordinate', async () => {
+      const geometry = new LineString([
+        [0, 0],
+        [0, 1],
+        [0, 2],
+        [0, 3],
+        [0, 4],
       ]);
       await placeGeometryOnTerrain(geometry, cesiumMap);
       geometry.getCoordinates().forEach((coord) => {

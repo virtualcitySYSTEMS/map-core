@@ -219,7 +219,7 @@ describe('ScaleInteraction', () => {
       map = await getOpenlayersMap({});
       setup = await setupTransformationHandler(map, TransformationMode.SCALE);
       await setup.transformationHandler.setFeatures([
-        new Feature({ geometry: new Point([0, 0, 0]) }),
+        new Feature({ geometry: new Point([0, 0]) }),
       ]);
       interaction = new ScaleInteraction(setup.transformationHandler);
     });
@@ -237,28 +237,28 @@ describe('ScaleInteraction', () => {
         map,
         feature,
         type: EventType.DRAGSTART,
-        positionOrPixel: [0.5, 0.5, 0],
+        positionOrPixel: [0.5, 0.5],
         windowPosition: [0, 0],
       });
       await interaction.pipe({
         map,
         feature,
         type: EventType.DRAG,
-        positionOrPixel: [1, 2, 0],
+        positionOrPixel: [1, 2],
         windowPosition: [0, 0],
       });
       await interaction.pipe({
         map,
         feature,
         type: EventType.DRAG,
-        positionOrPixel: [1, 4, 0],
+        positionOrPixel: [1, 4],
         windowPosition: [0, 0],
       });
       await interaction.pipe({
         map,
         feature,
         type: EventType.DRAGEND,
-        positionOrPixel: [1, 4, 0],
+        positionOrPixel: [1, 4],
         windowPosition: [0, 0],
       });
 
@@ -282,28 +282,28 @@ describe('ScaleInteraction', () => {
         map,
         feature,
         type: EventType.DRAGSTART,
-        positionOrPixel: [0.5, 0.5, 0],
+        positionOrPixel: [0.5, 0.5],
         windowPosition: [0, 0],
       });
       await interaction.pipe({
         map,
         feature,
         type: EventType.DRAG,
-        positionOrPixel: [1, 2, 0],
+        positionOrPixel: [1, 2],
         windowPosition: [0, 0],
       });
       await interaction.pipe({
         map,
         feature,
         type: EventType.DRAG,
-        positionOrPixel: [1, 4, 0],
+        positionOrPixel: [1, 4],
         windowPosition: [0, 0],
       });
       await interaction.pipe({
         map,
         feature,
         type: EventType.DRAGEND,
-        positionOrPixel: [1, 4, 0],
+        positionOrPixel: [1, 4],
         windowPosition: [0, 0],
       });
 
@@ -327,28 +327,28 @@ describe('ScaleInteraction', () => {
         map,
         feature,
         type: EventType.DRAGSTART,
-        positionOrPixel: [0.5, 0.5, 0],
+        positionOrPixel: [0.5, 0.5],
         windowPosition: [0, 0],
       });
       await interaction.pipe({
         map,
         feature,
         type: EventType.DRAG,
-        positionOrPixel: [1, 2, 0],
+        positionOrPixel: [1, 2],
         windowPosition: [0, 0],
       });
       await interaction.pipe({
         map,
         feature,
         type: EventType.DRAG,
-        positionOrPixel: [1, 4, 0],
+        positionOrPixel: [1, 4],
         windowPosition: [0, 0],
       });
       await interaction.pipe({
         map,
         feature,
         type: EventType.DRAGEND,
-        positionOrPixel: [1, 4, 0],
+        positionOrPixel: [1, 4],
         windowPosition: [0, 0],
       });
 

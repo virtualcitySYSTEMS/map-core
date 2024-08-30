@@ -87,7 +87,7 @@ class BaseOLMap extends VcsMap<OLLayer> {
       olEvent.preventDefault();
     }
     olEvent.originalEvent.preventDefault();
-    const position = [olEvent.coordinate[0], olEvent.coordinate[1], 0];
+    const position = [olEvent.coordinate[0], olEvent.coordinate[1]];
     this.pointerInteractionEvent.raiseEvent({
       map: this,
       position,

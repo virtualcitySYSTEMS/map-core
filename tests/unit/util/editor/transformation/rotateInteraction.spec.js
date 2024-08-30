@@ -211,7 +211,7 @@ describe('RotateInteraction', () => {
       map = await getOpenlayersMap({});
       setup = await setupTransformationHandler(map, TransformationMode.SCALE);
       await setup.transformationHandler.setFeatures([
-        new Feature({ geometry: new Point([0, 0, 0]) }),
+        new Feature({ geometry: new Point([0, 0]) }),
       ]);
       interaction = new RotateInteraction(setup.transformationHandler);
     });
@@ -229,28 +229,28 @@ describe('RotateInteraction', () => {
         map,
         feature,
         type: EventType.DRAGSTART,
-        positionOrPixel: [0.5, 0.5, 0],
+        positionOrPixel: [0.5, 0.5],
         windowPosition: [0, 0],
       });
       await interaction.pipe({
         map,
         feature,
         type: EventType.DRAG,
-        positionOrPixel: [-0.5, -0.5, 0],
+        positionOrPixel: [-0.5, -0.5],
         windowPosition: [0, 0],
       });
       await interaction.pipe({
         map,
         feature,
         type: EventType.DRAG,
-        positionOrPixel: [0.5, -0.5, 0],
+        positionOrPixel: [0.5, -0.5],
         windowPosition: [0, 0],
       });
       await interaction.pipe({
         map,
         feature,
         type: EventType.DRAGEND,
-        positionOrPixel: [0.5, -0.5, 0],
+        positionOrPixel: [0.5, -0.5],
         windowPosition: [0, 0],
       });
 

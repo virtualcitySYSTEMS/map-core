@@ -16,6 +16,9 @@ import {
   type Vertex,
 } from '../editorHelpers.js';
 import VcsEvent from '../../../vcsEvent.js';
+import { is2DLayout } from '../../geometryHelpers.js';
+import { isClampedHeightReference } from '../../featureconverter/vectorHeightInfo.js';
+import VectorProperties from '../../../layer/vectorProperties.js';
 
 export type VertexInsertedEvent = {
   vertex: Vertex;
@@ -31,6 +34,8 @@ class InsertVertexInteraction extends AbstractInteraction {
 
   private _isLinearRing: boolean;
 
+  private _vectorProperties: VectorProperties;
+
   /**
    * @param  feature
    * @param  geometry
@@ -38,11 +43,13 @@ class InsertVertexInteraction extends AbstractInteraction {
   constructor(
     feature: Feature<LineString | Polygon>,
     geometry: LineString | LinearRing,
+    vectorProperties: VectorProperties,
   ) {
     super(EventType.CLICK, ModificationKeyType.NONE);
 
     this._feature = feature;
     this._geometry = geometry;
+    this._vectorProperties = vectorProperties;
     this._isLinearRing = this._geometry instanceof LinearRing;
     this.setActive();
   }
@@ -57,14 +64,20 @@ class InsertVertexInteraction extends AbstractInteraction {
         lineCoords.push(lineCoords[0]);
       }
       const distance = cartesian2DDistance(closestCoord, coordinate); // todo respect altitude mode here. e.g. distance3D
+      const is2DLine =
+        is2DLayout(this._geometry.getLayout()) ||
+        isClampedHeightReference(
+          this._vectorProperties.getAltitudeMode(this._feature),
+        );
+
+      // XXX how to handle relative to ground height references?
       if (distance < event.map.getCurrentResolution(coordinate) * 5) {
         const length = lineCoords.length - 1;
         let i = 0;
         for (i; i < length; i++) {
-          const onLine =
-            this._feature.get('olcs_altitudeMode') === 'clampToGround' // todo altitude mode
-              ? pointOnLine2D(lineCoords[i], lineCoords[i + 1], closestCoord)
-              : pointOnLine3D(lineCoords[i], lineCoords[i + 1], closestCoord);
+          const onLine = is2DLine
+            ? pointOnLine2D(lineCoords[i], lineCoords[i + 1], closestCoord)
+            : pointOnLine3D(lineCoords[i], lineCoords[i + 1], closestCoord);
           if (onLine) {
             break;
           }

@@ -4,6 +4,7 @@ import { Point } from 'ol/geom.js';
 import sinon from 'sinon';
 import { Cartesian2 } from '@vcmap-cesium/engine';
 import {
+  CesiumMap,
   emptyStyle,
   EventAfterEventHandler,
   EventType,
@@ -14,171 +15,643 @@ import {
   TranslateVertexInteraction,
   vertexSymbol,
 } from '../../../../../index.js';
+import { getCesiumMap } from '../../../helpers/cesiumHelpers.js';
 
 describe('TranslateVertexInteraction', () => {
-  let map: OpenlayersMap;
-  let baseEvent: Omit<EventAfterEventHandler, 'feature' | 'type'>;
+  let cesiumMap: CesiumMap;
+  let openlayersMap: OpenlayersMap;
 
   before(() => {
-    map = new OpenlayersMap({});
-    baseEvent = {
-      key: ModificationKeyType.NONE,
-      position: [0, 0, 1],
-      map,
-      pointer: PointerKeyType.LEFT,
-      pointerEvent: PointerEventType.DOWN,
-      positionOrPixel: [0, 0, 1],
-      windowPosition: new Cartesian2(0, 0),
-    };
+    cesiumMap = getCesiumMap({});
+    openlayersMap = new OpenlayersMap({});
   });
 
   after(() => {
-    map.destroy();
+    cesiumMap.destroy();
+    openlayersMap.destroy();
   });
 
-  describe('starting vertex translation', () => {
-    let vertex: Feature<Point>;
-    let event: EventAfterEventHandler;
-    let feature: Feature;
+  describe('translating in 3D', () => {
+    let baseEvent: Omit<EventAfterEventHandler, 'feature' | 'type'>;
 
-    before(async () => {
-      vertex = new Feature({ geometry: new Point([0, 0, 0]) });
-      vertex[vertexSymbol] = true;
-      feature = new Feature();
-
-      const interaction = new TranslateVertexInteraction(feature);
-      event = {
-        feature: vertex,
-        type: EventType.DRAGSTART,
-        ...baseEvent,
+    before(() => {
+      baseEvent = {
+        key: ModificationKeyType.NONE,
+        position: [0, 0, 1],
+        pointer: PointerKeyType.LEFT,
+        pointerEvent: PointerEventType.DOWN,
+        positionOrPixel: [0, 0, 1],
+        windowPosition: new Cartesian2(0, 0),
+        map: cesiumMap,
       };
-
-      await interaction.pipe(event);
-      interaction.destroy();
     });
 
-    it('should stop event propagation', () => {
-      expect(event.stopPropagation).to.be.true;
+    describe('with 3D geometries', () => {
+      describe('starting vertex translation', () => {
+        let vertex: Feature<Point>;
+        let event: EventAfterEventHandler;
+        let feature: Feature;
+
+        before(async () => {
+          vertex = new Feature({ geometry: new Point([0, 0, 0]) });
+          vertex[vertexSymbol] = true;
+          feature = new Feature();
+
+          const interaction = new TranslateVertexInteraction(feature);
+          event = {
+            feature: vertex,
+            type: EventType.DRAGSTART,
+            ...baseEvent,
+          };
+
+          await interaction.pipe(event);
+          interaction.destroy();
+        });
+
+        it('should stop event propagation', () => {
+          expect(event.stopPropagation).to.be.true;
+        });
+
+        it('should set the vertex allowPicking to be false', () => {
+          expect(vertex.get('olcs_allowPicking')).to.be.false;
+        });
+      });
+
+      describe('dragging the vertex', () => {
+        let vertex: Feature<Point>;
+        let vertexChangedListener: () => void;
+        let feature: Feature;
+
+        before(async () => {
+          vertex = new Feature({ geometry: new Point([0, 0, 0]) });
+          vertex[vertexSymbol] = true;
+          vertexChangedListener = sinon.spy();
+          feature = new Feature();
+
+          const interaction = new TranslateVertexInteraction(feature);
+          interaction.vertexChanged.addEventListener(vertexChangedListener);
+          await interaction.pipe({
+            feature: vertex,
+            type: EventType.DRAGSTART,
+            ...baseEvent,
+          });
+          await interaction.pipe({
+            feature: vertex,
+            type: EventType.DRAG,
+            ...baseEvent,
+            positionOrPixel: [1, 1, 0],
+          });
+          await interaction.pipe({
+            feature: vertex,
+            type: EventType.DRAG,
+            ...baseEvent,
+            positionOrPixel: [2, 1, 0],
+          });
+          interaction.destroy();
+        });
+
+        it('should set the vertex geometry to the position of the event', () => {
+          expect(
+            vertex.getGeometry()!.getCoordinates(),
+          ).to.have.ordered.members([2, 1, 0]);
+        });
+
+        it('should call vertexChanged for each drag event', () => {
+          expect(vertexChangedListener).to.have.been.calledTwice;
+          expect(vertexChangedListener).to.have.been.calledWithExactly(vertex);
+        });
+
+        it('should set the vertex style to be the empty style', () => {
+          expect(vertex.getStyle()).to.equal(emptyStyle);
+        });
+
+        it('should not allow picking of the feature', () => {
+          expect(feature.get('olcs_allowPicking')).to.be.false;
+        });
+      });
+
+      describe('finish dragging the vertex', () => {
+        let vertex: Feature<Point>;
+        let vertexChangedListener: () => void;
+        let feature: Feature;
+
+        before(async () => {
+          vertex = new Feature({ geometry: new Point([0, 0, 0]) });
+          vertex[vertexSymbol] = true;
+          vertexChangedListener = sinon.spy();
+          feature = new Feature();
+
+          const interaction = new TranslateVertexInteraction(feature);
+          interaction.vertexChanged.addEventListener(vertexChangedListener);
+          await interaction.pipe({
+            feature: vertex,
+            type: EventType.DRAGSTART,
+            ...baseEvent,
+          });
+          await interaction.pipe({
+            feature: vertex,
+            type: EventType.DRAG,
+            ...baseEvent,
+            positionOrPixel: [1, 1, 0],
+          });
+          await interaction.pipe({
+            feature: vertex,
+            type: EventType.DRAG,
+            ...baseEvent,
+            positionOrPixel: [2, 1, 0],
+          });
+          await interaction.pipe({
+            feature: vertex,
+            type: EventType.DRAGEND,
+            ...baseEvent,
+            positionOrPixel: [2, 1, 0],
+          });
+          interaction.destroy();
+        });
+
+        it('should set the vertex geometry to the position of the event', () => {
+          expect(
+            vertex.getGeometry()!.getCoordinates(),
+          ).to.have.ordered.members([2, 1, 0]);
+        });
+
+        it('should call vertexChanged for each drag event & drag end event', () => {
+          expect(vertexChangedListener).to.have.been.calledThrice;
+          expect(vertexChangedListener).to.have.been.calledWithExactly(vertex);
+        });
+
+        it('should reset the vertex style', () => {
+          expect(vertex.get('olcs_allowPicking')).to.be.undefined;
+        });
+
+        it('should reset the vertex style', () => {
+          expect(vertex.getStyle()).to.be.undefined;
+        });
+
+        it('should unset allow picking of the feature', () => {
+          expect(feature.get('olcs_allowPicking')).to.be.undefined;
+        });
+      });
     });
 
-    it('should set the vertex allowPicking to be false', () => {
-      expect(vertex.get('olcs_allowPicking')).to.be.false;
+    describe('with 2D geometries', () => {
+      describe('starting vertex translation', () => {
+        let vertex: Feature<Point>;
+        let event: EventAfterEventHandler;
+        let feature: Feature;
+
+        before(async () => {
+          vertex = new Feature({ geometry: new Point([0, 0]) });
+          vertex[vertexSymbol] = true;
+          feature = new Feature();
+
+          const interaction = new TranslateVertexInteraction(feature);
+          event = {
+            feature: vertex,
+            type: EventType.DRAGSTART,
+            ...baseEvent,
+          };
+
+          await interaction.pipe(event);
+          interaction.destroy();
+        });
+
+        it('should stop event propagation', () => {
+          expect(event.stopPropagation).to.be.true;
+        });
+
+        it('should set the vertex allowPicking to be false', () => {
+          expect(vertex.get('olcs_allowPicking')).to.be.false;
+        });
+      });
+
+      describe('dragging the vertex', () => {
+        let vertex: Feature<Point>;
+        let vertexChangedListener: () => void;
+        let feature: Feature;
+
+        before(async () => {
+          vertex = new Feature({ geometry: new Point([0, 0]) });
+          vertex[vertexSymbol] = true;
+          vertexChangedListener = sinon.spy();
+          feature = new Feature();
+
+          const interaction = new TranslateVertexInteraction(feature);
+          interaction.vertexChanged.addEventListener(vertexChangedListener);
+          await interaction.pipe({
+            feature: vertex,
+            type: EventType.DRAGSTART,
+            ...baseEvent,
+          });
+          await interaction.pipe({
+            feature: vertex,
+            type: EventType.DRAG,
+            ...baseEvent,
+            positionOrPixel: [1, 1, 0],
+          });
+          await interaction.pipe({
+            feature: vertex,
+            type: EventType.DRAG,
+            ...baseEvent,
+            positionOrPixel: [2, 1, 0],
+          });
+          interaction.destroy();
+        });
+
+        it('should set the vertex geometry to the position of the event', () => {
+          expect(
+            vertex.getGeometry()!.getCoordinates(),
+          ).to.have.ordered.members([2, 1, 0]);
+        });
+
+        it('should call vertexChanged for each drag event', () => {
+          expect(vertexChangedListener).to.have.been.calledTwice;
+          expect(vertexChangedListener).to.have.been.calledWithExactly(vertex);
+        });
+
+        it('should set the vertex style to be the empty style', () => {
+          expect(vertex.getStyle()).to.equal(emptyStyle);
+        });
+
+        it('should not allow picking of the feature', () => {
+          expect(feature.get('olcs_allowPicking')).to.be.false;
+        });
+      });
+
+      describe('finish dragging the vertex', () => {
+        let vertex: Feature<Point>;
+        let vertexChangedListener: () => void;
+        let feature: Feature;
+
+        before(async () => {
+          vertex = new Feature({ geometry: new Point([0, 0]) });
+          vertex[vertexSymbol] = true;
+          vertexChangedListener = sinon.spy();
+          feature = new Feature();
+
+          const interaction = new TranslateVertexInteraction(feature);
+          interaction.vertexChanged.addEventListener(vertexChangedListener);
+          await interaction.pipe({
+            feature: vertex,
+            type: EventType.DRAGSTART,
+            ...baseEvent,
+          });
+          await interaction.pipe({
+            feature: vertex,
+            type: EventType.DRAG,
+            ...baseEvent,
+            positionOrPixel: [1, 1, 0],
+          });
+          await interaction.pipe({
+            feature: vertex,
+            type: EventType.DRAG,
+            ...baseEvent,
+            positionOrPixel: [2, 1, 0],
+          });
+          await interaction.pipe({
+            feature: vertex,
+            type: EventType.DRAGEND,
+            ...baseEvent,
+            positionOrPixel: [2, 1, 0],
+          });
+          interaction.destroy();
+        });
+
+        it('should set the vertex geometry to the position of the event', () => {
+          expect(
+            vertex.getGeometry()!.getCoordinates(),
+          ).to.have.ordered.members([2, 1, 0]);
+        });
+
+        it('should call vertexChanged for each drag event & drag end event', () => {
+          expect(vertexChangedListener).to.have.been.calledThrice;
+          expect(vertexChangedListener).to.have.been.calledWithExactly(vertex);
+        });
+
+        it('should reset the vertex style', () => {
+          expect(vertex.get('olcs_allowPicking')).to.be.undefined;
+        });
+
+        it('should reset the vertex style', () => {
+          expect(vertex.getStyle()).to.be.undefined;
+        });
+
+        it('should unset allow picking of the feature', () => {
+          expect(feature.get('olcs_allowPicking')).to.be.undefined;
+        });
+      });
     });
   });
 
-  describe('dragging the vertex', () => {
-    let vertex: Feature<Point>;
-    let vertexChangedListener: () => void;
-    let feature: Feature;
+  describe('translating in 2D', () => {
+    let baseEvent: Omit<EventAfterEventHandler, 'feature' | 'type'>;
 
-    before(async () => {
-      vertex = new Feature({ geometry: new Point([0, 0, 0]) });
-      vertex[vertexSymbol] = true;
-      vertexChangedListener = sinon.spy();
-      feature = new Feature();
+    before(() => {
+      baseEvent = {
+        key: ModificationKeyType.NONE,
+        position: [0, 0],
+        pointer: PointerKeyType.LEFT,
+        pointerEvent: PointerEventType.DOWN,
+        positionOrPixel: [0, 0],
+        windowPosition: new Cartesian2(0, 0),
+        map: openlayersMap,
+      };
+    });
 
-      const interaction = new TranslateVertexInteraction(feature);
-      interaction.vertexChanged.addEventListener(vertexChangedListener);
-      await interaction.pipe({
-        feature: vertex,
-        type: EventType.DRAGSTART,
-        ...baseEvent,
+    describe('with 3D geometries', () => {
+      describe('starting vertex translation', () => {
+        let vertex: Feature<Point>;
+        let event: EventAfterEventHandler;
+        let feature: Feature;
+
+        before(async () => {
+          vertex = new Feature({ geometry: new Point([0, 0, 0]) });
+          vertex[vertexSymbol] = true;
+          feature = new Feature();
+
+          const interaction = new TranslateVertexInteraction(feature);
+          event = {
+            feature: vertex,
+            type: EventType.DRAGSTART,
+            ...baseEvent,
+          };
+
+          await interaction.pipe(event);
+          interaction.destroy();
+        });
+
+        it('should stop event propagation', () => {
+          expect(event.stopPropagation).to.be.true;
+        });
+
+        it('should set the vertex allowPicking to be false', () => {
+          expect(vertex.get('olcs_allowPicking')).to.be.false;
+        });
       });
-      await interaction.pipe({
-        feature: vertex,
-        type: EventType.DRAG,
-        ...baseEvent,
-        positionOrPixel: [1, 1, 0],
+
+      describe('dragging the vertex', () => {
+        let vertex: Feature<Point>;
+        let vertexChangedListener: () => void;
+        let feature: Feature;
+
+        before(async () => {
+          vertex = new Feature({ geometry: new Point([0, 0, 0]) });
+          vertex[vertexSymbol] = true;
+          vertexChangedListener = sinon.spy();
+          feature = new Feature();
+
+          const interaction = new TranslateVertexInteraction(feature);
+          interaction.vertexChanged.addEventListener(vertexChangedListener);
+          await interaction.pipe({
+            feature: vertex,
+            type: EventType.DRAGSTART,
+            ...baseEvent,
+          });
+          await interaction.pipe({
+            feature: vertex,
+            type: EventType.DRAG,
+            ...baseEvent,
+            positionOrPixel: [1, 1],
+          });
+          await interaction.pipe({
+            feature: vertex,
+            type: EventType.DRAG,
+            ...baseEvent,
+            positionOrPixel: [2, 1],
+          });
+          interaction.destroy();
+        });
+
+        it('should set the vertex geometry to the position of the event', () => {
+          expect(
+            vertex.getGeometry()!.getCoordinates(),
+          ).to.have.ordered.members([2, 1]);
+        });
+
+        it('should call vertexChanged for each drag event', () => {
+          expect(vertexChangedListener).to.have.been.calledTwice;
+          expect(vertexChangedListener).to.have.been.calledWithExactly(vertex);
+        });
+
+        it('should set the vertex style to be the empty style', () => {
+          expect(vertex.getStyle()).to.equal(emptyStyle);
+        });
+
+        it('should not allow picking of the feature', () => {
+          expect(feature.get('olcs_allowPicking')).to.be.false;
+        });
       });
-      await interaction.pipe({
-        feature: vertex,
-        type: EventType.DRAG,
-        ...baseEvent,
-        positionOrPixel: [2, 1, 0],
+
+      describe('finish dragging the vertex', () => {
+        let vertex: Feature<Point>;
+        let vertexChangedListener: () => void;
+        let feature: Feature;
+
+        before(async () => {
+          vertex = new Feature({ geometry: new Point([0, 0, 0]) });
+          vertex[vertexSymbol] = true;
+          vertexChangedListener = sinon.spy();
+          feature = new Feature();
+
+          const interaction = new TranslateVertexInteraction(feature);
+          interaction.vertexChanged.addEventListener(vertexChangedListener);
+          await interaction.pipe({
+            feature: vertex,
+            type: EventType.DRAGSTART,
+            ...baseEvent,
+          });
+          await interaction.pipe({
+            feature: vertex,
+            type: EventType.DRAG,
+            ...baseEvent,
+            positionOrPixel: [1, 1],
+          });
+          await interaction.pipe({
+            feature: vertex,
+            type: EventType.DRAG,
+            ...baseEvent,
+            positionOrPixel: [2, 1],
+          });
+          await interaction.pipe({
+            feature: vertex,
+            type: EventType.DRAGEND,
+            ...baseEvent,
+            positionOrPixel: [2, 1],
+          });
+          interaction.destroy();
+        });
+
+        it('should set the vertex geometry to the position of the event', () => {
+          expect(
+            vertex.getGeometry()!.getCoordinates(),
+          ).to.have.ordered.members([2, 1]);
+        });
+
+        it('should call vertexChanged for each drag event & drag end event', () => {
+          expect(vertexChangedListener).to.have.been.calledThrice;
+          expect(vertexChangedListener).to.have.been.calledWithExactly(vertex);
+        });
+
+        it('should reset the vertex style', () => {
+          expect(vertex.get('olcs_allowPicking')).to.be.undefined;
+        });
+
+        it('should reset the vertex style', () => {
+          expect(vertex.getStyle()).to.be.undefined;
+        });
+
+        it('should unset allow picking of the feature', () => {
+          expect(feature.get('olcs_allowPicking')).to.be.undefined;
+        });
       });
-      interaction.destroy();
     });
 
-    it('should set the vertex geometry to the position of the event', () => {
-      expect(vertex.getGeometry()!.getCoordinates()).to.have.ordered.members([
-        2, 1, 0,
-      ]);
-    });
+    describe('with 2D geometries', () => {
+      describe('starting vertex translation', () => {
+        let vertex: Feature<Point>;
+        let event: EventAfterEventHandler;
+        let feature: Feature;
 
-    it('should call vertexChanged for each drag event', () => {
-      expect(vertexChangedListener).to.have.been.calledTwice;
-      expect(vertexChangedListener).to.have.been.calledWithExactly(vertex);
-    });
+        before(async () => {
+          vertex = new Feature({ geometry: new Point([0, 0]) });
+          vertex[vertexSymbol] = true;
+          feature = new Feature();
 
-    it('should set the vertex style to be the empty style', () => {
-      expect(vertex.getStyle()).to.equal(emptyStyle);
-    });
+          const interaction = new TranslateVertexInteraction(feature);
+          event = {
+            feature: vertex,
+            type: EventType.DRAGSTART,
+            ...baseEvent,
+          };
 
-    it('should not allow picking of the feature', () => {
-      expect(feature.get('olcs_allowPicking')).to.be.false;
-    });
-  });
+          await interaction.pipe(event);
+          interaction.destroy();
+        });
 
-  describe('finish dragging the vertex', () => {
-    let vertex: Feature<Point>;
-    let vertexChangedListener: () => void;
-    let feature: Feature;
+        it('should stop event propagation', () => {
+          expect(event.stopPropagation).to.be.true;
+        });
 
-    before(async () => {
-      vertex = new Feature({ geometry: new Point([0, 0, 0]) });
-      vertex[vertexSymbol] = true;
-      vertexChangedListener = sinon.spy();
-      feature = new Feature();
-
-      const interaction = new TranslateVertexInteraction(feature);
-      interaction.vertexChanged.addEventListener(vertexChangedListener);
-      await interaction.pipe({
-        feature: vertex,
-        type: EventType.DRAGSTART,
-        ...baseEvent,
+        it('should set the vertex allowPicking to be false', () => {
+          expect(vertex.get('olcs_allowPicking')).to.be.false;
+        });
       });
-      await interaction.pipe({
-        feature: vertex,
-        type: EventType.DRAG,
-        ...baseEvent,
-        positionOrPixel: [1, 1, 0],
+
+      describe('dragging the vertex', () => {
+        let vertex: Feature<Point>;
+        let vertexChangedListener: () => void;
+        let feature: Feature;
+
+        before(async () => {
+          vertex = new Feature({ geometry: new Point([0, 0]) });
+          vertex[vertexSymbol] = true;
+          vertexChangedListener = sinon.spy();
+          feature = new Feature();
+
+          const interaction = new TranslateVertexInteraction(feature);
+          interaction.vertexChanged.addEventListener(vertexChangedListener);
+          await interaction.pipe({
+            feature: vertex,
+            type: EventType.DRAGSTART,
+            ...baseEvent,
+          });
+          await interaction.pipe({
+            feature: vertex,
+            type: EventType.DRAG,
+            ...baseEvent,
+            positionOrPixel: [1, 1],
+          });
+          await interaction.pipe({
+            feature: vertex,
+            type: EventType.DRAG,
+            ...baseEvent,
+            positionOrPixel: [2, 1],
+          });
+          interaction.destroy();
+        });
+
+        it('should set the vertex geometry to the position of the event', () => {
+          expect(
+            vertex.getGeometry()!.getCoordinates(),
+          ).to.have.ordered.members([2, 1]);
+        });
+
+        it('should call vertexChanged for each drag event', () => {
+          expect(vertexChangedListener).to.have.been.calledTwice;
+          expect(vertexChangedListener).to.have.been.calledWithExactly(vertex);
+        });
+
+        it('should set the vertex style to be the empty style', () => {
+          expect(vertex.getStyle()).to.equal(emptyStyle);
+        });
+
+        it('should not allow picking of the feature', () => {
+          expect(feature.get('olcs_allowPicking')).to.be.false;
+        });
       });
-      await interaction.pipe({
-        feature: vertex,
-        type: EventType.DRAG,
-        ...baseEvent,
-        positionOrPixel: [2, 1, 0],
+
+      describe('finish dragging the vertex', () => {
+        let vertex: Feature<Point>;
+        let vertexChangedListener: () => void;
+        let feature: Feature;
+
+        before(async () => {
+          vertex = new Feature({ geometry: new Point([0, 0]) });
+          vertex[vertexSymbol] = true;
+          vertexChangedListener = sinon.spy();
+          feature = new Feature();
+
+          const interaction = new TranslateVertexInteraction(feature);
+          interaction.vertexChanged.addEventListener(vertexChangedListener);
+          await interaction.pipe({
+            feature: vertex,
+            type: EventType.DRAGSTART,
+            ...baseEvent,
+          });
+          await interaction.pipe({
+            feature: vertex,
+            type: EventType.DRAG,
+            ...baseEvent,
+            positionOrPixel: [1, 1],
+          });
+          await interaction.pipe({
+            feature: vertex,
+            type: EventType.DRAG,
+            ...baseEvent,
+            positionOrPixel: [2, 1],
+          });
+          await interaction.pipe({
+            feature: vertex,
+            type: EventType.DRAGEND,
+            ...baseEvent,
+            positionOrPixel: [2, 1],
+          });
+          interaction.destroy();
+        });
+
+        it('should set the vertex geometry to the position of the event', () => {
+          expect(
+            vertex.getGeometry()!.getCoordinates(),
+          ).to.have.ordered.members([2, 1]);
+        });
+
+        it('should call vertexChanged for each drag event & drag end event', () => {
+          expect(vertexChangedListener).to.have.been.calledThrice;
+          expect(vertexChangedListener).to.have.been.calledWithExactly(vertex);
+        });
+
+        it('should reset the vertex style', () => {
+          expect(vertex.get('olcs_allowPicking')).to.be.undefined;
+        });
+
+        it('should reset the vertex style', () => {
+          expect(vertex.getStyle()).to.be.undefined;
+        });
+
+        it('should unset allow picking of the feature', () => {
+          expect(feature.get('olcs_allowPicking')).to.be.undefined;
+        });
       });
-      await interaction.pipe({
-        feature: vertex,
-        type: EventType.DRAGEND,
-        ...baseEvent,
-        positionOrPixel: [2, 1, 0],
-      });
-      interaction.destroy();
-    });
-
-    it('should set the vertex geometry to the position of the event', () => {
-      expect(vertex.getGeometry()!.getCoordinates()).to.have.ordered.members([
-        2, 1, 0,
-      ]);
-    });
-
-    it('should call vertexChanged for each drag event & drag end event', () => {
-      expect(vertexChangedListener).to.have.been.calledThrice;
-      expect(vertexChangedListener).to.have.been.calledWithExactly(vertex);
-    });
-
-    it('should reset the vertex style', () => {
-      expect(vertex.get('olcs_allowPicking')).to.be.undefined;
-    });
-
-    it('should reset the vertex style', () => {
-      expect(vertex.getStyle()).to.be.undefined;
-    });
-
-    it('should unset allow picking of the feature', () => {
-      expect(feature.get('olcs_allowPicking')).to.be.undefined;
     });
   });
 });
