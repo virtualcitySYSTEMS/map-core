@@ -43,6 +43,7 @@ export enum AxisAndPlanes {
   XY = 'XY',
   XZ = 'XZ',
   YZ = 'YZ',
+  XYZ = 'XYZ',
   NONE = 'NONE',
 }
 export enum TransformationMode {
@@ -68,4 +69,8 @@ export function is2DAxis(axis: AxisAndPlanes): boolean {
     axis === AxisAndPlanes.XZ ||
     axis === AxisAndPlanes.YZ
   );
+}
+
+export function is3DAxis(axis: AxisAndPlanes): boolean {
+  return axis === AxisAndPlanes.XYZ;
 }

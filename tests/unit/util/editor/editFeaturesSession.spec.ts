@@ -1,7 +1,12 @@
 import { expect } from 'chai';
 import sinon, { SinonStub } from 'sinon';
 
-import { Cartesian2, Math as CesiumMath } from '@vcmap-cesium/engine';
+import {
+  Cartesian2,
+  Cartesian3,
+  Math as CesiumMath,
+  Ray,
+} from '@vcmap-cesium/engine';
 import { Point } from 'ol/geom.js';
 import Feature from 'ol/Feature.js';
 import { unByKey } from 'ol/Observable.js';
@@ -19,6 +24,7 @@ import {
   OpenlayersMap,
   PointerEventType,
   PointerKeyType,
+  Projection,
   startEditFeaturesSession,
   TransformationMode,
 } from '../../../../index.js';
@@ -444,6 +450,295 @@ describe('startEditFeaturesSession', () => {
         point2.getCoordinates().map((c) => Math.round(c)),
       ).to.have.ordered.members([1, 1]);
     });
+
+    describe('rotating models', () => {
+      let pointFeature: Feature<Point>;
+
+      beforeEach(() => {
+        const point1 = new Point([0, 0, 0]);
+        pointFeature = createFeatureWithId(point1);
+        pointFeature.set('olcs_modelUrl', 'model.glb');
+        session.setFeatures([pointFeature]);
+      });
+
+      it('should set heading', async () => {
+        const feature = createHandlerFeature(AxisAndPlanes.Z);
+        const map = app.maps.activeMap!;
+        const pointerEvent = PointerEventType.DOWN;
+        const windowPosition = new Cartesian2(0, 0);
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [0.5, 0.5, 1],
+          type: EventType.DRAGSTART,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [-0.5, -0.5, 1],
+          type: EventType.DRAG,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [-0.5, -0.5, 1],
+          type: EventType.DRAGEND,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        expect(
+          pointFeature
+            .getGeometry()!
+            .getCoordinates()
+            .map((c) => Math.round(c)),
+        ).to.have.ordered.members([0, 0, 0]);
+        expect(pointFeature.get('olcs_modelHeading')).to.equal(180);
+      });
+
+      it('should set pitch', async () => {
+        const feature = createHandlerFeature(AxisAndPlanes.X);
+        const map = app.maps.activeMap!;
+        const pointerEvent = PointerEventType.DOWN;
+        const windowPosition = new Cartesian2(0, 0);
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [0.5, 0.5, 1],
+          type: EventType.DRAGSTART,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [-0.5, -0.5, 0],
+          type: EventType.DRAG,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [-0.5, -0.5, 0],
+          type: EventType.DRAGEND,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        expect(
+          pointFeature
+            .getGeometry()!
+            .getCoordinates()
+            .map((c) => Math.round(c)),
+        ).to.have.ordered.members([0, 0, 0]);
+        expect(pointFeature.get('olcs_modelPitch')).to.equal(180);
+      });
+
+      it('should set roll', async () => {
+        const feature = createHandlerFeature(AxisAndPlanes.Y);
+        const map = app.maps.activeMap!;
+        const pointerEvent = PointerEventType.DOWN;
+        const windowPosition = new Cartesian2(0, 0);
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [0.5, 0.5, 1],
+          type: EventType.DRAGSTART,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [-0.5, -0.5, 0],
+          type: EventType.DRAG,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [-0.5, -0.5, 0],
+          type: EventType.DRAGEND,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        expect(
+          pointFeature
+            .getGeometry()!
+            .getCoordinates()
+            .map((c) => Math.round(c)),
+        ).to.have.ordered.members([0, 0, 0]);
+        expect(pointFeature.get('olcs_modelRoll')).to.equal(180);
+      });
+    });
+
+    describe('rotating primitives', () => {
+      let pointFeature: Feature<Point>;
+
+      beforeEach(() => {
+        const point1 = new Point([0, 0, 0]);
+        pointFeature = createFeatureWithId(point1);
+        pointFeature.set('olcs_primitiveOptions', {
+          type: 'sphere',
+          geometryOptions: { radius: 1 },
+        });
+        session.setFeatures([pointFeature]);
+      });
+
+      it('should set heading', async () => {
+        const feature = createHandlerFeature(AxisAndPlanes.Z);
+        const map = app.maps.activeMap!;
+        const pointerEvent = PointerEventType.DOWN;
+        const windowPosition = new Cartesian2(0, 0);
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [0.5, 0.5, 1],
+          type: EventType.DRAGSTART,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [-0.5, -0.5, 1],
+          type: EventType.DRAG,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [-0.5, -0.5, 1],
+          type: EventType.DRAGEND,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        expect(
+          pointFeature
+            .getGeometry()!
+            .getCoordinates()
+            .map((c) => Math.round(c)),
+        ).to.have.ordered.members([0, 0, 0]);
+        expect(pointFeature.get('olcs_modelHeading')).to.equal(180);
+      });
+
+      it('should set pitch', async () => {
+        const feature = createHandlerFeature(AxisAndPlanes.X);
+        const map = app.maps.activeMap!;
+        const pointerEvent = PointerEventType.DOWN;
+        const windowPosition = new Cartesian2(0, 0);
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [0.5, 0.5, 1],
+          type: EventType.DRAGSTART,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [-0.5, -0.5, 0],
+          type: EventType.DRAG,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [-0.5, -0.5, 0],
+          type: EventType.DRAGEND,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        expect(
+          pointFeature
+            .getGeometry()!
+            .getCoordinates()
+            .map((c) => Math.round(c)),
+        ).to.have.ordered.members([0, 0, 0]);
+        expect(pointFeature.get('olcs_modelPitch')).to.equal(180);
+      });
+
+      it('should set roll', async () => {
+        const feature = createHandlerFeature(AxisAndPlanes.Y);
+        const map = app.maps.activeMap!;
+        const pointerEvent = PointerEventType.DOWN;
+        const windowPosition = new Cartesian2(0, 0);
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [0.5, 0.5, 1],
+          type: EventType.DRAGSTART,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [-0.5, -0.5, 0],
+          type: EventType.DRAG,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [-0.5, -0.5, 0],
+          type: EventType.DRAGEND,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        expect(
+          pointFeature
+            .getGeometry()!
+            .getCoordinates()
+            .map((c) => Math.round(c)),
+        ).to.have.ordered.members([0, 0, 0]);
+        expect(pointFeature.get('olcs_modelRoll')).to.equal(180);
+      });
+    });
   });
 
   describe('starting a SCALE session', () => {
@@ -568,6 +863,419 @@ describe('startEditFeaturesSession', () => {
       expect(
         point2.getCoordinates().map((c) => Math.round(c)),
       ).to.have.ordered.members([1, -1]);
+    });
+
+    describe('scaling models', () => {
+      let pointFeature: Feature<Point>;
+      let patchedPickRay: undefined | (() => void);
+
+      before(async () => {
+        await app.maps.setActiveMap(cesiumMap.name);
+      });
+
+      beforeEach(() => {
+        const point1 = new Point([0, 0, 0]);
+        pointFeature = createFeatureWithId(point1);
+        pointFeature.set('olcs_modelUrl', 'model.glb');
+        session.setFeatures([pointFeature]);
+      });
+
+      afterEach(() => {
+        patchedPickRay?.();
+      });
+
+      after(async () => {
+        await app.maps.setActiveMap(defaultMap.name);
+      });
+
+      it('should scale the model X', async () => {
+        const feature = createHandlerFeature(AxisAndPlanes.X);
+        const map = app.maps.activeMap!;
+        const pointerEvent = PointerEventType.DOWN;
+        const windowPosition = new Cartesian2(0, 0);
+        patchedPickRay = patchPickRay([
+          mercatorToCartesian([1, 1, 1]),
+          mercatorToCartesian([2, 2, 1]),
+          mercatorToCartesian([2, 2, 1]),
+        ]);
+
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [1, 1, 1],
+          type: EventType.DRAGSTART,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [2, 2, 1],
+          type: EventType.DRAG,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [2, 2, 1],
+          type: EventType.DRAGEND,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        expect(pointFeature.get('olcs_modelScaleX')).to.be.closeTo(2, 0.1);
+      });
+
+      it('should scale the model Y', async () => {
+        const feature = createHandlerFeature(AxisAndPlanes.Y);
+        const map = app.maps.activeMap!;
+        const pointerEvent = PointerEventType.DOWN;
+        const windowPosition = new Cartesian2(0, 0);
+        patchedPickRay = patchPickRay([
+          mercatorToCartesian([1, 1, 1]),
+          mercatorToCartesian([2, 2, 1]),
+          mercatorToCartesian([2, 2, 1]),
+        ]);
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [1, 1, 1],
+          type: EventType.DRAGSTART,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [2, 2, 1],
+          type: EventType.DRAG,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [2, 2, 1],
+          type: EventType.DRAGEND,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        expect(pointFeature.get('olcs_modelScaleY')).to.be.closeTo(2, 0.1);
+      });
+
+      it('should scale the model Z', async () => {
+        const feature = createHandlerFeature(AxisAndPlanes.Z);
+        const map = app.maps.activeMap!;
+        const pointerEvent = PointerEventType.DOWN;
+        const windowPosition = new Cartesian2(0, 0);
+        patchedPickRay = patchPickRay([
+          mercatorToCartesian([1, 1, 1]),
+          mercatorToCartesian([1, 1, 2]),
+          mercatorToCartesian([1, 1, 2]),
+        ]);
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [1, 1, 1],
+          type: EventType.DRAGSTART,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [2, 2, 1],
+          type: EventType.DRAG,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [2, 2, 1],
+          type: EventType.DRAGEND,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        expect(pointFeature.get('olcs_modelScaleZ')).to.be.closeTo(2, 0.1);
+      });
+
+      it('should scale the model XYZ evenly', async () => {
+        const feature = createHandlerFeature(AxisAndPlanes.XYZ);
+        const map = app.maps.activeMap!;
+        const pointerEvent = PointerEventType.DOWN;
+        const windowPosition = new Cartesian2(0, 0);
+        patchedPickRay = patchPickRay([
+          mercatorToCartesian([1, 1, 1]),
+          mercatorToCartesian([2, 2, 2]),
+          mercatorToCartesian([2, 2, 2]),
+        ]);
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [1, 1, 1],
+          type: EventType.DRAGSTART,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [2, 2, 1],
+          type: EventType.DRAG,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [2, 2, 1],
+          type: EventType.DRAGEND,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        expect(pointFeature.get('olcs_modelScaleX')).to.be.closeTo(2, 0.1);
+        expect(pointFeature.get('olcs_modelScaleY')).to.be.closeTo(2, 0.1);
+        expect(pointFeature.get('olcs_modelScaleZ')).to.be.closeTo(2, 0.1);
+      });
+    });
+
+    describe('scaling primitives', () => {
+      let pointFeature: Feature<Point>;
+      let patchedPickRay: undefined | (() => void);
+
+      before(async () => {
+        await app.maps.setActiveMap(cesiumMap.name);
+      });
+
+      beforeEach(() => {
+        const point1 = new Point([0, 0, 0]);
+        pointFeature = createFeatureWithId(point1);
+        pointFeature.set('olcs_primitiveOptions', {
+          type: 'sphere',
+          geometryOptions: { radius: 1 },
+        });
+        session.setFeatures([pointFeature]);
+      });
+
+      afterEach(() => {
+        patchedPickRay?.();
+      });
+
+      after(async () => {
+        await app.maps.setActiveMap(defaultMap.name);
+      });
+
+      it('should scale the model X', async () => {
+        const feature = createHandlerFeature(AxisAndPlanes.X);
+        const map = app.maps.activeMap!;
+        const pointerEvent = PointerEventType.DOWN;
+        const windowPosition = new Cartesian2(0, 0);
+        patchedPickRay = patchPickRay([
+          mercatorToCartesian([1, 1, 1]),
+          mercatorToCartesian([2, 2, 1]),
+          mercatorToCartesian([2, 2, 1]),
+        ]);
+
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [1, 1, 1],
+          type: EventType.DRAGSTART,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [2, 2, 1],
+          type: EventType.DRAG,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [2, 2, 1],
+          type: EventType.DRAGEND,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        expect(pointFeature.get('olcs_modelScaleX')).to.be.closeTo(2, 0.1);
+      });
+
+      it('should scale the model Y', async () => {
+        const feature = createHandlerFeature(AxisAndPlanes.Y);
+        const map = app.maps.activeMap!;
+        const pointerEvent = PointerEventType.DOWN;
+        const windowPosition = new Cartesian2(0, 0);
+        patchedPickRay = patchPickRay([
+          mercatorToCartesian([1, 1, 1]),
+          mercatorToCartesian([2, 2, 1]),
+          mercatorToCartesian([2, 2, 1]),
+        ]);
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [1, 1, 1],
+          type: EventType.DRAGSTART,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [2, 2, 1],
+          type: EventType.DRAG,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [2, 2, 1],
+          type: EventType.DRAGEND,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        expect(pointFeature.get('olcs_modelScaleY')).to.be.closeTo(2, 0.1);
+      });
+
+      it('should scale the model Z', async () => {
+        const feature = createHandlerFeature(AxisAndPlanes.Z);
+        const map = app.maps.activeMap!;
+        const pointerEvent = PointerEventType.DOWN;
+        const windowPosition = new Cartesian2(0, 0);
+        patchedPickRay = patchPickRay([
+          mercatorToCartesian([1, 1, 1]),
+          mercatorToCartesian([1, 1, 2]),
+          mercatorToCartesian([1, 1, 2]),
+        ]);
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [1, 1, 1],
+          type: EventType.DRAGSTART,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [2, 2, 1],
+          type: EventType.DRAG,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [2, 2, 1],
+          type: EventType.DRAGEND,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        expect(pointFeature.get('olcs_modelScaleZ')).to.be.closeTo(2, 0.1);
+      });
+
+      it('should scale the model XYZ evenly', async () => {
+        const feature = createHandlerFeature(AxisAndPlanes.XYZ);
+        const map = app.maps.activeMap!;
+        const pointerEvent = PointerEventType.DOWN;
+        const windowPosition = new Cartesian2(0, 0);
+        patchedPickRay = patchPickRay([
+          mercatorToCartesian([1, 1, 1]),
+          mercatorToCartesian([2, 2, 2]),
+          mercatorToCartesian([2, 2, 2]),
+        ]);
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [1, 1, 1],
+          type: EventType.DRAGSTART,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [2, 2, 1],
+          type: EventType.DRAG,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+
+        await app.maps.eventHandler.interactions[4].pipe({
+          pointerEvent,
+          windowPosition,
+          map,
+          feature,
+          positionOrPixel: [2, 2, 1],
+          type: EventType.DRAGEND,
+          pointer: PointerKeyType.LEFT,
+          key: ModificationKeyType.NONE,
+        });
+        expect(pointFeature.get('olcs_modelScaleX')).to.be.closeTo(2, 0.1);
+        expect(pointFeature.get('olcs_modelScaleY')).to.be.closeTo(2, 0.1);
+        expect(pointFeature.get('olcs_modelScaleZ')).to.be.closeTo(2, 0.1);
+      });
     });
   });
 

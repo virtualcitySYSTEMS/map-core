@@ -8,6 +8,7 @@ import type { Feature } from 'ol/index.js';
 import type { EventsKey } from 'ol/events.js';
 import { unByKey } from 'ol/Observable.js';
 import { getLogger } from '@vcsuite/logger';
+import { Math as CesiumMath } from '@vcmap-cesium/engine';
 
 import VcsEvent from '../../vcsEvent.js';
 import {
@@ -18,6 +19,7 @@ import {
 } from './editorSessionHelpers.js';
 import createTransformationHandler from './transformation/transformationHandler.js';
 import {
+  AxisAndPlanes,
   TransformationHandler,
   TransformationMode,
 } from './transformation/transformationTypes.js';
@@ -112,12 +114,18 @@ function clearCreateSync(
 export type EditFeaturesSession = EditorSession<SessionType.EDIT_FEATURES> & {
   readonly mode: TransformationMode;
   /**
-   * Function for rotating features. Takes angle in radians as parameter.
+   * Function for rotating features. Takes angle in radians as parameter. you can provide an axis to rotate around for features & primitives
    * @param angle - in radians
+   * @param axis - optional axis. only has effect when rotating a single model or primitive
    */
-  rotate(angle: number): void;
+  rotate(angle: number, axis?: AxisAndPlanes): void;
   translate(dx: number, dy: number, dz: number): void;
-  scale(sx: number, sy: number): void;
+  /**
+   * @param sx
+   * @param sy
+   * @param sz - optional sz. only has effect when rotating a single model or primitive
+   */
+  scale(sx: number, sy: number, sz?: number): void;
   setMode(mode: TransformationMode): void;
   modeChanged: VcsEvent<TransformationMode>;
   setFeatures(features: Feature[]): void;
@@ -227,39 +235,92 @@ function startEditFeaturesSession(
     });
   };
 
-  const rotate = (angle: number): void => {
-    let center = transformationHandler?.center;
-    if (!center) {
-      const extent = createEmptyExtent();
-      currentFeatures.forEach((f) => {
-        extendExtent(extent, f.getGeometry()!.getExtent()); // XXX wont work in oblqiue
-      });
-      if (!isEmpty(extent)) {
-        center = getCenter(extent);
+  const rotate = (
+    angle: number,
+    axis: AxisAndPlanes = AxisAndPlanes.Z,
+  ): void => {
+    if (
+      currentFeatures.length === 1 &&
+      currentFeatures[0].getGeometry()?.getType() === 'Point' &&
+      layer.vectorProperties.renderAs(currentFeatures[0]) !== 'geometry'
+    ) {
+      if (axis === AxisAndPlanes.Z) {
+        const currentRotation = layer.vectorProperties.getModelHeading(
+          currentFeatures[0],
+        );
+        currentFeatures[0].set(
+          'olcs_modelHeading',
+          currentRotation - CesiumMath.toDegrees(angle),
+        );
+      } else if (axis === AxisAndPlanes.X) {
+        const currentRotation = layer.vectorProperties.getModelPitch(
+          currentFeatures[0],
+        );
+        currentFeatures[0].set(
+          'olcs_modelPitch',
+          currentRotation - CesiumMath.toDegrees(angle),
+        );
+      } else if (axis === AxisAndPlanes.Y) {
+        const currentRotation = layer.vectorProperties.getModelRoll(
+          currentFeatures[0],
+        );
+        currentFeatures[0].set(
+          'olcs_modelRoll',
+          currentRotation - CesiumMath.toDegrees(angle),
+        );
       }
+    } else {
+      let center = transformationHandler?.center;
+      if (!center) {
+        const extent = createEmptyExtent();
+        currentFeatures.forEach((f) => {
+          extendExtent(extent, f.getGeometry()!.getExtent()); // XXX wont work in oblqiue
+        });
+        if (!isEmpty(extent)) {
+          center = getCenter(extent);
+        }
+      }
+      currentFeatures.forEach((f) => {
+        const geometry = f[obliqueGeometry] ?? f.getGeometry(); // XXX wont work in oblqiue
+        geometry!.rotate(angle, center!);
+      });
     }
-    currentFeatures.forEach((f) => {
-      const geometry = f[obliqueGeometry] ?? f.getGeometry(); // XXX wont work in oblqiue
-      geometry!.rotate(angle, center!);
-    });
   };
 
-  const scale = (sx: number, sy: number): void => {
-    let center = transformationHandler?.center;
-    if (!center) {
-      // XXX copy paste
-      const extent = createEmptyExtent();
-      currentFeatures.forEach((f) => {
-        extendExtent(extent, f.getGeometry()!.getExtent());
-      });
-      if (!isEmpty(extent)) {
-        center = getCenter(extent);
+  const scale = (sx: number, sy: number, sz?: number): void => {
+    if (
+      currentFeatures.length === 1 &&
+      currentFeatures[0].getGeometry()?.getType() === 'Point' &&
+      layer.vectorProperties.renderAs(currentFeatures[0]) !== 'geometry'
+    ) {
+      const feature = currentFeatures[0];
+      const scaleX = layer.vectorProperties.getModelScaleX(feature);
+      const scaleY = layer.vectorProperties.getModelScaleY(feature);
+      const scaleZ = layer.vectorProperties.getModelScaleZ(feature);
+      currentFeatures[0].set('olcs_modelScaleX', scaleX * sx);
+      currentFeatures[0].set('olcs_modelScaleY', scaleY * sy);
+      let usedSz = sz;
+      if (usedSz == null) {
+        usedSz = sx === sy ? sx : 1;
       }
+      currentFeatures[0].set('olcs_modelScaleZ', scaleZ * usedSz);
+    } else {
+      let center = transformationHandler?.center;
+      if (!center) {
+        // XXX copy paste
+        const extent = createEmptyExtent();
+        currentFeatures.forEach((f) => {
+          extendExtent(extent, f.getGeometry()!.getExtent());
+        });
+        if (!isEmpty(extent)) {
+          center = getCenter(extent);
+        }
+      }
+      currentFeatures.forEach((f) => {
+        const geometry = f[obliqueGeometry] ?? f.getGeometry();
+        geometry!.scale(sx, sy, center);
+      });
     }
-    currentFeatures.forEach((f) => {
-      const geometry = f[obliqueGeometry] ?? f.getGeometry();
-      geometry!.scale(sx, sy, center);
-    });
   };
 
   const createTransformations = (): void => {
@@ -295,13 +356,13 @@ function startEditFeaturesSession(
       });
     } else if (mode === TransformationMode.ROTATE) {
       interaction = new RotateInteraction(transformationHandler);
-      interaction.rotated.addEventListener(({ angle }) => {
-        rotate(angle);
+      interaction.rotated.addEventListener(({ angle, axis }) => {
+        rotate(angle, axis);
       });
     } else if (mode === TransformationMode.SCALE) {
       interaction = new ScaleInteraction(transformationHandler);
-      interaction.scaled.addEventListener(([sx, sy]) => {
-        scale(sx, sy);
+      interaction.scaled.addEventListener(([sx, sy, sz]) => {
+        scale(sx, sy, sz);
       });
     } else {
       throw new Error(`Unknown transformation mode ${String(mode)}`);

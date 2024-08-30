@@ -38,11 +38,12 @@ type FeatureCenterInfo = {
 
 function getCenterFromFeatures3D(
   layer: VectorLayer,
+  mode: TransformationMode,
   features: Feature[],
 ): FeatureCenterInfo {
   const extent3D = new Extent3D();
   let calculateHeight = false;
-  let greyOutZ = false;
+  let greyOutZ = mode !== TransformationMode.TRANSLATE;
   let offsetHeight: boolean | undefined;
 
   features.forEach((f) => {
@@ -67,6 +68,15 @@ function getCenterFromFeatures3D(
       (isAbsoluteHeightReference(heightReference) &&
         layer.vectorProperties.getGroundLevel(f) != null);
   });
+
+  if (
+    features.length === 1 &&
+    (mode === TransformationMode.ROTATE || mode === TransformationMode.SCALE) &&
+    features[0].getGeometry()?.getType() === 'Point' &&
+    layer.vectorProperties.renderAs(features[0]) !== 'geometry'
+  ) {
+    greyOutZ = false;
+  }
   const center = extent3D.getCenter();
 
   return {
@@ -160,7 +170,7 @@ export default function createTransformationHandler(
 
   if (map instanceof CesiumMap) {
     handlerFeatures = create3DHandlers(map, mode);
-    getCenterFromFeatures = getCenterFromFeatures3D.bind(null, layer);
+    getCenterFromFeatures = getCenterFromFeatures3D.bind(null, layer, mode);
     cesiumMap = map;
   } else if (map instanceof BaseOLMap) {
     handlerFeatures = create2DHandlers(map, scratchLayer, mode);

@@ -310,6 +310,149 @@ describe('createTransformationHandler', () => {
           ),
         ).to.be.true;
       });
+
+      it('should grey Z handler, if one point feature rendered as a model is selected and mode is not rotate or scale', () => {
+        setup.transformationHandler.setFeatures([
+          createFeatureWithId({
+            geometry: new Point([1, 1, 1]),
+            olcs_modelUrl: 'foo.glb',
+          }),
+        ]);
+        const primitiveCollection = map.getScene()!.primitives;
+        expect(
+          collectionHasAxisPrimitive(
+            primitiveCollection.get(
+              primitiveCollection.length - 1,
+            ) as PrimitiveCollection,
+            AxisAndPlanes.Z,
+          ),
+        ).to.be.false;
+      });
+
+      it('should grey Z handler, if one point feature rendered as a primitive is selected and mode is not rotate or scale', () => {
+        setup.transformationHandler.setFeatures([
+          createFeatureWithId({
+            geometry: new Point([1, 1, 1]),
+            olcs_primitiveOptions: {
+              type: 'sphere',
+              geometryOptions: { radius: 1 },
+            },
+          }),
+        ]);
+        const primitiveCollection = map.getScene()!.primitives;
+        expect(
+          collectionHasAxisPrimitive(
+            primitiveCollection.get(
+              primitiveCollection.length - 1,
+            ) as PrimitiveCollection,
+            AxisAndPlanes.Z,
+          ),
+        ).to.be.false;
+      });
+
+      describe('model & primitives', () => {
+        let rotationSetup: TransformationSetup;
+
+        beforeEach(async () => {
+          rotationSetup = await setupTransformationHandler(
+            map,
+            TransformationMode.ROTATE,
+          );
+        });
+
+        afterEach(() => {
+          rotationSetup.destroy;
+        });
+
+        it('should not grey out Z handler, if one point feature rendered as a model is selected and mode is rotate', () => {
+          rotationSetup.transformationHandler.setFeatures([
+            createFeatureWithId({
+              geometry: new Point([1, 1, 1]),
+              olcs_modelUrl: 'foo.glb',
+            }),
+          ]);
+          const primitiveCollection = map.getScene()!.primitives;
+          expect(
+            collectionHasAxisPrimitive(
+              primitiveCollection.get(
+                primitiveCollection.length - 1,
+              ) as PrimitiveCollection,
+              AxisAndPlanes.Y,
+            ),
+          ).to.be.true;
+        });
+
+        it('should grey out Z handler, if more then one point feature rendered as a model is selected and mode is rotate', () => {
+          rotationSetup.transformationHandler.setFeatures([
+            createFeatureWithId({
+              geometry: new Point([1, 1, 1]),
+              olcs_modelUrl: 'foo.glb',
+            }),
+            createFeatureWithId({
+              geometry: new Point([2, 2, 1]),
+              olcs_modelUrl: 'foo.glb',
+            }),
+          ]);
+          const primitiveCollection = map.getScene()!.primitives;
+          expect(
+            collectionHasAxisPrimitive(
+              primitiveCollection.get(
+                primitiveCollection.length - 1,
+              ) as PrimitiveCollection,
+              AxisAndPlanes.Y,
+            ),
+          ).to.be.false;
+        });
+
+        it('should not grey out Z handler, if one point feature rendered as a primitive is selected and mode is rotate', () => {
+          rotationSetup.transformationHandler.setFeatures([
+            createFeatureWithId({
+              geometry: new Point([1, 1, 1]),
+              olcs_primitiveOptions: {
+                type: 'sphere',
+                geometryOptions: { radius: 1 },
+              },
+            }),
+          ]);
+          const primitiveCollection = map.getScene()!.primitives;
+          expect(
+            collectionHasAxisPrimitive(
+              primitiveCollection.get(
+                primitiveCollection.length - 1,
+              ) as PrimitiveCollection,
+              AxisAndPlanes.Y,
+            ),
+          ).to.be.true;
+        });
+
+        it('should grey out Z handler, if more then one point feature rendered as a primitive is selected and mode is rotate', () => {
+          rotationSetup.transformationHandler.setFeatures([
+            createFeatureWithId({
+              geometry: new Point([1, 1, 1]),
+              olcs_primitiveOptions: {
+                type: 'sphere',
+                geometryOptions: { radius: 1 },
+              },
+            }),
+            createFeatureWithId({
+              geometry: new Point([1, 1, 1]),
+              olcs_primitiveOptions: {
+                type: 'sphere',
+                geometryOptions: { radius: 1 },
+              },
+            }),
+          ]);
+          const primitiveCollection = map.getScene()!.primitives;
+          expect(
+            collectionHasAxisPrimitive(
+              primitiveCollection.get(
+                primitiveCollection.length - 1,
+              ) as PrimitiveCollection,
+              AxisAndPlanes.Y,
+            ),
+          ).to.be.false;
+        });
+      });
     });
   });
 

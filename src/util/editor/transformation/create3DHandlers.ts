@@ -30,6 +30,7 @@ import {
   Handlers,
   is1DAxis,
   is2DAxis,
+  is3DAxis,
   TransformationMode,
 } from './transformationTypes.js';
 import Projection from '../../projection.js';
@@ -206,7 +207,8 @@ function createAxisPrimitive(
   if (
     axis === AxisAndPlanes.X ||
     axis === AxisAndPlanes.XY ||
-    axis === AxisAndPlanes.XZ
+    axis === AxisAndPlanes.XZ ||
+    axis === AxisAndPlanes.XYZ
   ) {
     primitives.push(
       new Primitive({
@@ -229,7 +231,8 @@ function createAxisPrimitive(
   if (
     axis === AxisAndPlanes.Y ||
     axis === AxisAndPlanes.XY ||
-    axis === AxisAndPlanes.YZ
+    axis === AxisAndPlanes.YZ ||
+    axis === AxisAndPlanes.XYZ
   ) {
     primitives.push(
       new Primitive({
@@ -252,7 +255,8 @@ function createAxisPrimitive(
   if (
     axis === AxisAndPlanes.Z ||
     axis === AxisAndPlanes.XZ ||
-    axis === AxisAndPlanes.YZ
+    axis === AxisAndPlanes.YZ ||
+    axis === AxisAndPlanes.XYZ
   ) {
     primitives.push(
       new Primitive({
@@ -481,6 +485,28 @@ function createPlanePrimitive(
   return primitive;
 }
 
+function createBoxPrimitive(modelMatrix: Matrix4, greyOut = false): Primitive {
+  const color = greyOut ? greyedOutColor : Color.GAINSBORO;
+  const primitive = new Primitive({
+    allowPicking: !greyOut,
+    asynchronous: false,
+    geometryInstances: [
+      new GeometryInstance({
+        geometry: new BoxGeometry({
+          minimum: new Cartesian3(0.2, 0.2, 0.2),
+          maximum: new Cartesian3(0.4, 0.4, 0.4),
+        }),
+      }),
+    ],
+    ...getPolygonAppearance(color),
+    modelMatrix,
+  });
+  if (!greyOut) {
+    primitive[handlerSymbol] = AxisAndPlanes.XYZ;
+  }
+  return primitive;
+}
+
 function createShowShadowPrimitive(
   primitiveCollection: PrimitiveCollection,
 ): (
@@ -503,6 +529,8 @@ function createShowShadowPrimitive(
         });
       } else if (is2DAxis(axis)) {
         primitive.add(createPlanePrimitive(axis, modelMatrix, true));
+      } else if (is3DAxis(axis)) {
+        primitive.add(createBoxPrimitive(modelMatrix, true));
       }
       primitiveCollection.add(primitive);
     }
@@ -524,36 +552,47 @@ export default function create3DHandlers(
   const modelMatrix = Matrix4.fromTranslation(Cartesian3.fromDegrees(0, 0, 0));
   const zPrimitives: Primitive[] = [];
 
-  if (
-    mode === TransformationMode.TRANSLATE ||
-    mode === TransformationMode.SCALE
-  ) {
+  if (mode === TransformationMode.TRANSLATE) {
     const primitives = [
       ...createLineAxisPrimitives(AxisAndPlanes.X, modelMatrix, mode),
       ...createLineAxisPrimitives(AxisAndPlanes.Y, modelMatrix, mode),
       createPlanePrimitive(AxisAndPlanes.XY, modelMatrix),
     ];
 
-    if (mode === TransformationMode.TRANSLATE) {
-      zPrimitives.push(
-        ...createLineAxisPrimitives(AxisAndPlanes.Z, modelMatrix, mode),
-        createPlanePrimitive(AxisAndPlanes.XZ, modelMatrix),
-        createPlanePrimitive(AxisAndPlanes.YZ, modelMatrix),
-      );
-      primitives.push(...zPrimitives);
-    }
+    zPrimitives.push(
+      ...createLineAxisPrimitives(AxisAndPlanes.Z, modelMatrix, mode),
+      createPlanePrimitive(AxisAndPlanes.XZ, modelMatrix),
+      createPlanePrimitive(AxisAndPlanes.YZ, modelMatrix),
+    );
+    primitives.push(...zPrimitives);
     primitives.forEach((p) => {
       setFeatureOnPrimitive(p);
       primitiveCollection.add(p);
     });
   } else if (mode === TransformationMode.ROTATE) {
-    primitiveCollection.add(
-      createRingPrimitive(AxisAndPlanes.X, modelMatrix, true),
+    zPrimitives.push(
+      createRingPrimitive(AxisAndPlanes.X, modelMatrix),
+      createRingPrimitive(AxisAndPlanes.Y, modelMatrix),
     );
-    primitiveCollection.add(
-      createRingPrimitive(AxisAndPlanes.Y, modelMatrix, true),
-    );
+    zPrimitives.forEach((p) => {
+      primitiveCollection.add(p);
+    });
     primitiveCollection.add(createRingPrimitive(AxisAndPlanes.Z, modelMatrix));
+  } else if (mode === TransformationMode.SCALE) {
+    const primitives = [
+      ...createLineAxisPrimitives(AxisAndPlanes.X, modelMatrix, mode),
+      ...createLineAxisPrimitives(AxisAndPlanes.Y, modelMatrix, mode),
+    ];
+
+    zPrimitives.push(
+      ...createLineAxisPrimitives(AxisAndPlanes.Z, modelMatrix, mode),
+      createBoxPrimitive(modelMatrix),
+    );
+    primitives.push(...zPrimitives);
+    primitives.forEach((p) => {
+      setFeatureOnPrimitive(p);
+      primitiveCollection.add(p);
+    });
   } else if (mode === TransformationMode.EXTRUDE) {
     createLineAxisPrimitives(AxisAndPlanes.Z, modelMatrix, mode).forEach(
       (p) => {
@@ -629,6 +668,29 @@ export default function create3DHandlers(
             createPlanePrimitive(AxisAndPlanes.XZ, modelMatrix, greyOut),
             createPlanePrimitive(AxisAndPlanes.YZ, modelMatrix, greyOut),
           );
+        } else if (mode === TransformationMode.ROTATE) {
+          if (!greyOut) {
+            zPrimitives.push(
+              createRingPrimitive(AxisAndPlanes.X, modelMatrix, greyOut),
+              createRingPrimitive(AxisAndPlanes.Y, modelMatrix, greyOut),
+            );
+          }
+        } else if (mode === TransformationMode.SCALE) {
+          if (!greyOut) {
+            zPrimitives.push(
+              ...createLineAxisPrimitives(
+                AxisAndPlanes.Z,
+                modelMatrix,
+                mode,
+                greyOut,
+              ),
+              createBoxPrimitive(modelMatrix),
+            );
+          } else {
+            zPrimitives.push(
+              createPlanePrimitive(AxisAndPlanes.XY, modelMatrix),
+            );
+          }
         }
 
         zPrimitives.forEach((p) => {

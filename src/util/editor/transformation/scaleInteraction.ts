@@ -12,6 +12,7 @@ import VcsEvent from '../../../vcsEvent.js';
 import Projection from '../../projection.js';
 import {
   cartesian2DDistance,
+  cartesian3DDistance,
   cartographicToWgs84,
   mercatorToCartesian,
 } from '../../math.js';
@@ -37,23 +38,30 @@ function createGetScaledEvent(
   const { center } = transformationHandler;
   let flippedX = false;
   let flippedY = false;
+  let flippedZ = false;
 
   const getDistance = (
     coordinate: Coordinate,
     windowPosition: Cartesian2,
-  ): { distance: number; dx: number; dy: number } => {
+  ): { distance: number; dx: number; dy: number; dz: number } => {
     const position = getPosition(coordinate, windowPosition);
     const dx = position[0] - center[0];
     const dy = position[1] - center[1];
+    let dz = position[2] - center[2];
+    dz = Number.isFinite(dz) ? dz : 0;
     let distance;
     if (axis === AxisAndPlanes.X) {
       distance = Math.abs(dx);
     } else if (axis === AxisAndPlanes.Y) {
       distance = Math.abs(dy);
+    } else if (axis === AxisAndPlanes.Z) {
+      distance = Math.abs(dz);
+    } else if (axis === AxisAndPlanes.XYZ) {
+      distance = cartesian3DDistance(center, position);
     } else {
       distance = cartesian2DDistance(center, position);
     }
-    return { distance, dx, dy };
+    return { distance, dx, dy, dz };
   };
 
   const { distance: initialDistance } = getDistance(
@@ -62,13 +70,16 @@ function createGetScaledEvent(
   );
   let currentDistance = initialDistance;
   return (coordinate, windowPosition) => {
-    const { distance, dx, dy } = getDistance(coordinate, windowPosition);
+    const { distance, dx, dy, dz } = getDistance(coordinate, windowPosition);
 
     const distanceDelta = distance / currentDistance;
     const currentFlippedX = dx < 0;
     const currentFlippedY = dy < 0;
+    const currentFlippedZ = dz < 0;
     let sx = distanceDelta;
     let sy = distanceDelta;
+    let sz = distanceDelta;
+
     if (currentFlippedX !== flippedX) {
       flippedX = currentFlippedX;
       sx *= -1;
@@ -79,14 +90,24 @@ function createGetScaledEvent(
       sy *= -1;
     }
 
+    if (currentFlippedZ !== flippedZ) {
+      flippedZ = currentFlippedZ;
+      sz *= -1;
+    }
+
     currentDistance = distance;
     if (axis === AxisAndPlanes.X) {
       return [sx, 1, 1];
     } else if (axis === AxisAndPlanes.Y) {
       return [1, sy, 1];
-    } else {
+    } else if (axis === AxisAndPlanes.XY) {
       return [sx, sy, 1];
+    } else if (axis === AxisAndPlanes.XYZ) {
+      return [sx, sy, sz];
+    } else if (axis === AxisAndPlanes.Z) {
+      return [1, 1, sz];
     }
+    return [1, 1, 1];
   };
 }
 
@@ -142,7 +163,9 @@ class ScaleInteraction extends AbstractInteraction {
   ): GetScaleCallback {
     const scene = (event.map as CesiumMap).getScene() as Scene;
     const center = mercatorToCartesian(this._transformationHandler!.center);
-    let plane = Plane.clone(Plane.ORIGIN_XY_PLANE);
+    let plane = Plane.clone(
+      axis === AxisAndPlanes.Z ? Plane.ORIGIN_ZX_PLANE : Plane.ORIGIN_XY_PLANE,
+    );
     plane = Plane.transform(
       plane,
       Transforms.eastNorthUpToFixedFrame(center),
