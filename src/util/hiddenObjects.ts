@@ -14,10 +14,10 @@ export function createHiddenObjectsCollection(
   getDynamicModuleId: () => string,
   globalHider: GlobalHider,
 ): OverrideCollection<HiddenObject> {
-  const collection = makeOverrideCollection<
-    HiddenObject,
-    Collection<HiddenObject>
-  >(new Collection<HiddenObject>('id'), getDynamicModuleId);
+  const collection = makeOverrideCollection<HiddenObject>(
+    new Collection<HiddenObject>('id'),
+    getDynamicModuleId,
+  );
 
   collection.added.addEventListener(({ id }) => {
     globalHider.hideObjects([id]);

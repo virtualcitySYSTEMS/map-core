@@ -489,6 +489,7 @@ export {
   default as DisplayQuality,
   DisplayQualityLevel,
   DisplayQualityOptions,
+  DisplayQualityViewModelOptions,
 } from './src/util/displayQuality/displayQuality.js';
 export { default as Collection } from './src/util/collection.js';
 export {

@@ -30,7 +30,7 @@ export type OverrideCollectionItem = {
  * removed current item. 2) replaced is called for items which where replaced. 3) added can be called more the once for the same unique id.
  * Replaced is called before added has been called for the item.
  */
-export type OverrideCollectionInterface<T> = {
+export type OverrideCollectionInterface<T, S> = {
   /**
    * replaced is called before added
    */
@@ -40,16 +40,16 @@ export type OverrideCollectionInterface<T> = {
    * Returns the replaced item or null if the item could not be inserted
    */
   replace: (item: T) => T | null;
-  shadowMap: Map<string, (object & { [moduleIdSymbol]?: string })[]>;
+  shadowMap: Map<string, (S & { [moduleIdSymbol]?: string })[]>;
   /**
    * returns the overriden item or null if the item could not be inserted (this would be the result of a race condition)
    */
   override: (item: T) => T | null;
   parseItems: (
-    items: (object & { type?: string })[] | undefined,
+    items: (S & { type?: string })[] | undefined,
     moduleId: string,
   ) => Promise<void>;
-  getSerializedByKey: (key: string) => object | undefined;
+  getSerializedByKey: (key: string) => S | undefined;
   removeModule: (moduleId: string) => void;
   serializeModule: (moduleId: string) => object[];
   [isOverrideCollection]: boolean;
@@ -59,7 +59,16 @@ export type OverrideCollectionInterface<T> = {
 export type OverrideCollection<
   T extends OverrideCollectionItem,
   C extends Collection<T> = Collection<T>,
-> = C & OverrideCollectionInterface<T>;
+  S extends object = T['toJSON'] extends () => object
+    ? ReturnType<T['toJSON']>
+    : T,
+> = C & OverrideCollectionInterface<T, S>;
+
+function defaulSerialization(
+  i: OverrideCollectionItem,
+): object & { [moduleIdSymbol]?: string } {
+  return i.toJSON ? i.toJSON() : structuredClone(i);
+}
 
 /**
  * @param  collection
@@ -71,22 +80,25 @@ export type OverrideCollection<
  */
 function makeOverrideCollection<
   T extends OverrideCollectionItem,
-  C extends Collection<T>,
+  C extends Collection<T> = Collection<T>,
+  S extends object = T['toJSON'] extends () => object
+    ? ReturnType<T['toJSON']>
+    : T,
 >(
   collection: C,
   getDynamicModuleId: () => string,
-  serializeItem?: (item: T) => object & { [moduleIdSymbol]?: string },
-  deserializeItem?: (item: object) => T | Promise<T> | null,
+  serializeItem?: (item: T) => S & { [moduleIdSymbol]?: string },
+  deserializeItem?: (item: S) => T | Promise<T> | null,
   ctor?: new (...args: any[]) => T,
   determineShadowIndex?: (
     item: T,
     shadow?: T,
     index?: number,
   ) => number | null | undefined,
-): OverrideCollection<T, C> {
+): OverrideCollection<T, C, S> {
   check(collection, Collection);
 
-  const overrideCollection = collection as OverrideCollection<T, C>;
+  const overrideCollection = collection as OverrideCollection<T, C, S>;
   if (overrideCollection[isOverrideCollection]) {
     throw new Error(
       'Cannot transform collection, collection already is an OverrideCollection',
@@ -94,11 +106,10 @@ function makeOverrideCollection<
   }
   overrideCollection[isOverrideCollection] = true;
 
-  const deserialize = deserializeItem || ((i: object): T => i as T);
-  const serialize =
-    serializeItem ||
-    ((i: T): object & { [moduleIdSymbol]?: string } =>
-      i.toJSON ? i.toJSON() : structuredClone(i));
+  const deserialize = deserializeItem || ((i: S): T => i as unknown as T);
+  const serialize = (serializeItem || defaulSerialization) as (
+    item: T,
+  ) => S & { [moduleIdSymbol]?: string };
   const getShadowIndex =
     determineShadowIndex ||
     ((
@@ -196,7 +207,7 @@ function makeOverrideCollection<
 
   overrideCollection.getSerializedByKey = function getSerializedByKey(
     key,
-  ): object | undefined {
+  ): S | undefined {
     const item = overrideCollection.getByKey(key);
     if (item) {
       return serialize(item);
@@ -273,10 +284,6 @@ function makeOverrideCollection<
 
   overrideCollection.replaced = new VcsEvent();
 
-  /**
-   * @param {string} moduleId
-   * @returns {Object[]}
-   */
   overrideCollection.serializeModule = function serializeModule(
     moduleId,
   ): object[] {

@@ -12,7 +12,9 @@ function logger(): Logger {
   return getLogger('ClassRegistry');
 }
 
-export type Ctor<T extends new (...args: any) => any> = new (
+export type AbstractCtor = new (...args: any) => any;
+
+export type Ctor<T extends AbstractCtor> = new (
   ...params: any
 ) => InstanceType<T>;
 
@@ -21,7 +23,7 @@ export type TypedConstructorOptions = { type?: string } & Record<
   unknown
 >;
 
-class ClassRegistry<T extends Ctor<T>> {
+class ClassRegistry<T extends AbstractCtor> {
   private _classMap: Map<string, Ctor<T>>;
 
   constructor() {
@@ -76,6 +78,7 @@ class ClassRegistry<T extends Ctor<T>> {
       logger().error(`could not find constructor ${className}`);
       return undefined;
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return new Ctor(...args);
   }
 
@@ -84,7 +87,7 @@ class ClassRegistry<T extends Ctor<T>> {
     ...args: unknown[]
   ): InstanceType<T> | undefined {
     check(options, { type: String });
-
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return this.create(options.type as string, options, ...args);
   }
 }

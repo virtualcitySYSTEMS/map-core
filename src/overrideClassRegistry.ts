@@ -1,16 +1,20 @@
 import { check } from '@vcsuite/check';
 import { getLogger, type Logger } from '@vcsuite/logger';
 import VcsEvent from './vcsEvent.js';
-// eslint-disable-next-line import/no-named-default
-import type { default as ClassRegistry, Ctor } from './classRegistry.js';
+import {
+  // eslint-disable-next-line import/no-named-default
+  default as ClassRegistry,
+  Ctor,
+  AbstractCtor,
+} from './classRegistry.js';
 
 function logger(): Logger {
   return getLogger('OverrideClassRegistry');
 }
 
-type ModuleEntry<T extends Ctor<T>> = { moduleId: string; ctor: Ctor<T> };
+type ModuleEntry<T extends AbstractCtor> = { moduleId: string; ctor: Ctor<T> };
 
-class OverrideClassRegistry<T extends Ctor<T>> {
+class OverrideClassRegistry<T extends AbstractCtor> {
   private _coreClassRegistry: ClassRegistry<T>;
 
   private _classMap: Map<string, ModuleEntry<T>> = new Map();
@@ -142,12 +146,13 @@ class OverrideClassRegistry<T extends Ctor<T>> {
   create(className: string, ...args: unknown[]): InstanceType<T> | undefined {
     check(className, String);
 
-    const Ctor = this.getClass(className);
-    if (!Ctor) {
+    const Constructor = this.getClass(className);
+    if (!Constructor) {
       logger().error(`could not find constructor ${className}`);
       return undefined;
     }
-    return new Ctor(...args);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return new Constructor(...args);
   }
 
   /**
@@ -161,6 +166,7 @@ class OverrideClassRegistry<T extends Ctor<T>> {
   ): InstanceType<T> | undefined {
     check(options, { type: String });
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return this.create(options.type as string, options, ...args);
   }
 

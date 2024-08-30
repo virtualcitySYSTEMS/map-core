@@ -2,6 +2,9 @@
 
 - Updates openlayers to 10.0.0.
 - layer now support referencing of `highlightStyle` from styles collection as it already has been supported for `style`
+- fixes class registry double `Ctor` type bug.
+- `OverrideCollection` is now generic to the serialization type.
+- `Category` is now generic to the serialization type.
 
 ### 6.0.0-rc.3
 

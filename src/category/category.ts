@@ -77,6 +77,7 @@ function checkMergeOptionOverride<
  */
 class Category<
   T extends VcsObject | object = VcsObject | object,
+  S extends object = object,
 > extends VcsObject {
   static get className(): string {
     return 'Category';
@@ -113,7 +114,7 @@ class Category<
 
   private _collectionListeners: (() => void)[] = [];
 
-  private _collection: OverrideCollection<T> = makeOverrideCollection(
+  private _collection = makeOverrideCollection<T, Collection<T>, S>(
     new IndexedCollection(),
     this._getDynamicModuleId.bind(this),
     this._serializeItem.bind(this),
@@ -151,7 +152,7 @@ class Category<
     return this._classRegistryName;
   }
 
-  get collection(): OverrideCollection<T> {
+  get collection(): OverrideCollection<T, Collection<T>, S> {
     return this._collection;
   }
 
@@ -275,11 +276,11 @@ class Category<
       this._layer.removeAllFeatures(); // XXX should we call `itemRemoved` instead?
     }
 
-    this._collection = (collection as OverrideCollection<T>)[
+    this._collection = (collection as OverrideCollection<T, Collection<T>, S>)[
       isOverrideCollection
     ]
-      ? (collection as OverrideCollection<T>)
-      : makeOverrideCollection(
+      ? (collection as OverrideCollection<T, Collection<T>, S>)
+      : makeOverrideCollection<T, Collection<T>, S>(
           collection,
           this._getDynamicModuleId.bind(this),
           this._serializeItem.bind(this),
@@ -343,7 +344,7 @@ class Category<
     return Promise.resolve((item ?? config) as T);
   }
 
-  protected _serializeItem(item: T): object {
+  protected _serializeItem(item: T): S {
     const config = JSON.parse(JSON.stringify(item)) as Record<keyof T, unknown>;
     if (this._featureProperty && this._layer) {
       const feature = this._layer.getFeatureById(
@@ -353,7 +354,7 @@ class Category<
         config[this._featureProperty] = writeGeoJSONFeature(feature);
       }
     }
-    return config;
+    return config as S;
   }
 
   serializeModule(moduleId: string): { name: string; items: object[] } | null {
