@@ -80,7 +80,8 @@ publish:
     - git push git@gitlab:vcsuite/npm/vcmap/core.git $TAG
     - git push git@gitlab:vcsuite/npm/vcmap/core.git HEAD:$CI_COMMIT_REF_NAME
     - npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
-    - npm publish
+    - NPM_TAG=$([ $CI_COMMIT_REF_NAME == "main" ] && echo "dev" || echo "latest")
+    - npm publish --tag $NPM_TAG
   before_script:
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
