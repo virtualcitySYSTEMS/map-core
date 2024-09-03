@@ -1,4 +1,5 @@
 import { getLogger as getLoggerByName, Logger } from '@vcsuite/logger';
+import { parseBoolean } from '@vcsuite/parsers';
 import { v4 as uuidv4 } from 'uuid';
 import type { MapEvent as OLMapEvent } from 'ol';
 import type { Layer as OLLayer } from 'ol/layer.js';
@@ -23,6 +24,10 @@ function getLogger(): Logger {
 }
 
 export type VcsMapOptions = VcsObjectOptions & {
+  /**
+   * instead of using a fallback map, this map will fail to activate if another map is active and the current viewpoint cannot be shown
+   */
+  fallbackToCurrentMap?: boolean;
   /**
    * the name of the fallback map to use, e.g. in case there is no oblique image at the activation viewpoint
    */
@@ -58,6 +63,7 @@ class VcsMap<
   static getDefaultOptions(): VcsMapOptions {
     return {
       fallbackMap: undefined,
+      fallbackToCurrentMap: false,
     };
   }
 
@@ -93,8 +99,12 @@ class VcsMap<
   /**
    * The name of a map to fall back on, if this map cant show a viewpoint
    */
-
   fallbackMap: string | null;
+
+  /**
+   * instead of using a fallback map, this map will fail to activate if another map is active and the current viewpoint cannot be shown
+   */
+  fallbackToCurrentMap: boolean;
 
   private _visualizations: Map<string, Set<V>>;
 
@@ -122,7 +132,7 @@ class VcsMap<
    */
   constructor(options: VcsMapOptions) {
     super(options);
-
+    const defaultOptions = VcsMap.getDefaultOptions();
     this.mapElement = document.createElement('div');
     this.mapElement.setAttribute('id', uuidv4());
     this.mapElement.classList.add('mapElement');
@@ -146,6 +156,11 @@ class VcsMap<
     this.movementDisabledChanged = new VcsEvent();
 
     this.fallbackMap = options.fallbackMap || null;
+
+    this.fallbackToCurrentMap = parseBoolean(
+      options.fallbackToCurrentMap,
+      defaultOptions.fallbackToCurrentMap,
+    );
 
     this._visualizations = new Map();
 
@@ -515,6 +530,9 @@ class VcsMap<
     const config: VcsMapOptions = super.toJSON();
     if (this.fallbackMap) {
       config.fallbackMap = this.fallbackMap;
+    }
+    if (this.fallbackToCurrentMap) {
+      config.fallbackToCurrentMap = this.fallbackToCurrentMap;
     }
     return config;
   }

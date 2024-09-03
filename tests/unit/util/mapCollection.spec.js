@@ -356,7 +356,7 @@ describe('MapCollection', () => {
         expect(spy).to.not.have.been.called;
       });
 
-      describe('cant show viewpoint', () => {
+      describe('cant show viewpoint & fallbackMap is defined', () => {
         let fallbackMap;
 
         beforeEach(async () => {
@@ -384,6 +384,27 @@ describe('MapCollection', () => {
           openlayers.fallbackMap = null;
           await mapCollection.setActiveMap(openlayers.name);
           expect(mapCollection.activeMap).to.equal(openlayers);
+        });
+      });
+
+      describe('cant show viewpoint & fallbackToCurrent is defined', () => {
+        beforeEach(async () => {
+          openlayers.fallbackToCurrentMap = true;
+          sandbox.stub(openlayers, 'canShowViewpoint').resolves(false);
+        });
+
+        it('should publish the MAP_FALLBACK_ACTIVATED event', async () => {
+          const spy = getVcsEventSpy(
+            mapCollection.fallbackMapActivated,
+            sandbox,
+          );
+          await mapCollection.setActiveMap(openlayers.name);
+          expect(spy).to.have.been.called;
+        });
+
+        it('should call _activateMapHandler with the fallback map', async () => {
+          await mapCollection.setActiveMap(openlayers.name);
+          expect(mapCollection.activeMap).to.equal(cesiumMap);
         });
       });
 

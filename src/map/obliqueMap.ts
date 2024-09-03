@@ -32,6 +32,7 @@ export type ObliqueOptions = VcsMapOptions & {
   changeOnMoveEnd?: boolean;
   switchThreshold?: number;
   switchOnEdge?: boolean;
+  maintainViewpointOnCollectionChange?: boolean;
 };
 
 const defaultHeadings: Record<ViewDirection, number> = {
@@ -90,6 +91,10 @@ class ObliqueMap extends BaseOLMap {
    */
   collectionChanged: VcsEvent<ObliqueCollection>;
 
+  failedToSetCollection = new VcsEvent<ObliqueCollection>();
+
+  maintainViewpointOnCollectionChange: boolean;
+
   private _activeCollectionDestroyedListener: () => void;
 
   private _obliqueProvider: ObliqueProvider | null = null;
@@ -102,6 +107,7 @@ class ObliqueMap extends BaseOLMap {
       changeOnMoveEnd: false,
       switchThreshold: 0,
       switchOnEdge: true,
+      maintainViewpointOnCollectionChange: false,
     };
   }
 
@@ -128,6 +134,11 @@ class ObliqueMap extends BaseOLMap {
     );
 
     this.collectionChanged = new VcsEvent();
+
+    this.maintainViewpointOnCollectionChange = parseBoolean(
+      options.maintainViewpointOnCollectionChange,
+      defaultOptions.maintainViewpointOnCollectionChange,
+    );
 
     this._activeCollectionDestroyedListener = (): void => {};
   }
@@ -293,6 +304,7 @@ class ObliqueMap extends BaseOLMap {
     if (this._loadingCollection !== obliqueCollection) {
       return;
     }
+
     await this._setCollection(obliqueCollection, viewpoint);
   }
 
@@ -304,18 +316,37 @@ class ObliqueMap extends BaseOLMap {
     viewpoint?: Viewpoint,
   ): Promise<void> {
     this._loadingCollection = obliqueCollection;
+    await obliqueCollection.load();
+    const vp = viewpoint || (await this.getViewpoint());
+    if (this._loadingCollection !== obliqueCollection) {
+      return;
+    }
+
+    if (
+      viewpoint &&
+      this.maintainViewpointOnCollectionChange &&
+      this.collection
+    ) {
+      const viewDirection = getViewDirectionFromViewpoint(viewpoint);
+      const mercatorCoordinates = getMercatorViewpointCenter(viewpoint);
+      const canShow = await obliqueCollection.hasImageAtCoordinate(
+        mercatorCoordinates,
+        viewDirection,
+      );
+      if (!canShow) {
+        this.failedToSetCollection.raiseEvent(obliqueCollection);
+        return;
+      }
+    }
+
+    this._obliqueProvider?.setCollection(obliqueCollection);
     this._activeCollectionDestroyedListener();
     this._activeCollectionDestroyedListener =
       obliqueCollection.destroyed.addEventListener(() => {
         // eslint-disable-next-line no-void
         void this._setCollection(defaultCollection);
       });
-    await obliqueCollection.load();
-    const vp = viewpoint || (await this.getViewpoint());
-    if (this._loadingCollection !== obliqueCollection) {
-      return;
-    }
-    this._obliqueProvider?.setCollection(obliqueCollection);
+
     this.collectionChanged.raiseEvent(obliqueCollection);
     if (vp) {
       await this.gotoViewpoint(vp);
@@ -470,6 +501,14 @@ class ObliqueMap extends BaseOLMap {
       config.switchOnEdge = this.switchEnabled;
     }
 
+    if (
+      this.maintainViewpointOnCollectionChange !==
+      defaultOptions.maintainViewpointOnCollectionChange
+    ) {
+      config.maintainViewpointOnCollectionChange =
+        this.maintainViewpointOnCollectionChange;
+    }
+
     return config;
   }
 
@@ -478,6 +517,7 @@ class ObliqueMap extends BaseOLMap {
       this._obliqueProvider.destroy();
     }
     this.collectionChanged.destroy();
+    this.failedToSetCollection.destroy();
     this._activeCollectionDestroyedListener();
     super.destroy();
   }

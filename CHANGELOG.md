@@ -24,6 +24,15 @@
 
 - Add new `changed` event to FlightPlayerClock
 
+### 5.3.3
+
+- adds new `fallbackToCurrentMap` option to `VcsMap`. if a map cannot show the current
+  viewpoint, it will fail to the currently active map instead of a fallback map.
+- adds a new `maintainViewpointOnCollectionChange` flag to `ObliqueMap`. when
+  changing a collection, if the current viewpoint cannot be shown, the new collection
+  will not be set and the `failedToSetCollection` event will be called with the
+  failing collection.
+
 ### 5.3.2
 
 - fixed a Bug where legacy Oblique Datasets could not be read

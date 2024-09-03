@@ -317,6 +317,10 @@ class MapCollection extends Collection<VcsMap> {
         map,
         error: error as Error,
       });
+      if (!map.fallbackMap && map.fallbackToCurrentMap && this._activeMap) {
+        this.fallbackMapActivated.raiseEvent(map);
+        return Promise.resolve();
+      }
       if (fallbackMap) {
         this.fallbackMapActivated.raiseEvent(map);
         return this.setActiveMap(fallbackMap.name);
@@ -340,6 +344,10 @@ class MapCollection extends Collection<VcsMap> {
         if (fallbackMap) {
           this.fallbackMapActivated.raiseEvent(map);
           return this.setActiveMap(fallbackMap.name);
+        }
+        if (map.fallbackToCurrentMap && this._activeMap) {
+          this.fallbackMapActivated.raiseEvent(map);
+          return Promise.resolve();
         }
       }
       this._cachedViewpoint = null;
