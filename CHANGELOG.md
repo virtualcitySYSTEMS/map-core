@@ -38,6 +38,8 @@
   - removed helpers: `ensureFeatureAbsolute` & `clampFeature`.
   - vertices may have 2D coordinate layouts.
   - added a helper to handle mixed 2D & 3D vertices: `getCoordinatesAndLayoutFromVertices`.
+  - it is now possible to rotate & scale points rendered as models or primitives using handlers.
+  - snapping to orthogonal or parallels of the current geometry being edited is now possible.
   
 ### 6.0.0-rc.4
 

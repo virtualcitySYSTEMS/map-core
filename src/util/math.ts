@@ -40,8 +40,8 @@ export function coordinateAtDistance(
 
 /**
  * returns the initial bearing in degrees (0-360) between two coordinates
- * @param  coords1 [lon, lat] in degrees
- * @param  coords2 [lon, lat] in degrees
+ * @param  coords1 - [lon, lat] in degrees
+ * @param  coords2 - [lon, lat] in degrees
  * @returns ;
  */
 export function initialBearingBetweenCoords(
@@ -153,14 +153,12 @@ export function cartesianToMercator(cartesian: Cartesian3): Coordinate {
 }
 
 export function getMidPoint(p1: Coordinate, p2: Coordinate): Coordinate {
-  if (p1.length < 3 && p2.length < 3) {
-    return [p1[0] + (p2[0] - p1[0]) / 2, p1[1] + (p2[1] - p1[1]) / 2, 0];
+  const stride = p1.length;
+  const output = new Array<number>(stride);
+  for (let i = 0; i < stride; i++) {
+    output[i] = p1[i] + (p2[i] - p1[i]) / 2;
   }
-  return [
-    p1[0] + (p2[0] - p1[0]) / 2,
-    p1[1] + (p2[1] - p1[1]) / 2,
-    p1[2] + (p2[2] - p1[2]) / 2,
-  ];
+  return output;
 }
 
 /**
@@ -197,4 +195,26 @@ export function getCartesianPitch(p1: Coordinate, p2: Coordinate): number {
   }
 
   return pitch;
+}
+
+function perpDot(a: number[], b: number[]): number {
+  return a[0] * b[1] - a[1] * b[0];
+}
+
+// loosely copied from http://www.sunshine2k.de/coding/javascript/lineintersection2d/LineIntersect2D.html
+export function cartesian2Intersection(
+  lineA: [Coordinate, Coordinate],
+  lineB: [Coordinate, Coordinate],
+): Coordinate | undefined {
+  const A = [lineA[1][0] - lineA[0][0], lineA[1][1] - lineA[0][1]];
+  const B = [lineB[1][0] - lineB[0][0], lineB[1][1] - lineB[0][1]];
+
+  if (CesiumMath.equalsEpsilon(perpDot(A, B), 0, CesiumMath.EPSILON8)) {
+    return undefined;
+  }
+
+  const U = [lineB[0][0] - lineA[0][0], lineB[0][1] - lineA[0][1]];
+  const s = perpDot(B, U) / perpDot(B, A);
+
+  return [lineA[0][0] + s * A[0], lineA[0][1] + s * A[1]];
 }

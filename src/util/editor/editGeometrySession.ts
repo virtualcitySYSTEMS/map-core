@@ -28,7 +28,7 @@ import {
   geometryChangeKeys,
   getCoordinatesAndLayoutFromVertices,
   getOlcsPropsFromFeature,
-  vectorPropertyChangeKeys,
+  syncScratchLayerVectorProperties,
 } from './editorHelpers.js';
 import InsertVertexInteraction from './interactions/insertVertexInteraction.js';
 import EditGeometryMouseOverInteraction from './interactions/editGeometryMouseOverInteraction.js';
@@ -41,8 +41,9 @@ import type VcsApp from '../../vcsApp.js';
 import type {
   // eslint-disable-next-line import/no-named-default
   default as VectorProperties,
-  PropertyChangedKey,
 } from '../../layer/vectorProperties.js';
+import TranslationSnapping from './interactions/translationSnapping.js';
+import { vertexIndex } from './editorSymbols.js';
 
 export type EditGeometrySession = EditorSession<SessionType.EDIT_GEOMETRY> & {
   setFeature(feature?: Feature): void;
@@ -53,13 +54,6 @@ type EditGeometryInteraction = {
   interactionChain: InteractionChain;
   destroy(): void;
 };
-
-function assignVectorProperty<
-  K extends PropertyChangedKey,
-  V extends VectorProperties[K],
->(props: VectorProperties, key: K, value: V): void {
-  props[key] = value;
-}
 
 type EditGeometrySessionOptions = {
   denyInsertion?: boolean;
@@ -83,7 +77,7 @@ function createEditLineStringGeometryInteraction(
   const olcsProps = getOlcsPropsFromFeature(feature);
   const vertices = geometry
     .getCoordinates()
-    .map((c) => createVertex(c, olcsProps));
+    .map((c, i) => createVertex(c, olcsProps, i));
   scratchLayer.addFeatures(vertices);
   const resetGeometry = (): void => {
     const { coordinates, layout } =
@@ -93,7 +87,10 @@ function createEditLineStringGeometryInteraction(
   const translateVertex = new TranslateVertexInteraction(feature);
   translateVertex.vertexChanged.addEventListener(resetGeometry);
 
-  const interactions: AbstractInteraction[] = [translateVertex];
+  const interactions: AbstractInteraction[] = [
+    new TranslationSnapping(scratchLayer, geometry),
+    translateVertex,
+  ];
 
   if (!options.denyInsertion) {
     const insertVertex = new InsertVertexInteraction(
@@ -104,6 +101,9 @@ function createEditLineStringGeometryInteraction(
     insertVertex.vertexInserted.addEventListener(({ vertex, index }) => {
       scratchLayer.addFeatures([vertex]);
       vertices.splice(index, 0, vertex);
+      vertices.forEach((v, i) => {
+        v[vertexIndex] = i;
+      });
       resetGeometry();
     });
     interactions.push(insertVertex);
@@ -144,7 +144,7 @@ function createEditCircleGeometryInteraction(
   const olcsProps = getOlcsPropsFromFeature(feature);
   const vertices = geometry
     .getCoordinates()
-    .map((c) => createVertex(c, olcsProps));
+    .map((c, i) => createVertex(c, olcsProps, i));
   scratchLayer.addFeatures(vertices);
 
   const translateVertex = new TranslateVertexInteraction(feature);
@@ -199,16 +199,16 @@ function createEditBBoxGeometryInteraction(
   const olcsProps = getOlcsPropsFromFeature(feature);
   const vertices = geometry
     .getCoordinates()[0]
-    .map((c) => createVertex(c, olcsProps));
+    .map((c, i) => createVertex(c, olcsProps, i));
 
   scratchLayer.addFeatures(vertices);
   let suspend = false;
   const translateVertex = new TranslateVertexInteraction(feature);
   translateVertex.vertexChanged.addEventListener((vertex) => {
-    const vertexIndex = vertices.indexOf(vertex);
-    const originIndex = modulo(vertexIndex + 2, 4);
-    const rightOfIndex = modulo(vertexIndex + 1, 4);
-    const leftOfIndex = modulo(vertexIndex - 1, 4);
+    const index = vertices.indexOf(vertex);
+    const originIndex = modulo(index + 2, 4);
+    const rightOfIndex = modulo(index + 1, 4);
+    const leftOfIndex = modulo(index - 1, 4);
 
     const originCoords = vertices[originIndex].getGeometry()!.getCoordinates();
     const vertexCoords = vertex.getGeometry()!.getCoordinates();
@@ -283,7 +283,7 @@ function createEditSimplePolygonInteraction(
 
   const vertices = linearRing
     .getCoordinates()
-    .map((c) => createVertex(c, olcsProps));
+    .map((c, i) => createVertex(c, olcsProps, i));
   scratchLayer.addFeatures(vertices);
   const resetGeometry = (): void => {
     const { coordinates, layout } =
@@ -295,7 +295,10 @@ function createEditSimplePolygonInteraction(
   const translateVertex = new TranslateVertexInteraction(feature);
   translateVertex.vertexChanged.addEventListener(resetGeometry);
 
-  const interactions: AbstractInteraction[] = [translateVertex];
+  const interactions: AbstractInteraction[] = [
+    new TranslationSnapping(scratchLayer, geometry),
+    translateVertex,
+  ];
 
   if (!options.denyInsertion) {
     const insertVertex = new InsertVertexInteraction(
@@ -306,6 +309,9 @@ function createEditSimplePolygonInteraction(
     insertVertex.vertexInserted.addEventListener(({ vertex, index }) => {
       scratchLayer.addFeatures([vertex]);
       vertices.splice(index, 0, vertex);
+      vertices.forEach((v, i) => {
+        v[vertexIndex] = i;
+      });
       resetGeometry();
     });
     interactions.push(insertVertex);
@@ -345,7 +351,7 @@ function createEditPointInteraction(
   const geometry = feature[obliqueGeometry] ?? (feature.getGeometry() as Point);
   const olcsProps = getOlcsPropsFromFeature(feature);
 
-  const vertex = createVertex(geometry.getCoordinates(), olcsProps);
+  const vertex = createVertex(geometry.getCoordinates(), olcsProps, 0);
   const featureIdArray = [feature.getId() as string];
   layer.featureVisibility.hideObjects(featureIdArray);
   vertex[createSync] = true;
@@ -426,29 +432,12 @@ function startEditGeometrySession(
     pickingBehavior.setForAltitudeMode(altitudeMode);
   };
   altitudeModeChanged();
-  vectorPropertyChangeKeys.forEach((key) => {
-    assignVectorProperty(
-      scratchLayer.vectorProperties,
-      key,
-      layer.vectorProperties[key],
-    );
-  });
 
-  const vectorPropertiesChangedListener =
-    layer.vectorProperties.propertyChanged.addEventListener((props) => {
-      vectorPropertyChangeKeys.forEach((key) => {
-        if (props.includes(key)) {
-          assignVectorProperty(
-            scratchLayer.vectorProperties,
-            key,
-            layer.vectorProperties[key],
-          );
-          if (key === 'altitudeMode') {
-            altitudeModeChanged();
-          }
-        }
-      });
-    });
+  const vectorPropertiesChangedListener = syncScratchLayerVectorProperties(
+    scratchLayer,
+    layer,
+    altitudeModeChanged,
+  );
 
   const destroyCurrentInteractionSet = (): void => {
     if (currentInteractionSet) {
@@ -552,6 +541,7 @@ function startEditGeometrySession(
 
   const stop = (): void => {
     app.layers.remove(scratchLayer);
+    scratchLayer.destroy();
     if (featureListener) {
       unByKey(featureListener);
     }

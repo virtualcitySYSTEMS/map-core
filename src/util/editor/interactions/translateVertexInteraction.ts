@@ -2,7 +2,10 @@ import Feature from 'ol/Feature.js';
 import AbstractInteraction, {
   EventAfterEventHandler,
 } from '../../../interaction/abstractInteraction.js';
-import { EventType } from '../../../interaction/interactionType.js';
+import {
+  EventType,
+  ModificationKeyType,
+} from '../../../interaction/interactionType.js';
 import { vertexSymbol } from '../editorSymbols.js';
 import VcsEvent from '../../../vcsEvent.js';
 import { Vertex } from '../editorHelpers.js';
@@ -20,7 +23,10 @@ class TranslateVertexInteraction extends AbstractInteraction {
   private _feature: Feature;
 
   constructor(feature: Feature) {
-    super(EventType.DRAGEVENTS);
+    super(
+      EventType.DRAGEVENTS,
+      ModificationKeyType.NONE | ModificationKeyType.CTRL,
+    );
     this._feature = feature;
     this.setActive();
   }

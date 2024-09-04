@@ -1,3 +1,4 @@
+import { expect } from 'chai';
 import { Math as CesiumMath } from '@vcmap-cesium/engine';
 import {
   getCartesianBearing,
@@ -5,6 +6,7 @@ import {
   getMidPoint,
   modulo,
 } from '../../../index.js';
+import { cartesian2Intersection } from '../../../src/util/math.js';
 
 describe('modulo', () => {
   it('should return the modulo of 5 % 2', () => {
@@ -57,7 +59,51 @@ describe('getMidPoint', () => {
     expect(getMidPoint([0, 0, 0], [1, 1, 1])).to.have.members([0.5, 0.5, 0.5]);
   });
 
-  it('should set the mid points Z value to 0 if using 2D coordinates', () => {
-    expect(getMidPoint([0, 0], [1, 1])).to.have.members([0.5, 0.5, 0]);
+  it('should not set the mid points Z value to 0 if using 2D coordinates', () => {
+    expect(getMidPoint([0, 0], [1, 1])).to.have.members([0.5, 0.5]);
+  });
+});
+
+describe('cartesian2Intersection', () => {
+  it('should return an intersection within both segments', () => {
+    const intersection = cartesian2Intersection(
+      [
+        [0, -1],
+        [0, 1],
+      ],
+      [
+        [-1, 0],
+        [1, 0],
+      ],
+    );
+    expect(intersection).to.have.ordered.members([0, 0]);
+  });
+
+  it('should return an intersection outside of the line segments', () => {
+    const intersection = cartesian2Intersection(
+      [
+        [0, -2],
+        [0, -1],
+      ],
+      [
+        [-2, 0],
+        [-1, 0],
+      ],
+    );
+    expect(intersection).to.have.ordered.members([0, 0]);
+  });
+
+  it('should return undefined, if segments are parallel', () => {
+    const intersection = cartesian2Intersection(
+      [
+        [0, -2],
+        [0, -1],
+      ],
+      [
+        [-2, 1],
+        [-2, 5],
+      ],
+    );
+    expect(intersection).to.be.undefined;
   });
 });

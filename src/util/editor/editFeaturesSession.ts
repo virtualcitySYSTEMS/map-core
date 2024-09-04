@@ -443,6 +443,7 @@ function startEditFeaturesSession(
     });
     allowPickingMap.clear();
     app.layers.remove(scratchLayer);
+    scratchLayer.destroy();
     modeChanged.destroy();
     removeRightClickStart();
     rightClickStart.destroy();

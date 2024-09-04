@@ -46,9 +46,10 @@ class EditGeometryMouseOverInteraction extends AbstractInteraction {
   constructor(denyRemoval?: boolean) {
     super(
       EventType.MOVE,
-      denyRemoval
+      (denyRemoval
         ? ModificationKeyType.NONE
-        : ModificationKeyType.NONE | ModificationKeyType.SHIFT,
+        : ModificationKeyType.NONE | ModificationKeyType.SHIFT) |
+        ModificationKeyType.CTRL,
     );
 
     this.setActive();

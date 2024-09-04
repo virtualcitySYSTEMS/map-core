@@ -1,6 +1,6 @@
 import { check, ofEnum } from '@vcsuite/check';
 import { Feature } from 'ol';
-import type { Geometry } from 'ol/geom.js';
+import type { Geometry, LineString, Polygon } from 'ol/geom.js';
 import { unByKey } from 'ol/Observable.js';
 import VcsEvent from '../../vcsEvent.js';
 import {
@@ -10,6 +10,7 @@ import {
   GeometryType,
   SessionType,
   setupInteractionChain,
+  setupScratchLayer,
 } from './editorSessionHelpers.js';
 import CreateLineStringInteraction from './interactions/createLineStringInteraction.js';
 import CreateCircleInteraction from './interactions/createCircleInteraction.js';
@@ -23,6 +24,8 @@ import geometryIsValid from './validateGeoemetry.js';
 import ObliqueMap from '../../map/obliqueMap.js';
 import { cursorMap } from './interactions/editGeometryMouseOverInteraction.js';
 import { AltitudeModeType } from '../../layer/vectorProperties.js';
+import CreationSnapping from './interactions/creationSnapping.js';
+import { syncScratchLayerVectorProperties } from './editorHelpers.js';
 
 export type CreateFeatureSession<T extends GeometryType> =
   EditorSession<SessionType.CREATE> & {
@@ -108,6 +111,7 @@ function startCreateFeatureSession<T extends GeometryType>(
     removed: interactionRemoved,
     destroy: destroyInteractionChain,
   } = setupInteractionChain(app.maps.eventHandler);
+  const scratchLayer = setupScratchLayer(app.layers);
 
   const featureCreated = new VcsEvent<Feature<GeometryToType<T>>>();
   const creationFinished = new VcsEvent<Feature<GeometryToType<T>> | null>();
@@ -116,6 +120,7 @@ function startCreateFeatureSession<T extends GeometryType>(
 
   let currentInteraction: InteractionOfGeometryType<T> | null = null;
   let currentFeature: Feature<GeometryToType<T>> | null = null;
+  let snappingInteraction: CreationSnapping | null = null;
 
   /**
    * Ture if the currently active map is an ObliqueMap. set in setupActiveMap
@@ -134,13 +139,15 @@ function startCreateFeatureSession<T extends GeometryType>(
     pickingBehavior.setForAltitudeMode(altitudeModeInUse);
   };
 
-  const vectorPropertiesListener =
-    layer.vectorProperties.propertyChanged.addEventListener((properties) => {
-      if (properties.includes('altitudeMode') && !featureAltitudeMode) {
+  const vectorPropertiesListener = syncScratchLayerVectorProperties(
+    scratchLayer,
+    layer,
+    () => {
+      if (!featureAltitudeMode) {
         altitudeModeChanged();
       }
-    });
-
+    },
+  );
   altitudeModeChanged();
 
   let currentFeatureListener = (): void => {};
@@ -152,6 +159,11 @@ function startCreateFeatureSession<T extends GeometryType>(
       currentInteraction.destroy();
       currentInteraction = null;
     }
+    if (snappingInteraction) {
+      interactionChain.removeInteraction(snappingInteraction);
+      snappingInteraction.destroy();
+      snappingInteraction = null;
+    }
     interactionListeners.forEach((cb) => {
       cb();
     });
@@ -161,6 +173,12 @@ function startCreateFeatureSession<T extends GeometryType>(
   const createInteraction = (): void => {
     destroyCurrentInteraction();
     currentInteraction = createInteractionForGeometryType(geometryType);
+    if (
+      geometryType === GeometryType.Polygon ||
+      geometryType === GeometryType.LineString
+    ) {
+      snappingInteraction = new CreationSnapping(scratchLayer);
+    }
 
     interactionListeners = [
       currentInteraction.created.addEventListener((geometry) => {
@@ -187,6 +205,9 @@ function startCreateFeatureSession<T extends GeometryType>(
         };
         layer.addFeatures([currentFeature]);
         featureCreated.raiseEvent(currentFeature);
+        if (snappingInteraction) {
+          snappingInteraction.setGeometry(geometry as LineString | Polygon);
+        }
       }),
       currentInteraction.finished.addEventListener((geometry) => {
         if (isOblique) {
@@ -214,6 +235,9 @@ function startCreateFeatureSession<T extends GeometryType>(
         }
       }),
     ];
+    if (snappingInteraction) {
+      interactionChain.addInteraction(snappingInteraction);
+    }
     interactionChain.addInteraction(currentInteraction);
   };
   createInteraction();
@@ -252,6 +276,9 @@ function startCreateFeatureSession<T extends GeometryType>(
 
   const stop = (): void => {
     isStopped = true; // setting stopped true immediately, to prevent the recreation of the interaction chain on finished
+    app.layers.remove(scratchLayer);
+    scratchLayer.destroy();
+
     if (app.maps.target) {
       app.maps.target.style.cursor = cursorMap.auto;
     }

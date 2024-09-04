@@ -15,6 +15,7 @@ export function arrayCloseTo<T extends number[]>(
   expectedNumbers: T,
   epsilon = CesiumMath.EPSILON8,
 ): void {
+  expect(numbers.length).to.equal(expectedNumbers.length);
   numbers.forEach((c, index) => {
     expect(c).to.be.closeTo(
       expectedNumbers[index],

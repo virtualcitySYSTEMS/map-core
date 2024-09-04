@@ -3,7 +3,10 @@ import type { Coordinate } from 'ol/coordinate.js';
 import AbstractInteraction, {
   EventAfterEventHandler,
 } from '../../../interaction/abstractInteraction.js';
-import { EventType } from '../../../interaction/interactionType.js';
+import {
+  EventType,
+  ModificationKeyType,
+} from '../../../interaction/interactionType.js';
 import VcsEvent from '../../../vcsEvent.js';
 import {
   alreadyTransformedToImage,
@@ -11,6 +14,11 @@ import {
 } from '../../../layer/vectorSymbols.js';
 import ObliqueMap from '../../../map/obliqueMap.js';
 import { CreateInteraction } from '../createFeatureSession.js';
+
+/**
+ * Set on polygon geometries which have a validity placeholder active
+ */
+export const validityPlaceholder = Symbol('validityPlaceholder');
 
 class CreatePolygonInteraction
   extends AbstractInteraction
@@ -34,7 +42,10 @@ class CreatePolygonInteraction
   created = new VcsEvent<Polygon>();
 
   constructor() {
-    super(EventType.CLICKMOVE | EventType.DBLCLICK);
+    super(
+      EventType.CLICKMOVE | EventType.DBLCLICK,
+      ModificationKeyType.NONE | ModificationKeyType.CTRL,
+    );
     this.setActive();
   }
 
@@ -66,6 +77,7 @@ class CreatePolygonInteraction
         } else {
           this._geometry[alreadyTransformedToMercator] = true;
         }
+        this._geometry[validityPlaceholder] = true;
         this.created.raiseEvent(this._geometry);
         this._coordinates = [event.positionOrPixel.slice()];
         this._lastCoordinate = [...event.positionOrPixel];
@@ -76,6 +88,7 @@ class CreatePolygonInteraction
         this._lastCoordinate = [...(this._lastCoordinate as Coordinate)];
         this._coordinates.splice(2, 1, this._lastCoordinate);
         this._validityPlaceHolder = null;
+        this._geometry[validityPlaceholder] = false;
       } else {
         this._lastCoordinate = [...(this._lastCoordinate as Coordinate)];
         this._coordinates.push(this._lastCoordinate);

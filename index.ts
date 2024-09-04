@@ -531,7 +531,10 @@ export { default as CreateBBoxInteraction } from './src/util/editor/interactions
 export { default as CreateCircleInteraction } from './src/util/editor/interactions/createCircleInteraction.js';
 export { default as CreateLineStringInteraction } from './src/util/editor/interactions/createLineStringInteraction.js';
 export { default as CreatePointInteraction } from './src/util/editor/interactions/createPointInteraction.js';
-export { default as CreatePolygonInteraction } from './src/util/editor/interactions/createPolygonInteraction.js';
+export {
+  default as CreatePolygonInteraction,
+  validityPlaceholder,
+} from './src/util/editor/interactions/createPolygonInteraction.js';
 export { default as EditFeaturesMouseOverInteraction } from './src/util/editor/interactions/editFeaturesMouseOverInteraction.js';
 export {
   cursorMap,

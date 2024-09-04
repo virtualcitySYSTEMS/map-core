@@ -178,6 +178,7 @@ function getArcCoordinates(
   offset: number,
 ): Coordinate[] {
   const midPoint = getMidPoint(p1, p2);
+  midPoint[2] = midPoint[2] ?? 0;
   midPoint[2] += arcHeight / 2;
   const fullDistance = cartesian2DDistance(p1, p2);
 

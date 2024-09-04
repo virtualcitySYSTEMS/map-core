@@ -2,7 +2,9 @@ import { expect } from 'chai';
 import sinon, { SinonSpy } from 'sinon';
 import { Polygon } from 'ol/geom.js';
 import { Cartesian2 } from '@vcmap-cesium/engine';
-import CreatePolygonInteraction from '../../../../../src/util/editor/interactions/createPolygonInteraction.js';
+import CreatePolygonInteraction, {
+  validityPlaceholder,
+} from '../../../../../src/util/editor/interactions/createPolygonInteraction.js';
 import { alreadyTransformedToImage } from '../../../../../src/layer/vectorSymbols.js';
 import {
   EventType,
@@ -87,6 +89,10 @@ describe('CreatePolygonInteraction', () => {
       it('should have an XY layout', () => {
         expect(geometry.getLayout()).to.equal('XY');
       });
+
+      it('should have the validity placeholder symbol set', () => {
+        expect(geometry).to.have.property(validityPlaceholder, true);
+      });
     });
 
     describe('if the current map is an cesium map', () => {
@@ -128,6 +134,10 @@ describe('CreatePolygonInteraction', () => {
       it('should have an XYZ layout', () => {
         expect(geometry.getLayout()).to.equal('XYZ');
       });
+
+      it('should have the validity placeholder symbol set', () => {
+        expect(geometry).to.have.property(validityPlaceholder, true);
+      });
     });
 
     describe('if the current map is oblique', () => {
@@ -168,6 +178,10 @@ describe('CreatePolygonInteraction', () => {
 
       it('should have an XY layout', () => {
         expect(geometry.getLayout()).to.equal('XY');
+      });
+
+      it('should have the validity placeholder symbol set', () => {
+        expect(geometry).to.have.property(validityPlaceholder, true);
       });
     });
   });
@@ -252,6 +266,10 @@ describe('CreatePolygonInteraction', () => {
             [1, 2, 3],
           ],
         ]);
+      });
+
+      it('should have the validity placeholder symbol set to false', () => {
+        expect(geometry).to.have.property(validityPlaceholder, false);
       });
     });
 
@@ -451,6 +469,10 @@ describe('CreatePolygonInteraction', () => {
             [1, 2],
           ],
         ]);
+      });
+
+      it('should have the validity placeholder symbol set to false', () => {
+        expect(geometry).to.have.property(validityPlaceholder, false);
       });
     });
 

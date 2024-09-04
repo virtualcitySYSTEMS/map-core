@@ -41,6 +41,7 @@ import {
   fvLastUpdated,
   globalHiderLastUpdated,
 } from '../layer/vectorHelpers.js';
+import { validityPlaceholder } from '../util/editor/interactions/createPolygonInteraction.js';
 
 declare module 'ol/geom.js' {
   interface Geometry {
@@ -82,6 +83,10 @@ declare module 'ol/geom.js' {
       layout?: import('ol/geom/Geometry.js').GeometryLayout,
     ): void;
     rotate(angle: number, anchor: import('ol/coordinate.js').Coordinate): void;
+  }
+
+  interface Polygon {
+    [validityPlaceholder]?: boolean;
   }
 }
 

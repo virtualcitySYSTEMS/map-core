@@ -3,7 +3,10 @@ import type { Coordinate } from 'ol/coordinate.js';
 import AbstractInteraction, {
   EventAfterEventHandler,
 } from '../../../interaction/abstractInteraction.js';
-import { EventType } from '../../../interaction/interactionType.js';
+import {
+  EventType,
+  ModificationKeyType,
+} from '../../../interaction/interactionType.js';
 import VcsEvent from '../../../vcsEvent.js';
 import {
   alreadyTransformedToImage,
@@ -31,7 +34,10 @@ class CreateLineStringInteraction
   created = new VcsEvent<LineString>();
 
   constructor() {
-    super(EventType.CLICKMOVE | EventType.DBLCLICK);
+    super(
+      EventType.CLICKMOVE | EventType.DBLCLICK,
+      ModificationKeyType.NONE | ModificationKeyType.CTRL,
+    );
     this.setActive();
   }
 

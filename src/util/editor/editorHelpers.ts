@@ -20,16 +20,19 @@ import {
 import { mercatorToCartesian } from '../math.js';
 import { getFlatCoordinatesFromGeometry } from '../geometryHelpers.js';
 import CesiumMap from '../../map/cesiumMap.js';
-import { vertexSymbol } from './editorSymbols.js';
+import { vertexIndex, vertexSymbol } from './editorSymbols.js';
 import {
   alreadyTransformedToImage,
   createSync,
   doNotTransform,
 } from '../../layer/vectorSymbols.js';
 import type VcsMap from '../../map/vcsMap.js';
-import { PropertyChangedKey } from '../../layer/vectorProperties.js';
+import VectorProperties, {
+  PropertyChangedKey,
+} from '../../layer/vectorProperties.js';
+import VectorLayer from '../../layer/vectorLayer.js';
 
-export type Vertex = Feature<Point>;
+export type Vertex = Feature<Point> & { [vertexIndex]: number };
 
 export type SelectableFeatureType = Feature | Cesium3DTileFeature;
 export interface SelectFeatureInteraction {
@@ -52,6 +55,42 @@ export const vectorPropertyChangeKeys: PropertyChangedKey[] = [
   'heightAboveGround',
 ];
 
+function assignVectorProperty<
+  K extends PropertyChangedKey,
+  V extends VectorProperties[K],
+>(props: VectorProperties, key: K, value: V): void {
+  props[key] = value;
+}
+
+export function syncScratchLayerVectorProperties(
+  scratchLayer: VectorLayer,
+  layer: VectorLayer,
+  altitudeModeChanged?: () => void,
+): () => void {
+  vectorPropertyChangeKeys.forEach((key) => {
+    assignVectorProperty(
+      scratchLayer.vectorProperties,
+      key,
+      layer.vectorProperties[key],
+    );
+  });
+
+  return layer.vectorProperties.propertyChanged.addEventListener((props) => {
+    vectorPropertyChangeKeys.forEach((key) => {
+      if (props.includes(key)) {
+        assignVectorProperty(
+          scratchLayer.vectorProperties,
+          key,
+          layer.vectorProperties[key],
+        );
+        if (key === 'altitudeMode') {
+          altitudeModeChanged?.();
+        }
+      }
+    });
+  });
+}
+
 export function getOlcsPropsFromFeature(
   feature: Feature,
 ): Record<string, number | string> {
@@ -69,14 +108,16 @@ export function getOlcsPropsFromFeature(
 export function createVertex(
   coordinate: Coordinate,
   olcsProps: Record<string, number | string>,
+  index: number,
 ): Vertex {
   const geometry = new Point(coordinate);
   geometry[alreadyTransformedToImage] = true;
   const vertex = new Feature({
     geometry,
     ...olcsProps,
-  });
+  }) as Vertex;
   vertex[vertexSymbol] = true;
+  vertex[vertexIndex] = index;
   vertex[doNotTransform] = true;
   vertex[createSync] = true;
   return vertex;
@@ -152,6 +193,7 @@ export function getClosestPointOn2DLine(
     lambda,
     scratchCartesian21,
   );
+
   return [
     scratchCartesian21.x + start[0],
     scratchCartesian21.y + start[1],

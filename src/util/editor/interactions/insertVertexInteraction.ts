@@ -91,6 +91,7 @@ class InsertVertexInteraction extends AbstractInteraction {
           vertex: createVertex(
             closestCoord,
             getOlcsPropsFromFeature(this._feature),
+            -1,
           ),
           index,
         });
