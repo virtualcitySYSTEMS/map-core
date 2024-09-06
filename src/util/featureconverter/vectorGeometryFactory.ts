@@ -180,7 +180,7 @@ export function getMaterialAppearance(
     ctx.fillRect(0, 0, 300, 300);
     options.material = Material.fromType('Wallpaper', {
       image: canvas,
-      anchor: SceneTransforms.wgs84ToDrawingBufferCoordinates(
+      anchor: SceneTransforms.worldToDrawingBufferCoordinates(
         scene,
         Cartesian3.fromDegreesArray(
           getBottomLeft(feature.getGeometry()!.getExtent()),
