@@ -20,7 +20,7 @@ import {
 import { mercatorToCartesian } from '../math.js';
 import { getFlatCoordinatesFromGeometry } from '../geometryHelpers.js';
 import CesiumMap from '../../map/cesiumMap.js';
-import { vertexIndex, vertexSymbol } from './editorSymbols.js';
+import { vertexIndexSymbol, vertexSymbol } from './editorSymbols.js';
 import {
   alreadyTransformedToImage,
   createSync,
@@ -32,7 +32,7 @@ import VectorProperties, {
 } from '../../layer/vectorProperties.js';
 import VectorLayer from '../../layer/vectorLayer.js';
 
-export type Vertex = Feature<Point> & { [vertexIndex]: number };
+export type Vertex = Feature<Point> & { [vertexIndexSymbol]: number };
 
 export type SelectableFeatureType = Feature | Cesium3DTileFeature;
 export interface SelectFeatureInteraction {
@@ -117,7 +117,7 @@ export function createVertex(
     ...olcsProps,
   }) as Vertex;
   vertex[vertexSymbol] = true;
-  vertex[vertexIndex] = index;
+  vertex[vertexIndexSymbol] = index;
   vertex[doNotTransform] = true;
   vertex[createSync] = true;
   return vertex;

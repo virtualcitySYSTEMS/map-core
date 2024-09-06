@@ -26,6 +26,8 @@ import { cursorMap } from './interactions/editGeometryMouseOverInteraction.js';
 import { AltitudeModeType } from '../../layer/vectorProperties.js';
 import CreationSnapping from './interactions/creationSnapping.js';
 import { syncScratchLayerVectorProperties } from './editorHelpers.js';
+import LayerSnapping from './interactions/layerSnapping.js';
+import { SnapType, snapTypes } from './snappingHelpers.js';
 
 export type CreateFeatureSession<T extends GeometryType> =
   EditorSession<SessionType.CREATE> & {
@@ -33,6 +35,7 @@ export type CreateFeatureSession<T extends GeometryType> =
     featureAltitudeMode: AltitudeModeType | undefined;
     featureCreated: VcsEvent<Feature<GeometryToType<T>>>;
     creationFinished: VcsEvent<Feature<GeometryToType<T>> | null>;
+    snapToLayers: VectorLayer[];
     finish(): void;
   };
 
@@ -94,6 +97,8 @@ export interface CreateInteraction<T extends Geometry> {
  * @param  layer
  * @param  geometryType
  * @param initialAltitudeMode - whether to use the layers altitude mode or set this on the feature
+ * @param [initialSnapToLayers=[layer]] - the layers to initially snap to. defaults to the provided layer
+ * @param [snapTo] - what to snap to, by default all snaps are active
  * @group Editor
  */
 function startCreateFeatureSession<T extends GeometryType>(
@@ -101,6 +106,8 @@ function startCreateFeatureSession<T extends GeometryType>(
   layer: VectorLayer,
   geometryType: T,
   initialAltitudeMode?: AltitudeModeType,
+  initialSnapToLayers: VectorLayer[] = [layer],
+  snapTo: SnapType[] = [...snapTypes],
 ): CreateFeatureSession<T> {
   check(app, VcsApp);
   check(layer, VectorLayer);
@@ -121,6 +128,8 @@ function startCreateFeatureSession<T extends GeometryType>(
   let currentInteraction: InteractionOfGeometryType<T> | null = null;
   let currentFeature: Feature<GeometryToType<T>> | null = null;
   let snappingInteraction: CreationSnapping | null = null;
+  let layerSnappingInteraction: LayerSnapping | null = null;
+  let snapToLayers: VectorLayer[] = initialSnapToLayers?.slice() ?? [];
 
   /**
    * Ture if the currently active map is an ObliqueMap. set in setupActiveMap
@@ -136,6 +145,7 @@ function startCreateFeatureSession<T extends GeometryType>(
     const altitudeModeInUse =
       layer.vectorProperties.getAltitudeMode(altitudeModeFeature);
 
+    scratchLayer.vectorProperties.altitudeMode = altitudeModeInUse;
     pickingBehavior.setForAltitudeMode(altitudeModeInUse);
   };
 
@@ -164,6 +174,11 @@ function startCreateFeatureSession<T extends GeometryType>(
       snappingInteraction.destroy();
       snappingInteraction = null;
     }
+    if (layerSnappingInteraction) {
+      interactionChain.removeInteraction(layerSnappingInteraction);
+      layerSnappingInteraction.destroy();
+      layerSnappingInteraction = null;
+    }
     interactionListeners.forEach((cb) => {
       cb();
     });
@@ -173,11 +188,17 @@ function startCreateFeatureSession<T extends GeometryType>(
   const createInteraction = (): void => {
     destroyCurrentInteraction();
     currentInteraction = createInteractionForGeometryType(geometryType);
+    layerSnappingInteraction = new LayerSnapping(
+      snapToLayers,
+      scratchLayer,
+      (f) => currentFeature !== f,
+      snapTo,
+    );
     if (
       geometryType === GeometryType.Polygon ||
       geometryType === GeometryType.LineString
     ) {
-      snappingInteraction = new CreationSnapping(scratchLayer);
+      snappingInteraction = new CreationSnapping(scratchLayer, snapTo);
     }
 
     interactionListeners = [
@@ -235,6 +256,7 @@ function startCreateFeatureSession<T extends GeometryType>(
         }
       }),
     ];
+    interactionChain.addInteraction(layerSnappingInteraction);
     if (snappingInteraction) {
       interactionChain.addInteraction(snappingInteraction);
     }
@@ -317,6 +339,15 @@ function startCreateFeatureSession<T extends GeometryType>(
         } else {
           altitudeModeChanged();
         }
+      }
+    },
+    get snapToLayers(): VectorLayer[] {
+      return snapToLayers.slice();
+    },
+    set snapToLayers(layers: VectorLayer[]) {
+      snapToLayers = layers.slice();
+      if (layerSnappingInteraction) {
+        layerSnappingInteraction.layers = snapToLayers;
       }
     },
     featureCreated,

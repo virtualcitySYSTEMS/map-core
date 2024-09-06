@@ -13,7 +13,10 @@ import { transform } from 'ol/proj.js';
 import { Cartesian2, type CesiumTerrainProvider } from '@vcmap-cesium/engine';
 import { ObliqueViewDirection } from './obliqueViewDirection.js';
 import { getHeightFromTerrainProvider } from '../layer/terrainHelpers.js';
-import { cartesian2DDistance } from '../util/math.js';
+import {
+  cartesian2DDistance,
+  cartesian2DDistanceSquared,
+} from '../util/math.js';
 import Projection, {
   mercatorProjection,
   wgs84Projection,
@@ -52,11 +55,14 @@ export function sortRealWordEdgeCoordinates(
 
   let sorted = extentPoints.map((extentPoint) => {
     let closest = 0;
-    let distance = Infinity;
+    let distanceSquared = Infinity;
     cornerPoints.forEach((cornerPoint, cornerIndex) => {
-      const currentDistance = cartesian2DDistance(extentPoint, cornerPoint);
-      if (currentDistance < distance) {
-        distance = currentDistance;
+      const currentDistanceSquared = cartesian2DDistanceSquared(
+        extentPoint,
+        cornerPoint,
+      );
+      if (currentDistanceSquared < distanceSquared) {
+        distanceSquared = currentDistanceSquared;
         closest = cornerIndex;
       }
     });

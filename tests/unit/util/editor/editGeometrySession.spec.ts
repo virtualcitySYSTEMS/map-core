@@ -29,9 +29,11 @@ describe('EditGeometrySession', () => {
 
   before(async () => {
     defaultMap = new OpenlayersMap({});
+    sinon.stub(defaultMap, 'getCurrentResolution').returns(0.05);
     app = new VcsApp();
     app.maps.add(defaultMap);
     obliqueMap = new ObliqueMap({});
+    sinon.stub(obliqueMap, 'getCurrentResolution').returns(0.05);
     app.maps.add(obliqueMap);
     await app.maps.setActiveMap(defaultMap.name);
     layer = new VectorLayer({});
@@ -51,7 +53,9 @@ describe('EditGeometrySession', () => {
     let session: EditGeometrySession;
 
     beforeEach(() => {
-      session = startEditGeometrySession(app, layer);
+      session = startEditGeometrySession(app, layer, undefined, {
+        initialSnapToLayers: [],
+      });
     });
 
     afterEach(() => {
@@ -970,6 +974,7 @@ describe('EditGeometrySession', () => {
       });
     });
   });
+
   describe('starting a session with disabled insertion and removal of vertices', () => {
     let session: EditGeometrySession;
     let feature: Feature<LineString>;

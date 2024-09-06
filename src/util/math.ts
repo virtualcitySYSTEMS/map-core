@@ -77,6 +77,15 @@ export function getCartesianBearing(p1: Coordinate, p2: Coordinate): number {
   return theta;
 }
 
+export function cartesian2DDistanceSquared(
+  point0: Coordinate,
+  point1: Coordinate,
+): number {
+  const distX = point0[0] - point1[0];
+  const distY = point0[1] - point1[1];
+  return distX ** 2 + distY ** 2;
+}
+
 /**
  * returns distance between two coordinates
  * @param  point0
@@ -86,9 +95,7 @@ export function cartesian2DDistance(
   point0: Coordinate,
   point1: Coordinate,
 ): number {
-  const distX = point0[0] - point1[0];
-  const distY = point0[1] - point1[1];
-  return Math.sqrt(distX ** 2 + distY ** 2);
+  return Math.sqrt(cartesian2DDistanceSquared(point0, point1));
 }
 
 export function cartesian3DDistance(p1: Coordinate, p2: Coordinate): number {

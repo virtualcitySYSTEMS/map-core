@@ -2,12 +2,12 @@ import { getLogger } from '@vcsuite/logger';
 import { unByKey } from 'ol/Observable.js';
 import type { Feature } from 'ol/index.js';
 import type {
-  LineString,
   Circle,
-  Polygon,
-  Point,
-  LinearRing,
   Geometry,
+  LinearRing,
+  LineString,
+  Point,
+  Polygon,
 } from 'ol/geom.js';
 import { EventsKey } from 'ol/events.js';
 import {
@@ -38,16 +38,18 @@ import geometryIsValid from './validateGeoemetry.js';
 import MapInteractionController from './interactions/mapInteractionController.js';
 import type VectorLayer from '../../layer/vectorLayer.js';
 import type VcsApp from '../../vcsApp.js';
-import type {
-  // eslint-disable-next-line import/no-named-default
-  default as VectorProperties,
-} from '../../layer/vectorProperties.js';
+// eslint-disable-next-line import/no-named-default
+import type { default as VectorProperties } from '../../layer/vectorProperties.js';
 import TranslationSnapping from './interactions/translationSnapping.js';
-import { vertexIndex } from './editorSymbols.js';
+import { vertexIndexSymbol } from './editorSymbols.js';
+import LayerSnapping from './interactions/layerSnapping.js';
+import { EventType } from '../../interaction/interactionType.js';
+import { SnapType, snapTypes } from './snappingHelpers.js';
 
 export type EditGeometrySession = EditorSession<SessionType.EDIT_GEOMETRY> & {
   setFeature(feature?: Feature): void;
   feature: Feature | null;
+  snapToLayers: VectorLayer[];
 };
 
 type EditGeometryInteraction = {
@@ -58,19 +60,16 @@ type EditGeometryInteraction = {
 type EditGeometrySessionOptions = {
   denyInsertion?: boolean;
   denyRemoval?: boolean;
+  initialSnapToLayers?: VectorLayer[];
+  snapTo?: SnapType[];
 };
 
-/**
- * Create the editing interaction for a feature with a line geometry
- * @param  feature
- * @param  scratchLayer
- * @group Editor
- */
 function createEditLineStringGeometryInteraction(
   feature: Feature<LineString>,
   scratchLayer: VectorLayer,
   vectorProperties: VectorProperties,
   options: EditGeometrySessionOptions,
+  snapTo: SnapType[],
 ): EditGeometryInteraction {
   const geometry =
     feature[obliqueGeometry] ?? (feature.getGeometry() as LineString);
@@ -88,7 +87,7 @@ function createEditLineStringGeometryInteraction(
   translateVertex.vertexChanged.addEventListener(resetGeometry);
 
   const interactions: AbstractInteraction[] = [
-    new TranslationSnapping(scratchLayer, geometry),
+    new TranslationSnapping(scratchLayer, geometry, snapTo),
     translateVertex,
   ];
 
@@ -102,7 +101,7 @@ function createEditLineStringGeometryInteraction(
       scratchLayer.addFeatures([vertex]);
       vertices.splice(index, 0, vertex);
       vertices.forEach((v, i) => {
-        v[vertexIndex] = i;
+        v[vertexIndexSymbol] = i;
       });
       resetGeometry();
     });
@@ -275,6 +274,7 @@ function createEditSimplePolygonInteraction(
   scratchLayer: VectorLayer,
   vectorProperties: VectorProperties,
   options: EditGeometrySessionOptions,
+  snapTo: SnapType[],
 ): EditGeometryInteraction {
   const geometry =
     feature[obliqueGeometry] ?? (feature.getGeometry() as Polygon);
@@ -296,7 +296,7 @@ function createEditSimplePolygonInteraction(
   translateVertex.vertexChanged.addEventListener(resetGeometry);
 
   const interactions: AbstractInteraction[] = [
-    new TranslationSnapping(scratchLayer, geometry),
+    new TranslationSnapping(scratchLayer, geometry, snapTo),
     translateVertex,
   ];
 
@@ -310,7 +310,7 @@ function createEditSimplePolygonInteraction(
       scratchLayer.addFeatures([vertex]);
       vertices.splice(index, 0, vertex);
       vertices.forEach((v, i) => {
-        v[vertexIndex] = i;
+        v[vertexIndexSymbol] = i;
       });
       resetGeometry();
     });
@@ -392,7 +392,7 @@ function createEditPointInteraction(
  * Creates the edit geometry session.
  * @param  app
  * @param  layer
- * @param  [interactionId] id for registering mutliple exclusive interaction. Needed to run a selection session at the same time as a edit features session.
+ * @param  [interactionId] id for registering multiple exclusive interaction. Needed to run a selection session at the same time as a edit features session.
  * @param  [editVertexOptions={}]
  */
 function startEditGeometrySession(
@@ -423,12 +423,19 @@ function startEditGeometrySession(
    * The feature that is set for the edit session.
    */
   let currentFeature: Feature | null = null;
+  let layerSnappingInteraction: LayerSnapping | null = null;
+  let snapToLayers: VectorLayer[] =
+    editVertexOptions?.initialSnapToLayers?.slice() ?? [layer];
+
+  const snapTo = editVertexOptions?.snapTo ?? [...snapTypes];
 
   const pickingBehavior = createPickingBehavior(app);
   const altitudeModeChanged = (): void => {
     const altitudeMode = currentFeature
       ? layer.vectorProperties.getAltitudeMode(currentFeature)
       : layer.vectorProperties.altitudeMode;
+
+    scratchLayer.vectorProperties.altitudeMode = altitudeMode;
     pickingBehavior.setForAltitudeMode(altitudeMode);
   };
   altitudeModeChanged();
@@ -446,6 +453,7 @@ function startEditGeometrySession(
       );
       currentInteractionSet.destroy();
       currentInteractionSet = null;
+      layerSnappingInteraction = null; // destroyed in current interaction set
     }
 
     if (currentFeature) {
@@ -495,6 +503,7 @@ function startEditGeometrySession(
             scratchLayer,
             layer.vectorProperties,
             editVertexOptions,
+            snapTo,
           );
         }
       } else if (geometryType === GeometryType.LineString) {
@@ -503,6 +512,7 @@ function startEditGeometrySession(
           scratchLayer,
           layer.vectorProperties,
           editVertexOptions,
+          snapTo,
         );
       } else if (geometryType === GeometryType.Point) {
         currentInteractionSet = createEditPointInteraction(
@@ -518,6 +528,17 @@ function startEditGeometrySession(
       }
 
       if (currentInteractionSet) {
+        layerSnappingInteraction = new LayerSnapping(
+          snapToLayers,
+          scratchLayer,
+          (f) => f !== feature,
+          snapTo,
+          EventType.DRAGEVENTS,
+        );
+        currentInteractionSet.interactionChain.addInteraction(
+          layerSnappingInteraction,
+          0,
+        );
         interactionChain.addInteraction(currentInteractionSet.interactionChain);
         altitudeModeChanged();
       } else {
@@ -566,6 +587,15 @@ function startEditGeometrySession(
     },
     get feature(): Feature | null {
       return currentFeature;
+    },
+    get snapToLayers(): VectorLayer[] {
+      return snapToLayers.slice();
+    },
+    set snapToLayers(layers: VectorLayer[]) {
+      snapToLayers = layers.slice();
+      if (layerSnappingInteraction) {
+        layerSnappingInteraction.layers = snapToLayers;
+      }
     },
   };
 }

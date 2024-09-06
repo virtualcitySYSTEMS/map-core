@@ -1,4 +1,3 @@
-
 ### 6.0.0-rc.5
 
 - Adds new helpers to change geometry layouts from XY to XYZ.
@@ -40,7 +39,9 @@
   - added a helper to handle mixed 2D & 3D vertices: `getCoordinatesAndLayoutFromVertices`.
   - it is now possible to rotate & scale points rendered as models or primitives using handlers.
   - snapping to orthogonal or parallels of the current geometry being edited is now possible.
-  
+  - snapping is now also possible to features within vector layers. by default, the editing layer is snapped to.
+  - renamed previously unused symbol `vertexIndex` to `vertexIndexSymbol`. the symbol is now correctly set on vertices.
+
 ### 6.0.0-rc.4
 
 - Updates openlayers to 10.0.0.

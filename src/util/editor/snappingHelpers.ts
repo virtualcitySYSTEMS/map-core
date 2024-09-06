@@ -1,28 +1,54 @@
 import { Coordinate } from 'ol/coordinate.js';
-import { Icon, Style } from 'ol/style.js';
+import { Fill, Icon, Stroke, Style } from 'ol/style.js';
 import { Feature } from 'ol';
-import { Point } from 'ol/geom.js';
+import { Geometry, Point } from 'ol/geom.js';
+import RegularShape from 'ol/style/RegularShape.js';
 import { Cartesian2, Matrix2, Math as CesiumMath } from '@vcmap-cesium/engine';
 import {
-  cartesian2DDistance,
+  cartesian2DDistanceSquared,
   cartesian2Intersection,
   getCartesianBearing,
   getMidPoint,
 } from '../math.js';
 import { getClosestPointOn2DLine } from './editorHelpers.js';
-import VcsMap from '../../map/vcsMap.js';
 import VectorLayer from '../../layer/vectorLayer.js';
 import {
   alreadyTransformedToImage,
   alreadyTransformedToMercator,
+  doNotTransform,
 } from '../../layer/vectorSymbols.js';
+import { blackColor } from '../../style/styleHelpers.js';
+import { PrimitiveOptionsType } from '../../layer/vectorProperties.js';
+import { isRelativeHeightReference } from '../featureconverter/vectorHeightInfo.js';
 
-export type SnapResult = {
-  toParallel?: number;
-  toOrthogonal?: number;
-  snapped?: Coordinate;
-  orthogonalIndex?: number;
-};
+export const snapTypes = ['orthogonal', 'parallel', 'vertex', 'edge'] as const;
+
+export type SnapType = (typeof snapTypes)[number];
+
+export type SnapResult<T extends SnapType = SnapType> = T extends 'orthogonal'
+  ? {
+      type: T;
+      snapped: Coordinate;
+      otherVertexIndex: number;
+    }
+  : T extends 'parallel'
+  ? {
+      type: T;
+      parallelIndex: number;
+      snapped: Coordinate;
+      otherVertexIndex: number;
+    }
+  : T extends 'vertex'
+  ? {
+      type: T;
+      snapped: Coordinate;
+    }
+  : T extends 'edge'
+  ? {
+      type: T;
+      snapped: Coordinate;
+    }
+  : never;
 
 let scratchCartesian21 = new Cartesian2();
 let scratchCartesian22 = new Cartesian2();
@@ -59,6 +85,26 @@ function getParallelStyle(): Style {
     });
   }
   return parallelStyle;
+}
+
+let vertexStyle: Style | undefined;
+function getVertexStyle(): Style {
+  if (!vertexStyle) {
+    vertexStyle = new Style({
+      image: new RegularShape({
+        radius: 6,
+        points: 4,
+        fill: new Fill({
+          color: [255, 255, 255, 0.4],
+        }),
+        stroke: new Stroke({
+          color: blackColor,
+          width: 1,
+        }),
+      }),
+    });
+  }
+  return vertexStyle;
 }
 
 const FIVE_DEGREES = CesiumMath.toRadians(5);
@@ -104,8 +150,8 @@ function findClosestOrthogonalOrLinear(
 ): Coordinate {
   const c1 = getClosestPointOn2DLine(start, end, point);
   const c2 = getClosestOrthogonal(start, end, point);
-  const d1 = cartesian2DDistance(c1, point);
-  const d2 = cartesian2DDistance(c2, point);
+  const d1 = cartesian2DDistanceSquared(c1, point);
+  const d2 = cartesian2DDistanceSquared(c2, point);
   if (d1 > d2) {
     return c2;
   }
@@ -135,17 +181,12 @@ function getClosestInDirection(
   return getClosestPointOn2DLine(origin, unityP1, point);
 }
 
-function snapToGeometry(
+function getOrthogonalSnapResult(
   coordinate: Coordinate,
   p1: Coordinate,
   p2: Coordinate,
-  geometryBearings: number[],
-  orthogonalIndex: number,
-): SnapResult {
-  let snapped;
-  let toOrthogonal: number | undefined;
-  let toParallel: number | undefined;
-
+  otherVertexIndex: number,
+): SnapResult<'orthogonal'> | undefined {
   const currentBearing = getCartesianBearing(p1, coordinate);
   const previousBearing = getCartesianBearing(p2, p1);
   const previousBearingDiff = Math.abs(previousBearing - currentBearing);
@@ -159,13 +200,29 @@ function snapToGeometry(
       previousBearingDiff < CesiumMath.THREE_PI_OVER_TWO + FIVE_DEGREES) || // 280 +/- 5
     previousBearingDiff > CesiumMath.TWO_PI - FIVE_DEGREES // 360 - 5
   ) {
-    snapped = findClosestOrthogonalOrLinear(p2, p1, coordinate);
-    toOrthogonal = orthogonalIndex;
-  } else {
-    toParallel = geometryBearings.findIndex((bearing) => {
-      if (bearing < 0) {
-        return false;
-      }
+    const snapped = findClosestOrthogonalOrLinear(p2, p1, coordinate);
+
+    return {
+      type: 'orthogonal',
+      snapped,
+      otherVertexIndex,
+    };
+  }
+
+  return undefined;
+}
+
+function getParallelSnapResult(
+  coordinate: Coordinate,
+  p1: Coordinate,
+  geometryBearings: number[],
+  otherVertexIndex: number,
+): SnapResult<'parallel'> | undefined {
+  const currentBearing = getCartesianBearing(p1, coordinate);
+  const bearingsLength = geometryBearings.length;
+  for (let parallelIndex = 0; parallelIndex < bearingsLength; parallelIndex++) {
+    const bearing = geometryBearings[parallelIndex];
+    if (bearing >= 0) {
       const bearingDiff = Math.abs(bearing - currentBearing);
       if (
         bearingDiff < FIVE_DEGREES || // 5
@@ -173,45 +230,146 @@ function snapToGeometry(
           bearingDiff < CesiumMath.PI + FIVE_DEGREES) || // 180 +/- 5
         bearingDiff > CesiumMath.TWO_PI - FIVE_DEGREES // 360 - 5
       ) {
-        snapped = getClosestInDirection(p1, coordinate, bearing);
-        return true;
+        const snapped = getClosestInDirection(p1, coordinate, bearing);
+        return {
+          type: 'parallel',
+          snapped,
+          otherVertexIndex,
+          parallelIndex,
+        };
       }
-      return false;
-    });
+    }
   }
 
-  return {
-    snapped,
-    toParallel,
-    toOrthogonal,
-    orthogonalIndex,
-  };
+  return undefined;
 }
 
-export function getSnapResultForSegment(
+/**
+ * Try to create an orthogonal for p2 - p1 - coordinate. otherwise snaps p1 - coordinate to any of the given geometry bearings
+ * @param coordinate
+ * @param p1
+ * @param p2
+ * @param geometryBearings
+ * @param otherVertexIndex
+ * @param maxDistanceSquared
+ * @param snapOrthogonal
+ * @param snapParallel
+ */
+export function getAngleSnapResult(
   coordinate: Coordinate,
   p1: Coordinate,
   p2: Coordinate,
   geometryBearings: number[],
-  orthogonalIndex: number,
-  map: VcsMap,
-): SnapResult | undefined {
-  const snapResult = snapToGeometry(
-    coordinate,
-    p1,
-    p2,
-    geometryBearings,
-    orthogonalIndex,
-  );
+  otherVertexIndex: number,
+  maxDistanceSquared: number,
+  snapOrthogonal = true,
+  snapParallel = true,
+): SnapResult<'orthogonal' | 'parallel'> | undefined {
+  let snapResult: SnapResult<'orthogonal' | 'parallel'> | undefined =
+    snapOrthogonal
+      ? getOrthogonalSnapResult(coordinate, p1, p2, otherVertexIndex)
+      : undefined;
+
+  if (!snapResult && snapParallel) {
+    snapResult = getParallelSnapResult(
+      coordinate,
+      p1,
+      geometryBearings,
+      otherVertexIndex,
+    );
+  }
 
   if (
-    snapResult.snapped &&
-    cartesian2DDistance(snapResult.snapped, coordinate) <=
-      map.getCurrentResolution(coordinate) * 12
+    snapResult?.snapped &&
+    cartesian2DDistanceSquared(snapResult.snapped, coordinate) <=
+      maxDistanceSquared
   ) {
     return snapResult;
   }
   return undefined;
+}
+
+/**
+ * Snaps to the vertices of the provided geometries, otherwise tries to snap to the edges.
+ * @param geometries
+ * @param coordinate
+ * @param maxDistanceSquared
+ * @param snapToVertex
+ * @param snapToEdge
+ */
+export function getGeometrySnapResult(
+  geometries: Geometry[],
+  coordinate: Coordinate,
+  maxDistanceSquared: number,
+  snapToVertex = true,
+  snapToEdge = true,
+): SnapResult<'edge' | 'vertex'> | undefined {
+  let distanceSquared = Infinity;
+  let result: SnapResult<'vertex' | 'edge'> | undefined;
+
+  if (snapToVertex) {
+    geometries.forEach((geometry) => {
+      const coordinates = geometry.getFlatCoordinates();
+      const stride = geometry.getStride();
+
+      const { length } = coordinates;
+      for (let i = 0; i < length; i += stride) {
+        const vertex = [coordinates[i], coordinates[i + 1]];
+        if (stride > 2) {
+          vertex[2] = coordinates[i + 2];
+        }
+        const currentDistanceSquared = cartesian2DDistanceSquared(
+          vertex,
+          coordinate,
+        );
+
+        if (
+          currentDistanceSquared < distanceSquared &&
+          currentDistanceSquared <= maxDistanceSquared
+        ) {
+          distanceSquared = currentDistanceSquared;
+          if (!result) {
+            result = {
+              type: 'vertex',
+              snapped: vertex,
+            };
+          } else {
+            result.type = 'vertex';
+            result.snapped = vertex;
+          }
+        }
+      }
+    });
+  }
+
+  if (!result && snapToEdge) {
+    distanceSquared = Infinity;
+    geometries.forEach((geometry) => {
+      const closestPoint = geometry.getClosestPoint(coordinate);
+      const currentDistanceSquared = cartesian2DDistanceSquared(
+        closestPoint,
+        coordinate,
+      );
+
+      if (
+        currentDistanceSquared < distanceSquared &&
+        currentDistanceSquared <= maxDistanceSquared
+      ) {
+        distanceSquared = currentDistanceSquared;
+        if (!result) {
+          result = {
+            type: 'edge',
+            snapped: closestPoint,
+          };
+        } else {
+          result.type = 'edge';
+          result.snapped = closestPoint;
+        }
+      }
+    });
+  }
+
+  return result;
 }
 
 export function setSnappingFeatures(
@@ -222,13 +380,13 @@ export function setSnappingFeatures(
   const features = results
     .map((result) => {
       let feature: Feature | undefined;
-      if (result?.toOrthogonal != null && result.toOrthogonal > -1) {
+      if (result?.type === 'orthogonal' && result.otherVertexIndex > -1) {
         feature = new Feature({
-          geometry: new Point(coordinates[result.toOrthogonal]),
+          geometry: new Point(coordinates[result.otherVertexIndex]),
         });
         feature.setStyle(getOrthogonalStyle);
-      } else if (result?.toParallel != null && result.toParallel > -1) {
-        const parallelIndex = result.toParallel;
+      } else if (result?.type === 'parallel' && result.parallelIndex > -1) {
+        const { parallelIndex } = result;
         const other =
           parallelIndex !== coordinates.length - 1 ? parallelIndex + 1 : 0;
         const midPoint = getMidPoint(
@@ -239,17 +397,51 @@ export function setSnappingFeatures(
           geometry: new Point(midPoint),
         });
         feature.setStyle(getParallelStyle());
+      } else if (result?.type === 'vertex') {
+        feature = new Feature({
+          geometry: new Point(result.snapped),
+          olcs_allowPicking: false,
+          olcs_primitiveOptions: {
+            type: PrimitiveOptionsType.BOX,
+            geometryOptions: {
+              minimum: [-3, -3, -3],
+              maximum: [3, 3, 3],
+            },
+            depthFailColor: 'rgba(150,147,147,0.47)',
+          },
+          olcs_modelAutoScale: true,
+        });
+        feature.setStyle(getVertexStyle());
+      } else if (result?.type === 'edge') {
+        feature = new Feature({
+          geometry: new Point(result.snapped),
+          olcs_allowPicking: false,
+          olcs_primitiveOptions: {
+            type: PrimitiveOptionsType.SPHERE,
+            geometryOptions: {
+              radius: 3,
+            },
+            depthFailColor: 'rgba(150,147,147,0.47)',
+          },
+          olcs_modelAutoScale: true,
+        });
       }
 
       if (feature) {
         const geometry = feature.getGeometry()!;
         geometry[alreadyTransformedToImage] = true;
         geometry[alreadyTransformedToMercator] = true;
+        feature[doNotTransform] = true;
       }
       return feature;
     })
     .filter((f): f is Feature => !!f);
 
+  if (isRelativeHeightReference(layer.vectorProperties.altitudeMode)) {
+    features.forEach((feature) => {
+      feature.set('olcs_altitudeMode', 'absolute');
+    });
+  }
   layer.addFeatures(features);
   return () => {
     layer.removeFeaturesById(features.map((f) => f.getId()!));
@@ -259,19 +451,28 @@ export function setSnappingFeatures(
 export function getSnappedCoordinateForResults(
   results: (SnapResult | undefined)[],
   coordinates: Coordinate[],
+  maxDistanceSquared: number,
 ): Coordinate | undefined {
   const snapped0 = results[0]?.snapped;
   const snapped1 = results[1]?.snapped;
 
-  if (snapped0 && snapped1) {
-    const other0 = coordinates[results[0]!.orthogonalIndex!];
-    const other1 = coordinates[results[1]!.orthogonalIndex!];
+  if (
+    snapped0 &&
+    snapped1 &&
+    (results[0]!.type === 'orthogonal' || results[0]!.type === 'parallel') &&
+    (results[1]!.type === 'orthogonal' || results[1]!.type === 'parallel')
+  ) {
+    const other0 = coordinates[results[0]!.otherVertexIndex];
+    const other1 = coordinates[results[1]!.otherVertexIndex];
     if (other0 && other1) {
       const intersection = cartesian2Intersection(
         [snapped0, other0],
         [snapped1, other1],
       );
-      if (intersection) {
+      if (
+        intersection &&
+        cartesian2DDistanceSquared(intersection, snapped0) <= maxDistanceSquared
+      ) {
         return [intersection[0], intersection[1], snapped0[2]];
       }
     }

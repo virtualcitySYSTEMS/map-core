@@ -976,10 +976,11 @@ class VectorProperties {
 
   private _getBaseOptions(feature: Feature): VectorPropertiesBaseOptions {
     return {
+      // 0 is not a valid scale value and will crash cesium
       scale: [
-        this.getModelScaleX(feature),
-        this.getModelScaleY(feature),
-        this.getModelScaleZ(feature),
+        this.getModelScaleX(feature) || 1,
+        this.getModelScaleY(feature) || 1,
+        this.getModelScaleZ(feature) || 1,
       ],
       heading: this.getModelHeading(feature),
       pitch: this.getModelPitch(feature),

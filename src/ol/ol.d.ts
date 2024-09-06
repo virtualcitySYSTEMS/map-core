@@ -51,6 +51,7 @@ declare module 'ol/geom.js' {
       layout?: import('ol/geom/Geometry.js').GeometryLayout,
     ): void;
     getFlatCoordinates(): number[];
+    getStride(): number;
     getLayout(): import('ol/geom/Geometry.js').GeometryLayout;
     [alreadyTransformedToMercator]?: boolean;
     [actuallyIsCircle]?: boolean;

@@ -7,7 +7,7 @@ import {
   EventType,
   ModificationKeyType,
 } from '../../../interaction/interactionType.js';
-import { cartesian2DDistance } from '../../math.js';
+import { cartesian2DDistanceSquared } from '../../math.js';
 import {
   createVertex,
   getOlcsPropsFromFeature,
@@ -63,7 +63,10 @@ class InsertVertexInteraction extends AbstractInteraction {
       if (this._isLinearRing) {
         lineCoords.push(lineCoords[0]);
       }
-      const distance = cartesian2DDistance(closestCoord, coordinate); // todo respect altitude mode here. e.g. distance3D
+      const distanceSquared = cartesian2DDistanceSquared(
+        closestCoord,
+        coordinate,
+      ); // todo respect altitude mode here. e.g. distance3D
       const is2DLine =
         is2DLayout(this._geometry.getLayout()) ||
         isClampedHeightReference(
@@ -71,7 +74,10 @@ class InsertVertexInteraction extends AbstractInteraction {
         );
 
       // XXX how to handle relative to ground height references?
-      if (distance < event.map.getCurrentResolution(coordinate) * 5) {
+      if (
+        distanceSquared <
+        (event.map.getCurrentResolution(coordinate) * 5) ** 2
+      ) {
         const length = lineCoords.length - 1;
         let i = 0;
         for (i; i < length; i++) {

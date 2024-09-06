@@ -16,6 +16,7 @@ import { getOpenlayersMap } from '../../../helpers/openlayersHelpers.js';
 import { arrayCloseTo } from '../../../helpers/helpers.js';
 import { getCesiumMap } from '../../../helpers/cesiumHelpers.js';
 import TranslationSnapping from '../../../../../src/util/editor/interactions/translationSnapping.js';
+import { snapTypes } from '../../../../../src/util/editor/snappingHelpers.js';
 
 describe('translation snapping', () => {
   let map: OpenlayersMap;
@@ -31,7 +32,7 @@ describe('translation snapping', () => {
   before(async () => {
     map = await getOpenlayersMap({});
     scratchLayer = new VectorLayer({});
-    sinon.stub(map, 'getCurrentResolution').returns(1);
+    sinon.stub(map, 'getCurrentResolution').returns(0.05);
     eventBase = {
       key: ModificationKeyType.NONE,
       pointer: PointerKeyType.ALL,
@@ -186,7 +187,7 @@ describe('translation snapping', () => {
       geometry.setCoordinates([
         [0, 0, 0],
         [1, 0, 0],
-        [2, 1, 0],
+        [1, 1, 0],
         [2, 2, 0],
       ]);
       const feature = createVertex([2, 2], {}, 3);
@@ -194,17 +195,17 @@ describe('translation snapping', () => {
         ...eventBase,
         feature,
         type: EventType.DRAGSTART,
-        position: [2.1, 1],
-        positionOrPixel: [2.1, 1],
+        position: [3.1, 3],
+        positionOrPixel: [3.1, 3],
       });
       const modifiedEvent = await translationSnapping.pipe({
         ...eventBase,
         feature,
         type: EventType.DRAG,
-        position: [2.1, 1],
-        positionOrPixel: [2.1, 1],
+        position: [3.1, 3],
+        positionOrPixel: [3.1, 3],
       });
-      expect(modifiedEvent.positionOrPixel!).to.have.ordered.members([2.1, 1]);
+      expect(modifiedEvent.positionOrPixel!).to.have.ordered.members([3.1, 3]);
     });
 
     it('should snap to the next segment, if there is one', async () => {
@@ -312,12 +313,91 @@ describe('translation snapping', () => {
       expect(nonFeatureEvent.positionOrPixel).to.have.ordered.members([1, 2.1]);
     });
 
+    it('should snap to its own vertices', async () => {
+      geometry.setCoordinates([
+        [0, 0, 0],
+        [1, 0, 0],
+        [2, 1, 0],
+        [2, 2, 0],
+      ]);
+      const feature = createVertex([1.05, 0.05], {}, 3);
+      await translationSnapping.pipe({
+        ...eventBase,
+        feature,
+        type: EventType.DRAGSTART,
+        position: [1.05, 0.05],
+        positionOrPixel: [1.05, 0.05],
+      });
+      const modifiedEvent = await translationSnapping.pipe({
+        ...eventBase,
+        feature,
+        type: EventType.DRAG,
+        position: [1.05, 0.05],
+        positionOrPixel: [1.05, 0.05],
+      });
+      expect(modifiedEvent.positionOrPixel!).to.have.ordered.members([1, 0]);
+    });
+
+    it('should snap to its own edges', async () => {
+      geometry.setCoordinates([
+        [0, 0, 0],
+        [2, 0, 0],
+        [2, 2, 0],
+        [0, 2, 0],
+      ]);
+      const feature = createVertex([0.6, 0.05], {}, 3);
+      await translationSnapping.pipe({
+        ...eventBase,
+        feature,
+        type: EventType.DRAGSTART,
+        position: [0.6, 0.05],
+        positionOrPixel: [0.6, 0.05],
+      });
+      const modifiedEvent = await translationSnapping.pipe({
+        ...eventBase,
+        feature,
+        type: EventType.DRAG,
+        position: [0.6, 0.05],
+        positionOrPixel: [0.6, 0.05],
+      });
+
+      expect(modifiedEvent.positionOrPixel!).to.have.ordered.members([0.6, 0]);
+    });
+
+    it('should not snap to the editing vertex', async () => {
+      geometry.setCoordinates([
+        [0, 0, 0],
+        [1, 2, 0],
+        [2, 0, 0],
+        [4, 2, 0],
+      ]);
+      const feature = createVertex([2.1, 0.05], {}, 2);
+      await translationSnapping.pipe({
+        ...eventBase,
+        feature,
+        type: EventType.DRAGSTART,
+        position: [2.1, 0.05],
+        positionOrPixel: [2.1, 0.05],
+      });
+      const modifiedEvent = await translationSnapping.pipe({
+        ...eventBase,
+        feature,
+        type: EventType.DRAG,
+        position: [2.1, 0.05],
+        positionOrPixel: [2.1, 0.05],
+      });
+
+      expect(modifiedEvent.positionOrPixel!).to.have.ordered.members([
+        2.1, 0.05,
+      ]);
+    });
+
     describe('snapping in 3D', () => {
       let cesiumMap: CesiumMap;
 
       before(() => {
         cesiumMap = getCesiumMap({});
-        sinon.stub(cesiumMap, 'getCurrentResolution').returns(1);
+        sinon.stub(cesiumMap, 'getCurrentResolution').returns(0.05);
       });
 
       after(() => {
@@ -439,6 +519,64 @@ describe('translation snapping', () => {
         ).to.have.deep.ordered.members([0.5, 0.5, 0]);
       });
 
+      it('should set the vertex feature to the snapped vertex', async () => {
+        geometry.setCoordinates([
+          [0, 0, 0],
+          [1, 0, 0],
+          [2, 1, 0],
+          [2, 2, 0],
+        ]);
+        const feature = createVertex([1.05, 0.05], {}, 3);
+        await translationSnapping.pipe({
+          ...eventBase,
+          feature,
+          type: EventType.DRAGSTART,
+          position: [1.05, 0.05],
+          positionOrPixel: [1.05, 0.05],
+        });
+        await translationSnapping.pipe({
+          ...eventBase,
+          feature,
+          type: EventType.DRAG,
+          position: [1.05, 0.05],
+          positionOrPixel: [1.05, 0.05],
+        });
+        const features = scratchLayer.getFeatures();
+        expect(features).to.have.lengthOf(1);
+        expect(
+          features[0].getGeometry()!.getCoordinates(),
+        ).to.have.deep.ordered.members([1, 0]);
+      });
+
+      it('should set the edge feature to the snapped edge', async () => {
+        geometry.setCoordinates([
+          [0, 0, 0],
+          [2, 0, 0],
+          [2, 2, 0],
+          [0, 2, 0],
+        ]);
+        const feature = createVertex([0.6, 0.05], {}, 3);
+        await translationSnapping.pipe({
+          ...eventBase,
+          feature,
+          type: EventType.DRAGSTART,
+          position: [0.6, 0.05],
+          positionOrPixel: [0.6, 0.05],
+        });
+        await translationSnapping.pipe({
+          ...eventBase,
+          feature,
+          type: EventType.DRAG,
+          position: [0.6, 0.05],
+          positionOrPixel: [0.6, 0.05],
+        });
+        const features = scratchLayer.getFeatures();
+        expect(features).to.have.lengthOf(1);
+        expect(
+          features[0].getGeometry()!.getCoordinates(),
+        ).to.have.deep.ordered.members([0.6, 0]);
+      });
+
       it('should clear the snapped features, if there is no snapping', async () => {
         geometry.setCoordinates([
           [1, 1, 0],
@@ -469,6 +607,115 @@ describe('translation snapping', () => {
           positionOrPixel: [3, 2.05],
         });
         expect(scratchLayer.getFeatures()).to.be.empty;
+      });
+    });
+
+    describe('setting of snapTo', () => {
+      afterEach(() => {
+        translationSnapping.snapTo = [...snapTypes];
+      });
+
+      it('should not snap to a vertex, if snapTo does not include vertex', async () => {
+        translationSnapping.snapTo = [...snapTypes].filter(
+          (s) => s !== 'vertex',
+        );
+        geometry.setCoordinates([
+          [0, 0, 0],
+          [1, 0, 0],
+          [2, 1, 0],
+          [2, 2, 0],
+        ]);
+        await translationSnapping.pipe({
+          ...eventBase,
+          type: EventType.DRAGSTART,
+          position: [1.05, 0.05],
+          positionOrPixel: [1.05, 0.05],
+        });
+        const modifiedEvent = await translationSnapping.pipe({
+          ...eventBase,
+          type: EventType.DRAG,
+          position: [1.05, 0.05],
+          positionOrPixel: [1.05, 0.05],
+        });
+        arrayCloseTo(modifiedEvent.positionOrPixel!, [1.05, 0.05]);
+      });
+
+      it('should not snap to an edge, if snapTo does not include edge', async () => {
+        translationSnapping.snapTo = [...snapTypes].filter((s) => s !== 'edge');
+        geometry.setCoordinates([
+          [0, 0, 0],
+          [2, 0, 0],
+          [2, 2, 0],
+          [0, 2, 0],
+        ]);
+        await translationSnapping.pipe({
+          ...eventBase,
+          type: EventType.DRAGSTART,
+          position: [0.6, 0.05],
+          positionOrPixel: [0.6, 0.05],
+        });
+        const modifiedEvent = await translationSnapping.pipe({
+          ...eventBase,
+          type: EventType.DRAG,
+          position: [0.6, 0.05],
+          positionOrPixel: [0.6, 0.05],
+        });
+        expect(modifiedEvent.positionOrPixel!).to.have.ordered.members([
+          0.6, 0.05,
+        ]);
+      });
+
+      it('should not snap to bearings, if snapTo does not include parallel', async () => {
+        translationSnapping.snapTo = [...snapTypes].filter(
+          (s) => s !== 'parallel',
+        );
+        geometry.setCoordinates([
+          [0, 0, 0],
+          [1, 1, 0],
+          [0, 1, 0],
+          [1, 1.5, 0],
+        ]);
+        await translationSnapping.pipe({
+          ...eventBase,
+          type: EventType.DRAGSTART,
+          position: [1, 2.1],
+          positionOrPixel: [1, 2.1],
+        });
+        const modifiedEvent = await translationSnapping.pipe({
+          ...eventBase,
+          type: EventType.DRAG,
+          position: [1, 2.1],
+          positionOrPixel: [1, 2.1],
+        });
+        expect(modifiedEvent.positionOrPixel!).to.have.ordered.members([
+          1, 2.1,
+        ]);
+      });
+
+      it('should not snap to an orthogonal, if snapTo does not include orthogonal', async () => {
+        translationSnapping.snapTo = [...snapTypes].filter(
+          (s) => s !== 'orthogonal',
+        );
+        geometry.setCoordinates([
+          [1, 1, 0],
+          [2, 2, 0],
+          [3, 1.05, 0],
+        ]);
+        await translationSnapping.pipe({
+          ...eventBase,
+          type: EventType.DRAGSTART,
+          position: [3, 1.05],
+          positionOrPixel: [3, 1.05],
+        });
+        const modifiedEvent = await translationSnapping.pipe({
+          ...eventBase,
+          type: EventType.DRAG,
+          position: [3, 1.05],
+          positionOrPixel: [3, 1.05],
+        });
+        expect(modifiedEvent.positionOrPixel!).to.have.ordered.members([
+          3, 1.05,
+        ]);
       });
     });
   });
@@ -598,6 +845,34 @@ describe('translation snapping', () => {
         positionOrPixel: [1.05, 2.05],
       });
       arrayCloseTo(modifiedEvent.positionOrPixel!, [1, 2]);
+    });
+
+    it('should snap to the closing edge, if not editing first or last index', async () => {
+      geometry.setCoordinates([
+        [
+          [0, 0, 0],
+          [1, 0, 0],
+          [2, 2, 0],
+          [1, 4, 0],
+          [0, 5, 0],
+        ],
+      ]);
+      const feature = createVertex([2, 2, 0], {}, 2);
+      await translationSnapping.pipe({
+        ...eventBase,
+        feature,
+        type: EventType.DRAGSTART,
+        position: [0.1, 2.1],
+        positionOrPixel: [0.1, 2.1],
+      });
+      const modifiedEvent = await translationSnapping.pipe({
+        ...eventBase,
+        feature,
+        type: EventType.DRAG,
+        position: [0.1, 2.1],
+        positionOrPixel: [0.1, 2.1],
+      });
+      arrayCloseTo(modifiedEvent.positionOrPixel!, [0, 2.1]);
     });
   });
 });

@@ -10,6 +10,13 @@ import { markVolatile } from '../../vcsModule.js';
 import { PrimitiveOptionsType } from '../../layer/vectorProperties.js';
 import EventHandler from '../../interaction/eventHandler.js';
 import type VcsApp from '../../vcsApp.js';
+import { InteractionEvent } from '../../interaction/abstractInteraction.js';
+
+export const alreadySnapped = Symbol('alreadySnapped');
+
+export type SnappingInteractionEvent = InteractionEvent & {
+  [alreadySnapped]?: boolean;
+};
 
 export enum SessionType {
   CREATE = 'create',

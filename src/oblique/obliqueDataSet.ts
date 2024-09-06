@@ -3,7 +3,7 @@ import { createXYZ } from 'ol/tilegrid.js';
 import type { Coordinate } from 'ol/coordinate.js';
 import type { TileCoord } from 'ol/tilecoord.js';
 import type { Extent } from 'ol/extent.js';
-import { cartesian2DDistance } from '../util/math.js';
+import { cartesian2DDistanceSquared } from '../util/math.js';
 import {
   parseImageData,
   parseImageMeta,
@@ -235,12 +235,12 @@ class ObliqueDataSet {
     let minTile = null;
     [...this._tiles.keys()].forEach((tile) => {
       const tileCoord = tile.split('/').map(Number);
-      const dist = cartesian2DDistance(
+      const squaredDist = cartesian2DDistanceSquared(
         [actualTile[1], actualTile[2]],
         [tileCoord[1], tileCoord[2]],
       );
-      if (dist < minDistance) {
-        minDistance = dist;
+      if (squaredDist < minDistance) {
+        minDistance = squaredDist;
         minTile = tileCoord;
       }
     });

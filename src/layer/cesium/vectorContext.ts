@@ -171,6 +171,7 @@ export default class VectorContext implements CesiumVectorContext {
                 this._scaledDirty.value =
                   this.scaledPrimitives.remove(instance);
               };
+              this._scaledDirty.value = true;
             }
           } else {
             instance = this.primitives.add(item.item) as PrimitiveType;

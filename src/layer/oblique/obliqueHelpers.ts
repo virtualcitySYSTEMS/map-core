@@ -7,7 +7,7 @@ import type { Geometry } from 'ol/geom.js';
 import type { Feature } from 'ol/index.js';
 
 import { Cartographic, sampleTerrainMostDetailed } from '@vcmap-cesium/engine';
-import { cartesian2DDistance } from '../../util/math.js';
+import { cartesian2DDistanceSquared } from '../../util/math.js';
 import Projection, {
   mercatorProjection,
   wgs84Projection,
@@ -25,7 +25,7 @@ import { transformFromImage } from '../../oblique/helpers.js';
 import type ObliqueImage from '../../oblique/obliqueImage.js';
 
 export function getLongestSide(coordinates: Coordinate[]): number {
-  let side = 0;
+  let sideSquared = 0;
   for (let i = 0; i < coordinates.length; i++) {
     let j = i + 1;
     if (j >= coordinates.length) {
@@ -33,12 +33,12 @@ export function getLongestSide(coordinates: Coordinate[]): number {
     }
     const point1 = coordinates[i];
     const point2 = coordinates[j];
-    const currentSide = cartesian2DDistance(point1, point2);
-    if (currentSide > side) {
-      side = currentSide;
+    const currentSideSquared = cartesian2DDistanceSquared(point1, point2);
+    if (currentSideSquared > sideSquared) {
+      sideSquared = currentSideSquared;
     }
   }
-  return side;
+  return Math.sqrt(sideSquared);
 }
 
 export function getResolutionOptions(

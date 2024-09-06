@@ -520,13 +520,24 @@ export {
   GeometryType,
   EditorSession,
   GeometryToType,
+  SnappingInteractionEvent,
+  alreadySnapped,
 } from './src/util/editor/editorSessionHelpers.js';
 export {
   vertexSymbol,
-  vertexIndex,
+  vertexIndexSymbol,
   handlerSymbol,
   mouseOverSymbol,
 } from './src/util/editor/editorSymbols.js';
+export {
+  getAngleSnapResult,
+  getGeometrySnapResult,
+  getSnappedCoordinateForResults,
+  snapTypes,
+  setSnappingFeatures,
+  SnapType,
+  SnapResult,
+} from './src/util/editor/snappingHelpers.js';
 export { default as CreateBBoxInteraction } from './src/util/editor/interactions/createBBoxInteraction.js';
 export { default as CreateCircleInteraction } from './src/util/editor/interactions/createCircleInteraction.js';
 export { default as CreateLineStringInteraction } from './src/util/editor/interactions/createLineStringInteraction.js';
@@ -554,6 +565,9 @@ export {
 export { default as SelectMultiFeatureInteraction } from './src/util/editor/interactions/selectMultiFeatureInteraction.js';
 export { default as SelectSingleFeatureInteraction } from './src/util/editor/interactions/selectSingleFeatureInteraction.js';
 export { default as TranslateVertexInteraction } from './src/util/editor/interactions/translateVertexInteraction.js';
+export { default as CreationSnapping } from './src/util/editor/interactions/creationSnapping.js';
+export { default as TranslationSnapping } from './src/util/editor/interactions/translationSnapping.js';
+export { default as LayerSnapping } from './src/util/editor/interactions/layerSnapping.js';
 export {
   getDefaultHighlightStyle,
   default as startSelectFeaturesSession,
@@ -699,6 +713,7 @@ export {
   initialBearingBetweenCoords,
   getCartesianBearing,
   cartesian2DDistance,
+  cartesian2DDistanceSquared,
   cartesian3DDistance,
   modulo,
   cartographicToWgs84,

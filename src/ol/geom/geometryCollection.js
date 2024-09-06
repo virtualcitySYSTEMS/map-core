@@ -5,7 +5,7 @@ import { check } from '@vcsuite/check';
  * @returns {Array<import("ol/coordinate").Coordinate|Array<import("ol/coordinate").Coordinate>|Array<Array<import("ol/coordinate").Coordinate>>|Array<Array<Array<import("ol/coordinate").Coordinate>>>>}
  */
 GeometryCollection.prototype.getCoordinates = function getCoordinates() {
-  return this.getGeometries().map((g) => g.getCoordinates());
+  return this.getGeometriesArray().map((g) => g.getCoordinates());
 };
 
 /**
@@ -31,9 +31,28 @@ GeometryCollection.prototype.setCoordinates = function setCoordinates(
  * @returns {import("ol/geom/Geometry").GeometryLayout}
  */
 GeometryCollection.prototype.getLayout = function getLayout() {
-  const firstGeom = this.getGeometries()[0];
+  const firstGeom = this.getGeometriesArray()[0];
   if (firstGeom) {
     return firstGeom.getLayout();
   }
   return 'XYZ';
 };
+
+/**
+ * @returns {number}
+ */
+GeometryCollection.prototype.getStride = function getStride() {
+  const firstGeom = this.getGeometriesArray()[0];
+  if (firstGeom) {
+    return firstGeom.getStride();
+  }
+  return 2;
+};
+
+/**
+ * @returns {number[]}
+ */
+GeometryCollection.prototype.getFlatCoordinates =
+  function getFlatCoordinates() {
+    return this.getGeometriesArray().flatMap((g) => g.getFlatCoordinates());
+  };
