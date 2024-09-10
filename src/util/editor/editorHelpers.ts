@@ -18,7 +18,7 @@ import {
 } from '@vcmap-cesium/engine';
 
 import { mercatorToCartesian } from '../math.js';
-import { getFlatCoordinatesFromGeometry } from '../geometryHelpers.js';
+import { getFlatCoordinateReferences } from '../geometryHelpers.js';
 import CesiumMap from '../../map/cesiumMap.js';
 import { vertexIndexSymbol, vertexSymbol } from './editorSymbols.js';
 import {
@@ -365,7 +365,7 @@ export async function drapeGeometryOnTerrain(
 ): Promise<void> {
   if (map instanceof CesiumMap) {
     const coordinates = geometry.getCoordinates() as any[];
-    const flats = getFlatCoordinatesFromGeometry(geometry, coordinates);
+    const flats = getFlatCoordinateReferences(geometry, coordinates);
     await map.getHeightFromTerrain(flats);
     geometry.setCoordinates(coordinates, 'XYZ');
   }
@@ -382,7 +382,7 @@ export async function placeGeometryOnTerrain(
 ): Promise<void> {
   if (map instanceof CesiumMap) {
     const coordinates = geometry.getCoordinates() as any[];
-    const flats = getFlatCoordinatesFromGeometry(geometry, coordinates);
+    const flats = getFlatCoordinateReferences(geometry, coordinates);
     await map.getHeightFromTerrain(flats);
     let minHeight = Infinity;
     flats.forEach((coord) => {

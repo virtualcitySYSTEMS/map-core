@@ -41,6 +41,8 @@
   - snapping to orthogonal or parallels of the current geometry being edited is now possible.
   - snapping is now also possible to features within vector layers. by default, the editing layer is snapped to.
   - renamed previously unused symbol `vertexIndex` to `vertexIndexSymbol`. the symbol is now correctly set on vertices.
+- To better illustrate its use, `getFlatCoordinatesForGeometry` was renamed to `getFlatCoordinateReferences`.
+- `VectorPropeties.getModelOptions` no longer returns an empty object, but undefined, if model options is not defined anywhere.
 
 ### 6.0.0-rc.4
 

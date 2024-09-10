@@ -682,7 +682,7 @@ export {
 } from './src/util/fetch.js';
 export {
   getFlatCoordinatesFromSimpleGeometry,
-  getFlatCoordinatesFromGeometry,
+  getFlatCoordinateReferences,
   circleFromCenterRadius,
   convertGeometryToPolygon,
   enforceEndingVertex,
@@ -692,6 +692,8 @@ export {
   is2DLayout,
   from2Dto3DLayout,
   from3Dto2DLayout,
+  placeGeometryOnGround,
+  createAbsoluteFeatures,
 } from './src/util/geometryHelpers.js';
 export { default as IndexedCollection } from './src/util/indexedCollection.js';
 export { isMobile } from './src/util/isMobile.js';

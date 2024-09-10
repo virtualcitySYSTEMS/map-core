@@ -109,7 +109,9 @@ export function getStylesArray(
   return styles;
 }
 
-function getSingleGeometriesFromGeometry(geometry: Geometry): SingleGeometry[] {
+export function getSingleGeometriesFromGeometry(
+  geometry: Geometry,
+): SingleGeometry[] {
   if (
     geometry instanceof Point ||
     geometry instanceof Polygon ||

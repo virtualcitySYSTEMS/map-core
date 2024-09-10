@@ -14,13 +14,14 @@ export function arrayCloseTo<T extends number[]>(
   numbers: T,
   expectedNumbers: T,
   epsilon = CesiumMath.EPSILON8,
+  message = '',
 ): void {
   expect(numbers.length).to.equal(expectedNumbers.length);
   numbers.forEach((c, index) => {
     expect(c).to.be.closeTo(
       expectedNumbers[index],
       epsilon,
-      `Array at index ${index}`,
+      `Array at index ${index}${message}`,
     );
   });
 }

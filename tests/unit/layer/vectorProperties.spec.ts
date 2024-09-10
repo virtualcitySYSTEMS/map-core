@@ -953,12 +953,6 @@ describe('VectorProperties', () => {
         const modelOptions = vectorProperties.getModelOptions(feature);
         expect(modelOptions).to.be.equal(options);
       });
-
-      it('should return an empty object modelOptions, if both feature and vectorProperties modelOptions are undefined', () => {
-        vectorProperties.modelOptions = undefined;
-        const modelOptions = vectorProperties.getModelOptions(feature);
-        expect(modelOptions).to.be.an('object').and.to.be.empty;
-      });
     });
 
     describe('getting a primitive', () => {

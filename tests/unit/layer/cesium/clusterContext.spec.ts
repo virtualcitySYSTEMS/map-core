@@ -1,4 +1,4 @@
-import { CustomDataSource, Scene } from '@vcmap-cesium/engine';
+import { CustomDataSource, Scene, SplitDirection } from '@vcmap-cesium/engine';
 import Feature from 'ol/Feature.js';
 import { expect } from 'chai';
 import { LineString, Point } from 'ol/geom.js';
@@ -30,7 +30,7 @@ describe('ClusterContext', () => {
     let clusterContext: ClusterContext;
 
     before(() => {
-      clusterContext = new ClusterContext(dataSource);
+      clusterContext = new ClusterContext(dataSource, SplitDirection.NONE);
     });
 
     after(() => {
@@ -46,7 +46,7 @@ describe('ClusterContext', () => {
     let clusterContext: ClusterContext;
 
     before(() => {
-      clusterContext = new ClusterContext(dataSource);
+      clusterContext = new ClusterContext(dataSource, SplitDirection.NONE);
     });
 
     afterEach(() => {
@@ -123,7 +123,7 @@ describe('ClusterContext', () => {
     let clusterContext: ClusterContext;
 
     before(() => {
-      clusterContext = new ClusterContext(dataSource);
+      clusterContext = new ClusterContext(dataSource, SplitDirection.NONE);
     });
 
     afterEach(() => {
@@ -187,7 +187,7 @@ describe('ClusterContext', () => {
       let clusterContext: ClusterContext;
 
       before(() => {
-        clusterContext = new ClusterContext(dataSource);
+        clusterContext = new ClusterContext(dataSource, SplitDirection.NONE);
       });
 
       afterEach(() => {
@@ -247,7 +247,7 @@ describe('ClusterContext', () => {
       let clusterContext: ClusterContext;
 
       before(() => {
-        clusterContext = new ClusterContext(dataSource);
+        clusterContext = new ClusterContext(dataSource, SplitDirection.NONE);
       });
 
       after(() => {
@@ -284,7 +284,7 @@ describe('ClusterContext', () => {
     let clusterContext: ClusterContext;
 
     before(() => {
-      clusterContext = new ClusterContext(dataSource);
+      clusterContext = new ClusterContext(dataSource, SplitDirection.NONE);
     });
 
     afterEach(() => {

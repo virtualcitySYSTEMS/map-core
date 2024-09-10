@@ -8,16 +8,31 @@ import LineString from 'ol/geom/LineString.js';
 import MultiLineString from 'ol/geom/MultiLineString.js';
 import GeometryCollection from 'ol/geom/GeometryCollection.js';
 import { Coordinate } from 'ol/coordinate.js';
-import { Cartographic, HeightReference, Scene } from '@vcmap-cesium/engine';
+import {
+  Cartographic,
+  HeightReference,
+  Scene,
+  Math as CesiumMath,
+} from '@vcmap-cesium/engine';
+import { Geometry } from 'ol/geom.js';
+import { Feature } from 'ol';
 import {
   circleFromCenterRadius,
   convertGeometryToPolygon,
+  createAbsoluteFeatures,
   from2Dto3DLayout,
   from3Dto2DLayout,
-  getFlatCoordinatesFromGeometry,
+  getFlatCoordinateReferences,
   getFlatCoordinatesFromSimpleGeometry,
 } from '../../../src/util/geometryHelpers.js';
 import { getMockScene } from '../helpers/cesiumHelpers.js';
+import {
+  mercatorProjection,
+  Projection,
+  VectorProperties,
+  wgs84Projection,
+} from '../../../index.js';
+import { arrayCloseTo } from '../helpers/helpers.js';
 
 describe('util.geometryHelpers', () => {
   describe('convertGeometryToPolygon', () => {
@@ -313,7 +328,7 @@ describe('util.geometryHelpers', () => {
 
     it('should get the flat coordinates of a geometry', () => {
       keys.forEach((key) => {
-        const coords = getFlatCoordinatesFromGeometry(geometries[key]);
+        const coords = getFlatCoordinateReferences(geometries[key]);
         expect(coords).to.have.deep.members(flatCoordinates[key]);
       });
     });
@@ -327,7 +342,7 @@ describe('util.geometryHelpers', () => {
                 geometries[key].getLastCoordinate(),
               ]
             : geometries[key].getCoordinates();
-        const flats = getFlatCoordinatesFromGeometry(geometries[key], coords);
+        const flats = getFlatCoordinateReferences(geometries[key], coords);
         expect(flats).to.have.deep.members(flatCoordinates[key]);
       });
     });
@@ -1669,6 +1684,567 @@ describe('util.geometryHelpers', () => {
           ],
         ]);
         expect(geometry.getLayout()).to.equal('XYZM');
+      });
+    });
+  });
+
+  describe('create absolute features', () => {
+    let scene: Scene;
+
+    before(() => {
+      scene = getMockScene();
+      scene.sampleHeightMostDetailed = (
+        cs: Cartographic[],
+      ): Promise<Cartographic[]> => {
+        cs.forEach((c) => {
+          c.height =
+            CesiumMath.toDegrees(c.longitude) +
+            CesiumMath.toDegrees(c.latitude);
+        });
+        return Promise.resolve(cs);
+      };
+    });
+
+    after(() => {
+      scene.destroy();
+    });
+
+    describe('of 3D features', () => {
+      let geometries: {
+        Point: Point;
+        LineString: LineString;
+        MultiPoint: MultiPoint;
+        Polygon: Polygon;
+        MultiLineString: MultiLineString;
+        Circle: Circle;
+        MultiPolygon: MultiPolygon;
+        GeometryCollection: GeometryCollection;
+      };
+      let inputFeatures: Feature[];
+
+      before(() => {
+        geometries = {
+          Point: new Point([1, 1, 1]),
+          LineString: new LineString([
+            [1, 1, 1],
+            [2, 2, 2],
+          ]),
+          MultiPoint: new MultiPoint([
+            [1, 1, 1],
+            [2, 2, 2],
+          ]),
+          Polygon: new Polygon([
+            [
+              [0, 0, 0],
+              [10, 0, 0],
+              [10, 10, 0],
+              [0, 10, 0],
+            ],
+            [
+              [2, 2, 0],
+              [0, 8, 0],
+              [8, 8, 0],
+              [8, 0, 0],
+            ],
+          ]),
+          MultiLineString: new MultiLineString([
+            [
+              [1, 1, 1],
+              [2, 2, 2],
+            ],
+            [
+              [1, 1, 1],
+              [3, 3, 3],
+            ],
+          ]),
+          Circle: new Circle([1, 0, 0], 1, 'XYZ'),
+          MultiPolygon: new MultiPolygon([
+            [
+              [
+                [0, 0, 0],
+                [1, 0, 0],
+                [0, 1, 0],
+              ],
+            ],
+            [
+              [
+                [2, 2, 0],
+                [2, 5, 0],
+                [-2, 5, 0],
+              ],
+              [
+                [1, 3, 0],
+                [0, 4, 0],
+                [1, 4, 0],
+              ],
+            ],
+          ]),
+          GeometryCollection: new GeometryCollection([]),
+        };
+        geometries.GeometryCollection = new GeometryCollection([
+          geometries.Point.clone(),
+          geometries.LineString.clone(),
+          geometries.Polygon.clone(),
+          geometries.MultiLineString.clone(),
+        ]);
+        inputFeatures = Object.values(geometries).map((geometry) => {
+          geometry.transform(wgs84Projection.proj, mercatorProjection.proj);
+          return new Feature({ geometry });
+        });
+      });
+
+      describe('if they are absolute', () => {
+        let vectorProperties: VectorProperties;
+        let absoluteFeatures: Feature[];
+
+        before(async () => {
+          vectorProperties = new VectorProperties({ altitudeMode: 'absolute' });
+          absoluteFeatures = await createAbsoluteFeatures(
+            inputFeatures,
+            vectorProperties,
+            scene,
+          );
+        });
+
+        it('should not change the height of absolute geometries', () => {
+          absoluteFeatures.forEach((f, i) => {
+            expect(f.getGeometry()!.getFlatCoordinates()).to.eql(
+              inputFeatures[i].getGeometry()!.getFlatCoordinates(),
+            );
+          });
+        });
+      });
+
+      describe('if they are clamped', () => {
+        let vectorProperties: VectorProperties;
+        let absoluteFeatures: Feature[];
+
+        before(async () => {
+          vectorProperties = new VectorProperties({
+            altitudeMode: 'clampToGround',
+          });
+          absoluteFeatures = await createAbsoluteFeatures(
+            inputFeatures,
+            vectorProperties,
+            scene,
+          );
+        });
+
+        it('should place geometries onto the ground', () => {
+          absoluteFeatures.forEach((f, i) => {
+            const geometry = f.getGeometry()!;
+            if (geometry instanceof Circle) {
+              expect(
+                Projection.mercatorToWgs84(geometry.getCenter()),
+              ).to.have.members([1, 0, 1]);
+            } else {
+              expect(geometry.getFlatCoordinates()).to.eql(
+                inputFeatures[i]
+                  .getGeometry()!
+                  .getFlatCoordinates()
+                  .map((c, j, a) => {
+                    if ((j + 1) % 3 === 0) {
+                      const mercatorCoordinate = [a[j - 2], a[j - 1]];
+                      const wgs84 =
+                        Projection.mercatorToWgs84(mercatorCoordinate);
+                      return wgs84[0] + wgs84[1];
+                    }
+                    return c;
+                  }),
+                `coordiantes of ${geometry.getType()} dont match`,
+              );
+            }
+          });
+        });
+      });
+
+      describe('if they are relative to ground', () => {
+        let expectedHeightForType: Record<
+          ReturnType<typeof Geometry.prototype.getType>,
+          number[]
+        >;
+
+        before(() => {
+          expectedHeightForType = {
+            Circle: [1.5, 1.5],
+            GeometryCollection: [
+              2,
+              ...new Array<number>(2).fill(3.000057130632186),
+              ...new Array<number>(8).fill(9.5138726697935),
+              ...new Array<number>(2).fill(3.000057130632186),
+              ...new Array<number>(2).fill(4.00030477991453),
+            ].reverse(),
+            LinearRing: [0],
+            MultiLineString: [
+              ...new Array<number>(2).fill(3.000057130632186),
+              ...new Array<number>(2).fill(4.00030477991453),
+            ].reverse(),
+            MultiPoint: [2, 4].reverse(),
+            MultiPolygon: [
+              ...new Array<number>(3).fill(0.6666817105205824),
+              ...new Array<number>(6).fill(4.500635759754239),
+            ].reverse(),
+            Point: [2],
+            LineString: new Array<number>(2).fill(3.000057130632186),
+            Polygon: new Array<number>(8).fill(9.5138726697935),
+          };
+        });
+
+        describe('with height above ground set', () => {
+          let vectorProperties: VectorProperties;
+          let absoluteFeatures: Feature[];
+
+          before(async () => {
+            vectorProperties = new VectorProperties({
+              altitudeMode: 'relativeToGround',
+              heightAboveGround: 5,
+            });
+            absoluteFeatures = await createAbsoluteFeatures(
+              inputFeatures,
+              vectorProperties,
+              scene,
+            );
+          });
+
+          it('should place geometries above the ground by height above ground', () => {
+            absoluteFeatures.forEach((f, i) => {
+              const geometry = f.getGeometry()!;
+              const expectedHeights =
+                expectedHeightForType[geometry.getType()].slice();
+              arrayCloseTo(
+                geometry.getFlatCoordinates(),
+                inputFeatures[i]
+                  .getGeometry()!
+                  .getFlatCoordinates()
+                  .map((c, j) => {
+                    if ((j + 1) % 3 === 0) {
+                      return (expectedHeights.pop() ?? 0) + 5;
+                    }
+                    return c;
+                  }),
+                undefined,
+                ` of ${geometry.getType()} coordinate: `,
+              );
+            });
+          });
+        });
+
+        describe('without height above ground set', () => {
+          let vectorProperties: VectorProperties;
+          let absoluteFeatures: Feature[];
+
+          before(async () => {
+            vectorProperties = new VectorProperties({
+              altitudeMode: 'relativeToGround',
+            });
+            absoluteFeatures = await createAbsoluteFeatures(
+              inputFeatures,
+              vectorProperties,
+              scene,
+            );
+          });
+
+          it('should place geometries onto the ground at height above Z', () => {
+            absoluteFeatures.forEach((f, i) => {
+              const geometry = f.getGeometry()!;
+              const expectedHeights =
+                expectedHeightForType[geometry.getType()].slice();
+              arrayCloseTo(
+                geometry.getFlatCoordinates(),
+                inputFeatures[i]
+                  .getGeometry()!
+                  .getFlatCoordinates()
+                  .map((c, j) => {
+                    if ((j + 1) % 3 === 0) {
+                      return (expectedHeights.pop() ?? 0) + c;
+                    }
+                    return c;
+                  }),
+                undefined,
+                ` of ${geometry.getType()} coordinate: `,
+              );
+            });
+          });
+        });
+      });
+    });
+
+    describe('of 2D features', () => {
+      let geometries: {
+        Point: Point;
+        LineString: LineString;
+        MultiPoint: MultiPoint;
+        Polygon: Polygon;
+        MultiLineString: MultiLineString;
+        Circle: Circle;
+        MultiPolygon: MultiPolygon;
+        GeometryCollection: GeometryCollection;
+      };
+      let inputFeatures: Feature[];
+
+      before(() => {
+        geometries = {
+          Point: new Point([1, 1]),
+          LineString: new LineString([
+            [1, 1],
+            [2, 2],
+          ]),
+          MultiPoint: new MultiPoint([
+            [1, 1],
+            [2, 2],
+          ]),
+          Polygon: new Polygon([
+            [
+              [0, 0],
+              [10, 0],
+              [10, 10],
+              [0, 10],
+            ],
+            [
+              [2, 2],
+              [0, 8],
+              [8, 8],
+              [8, 0],
+            ],
+          ]),
+          MultiLineString: new MultiLineString([
+            [
+              [1, 1],
+              [2, 2],
+            ],
+            [
+              [1, 1],
+              [3, 3],
+            ],
+          ]),
+          Circle: new Circle([1, 0], 1, 'XY'),
+          MultiPolygon: new MultiPolygon([
+            [
+              [
+                [0, 0],
+                [1, 0],
+                [0, 1],
+              ],
+            ],
+            [
+              [
+                [2, 2],
+                [2, 5],
+                [-2, 5],
+              ],
+              [
+                [1, 3],
+                [0, 4],
+                [1, 4],
+              ],
+            ],
+          ]),
+          GeometryCollection: new GeometryCollection([]),
+        };
+        geometries.GeometryCollection = new GeometryCollection([
+          geometries.Point.clone(),
+          geometries.LineString.clone(),
+          geometries.Polygon.clone(),
+          geometries.MultiLineString.clone(),
+        ]);
+        inputFeatures = Object.values(geometries).map((geometry) => {
+          geometry.transform(wgs84Projection.proj, mercatorProjection.proj);
+          return new Feature({ geometry });
+        });
+      });
+
+      describe('if they are absolute', () => {
+        let vectorProperties: VectorProperties;
+        let absoluteFeatures: Feature[];
+
+        before(async () => {
+          vectorProperties = new VectorProperties({ altitudeMode: 'absolute' });
+          absoluteFeatures = await createAbsoluteFeatures(
+            inputFeatures,
+            vectorProperties,
+            scene,
+          );
+        });
+
+        it('should place geometries onto the ground', () => {
+          absoluteFeatures.forEach((f, i) => {
+            const geometry = f.getGeometry()!;
+            if (geometry instanceof Circle) {
+              expect(
+                Projection.mercatorToWgs84(geometry.getCenter()),
+              ).to.have.members([1, 0, 1]);
+            } else {
+              expect(geometry.getFlatCoordinates()).to.eql(
+                inputFeatures[i]
+                  .getGeometry()!
+                  .getFlatCoordinates()
+                  .flatMap((c, j, a) => {
+                    if ((j + 1) % 2 === 0) {
+                      const mercatorCoordinate = [a[j - 1], a[j]];
+                      const wgs84 =
+                        Projection.mercatorToWgs84(mercatorCoordinate);
+                      return [c, wgs84[0] + wgs84[1]];
+                    }
+                    return [c];
+                  }),
+                `coordiantes of ${geometry.getType()} dont match`,
+              );
+            }
+          });
+        });
+      });
+
+      describe('if they are clamped', () => {
+        let vectorProperties: VectorProperties;
+        let absoluteFeatures: Feature[];
+
+        before(async () => {
+          vectorProperties = new VectorProperties({
+            altitudeMode: 'clampToGround',
+          });
+          absoluteFeatures = await createAbsoluteFeatures(
+            inputFeatures,
+            vectorProperties,
+            scene,
+          );
+        });
+
+        it('should place geometries onto the ground', () => {
+          absoluteFeatures.forEach((f, i) => {
+            const geometry = f.getGeometry()!;
+            if (geometry instanceof Circle) {
+              expect(
+                Projection.mercatorToWgs84(geometry.getCenter()),
+              ).to.have.members([1, 0, 1]);
+            } else {
+              expect(geometry.getFlatCoordinates()).to.eql(
+                inputFeatures[i]
+                  .getGeometry()!
+                  .getFlatCoordinates()
+                  .flatMap((c, j, a) => {
+                    if ((j + 1) % 2 === 0) {
+                      const mercatorCoordinate = [a[j - 1], a[j]];
+                      const wgs84 =
+                        Projection.mercatorToWgs84(mercatorCoordinate);
+                      return [c, wgs84[0] + wgs84[1]];
+                    }
+                    return [c];
+                  }),
+                `coordiantes of ${geometry.getType()} dont match`,
+              );
+            }
+          });
+        });
+      });
+
+      describe('if they are relative to ground', () => {
+        let expectedHeightForType: Record<
+          ReturnType<typeof Geometry.prototype.getType>,
+          number[]
+        >;
+
+        before(() => {
+          expectedHeightForType = {
+            Circle: [1.5, 1.5],
+            GeometryCollection: [
+              2,
+              ...new Array<number>(2).fill(3.000057130632186),
+              ...new Array<number>(8).fill(9.5138726697935),
+              ...new Array<number>(2).fill(3.000057130632186),
+              ...new Array<number>(2).fill(4.00030477991453),
+            ].reverse(),
+            LinearRing: [0],
+            MultiLineString: [
+              ...new Array<number>(2).fill(3.000057130632186),
+              ...new Array<number>(2).fill(4.00030477991453),
+            ].reverse(),
+            MultiPoint: [2, 4].reverse(),
+            MultiPolygon: [
+              ...new Array<number>(3).fill(0.6666817105205824),
+              ...new Array<number>(6).fill(4.500635759754239),
+            ].reverse(),
+            Point: [2],
+            LineString: new Array<number>(2).fill(3.000057130632186),
+            Polygon: new Array<number>(8).fill(9.5138726697935),
+          };
+        });
+
+        describe('with height above ground set', () => {
+          let vectorProperties: VectorProperties;
+          let absoluteFeatures: Feature[];
+
+          before(async () => {
+            vectorProperties = new VectorProperties({
+              altitudeMode: 'relativeToGround',
+              heightAboveGround: 5,
+            });
+            absoluteFeatures = await createAbsoluteFeatures(
+              inputFeatures,
+              vectorProperties,
+              scene,
+            );
+          });
+
+          it('should place geometries above the ground by height above ground', () => {
+            absoluteFeatures.forEach((f, i) => {
+              const geometry = f.getGeometry()!;
+              const expectedHeights =
+                expectedHeightForType[geometry.getType()].slice();
+              arrayCloseTo(
+                geometry.getFlatCoordinates(),
+                inputFeatures[i]
+                  .getGeometry()!
+                  .getFlatCoordinates()
+                  .flatMap((c, j) => {
+                    if ((j + 1) % 2 === 0) {
+                      return [c, (expectedHeights.pop() ?? 0) + 5];
+                    }
+                    return [c];
+                  }),
+                undefined,
+                ` of ${geometry.getType()} dont match`,
+              );
+            });
+          });
+        });
+
+        describe('without height above ground set', () => {
+          let vectorProperties: VectorProperties;
+          let absoluteFeatures: Feature[];
+
+          before(async () => {
+            vectorProperties = new VectorProperties({
+              altitudeMode: 'relativeToGround',
+            });
+            absoluteFeatures = await createAbsoluteFeatures(
+              inputFeatures,
+              vectorProperties,
+              scene,
+            );
+          });
+
+          it('should place geometries onto the ground', () => {
+            absoluteFeatures.forEach((f, i) => {
+              const geometry = f.getGeometry()!;
+              const expectedHeights =
+                expectedHeightForType[geometry.getType()].slice();
+              arrayCloseTo(
+                geometry.getFlatCoordinates(),
+                inputFeatures[i]
+                  .getGeometry()!
+                  .getFlatCoordinates()
+                  .flatMap((c, j) => {
+                    if ((j + 1) % 2 === 0) {
+                      return [c, expectedHeights.pop() ?? 0];
+                    }
+                    return [c];
+                  }),
+                undefined,
+                ` of ${geometry.getType()} dont match`,
+              );
+            });
+          });
+        });
       });
     });
   });

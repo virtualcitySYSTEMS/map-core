@@ -54,5 +54,7 @@ GeometryCollection.prototype.getStride = function getStride() {
  */
 GeometryCollection.prototype.getFlatCoordinates =
   function getFlatCoordinates() {
-    return this.getGeometriesArray().flatMap((g) => g.getFlatCoordinates());
+    return this.getGeometriesArrayRecursive().flatMap((g) =>
+      g.getFlatCoordinates(),
+    );
   };

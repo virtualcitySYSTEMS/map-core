@@ -13,7 +13,6 @@ import {
   type Camera,
 } from '@vcmap-cesium/engine';
 import type { Coordinate } from 'ol/coordinate.js';
-import type { Geometry } from 'ol/geom.js';
 import Feature from 'ol/Feature.js';
 import LineString from 'ol/geom/LineString.js';
 import { offset } from 'ol/sphere.js';
@@ -27,7 +26,7 @@ import Extent3D from '../featureconverter/extent3D.js';
 import {
   enforceEndingVertex,
   enforceRightHand,
-  getFlatCoordinatesFromGeometry,
+  getFlatCoordinateReferences,
 } from '../geometryHelpers.js';
 import { mercatorToCartesian } from '../math.js';
 
@@ -162,7 +161,7 @@ export function createClippingPlaneCollection(
   check(transformMatrix, optional(Matrix4));
 
   const clippingPlanes = [];
-  const geometry = feature.getGeometry() as Geometry;
+  const geometry = feature.getGeometry()!;
   const geometryType = geometry.getType();
 
   if (geometryType === 'Point') {
@@ -174,7 +173,7 @@ export function createClippingPlaneCollection(
       ),
     );
   } else {
-    const coords = getFlatCoordinatesFromGeometry(geometry);
+    const coords = getFlatCoordinateReferences(geometry);
     if (
       coords.length < 2 ||
       (coords[0][0] === coords[1][0] && coords[0][1] === coords[1][1])

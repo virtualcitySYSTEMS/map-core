@@ -1,5 +1,5 @@
 import {
-  type Billboard,
+  Billboard,
   BillboardCollection,
   Cartesian3,
   type Entity,
@@ -34,13 +34,12 @@ export function setReferenceForPicking(
 /**
  * Sets splitDirection on primitives. Currently only Model primitives support splitting.
  */
-export function setSplitDirectionOnPrimitives(
-  splitDirection: SplitDirection,
-  primitives: PrimitiveCollection,
-): void {
+export function setSplitDirectionOnPrimitives<
+  T extends PrimitiveCollection | BillboardCollection,
+>(splitDirection: SplitDirection, primitives: T): void {
   for (let i = 0; i < primitives.length; i++) {
-    const p = primitives.get(i) as Primitive | Model;
-    if (p instanceof Model) {
+    const p = primitives.get(i) as Primitive | Model | Billboard;
+    if (p instanceof Model || p instanceof Billboard) {
       p.splitDirection = splitDirection;
     }
   }
@@ -202,8 +201,11 @@ export default class VectorContext implements CesiumVectorContext {
             setReferenceForPicking(feature, instance);
           }
 
-          if (this.splitDirection && instance instanceof Model) {
-            // Cesium currently only supports splitDirection on Model primitives // XXX this is no longer TRUE
+          if (
+            this.splitDirection &&
+            (instance instanceof Model || instance instanceof Billboard)
+          ) {
+            // Cesium currently only supports splitDirection on Model & Billboard Primitives
             instance.splitDirection = this.splitDirection;
           }
         }
@@ -262,6 +264,7 @@ export default class VectorContext implements CesiumVectorContext {
     this.splitDirection = splitDirection;
     setSplitDirectionOnPrimitives(splitDirection, this.primitives);
     setSplitDirectionOnPrimitives(splitDirection, this.scaledPrimitives);
+    setSplitDirectionOnPrimitives(splitDirection, this.billboards);
   }
 
   clear(): void {

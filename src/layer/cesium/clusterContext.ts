@@ -4,6 +4,7 @@ import {
   Entity,
   SplitDirection,
   Scene,
+  ConstantProperty,
 } from '@vcmap-cesium/engine';
 import { StyleLike } from 'ol/style/Style.js';
 import type { Feature } from 'ol/index.js';
@@ -17,12 +18,18 @@ import convert, { ConvertedItem } from '../../util/featureconverter/convert.js';
 class ClusterContext implements CesiumVectorContext {
   entities: EntityCollection;
 
+  splitDirection: SplitDirection;
+
+  private _splitDirectionProperty: ConstantProperty;
+
   private _featureItems = new Map<Feature, (() => void)[]>();
 
   private _convertingFeatures: Map<Feature, () => void> = new Map();
 
-  constructor(dataSource: CustomDataSource) {
+  constructor(dataSource: CustomDataSource, splitDirection: SplitDirection) {
     this.entities = dataSource.entities;
+    this.splitDirection = splitDirection;
+    this._splitDirectionProperty = new ConstantProperty(splitDirection);
   }
 
   private _addConvertedItems(
@@ -36,7 +43,10 @@ class ClusterContext implements CesiumVectorContext {
         let removeItem: (() => void) | undefined;
         if (item.type === 'billboard') {
           instance = this.entities.add({
-            billboard: item.item,
+            billboard: {
+              ...item.item,
+              splitDirection: this._splitDirectionProperty,
+            },
             position: item.item.position,
           });
         } else if (item.type === 'label') {
@@ -108,7 +118,10 @@ class ClusterContext implements CesiumVectorContext {
   }
 
   // eslint-disable-next-line class-methods-use-this,no-unused-vars
-  updateSplitDirection(_splitDirection: SplitDirection): void {}
+  updateSplitDirection(splitDirection: SplitDirection): void {
+    this.splitDirection = splitDirection;
+    this._splitDirectionProperty.setValue(this.splitDirection);
+  }
 
   clear(): void {
     this.entities.removeAll();

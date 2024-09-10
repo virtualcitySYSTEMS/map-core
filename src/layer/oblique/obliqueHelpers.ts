@@ -19,7 +19,7 @@ import {
 } from '../vectorSymbols.js';
 import {
   convertGeometryToPolygon,
-  getFlatCoordinatesFromGeometry,
+  getFlatCoordinateReferences,
 } from '../../util/geometryHelpers.js';
 import { transformFromImage } from '../../oblique/helpers.js';
 import type ObliqueImage from '../../oblique/obliqueImage.js';
@@ -97,7 +97,7 @@ export async function mercatorGeometryToImageGeometry(
       ? fromCircle(inputSourceGeometry)
       : inputSourceGeometry;
   const coordinates = sourceGeometry.getCoordinates() as any[];
-  const flattenCoordinates = getFlatCoordinatesFromGeometry(
+  const flattenCoordinates = getFlatCoordinateReferences(
     sourceGeometry,
     coordinates,
   );
@@ -151,7 +151,7 @@ export function imageGeometryToMercatorGeometry(
   image: ObliqueImage,
 ): Promise<Geometry> {
   const coordinates = sourceGeometry.getCoordinates() as any[];
-  const flattenCoordinates = getFlatCoordinatesFromGeometry(
+  const flattenCoordinates = getFlatCoordinateReferences(
     sourceGeometry,
     coordinates,
   );

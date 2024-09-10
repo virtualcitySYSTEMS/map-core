@@ -897,10 +897,10 @@ class VectorProperties {
   }
 
   /**
-   * Get the features or the properties modelOptions. Returns an empty Object if both are undefined
+   * Get the features or the properties modelOptions.
    * @param  feature
    */
-  getModelOptions(feature: Feature): Record<string, unknown> {
+  getModelOptions(feature: Feature): Record<string, unknown> | undefined {
     const featureValue = feature.get('olcs_modelOptions') as
       | Record<string, unknown>
       | undefined;
@@ -910,7 +910,7 @@ class VectorProperties {
     if (this.modelOptions) {
       return this.modelOptions;
     }
-    return {};
+    return undefined;
   }
 
   get modelAutoScale(): boolean {
@@ -1315,7 +1315,7 @@ class VectorProperties {
   }
 
   getValues(): VectorPropertiesOptions {
-    const values = {
+    return {
       altitudeMode: getAltitudeModeOptions(this.altitudeMode),
       allowPicking: this.allowPicking,
       classificationType: getClassificationTypeOptions(this.classificationType),
@@ -1336,9 +1336,11 @@ class VectorProperties {
       modelHeading: this.modelHeading,
       modelPitch: this.modelPitch,
       modelRoll: this.modelRoll,
+      modelAutoScale: this.modelAutoScale,
+      modelOptions: this.modelOptions,
       baseUrl: this.baseUrl,
+      primitiveOptions: this.primitiveOptions,
     };
-    return values;
   }
 
   /**
