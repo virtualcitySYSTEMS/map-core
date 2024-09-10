@@ -83,7 +83,7 @@ export function setupScalingPrimitiveCollection(
           primitive.modelMatrix = Matrix4.setScale(
             modelMatrix,
             new Cartesian3(res, res, res),
-            new Matrix4(),
+            primitive.modelMatrix,
           );
           primitive[scaleSymbol] = res;
         }

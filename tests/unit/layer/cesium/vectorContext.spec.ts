@@ -567,26 +567,29 @@ describe('VectorContext', () => {
       scene.postRender.raiseEvent();
       const scale = Matrix4.getScale(primitive.modelMatrix, new Cartesian3());
       expect(scale.equals(new Cartesian3(3, 3, 3))).to.be.true;
-      expect(primitive.modelMatrix).to.not.equal(modelMatrix);
     });
 
     it('should not scale a primitive post render, if the viewpoint doesnt change', () => {
       const primitive = addPrimitive();
       scene.postRender.raiseEvent();
-      const { modelMatrix } = primitive;
+      const scale = Matrix4.getScale(primitive.modelMatrix, new Cartesian3());
       scene.postRender.raiseEvent();
-      expect(primitive.modelMatrix).to.equal(modelMatrix);
+      expect(Matrix4.getScale(primitive.modelMatrix, new Cartesian3())).to.eql(
+        scale,
+      );
     });
 
     it('should not scale a primitive post render, if the viewpoint changes, but the resolution does not', async () => {
       const primitive = addPrimitive();
       scene.postRender.raiseEvent();
-      const { modelMatrix } = primitive;
+      const scale = Matrix4.getScale(primitive.modelMatrix, new Cartesian3());
       const vp = map.getViewpointSync()!;
       vp.cameraPosition = [0, 0, 1];
       await map.gotoViewpoint(vp);
       scene.postRender.raiseEvent();
-      expect(primitive.modelMatrix).to.equal(modelMatrix);
+      expect(Matrix4.getScale(primitive.modelMatrix, new Cartesian3())).to.eql(
+        scale,
+      );
     });
 
     it('should scale a primitive post render, if the viewpoint doesnt change, but the collection is dirty', () => {
@@ -596,7 +599,8 @@ describe('VectorContext', () => {
       dirtyRef.value = true;
       getCurrentResolutionFromCartesian.returns(3);
       scene.postRender.raiseEvent();
-      expect(primitive.modelMatrix).to.not.equal(modelMatrix);
+      const scale = Matrix4.getScale(primitive.modelMatrix, new Cartesian3());
+      expect(scale.equals(new Cartesian3(3, 3, 3))).to.be.true;
     });
   });
 });

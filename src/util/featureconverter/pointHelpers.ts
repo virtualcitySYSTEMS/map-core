@@ -44,6 +44,7 @@ import {
   RelativeHeightReference,
   VectorHeightInfo,
 } from './vectorHeightInfo.js';
+import { scaleSymbol } from '../../layer/cesium/vectorContext.js';
 
 function makeOffsetAutoScalePrimitive(
   primitive: Primitive | Model,
@@ -114,12 +115,16 @@ function makeClampedPrimitive(
       undefined,
       scratchUpdateHeightCartesian,
     );
-
-    const geometryModelMatrix = Matrix4.fromScale(scale);
+    let usedScale = scale;
+    const autoScale = primitive[scaleSymbol];
+    if (autoScale != null) {
+      usedScale = new Cartesian3(autoScale, autoScale, autoScale);
+    }
+    const geometryModelMatrix = Matrix4.fromScale(usedScale);
     if (offset) {
       Matrix4.setTranslation(
         geometryModelMatrix,
-        Cartesian3.multiplyComponents(offset, scale, new Cartesian3()),
+        Cartesian3.multiplyComponents(offset, usedScale, new Cartesian3()),
         geometryModelMatrix,
       );
     }
@@ -131,7 +136,7 @@ function makeClampedPrimitive(
     primitive.modelMatrix = Matrix4.multiply(
       transform,
       geometryModelMatrix,
-      new Matrix4(),
+      primitive.modelMatrix,
     );
   };
 

@@ -11,8 +11,8 @@ import { Coordinate } from 'ol/coordinate.js';
 import {
   Cartographic,
   HeightReference,
-  Scene,
   Math as CesiumMath,
+  Scene,
 } from '@vcmap-cesium/engine';
 import { Geometry } from 'ol/geom.js';
 import { Feature } from 'ol';
@@ -24,6 +24,7 @@ import {
   from3Dto2DLayout,
   getFlatCoordinateReferences,
   getFlatCoordinatesFromSimpleGeometry,
+  placeGeometryOnGround,
 } from '../../../src/util/geometryHelpers.js';
 import { getMockScene } from '../helpers/cesiumHelpers.js';
 import {
@@ -1685,6 +1686,75 @@ describe('util.geometryHelpers', () => {
         ]);
         expect(geometry.getLayout()).to.equal('XYZM');
       });
+    });
+  });
+
+  describe('placeGeometryOnGround', () => {
+    let scene: Scene;
+
+    before(() => {
+      scene = getMockScene();
+      scene.sampleHeightMostDetailed = (
+        cs: Cartographic[],
+      ): Promise<Cartographic[]> => {
+        cs.forEach((c) => {
+          c.height =
+            CesiumMath.toDegrees(c.longitude) +
+            CesiumMath.toDegrees(c.latitude);
+        });
+        return Promise.resolve(cs);
+      };
+    });
+
+    it('should place an XY geometry on ground', async () => {
+      const geometry = new Point(Projection.wgs84ToMercator([1, 2]));
+      await placeGeometryOnGround(
+        geometry,
+        scene,
+        HeightReference.CLAMP_TO_GROUND,
+      );
+      expect(geometry.getCoordinates()).to.have.ordered.members(
+        Projection.wgs84ToMercator([1, 2, 3]),
+      );
+    });
+
+    it('should place an XYZ geometry on ground', async () => {
+      const geometry = new Point(Projection.wgs84ToMercator([1, 2, 1]));
+      await placeGeometryOnGround(
+        geometry,
+        scene,
+        HeightReference.CLAMP_TO_GROUND,
+      );
+      expect(geometry.getCoordinates()).to.have.ordered.members(
+        Projection.wgs84ToMercator([1, 2, 3]),
+      );
+    });
+
+    it('should place an XYM geometry on ground', async () => {
+      const geometry = new Point(Projection.wgs84ToMercator([1, 2, 1]), 'XYM');
+      await placeGeometryOnGround(
+        geometry,
+        scene,
+        HeightReference.CLAMP_TO_GROUND,
+      );
+      expect(geometry.getCoordinates()).to.have.ordered.members(
+        Projection.wgs84ToMercator([1, 2, 3, 1]),
+      );
+    });
+
+    it('should place an XYZM geometry on ground', async () => {
+      const geometry = new Point(
+        Projection.wgs84ToMercator([1, 2, 1, 1]),
+        'XYZM',
+      );
+      await placeGeometryOnGround(
+        geometry,
+        scene,
+        HeightReference.CLAMP_TO_GROUND,
+      );
+      expect(geometry.getCoordinates()).to.have.ordered.members(
+        Projection.wgs84ToMercator([1, 2, 3, 1]),
+      );
     });
   });
 

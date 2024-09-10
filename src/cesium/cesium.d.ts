@@ -69,6 +69,7 @@ declare module '@vcmap-cesium/engine' {
   interface Primitive {
     olFeature?: import('ol').Feature<import('ol/geom.js').Geometry>;
     [handlerSymbol]?: AxisAndPlanes;
+    [scaleSymbol]?: number;
   }
 
   interface Model {

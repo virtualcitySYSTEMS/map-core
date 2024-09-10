@@ -214,13 +214,19 @@ export function from3Dto2DLayout(geometry: Geometry): void {
   geometry.setCoordinates(coordinates, layout === 'XYZM' ? 'XYM' : 'XY');
 }
 
+/**
+ * Places a geometry on to the ground (or terrain). The geometry is changed in place. This function
+ * will set the layout to a respective 3D layout.
+ * @param geometry
+ * @param scene
+ * @param heightReference - clamp to ground will use `scene.getHeightMostDetailed`, terrain will use `sampleTerrainMostDetailed` using the scenes terrain provider
+ */
 export async function placeGeometryOnGround(
   geometry: Geometry,
   scene: Scene,
   heightReference:
     | HeightReference.CLAMP_TO_GROUND
     | HeightReference.CLAMP_TO_TERRAIN,
-  offsetByZ = false,
 ): Promise<void> {
   const layout = geometry.getLayout();
   const coordinates = geometry.getCoordinates() as any[];
@@ -232,22 +238,19 @@ export async function placeGeometryOnGround(
     await sampleTerrainMostDetailed(scene.terrainProvider, cartographics);
   }
 
-  if (offsetByZ && !is2DLayout(layout)) {
-    cartographics.forEach((c, index) => {
-      flatCoordinates[index][2] += c.height;
-    });
-  } else {
-    cartographics.forEach((c, index) => {
-      if (layout === 'XYM') {
-        flatCoordinates[index][3] = flatCoordinates[index][2];
-        flatCoordinates[index][2] = c.height;
-      } else {
-        flatCoordinates[index][2] = c.height;
-      }
-    });
-  }
+  cartographics.forEach((c, index) => {
+    if (layout === 'XYM') {
+      flatCoordinates[index][3] = flatCoordinates[index][2];
+      flatCoordinates[index][2] = c.height;
+    } else {
+      flatCoordinates[index][2] = c.height;
+    }
+  });
 
-  geometry.setCoordinates(coordinates, layout === 'XYM' ? 'XYZM' : 'XYZ');
+  geometry.setCoordinates(
+    coordinates,
+    layout === 'XYM' || layout === 'XYZM' ? 'XYZM' : 'XYZ',
+  );
 }
 
 /**
