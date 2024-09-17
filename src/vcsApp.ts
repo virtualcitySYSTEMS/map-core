@@ -27,6 +27,7 @@ import { setDefaultProjectionOptions } from './util/projection.js';
 import ObliqueMap from './map/obliqueMap.js';
 import OverrideClassRegistry from './overrideClassRegistry.js';
 import ClassRegistry, {
+  AbstractCtor,
   categoryClassRegistry,
   Ctor,
   featureProviderClassRegistry,
@@ -117,7 +118,9 @@ class VcsApp {
 
   private _flights: OverrideCollection<FlightInstance, FlightCollection>;
 
-  private _categoryClassRegistry: OverrideClassRegistry<typeof Category>;
+  private _categoryClassRegistry: OverrideClassRegistry<
+    typeof Category<any, any>
+  >;
 
   private _categories: CategoryCollection;
 
@@ -347,11 +350,13 @@ class VcsApp {
     return this._styleClassRegistry;
   }
 
-  get categoryClassRegistry(): OverrideClassRegistry<typeof Category> {
+  get categoryClassRegistry(): OverrideClassRegistry<
+    typeof Category<any, any>
+  > {
     return this._categoryClassRegistry;
   }
 
-  get categoryItemClassRegistry(): OverrideClassRegistry<Ctor<any>> {
+  get categoryItemClassRegistry(): OverrideClassRegistry<AbstractCtor> {
     return this._categoryItemClassRegistry;
   }
 
@@ -422,7 +427,7 @@ class VcsApp {
           [...this._maps]
             .filter((m) => m instanceof ObliqueMap)
             .map((m) => {
-              return (m as ObliqueMap).setCollection(startingObliqueCollection);
+              return m.setCollection(startingObliqueCollection);
             }),
         );
       }
@@ -623,5 +628,7 @@ export function getVcsAppById(id: string): VcsApp | undefined {
 
 window.vcs = window.vcs || {};
 window.vcs.apps = vcsApps;
+window.vcs.createModuleFromConfig = (config: VcsModuleConfig): VcsModule =>
+  new VcsModule(config);
 
 export default VcsApp;

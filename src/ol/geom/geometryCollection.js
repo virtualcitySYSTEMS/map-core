@@ -28,25 +28,67 @@ GeometryCollection.prototype.setCoordinates = function setCoordinates(
 };
 
 /**
+ * @type {Record<import("ol/geom/Geometry").GeometryLayout, number>}
+ */
+const layoutScore = {
+  XY: 1,
+  XYM: 2,
+  XYZ: 3,
+  XYZM: 4,
+};
+
+/**
+ * @type {Record<import("ol/geom/Geometry").GeometryLayout, number>}
+ */
+const layoutStride = {
+  XY: 2,
+  XYM: 3,
+  XYZ: 3,
+  XYZM: 4,
+};
+
+/**
+ * @param {import("ol/geom/Geometry").GeometryLayout} layout
+ * @param {import("ol/geom/Geometry").GeometryLayout=} minLayout
+ * @returns { import("ol/geom/Geometry").GeometryLayout}
+ */
+function getMinLayout(layout, minLayout) {
+  if (!minLayout) {
+    return layout;
+  }
+  if (
+    (minLayout === 'XYM' && layout !== 'XYM') ||
+    (layout === 'XYM' && minLayout !== 'XYM')
+  ) {
+    return 'XY';
+  }
+  const inScore = layoutScore[layout];
+  const minScore = layoutScore[minLayout];
+  if (inScore < minScore) {
+    return layout;
+  }
+
+  return minLayout;
+}
+
+/**
  * @returns {import("ol/geom/Geometry").GeometryLayout}
  */
 GeometryCollection.prototype.getLayout = function getLayout() {
-  const firstGeom = this.getGeometriesArray()[0];
-  if (firstGeom) {
-    return firstGeom.getLayout();
-  }
-  return 'XYZ';
+  let maxCommonLayout;
+  this.getGeometriesArrayRecursive().forEach((geom) => {
+    maxCommonLayout = getMinLayout(geom.getLayout(), maxCommonLayout);
+  });
+
+  return maxCommonLayout ?? 'XY';
 };
 
 /**
  * @returns {number}
  */
 GeometryCollection.prototype.getStride = function getStride() {
-  const firstGeom = this.getGeometriesArray()[0];
-  if (firstGeom) {
-    return firstGeom.getStride();
-  }
-  return 2;
+  const layout = this.getLayout();
+  return layoutStride[layout];
 };
 
 /**
@@ -54,7 +96,34 @@ GeometryCollection.prototype.getStride = function getStride() {
  */
 GeometryCollection.prototype.getFlatCoordinates =
   function getFlatCoordinates() {
-    return this.getGeometriesArrayRecursive().flatMap((g) =>
-      g.getFlatCoordinates(),
-    );
+    const commonStride = this.getStride();
+    const flatCoordinates = [];
+    this.getGeometriesArrayRecursive().forEach((geom) => {
+      const geometryStride = geom.getStride();
+      const geometryFlatCoordinates = geom.getFlatCoordinates();
+      if (geometryStride === commonStride) {
+        flatCoordinates.push(geometryFlatCoordinates);
+      } else if (geometryStride > commonStride) {
+        const geometryCoordinateLength = geometryFlatCoordinates.length;
+        const numberOfCoordinates = Math.round(
+          geometryCoordinateLength / geometryStride,
+        );
+        const slicedGeometryCoordinates = new Array(
+          numberOfCoordinates * commonStride,
+        );
+        for (let i = 0; i < geometryCoordinateLength; i += geometryStride) {
+          for (let j = 0; j < commonStride; j++) {
+            const slicedGeometryCoordinateOffset = Math.round(
+              (i / geometryStride) * commonStride,
+            );
+
+            slicedGeometryCoordinates[slicedGeometryCoordinateOffset + j] =
+              geometryFlatCoordinates[i + j];
+          }
+        }
+        flatCoordinates.push(slicedGeometryCoordinates);
+      }
+    });
+
+    return [].concat(...flatCoordinates);
   };

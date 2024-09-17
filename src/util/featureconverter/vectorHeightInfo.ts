@@ -1,4 +1,3 @@
-import { is } from '@vcsuite/check';
 import { Geometry, SimpleGeometry } from 'ol/geom.js';
 import type { Coordinate } from 'ol/coordinate.js';
 import { Cartesian3, HeightReference } from '@vcmap-cesium/engine';
@@ -190,8 +189,8 @@ export function getClampOrigin(geometry: SimpleGeometry): [number, number] {
  * @returns the minimum height
  */
 export function getMinHeight(geometry: Geometry): number {
-  if (!is(geometry, SimpleGeometry) || is2DLayout(geometry.getLayout())) {
-    throw new Error('expected geometry to be a simple YXZ geometry');
+  if (is2DLayout(geometry.getLayout())) {
+    throw new Error('expected geometry to have an YXZ geometry layout');
   }
 
   const stride = geometry.getStride();

@@ -166,9 +166,7 @@ class ClippingObject {
         if (layer.active) {
           const visualisations = map.getVisualizationsForLayer(layer);
           const tilesets = visualisations
-            ? ([...visualisations].filter(
-                (v) => v instanceof Cesium3DTileset,
-              ) as Cesium3DTileset[])
+            ? [...visualisations].filter((v) => v instanceof Cesium3DTileset)
             : [];
 
           if (tilesets.length > 0) {

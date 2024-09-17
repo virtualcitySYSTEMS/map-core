@@ -72,7 +72,8 @@ function checkMergeOptionOverride<
  * the requestCategory API on the categories collection. Do not use toJSON to retrieve the state of a category, since
  * categories outlive modules and may be changed with mergeOptions to no longer reflect your initial state. Requestors
  * should keep track of the requested options themselves.
- * @template {Object|VcsObject} T
+ * @template {Object|VcsObject} T the type of objects in this category
+ * @template {Object} S the serialized state of the object in this category
  * @group Category
  */
 class Category<
@@ -192,7 +193,7 @@ class Category<
       if (feature) {
         feature.setId(String(id));
         setTimeout(() => {
-          this._layer?.addFeatures([feature as Feature]);
+          this._layer?.addFeatures([feature]);
         }, 0); // We need to set a timeout, since removing and adding the feature in the same sync call leads to undefined behavior in OL TODO recheck in ol 6.11
       }
     }

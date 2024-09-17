@@ -433,9 +433,7 @@ class VectorLayer
    */
   getFeaturesById(ids: (string | number)[]): Feature[] {
     check(ids, [oneOf(String, Number)]);
-    return ids
-      .map((id) => this.getFeatureById(id))
-      .filter((f) => f != null) as Feature[];
+    return ids.map((id) => this.getFeatureById(id)).filter((f) => f != null);
   }
 
   /**

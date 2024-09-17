@@ -1,3 +1,7 @@
+### 6.0.0-rc.6
+
+- Adds a `createAbsoluteFeature` helper to resolve features of the current session to an absolute state.
+
 ### 6.0.0-rc.5
 
 - Adds new helpers to change geometry layouts from XY to XYZ.
@@ -43,6 +47,7 @@
   - renamed previously unused symbol `vertexIndex` to `vertexIndexSymbol`. the symbol is now correctly set on vertices.
 - To better illustrate its use, `getFlatCoordinatesForGeometry` was renamed to `getFlatCoordinateReferences`.
 - `VectorPropeties.getModelOptions` no longer returns an empty object, but undefined, if model options is not defined anywhere.
+- The window now includes a `createModuleFromConfig` helper to be used in iframes.
 
 ### 6.0.0-rc.4
 

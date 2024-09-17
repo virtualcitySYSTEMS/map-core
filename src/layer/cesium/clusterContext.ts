@@ -58,7 +58,7 @@ class ClusterContext implements CesiumVectorContext {
 
         if (instance) {
           removeItem = (): void => {
-            this.entities.remove(instance as Entity);
+            this.entities.remove(instance);
           };
         }
 

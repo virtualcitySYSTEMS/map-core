@@ -110,7 +110,7 @@ export const mapClassRegistry: ClassRegistry<typeof VcsMap> =
 export const styleClassRegistry: ClassRegistry<typeof StyleItem> =
   new ClassRegistry();
 
-export const categoryClassRegistry: ClassRegistry<typeof Category> =
+export const categoryClassRegistry: ClassRegistry<typeof Category<any, any>> =
   new ClassRegistry();
 
 /**

@@ -693,7 +693,7 @@ export {
   from2Dto3DLayout,
   from3Dto2DLayout,
   placeGeometryOnGround,
-  createAbsoluteFeatures,
+  createAbsoluteFeature,
 } from './src/util/geometryHelpers.js';
 export { default as IndexedCollection } from './src/util/indexedCollection.js';
 export { isMobile } from './src/util/isMobile.js';

@@ -19,7 +19,7 @@ import { Feature } from 'ol';
 import {
   circleFromCenterRadius,
   convertGeometryToPolygon,
-  createAbsoluteFeatures,
+  createAbsoluteFeature,
   from2Dto3DLayout,
   from3Dto2DLayout,
   getFlatCoordinateReferences,
@@ -1869,17 +1869,74 @@ describe('util.geometryHelpers', () => {
 
         before(async () => {
           vectorProperties = new VectorProperties({ altitudeMode: 'absolute' });
-          absoluteFeatures = await createAbsoluteFeatures(
-            inputFeatures,
-            vectorProperties,
-            scene,
+          absoluteFeatures = await Promise.all(
+            inputFeatures.map(
+              (f) =>
+                createAbsoluteFeature(
+                  f,
+                  vectorProperties,
+                  scene,
+                ) as Promise<Feature>,
+            ),
           );
+        });
+
+        it('should set olcs_altitudeMode to absolute', () => {
+          absoluteFeatures.forEach((f) => {
+            expect(f.get('olcs_altitudeMode')).to.equal('absolute');
+          });
         });
 
         it('should not change the height of absolute geometries', () => {
           absoluteFeatures.forEach((f, i) => {
             expect(f.getGeometry()!.getFlatCoordinates()).to.eql(
               inputFeatures[i].getGeometry()!.getFlatCoordinates(),
+            );
+          });
+        });
+      });
+
+      describe('if they are absolute & ground level is set', () => {
+        let vectorProperties: VectorProperties;
+        let absoluteFeatures: Feature[];
+
+        before(async () => {
+          vectorProperties = new VectorProperties({
+            altitudeMode: 'absolute',
+            groundLevel: 5,
+          });
+          absoluteFeatures = await Promise.all(
+            inputFeatures.map(
+              (f) =>
+                createAbsoluteFeature(
+                  f,
+                  vectorProperties,
+                  scene,
+                ) as Promise<Feature>,
+            ),
+          );
+        });
+
+        it('should set olcs_altitudeMode to absolute', () => {
+          absoluteFeatures.forEach((f) => {
+            expect(f.get('olcs_altitudeMode')).to.equal('absolute');
+          });
+        });
+
+        it('should set the geometries to ground level', () => {
+          absoluteFeatures.forEach((f, i) => {
+            const geometry = f.getGeometry()!;
+            expect(geometry.getFlatCoordinates()).to.eql(
+              inputFeatures[i]
+                .getGeometry()!
+                .getFlatCoordinates()
+                .map((c, j) => {
+                  if ((j + 1) % 3 === 0) {
+                    return 5;
+                  }
+                  return c;
+                }),
+              ` of ${geometry.getType()} coordinate: `,
             );
           });
         });
@@ -1893,11 +1950,22 @@ describe('util.geometryHelpers', () => {
           vectorProperties = new VectorProperties({
             altitudeMode: 'clampToGround',
           });
-          absoluteFeatures = await createAbsoluteFeatures(
-            inputFeatures,
-            vectorProperties,
-            scene,
+          absoluteFeatures = await Promise.all(
+            inputFeatures.map(
+              (f) =>
+                createAbsoluteFeature(
+                  f,
+                  vectorProperties,
+                  scene,
+                ) as Promise<Feature>,
+            ),
           );
+        });
+
+        it('should set olcs_altitudeMode to absolute', () => {
+          absoluteFeatures.forEach((f) => {
+            expect(f.get('olcs_altitudeMode')).to.equal('absolute');
+          });
         });
 
         it('should place geometries onto the ground', () => {
@@ -1924,6 +1992,52 @@ describe('util.geometryHelpers', () => {
                 `coordiantes of ${geometry.getType()} dont match`,
               );
             }
+          });
+        });
+      });
+
+      describe('if they are clamped and ground level is set', () => {
+        let vectorProperties: VectorProperties;
+        let absoluteFeatures: Feature[];
+
+        before(async () => {
+          vectorProperties = new VectorProperties({
+            altitudeMode: 'clampToGround',
+            groundLevel: 5,
+          });
+          absoluteFeatures = await Promise.all(
+            inputFeatures.map(
+              (f) =>
+                createAbsoluteFeature(
+                  f,
+                  vectorProperties,
+                  scene,
+                ) as Promise<Feature>,
+            ),
+          );
+        });
+
+        it('should set olcs_altitudeMode to absolute', () => {
+          absoluteFeatures.forEach((f) => {
+            expect(f.get('olcs_altitudeMode')).to.equal('absolute');
+          });
+        });
+
+        it('should set the geometries to ground level', () => {
+          absoluteFeatures.forEach((f, i) => {
+            const geometry = f.getGeometry()!;
+            expect(geometry.getFlatCoordinates()).to.eql(
+              inputFeatures[i]
+                .getGeometry()!
+                .getFlatCoordinates()
+                .map((c, j) => {
+                  if ((j + 1) % 3 === 0) {
+                    return 5;
+                  }
+                  return c;
+                }),
+              ` of ${geometry.getType()} coordinate: `,
+            );
           });
         });
       });
@@ -1969,11 +2083,22 @@ describe('util.geometryHelpers', () => {
               altitudeMode: 'relativeToGround',
               heightAboveGround: 5,
             });
-            absoluteFeatures = await createAbsoluteFeatures(
-              inputFeatures,
-              vectorProperties,
-              scene,
+            absoluteFeatures = await Promise.all(
+              inputFeatures.map(
+                (f) =>
+                  createAbsoluteFeature(
+                    f,
+                    vectorProperties,
+                    scene,
+                  ) as Promise<Feature>,
+              ),
             );
+          });
+
+          it('should set olcs_altitudeMode to absolute', () => {
+            absoluteFeatures.forEach((f) => {
+              expect(f.get('olcs_altitudeMode')).to.equal('absolute');
+            });
           });
 
           it('should place geometries above the ground by height above ground', () => {
@@ -2007,10 +2132,15 @@ describe('util.geometryHelpers', () => {
             vectorProperties = new VectorProperties({
               altitudeMode: 'relativeToGround',
             });
-            absoluteFeatures = await createAbsoluteFeatures(
-              inputFeatures,
-              vectorProperties,
-              scene,
+            absoluteFeatures = await Promise.all(
+              inputFeatures.map(
+                (f) =>
+                  createAbsoluteFeature(
+                    f,
+                    vectorProperties,
+                    scene,
+                  ) as Promise<Feature>,
+              ),
             );
           });
 
@@ -2129,11 +2259,22 @@ describe('util.geometryHelpers', () => {
 
         before(async () => {
           vectorProperties = new VectorProperties({ altitudeMode: 'absolute' });
-          absoluteFeatures = await createAbsoluteFeatures(
-            inputFeatures,
-            vectorProperties,
-            scene,
+          absoluteFeatures = await Promise.all(
+            inputFeatures.map(
+              (f) =>
+                createAbsoluteFeature(
+                  f,
+                  vectorProperties,
+                  scene,
+                ) as Promise<Feature>,
+            ),
           );
+        });
+
+        it('should set olcs_altitudeMode to absolute', () => {
+          absoluteFeatures.forEach((f) => {
+            expect(f.get('olcs_altitudeMode')).to.equal('absolute');
+          });
         });
 
         it('should place geometries onto the ground', () => {
@@ -2172,11 +2313,22 @@ describe('util.geometryHelpers', () => {
           vectorProperties = new VectorProperties({
             altitudeMode: 'clampToGround',
           });
-          absoluteFeatures = await createAbsoluteFeatures(
-            inputFeatures,
-            vectorProperties,
-            scene,
+          absoluteFeatures = await Promise.all(
+            inputFeatures.map(
+              (f) =>
+                createAbsoluteFeature(
+                  f,
+                  vectorProperties,
+                  scene,
+                ) as Promise<Feature>,
+            ),
           );
+        });
+
+        it('should set olcs_altitudeMode to absolute', () => {
+          absoluteFeatures.forEach((f) => {
+            expect(f.get('olcs_altitudeMode')).to.equal('absolute');
+          });
         });
 
         it('should place geometries onto the ground', () => {
@@ -2248,11 +2400,22 @@ describe('util.geometryHelpers', () => {
               altitudeMode: 'relativeToGround',
               heightAboveGround: 5,
             });
-            absoluteFeatures = await createAbsoluteFeatures(
-              inputFeatures,
-              vectorProperties,
-              scene,
+            absoluteFeatures = await Promise.all(
+              inputFeatures.map(
+                (f) =>
+                  createAbsoluteFeature(
+                    f,
+                    vectorProperties,
+                    scene,
+                  ) as Promise<Feature>,
+              ),
             );
+          });
+
+          it('should set olcs_altitudeMode to absolute', () => {
+            absoluteFeatures.forEach((f) => {
+              expect(f.get('olcs_altitudeMode')).to.equal('absolute');
+            });
           });
 
           it('should place geometries above the ground by height above ground', () => {
@@ -2286,10 +2449,15 @@ describe('util.geometryHelpers', () => {
             vectorProperties = new VectorProperties({
               altitudeMode: 'relativeToGround',
             });
-            absoluteFeatures = await createAbsoluteFeatures(
-              inputFeatures,
-              vectorProperties,
-              scene,
+            absoluteFeatures = await Promise.all(
+              inputFeatures.map(
+                (f) =>
+                  createAbsoluteFeature(
+                    f,
+                    vectorProperties,
+                    scene,
+                  ) as Promise<Feature>,
+              ),
             );
           });
 

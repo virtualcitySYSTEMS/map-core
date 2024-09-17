@@ -33,9 +33,7 @@ export async function tiledLayerLoaded(
 ): Promise<void> {
   const impls = layer
     .getImplementations()
-    .filter(
-      (i) => i instanceof CesiumTilesetCesiumImpl,
-    ) as CesiumTilesetCesiumImpl[];
+    .filter((i) => i instanceof CesiumTilesetCesiumImpl);
   if (!layer.active || impls.every((i) => i.cesium3DTileset?.tilesLoaded)) {
     return;
   }

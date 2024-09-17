@@ -257,13 +257,13 @@ function getGeometryInstanceFromOptions(
       : new CylinderGeometry(options.geometryOptions);
   } else if (vectorPropertiesOfType(options, PrimitiveOptionsType.ELLIPSOID)) {
     if (Array.isArray(options.geometryOptions?.radii)) {
-      options.geometryOptions!.radii = Cartesian3.fromArray(
-        options.geometryOptions!.radii,
+      options.geometryOptions.radii = Cartesian3.fromArray(
+        options.geometryOptions.radii,
       );
     }
     if (Array.isArray(options.geometryOptions?.innerRadii)) {
-      options.geometryOptions!.innerRadii = Cartesian3.fromArray(
-        options.geometryOptions!.innerRadii,
+      options.geometryOptions.innerRadii = Cartesian3.fromArray(
+        options.geometryOptions.innerRadii,
       );
     }
     geometry = outline

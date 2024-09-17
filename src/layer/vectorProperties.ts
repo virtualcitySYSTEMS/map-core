@@ -225,7 +225,7 @@ export function parseNearFarScalar(
   if (Array.isArray(value)) {
     const valid = value
       .map((entry) => parseNumber(entry))
-      .filter((entry) => entry != null) as number[];
+      .filter((entry) => entry != null);
     if (valid.length === 4) {
       return new NearFarScalar(valid[0], valid[1], valid[2], valid[3]);
     }
@@ -240,7 +240,7 @@ export function parseCartesian3(
   if (Array.isArray(value)) {
     const valid = value
       .map((entry) => parseNumber(entry))
-      .filter((entry) => entry != null) as number[];
+      .filter((entry) => entry != null);
     if (valid.length === 3) {
       return new Cartesian3(valid[0], valid[1], valid[2]);
     }
@@ -1302,10 +1302,35 @@ class VectorProperties {
       }
     }
 
+    if ('modelOptions' in options) {
+      if (!deepEqual(this._modelOptions, options.modelOptions)) {
+        this._modelOptions = options.modelOptions
+          ? structuredClone(options.modelOptions)
+          : undefined;
+        changedProperties.push('modelOptions');
+      }
+    }
+
+    if ('modelAutoScale' in options) {
+      if (this._modelAutoScale !== options.modelAutoScale) {
+        this._modelAutoScale = !!options.modelAutoScale;
+        changedProperties.push('modelAutoScale');
+      }
+    }
+
     if ('baseUrl' in options) {
       if (options.baseUrl !== this._baseUrl) {
         this._baseUrl = options.baseUrl ?? '';
         changedProperties.push('baseUrl');
+      }
+    }
+
+    if ('primitiveOptions' in options) {
+      if (!deepEqual(this._primitiveOptions, options.primitiveOptions)) {
+        this._primitiveOptions = options.primitiveOptions
+          ? structuredClone(options.primitiveOptions)
+          : undefined;
+        changedProperties.push('primitiveOptions');
       }
     }
 

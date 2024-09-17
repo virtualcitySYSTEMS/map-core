@@ -118,7 +118,7 @@ class CategoryCollection extends IndexedCollection<Category> {
         options,
       );
       if (category) {
-        if (this.add(category) == null) {
+        if (this.add(category as Category) == null) {
           return null;
         }
       }
