@@ -31,6 +31,36 @@ export function setReferenceForPicking(
   primitive.olFeature = feature;
 }
 
+function getIndexOfPrimitive(
+  item: PrimitiveType,
+  collection: PrimitiveCollection,
+): number {
+  const { length } = collection;
+  for (let i = 0; i < length; i++) {
+    const p = collection.get(i) as PrimitiveType;
+    if (p === item) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+function addPrimitiveAtIndex(
+  type: 'scaled' | 'primitive',
+  item: PrimitiveType,
+  collection: PrimitiveCollection,
+  indices: ConvertedIndices,
+): PrimitiveType {
+  let index = indices[type];
+  if (index != null) {
+    if (index > collection.length) {
+      index = undefined;
+    }
+  }
+
+  return collection.add(item, index) as PrimitiveType;
+}
+
 /**
  * Sets splitDirection on primitives. Currently only Model primitives support splitting.
  */
@@ -106,6 +136,10 @@ export interface CesiumVectorContext {
   clear(): void;
 }
 
+type ConvertedItemIndex = { type: 'primitive' | 'scaled'; index: number };
+
+type ConvertedIndices = { primitive?: number; scaled?: number };
+
 export default class VectorContext implements CesiumVectorContext {
   primitives = new PrimitiveCollection();
 
@@ -115,9 +149,13 @@ export default class VectorContext implements CesiumVectorContext {
 
   labels: LabelCollection;
 
-  private _featureItems = new Map<Feature, (() => void)[]>();
+  private _featureItems = new Map<
+    Feature,
+    (() => ConvertedItemIndex | void)[]
+  >();
 
-  private _convertingFeatures: Map<Feature, () => void> = new Map();
+  private _convertingFeatures: Map<Feature, (replace: boolean) => void> =
+    new Map();
 
   splitDirection: SplitDirection;
 
@@ -157,26 +195,63 @@ export default class VectorContext implements CesiumVectorContext {
     feature: Feature,
     allowPicking: boolean,
     items: ConvertedItem[],
+    indices: ConvertedIndices,
   ): void {
     const removeItems = items
       .map((item) => {
         let instance: PrimitiveType | Label | Billboard | undefined;
-        let removeItem: (() => void) | undefined;
+        let removeItem: (() => ConvertedItemIndex | void) | undefined;
         if (item.type === 'primitive') {
           if (item.autoScale) {
-            instance = this.scaledPrimitives.add(item.item) as PrimitiveType;
+            instance = addPrimitiveAtIndex(
+              'scaled',
+              item.item,
+              this.scaledPrimitives,
+              indices,
+            );
+
             if (instance) {
-              removeItem = (): void => {
-                this._scaledDirty.value =
-                  this.scaledPrimitives.remove(instance);
+              removeItem = (): ConvertedItemIndex | undefined => {
+                const currentIndex = getIndexOfPrimitive(
+                  instance as PrimitiveType,
+                  this.scaledPrimitives,
+                );
+                if (currentIndex > -1) {
+                  this._scaledDirty.value =
+                    this.scaledPrimitives.remove(instance);
+
+                  return {
+                    type: 'scaled',
+                    index: currentIndex,
+                  };
+                }
+                return undefined;
               };
               this._scaledDirty.value = true;
             }
           } else {
-            instance = this.primitives.add(item.item) as PrimitiveType;
+            instance = addPrimitiveAtIndex(
+              'primitive',
+              item.item,
+              this.primitives,
+              indices,
+            );
+
             if (instance) {
-              removeItem = (): void => {
-                this.primitives.remove(instance);
+              removeItem = (): ConvertedItemIndex | undefined => {
+                const currentIndex = getIndexOfPrimitive(
+                  instance as PrimitiveType,
+                  this.primitives,
+                );
+
+                if (currentIndex > -1) {
+                  this.primitives.remove(instance);
+                  return {
+                    type: 'primitive',
+                    index: currentIndex,
+                  };
+                }
+                return undefined;
               };
             }
           }
@@ -211,7 +286,7 @@ export default class VectorContext implements CesiumVectorContext {
         }
         return removeItem;
       })
-      .filter((i): i is () => void => i != null);
+      .filter((i) => i != null);
 
     this._featureItems.set(feature, removeItems);
   }
@@ -222,10 +297,15 @@ export default class VectorContext implements CesiumVectorContext {
     vectorProperties: VectorProperties,
     scene: Scene,
   ): Promise<void> {
-    this._convertingFeatures.get(feature)?.();
+    this._convertingFeatures.get(feature)?.(true);
     let deleted = false;
-    this._convertingFeatures.set(feature, () => {
-      deleted = true;
+    let replaced = false;
+    this._convertingFeatures.set(feature, (isReplacement?: boolean) => {
+      if (isReplacement) {
+        replaced = true;
+      } else {
+        deleted = true;
+      }
     });
 
     const convertedItems = await convert(
@@ -235,7 +315,32 @@ export default class VectorContext implements CesiumVectorContext {
       scene,
     );
 
-    this._featureItems.get(feature)?.forEach((removeItem) => removeItem());
+    if (replaced) {
+      convertedItems.forEach((item) => {
+        if (item.type === 'primitive') {
+          item.item.destroy();
+        }
+      });
+      return;
+    }
+
+    const convertedIndices: ConvertedIndices =
+      this._featureItems
+        .get(feature)
+        ?.map((removeItem) => removeItem())
+        ?.filter((i) => i != null)
+        ?.reduce((items, current) => {
+          const minIndex = items[current.type];
+          if (minIndex != null) {
+            items[current.type] =
+              current.index != null && current.index < minIndex
+                ? current.index
+                : items[current.type];
+          } else {
+            items[current.type] = current.index;
+          }
+          return items;
+        }, {} as ConvertedIndices) ?? {};
     this._featureItems.delete(feature);
 
     if (deleted) {
@@ -249,12 +354,13 @@ export default class VectorContext implements CesiumVectorContext {
         feature,
         vectorProperties.getAllowPicking(feature),
         convertedItems,
+        convertedIndices,
       );
     }
   }
 
   removeFeature(feature: Feature): void {
-    this._convertingFeatures.get(feature)?.();
+    this._convertingFeatures.get(feature)?.(false);
     this._convertingFeatures.delete(feature);
     this._featureItems.get(feature)?.forEach((removeItem) => removeItem());
     this._featureItems.delete(feature);
@@ -275,7 +381,7 @@ export default class VectorContext implements CesiumVectorContext {
     this.labels.removeAll();
     this._featureItems.clear();
     this._convertingFeatures.forEach((destroy) => {
-      destroy();
+      destroy(true);
     });
     this._convertingFeatures.clear();
   }
@@ -294,7 +400,7 @@ export default class VectorContext implements CesiumVectorContext {
     // @ts-ignore
     this._rootCollection = null;
     this._convertingFeatures.forEach((destroy) => {
-      destroy();
+      destroy(true);
     });
     this._convertingFeatures.clear();
     this._featureItems.clear();

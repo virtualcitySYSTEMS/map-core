@@ -475,6 +475,49 @@ describe('VectorContext', () => {
       await Promise.all([p1, p2, p3]);
       expect(vectorContext.labels.length).to.equal(1);
     });
+
+    it('should only remove the current feature, once the new one which will be added is ready', async () => {
+      const feature = new Feature({
+        geometry: new Point([1, 1, 1]),
+      });
+
+      await vectorContext.addFeature(
+        feature,
+        new Style({
+          text: new OlText({
+            text: 'foo1',
+          }),
+        }),
+        new VectorProperties({}),
+        scene,
+      );
+      expect(vectorContext.labels.length).to.equal(1);
+      const p2 = vectorContext.addFeature(
+        feature,
+        new Style({
+          text: new OlText({
+            text: 'foo2',
+          }),
+        }),
+        new VectorProperties({}),
+        scene,
+      );
+      const p3 = vectorContext.addFeature(
+        feature,
+        new Style({
+          text: new OlText({
+            text: 'foo3',
+          }),
+        }),
+        new VectorProperties({}),
+        scene,
+      );
+      expect(vectorContext.labels.length).to.equal(1);
+      expect(vectorContext.labels.get(0)).to.have.property('text', 'foo1');
+      await Promise.all([p2, p3]);
+      expect(vectorContext.labels.length).to.equal(1);
+      expect(vectorContext.labels.get(0)).to.have.property('text', 'foo3');
+    });
   });
 
   describe('updateSplitDirection', () => {
@@ -601,6 +644,103 @@ describe('VectorContext', () => {
       scene.postRender.raiseEvent();
       const scale = Matrix4.getScale(primitive.modelMatrix, new Cartesian3());
       expect(scale.equals(new Cartesian3(3, 3, 3))).to.be.true;
+    });
+  });
+
+  describe('maintaining drawing order', () => {
+    let vectorContext: VectorContext;
+    let features: Feature[];
+
+    beforeEach(async () => {
+      const collection = new PrimitiveCollection();
+      vectorContext = new VectorContext(map, collection, SplitDirection.NONE);
+      features = [];
+      for (let i = 0; i < 5; i++) {
+        features.push(
+          new Feature({
+            geometry: new LineString([
+              [1, 1, 1],
+              [2, 2, 1],
+            ]),
+          }),
+        );
+      }
+
+      await Promise.all(
+        features.map((feature) =>
+          vectorContext.addFeature(
+            feature,
+            new Style({
+              stroke: new Stroke({
+                color: '#ff0000',
+                width: 1,
+              }),
+            }),
+            new VectorProperties({}),
+            scene,
+          ),
+        ),
+      );
+    });
+
+    afterEach(() => {
+      vectorContext.destroy();
+    });
+
+    it('should maintain index, if adding the same feature again', async () => {
+      const indices = [3, 0, 1, 2];
+      const promises = indices.map(async (index) => {
+        const feature = features[index];
+        await vectorContext.addFeature(
+          feature,
+          new Style({
+            stroke: new Stroke({
+              color: '#ff0000',
+              width: 1,
+            }),
+          }),
+          new VectorProperties({}),
+          scene,
+        );
+        const primitiveAtIndex = vectorContext.primitives.get(
+          index,
+        ) as Primitive;
+        expect(primitiveAtIndex).to.have.property('olFeature', feature);
+      });
+
+      await Promise.all(promises);
+    });
+
+    it('should maintain the index, even when adding fast in succession', async () => {
+      const index = 2;
+      const feature = features[index];
+
+      const p1 = vectorContext.addFeature(
+        feature,
+        new Style({
+          stroke: new Stroke({
+            color: '#ff0000',
+            width: 1,
+          }),
+        }),
+        new VectorProperties({}),
+        scene,
+      );
+      const p2 = vectorContext.addFeature(
+        feature,
+        new Style({
+          stroke: new Stroke({
+            color: '#ff0000',
+            width: 1,
+          }),
+        }),
+        new VectorProperties({}),
+        scene,
+      );
+      await Promise.all([p1, p2]);
+
+      const primitiveAtIndex = vectorContext.primitives.get(index) as Primitive;
+      expect(primitiveAtIndex).to.have.property('olFeature', feature);
     });
   });
 });

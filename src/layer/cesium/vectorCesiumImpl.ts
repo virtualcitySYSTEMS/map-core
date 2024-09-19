@@ -130,8 +130,8 @@ class VectorCesiumImpl
   private _addFeatures(features: Feature[]): void {
     // TODO we should make this non-blocking to better handle larger data sets check in RIWA Impl
     features.forEach((f) => {
-      this._addFeature(f).catch(() => {
-        this.getLogger().error('failed to convert feature');
+      this._addFeature(f).catch((err) => {
+        this.getLogger().error('failed to convert feature', f, err);
       });
     });
   }
