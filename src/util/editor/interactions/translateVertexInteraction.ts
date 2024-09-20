@@ -6,9 +6,8 @@ import {
   EventType,
   ModificationKeyType,
 } from '../../../interaction/interactionType.js';
-import { vertexSymbol } from '../editorSymbols.js';
 import VcsEvent from '../../../vcsEvent.js';
-import { Vertex } from '../editorHelpers.js';
+import { isVertex, Vertex } from '../editorHelpers.js';
 import { emptyStyle } from '../../../style/styleHelpers.js';
 
 /**
@@ -42,17 +41,11 @@ class TranslateVertexInteraction extends AbstractInteraction {
         this._vertex.setStyle(undefined);
         this._vertex = null;
       }
-      event.stopPropagation = true;
-    } else if (
-      event.type & EventType.DRAGSTART &&
-      event.feature &&
-      (event.feature as Vertex)[vertexSymbol]
-    ) {
-      this._vertex = event.feature as Vertex;
+    } else if (event.type & EventType.DRAGSTART && isVertex(event.feature)) {
+      this._vertex = event.feature;
       this._vertex.set('olcs_allowPicking', false);
       this._feature.set('olcs_allowPicking', false);
       this._vertex.setStyle(emptyStyle);
-      event.stopPropagation = true;
     }
     return Promise.resolve(event);
   }

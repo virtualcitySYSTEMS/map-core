@@ -45,6 +45,7 @@ import { vertexIndexSymbol } from './editorSymbols.js';
 import LayerSnapping from './interactions/layerSnapping.js';
 import { EventType } from '../../interaction/interactionType.js';
 import { SnapType, snapTypes } from './snappingHelpers.js';
+import SegmentLengthInteraction from './interactions/segmentLengthInteraction.js';
 
 export type EditGeometrySession = EditorSession<SessionType.EDIT_GEOMETRY> & {
   setFeature(feature?: Feature): void;
@@ -57,11 +58,12 @@ type EditGeometryInteraction = {
   destroy(): void;
 };
 
-type EditGeometrySessionOptions = {
+export type EditGeometrySessionOptions = {
   denyInsertion?: boolean;
   denyRemoval?: boolean;
   initialSnapToLayers?: VectorLayer[];
   snapTo?: SnapType[];
+  hideSegmentLength?: boolean;
 };
 
 function createEditLineStringGeometryInteraction(
@@ -90,6 +92,12 @@ function createEditLineStringGeometryInteraction(
     new TranslationSnapping(scratchLayer, geometry, snapTo),
     translateVertex,
   ];
+
+  if (!options.hideSegmentLength) {
+    const segmentLength = new SegmentLengthInteraction(scratchLayer, false);
+    segmentLength.setGeometry(geometry);
+    interactions.push(segmentLength);
+  }
 
   if (!options.denyInsertion) {
     const insertVertex = new InsertVertexInteraction(
@@ -137,6 +145,7 @@ function createEditLineStringGeometryInteraction(
 function createEditCircleGeometryInteraction(
   feature: Feature<Circle>,
   scratchLayer: VectorLayer,
+  options: EditGeometrySessionOptions,
 ): EditGeometryInteraction {
   const geometry =
     feature[obliqueGeometry] ?? (feature.getGeometry() as Circle);
@@ -175,7 +184,14 @@ function createEditCircleGeometryInteraction(
     }
   });
 
-  const interactionChain = new InteractionChain([translateVertex]);
+  const interactions: AbstractInteraction[] = [translateVertex];
+  if (!options.hideSegmentLength) {
+    const segmentLength = new SegmentLengthInteraction(scratchLayer, false);
+    segmentLength.setGeometry(geometry);
+    interactions.push(segmentLength);
+  }
+
+  const interactionChain = new InteractionChain(interactions);
 
   return {
     interactionChain,
@@ -192,6 +208,7 @@ function createEditCircleGeometryInteraction(
 function createEditBBoxGeometryInteraction(
   feature: Feature<Polygon>,
   scratchLayer: VectorLayer,
+  options: EditGeometrySessionOptions,
 ): EditGeometryInteraction {
   const geometry =
     feature[obliqueGeometry] ?? (feature.getGeometry() as Polygon);
@@ -255,7 +272,16 @@ function createEditBBoxGeometryInteraction(
       });
     }
   });
-  const interactionChain = new InteractionChain([translateVertex]);
+
+  const interactions: AbstractInteraction[] = [translateVertex];
+
+  if (!options.hideSegmentLength) {
+    const segmentLength = new SegmentLengthInteraction(scratchLayer, false);
+    segmentLength.setGeometry(geometry);
+    interactions.push(segmentLength);
+  }
+
+  const interactionChain = new InteractionChain(interactions);
 
   return {
     interactionChain,
@@ -299,6 +325,12 @@ function createEditSimplePolygonInteraction(
     new TranslationSnapping(scratchLayer, geometry, snapTo),
     translateVertex,
   ];
+
+  if (!options.hideSegmentLength) {
+    const segmentLength = new SegmentLengthInteraction(scratchLayer, false);
+    segmentLength.setGeometry(geometry);
+    interactions.push(segmentLength);
+  }
 
   if (!options.denyInsertion) {
     const insertVertex = new InsertVertexInteraction(
@@ -496,6 +528,7 @@ function startEditGeometrySession(
           currentInteractionSet = createEditBBoxGeometryInteraction(
             feature as Feature<Polygon>,
             scratchLayer,
+            editVertexOptions,
           );
         } else if ((geometry as Polygon).getLinearRingCount() === 1) {
           currentInteractionSet = createEditSimplePolygonInteraction(
@@ -524,6 +557,7 @@ function startEditGeometrySession(
         currentInteractionSet = createEditCircleGeometryInteraction(
           feature as Feature<Circle>,
           scratchLayer,
+          editVertexOptions,
         );
       }
 

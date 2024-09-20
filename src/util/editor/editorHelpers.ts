@@ -123,6 +123,10 @@ export function createVertex(
   return vertex;
 }
 
+export function isVertex(f?: unknown): f is Vertex {
+  return f instanceof Feature && !!f[vertexSymbol];
+}
+
 export function getCoordinatesAndLayoutFromVertices(vertices: Vertex[]): {
   coordinates: Coordinate[];
   layout: GeometryLayout;

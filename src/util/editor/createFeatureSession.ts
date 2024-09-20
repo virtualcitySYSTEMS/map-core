@@ -28,6 +28,7 @@ import CreationSnapping from './interactions/creationSnapping.js';
 import { syncScratchLayerVectorProperties } from './editorHelpers.js';
 import LayerSnapping from './interactions/layerSnapping.js';
 import { SnapType, snapTypes } from './snappingHelpers.js';
+import SegmentLengthInteraction from './interactions/segmentLengthInteraction.js';
 
 export type CreateFeatureSession<T extends GeometryType> =
   EditorSession<SessionType.CREATE> & {
@@ -89,6 +90,12 @@ export interface CreateInteraction<T extends Geometry> {
   destroy(): void;
 }
 
+export type CreateFeatureSessionOptions = {
+  initialSnapToLayers?: VectorLayer[];
+  snapTo?: SnapType[];
+  hideSegmentLength?: boolean;
+};
+
 /**
  * Creates an editor session to create features of the given geometry type.
  * While the session is active: Do not change the geometry on the current feature (the last created one)
@@ -96,9 +103,8 @@ export interface CreateInteraction<T extends Geometry> {
  * @param  app
  * @param  layer
  * @param  geometryType
- * @param initialAltitudeMode - whether to use the layers altitude mode or set this on the feature
- * @param [initialSnapToLayers=[layer]] - the layers to initially snap to. defaults to the provided layer
- * @param [snapTo] - what to snap to, by default all snaps are active
+ * @param [initialAltitudeMode] - whether to use the layers altitude mode or set this on the feature
+ * @param [options]
  * @group Editor
  */
 function startCreateFeatureSession<T extends GeometryType>(
@@ -106,12 +112,14 @@ function startCreateFeatureSession<T extends GeometryType>(
   layer: VectorLayer,
   geometryType: T,
   initialAltitudeMode?: AltitudeModeType,
-  initialSnapToLayers: VectorLayer[] = [layer],
-  snapTo: SnapType[] = [...snapTypes],
+  options?: CreateFeatureSessionOptions,
 ): CreateFeatureSession<T> {
   check(app, VcsApp);
   check(layer, VectorLayer);
   check(geometryType, ofEnum(GeometryType));
+
+  const snapTo = options?.snapTo ?? [...snapTypes];
+  const showSegmentLength = !options?.hideSegmentLength;
 
   const {
     interactionChain,
@@ -129,7 +137,10 @@ function startCreateFeatureSession<T extends GeometryType>(
   let currentFeature: Feature<GeometryToType<T>> | null = null;
   let snappingInteraction: CreationSnapping | null = null;
   let layerSnappingInteraction: LayerSnapping | null = null;
-  let snapToLayers: VectorLayer[] = initialSnapToLayers?.slice() ?? [];
+  let segmentLengthInteraction: SegmentLengthInteraction | null = null;
+  let snapToLayers: VectorLayer[] = options?.initialSnapToLayers?.slice() ?? [
+    layer,
+  ];
 
   /**
    * Ture if the currently active map is an ObliqueMap. set in setupActiveMap
@@ -179,6 +190,11 @@ function startCreateFeatureSession<T extends GeometryType>(
       layerSnappingInteraction.destroy();
       layerSnappingInteraction = null;
     }
+    if (segmentLengthInteraction) {
+      interactionChain.removeInteraction(segmentLengthInteraction);
+      segmentLengthInteraction.destroy();
+      segmentLengthInteraction = null;
+    }
     interactionListeners.forEach((cb) => {
       cb();
     });
@@ -199,6 +215,19 @@ function startCreateFeatureSession<T extends GeometryType>(
       geometryType === GeometryType.LineString
     ) {
       snappingInteraction = new CreationSnapping(scratchLayer, snapTo);
+    }
+
+    if (
+      showSegmentLength &&
+      (geometryType === GeometryType.Polygon ||
+        geometryType === GeometryType.LineString ||
+        geometryType === GeometryType.BBox ||
+        geometryType === GeometryType.Circle)
+    ) {
+      segmentLengthInteraction = new SegmentLengthInteraction(
+        scratchLayer,
+        true,
+      );
     }
 
     interactionListeners = [
@@ -229,6 +258,11 @@ function startCreateFeatureSession<T extends GeometryType>(
         if (snappingInteraction) {
           snappingInteraction.setGeometry(geometry as LineString | Polygon);
         }
+        if (segmentLengthInteraction) {
+          segmentLengthInteraction.setGeometry(
+            geometry as LineString | Polygon,
+          );
+        }
       }),
       currentInteraction.finished.addEventListener((geometry) => {
         if (isOblique) {
@@ -256,11 +290,15 @@ function startCreateFeatureSession<T extends GeometryType>(
         }
       }),
     ];
+
     interactionChain.addInteraction(layerSnappingInteraction);
     if (snappingInteraction) {
       interactionChain.addInteraction(snappingInteraction);
     }
     interactionChain.addInteraction(currentInteraction);
+    if (segmentLengthInteraction) {
+      interactionChain.addInteraction(segmentLengthInteraction);
+    }
   };
   createInteraction();
 

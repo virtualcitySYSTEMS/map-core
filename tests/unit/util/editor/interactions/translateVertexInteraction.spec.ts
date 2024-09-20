@@ -68,10 +68,6 @@ describe('TranslateVertexInteraction', () => {
           interaction.destroy();
         });
 
-        it('should stop event propagation', () => {
-          expect(event.stopPropagation).to.be.true;
-        });
-
         it('should set the vertex allowPicking to be false', () => {
           expect(vertex.get('olcs_allowPicking')).to.be.false;
         });
@@ -214,10 +210,6 @@ describe('TranslateVertexInteraction', () => {
 
           await interaction.pipe(event);
           interaction.destroy();
-        });
-
-        it('should stop event propagation', () => {
-          expect(event.stopPropagation).to.be.true;
         });
 
         it('should set the vertex allowPicking to be false', () => {
@@ -380,10 +372,6 @@ describe('TranslateVertexInteraction', () => {
           interaction.destroy();
         });
 
-        it('should stop event propagation', () => {
-          expect(event.stopPropagation).to.be.true;
-        });
-
         it('should set the vertex allowPicking to be false', () => {
           expect(vertex.get('olcs_allowPicking')).to.be.false;
         });
@@ -526,10 +514,6 @@ describe('TranslateVertexInteraction', () => {
 
           await interaction.pipe(event);
           interaction.destroy();
-        });
-
-        it('should stop event propagation', () => {
-          expect(event.stopPropagation).to.be.true;
         });
 
         it('should set the vertex allowPicking to be false', () => {

@@ -16,8 +16,8 @@ import {
   SnapType,
   snapTypes,
 } from '../snappingHelpers.js';
-import { vertexIndexSymbol, vertexSymbol } from '../editorSymbols.js';
-import { Vertex } from '../editorHelpers.js';
+import { vertexIndexSymbol } from '../editorSymbols.js';
+import { isVertex } from '../editorHelpers.js';
 import {
   alreadySnapped,
   SnappingInteractionEvent,
@@ -149,9 +149,9 @@ export default class TranslationSnapping extends AbstractInteraction {
       this._lastCoordinate = undefined;
     } else if (
       event.key !== ModificationKeyType.CTRL &&
-      (event.feature as Vertex | undefined)?.[vertexSymbol]
+      isVertex(event.feature)
     ) {
-      const index = (event.feature as Vertex)[vertexIndexSymbol];
+      const index = event.feature[vertexIndexSymbol];
       if (event.type === EventType.DRAGSTART) {
         this._setCoordinates(index);
       }

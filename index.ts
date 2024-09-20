@@ -490,6 +490,7 @@ export {
   default as startCreateFeatureSession,
   CreateFeatureSession,
   CreateInteraction,
+  CreateFeatureSessionOptions,
 } from './src/util/editor/createFeatureSession.js';
 export {
   default as startEditFeaturesSession,
@@ -498,9 +499,11 @@ export {
 export {
   default as startEditGeometrySession,
   EditGeometrySession,
+  EditGeometrySessionOptions,
 } from './src/util/editor/editGeometrySession.js';
 export {
   createVertex,
+  isVertex,
   getCoordinatesAndLayoutFromVertices,
   getClosestPointOn2DLine,
   pointOnLine3D,
@@ -723,6 +726,8 @@ export {
   cartesianToMercator,
   getMidPoint,
   getCartesianPitch,
+  spherical2Distance,
+  ecef3DDistance,
 } from './src/util/math.js';
 export {
   isOverrideCollection,

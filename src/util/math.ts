@@ -4,6 +4,7 @@ import {
   Cartographic,
 } from '@vcmap-cesium/engine';
 import type { Coordinate } from 'ol/coordinate.js';
+import { getDistance as haversineDistance } from 'ol/sphere.js';
 import Projection from './projection.js';
 
 /**
@@ -224,4 +225,31 @@ export function cartesian2Intersection(
   const s = perpDot(B, U) / perpDot(B, A);
 
   return [lineA[0][0] + s * A[0], lineA[0][1] + s * A[1]];
+}
+
+/**
+ * calculates the haversine distance between two mercator coordinates.
+ * @param p1 - in mercator
+ * @param p2 - in mercator
+ */
+export function spherical2Distance(p1: Coordinate, p2: Coordinate): number {
+  return haversineDistance(
+    Projection.mercatorToWgs84(p1),
+    Projection.mercatorToWgs84(p2),
+  );
+}
+
+let ecefDistanceScratch1 = new Cartesian3();
+let ecefDistanceScratch2 = new Cartesian3();
+
+/**
+ * calculates the 3D distance in ECEF between two mercator coordinates.
+ * @param p1 - in mercator
+ * @param p2 - in mercator
+ */
+export function ecef3DDistance(p1: Coordinate, p2: Coordinate): number {
+  ecefDistanceScratch1 = mercatorToCartesian(p1, ecefDistanceScratch1);
+  ecefDistanceScratch2 = mercatorToCartesian(p2, ecefDistanceScratch2);
+
+  return Cartesian3.distance(ecefDistanceScratch1, ecefDistanceScratch2);
 }
