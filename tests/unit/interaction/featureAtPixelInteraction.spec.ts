@@ -1,52 +1,67 @@
+import { expect } from 'chai';
+import sinon, { SinonSandbox, SinonSpy, SinonStub } from 'sinon';
 import {
-  Cartesian3,
   Cartesian2,
+  Cartesian3,
+  CesiumWidget,
   Clock,
-  JulianDate,
   Entity,
+  JulianDate,
+  Scene,
 } from '@vcmap-cesium/engine';
+import { Coordinate } from 'ol/coordinate.js';
 import Feature from 'ol/Feature.js';
 import FeatureAtPixel from '../../../src/interaction/featureAtPixelInteraction.js';
 import OpenlayersMap from '../../../src/map/openlayersMap.js';
 import {
   EventType,
   ModificationKeyType,
+  PointerEventType,
+  PointerKeyType,
 } from '../../../src/interaction/interactionType.js';
 import Projection from '../../../src/util/projection.js';
 import VectorLayer from '../../../src/layer/vectorLayer.js';
 import {
-  setCesiumMap,
   createDummyCesium3DTileFeature,
+  setCesiumMap,
 } from '../helpers/cesiumHelpers.js';
 import VcsApp from '../../../src/vcsApp.js';
 import { vcsLayerName } from '../../../src/layer/layerSymbols.js';
+import {
+  CesiumMap,
+  FeatureAtPixelInteraction,
+  InteractionEvent,
+} from '../../../index.js';
 
 describe('FeatureAtPixelInteraction', () => {
-  let sandbox;
-  let pick;
-  let sceneStub;
-  let render;
+  let sandbox: SinonSandbox;
+  let pick: SinonStub;
+  let sceneStub: Scene;
+  let render: SinonSpy;
   /** @type {import("@vcmap/core").FeatureAtPixelInteraction} */
-  let fap;
-  let app;
-  let mercatorPosition;
-  let cartesianPosition;
-  let positionSpy;
-  let cesiumMap;
+  let fap: FeatureAtPixelInteraction;
+  let app: VcsApp;
+  let mercatorPosition: Coordinate;
+  let cartesianPosition: Cartesian3;
+  let positionSpy: SinonStub;
+  let cesiumMap: CesiumMap;
 
   before(async () => {
     sandbox = sinon.createSandbox();
     app = new VcsApp();
     mercatorPosition = [5845000, 1505147, 0];
     cartesianPosition = Cartesian3.fromDegrees(
-      ...Projection.mercatorToWgs84(mercatorPosition),
+      ...(Projection.mercatorToWgs84(mercatorPosition) as [
+        number,
+        number,
+        number,
+      ]),
     );
     cesiumMap = await setCesiumMap(app);
   });
 
   beforeEach(() => {
-    sceneStub = cesiumMap.getScene();
-    sceneStub.pickPositionSupported = true;
+    sceneStub = cesiumMap.getScene()!;
     sceneStub.pickTranslucentDepth = false;
     render = sandbox.spy(sceneStub, 'render');
     pick = sandbox.stub(sceneStub, 'pick');
@@ -64,9 +79,12 @@ describe('FeatureAtPixelInteraction', () => {
     app.destroy();
   });
 
-  function setup3DTest(dummy) {
+  function setup3DTest(dummy: unknown): Promise<InteractionEvent> {
     pick.returns(dummy);
-    const event = {
+    const event: InteractionEvent = {
+      pointer: PointerKeyType.LEFT,
+      pointerEvent: PointerEventType.MOVE,
+      windowPosition: new Cartesian2(0, 0),
       map: cesiumMap,
       type: EventType.DRAGSTART,
       key: ModificationKeyType.NONE,
@@ -83,6 +101,9 @@ describe('FeatureAtPixelInteraction', () => {
       const dummy = { primitive: { olFeature: 'test' } };
       pick.returns(dummy);
       const event = {
+        pointer: PointerKeyType.LEFT,
+        pointerEvent: PointerEventType.MOVE,
+        windowPosition: new Cartesian2(0, 0),
         map: cesiumMap,
         type: EventType.DRAGSTART,
         key: ModificationKeyType.NONE,
@@ -120,7 +141,14 @@ describe('FeatureAtPixelInteraction', () => {
       return setup3DTest(dummy)
         .then(() => {
           fap.pickPosition = EventType.DRAGEVENTS;
-          return fap.pipe({ map: cesiumMap, type: EventType.DRAG });
+          return fap.pipe({
+            map: cesiumMap,
+            type: EventType.DRAG,
+            key: ModificationKeyType.NONE,
+            pointer: PointerKeyType.LEFT,
+            pointerEvent: PointerEventType.MOVE,
+            windowPosition: new Cartesian2(0, 0),
+          });
         })
         .then(() => {
           expect(positionSpy).to.have.been.called;
@@ -136,7 +164,10 @@ describe('FeatureAtPixelInteraction', () => {
       dummyLayer[vcsLayerName] = 'dummy';
 
       const dummyMap = {
-        forEachFeatureAtPixel(w, cb) {
+        forEachFeatureAtPixel(
+          w: Coordinate,
+          cb: (...args: Feature[]) => void,
+        ): void {
           if (w[0] === 0) {
             cb(normalFeature, dummyLayer);
           } else {
@@ -145,10 +176,13 @@ describe('FeatureAtPixelInteraction', () => {
         },
       };
       const map = new OpenlayersMap({});
+      // @ts-expect-error: bad joojoo, but still
       map._olMap = dummyMap;
 
       const windowPosition = new Cartesian2(0, 0);
-      const event = {
+      const event: InteractionEvent = {
+        pointer: PointerKeyType.LEFT,
+        pointerEvent: PointerEventType.MOVE,
         map,
         type: EventType.CLICK,
         key: ModificationKeyType.NONE,
@@ -176,15 +210,21 @@ describe('FeatureAtPixelInteraction', () => {
       const dummyLayer = new VectorLayer({ name: 'dummy' });
 
       const dummyMap = {
-        forEachFeatureAtPixel(w, cb) {
+        forEachFeatureAtPixel(
+          w: Coordinate,
+          cb: (f: Feature, l: VectorLayer) => void,
+        ): void {
           cb(normalFeature, dummyLayer);
         },
       };
       const map = new OpenlayersMap({});
+      // @ts-expect-error: bad joojoo, but still
       map._olMap = dummyMap;
 
       const windowPosition = new Cartesian2(0, 0);
-      const event = {
+      const event: InteractionEvent = {
+        pointer: PointerKeyType.LEFT,
+        pointerEvent: PointerEventType.MOVE,
         map,
         type: EventType.CLICK,
         key: ModificationKeyType.NONE,
@@ -265,7 +305,10 @@ describe('FeatureAtPixelInteraction', () => {
     describe('picking behavior', () => {
       it('should only pick position on CLICK by default', () => {
         pick.returns({});
-        const event = {
+        const event: InteractionEvent = {
+          pointer: PointerKeyType.LEFT,
+          pointerEvent: PointerEventType.MOVE,
+          windowPosition: new Cartesian2(0, 0),
           map: cesiumMap,
           type: EventType.DRAGSTART,
           key: ModificationKeyType.NONE,
@@ -294,15 +337,12 @@ describe('FeatureAtPixelInteraction', () => {
           });
       });
 
-      it('should apply the excluded picking events, when setting pickPosition', () => {
-        fap.excludedPickPositionEvents = EventType.MOVE | EventType.DRAG;
-        fap.pickPosition = EventType.CLICKMOVE;
-        expect(fap).to.have.property('pickPosition', EventType.CLICK);
-      });
-
       it('should pick translucent on olFeature', () => {
         pick.returns({ primitive: { olFeature: true } });
         const event = {
+          pointer: PointerKeyType.LEFT,
+          pointerEvent: PointerEventType.MOVE,
+          windowPosition: new Cartesian2(0, 0),
           map: cesiumMap,
           type: EventType.CLICK,
           key: ModificationKeyType.NONE,
@@ -310,7 +350,7 @@ describe('FeatureAtPixelInteraction', () => {
 
         sandbox.stub(cesiumMap, 'getCesiumWidget').returns({
           clock: new Clock({}),
-        });
+        } as CesiumWidget);
         fap.pickTranslucent = false;
 
         return fap
@@ -333,6 +373,9 @@ describe('FeatureAtPixelInteraction', () => {
       it('should reset translucent picking on the scene', async () => {
         pick.returns({ primitive: { olFeature: true } });
         const event = {
+          pointer: PointerKeyType.LEFT,
+          pointerEvent: PointerEventType.MOVE,
+          windowPosition: new Cartesian2(0, 0),
           map: cesiumMap,
           type: EventType.CLICK,
           key: ModificationKeyType.NONE,
@@ -340,7 +383,7 @@ describe('FeatureAtPixelInteraction', () => {
 
         sandbox.stub(cesiumMap, 'getCesiumWidget').returns({
           clock: new Clock({}),
-        });
+        } as CesiumWidget);
         sceneStub.pickTranslucentDepth = true;
         fap.pickTranslucent = true;
         await fap.pipe(event);
@@ -352,13 +395,16 @@ describe('FeatureAtPixelInteraction', () => {
           primitive: { pointCloudShading: { attenuation: true } },
         });
         const event = {
+          pointer: PointerKeyType.LEFT,
+          pointerEvent: PointerEventType.MOVE,
+          windowPosition: new Cartesian2(0, 0),
           map: cesiumMap,
           type: EventType.CLICK,
           key: ModificationKeyType.NONE,
         };
         sandbox.stub(cesiumMap, 'getCesiumWidget').returns({
           clock: new Clock({}),
-        });
+        } as CesiumWidget);
         fap.pickTranslucent = true;
 
         return fap.pipe(event).then(() => {

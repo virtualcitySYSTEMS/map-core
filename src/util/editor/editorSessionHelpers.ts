@@ -1,5 +1,4 @@
 import type { Point, Polygon, Circle, LineString } from 'ol/geom.js';
-import { HeightReference } from '@vcmap-cesium/engine';
 import VectorLayer from '../../layer/vectorLayer.js';
 import { mercatorProjection } from '../projection.js';
 import InteractionChain from '../../interaction/interactionChain.js';
@@ -145,27 +144,14 @@ export type GeometryToType<T extends GeometryType> =
     ? Circle
     : never;
 
-export type PickingBehavior = {
-  setForAltitudeMode(altitudeMode: HeightReference): void;
-  reset(): void;
-};
-
-export function createPickingBehavior(app: VcsApp): PickingBehavior {
+export function setupPickingBehavior(app: VcsApp): () => void {
   const initialPickPosition =
     app.maps.eventHandler.featureInteraction.pickPosition;
 
-  return {
-    setForAltitudeMode(altitudeMode: HeightReference): void {
-      if (altitudeMode === HeightReference.NONE) {
-        app.maps.eventHandler.featureInteraction.pickPosition =
-          EventType.CLICKMOVE | EventType.DRAGEVENTS;
-      } else {
-        app.maps.eventHandler.featureInteraction.pickPosition = EventType.NONE;
-      }
-    },
-    reset(): void {
-      app.maps.eventHandler.featureInteraction.pickPosition =
-        initialPickPosition;
-    },
+  app.maps.eventHandler.featureInteraction.pickPosition =
+    EventType.CLICKMOVE | EventType.DRAGEVENTS;
+
+  return () => {
+    app.maps.eventHandler.featureInteraction.pickPosition = initialPickPosition;
   };
 }

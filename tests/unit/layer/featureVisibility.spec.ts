@@ -181,8 +181,7 @@ describe('FeatureVisibility', () => {
       });
 
       it('should update the color on any features already highlighted', () => {
-        const feature: Cesium3DTileFeature =
-          createDummyCesium3DTileFeature() as Cesium3DTileFeature;
+        const feature: Cesium3DTileFeature = createDummyCesium3DTileFeature();
         featureVisibility.addHighlightFeature('test', feature);
         const newColor = Color.fromBytes(255, 0, 255, 255);
         featureVisibility.highlight({ test: newColor });
@@ -263,8 +262,8 @@ describe('FeatureVisibility', () => {
     it('should set the originalCesiumColor color on features, if they still exist', () => {
       featureVisibility.highlight({ test: Color.BLUE });
       const features: [Cesium3DTileFeature, Color][] = [
-        [createDummyCesium3DTileFeature() as Cesium3DTileFeature, Color.GREEN],
-        [createDummyCesium3DTileFeature() as Cesium3DTileFeature, Color.BLUE],
+        [createDummyCesium3DTileFeature(), Color.GREEN],
+        [createDummyCesium3DTileFeature(), Color.BLUE],
       ];
       features.forEach(([feat, color]) => {
         feat.color = color;
@@ -412,7 +411,7 @@ describe('FeatureVisibility', () => {
     describe('adding of CesiumTilesetFeature to highlighting', () => {
       let feature: Cesium3DTileFeature;
       beforeEach(() => {
-        feature = createDummyCesium3DTileFeature() as Cesium3DTileFeature;
+        feature = createDummyCesium3DTileFeature();
         featureVisibility.highlight({ test: highlightStyle });
         featureVisibility.addHighlightFeature('test', feature);
       });
@@ -525,8 +524,8 @@ describe('FeatureVisibility', () => {
 
     it('should set the Cesium3DTileFeature features show to true, if it exists', () => {
       const features: Cesium3DTileFeature[] = [
-        createDummyCesium3DTileFeature() as Cesium3DTileFeature,
-        createDummyCesium3DTileFeature() as Cesium3DTileFeature,
+        createDummyCesium3DTileFeature(),
+        createDummyCesium3DTileFeature(),
       ];
       features.forEach((f) => {
         featureVisibility.addHiddenFeature('test', f);
@@ -669,7 +668,7 @@ describe('FeatureVisibility', () => {
     describe('adding of CesiumTilesetFeature to highlighting', () => {
       let feature: Cesium3DTileFeature;
       beforeEach(() => {
-        feature = createDummyCesium3DTileFeature() as Cesium3DTileFeature;
+        feature = createDummyCesium3DTileFeature();
         featureVisibility.hideObjects(['test']);
         featureVisibility.addHiddenFeature('test', feature);
       });

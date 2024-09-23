@@ -4,7 +4,7 @@ import type { Geometry, LineString, Polygon } from 'ol/geom.js';
 import { unByKey } from 'ol/Observable.js';
 import VcsEvent from '../../vcsEvent.js';
 import {
-  createPickingBehavior,
+  setupPickingBehavior,
   EditorSession,
   GeometryToType,
   GeometryType,
@@ -148,16 +148,14 @@ function startCreateFeatureSession<T extends GeometryType>(
   let isOblique = false;
 
   let featureAltitudeMode = initialAltitudeMode;
-  const pickingBehavior = createPickingBehavior(app);
+  const resetPickingBehavior = setupPickingBehavior(app);
 
   const altitudeModeChanged = (): void => {
     const altitudeModeFeature =
       currentFeature ?? new Feature({ olcs_altitudeMode: featureAltitudeMode });
-    const altitudeModeInUse =
-      layer.vectorProperties.getAltitudeMode(altitudeModeFeature);
 
-    scratchLayer.vectorProperties.altitudeMode = altitudeModeInUse;
-    pickingBehavior.setForAltitudeMode(altitudeModeInUse);
+    scratchLayer.vectorProperties.altitudeMode =
+      layer.vectorProperties.getAltitudeMode(altitudeModeFeature);
   };
 
   const vectorPropertiesListener = syncScratchLayerVectorProperties(
@@ -351,7 +349,7 @@ function startCreateFeatureSession<T extends GeometryType>(
     destroyInteractionChain();
     currentFeatureListener();
     vectorPropertiesListener();
-    pickingBehavior.reset();
+    resetPickingBehavior();
 
     stopped.raiseEvent();
     stopped.destroy();

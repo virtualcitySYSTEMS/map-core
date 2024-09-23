@@ -234,8 +234,12 @@ export async function placeGeometryOnGround(
   const cartographics = flatCoordinates.map((c) => mercatorToCartographic(c));
   if (heightReference === HeightReference.CLAMP_TO_GROUND) {
     await scene.sampleHeightMostDetailed(cartographics);
-  } else {
+  } else if (scene.terrainProvider.availability) {
     await sampleTerrainMostDetailed(scene.terrainProvider, cartographics);
+  } else {
+    cartographics.forEach((c) => {
+      c.height = 0;
+    });
   }
 
   cartographics.forEach((c, index) => {

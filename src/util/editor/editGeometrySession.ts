@@ -11,7 +11,7 @@ import type {
 } from 'ol/geom.js';
 import { EventsKey } from 'ol/events.js';
 import {
-  createPickingBehavior,
+  setupPickingBehavior,
   EditorSession,
   GeometryType,
   SessionType,
@@ -461,14 +461,11 @@ function startEditGeometrySession(
 
   const snapTo = editVertexOptions?.snapTo ?? [...snapTypes];
 
-  const pickingBehavior = createPickingBehavior(app);
+  const resetPickingBehavior = setupPickingBehavior(app);
   const altitudeModeChanged = (): void => {
-    const altitudeMode = currentFeature
+    scratchLayer.vectorProperties.altitudeMode = currentFeature
       ? layer.vectorProperties.getAltitudeMode(currentFeature)
       : layer.vectorProperties.altitudeMode;
-
-    scratchLayer.vectorProperties.altitudeMode = altitudeMode;
-    pickingBehavior.setForAltitudeMode(altitudeMode);
   };
   altitudeModeChanged();
 
@@ -606,7 +603,7 @@ function startEditGeometrySession(
     destroyCurrentInteractionSet();
     destroyInteractionChain();
     vectorPropertiesChangedListener();
-    pickingBehavior.reset();
+    resetPickingBehavior();
     stopped.raiseEvent();
     stopped.destroy();
   };

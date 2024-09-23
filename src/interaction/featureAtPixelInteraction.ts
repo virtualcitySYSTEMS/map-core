@@ -30,9 +30,10 @@ import type CesiumMap from '../map/cesiumMap.js';
  * @group Interaction
  */
 class FeatureAtPixelInteraction extends AbstractInteraction {
-  private _pickPosition = EventType.CLICK;
-
-  private _pickPositionMask = -1;
+  /**
+   * event type for which to pick the position of the scene. this will create a second render.
+   */
+  pickPosition = EventType.CLICK;
 
   /**
    * whether to pick translucent depth or not, defaults to true
@@ -60,30 +61,8 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
     this.setActive();
   }
 
-  /**
-   * Bitmask of {@link EventType} for which events to pick the position
-   */
-  get pickPosition(): EventType {
-    return this._pickPosition;
-  }
-
-  set pickPosition(position: EventType) {
-    this._pickPosition = position & this._pickPositionMask;
-  }
-
-  /**
-   * Bitmask of  for which to never pick positions.
-   */
-  get excludedPickPositionEvents(): number {
-    return ~this._pickPositionMask;
-  }
-
-  set excludedPickPositionEvents(position: number) {
-    this._pickPositionMask = ~position;
-  }
-
   async pipe(event: InteractionEvent): Promise<InteractionEvent> {
-    if (event.type & EventType.DRAG && !(this._pickPosition & EventType.DRAG)) {
+    if (event.type & EventType.DRAG && !(this.pickPosition & EventType.DRAG)) {
       if (this._draggingFeature) {
         event.feature = this._draggingFeature;
       }
@@ -209,6 +188,7 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
         scratchCartesian = new Cartesian3();
         return Promise.resolve(event);
       }
+
       if (this.pullPickedPosition && event.ray) {
         scratchPullCartesian = Cartesian3.multiplyByScalar(
           event.ray.direction,
@@ -227,6 +207,7 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
         scene.globe.ellipsoid,
         scratchCartographic,
       );
+
       event.position = Projection.wgs84ToMercator(
         [
           CesiumMath.toDegrees(scratchCartographic.longitude),

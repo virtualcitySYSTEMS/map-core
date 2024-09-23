@@ -24,7 +24,6 @@ import {
   OpenlayersMap,
   PointerEventType,
   PointerKeyType,
-  Projection,
   startEditFeaturesSession,
   TransformationMode,
 } from '../../../../index.js';

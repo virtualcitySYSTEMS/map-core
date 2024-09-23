@@ -571,6 +571,7 @@ export { default as TranslateVertexInteraction } from './src/util/editor/interac
 export { default as CreationSnapping } from './src/util/editor/interactions/creationSnapping.js';
 export { default as TranslationSnapping } from './src/util/editor/interactions/translationSnapping.js';
 export { default as LayerSnapping } from './src/util/editor/interactions/layerSnapping.js';
+export { default as SegmentLengthInteraction } from './src/util/editor/interactions/segmentLengthInteraction.js';
 export {
   getDefaultHighlightStyle,
   default as startSelectFeaturesSession,

@@ -68,6 +68,12 @@ describe('EditGeometrySession', () => {
       );
     });
 
+    it('should change the picking', () => {
+      expect(app.maps.eventHandler.featureInteraction.pickPosition).to.equal(
+        EventType.CLICKMOVE | EventType.DRAGEVENTS,
+      );
+    });
+
     describe('setting a feature', () => {
       let feature: Feature<Point>;
 
@@ -802,6 +808,13 @@ describe('EditGeometrySession', () => {
       session.stop();
       expect(spy).to.have.been.called;
     });
+
+    it('should reset picking', () => {
+      session.stop();
+      expect(app.maps.eventHandler.featureInteraction.pickPosition).to.equal(
+        EventType.CLICK,
+      );
+    });
   });
 
   describe('forcefully removing a session', () => {
@@ -816,162 +829,6 @@ describe('EditGeometrySession', () => {
       session.stopped.addEventListener(spy);
       app.maps.eventHandler.removeExclusive();
       expect(spy).to.have.been.called;
-    });
-  });
-
-  describe('altitude mode handling', () => {
-    describe('setting the altitude mode on the feature currently being edited', () => {
-      let session: EditGeometrySession;
-      let feature: Feature<Point>;
-
-      beforeEach(() => {
-        session = startEditGeometrySession(app, layer);
-        feature = new Feature({ geometry: new Point([0, 0, 0]) });
-        layer.addFeatures([feature]);
-        session.setFeature(feature);
-      });
-
-      afterEach(() => {
-        session.stop();
-      });
-
-      it('should no longer change picking behavior once deselected', () => {
-        session.setFeature();
-        feature.set('olcs_altitudeMode', 'absolute');
-        expect(app.maps.eventHandler.featureInteraction.pickPosition).to.equal(
-          EventType.NONE,
-        );
-      });
-
-      it('should change the picking behavior while editing', () => {
-        feature.set('olcs_altitudeMode', 'absolute');
-        expect(app.maps.eventHandler.featureInteraction.pickPosition).to.equal(
-          EventType.CLICKMOVE | EventType.DRAGEVENTS,
-        );
-      });
-
-      it('should change the picking behavior, if selecting a feature with a change altitude mode', () => {
-        const otherFeature = new Feature({
-          geometry: new Point([0, 0, 0]),
-          olcs_altitudeMode: 'absolute',
-        });
-        layer.addFeatures([otherFeature]);
-        session.setFeature(otherFeature);
-        expect(app.maps.eventHandler.featureInteraction.pickPosition).to.equal(
-          EventType.CLICKMOVE | EventType.DRAGEVENTS,
-        );
-      });
-
-      it('should revert picking behavior after editing is finished', () => {
-        feature?.set('olcs_altitudeMode', 'absolute');
-        session.setFeature();
-        expect(app.maps.eventHandler.featureInteraction.pickPosition).to.equal(
-          EventType.NONE,
-        );
-      });
-    });
-
-    describe('changing the layer vector properties altitude mode', () => {
-      let session: EditGeometrySession;
-      let currentAltitudeMode: HeightReference;
-      let feature: Feature<Point>;
-
-      beforeEach(() => {
-        currentAltitudeMode = layer.vectorProperties.altitudeMode;
-        session = startEditGeometrySession(app, layer);
-        feature = new Feature({ geometry: new Point([0, 0, 0]) });
-        layer.addFeatures([feature]);
-      });
-
-      afterEach(() => {
-        session.stop();
-        layer.vectorProperties.altitudeMode = currentAltitudeMode;
-      });
-
-      it('should not change the picking behavior if a set feature has a picking behavior', () => {
-        feature.set('olcs_altitudeMode', 'clampToGround');
-        session.setFeature(feature);
-        layer.vectorProperties.altitudeMode = HeightReference.NONE;
-        expect(app.maps.eventHandler.featureInteraction.pickPosition).to.equal(
-          EventType.NONE,
-        );
-      });
-
-      it("should change picking behavior, 'without an altitude mode set anywhere else", () => {
-        layer.vectorProperties.altitudeMode = HeightReference.NONE;
-        expect(app.maps.eventHandler.featureInteraction.pickPosition).to.equal(
-          EventType.CLICKMOVE | EventType.DRAGEVENTS,
-        );
-      });
-
-      it("should change picking behavior, 'without an altitude mode set anywhere else", () => {
-        session.setFeature(feature);
-        layer.vectorProperties.altitudeMode = HeightReference.NONE;
-        expect(app.maps.eventHandler.featureInteraction.pickPosition).to.equal(
-          EventType.CLICKMOVE | EventType.DRAGEVENTS,
-        );
-      });
-    });
-
-    describe('stopping a session with a feature altitude mode of absolute', () => {
-      let currentAltitudeMode: HeightReference;
-      let feature: Feature<Point>;
-
-      beforeEach(() => {
-        currentAltitudeMode = layer.vectorProperties.altitudeMode;
-        const session = startEditGeometrySession(app, layer);
-        feature = new Feature({ geometry: new Point([0, 0, 0]) });
-        layer.addFeatures([feature]);
-        session.setFeature(feature);
-        session.stop();
-      });
-
-      afterEach(() => {
-        layer.vectorProperties.altitudeMode = currentAltitudeMode;
-      });
-
-      it('should reset picking', () => {
-        expect(app.maps.eventHandler.featureInteraction.pickPosition).to.equal(
-          EventType.CLICK,
-        );
-      });
-
-      it('should no longer listen to feature changes', () => {
-        feature?.set('olcs_altitudeMode', 'clampToGround');
-        feature?.set('olcs_altitudeMode', 'absolute');
-        expect(app.maps.eventHandler.featureInteraction.pickPosition).to.equal(
-          EventType.CLICK,
-        );
-      });
-
-      it('should no longer listen to layer vector property changes', () => {
-        layer.vectorProperties.altitudeMode = HeightReference.NONE;
-        expect(app.maps.eventHandler.featureInteraction.pickPosition).to.equal(
-          EventType.CLICK,
-        );
-      });
-    });
-
-    describe('starting a session with a layer with absolute altitude mode', () => {
-      let session: EditGeometrySession;
-      let initialAltitudeMode: HeightReference;
-
-      beforeEach(() => {
-        initialAltitudeMode = layer.vectorProperties.altitudeMode;
-        layer.vectorProperties.altitudeMode = HeightReference.NONE;
-        session = startEditGeometrySession(app, layer);
-      });
-
-      afterEach(() => {
-        session.stop();
-        layer.vectorProperties.altitudeMode = initialAltitudeMode;
-      });
-
-      it('should change the picking', () => {
-        expect(app.maps.eventHandler.featureInteraction.pickPosition).to.equal(
-          EventType.CLICKMOVE | EventType.DRAGEVENTS,
-        );
-      });
     });
   });
 

@@ -130,6 +130,7 @@ export function getMockScene() {
     screenSpaceCameraController: {
       enableInputs: true,
     },
+    pickPositionSupported: true,
     globe: new Globe(),
     mode: SceneMode.SCENE3D,
     tweens: new TweenCollection(),
@@ -316,7 +317,7 @@ class BatchTable {
 /**
  * @param {Object} [properties={}]
  * @param {Object=} tileset
- * @returns {Cesium.Cesium3DTileFeature}
+ * @returns {import("@vcmap-cesium/engine").Cesium3DTileFeature}
  */
 export function createDummyCesium3DTileFeature(
   properties = {},

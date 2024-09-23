@@ -1,3 +1,19 @@
+### 6.0.0-rc.10
+
+- New `SegmentLengthInteraction` added to the editor. Displays segment length of polygons, line strings, circles & bboxes.
+- Adds two new helpers: `spherical2Distance` & `ecef3DDistance` to calculate acutal distance on sphere or in 3D space.¨
+- Adds an `isVertex` helper for editor interactions.
+- Removed `excludedPickPositionEvents` from `FeatureAtPixelInteraction`.
+- Editors will always pick the position of the scene, instead of shooting through objects.
+
+### 6.0.0-rc.9
+
+- Vector layer will maintain drawing order in 3D.
+
+### 6.0.0-rc.8
+
+- Adds a new function to the `window`: `createModuleFromConfig` will create a `VcsModule` from a `VcsModuleConfig`, to be used in iframes.
+
 ### 6.0.0-rc.6
 
 - Adds a `createAbsoluteFeature` helper to resolve features of the current session to an absolute state.
