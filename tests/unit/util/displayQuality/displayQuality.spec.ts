@@ -63,6 +63,11 @@ describe('util.displayQuality.DisplayQuality', () => {
         low: {
           sse: 4,
           layerSSEFactor: 2,
+          msaa: 2,
+        },
+        medium: {
+          // @ts-expect-error check invalid value handling
+          msaa: 'test',
         },
       };
       DC.updateOptions(newOptions);
@@ -71,12 +76,20 @@ describe('util.displayQuality.DisplayQuality', () => {
     it('should update the settings and apply the starting quality level', () => {
       expect(DC.startingQualityLevel).to.equal(newOptions.startingQualityLevel);
     });
+
+    it('should filter invalid msaa Options', () => {
+      DC.setLevel(DisplayQualityLevel.MEDIUM);
+      expect(cesiumMap.getCesiumWidget()!.scene.msaaSamples).to.equal(
+        DisplayQuality.getDefaultOptions().medium!.msaa,
+      );
+    });
   });
 
   describe('setLevel', () => {
     let spy: SinonSpy;
     let oldGlobeSse: number;
     let oldLayerSee: number;
+    let oldMsaa: number | undefined;
 
     before(() => {
       oldGlobeSse =
@@ -84,6 +97,7 @@ describe('util.displayQuality.DisplayQuality', () => {
       oldLayerSee =
         tilesetLayer.getImplementations()[0].cesium3DTileset!
           .maximumScreenSpaceError!;
+      oldMsaa = cesiumMap.getScene()?.msaaSamples;
       spy = getVcsEventSpy(DC.qualityLevelChanged, sandbox);
       DC.setLevel(DisplayQualityLevel.HIGH);
     });
@@ -99,6 +113,10 @@ describe('util.displayQuality.DisplayQuality', () => {
         DisplayQuality.getDefaultOptions().high!.sse,
       );
       expect(oldGlobeSse).to.not.equal(newGlobeSse);
+    });
+
+    it('should set msaa', () => {
+      expect(oldMsaa).to.not.equal(cesiumMap.getScene()?.msaaSamples);
     });
 
     it('should update the layer display quality', () => {

@@ -32,13 +32,6 @@ class VectorTileOpenlayersImpl
 
   tileSize: Size;
 
-  /**
-   * tiles to update on next TileRedraw
-   */
-  private _tilesToUpdate: Set<string> = new Set();
-
-  private _reloadTimeout: number | undefined = undefined;
-
   minLevel: number | undefined;
 
   maxLevel: number | undefined;
@@ -107,45 +100,18 @@ class VectorTileOpenlayersImpl
   }
 
   /**
-   * rerenders the specified tiles
-   * rendering happens async
+   * refreshes the openlayers Layer, which will redraw the scene, seems to magically work
    */
   updateTiles(tileIds: string[]): void {
     if (tileIds.length > 0) {
-      tileIds.forEach((tileId) => {
-        this._tilesToUpdate.add(tileId);
-      });
-      if (this.source) {
-        if (!this._reloadTimeout) {
-          this._reloadTimeout = window.setTimeout(() => {
-            this._tilesToUpdate.forEach((tileId) => {
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              const tCache = this.source.tileCache;
-              if (tCache.containsKey(tileId)) {
-                // change of key of tile (will trigger a reload)
-                const tile = tCache.get(tileId) as VectorTile<Feature>;
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                tile.key = false;
-              }
-            });
-            this.source!.changed();
-            this._tilesToUpdate.clear();
-            this._reloadTimeout = undefined;
-          }, 0);
-        }
-      }
+      this.olLayer?.changed();
     }
   }
 
   // eslint-disable-next-line no-unused-vars
   updateStyle(_style: StyleItem, _silent?: boolean): void {
     if (this.initialized) {
-      window.clearTimeout(this._reloadTimeout);
-      this._reloadTimeout = undefined;
-      this._tilesToUpdate.clear();
-      this.source!.refresh();
+      this.olLayer?.changed();
     }
   }
 

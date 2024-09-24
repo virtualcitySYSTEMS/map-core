@@ -5,6 +5,8 @@
 - Adds an `isVertex` helper for editor interactions.
 - Removed `excludedPickPositionEvents` from `FeatureAtPixelInteraction`.
 - Editors will always pick the position of the scene, instead of shooting through objects.
+- Added new option `msaa` to DisplayQuality
+- Update Openlayers to 10.2.0
 
 ### 6.0.0-rc.9
 

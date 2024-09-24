@@ -2,7 +2,6 @@ import VcsApp from '../../../../src/vcsApp.js';
 import { setOpenlayersMap } from '../../helpers/openlayersHelpers.js';
 import VectorTileLayer from '../../../../src/layer/vectorTileLayer.js';
 import VectorTileOpenlayersImpl from '../../../../src/layer/openlayers/vectorTileOpenlayersImpl.js';
-import { timeout } from '../../helpers/helpers.js';
 
 describe('VectorTileOpenlayersImpl', () => {
   let sandbox;
@@ -12,8 +11,7 @@ describe('VectorTileOpenlayersImpl', () => {
   /** @type {import("@vcmap/core").VectorTileOpenlayersImpl} */
   let vectorTileOpenlayers;
 
-  let sourceChangedSpy;
-  let sourceRefreshSpy;
+  let olLayerChangedSpy;
 
   before(async () => {
     sandbox = sinon.createSandbox();
@@ -35,8 +33,7 @@ describe('VectorTileOpenlayersImpl', () => {
       vectorTile.getImplementationOptions(),
     );
     await vectorTileOpenlayers.initialize();
-    sourceChangedSpy = sandbox.spy(vectorTileOpenlayers.source, 'changed');
-    sourceRefreshSpy = sandbox.spy(vectorTileOpenlayers.source, 'refresh');
+    olLayerChangedSpy = sandbox.spy(vectorTileOpenlayers.olLayer, 'changed');
   });
 
   afterEach(() => {
@@ -51,52 +48,38 @@ describe('VectorTileOpenlayersImpl', () => {
   describe('updateTiles', () => {
     it('should do nothing if no tileID is given', async () => {
       vectorTileOpenlayers.updateTiles([]);
-      await timeout(0);
-      expect(sourceChangedSpy).to.not.have.been.called;
+      expect(olLayerChangedSpy).to.not.have.been.called;
     });
 
     it('should do call source changed if tiles have been updated', async () => {
       vectorTileOpenlayers.updateTiles(['1']);
-      await timeout(0);
-      expect(sourceChangedSpy).to.have.been.called;
+      expect(olLayerChangedSpy).to.have.been.called;
     });
 
     it('should collect requests from the same  thread and only call sourceChanged once', async () => {
       vectorTileOpenlayers.updateTiles(['1']);
       vectorTileOpenlayers.updateTiles(['2']);
-      await timeout(0);
-      expect(sourceChangedSpy).to.have.been.calledOnce;
+      expect(olLayerChangedSpy).to.have.been.calledTwice;
     });
 
     it('should invalidate tiles on the source tileCache', async () => {
       const tile1 = { release() {} };
       const tile2 = { release() {} };
       const tile3 = { release() {} };
-      vectorTileOpenlayers.source.tileCache.set('1', tile1);
-      vectorTileOpenlayers.source.tileCache.set('2', tile2);
-      vectorTileOpenlayers.source.tileCache.set('3', tile3);
+      vectorTileOpenlayers.olLayer.getRenderer().getTileCache().set('1', tile1);
+      vectorTileOpenlayers.olLayer.getRenderer().getTileCache().set('2', tile2);
+      vectorTileOpenlayers.olLayer.getRenderer().getTileCache().set('3', tile3);
 
       vectorTileOpenlayers.updateTiles(['1', '2']);
       vectorTileOpenlayers.updateTiles(['3']);
-      await timeout(0);
-      expect(tile1.key).to.be.false;
-      expect(tile2.key).to.be.false;
-      expect(tile3.key).to.be.false;
+      expect(olLayerChangedSpy).to.have.been.calledTwice;
     });
   });
 
   describe('updateStyle', () => {
-    it('should refresh the source', () => {
+    it('should call olLayer changed', () => {
       vectorTileOpenlayers.updateStyle();
-      expect(sourceRefreshSpy).to.have.been.calledOnce;
-    });
-
-    it('should cancel updateTiles calls', async () => {
-      vectorTileOpenlayers.updateTiles(['1']);
-      vectorTileOpenlayers.updateStyle();
-      expect(sourceRefreshSpy).to.have.been.calledOnce;
-      await timeout(0);
-      expect(sourceChangedSpy).to.have.been.calledOnce; // refresh also calls changed
+      expect(olLayerChangedSpy).to.have.been.calledOnce;
     });
   });
 });

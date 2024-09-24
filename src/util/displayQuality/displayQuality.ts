@@ -20,6 +20,7 @@ export type DisplayQualityViewModelOptions = {
   fogScreenSpaceErrorFactor?: number;
   resolutionScale?: number;
   layerSSEFactor?: number;
+  msaa?: 1 | 2 | 4 | 8;
 };
 
 export type DisplayQualityLayerModel = {
@@ -55,6 +56,7 @@ class DisplayQuality {
         fogScreenSpaceErrorFactor: 6,
         resolutionScale: 0.9,
         layerSSEFactor: 2,
+        msaa: 1,
       },
       medium: {
         sse: 2.333,
@@ -64,6 +66,7 @@ class DisplayQuality {
         fogScreenSpaceErrorFactor: 4,
         resolutionScale: 1,
         layerSSEFactor: 1.1,
+        msaa: 1,
       },
       high: {
         sse: 4 / 3,
@@ -73,6 +76,7 @@ class DisplayQuality {
         fogScreenSpaceErrorFactor: 0,
         resolutionScale: 1,
         layerSSEFactor: 0.5,
+        msaa: 4,
       },
     };
   }
@@ -172,7 +176,12 @@ class DisplayQuality {
               key,
               Object.fromEntries(
                 Object.entries(value as Record<string, unknown>).filter(
-                  ([, v]) => v != null,
+                  ([innerKey, v]) => {
+                    if (innerKey === 'msaa') {
+                      return ([1, 2, 4, 8] as Array<unknown>).includes(v);
+                    }
+                    return v != null;
+                  },
                 ),
               ),
             ];
@@ -245,6 +254,9 @@ class DisplayQuality {
       viewer.scene.fog.density = this._viewModel.fogDensity!;
       viewer.scene.fog.screenSpaceErrorFactor =
         this._viewModel.fogScreenSpaceErrorFactor!;
+      if (this._viewModel.msaa) {
+        viewer.scene.msaaSamples = this._viewModel.msaa;
+      }
     }
 
     if (this._currentQualityLevel !== previousLevel) {
