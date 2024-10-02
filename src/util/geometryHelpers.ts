@@ -221,7 +221,62 @@ export function from3Dto2DLayout(geometry: Geometry): void {
  * @param scene
  * @param heightReference - clamp to ground will use `scene.getHeightMostDetailed`, terrain will use `sampleTerrainMostDetailed` using the scenes terrain provider
  */
-export async function placeGeometryOnGround(
+export async function placeGeometryOnSurface(
+  geometry: Geometry,
+  scene: Scene,
+  heightReference:
+    | HeightReference.CLAMP_TO_GROUND
+    | HeightReference.CLAMP_TO_TERRAIN,
+): Promise<void> {
+  const layout = geometry.getLayout();
+  const coordinates = geometry.getCoordinates() as any[];
+  const flatCoordinates = getFlatCoordinateReferences(geometry, coordinates);
+  const drapedCartographics = flatCoordinates.map((c) =>
+    mercatorToCartographic(c),
+  );
+  if (heightReference === HeightReference.CLAMP_TO_GROUND) {
+    await scene.sampleHeightMostDetailed(drapedCartographics);
+  } else if (scene.terrainProvider.availability) {
+    await sampleTerrainMostDetailed(scene.terrainProvider, drapedCartographics);
+  } else {
+    drapedCartographics.forEach((c) => {
+      c.height = 0;
+    });
+  }
+  if (layout === 'XY' || layout === 'XYM') {
+    const height = Math.max(...drapedCartographics.map((c) => c.height));
+    flatCoordinates.forEach((c, index) => {
+      if (layout === 'XYM') {
+        flatCoordinates[index][3] = c[2];
+      }
+      flatCoordinates[index][2] = height;
+    });
+  } else {
+    const maxDiff = flatCoordinates.reduce((acc, coord, index) => {
+      const current = drapedCartographics[index].height - coord[2];
+      return Math.max(current, acc);
+    }, -Infinity);
+    if (Number.isFinite(maxDiff) && maxDiff !== 0) {
+      flatCoordinates.forEach((_c, index) => {
+        flatCoordinates[index][2] += maxDiff;
+      });
+    }
+  }
+
+  geometry.setCoordinates(
+    coordinates,
+    layout === 'XYM' || layout === 'XYZM' ? 'XYZM' : 'XYZ',
+  );
+}
+
+/**
+ * Drape a geometry on to the ground (or terrain). The geometry is changed in place. This function
+ * will set the layout to a respective 3D layout.
+ * @param geometry
+ * @param scene
+ * @param heightReference - clamp to ground will use `scene.getHeightMostDetailed`, terrain will use `sampleTerrainMostDetailed` using the scenes terrain provider
+ */
+export async function drapeGeometryOnSurface(
   geometry: Geometry,
   scene: Scene,
   heightReference:
@@ -272,7 +327,7 @@ export async function from2Dto3DLayout(
     | HeightReference.CLAMP_TO_TERRAIN,
 ): Promise<void> {
   if (is2DLayout(geometry.getLayout())) {
-    await placeGeometryOnGround(geometry, scene, heightReference);
+    await drapeGeometryOnSurface(geometry, scene, heightReference);
   }
 }
 
@@ -320,7 +375,7 @@ export async function createAbsoluteFeature(
     if (groundLevel != null) {
       setZCoordinate(geometry, groundLevel);
     } else {
-      await placeGeometryOnGround(
+      await drapeGeometryOnSurface(
         geometry,
         scene,
         altitudeMode !== HeightReference.CLAMP_TO_TERRAIN

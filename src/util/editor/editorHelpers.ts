@@ -17,6 +17,7 @@ import {
   type Camera,
 } from '@vcmap-cesium/engine';
 
+import { getLogger } from '@vcsuite/logger';
 import { mercatorToCartesian } from '../math.js';
 import { getFlatCoordinateReferences } from '../geometryHelpers.js';
 import CesiumMap from '../../map/cesiumMap.js';
@@ -367,6 +368,10 @@ export async function drapeGeometryOnTerrain(
   geometry: Geometry,
   map: VcsMap,
 ): Promise<void> {
+  getLogger('editor helpers').deprecate(
+    'drapeGeometryOnTerrain',
+    'drapeGeometryOnTerrain is deprecated and will be removed in 6.1. Use drapeGeometryOnSurface instead.',
+  );
   if (map instanceof CesiumMap) {
     const coordinates = geometry.getCoordinates() as any[];
     const flats = getFlatCoordinateReferences(geometry, coordinates);
@@ -384,6 +389,10 @@ export async function placeGeometryOnTerrain(
   geometry: Geometry,
   map: VcsMap,
 ): Promise<void> {
+  getLogger('editor helpers').deprecate(
+    'placeGeometryOnTerrain',
+    'place geometry on terrain is deprecated and will be removed in 6.1. Use placeGeometryOnSurface instead.',
+  );
   if (map instanceof CesiumMap) {
     const coordinates = geometry.getCoordinates() as any[];
     const flats = getFlatCoordinateReferences(geometry, coordinates);

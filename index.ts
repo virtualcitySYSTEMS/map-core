@@ -714,7 +714,8 @@ export {
   is2DLayout,
   from2Dto3DLayout,
   from3Dto2DLayout,
-  placeGeometryOnGround,
+  drapeGeometryOnSurface,
+  placeGeometryOnSurface,
   createAbsoluteFeature,
 } from './src/util/geometryHelpers.js';
 export { default as IndexedCollection } from './src/util/indexedCollection.js';

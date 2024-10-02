@@ -24,7 +24,8 @@ import {
   from3Dto2DLayout,
   getFlatCoordinateReferences,
   getFlatCoordinatesFromSimpleGeometry,
-  placeGeometryOnGround,
+  placeGeometryOnSurface,
+  drapeGeometryOnSurface,
 } from '../../../src/util/geometryHelpers.js';
 import { getMockScene } from '../helpers/cesiumHelpers.js';
 import {
@@ -1707,8 +1708,96 @@ describe('util.geometryHelpers', () => {
     });
 
     it('should place an XY geometry on ground', async () => {
+      const geometry = new LineString([
+        Projection.wgs84ToMercator([1, 2]),
+        Projection.wgs84ToMercator([3, 4]),
+      ]);
+      await placeGeometryOnSurface(
+        geometry,
+        scene,
+        HeightReference.CLAMP_TO_GROUND,
+      );
+      expect(geometry.getFlatCoordinates()).to.have.ordered.members([
+        ...Projection.wgs84ToMercator([1, 2, 7]),
+        ...Projection.wgs84ToMercator([3, 4, 7]),
+      ]);
+    });
+
+    it('should place an XYZ geometry on ground', async () => {
+      const geometry = new LineString([
+        Projection.wgs84ToMercator([1, 2, 1]),
+        Projection.wgs84ToMercator([3, 4, 8]),
+      ]);
+      await placeGeometryOnSurface(
+        geometry,
+        scene,
+        HeightReference.CLAMP_TO_GROUND,
+      );
+      expect(geometry.getFlatCoordinates()).to.have.ordered.members([
+        ...Projection.wgs84ToMercator([1, 2, 3]),
+        ...Projection.wgs84ToMercator([3, 4, 10]),
+      ]);
+    });
+
+    it('should place an XYM geometry on ground', async () => {
+      const geometry = new LineString(
+        [
+          Projection.wgs84ToMercator([1, 2, 1]),
+          Projection.wgs84ToMercator([3, 4, 1]),
+        ],
+        'XYM',
+      );
+      await placeGeometryOnSurface(
+        geometry,
+        scene,
+        HeightReference.CLAMP_TO_GROUND,
+      );
+      expect(geometry.getFlatCoordinates()).to.have.ordered.members([
+        ...Projection.wgs84ToMercator([1, 2, 7, 1]),
+        ...Projection.wgs84ToMercator([3, 4, 7, 1]),
+      ]);
+    });
+
+    it('should place an XYZM geometry on ground', async () => {
+      const geometry = new LineString(
+        [
+          Projection.wgs84ToMercator([1, 2, 1, 1]),
+          Projection.wgs84ToMercator([3, 4, 8, 1]),
+        ],
+        'XYZM',
+      );
+      await placeGeometryOnSurface(
+        geometry,
+        scene,
+        HeightReference.CLAMP_TO_GROUND,
+      );
+      expect(geometry.getFlatCoordinates()).to.have.ordered.members([
+        ...Projection.wgs84ToMercator([1, 2, 3, 1]),
+        ...Projection.wgs84ToMercator([3, 4, 10, 1]),
+      ]);
+    });
+  });
+
+  describe('drapeGeometryOnGround', () => {
+    let scene: Scene;
+
+    before(() => {
+      scene = getMockScene();
+      scene.sampleHeightMostDetailed = (
+        cs: Cartographic[],
+      ): Promise<Cartographic[]> => {
+        cs.forEach((c) => {
+          c.height =
+            CesiumMath.toDegrees(c.longitude) +
+            CesiumMath.toDegrees(c.latitude);
+        });
+        return Promise.resolve(cs);
+      };
+    });
+
+    it('should place an XY geometry on ground', async () => {
       const geometry = new Point(Projection.wgs84ToMercator([1, 2]));
-      await placeGeometryOnGround(
+      await drapeGeometryOnSurface(
         geometry,
         scene,
         HeightReference.CLAMP_TO_GROUND,
@@ -1720,7 +1809,7 @@ describe('util.geometryHelpers', () => {
 
     it('should place an XYZ geometry on ground', async () => {
       const geometry = new Point(Projection.wgs84ToMercator([1, 2, 1]));
-      await placeGeometryOnGround(
+      await drapeGeometryOnSurface(
         geometry,
         scene,
         HeightReference.CLAMP_TO_GROUND,
@@ -1732,7 +1821,7 @@ describe('util.geometryHelpers', () => {
 
     it('should place an XYM geometry on ground', async () => {
       const geometry = new Point(Projection.wgs84ToMercator([1, 2, 1]), 'XYM');
-      await placeGeometryOnGround(
+      await drapeGeometryOnSurface(
         geometry,
         scene,
         HeightReference.CLAMP_TO_GROUND,
@@ -1747,7 +1836,7 @@ describe('util.geometryHelpers', () => {
         Projection.wgs84ToMercator([1, 2, 1, 1]),
         'XYZM',
       );
-      await placeGeometryOnGround(
+      await drapeGeometryOnSurface(
         geometry,
         scene,
         HeightReference.CLAMP_TO_GROUND,

@@ -2,6 +2,9 @@
 
 - New `primitive` rendering of vector tile features.
 - Add the `StaticFeatureTileProvider` tile provider, which serves runtime openlayers features as a tile provider.
+- deprecates `placeGeometryOnTerrain` and `drapeGeometryOnTerrain`
+- Renames `placeGeometryOnGround` to `drapeGeometryOnSurface`
+- Adds `placeGeometryOnSurface`
 
 ### 6.0.0-rc.10
 
