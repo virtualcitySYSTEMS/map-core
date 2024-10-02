@@ -262,9 +262,121 @@ declare module '@vcmap-cesium/engine' {
     creditDisplay: CreditDisplay;
 
     frameNumber: number;
+
+    passes: Record<string, unknown>;
+
+    fog: Fog;
+
+    cullingVolume: CullingVolume;
+
+    camera: Camera;
   }
 
   export namespace PolygonPipeline {
     function triangulate(positions: Cartesian2[], holes?: number[]): number[];
+  }
+
+  enum QuadtreeTileLoadState {
+    START = 0,
+    LOADING = 1,
+    DONE = 2,
+    FAILED = 3,
+  }
+
+  class TileBoundingRegion {
+    constructor(options: {
+      rectangle: Rectangle;
+      minimumHeight: number;
+      maximumHeight: number;
+      ellipsoid?: Ellipsoid;
+      computeBoundingVolumes?: boolean;
+    });
+
+    distanceToCamera(frameState: FrameState): number;
+
+    boundingVolume: OrientedBoundingBox;
+  }
+
+  class QuadtreeTile<T = any> {
+    constructor(options: {
+      level: number;
+      x: number;
+      y: number;
+      tilingScheme: TilingScheme;
+      parent?: QuadtreeTile<T>;
+    });
+
+    data: T | undefined;
+
+    level: number;
+
+    x: number;
+
+    y: number;
+
+    tilingScheme: TilingScheme;
+
+    parent: QuadtreeTile<T> | undefined;
+
+    rectangle: Rectangle;
+
+    children: QuadtreeTile[];
+
+    state: QuadtreeTileLoadState;
+
+    renderable: boolean;
+
+    _distance?: number;
+
+    upsampledFromParent: boolean;
+  }
+
+  namespace QuadtreeTileProvider {
+    function computeDefaultLevelZeroMaximumGeometricError(
+      tilingScheme: TilingScheme,
+    ): number;
+  }
+
+  interface QuadtreeTileProviderInterface {
+    quadtree: QuadtreePrimitive | undefined;
+    readonly tilingScheme: TilingScheme;
+    readonly errorEvent: Event;
+    initialize(frameState: FrameState): void;
+    update(frameState: FrameState): void;
+    beginUpdate(frameState: FrameState, drawCommands: unknown[]): void;
+    endUpdate(frameState: FrameState, drawCommands: unknown[]): void;
+    updateForPick(frameState: FrameState): void;
+    getLevelMaximumGeometricError(level: number): number;
+    loadTile(frameState: FrameState, tile: QuadtreeTile): void;
+    computeTileVisibility(
+      tile: QuadtreeTile,
+      frameState: FrameState,
+    ): Visibility;
+    showTileThisFrame(tile: QuadtreeTile, frameState: FrameState): void;
+    computeDistanceToTile(tile: QuadtreeTile, frameState: FrameState): number;
+    computeTileLoadPriority(tile: QuadtreeTile, frameState: FrameState): number;
+    cancelReprojections(): void;
+    isDestroyed(): boolean;
+    canRefine(tile: QuadtreeTile): boolean;
+    destroy(): void;
+  }
+
+  class QuadtreePrimitive {
+    constructor(options: {
+      tileProvider: QuadtreeTileProviderInterface;
+      tileCacheSize?: number;
+    });
+
+    forEachLoadedTile(cb: (tile: QuadtreeTile) => void): void;
+    forEachRenderedTile(cb: (tile: QuadtreeTile) => void): void;
+    invalidateAllTiles(): void;
+
+    beginFrame(f: FrameState): void;
+    endFrame(f: FrameState): void;
+    render(f: FrameState): void;
+  }
+
+  export namespace Math {
+    function fog(distanceToCamera: number, density: number): number;
   }
 }

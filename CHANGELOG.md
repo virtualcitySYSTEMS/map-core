@@ -1,3 +1,8 @@
+### 6.0.0-rc.11
+
+- New `primitive` rendering of vector tile features.
+- Add the `StaticFeatureTileProvider` tile provider, which serves runtime openlayers features as a tile provider.
+
 ### 6.0.0-rc.10
 
 - New `SegmentLengthInteraction` added to the editor. Displays segment length of polygons, line strings, circles & bboxes.

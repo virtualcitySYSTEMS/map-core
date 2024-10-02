@@ -91,6 +91,20 @@ export {
   CesiumTilesetOptions,
   CesiumTilesetImplementationOptions,
 } from './src/layer/cesiumTilesetLayer.js';
+export { default as VcsChildTile } from './src/layer/cesium/vcsTile/vcsChildTile.js';
+export { default as VcsDebugTile } from './src/layer/cesium/vcsTile/vcsDebugTile.js';
+export { default as VcsNoDataTile } from './src/layer/cesium/vcsTile/vcsNoDataTile.js';
+export { default as VcsQuadtreeTileProvider } from './src/layer/cesium/vcsTile/vcsQuadtreeTileProvider.js';
+export { default as VcsVectorTile } from './src/layer/cesium/vcsTile/vcsVectorTile.js';
+export {
+  VcsTile,
+  VcsTileState,
+  VcsTileType,
+  VcsTileOptions,
+  getTileWebMercatorExtent,
+  getTileHash,
+  getTileWgs84Extent,
+} from './src/layer/cesium/vcsTile/vcsTileHelpers.js';
 export { default as CzmlLayer, CzmlOptions } from './src/layer/czmlLayer.js';
 export {
   default as DataSourceLayer,
@@ -226,6 +240,10 @@ export {
   default as StaticGeoJSONTileProvider,
   StaticGeoJSONTileProviderOptions,
 } from './src/layer/tileProvider/staticGeojsonTileProvider.js';
+export {
+  default as StaticFeatureTileProvider,
+  StaticFeatureTileProviderOptions,
+} from './src/layer/tileProvider/staticFeatureTileProvider.js';
 export {
   mercatorResolutionsToLevel,
   rectangleToExtent,

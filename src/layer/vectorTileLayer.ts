@@ -1,8 +1,11 @@
 import Style, { type StyleFunction } from 'ol/style/Style.js';
 import type { Feature } from 'ol/index.js';
 import type { Size } from 'ol/size.js';
-
-import { parseBoolean, parseInteger } from '@vcsuite/parsers';
+import {
+  parseBoolean,
+  parseStringLiteral,
+  parseInteger,
+} from '@vcsuite/parsers';
 import CesiumMap from '../map/cesiumMap.js';
 import VectorRasterTileCesiumImpl from './cesium/vectorRasterTileCesiumImpl.js';
 import OpenlayersMap from '../map/openlayersMap.js';
@@ -45,6 +48,7 @@ import GlobalHider from './globalHider.js';
 import Extent from '../util/extent.js';
 import VcsMap from '../map/vcsMap.js';
 import StyleItem from '../style/styleItem.js';
+import VectorTileCesiumImpl from './cesium/vectorTileCesiumImpl.js';
 
 /**
  * synchronizes featureVisibility Symbols on the feature;
@@ -55,23 +59,37 @@ function synchronizeFeatureVisibility(
   feature: Feature,
 ): void {
   const featureId = feature.getId() as string | number;
+  let changed = false;
   if (featureVisibility.hiddenObjects[featureId]) {
     feature[hidden] = true;
+    changed = true;
   } else if (feature[hidden]) {
     delete feature[hidden];
+    changed = true;
   }
   if (featureVisibility.highlightedObjects[featureId]) {
     feature[highlighted] =
       featureVisibility.highlightedObjects[featureId].style;
+    changed = true;
   } else if (feature[highlighted]) {
     delete feature[highlighted];
+    changed = true;
   }
   if (globalHider?.hiddenObjects[featureId]) {
     feature[globalHidden] = true;
+    changed = true;
   } else if (feature[globalHidden]) {
     delete feature[globalHidden];
+    changed = true;
+  }
+
+  if (changed) {
+    feature.changed();
   }
 }
+
+const vectorTileRenderers = ['image', 'primitive'] as const;
+export type VectorTileRenderer = (typeof vectorTileRenderers)[number];
 
 export type VectorTileOptions = FeatureLayerOptions & {
   tileProvider?: TileProviderOptions | TileProvider;
@@ -89,6 +107,8 @@ export type VectorTileOptions = FeatureLayerOptions & {
    * used to forward declutter option to openlayers VectorTileLayer
    */
   declutter?: boolean;
+  debug?: boolean;
+  renderer?: VectorTileRenderer;
 };
 
 export type VectorTileImplementationOptions =
@@ -99,10 +119,12 @@ export type VectorTileImplementationOptions =
     maxLevel: number;
     extent?: Extent;
     declutter: boolean;
+    vectorProperties: VectorProperties;
+    debug?: boolean;
   };
 
 export interface VectorTileImplementation extends FeatureLayerImplementation {
-  updateTiles(tiles: string[]): void;
+  updateTiles(tiles: string[], featureVisibilityChange: boolean): void;
 }
 
 /**
@@ -110,7 +132,7 @@ export interface VectorTileImplementation extends FeatureLayerImplementation {
  * @group Layer
  */
 class VectorTileLayer extends FeatureLayer<
-  VectorTileOpenlayersImpl | VectorRasterTileCesiumImpl
+  VectorTileOpenlayersImpl | VectorRasterTileCesiumImpl | VectorTileCesiumImpl
 > {
   static get className(): string {
     return 'VectorTileLayer';
@@ -127,6 +149,8 @@ class VectorTileLayer extends FeatureLayer<
       minLevel: undefined,
       maxLevel: undefined,
       declutter: true,
+      debug: false,
+      renderer: 'image',
     };
   }
 
@@ -159,6 +183,10 @@ class VectorTileLayer extends FeatureLayer<
    * zIndex for features with featureStyle // Do we maybe need a global counter ?
    */
   private _styleZIndex = 0;
+
+  private _debug = false;
+
+  private _renderer: VectorTileRenderer;
 
   /**
    * @param  options
@@ -197,6 +225,12 @@ class VectorTileLayer extends FeatureLayer<
     this._maxLevel = parseInteger(options.maxLevel, defaultOptions.maxLevel);
     this._minLevel = parseInteger(options.minLevel, defaultOptions.minLevel);
     this._declutter = parseBoolean(options.declutter, defaultOptions.declutter);
+    this._debug = parseBoolean(options.debug, defaultOptions.debug);
+    this._renderer = parseStringLiteral(
+      options.renderer,
+      vectorTileRenderers,
+      defaultOptions.renderer,
+    );
   }
 
   /**
@@ -224,12 +258,16 @@ class VectorTileLayer extends FeatureLayer<
           // eslint-disable-next-line no-void
           void this.reload();
         });
-      this.featureProvider = new TileProviderFeatureProvider(this.name, {
-        // XXX this overwrites
-        style: this.style,
-        tileProvider: this.tileProvider,
-        vectorProperties: this.vectorProperties,
-      });
+
+      if (this._renderer === 'image') {
+        // primitives dont need a feature provider
+        this.featureProvider = new TileProviderFeatureProvider(this.name, {
+          // XXX this overwrites
+          style: this.style,
+          tileProvider: this.tileProvider,
+          vectorProperties: this.vectorProperties,
+        });
+      }
     }
     await super.initialize();
   }
@@ -306,11 +344,12 @@ class VectorTileLayer extends FeatureLayer<
                 } else if (action === FeatureVisibilityAction.SHOW) {
                   delete feature[hidden];
                 }
+                feature.changed();
               }
             });
           }
         });
-        this.updateTiles([...tileIdsChanged]);
+        this._updateTiles([...tileIdsChanged], true);
       }),
     ];
 
@@ -338,14 +377,24 @@ class VectorTileLayer extends FeatureLayer<
                   } else if (action === FeatureVisibilityAction.SHOW) {
                     delete feature[globalHidden];
                   }
+                  feature.changed();
                 }
               });
             }
           });
-          this.updateTiles([...tileIdsChanged]);
+          this._updateTiles([...tileIdsChanged], true);
         }),
       );
     }
+  }
+
+  private _updateTiles(
+    tileIds: string[],
+    featureVisibilityChange?: boolean,
+  ): void {
+    this.getImplementations().forEach((impl) => {
+      impl.updateTiles(tileIds, !!featureVisibilityChange);
+    });
   }
 
   /**
@@ -353,9 +402,7 @@ class VectorTileLayer extends FeatureLayer<
    * rendering happens async
    */
   updateTiles(tileIds: string[]): void {
-    this.getImplementations().forEach((impl) => {
-      impl.updateTiles(tileIds);
-    });
+    this._updateTiles(tileIds);
   }
 
   /**
@@ -388,15 +435,23 @@ class VectorTileLayer extends FeatureLayer<
       maxLevel: this._maxLevel,
       extent: this.extent ?? new Extent(),
       declutter: this._declutter,
+      vectorProperties: this.vectorProperties,
+      debug: this._debug,
     };
   }
 
   createImplementationsForMap(
     map: VcsMap,
-  ): (VectorRasterTileCesiumImpl | VectorTileOpenlayersImpl)[] {
+  ): (
+    | VectorTileCesiumImpl
+    | VectorRasterTileCesiumImpl
+    | VectorTileOpenlayersImpl
+  )[] {
     if (map instanceof CesiumMap) {
       return [
-        new VectorRasterTileCesiumImpl(map, this.getImplementationOptions()),
+        this._renderer === 'image'
+          ? new VectorRasterTileCesiumImpl(map, this.getImplementationOptions())
+          : new VectorTileCesiumImpl(map, this.getImplementationOptions()),
       ];
     }
 

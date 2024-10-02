@@ -295,7 +295,7 @@ describe('VectorTileLayer', () => {
     });
 
     it('should update featureVisibility listeners', () => {
-      const updateTilesSpy = sandbox.spy(vectorTile, 'updateTiles');
+      const updateTilesSpy = sandbox.spy(vectorTile, '_updateTiles');
       vectorTile.setGlobalHider(new GlobalHider());
       vectorTile.globalHider.hideObjects(['globallyHiddenFeature']);
       expect(updateTilesSpy).to.have.been.called;
