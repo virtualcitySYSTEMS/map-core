@@ -5,6 +5,9 @@
 - deprecates `placeGeometryOnTerrain` and `drapeGeometryOnTerrain`
 - Renames `placeGeometryOnGround` to `drapeGeometryOnSurface`
 - Adds `placeGeometryOnSurface`
+- Introduces a new `getAttributes` API on Cesium3DTileFeature, Cesium3DTilePointFeature, Entity & ol.Feature to get attributes.
+  This works for 1.0 and 1.1 Cesium3DTile data sets. On ol.Feature it is an alias for getProperties _without_ the geometry.
+- Terrain layer implementation remove their visualization on destruction.
 
 ### 6.0.0-rc.10
 

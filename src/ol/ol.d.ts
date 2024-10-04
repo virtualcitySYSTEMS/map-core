@@ -95,6 +95,7 @@ declare module 'ol/index.js' {
   interface Feature<Geometry> {
     getProperty(key: string): any;
     getPropertyInherited(key: string): any;
+    getAttributes(): Record<string, unknown>;
     [vcsLayerName]?: string;
     [originalFeatureSymbol]?: Feature<Geometry>;
     [vectorStyleSymbol]?: VectorStyleItem;

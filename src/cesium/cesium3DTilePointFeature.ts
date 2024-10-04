@@ -1,4 +1,5 @@
 import { Cesium3DTilePointFeature } from '@vcmap-cesium/engine';
+import { getAttributes } from './cesium3DTileFeature.js';
 
 Cesium3DTilePointFeature.prototype.getId = function getId(
   this: Cesium3DTilePointFeature,
@@ -8,3 +9,5 @@ Cesium3DTilePointFeature.prototype.getId = function getId(
     `${this.content.url}${this._batchId}`
   );
 };
+
+Cesium3DTilePointFeature.prototype.getAttributes = getAttributes;

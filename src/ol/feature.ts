@@ -44,6 +44,16 @@ Feature.prototype.getProperty = function getProperty(
   return this.get(property);
 };
 
+Feature.prototype.getAttributes = function getAttributes(
+  this: Feature,
+): Record<string, unknown> {
+  const properties = this.getProperties();
+  if (this.getGeometryName()) {
+    delete properties[this.getGeometryName()];
+  }
+  return properties;
+};
+
 /**
  * To be used for cesium 3D style functions
  * @param {string} property

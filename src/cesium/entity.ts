@@ -14,6 +14,13 @@ Entity.prototype.getProperty = function getProperty(
   return this[property as keyof Entity];
 };
 
+Entity.prototype.getAttributes = function getAttributes(): Record<
+  string,
+  unknown
+> {
+  return this.properties ?? {};
+};
+
 /**
  * To be used for cesium 3D style functions
  */

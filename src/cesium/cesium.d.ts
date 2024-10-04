@@ -59,6 +59,7 @@ declare module '@vcmap-cesium/engine' {
     getId(): number | string;
     getProperty(key: string): any;
     getPropertyInherited(key: string): any;
+    getAttributes(): Record<string, unknown>;
     [vcsLayerName]?: string;
     [globalHidden]?: boolean;
     [hidden]?: boolean;
@@ -163,6 +164,7 @@ declare module '@vcmap-cesium/engine' {
     content: Cesium3DTileContent;
     _batchId: number;
     getId(): number | string;
+    getAttributes(): Record<string, unknown>;
     [vcsLayerName]?: string;
     [globalHidden]?: boolean;
     [hidden]?: boolean;
@@ -175,6 +177,7 @@ declare module '@vcmap-cesium/engine' {
     content: Cesium3DTileContent;
     _batchId: number;
     getId(): number | string;
+    getAttributes(): Record<string, unknown>;
     [vcsLayerName]?: string;
     [globalHidden]?: boolean;
     [hidden]?: boolean;

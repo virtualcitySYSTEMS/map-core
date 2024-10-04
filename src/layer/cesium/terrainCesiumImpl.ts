@@ -56,6 +56,9 @@ class TerrainCesiumImpl extends LayerImplementation<CesiumMap> {
   }
 
   destroy(): void {
+    if (this.terrainProvider) {
+      this.map.unsetTerrainProvider(this.terrainProvider);
+    }
     this.terrainProvider = undefined;
     super.destroy();
   }

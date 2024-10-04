@@ -240,6 +240,7 @@ function startCreateFeatureSession<T extends GeometryType>(
         if (featureAltitudeMode) {
           currentFeature.set('olcs_altitudeMode', featureAltitudeMode);
         }
+        currentFeature.set('olcs_allowPicking', false);
         const propChangeListener = currentFeature.on(
           'propertychange',
           (event) => {
@@ -268,6 +269,7 @@ function startCreateFeatureSession<T extends GeometryType>(
         }
         if (currentFeature) {
           delete currentFeature[createSync];
+          currentFeature.set('olcs_allowPicking', true);
           if (
             !geometry ||
             currentFeature.getGeometry() !== geometry ||
