@@ -7,6 +7,7 @@ import { expect } from 'chai';
 import { Polygon, MultiPolygon, LineString } from 'ol/geom.js';
 import {
   Cartesian3,
+  ClassificationPrimitive,
   GroundPolylinePrimitive,
   GroundPrimitive,
   Math as CesiumMath,
@@ -213,6 +214,22 @@ describe('convert', () => {
       );
       expect(items).lengthOf(1);
       expect(items[0].item).to.be.an.instanceOf(GroundPrimitive);
+    });
+
+    it('should create a classification primitive', async () => {
+      const altitudeModeVectorProperties = new VectorProperties({
+        altitudeMode: 'absolute',
+        classificationType: 'cesium3DTile',
+      });
+      const fillStyle = new Style({ fill: new Fill({}) });
+      const items = await convert(
+        feature,
+        fillStyle,
+        altitudeModeVectorProperties,
+        scene,
+      );
+      expect(items).lengthOf(1);
+      expect(items[0].item).to.be.an.instanceOf(ClassificationPrimitive);
     });
 
     it('should create primitive per style', async () => {

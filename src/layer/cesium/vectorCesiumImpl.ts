@@ -91,7 +91,7 @@ class VectorCesiumImpl
 
     this._olListeners.push(
       this.source.on('changefeature', (event) => {
-        this._featureChanged(event.feature as Feature).catch(() => {
+        this._featureChanged(event.feature as Feature).catch((_e) => {
           this.getLogger().error('failed to convert feature');
         });
       }),

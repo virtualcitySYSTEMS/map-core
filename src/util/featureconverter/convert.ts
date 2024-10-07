@@ -324,12 +324,23 @@ function getPrimitiveBatches(
 
 function getClampedPrimitiveBatches(
   options: CesiumGeometryOption<'solid' | 'outline' | 'line' | 'fill'>[],
+  feature: Feature,
+  vectorProperties: VectorProperties,
+  scene: Scene,
 ): PrimitiveBatches {
   const batches = createPrimitiveBatches();
+  const classification = vectorProperties.getClassificationType(feature);
+  const classificationSupported = ClassificationPrimitive.isSupported(scene);
 
   options.forEach((item) => {
     if (item.type === 'solid' || item.type === 'fill') {
-      batches.solidPrimitive.push(item);
+      if (classification != null) {
+        if (classificationSupported) {
+          batches.classificationPrimitive.push(item);
+        }
+      } else {
+        batches.solidPrimitive.push(item);
+      }
     } else if (item.type === 'outline') {
       batches.outlinePrimitive.push(item);
     } else if (item.type === 'line') {
@@ -414,7 +425,12 @@ function batchPrimitives(
 
   batches.clampedPrimitives.forEach((options, originHash) => {
     const [x, y, heightReference] = originHash.split(':').map(Number);
-    const clampedBatches = getClampedPrimitiveBatches(options);
+    const clampedBatches = getClampedPrimitiveBatches(
+      options,
+      feature,
+      vectorProperties,
+      scene,
+    );
     const clampedItems = batchPrimitives(
       clampedBatches,
       feature,

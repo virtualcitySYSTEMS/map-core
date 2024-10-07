@@ -89,6 +89,8 @@ declare module '@vcmap-cesium/engine' {
 
   interface ClassificationPrimitive {
     olFeature?: import('ol').Feature<import('ol/geom.js').Geometry>;
+    _primitive?: Primitive; // internal API used to create clamped primitives
+    _primitiveOptions: ConstructorParameters<typeof Primitive>[0];
   }
 
   interface Label {

@@ -1,3 +1,7 @@
+### 6.0.0-rc.13
+
+- Clamped features will now render as classifcations too.
+
 ### 6.0.0-rc.11
 
 - New `primitive` rendering of vector tile features.
