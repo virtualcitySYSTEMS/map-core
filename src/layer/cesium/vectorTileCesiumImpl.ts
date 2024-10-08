@@ -49,8 +49,10 @@ export default class VectorTileCesiumImpl
   }
 
   async initialize(): Promise<void> {
+    if (!this.initialized) {
+      this.map.addPrimitiveCollection(this._primitiveCollection);
+    }
     await super.initialize();
-    this.map.addPrimitiveCollection(this._primitiveCollection);
   }
 
   async activate(): Promise<void> {
@@ -71,5 +73,19 @@ export default class VectorTileCesiumImpl
   updateSplitDirection(direction: SplitDirection): void {
     this._quadtreeProvider.updateSplitDirection(direction);
     this._quadtreePrimitive.invalidateAllTiles();
+  }
+
+  destroy(): void {
+    if (!this.isDestroyed) {
+      this._quadtreeProvider.destroy();
+      this._quadtreePrimitive.invalidateAllTiles();
+      if (this.map.initialized) {
+        this.map.removePrimitiveCollection(this._primitiveCollection);
+      } else {
+        this._primitiveCollection.destroy();
+      }
+    }
+
+    super.destroy();
   }
 }
