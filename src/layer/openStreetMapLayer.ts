@@ -1,4 +1,4 @@
-import { SplitDirection } from '@vcmap-cesium/engine';
+import { ImageryLayer, SplitDirection } from '@vcmap-cesium/engine';
 
 import { parseInteger, parseNumberRange } from '@vcsuite/parsers';
 import Layer, { type LayerOptions, SplitLayer } from './layer.js';
@@ -29,6 +29,22 @@ export type OpenStreetMapOptions = LayerOptions & {
    * @default 19
    */
   maxLevel?: number;
+
+  /**
+   * configures the visible level in the rendered map. Maps to Openlayers `minZoom` and Cesium `minimiumTerrainLevel`
+   */
+  minRenderingLevel?: number;
+
+  /**
+   * configures the visible level in the rendered map. Maps to Openlayers `maxZoom` and Cesium `maximumTerrainLevel`
+   */
+  maxRenderingLevel?: number;
+
+  /**
+   * can be used to forward options to the cesium ImageryLayer
+   * @see https://cesium.com/learn/cesiumjs/ref-doc/ImageryLayer.html#.ConstructorOptions
+   */
+  imageryLayerOptions?: ImageryLayer.ConstructorOptions;
 };
 
 /**
@@ -48,6 +64,8 @@ class OpenStreetMapLayer
       splitDirection: undefined,
       opacity: 1,
       maxLevel: 19,
+      minRenderingLevel: undefined,
+      maxRenderingLevel: undefined,
     };
   }
 
@@ -61,9 +79,29 @@ class OpenStreetMapLayer
   splitDirectionChanged: VcsEvent<SplitDirection> = new VcsEvent();
 
   /**
-   * The maximum level to load. Changing requires a redraw to take effect.
+   * The maximum level to load.
+   * Changes requires calling layer.redraw() to take effect.
    */
   maxLevel: number;
+
+  /**
+   * defines the visible level in the rendered map, maps to Openlayers `minZoom` and Cesium `minimiumTerrainLevel`.
+   * Changes requires calling layer.redraw() to take effect.
+   */
+  minRenderingLevel: number | undefined;
+
+  /**
+   * defines the visible level in the rendered map, maps to Openlayers `minZoom` and Cesium `minimiumTerrainLevel`.
+   * Changes requires calling layer.redraw() to take effect.
+   */
+  maxRenderingLevel: number | undefined;
+
+  /**
+   * can be used to forward options to the cesium ImageryLayer
+   * @see https://cesium.com/learn/cesiumjs/ref-doc/ImageryLayer.html#.ConstructorOptions
+   * Changes requires calling layer.redraw() to take effect.
+   */
+  imageryLayerOptions: ImageryLayer.ConstructorOptions | undefined;
 
   protected _supportedMaps = [CesiumMap.className, OpenlayersMap.className];
 
@@ -86,6 +124,15 @@ class OpenStreetMapLayer
       1.0,
     );
     this.maxLevel = parseInteger(options.maxLevel, defaultOptions.maxLevel);
+    this.minRenderingLevel = parseInteger(
+      options.minRenderingLevel,
+      defaultOptions.minRenderingLevel,
+    );
+    this.maxRenderingLevel = parseInteger(
+      options.maxRenderingLevel,
+      defaultOptions.maxRenderingLevel,
+    );
+    this.imageryLayerOptions = structuredClone(options.imageryLayerOptions);
   }
 
   get splitDirection(): SplitDirection {
@@ -126,7 +173,10 @@ class OpenStreetMapLayer
       splitDirection: this.splitDirection,
       minLevel: 0,
       maxLevel: this.maxLevel,
+      minRenderingLevel: this.minRenderingLevel,
+      maxRenderingLevel: this.maxRenderingLevel,
       tilingSchema: TilingScheme.GEOGRAPHIC,
+      imageryLayerOptions: this.imageryLayerOptions,
     };
   }
 
@@ -164,9 +214,21 @@ class OpenStreetMapLayer
       config.maxLevel = this.maxLevel;
     }
 
+    if (this.minRenderingLevel !== defaultOptions.minRenderingLevel) {
+      config.minRenderingLevel = this.minRenderingLevel;
+    }
+
+    if (this.maxRenderingLevel !== defaultOptions.maxRenderingLevel) {
+      config.maxRenderingLevel = this.maxRenderingLevel;
+    }
+
     if (this._splitDirection !== SplitDirection.NONE) {
       config.splitDirection =
         this._splitDirection === SplitDirection.RIGHT ? 'right' : 'left';
+    }
+
+    if (this.imageryLayerOptions !== defaultOptions.imageryLayerOptions) {
+      config.imageryLayerOptions = structuredClone(this.imageryLayerOptions);
     }
 
     return config;

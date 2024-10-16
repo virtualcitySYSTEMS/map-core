@@ -46,6 +46,8 @@ class WmsOpenlayersImpl extends RasterLayerOpenlayersImpl {
           headers: this.headers,
         }),
         opacity: this.opacity,
+        minZoom: this.minRenderingLevel,
+        maxZoom: this.maxRenderingLevel,
       });
     }
     return new Tile({
@@ -62,6 +64,8 @@ class WmsOpenlayersImpl extends RasterLayerOpenlayersImpl {
         headers: this.headers,
       }),
       opacity: this.opacity,
+      minZoom: this.minRenderingLevel,
+      maxZoom: this.maxRenderingLevel,
     });
   }
 }

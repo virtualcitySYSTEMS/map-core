@@ -83,10 +83,7 @@ class WmtsCesiumImpl extends RasterLayerCesiumImpl {
     options.tileMatrixLabels = this.matrixIds;
 
     const imageryProvider = new WebMapTileServiceImageryProvider(options);
-    const layerOptions = {
-      alpha: this.opacity,
-      splitDirection: this.splitDirection,
-    };
+    const layerOptions = this.getCesiumLayerOptions();
     return Promise.resolve(
       new CesiumImageryLayer(imageryProvider, layerOptions),
     );

@@ -5,11 +5,9 @@ The editor is a set of functionality to allow users to:
 1. Create features with a given geometry on a specific layer.
 2. Select & edit the geometry of a single feature on a specific layer.
 3. Select, translate, scale & rotate one or more features from a specific layer.
-
-## Missing Features
-
-- Altitude mode handling
-- Snapping
+4. Allows snapping to parallel or orthogonal lines of the currently edited feature.
+5. Allows snapping to edges and vertexes of features in the current layer or other vectorLayers.
+6. Shows the segment lengths on edit.
 
 ## Usage
 
@@ -24,7 +22,8 @@ created, each intended for a specific use case.
 
 If you wish to start a `CreateFeatureSession`, you must call the `startCreateFeatureSession`
 helper, to create it. Once created you can listen to the sessions events to handle creation
-& stopping. The following outlines some example usage:
+& stopping. In the options snapping options can be controlled, for example which layer should be snapped to.
+The following outlines some example usage:
 
 ```javascript
 import {
@@ -58,6 +57,12 @@ function createFeatureAndGrabInfo(info) {
     app,
     layer,
     GeometryType.LineString,
+    'absolute',
+    {
+      snapTo: ['orthogonal', 'parallel', 'vertex', 'edge'],
+      initialSnapToLayers: [layer],
+      hideSegmentLength: false,
+    },
   );
   session.featureCreated.addEventListener((feature) => {
     info.currentId = feature.getId();
@@ -146,7 +151,7 @@ async function setAndClearTheCurrentFeatures(featureId) {
  * You can change the initial mode and change the mode afterwards.
  * Additionally you can listen to mode changes.
  */
-function changingSelecionMode() {
+function changingSelectionMode() {
   const session = startSelectFeaturesSession(
     app,
     layer,

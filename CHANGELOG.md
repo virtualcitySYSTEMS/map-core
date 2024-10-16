@@ -1,5 +1,8 @@
 ### 6.0.0-rc.14
 
+- Added getter to `CesiumMap` for the `defaultShadowMap`
+- Added `minRenderingLevel` and `maxRenderingLevel` to all `Rasterlayer` and `OpenstreetMapLayer`, this can be used to constrain the levels at which the data should be rendered
+- Added `imageryLayerOptions` to `RasterLayer` and `OpenstreetMapLayer` to forward Cesium ImageryLayer Option to the cesium Instance
 - Updated Openlayers to 10.2.1
 - Fixed featureAtPixelInteraction to correctly handle translucentDepthPicking
 - Removed the `defaultPointcloudStyle` from the API, just use `defaultDeclarativeStyle`

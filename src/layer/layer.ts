@@ -106,6 +106,11 @@ class Layer<
 
   private _initialized: boolean;
 
+  /**
+   * if provided, the layer will only be shown in the given MapNames.
+   * An empty array will show the layer in all configured maps.
+   * Changes require calling layer.redraw() to take effect.
+   */
   mapNames: string[];
 
   /**

@@ -64,6 +64,8 @@ class SingleImageOpenlayersImpl extends RasterLayerOpenlayersImpl {
     return new ImageLayer({
       source: new ImageStatic(options),
       opacity: this.opacity,
+      minZoom: this.minRenderingLevel,
+      maxZoom: this.maxRenderingLevel,
     });
   }
 }

@@ -65,10 +65,7 @@ class WmsCesiumImpl extends RasterLayerCesiumImpl {
     }
 
     const imageryProvider = new WebMapServiceImageryProvider(options);
-    const layerOptions = {
-      alpha: this.opacity,
-      splitDirection: this.splitDirection,
-    };
+    const layerOptions = this.getCesiumLayerOptions();
     return Promise.resolve(
       new CesiumImageryLayer(imageryProvider, layerOptions),
     );

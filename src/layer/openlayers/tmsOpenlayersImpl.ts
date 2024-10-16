@@ -60,6 +60,8 @@ class TmsOpenlayersImpl extends RasterLayerOpenlayersImpl {
     const tileOptions: TileOptions<XYZ> = {
       source: new XYZ(sourceOptions),
       opacity: this.opacity,
+      minZoom: this.minRenderingLevel,
+      maxZoom: this.maxRenderingLevel,
     };
     if (this.extent && this.extent.isValid()) {
       tileOptions.extent =

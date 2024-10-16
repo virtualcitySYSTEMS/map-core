@@ -25,20 +25,29 @@ class RasterLayerCesiumImpl
 
   maxLevel: number;
 
+  minRenderingLevel: number | undefined;
+
+  maxRenderingLevel: number | undefined;
+
   extent: Extent | undefined;
 
   opacity: number;
 
   tilingSchema: TilingScheme;
 
+  imageryLayerOptions: ImageryLayer.ConstructorOptions | undefined;
+
   constructor(map: CesiumMap, options: RasterLayerImplementationOptions) {
     super(map, options);
     this.splitDirection = options.splitDirection;
     this.minLevel = options.minLevel;
     this.maxLevel = options.maxLevel;
+    this.minRenderingLevel = options.minRenderingLevel;
+    this.maxRenderingLevel = options.maxRenderingLevel;
     this.extent = options.extent;
     this.opacity = options.opacity;
     this.tilingSchema = options.tilingSchema;
+    this.imageryLayerOptions = options.imageryLayerOptions;
   }
 
   async initialize(): Promise<void> {
@@ -60,6 +69,16 @@ class RasterLayerCesiumImpl
     if (this.initialized && this.cesiumLayer) {
       this.cesiumLayer.splitDirection = splitDirection;
     }
+  }
+
+  getCesiumLayerOptions(): ImageryLayer.ConstructorOptions {
+    return {
+      ...this.imageryLayerOptions,
+      alpha: this.opacity,
+      splitDirection: this.splitDirection,
+      minimumTerrainLevel: this.minRenderingLevel,
+      maximumTerrainLevel: this.maxRenderingLevel,
+    };
   }
 
   // eslint-disable-next-line class-methods-use-this

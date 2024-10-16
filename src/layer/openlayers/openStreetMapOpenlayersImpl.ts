@@ -16,6 +16,8 @@ class OpenStreetMapOpenlayersImpl extends RasterLayerOpenlayersImpl {
       source: new OSM({
         maxZoom: this.maxLevel,
       }),
+      minZoom: this.minRenderingLevel,
+      maxZoom: this.maxRenderingLevel,
     });
   }
 }

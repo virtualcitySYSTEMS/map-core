@@ -52,11 +52,8 @@ class TmsCesiumImpl extends RasterLayerCesiumImpl {
       getResourceOrUrl(this.url!, this.headers),
       options,
     );
-    const layerOptions = {
-      alpha: this.opacity,
-      splitDirection: this.splitDirection,
-    };
 
+    const layerOptions = this.getCesiumLayerOptions();
     return new CesiumImageryLayer(imageryProvider, layerOptions);
   }
 }

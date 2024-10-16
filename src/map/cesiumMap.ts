@@ -468,6 +468,10 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
     }
   }
 
+  get defaultShadowMap(): ShadowMap | null {
+    return this._defaultShadowMap;
+  }
+
   get terrainProvider(): TerrainProvider | null {
     return this._terrainProvider;
   }

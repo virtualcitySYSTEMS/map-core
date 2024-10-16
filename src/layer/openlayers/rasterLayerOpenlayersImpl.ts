@@ -19,6 +19,10 @@ class RasterLayerOpenlayersImpl
 
   maxLevel: number;
 
+  minRenderingLevel: number | undefined;
+
+  maxRenderingLevel: number | undefined;
+
   tilingSchema: TilingScheme;
 
   extent: Extent;
@@ -29,6 +33,8 @@ class RasterLayerOpenlayersImpl
     super(map, options);
     this.minLevel = options.minLevel;
     this.maxLevel = options.maxLevel;
+    this.minRenderingLevel = options.minRenderingLevel;
+    this.maxRenderingLevel = options.maxRenderingLevel;
     this.tilingSchema = options.tilingSchema;
     this.extent = options.extent as Extent;
     this.opacity = options.opacity;

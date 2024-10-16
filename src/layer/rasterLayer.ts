@@ -3,6 +3,7 @@ import {
   WebMercatorTilingScheme,
   GeographicTilingScheme,
   Cartographic,
+  ImageryLayer,
 } from '@vcmap-cesium/engine';
 import {
   getBottomLeft,
@@ -30,15 +31,26 @@ import VcsMap from '../map/vcsMap.js';
 
 export type RasterLayerOptions = LayerOptions & {
   /**
-   * minLevel to show (if not specified, calculated from extent)
+   * minLevel of the datasource (if not specified, calculated from extent)
    * @default 0
    */
   minLevel?: number;
   /**
-   * maxLevel to show
+   * maxlevel the datasource can provide the data.
    * @default 18
    */
   maxLevel?: number;
+
+  /**
+   * configures the visible level in the rendered map. Maps to Openlayers `minZoom` and Cesium `minimiumTerrainLevel`
+   */
+  minRenderingLevel?: number;
+
+  /**
+   * configures the visible level in the rendered map. Maps to Openlayers `maxZoom` and Cesium `maximumTerrainLevel`
+   */
+  maxRenderingLevel?: number;
+
   tilingSchema?: TilingScheme;
   /**
    * opacity between 0 and 1
@@ -49,15 +61,24 @@ export type RasterLayerOptions = LayerOptions & {
    * either 'left' or 'right', none if omitted
    */
   splitDirection?: string;
+
+  /**
+   * can be used to forward options to the cesium ImageryLayer
+   * @see https://cesium.com/learn/cesiumjs/ref-doc/ImageryLayer.html#.ConstructorOptions
+   */
+  imageryLayerOptions?: ImageryLayer.ConstructorOptions;
 };
 
 export type RasterLayerImplementationOptions = LayerImplementationOptions & {
   minLevel: number;
   maxLevel: number;
+  minRenderingLevel?: number;
+  maxRenderingLevel?: number;
   tilingSchema: TilingScheme;
   opacity: number;
   extent?: Extent;
   splitDirection: SplitDirection;
+  imageryLayerOptions?: ImageryLayer.ConstructorOptions;
 };
 
 export interface RasterLayerImplementation {
@@ -166,9 +187,12 @@ class RasterLayer<
       ...Layer.getDefaultOptions(),
       minLevel: 0,
       maxLevel: 18,
+      minRenderingLevel: undefined,
+      maxRenderingLevel: undefined,
       tilingSchema: TilingScheme.GEOGRAPHIC,
       opacity: 1,
       splitDirection: undefined,
+      imageryLayerOptions: undefined,
     };
   }
 
@@ -176,18 +200,46 @@ class RasterLayer<
 
   /**
    * The {@link TilingScheme} of this layer
+   * Changes require calling layer.redraw() to take effect.
    */
   tilingSchema: TilingScheme;
 
+  /**
+   * The maximum level to load.
+   * Changes require calling layer.redraw() to take effect.
+   */
   maxLevel: number;
 
   private _minLevel: number;
 
+  /**
+   * The minimum level to load.
+   * Changes require calling layer.redraw() to take effect.
+   */
   minLevel: number;
+
+  /**
+   * defines the visible level in the rendered map, maps to Openlayers `minZoom` and Cesium `minimiumTerrainLevel`.
+   * Changes requires calling layer.redraw() to take effect.
+   */
+  minRenderingLevel: number | undefined;
+
+  /**
+   * defines the visible level in the rendered map, maps to Openlayers `minZoom` and Cesium `minimiumTerrainLevel`.
+   * Changes requires calling layer.redraw() to take effect.
+   */
+  maxRenderingLevel: number | undefined;
 
   private _opacity: number;
 
   private _splitDirection: SplitDirection = SplitDirection.NONE;
+
+  /**
+   * can be used to forward options to the cesium ImageryLayer
+   * @see https://cesium.com/learn/cesiumjs/ref-doc/ImageryLayer.html#.ConstructorOptions
+   * Changes requires calling layer.redraw() to take effect.
+   */
+  imageryLayerOptions: ImageryLayer.ConstructorOptions | undefined;
 
   /**
    * raised if the split direction changes, is passed the split direction as its only argument
@@ -216,6 +268,16 @@ class RasterLayer<
       this.maxLevel,
       this._minLevel,
     );
+
+    this.minRenderingLevel = parseInteger(
+      options.minRenderingLevel,
+      defaultOptions.minRenderingLevel,
+    );
+    this.maxRenderingLevel = parseInteger(
+      options.maxRenderingLevel,
+      defaultOptions.maxRenderingLevel,
+    );
+
     this._opacity = parseNumberRange(
       options.opacity,
       defaultOptions.opacity as number,
@@ -229,6 +291,8 @@ class RasterLayer<
           ? SplitDirection.LEFT
           : SplitDirection.RIGHT;
     }
+
+    this.imageryLayerOptions = structuredClone(options.imageryLayerOptions);
   }
 
   /**
@@ -270,9 +334,12 @@ class RasterLayer<
       ...super.getImplementationOptions(),
       minLevel: this.minLevel,
       maxLevel: this.maxLevel,
+      minRenderingLevel: this.minRenderingLevel,
+      maxRenderingLevel: this.maxRenderingLevel,
       tilingSchema: this.tilingSchema,
       opacity: this.opacity,
       splitDirection: this._splitDirection,
+      imageryLayerOptions: this.imageryLayerOptions,
     };
 
     if (this.extent?.isValid()) {
@@ -297,6 +364,14 @@ class RasterLayer<
       config.maxLevel = this.maxLevel;
     }
 
+    if (this.minRenderingLevel !== defaultOptions.minRenderingLevel) {
+      config.minRenderingLevel = this.minRenderingLevel;
+    }
+
+    if (this.maxRenderingLevel !== defaultOptions.maxRenderingLevel) {
+      config.maxRenderingLevel = this.maxRenderingLevel;
+    }
+
     if (this.tilingSchema !== defaultOptions.tilingSchema) {
       config.tilingSchema = this.tilingSchema;
     }
@@ -308,6 +383,10 @@ class RasterLayer<
     if (this._splitDirection !== SplitDirection.NONE) {
       config.splitDirection =
         this._splitDirection === SplitDirection.RIGHT ? 'right' : 'left';
+    }
+
+    if (this.imageryLayerOptions !== defaultOptions.imageryLayerOptions) {
+      config.imageryLayerOptions = structuredClone(this.imageryLayerOptions);
     }
 
     return config;

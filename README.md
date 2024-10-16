@@ -42,6 +42,9 @@ Some layer are map specific and only work for example in 3D. Layers can be creat
 #### Supported in 2D and 3D
 
 - WMS Layer
+- WMTS Layer
+- TMS Layer
+- SingleImageryLayer
 - Vector Tile Layer
 - OpenstreetMap Layer
 

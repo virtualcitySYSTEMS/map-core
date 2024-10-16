@@ -124,6 +124,8 @@ class WmtsOpenlayersImpl extends RasterLayerOpenlayersImpl {
     Object.assign(wmtsOptions, this.openlayersOptions);
     return new Tile({
       opacity: this.opacity,
+      minZoom: this.minRenderingLevel,
+      maxZoom: this.maxRenderingLevel,
       source: new WMTSSource(wmtsOptions),
     });
   }

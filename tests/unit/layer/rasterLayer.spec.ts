@@ -1,16 +1,19 @@
-import { SplitDirection, GeographicTilingScheme } from '@vcmap-cesium/engine';
-
+import { expect } from 'chai';
+import sinon, { SinonSandbox } from 'sinon';
+import { GeographicTilingScheme, SplitDirection } from '@vcmap-cesium/engine';
 import RasterLayer, {
   calculateMinLevel,
+  RasterLayerImplementation,
+  RasterLayerOptions,
+  TilingScheme,
 } from '../../../src/layer/rasterLayer.js';
 import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
 import Extent from '../../../src/util/extent.js';
 import { getOpenlayersMap } from '../helpers/openlayersHelpers.js';
 import AbstractRasterLayerOL from '../../../src/layer/openlayers/rasterLayerOpenlayersImpl.js';
-import {
-  mercatorProjection,
-  wgs84Projection,
-} from '../../../src/util/projection.js';
+import { wgs84Projection } from '../../../src/util/projection.js';
+import LayerImplementation from '../../../src/layer/layerImplementation.js';
+import VcsMap, { VisualisationType } from '../../../src/map/vcsMap.js';
 
 describe('RasterLayer.calculateMinLevel', () => {
   describe('calculating min level', () => {
@@ -47,9 +50,10 @@ describe('RasterLayer.calculateMinLevel', () => {
 });
 
 describe('RasterLayer', () => {
-  let sandbox;
-  /** @type {import("@vcmap/core").RasterLayer} */
-  let ARL;
+  let sandbox: SinonSandbox;
+  let ARL: RasterLayer<
+    LayerImplementation<VcsMap<VisualisationType>> & RasterLayerImplementation
+  >;
 
   before(() => {
     sandbox = sinon.createSandbox();
@@ -85,9 +89,14 @@ describe('RasterLayer', () => {
 
     it('should call updateSplitDirection on all implementations', () => {
       const updateSplitDirection = sandbox.spy();
-      sandbox
-        .stub(ARL, 'getImplementations')
-        .returns([{ updateSplitDirection, destroy() {} }]);
+
+      sandbox.stub(ARL, 'getImplementations').returns([
+        // @ts-expect-error stub
+        {
+          updateSplitDirection,
+          destroy(): void {},
+        },
+      ]);
       ARL.splitDirection = SplitDirection.LEFT;
       expect(updateSplitDirection).to.have.been.called;
     });
@@ -102,18 +111,23 @@ describe('RasterLayer', () => {
     });
 
     describe('of a configured layer', () => {
-      let inputConfig;
-      let outputConfig;
-      let configuredLayer;
+      let inputConfig: RasterLayerOptions;
+      let outputConfig: RasterLayerOptions;
+      let configuredLayer: RasterLayer<
+        LayerImplementation<VcsMap<VisualisationType>> &
+          RasterLayerImplementation
+      >;
 
       before(() => {
         inputConfig = {
           minLevel: 1,
           maxLevel: 27,
-          tilingSchema: 'mercator',
+          minRenderingLevel: 18,
+          maxRenderingLevel: 20,
+          imageryLayerOptions: { alpha: 2 },
+          tilingSchema: TilingScheme.MERCATOR,
           opacity: 0.5,
           splitDirection: 'left',
-          projection: mercatorProjection.toJSON(),
         };
         configuredLayer = new RasterLayer(inputConfig);
         outputConfig = configuredLayer.toJSON();
@@ -129,6 +143,27 @@ describe('RasterLayer', () => {
 
       it('should configure maxLevel', () => {
         expect(outputConfig).to.have.property('maxLevel', inputConfig.maxLevel);
+      });
+
+      it('should configure minRenderingLevel', () => {
+        expect(outputConfig).to.have.property(
+          'minRenderingLevel',
+          inputConfig.minRenderingLevel,
+        );
+      });
+
+      it('should configure maxRenderingLevel', () => {
+        expect(outputConfig).to.have.property(
+          'maxRenderingLevel',
+          inputConfig.maxRenderingLevel,
+        );
+      });
+
+      it('should configure imageryLayerOptions', () => {
+        expect(outputConfig).to.have.property('imageryLayerOptions');
+        expect(outputConfig.imageryLayerOptions).to.deep.equal(
+          inputConfig.imageryLayerOptions,
+        );
       });
 
       it('should configure tilingSchema', () => {
@@ -166,7 +201,11 @@ describe('RasterLayer', () => {
 
     it('should update all implementations, if the opacity changes', async () => {
       const map = await getOpenlayersMap();
-      const impl = new AbstractRasterLayerOL(map, ARL.toJSON());
+      const impl = new AbstractRasterLayerOL(
+        map,
+        ARL.getImplementationOptions(),
+      );
+      // @ts-expect-error testing setup
       ARL._implementations.set(map, [impl]);
       const updateOpacity = sandbox.spy(impl, 'updateOpacity');
       ARL.opacity = 0.5;

@@ -43,12 +43,8 @@ class SingleImageCesiumImpl extends RasterLayerCesiumImpl {
       getResourceOrUrl(this.url!, this.headers),
       options,
     );
-    const layerOptions = {
-      rectangle: options.rectangle,
-      alpha: this.opacity,
-      defaultAlpha: 1.0,
-      splitDirection: this.splitDirection,
-    };
+    const layerOptions = this.getCesiumLayerOptions();
+    layerOptions.rectangle = options.rectangle;
     return new ImageryLayer(imageryProvider, layerOptions);
   }
 }

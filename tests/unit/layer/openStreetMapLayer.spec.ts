@@ -1,16 +1,19 @@
+import sinon from 'sinon';
+import { expect } from 'chai';
 import { SplitDirection } from '@vcmap-cesium/engine';
-
 import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
 import { setOpenlayersMap } from '../helpers/openlayersHelpers.js';
-import OpenStreetMapLayer from '../../../src/layer/openStreetMapLayer.js';
+import OpenStreetMapLayer, {
+  OpenStreetMapOptions,
+} from '../../../src/layer/openStreetMapLayer.js';
 import VcsApp from '../../../src/vcsApp.js';
+import type OpenlayersMap from '../../../src/map/openlayersMap.js';
 
 describe('OpenStreetMapLayer', () => {
-  let sandbox;
-  let app;
-  /** @type {import("@vcmap/core").OpenStreetMapLayer} */
-  let openStreetMapLayer;
-  let map;
+  let sandbox: sinon.SinonSandbox;
+  let app: VcsApp;
+  let openStreetMapLayer: OpenStreetMapLayer;
+  let map: OpenlayersMap;
 
   before(async () => {
     sandbox = sinon.createSandbox();
@@ -75,14 +78,17 @@ describe('OpenStreetMapLayer', () => {
     });
 
     describe('of a configured layer', () => {
-      let inputConfig;
-      let outputConfig;
-      let configuredLayer;
+      let inputConfig: OpenStreetMapOptions;
+      let outputConfig: OpenStreetMapOptions;
+      let configuredLayer: OpenStreetMapLayer;
 
       before(() => {
         inputConfig = {
           maxLevel: 15,
           opacity: 0.5,
+          minRenderingLevel: 18,
+          maxRenderingLevel: 20,
+          imageryLayerOptions: { alpha: 2 },
           splitDirection: 'left',
         };
         configuredLayer = new OpenStreetMapLayer(inputConfig);
@@ -107,6 +113,27 @@ describe('OpenStreetMapLayer', () => {
           inputConfig.splitDirection,
         );
       });
+
+      it('should configure minRenderingLevel', () => {
+        expect(outputConfig).to.have.property(
+          'minRenderingLevel',
+          inputConfig.minRenderingLevel,
+        );
+      });
+
+      it('should configure maxRenderingLevel', () => {
+        expect(outputConfig).to.have.property(
+          'maxRenderingLevel',
+          inputConfig.maxRenderingLevel,
+        );
+      });
+
+      it('should configure imageryLayerOptions', () => {
+        expect(outputConfig).to.have.property('imageryLayerOptions');
+        expect(outputConfig.imageryLayerOptions).to.deep.equal(
+          inputConfig.imageryLayerOptions,
+        );
+      });
     });
   });
 
@@ -123,7 +150,7 @@ describe('OpenStreetMapLayer', () => {
       expect(openStreetMapLayer.opacity).to.equal(0);
     });
 
-    it('should update all implementations, if the opacity changes', async () => {
+    it('should update all implementations, if the opacity changes', () => {
       const [impl] = openStreetMapLayer.getImplementationsForMap(map);
       const updateOpacity = sandbox.spy(impl, 'updateOpacity');
       openStreetMapLayer.opacity = 0.5;
