@@ -2,6 +2,8 @@
 
 - Updated Openlayers to 10.2.1
 - Fixed featureAtPixelInteraction to correctly handle translucentDepthPicking
+- Removed the `defaultPointcloudStyle` from the API, just use `defaultDeclarativeStyle`
+- Changed the FeatureLayer defaultStyle to a be an emtpy `DeclarativeStyleItem`
 
 ### 6.0.0-rc.13
 

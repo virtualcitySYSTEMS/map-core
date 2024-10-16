@@ -201,7 +201,6 @@ export { default as VectorTileOpenlayersImpl } from './src/layer/openlayers/vect
 export { default as WmsOpenlayersImpl } from './src/layer/openlayers/wmsOpenlayersImpl.js';
 export { default as WmtsOpenlayersImpl } from './src/layer/openlayers/wmtsOpenlayersImpl.js';
 export {
-  defaultPointCloudStyle,
   default as PointCloudLayer,
   PointCloudOptions,
 } from './src/layer/pointCloudLayer.js';

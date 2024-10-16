@@ -288,7 +288,7 @@ class VectorLayer
       | DeclarativeStyleItemOptions
       | VectorStyleItemOptions
       | StyleItem,
-    defaultStyle?: VectorStyleItem,
+    defaultStyle?: StyleItem,
   ): StyleItem {
     return super.getStyleOrDefaultStyle(
       styleOptions,

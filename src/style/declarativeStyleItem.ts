@@ -17,11 +17,7 @@ import Fill from 'ol/style/Fill.js';
 import type { Feature } from 'ol/index.js';
 
 import StyleItem, { type StyleItemOptions } from './styleItem.js';
-import {
-  cesiumColorToColor,
-  getDefaultCondition,
-  whiteColor,
-} from './styleHelpers.js';
+import { cesiumColorToColor, whiteColor } from './styleHelpers.js';
 import { originalFeatureSymbol } from '../layer/vectorSymbols.js';
 import { styleClassRegistry } from '../classRegistry.js';
 import { isSameOrigin } from '../util/urlHelpers.js';
@@ -507,70 +503,4 @@ styleClassRegistry.registerClass(
   DeclarativeStyleItem,
 );
 
-export const defaultDeclarativeStyle = new DeclarativeStyleItem({
-  declarativeStyle: {
-    show: true,
-    color: {
-      conditions: getDefaultCondition('olcs_color', true),
-    },
-    scale: {
-      conditions: getDefaultCondition('olcs_scale'),
-    },
-    pointOutlineWidth: {
-      conditions: getDefaultCondition('olcs_outlineWidth'),
-    },
-    pointOutlineColor: {
-      conditions: getDefaultCondition('olcs_outlineColor', true),
-    },
-    pointSize: {
-      conditions: getDefaultCondition('olcs_pointSize'),
-    },
-    image: {
-      conditions: getDefaultCondition('olcs_image'),
-    },
-    font: {
-      conditions: getDefaultCondition('olcs_font'),
-    },
-    labelStyle: '2',
-    labelText: {
-      conditions: getDefaultCondition('olcs_labelText'),
-    },
-    labelColor: {
-      conditions: getDefaultCondition('olcs_fontColor', true),
-    },
-    labelOutlineWidth: {
-      conditions: getDefaultCondition('olcs_fontOutlineWidth'),
-    },
-    labelOutlineColor: {
-      conditions: getDefaultCondition('olcs_fontOutlineColor', true),
-    },
-    /*
-    anchorLineEnabled: {
-      conditions: [
-        [
-          defaultExtrudedHeightCondition,
-          'true',
-        ],
-        ['true', 'false'],
-      ],
-    },
-    anchorLineColor: {
-      conditions: getDefaultCondition('olcs_anchorLineColor', true),
-    },
-    heightOffset: {
-      conditions: [
-        [
-          defaultExtrudedHeightCondition,
-          // eslint-disable-next-line no-template-curly-in-string
-          '${attributes.olcs_extrudedHeight}',
-        ],
-        ['true', '0'],
-      ],
-    },
-    */
-    verticalOrigin: '1',
-    horizontalOrigin: '0',
-    labelHorizontalOrigin: '0',
-    labelVerticalOrigin: '1',
-  },
-});
+export const defaultDeclarativeStyle = new DeclarativeStyleItem({});

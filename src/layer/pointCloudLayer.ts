@@ -6,6 +6,7 @@ import CesiumTilesetLayer, {
 } from './cesiumTilesetLayer.js';
 import DeclarativeStyleItem, {
   DeclarativeStyleItemOptions,
+  defaultDeclarativeStyle,
 } from '../style/declarativeStyleItem.js';
 import VectorStyleItem, {
   VectorStyleItemOptions,
@@ -19,8 +20,6 @@ import VcsMap from '../map/vcsMap.js';
 export type PointCloudOptions = CesiumTilesetOptions & {
   pointSize?: number | string;
 };
-
-export const defaultPointCloudStyle = new DeclarativeStyleItem({});
 
 /**
  * represents a specific PointCloudLayer layer for cesium.
@@ -71,7 +70,7 @@ class PointCloudLayer extends CesiumTilesetLayer {
   ): StyleItem {
     return super.getStyleOrDefaultStyle(
       styleOptions,
-      defaultStyle || defaultPointCloudStyle,
+      defaultStyle || defaultDeclarativeStyle,
     );
   }
 
