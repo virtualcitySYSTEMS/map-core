@@ -40,7 +40,8 @@ export type TileProviderRtree = RBush<TileProviderRTreeEntry>;
 /**
  * resolutions to levels
  */
-export const mercatorResolutionsToLevel = new Array(25);
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+export const mercatorResolutionsToLevel: Array<number> = new Array(25);
 for (let i = 0; i < mercatorResolutionsToLevel.length; i++) {
   mercatorResolutionsToLevel[i] = (20037508.3427892 * 2) / 256 / 2 ** (i + 1);
 }
@@ -85,6 +86,11 @@ export type TileProviderOptions = VcsObjectOptions & {
    * allows aggregation of tiles if requested minLevel is lower than provided baseLevels ( if true, allows for aggregating up to two levels (16 child tiles) into a tile)
    */
   allowTileAggregation?: boolean;
+
+  /**
+   * if property exists will be used to set the ID of the feature
+   */
+  idProperty?: string;
 };
 
 export type TileLoadedEvent = {
@@ -109,6 +115,7 @@ class TileProvider extends VcsObject {
       baseLevels: [15],
       trackFeaturesToTiles: true,
       allowTileAggregation: true,
+      idProperty: undefined,
     };
   }
 
@@ -147,6 +154,8 @@ class TileProvider extends VcsObject {
 
   private _locale = 'en';
 
+  private _idProperty: string | undefined;
+
   constructor(options: TileProviderOptions) {
     super(options);
     const defaultOptions = TileProvider.getDefaultOptions();
@@ -176,6 +185,8 @@ class TileProvider extends VcsObject {
       options.allowTileAggregation,
       defaultOptions.allowTileAggregation,
     );
+
+    this._idProperty = options.idProperty || defaultOptions.idProperty;
   }
 
   /**
@@ -183,6 +194,10 @@ class TileProvider extends VcsObject {
    */
   get tileCacheSize(): number {
     return this._tileCacheSize;
+  }
+
+  get idProperty(): string | undefined {
+    return this._idProperty;
   }
 
   get locale(): string {
@@ -258,6 +273,12 @@ class TileProvider extends VcsObject {
     const rtreePromise: Promise<TileProviderRtree> = featuresPromise
       .then((features) => {
         features.forEach((feature) => {
+          const idToUse = this.idProperty
+            ? (feature.get(this.idProperty) as string)
+            : null;
+          if (idToUse != null) {
+            feature.setId(String(idToUse));
+          }
           if (!feature.getId()) {
             feature.setId(uuidv4());
           }
@@ -584,7 +605,7 @@ class TileProvider extends VcsObject {
    * return fetch.get(url)
    *  .then(response => response.json())
    *  .then((data) => {
-   *     const { features } = GeoJSONparseGeoJSON(data.data, { dynamicStyle: true });
+   *     const { features } = parseGeoJSON(data.data, { dynamicStyle: true });
    *     return features;
    *   });
    */
@@ -623,6 +644,10 @@ class TileProvider extends VcsObject {
 
     if (defaultOptions.allowTileAggregation !== this.allowTileAggregation) {
       config.allowTileAggregation = this.allowTileAggregation;
+    }
+
+    if (this.idProperty) {
+      config.idProperty = this.idProperty;
     }
 
     return config;

@@ -15,10 +15,6 @@ export type MVTTileProviderOptions = TileProviderOptions & {
    * url to pbf tiled datasource {x}, {y}, {z} are placeholders for x, y, zoom
    */
   url: string;
-  /**
-   * if property exists will be used to set the ID of the feature
-   */
-  idProperty?: string;
 };
 
 /**
@@ -33,13 +29,10 @@ class MVTTileProvider extends TileProvider {
     return {
       ...TileProvider.getDefaultOptions(),
       url: '',
-      idProperty: undefined,
     };
   }
 
   url: string;
-
-  idProperty: string | undefined;
 
   private _MVTFormat = new MVT<Feature>({ featureClass: Feature });
 
@@ -48,7 +41,6 @@ class MVTTileProvider extends TileProvider {
     super(options);
 
     this.url = options.url || defaultOptions.url;
-    this.idProperty = options.idProperty || defaultOptions.idProperty;
   }
 
   get locale(): string {
@@ -84,12 +76,6 @@ class MVTTileProvider extends TileProvider {
     const sx = (extent[2] - extent[0]) / 4096;
     const sy = -((extent[3] - extent[1]) / 4096);
     features.forEach((feature) => {
-      const idToUse = this.idProperty
-        ? (feature.get(this.idProperty) as string)
-        : null;
-      if (idToUse != null) {
-        feature.setId(String(idToUse));
-      }
       const geom = feature.getGeometry() as Geometry;
       const flatCoordinates = geom.getFlatCoordinates();
       const flatCoordinatesLength = flatCoordinates.length;
@@ -111,10 +97,6 @@ class MVTTileProvider extends TileProvider {
 
     if (this.url) {
       config.url = this.url;
-    }
-
-    if (this.idProperty) {
-      config.idProperty = this.idProperty;
     }
     return config as MVTTileProviderOptions;
   }

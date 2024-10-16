@@ -1,9 +1,12 @@
+import sinon, { type SinonSandbox } from 'sinon';
+import { expect } from 'chai';
 import LRUCache from 'ol/structs/LRUCache.js';
 import { Math as CesiumMath } from '@vcmap-cesium/engine';
 import Point from 'ol/geom/Point.js';
 import Feature from 'ol/Feature.js';
 import TileProvider, {
   mercatorResolutionsToLevel,
+  TileProviderOptions,
 } from '../../../../src/layer/tileProvider/tileProvider.js';
 import Extent from '../../../../src/util/extent.js';
 import Projection, {
@@ -11,10 +14,9 @@ import Projection, {
 } from '../../../../src/util/projection.js';
 
 describe('TileProvider', () => {
-  let sandbox;
+  let sandbox: SinonSandbox;
 
-  /** @type {import("@vcmap/core").TileProvider} */
-  let tileProvider;
+  let tileProvider: TileProvider;
 
   before(() => {
     sandbox = sinon.createSandbox();
@@ -39,14 +41,14 @@ describe('TileProvider', () => {
     it('should create empty cache for each unique baseLevel', () => {
       expect(tileProvider.cache.size).to.be.equal(3);
       expect(tileProvider.cache.get(10)).to.be.an.instanceof(LRUCache);
-      expect(tileProvider.cache.get(10).getCount()).to.be.equal(0);
+      expect(tileProvider.cache.get(10)?.getCount()).to.be.equal(0);
       expect(tileProvider.cache.get(17)).to.be.an.instanceof(LRUCache);
       expect(tileProvider.cache.get(14)).to.be.an.instanceof(LRUCache);
     });
   });
 
   describe('tileCacheSize', () => {
-    let tileProviderTileCache;
+    let tileProviderTileCache: TileProvider;
 
     before(() => {
       tileProviderTileCache = new TileProvider({
@@ -161,7 +163,7 @@ describe('TileProvider', () => {
   });
 
   describe('getFeaturesForTile', () => {
-    let loaderSpy;
+    let loaderSpy: sinon.SinonSpy;
 
     beforeEach(() => {
       loaderSpy = sandbox.spy(tileProvider, 'loader');
@@ -248,8 +250,8 @@ describe('TileProvider', () => {
   });
 
   describe('getFeaturesForExtent', () => {
-    let loaderStub;
-    let extent;
+    let loaderStub: sinon.SinonStub;
+    let extent: Extent;
 
     before(() => {
       extent = new Extent({
@@ -299,21 +301,33 @@ describe('TileProvider', () => {
   });
 
   describe('feature Handling', () => {
-    let featuresTile1;
-    let featuresTile2;
-    let f1;
-    let f2;
-    let f3;
-    let f4;
+    let featuresTile1: Array<Feature>;
+    let featuresTile2: Array<Feature>;
+    let f1: Feature;
+    let f2: Feature;
+    let f3: Feature;
+    let f4: Feature;
 
     before(() => {
-      f1 = new Feature({ geometry: new Point([1, 1]) });
+      f1 = new Feature({
+        geometry: new Point([1, 1]),
+        idProp: 'idTest1',
+      });
       f1.setId('id1');
-      f2 = new Feature({ geometry: new Point([1, 2]) });
+      f2 = new Feature({
+        geometry: new Point([1, 2]),
+        idProp: 'idTest2',
+      });
       f2.setId('id2');
-      f3 = new Feature({ geometry: new Point([1, 1]) });
+      f3 = new Feature({
+        geometry: new Point([1, 1]),
+        idProp: 'idTest3',
+      });
       f3.setId('id3');
-      f4 = new Feature({ geometry: new Point([1, 2]) });
+      f4 = new Feature({
+        geometry: new Point([1, 2]),
+        idProp: 'idTest4',
+      });
       f4.setId('id2');
       featuresTile1 = [f1, f2];
       featuresTile2 = [f3, f4];
@@ -348,9 +362,9 @@ describe('TileProvider', () => {
       it('should track the featureId to the TileId', async () => {
         await tileProvider.getFeaturesForTile(1, 1, 10);
         expect(tileProvider.featureIdToTileIds.has('id1')).to.be.true;
-        expect([...tileProvider.featureIdToTileIds.get('id1')]).to.have.members(
-          [tileProvider.getCacheKey(1, 1, 10)],
-        );
+        expect([
+          ...tileProvider.featureIdToTileIds.get('id1')!,
+        ]).to.have.members([tileProvider.getCacheKey(1, 1, 10)]);
       });
 
       it('should remove featureId from the featureTracking if the tile is unloaded', async () => {
@@ -366,7 +380,7 @@ describe('TileProvider', () => {
 
     describe('forEachFeature', () => {
       it('should call function for each feature', async () => {
-        const featuresFound = [];
+        const featuresFound: Array<Feature> = [];
         await tileProvider.getFeaturesForTile(1, 1, 10);
         tileProvider.forEachFeature((feature) => {
           featuresFound.push(feature);
@@ -402,7 +416,7 @@ describe('TileProvider', () => {
     });
 
     describe('larger Cache', () => {
-      let tileProviderLargeCache;
+      let tileProviderLargeCache: TileProvider;
 
       before(() => {
         tileProviderLargeCache = new TileProvider({
@@ -438,13 +452,13 @@ describe('TileProvider', () => {
           tileProviderLargeCache.getCacheKey(2, 1, 10),
         ];
         expect([
-          ...tileProviderLargeCache.featureIdToTileIds.get('id2'),
+          ...tileProviderLargeCache.featureIdToTileIds.get('id2')!,
         ]).to.have.members(tileIds);
       });
     });
 
     describe('tracking disabled', () => {
-      let tileProviderWithoutTracking;
+      let tileProviderWithoutTracking: TileProvider;
 
       before(() => {
         tileProviderWithoutTracking = new TileProvider({
@@ -478,6 +492,42 @@ describe('TileProvider', () => {
           .false;
       });
     });
+
+    describe('idProperty', () => {
+      let tileProviderIdProperty: TileProvider;
+
+      before(() => {
+        tileProviderIdProperty = new TileProvider({
+          tileCacheSize: 10,
+          baseLevels: [10, 17, 17, 14],
+          idProperty: 'idProp',
+        });
+        // eslint-disable-next-line no-unused-vars
+        sandbox.stub(tileProviderIdProperty, 'loader').callsFake((x) => {
+          if (x === 1) {
+            return Promise.resolve(featuresTile1);
+          } else {
+            return Promise.resolve(featuresTile2);
+          }
+        });
+      });
+
+      afterEach(async () => {
+        await tileProviderIdProperty.clearCache();
+      });
+
+      after(() => {
+        tileProviderIdProperty.destroy();
+      });
+
+      it('should', async () => {
+        await tileProviderIdProperty.getFeaturesForTile(1, 1, 10);
+        expect(tileProviderIdProperty.featureIdToTileIds.has('idTest1')).to.be
+          .true;
+        expect(tileProviderIdProperty.featureIdToTileIds.has('idTest2')).to.be
+          .true;
+      });
+    });
   });
 
   describe('serialization', () => {
@@ -489,8 +539,8 @@ describe('TileProvider', () => {
     });
 
     describe('of a configured tile provider', () => {
-      let inputConfig;
-      let outputConfig;
+      let inputConfig: TileProviderOptions;
+      let outputConfig: TileProviderOptions;
 
       before(() => {
         inputConfig = {
@@ -526,7 +576,7 @@ describe('TileProvider', () => {
       it('should configure baseLevels', () => {
         expect(outputConfig)
           .to.have.property('baseLevels')
-          .and.to.have.members(inputConfig.baseLevels);
+          .and.to.have.members(inputConfig.baseLevels!);
         expect(outputConfig.baseLevels).to.not.equal(inputConfig.baseLevels);
       });
     });

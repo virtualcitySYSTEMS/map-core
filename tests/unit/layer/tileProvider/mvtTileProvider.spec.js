@@ -46,12 +46,6 @@ describe('MVTTileProvider', () => {
       expect(loaded[0]).to.be.instanceOf(Feature);
     });
 
-    it('should apply id Property as featureId', () => {
-      expect(loaded[0].getId()).to.equal(
-        '9da902d4-2d74-4798-b6b4-795a50e7f6cf',
-      );
-    });
-
     it('should transform local coordinates from southWest Corner to mercator', () => {
       expect(loaded[0].getGeometry().getFirstCoordinate()).to.have.members([
         1488993.3109952325, 6894008.455096615,

@@ -47,6 +47,8 @@ export default class VcsVectorTile implements VcsTile {
 
   private _layerPrimitiveCollection: PrimitiveCollection;
 
+  private _isDestroyed: boolean;
+
   constructor(tile: QuadtreeTile<VcsTile>, options: VcsTileOptions) {
     this._tile = tile;
     this._map = options.map;
@@ -68,6 +70,7 @@ export default class VcsVectorTile implements VcsTile {
     this._load().catch(() => {
       this.state = VcsTileState.FAILED;
     });
+    this._isDestroyed = false;
   }
 
   private async _load(): Promise<void> {
@@ -79,7 +82,9 @@ export default class VcsVectorTile implements VcsTile {
       this._tile.y,
       this._tile.level,
     );
-
+    if (this._isDestroyed) {
+      return;
+    }
     const tileWebmercator = getTileWebMercatorExtent(
       this._tile,
       this._tileProvider.tilingScheme,
@@ -88,6 +93,9 @@ export default class VcsVectorTile implements VcsTile {
     this.state = VcsTileState.PROCESSING;
     await Promise.all(
       features.map(async (f) => {
+        if (this._isDestroyed) {
+          return;
+        }
         const featureExtent = f.getGeometry()?.getExtent();
         if (
           featureExtent &&
@@ -113,6 +121,9 @@ export default class VcsVectorTile implements VcsTile {
         }
       }),
     );
+    if (this._isDestroyed) {
+      return;
+    }
     this.state = VcsTileState.READY;
   }
 
@@ -130,6 +141,7 @@ export default class VcsVectorTile implements VcsTile {
 
   destroy(): void {
     unByKey(this._featureListeners);
+    this._isDestroyed = true;
     this._vectorContext.destroy();
     this._layerPrimitiveCollection.remove(this._rootCollection);
     this._tile.data = undefined;
