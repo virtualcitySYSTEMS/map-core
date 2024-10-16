@@ -37,7 +37,6 @@ describe('FeatureAtPixelInteraction', () => {
   let sandbox: SinonSandbox;
   let pick: SinonStub;
   let sceneStub: Scene;
-  let render: SinonSpy;
   /** @type {import("@vcmap/core").FeatureAtPixelInteraction} */
   let fap: FeatureAtPixelInteraction;
   let app: VcsApp;
@@ -63,7 +62,6 @@ describe('FeatureAtPixelInteraction', () => {
   beforeEach(() => {
     sceneStub = cesiumMap.getScene()!;
     sceneStub.pickTranslucentDepth = false;
-    render = sandbox.spy(sceneStub, 'render');
     pick = sandbox.stub(sceneStub, 'pick');
     positionSpy = sandbox
       .stub(sceneStub, 'pickPosition')
@@ -333,7 +331,6 @@ describe('FeatureAtPixelInteraction', () => {
           })
           .then(() => {
             expect(positionSpy).to.have.been.calledTwice;
-            expect(render).to.not.have.been.called;
           });
       });
 
@@ -357,15 +354,12 @@ describe('FeatureAtPixelInteraction', () => {
           .pipe(event)
           .then(() => {
             expect(positionSpy).to.have.been.called;
-            expect(render).to.not.have.been.called;
             expect(sceneStub).to.have.property('pickTranslucentDepth', false);
             fap.pickTranslucent = true;
             return fap.pipe(event);
           })
           .then(() => {
             expect(positionSpy).to.have.been.calledTwice;
-            expect(render).to.have.been.calledOnce;
-            expect(render.getCall(0).args[0]).to.be.an.instanceOf(JulianDate);
             expect(sceneStub).to.have.property('pickTranslucentDepth', false);
           });
       });
@@ -388,30 +382,6 @@ describe('FeatureAtPixelInteraction', () => {
         fap.pickTranslucent = true;
         await fap.pipe(event);
         expect(sceneStub).to.have.property('pickTranslucentDepth', true);
-      });
-
-      it('should not pick translucent on pointcloud feature with attenuation', () => {
-        pick.returns({
-          primitive: { pointCloudShading: { attenuation: true } },
-        });
-        const event = {
-          pointer: PointerKeyType.LEFT,
-          pointerEvent: PointerEventType.MOVE,
-          windowPosition: new Cartesian2(0, 0),
-          map: cesiumMap,
-          type: EventType.CLICK,
-          key: ModificationKeyType.NONE,
-        };
-        sandbox.stub(cesiumMap, 'getCesiumWidget').returns({
-          clock: new Clock({}),
-        } as CesiumWidget);
-        fap.pickTranslucent = true;
-
-        return fap.pipe(event).then(() => {
-          expect(positionSpy).to.have.been.called;
-          expect(render).to.not.have.been.called;
-          expect(sceneStub).to.have.property('pickTranslucentDepth', false);
-        });
       });
     });
   });

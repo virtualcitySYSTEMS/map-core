@@ -1,3 +1,8 @@
+### 6.0.0-rc.14
+
+- Updated Openlayers to 10.2.1
+- Fixed featureAtPixelInteraction to correctly handle translucentDepthPicking
+
 ### 6.0.0-rc.13
 
 - Clamped features will now render as classifcations too.

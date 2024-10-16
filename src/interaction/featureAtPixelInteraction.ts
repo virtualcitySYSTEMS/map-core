@@ -5,7 +5,6 @@ import {
   Cesium3DTileFeature,
   Cesium3DTilePointFeature,
   Entity,
-  CesiumWidget,
 } from '@vcmap-cesium/engine';
 import type { Feature } from 'ol/index.js';
 import type { Layer as OLLayer } from 'ol/layer.js';
@@ -258,19 +257,8 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
       }
 
       if (scene.pickPositionSupported) {
-        if (
-          object.primitive &&
-          this.pickTranslucent &&
-          !(
-            object.primitive.pointCloudShading &&
-            object.primitive.pointCloudShading.attenuation
-          )
-        ) {
-          // XXX should this always be on, also for non vector?
+        if (object.primitive && this.pickTranslucent) {
           scene.pickTranslucentDepth = true;
-          scene.render(
-            (cesiumMap.getCesiumWidget() as CesiumWidget).clock.currentTime,
-          );
           event.exactPosition = true;
         }
         scratchCartesian = scene.pickPosition(
