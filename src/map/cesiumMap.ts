@@ -37,6 +37,7 @@ import {
   type DataSource,
   type Visualizer,
   type ShadowMap,
+  type ContextOptions,
 } from '@vcmap-cesium/engine';
 import type { Coordinate } from 'ol/coordinate.js';
 
@@ -89,6 +90,12 @@ export type CesiumMapOptions = VcsMapOptions & {
    * Cesium Default is 2.0
    */
   lightIntensity?: number;
+
+  /**
+   * can be used to forward contextOptions to the CesiumWidget
+   * https://cesium.com/learn/cesiumjs/ref-doc/global.html#ContextOptions
+   */
+  contextOptions?: ContextOptions;
 };
 
 export type CesiumMapEvent = {
@@ -297,6 +304,7 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
       globeColor: '#3f47cc',
       useOriginalCesiumShader: false,
       lightIntensity: 3.0,
+      contextOptions: undefined,
     };
   }
 
@@ -368,6 +376,8 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
 
   private _lightIntensity: number;
 
+  private _contextOptions: ContextOptions | undefined;
+
   constructor(options: CesiumMapOptions) {
     super(options);
 
@@ -438,6 +448,8 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
       options.lightIntensity,
       defaultOptions.lightIntensity,
     );
+
+    this._contextOptions = structuredClone(options.contextOptions);
   }
 
   /**
@@ -660,6 +672,13 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
           'Cannot activate Original Cesium Shader, flag to use VCS Shader is already set by another Cesium Map or VCMap Instance',
         );
       }
+      const contextOptions = {
+        ...this._contextOptions,
+        webgl: {
+          ...this._contextOptions?.webgl,
+          antialias: this.webGLaa,
+        },
+      };
       this._cesiumWidget = new CesiumWidget(this.mapElement, {
         requestRenderMode: false,
         scene3DOnly: true,
@@ -668,12 +687,7 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
         baseLayer: false,
         shadows: false,
         terrainShadows: ShadowMode.ENABLED,
-        contextOptions: {
-          webgl: {
-            failIfMajorPerformanceCaveat: false,
-            antialias: this.webGLaa,
-          },
-        },
+        contextOptions,
       });
       this._cesiumWidget.scene.globe.tileCacheSize = this.tileCacheSize;
       this._cesiumWidget.scene.globe.baseColor = this.globeColor;
@@ -1402,6 +1416,10 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
       this.useOriginalCesiumShader !== defaultOptions.useOriginalCesiumShader
     ) {
       config.useOriginalCesiumShader = this.useOriginalCesiumShader;
+    }
+
+    if (this._contextOptions !== defaultOptions.contextOptions) {
+      config.contextOptions = structuredClone(this._contextOptions);
     }
 
     return config;

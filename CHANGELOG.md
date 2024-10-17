@@ -1,5 +1,6 @@
 ### 6.0.0-rc.14
 
+- Added `contextOptions` to `CesiumMap` to allow configure the CesiumWidget WebGL Context, see:
 - Added getter to `CesiumMap` for the `defaultShadowMap`
 - Added `minRenderingLevel` and `maxRenderingLevel` to all `Rasterlayer` and `OpenstreetMapLayer`, this can be used to constrain the levels at which the data should be rendered
 - Added `imageryLayerOptions` to `RasterLayer` and `OpenstreetMapLayer` to forward Cesium ImageryLayer Option to the cesium Instance

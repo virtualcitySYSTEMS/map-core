@@ -1013,6 +1013,11 @@ describe('CesiumMap', () => {
           tileCacheSize: 2,
           webGLaa: true,
           globeColor: '#00ff00',
+          contextOptions: {
+            webgl: {
+              failIfMajorPerformanceCaveat: true,
+            },
+          },
           useOriginalCesiumShader: true,
           lightIntensity: 4,
           cameraLimiter: {
@@ -1071,6 +1076,12 @@ describe('CesiumMap', () => {
         expect(outputConfig)
           .to.have.property('useOriginalCesiumShader')
           .and.to.eql(inputConfig.useOriginalCesiumShader);
+      });
+
+      it('should configure contextOptions', () => {
+        expect(outputConfig)
+          .to.have.property('contextOptions')
+          .and.to.deep.equal(inputConfig.contextOptions);
       });
     });
   });
