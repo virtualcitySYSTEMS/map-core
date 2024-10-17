@@ -83,6 +83,14 @@ describe('Projection', () => {
         });
         expect(projection).to.have.property('epsg', 'FOO:25833');
       });
+      it('should handle nullish prefix', () => {
+        const projection = new Projection({
+          epsg: '25833',
+          proj4: '+proj=utm +zone=33 +ellps=GRS80 +units=m +no_defs',
+          prefix: null,
+        });
+        expect(projection).to.have.property('epsg', '25833');
+      });
     });
     describe('should use project Default Projection on invalid options', () => {
       it('should return default projection', () => {

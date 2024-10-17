@@ -48,7 +48,7 @@ function parseEPSGCode(value?: string | number, prefix = 'EPSG:'): string {
     const regex = new RegExp(`^(?:${prefix})?(\\d+)`, 'i');
     const matches = `${value}`.match(regex);
     if (matches && matches[1]) {
-      return `${prefix}${matches[1]}`;
+      return prefix ? `${prefix}${matches[1]}` : matches[1];
     }
   }
   return '';
