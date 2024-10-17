@@ -1,55 +1,14 @@
-### 6.0.0-rc.14
+### 6.0.0
 
-- Added `contextOptions` to `CesiumMap` to allow configure the CesiumWidget WebGL Context, see:
-- Added getter to `CesiumMap` for the `defaultShadowMap`
-- Added `minRenderingLevel` and `maxRenderingLevel` to all `Rasterlayer` and `OpenstreetMapLayer`, this can be used to constrain the levels at which the data should be rendered
-- Added `imageryLayerOptions` to `RasterLayer` and `OpenstreetMapLayer` to forward Cesium ImageryLayer Option to the cesium Instance
+#### Breaking Changes
+
 - Updated Openlayers to 10.2.1
-- Fixed featureAtPixelInteraction to correctly handle translucentDepthPicking
+- Updated Cesium to 1.121
 - Removed the `defaultPointcloudStyle` from the API, just use `defaultDeclarativeStyle`
 - Changed the FeatureLayer defaultStyle to a be an emtpy `DeclarativeStyleItem`
-
-### 6.0.0-rc.13
-
-- Clamped features will now render as classifcations too.
-
-### 6.0.0-rc.11
-
-- New `primitive` rendering of vector tile features.
-- Add the `StaticFeatureTileProvider` tile provider, which serves runtime openlayers features as a tile provider.
-- deprecates `placeGeometryOnTerrain` and `drapeGeometryOnTerrain`
-- Renames `placeGeometryOnGround` to `drapeGeometryOnSurface`
-- Adds `placeGeometryOnSurface`
-- Introduces a new `getAttributes` API on Cesium3DTileFeature, Cesium3DTilePointFeature, Entity & ol.Feature to get attributes.
-  This works for 1.0 and 1.1 Cesium3DTile data sets. On ol.Feature it is an alias for getProperties _without_ the geometry.
-- Terrain layer implementation remove their visualization on destruction.
-
-### 6.0.0-rc.10
-
-- New `SegmentLengthInteraction` added to the editor. Displays segment length of polygons, line strings, circles & bboxes.
-- Adds two new helpers: `spherical2Distance` & `ecef3DDistance` to calculate acutal distance on sphere or in 3D space.¨
-- Adds an `isVertex` helper for editor interactions.
-- Removed `excludedPickPositionEvents` from `FeatureAtPixelInteraction`.
-- Editors will always pick the position of the scene, instead of shooting through objects.
-- Added new option `msaa` to DisplayQuality
-- Update Openlayers to 10.2.0
-
-### 6.0.0-rc.9
-
-- Vector layer will maintain drawing order in 3D.
-
-### 6.0.0-rc.8
-
-- Adds a new function to the `window`: `createModuleFromConfig` will create a `VcsModule` from a `VcsModuleConfig`, to be used in iframes.
-
-### 6.0.0-rc.6
-
-- Adds a `createAbsoluteFeature` helper to resolve features of the current session to an absolute state.
-
-### 6.0.0-rc.5
-
-- Adds new helpers to change geometry layouts from XY to XYZ.
-- InteractionEvents position & pixelOrPosition may return 2D coordinates (if emitted from a 2D map). This may be breaking, if you rely on a Z coordiante.
+- `OverrideCollection` is now generic to the serialization type.
+- `Category` is now generic to the serialization type.
+- InteractionEvents position & pixelOrPosition may return 2D coordinates (if emitted from a 2D map). This may be breaking, if you rely on a Z coordinate.
 - Feature converter refactoring. Most of these are _breaking_ if you rely on any feature converter APIs directly, make sure to follow up on the docs:
   - New VectorHeightInfo types. VectorHeightInfo now only exposes properties required
     for the specified height reference. Changed the way `create*Primitive` helpers work and renamed to `create*PrimitiveItem`. These are
@@ -89,35 +48,42 @@
   - snapping to orthogonal or parallels of the current geometry being edited is now possible.
   - snapping is now also possible to features within vector layers. by default, the editing layer is snapped to.
   - renamed previously unused symbol `vertexIndex` to `vertexIndexSymbol`. the symbol is now correctly set on vertices.
+  - Editors will always pick the position of the scene, instead of shooting through objects.
+  - Adds an `isVertex` helper for editor interactions.
+  - New `SegmentLengthInteraction` added to the editor. Displays segment length of polygons, line strings, circles & bboxes.
 - To better illustrate its use, `getFlatCoordinatesForGeometry` was renamed to `getFlatCoordinateReferences`.
 - `VectorPropeties.getModelOptions` no longer returns an empty object, but undefined, if model options is not defined anywhere.
-- The window now includes a `createModuleFromConfig` helper to be used in iframes.
+- Vector layer will maintain drawing order in 3D.
+- Removed `excludedPickPositionEvents` from `FeatureAtPixelInteraction`.
+- deprecates `placeGeometryOnTerrain` and `drapeGeometryOnTerrain`
+- Renames `placeGeometryOnGround` to `drapeGeometryOnSurface`
 
-### 6.0.0-rc.4
+#### Changes
 
-- Updates openlayers to 10.0.0.
-- layer now support referencing of `highlightStyle` from styles collection as it already has been supported for `style`
-- fixes class registry double `Ctor` type bug.
-- `OverrideCollection` is now generic to the serialization type.
-- `Category` is now generic to the serialization type.
-
-### 6.0.0-rc.3
-
-- Updates openlayers to 10.0.0.
-- Adds isDestroyed() to `VcsCameraPrimitive`
-
-### 6.0.0-rc.2
-
-- Dev dependency updates
-- Fixes an issue where override collections would hand out shadow objects directly when serializing. These are now properly cloned.
-
-### 6.0.0-rc.1
-
-- Update cesium to 1.119
-
-### 6.0.0-rc.0
-
+- Added `contextOptions` to `CesiumMap` to allow configure the CesiumWidget WebGL Context, see:
+- Added getter to `CesiumMap` for the `defaultShadowMap`
+- Added `minRenderingLevel` and `maxRenderingLevel` to all `Rasterlayer` and `OpenstreetMapLayer`, this can be used to constrain the levels at which the data should be rendered
+- Added `imageryLayerOptions` to `RasterLayer` and `OpenstreetMapLayer` to forward Cesium ImageryLayer Option to the cesium Instance
 - Add new `changed` event to FlightPlayerClock
+- Adds isDestroyed() to `VcsCameraPrimitive`
+- layer now support referencing of `highlightStyle` from styles collection as it already has been supported for `style`
+- Adds a new function to the `window`: `createModuleFromConfig` will create a `VcsModule` from a `VcsModuleConfig`, to be used in iframes.
+- Adds new helpers to change geometry layouts from XY to XYZ.
+- Adds a `createAbsoluteFeature` helper to resolve features of the current session to an absolute state.
+- Added new option `msaa` to DisplayQuality
+- Adds two new helpers: `spherical2Distance` & `ecef3DDistance` to calculate actual distance on sphere or in 3D space.¨
+- Introduces a new `getAttributes` API on Cesium3DTileFeature, Cesium3DTilePointFeature, Entity & ol.Feature to get attributes.
+  This works for 1.0 and 1.1 Cesium3DTile data sets. On ol.Feature it is an alias for getProperties _without_ the geometry.
+- New `primitive` rendering of vector tile features.
+- Add the `StaticFeatureTileProvider` tile provider, which serves runtime openlayers features as a tile provider.
+- Adds `placeGeometryOnSurface`
+
+#### Bugfixes
+
+- Fixed featureAtPixelInteraction to correctly handle translucentDepthPicking
+- Fixes an issue where override collections would hand out shadow objects directly when serializing. These are now properly cloned.
+- Fixes class registry double `Ctor` type bug.
+- Terrain layer implementation remove their visualization on destruction.
 
 ### 5.3.3
 
