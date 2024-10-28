@@ -35,6 +35,9 @@ describe('Module', () => {
       maps: [new OpenlayersMap({ name: 'foo' }).toJSON()],
       startingViewpointName: 'foo',
       startingMapName: 'foo',
+      projection: {
+        epsg: 4326,
+      },
     } as TestVcsModuleConfig);
     await app.addModule(module);
   });
@@ -44,7 +47,7 @@ describe('Module', () => {
   });
 
   describe('getting a config', () => {
-    let config: object;
+    let config: VcsModuleConfig;
 
     beforeEach(() => {
       config = module.toJSON();
@@ -62,6 +65,10 @@ describe('Module', () => {
     it('should add the startingMapName', () => {
       expect(config).to.have.property('startingMapName', 'foo');
     });
+    it('should add the projection', () => {
+      expect(config).to.have.property('projection');
+      expect(config.projection).to.have.property('epsg', 'EPSG:4326');
+    });
   });
 
   describe('setting a config', () => {
@@ -77,6 +84,24 @@ describe('Module', () => {
       expect(!!config.layers?.find((l) => l.name === 'fooBar')).to.be.true;
       expect(config.viewpoints).to.have.lengthOf(1);
       expect(config.maps).to.have.lengthOf(2);
+      app.resetDynamicModule();
+    });
+
+    it('should allow unsetting values by null', () => {
+      app.setDynamicModule(module);
+      module.name = null;
+      module.description = null;
+      module.startingViewpointName = null;
+      module.startingMapName = null;
+      module.projection = null;
+      module.setConfigFromApp(app);
+      const { config } = module;
+      expect(config.name).to.be.null;
+      expect(config.description).to.be.null;
+      expect(config.startingViewpointName).to.be.null;
+      expect(config.startingMapName).to.be.null;
+      expect(config.projection).to.be.null;
+      app.resetDynamicModule();
     });
 
     it('should not loose keys in the config not defined by the app', () => {

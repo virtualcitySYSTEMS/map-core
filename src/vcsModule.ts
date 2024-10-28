@@ -12,17 +12,17 @@ import { FlightInstanceOptions } from './util/flight/flightInstance.js';
 
 export type VcsModuleConfig = {
   _id?: string | undefined;
-  name?: string | undefined;
-  description?: string | undefined;
+  name?: string | null;
+  description?: string | null;
   properties?: Record<string, unknown>;
   layers?: LayerOptions[];
   maps?: VcsMapOptions[];
   styles?: StyleItemOptions[];
   viewpoints?: ViewpointOptions[];
-  startingViewpointName?: string;
-  startingMapName?: string;
-  startingObliqueCollectionName?: string;
-  projection?: ProjectionOptions;
+  startingViewpointName?: string | null;
+  startingMapName?: string | null;
+  startingObliqueCollectionName?: string | null;
+  projection?: ProjectionOptions | null;
   obliqueCollections?: ObliqueCollectionOptions[];
   categories?: { name: string; items: object[] }[];
   hiddenObjects?: HiddenObject[];
@@ -52,19 +52,19 @@ export function markVolatile(
 class VcsModule {
   private _uuid: string;
 
-  name: string;
+  name: string | null;
 
-  description: string | undefined;
+  description: string | undefined | null;
 
   properties: Record<string, unknown> | undefined;
 
-  startingViewpointName: string | undefined;
+  startingViewpointName: string | undefined | null;
 
-  startingMapName: string | undefined;
+  startingMapName: string | undefined | null;
 
-  startingObliqueCollectionName: string | undefined;
+  startingObliqueCollectionName: string | undefined | null;
 
-  projection: Projection | undefined;
+  projection: Projection | undefined | null;
 
   private _config: VcsModuleConfig;
 
@@ -90,7 +90,7 @@ class VcsModule {
   }
 
   get config(): VcsModuleConfig {
-    return JSON.parse(JSON.stringify(this._config)) as VcsModuleConfig;
+    return structuredClone(this._config);
   }
 
   /**
@@ -106,23 +106,23 @@ class VcsModule {
     if (this._config._id) {
       config._id = this._config._id;
     }
-    if (this.name) {
+    if (this.name !== undefined) {
       config.name = this.name;
     }
-    if (this.description != null) {
+    if (this.description !== undefined) {
       config.description = this.description;
     }
-    if (this.startingViewpointName != null) {
+    if (this.startingViewpointName !== undefined) {
       config.startingViewpointName = this.startingViewpointName;
     }
-    if (this.startingMapName != null) {
+    if (this.startingMapName !== undefined) {
       config.startingMapName = this.startingMapName;
     }
-    if (this.startingObliqueCollectionName != null) {
+    if (this.startingObliqueCollectionName !== undefined) {
       config.startingObliqueCollectionName = this.startingObliqueCollectionName;
     }
-    if (this.projection != null) {
-      config.projection = this.projection?.toJSON();
+    if (this.projection !== undefined) {
+      config.projection = this.projection?.toJSON() ?? null;
     }
     return config;
   }

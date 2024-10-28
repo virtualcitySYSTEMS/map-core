@@ -1,3 +1,7 @@
+### 6.0.1
+
+- Allow unsetting `VcsModule` properties by null
+
 ### 6.0.0
 
 #### Breaking Changes
