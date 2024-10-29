@@ -480,7 +480,7 @@ function startEditFeaturesSession(
       transformationHandler?.setFeatures(features);
     },
     get features(): Feature[] {
-      return currentFeatures;
+      return currentFeatures.slice();
     },
   };
 }

@@ -1,6 +1,7 @@
 ### 6.0.2
 
 - revert part of 6.0.1 `VcsModule.name` property is not nullable anymore
+- fix bug where `editFeaturesSession` returns reference to internal feature array
 
 ### 6.0.1
 
