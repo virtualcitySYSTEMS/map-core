@@ -1,3 +1,7 @@
+### 6.0.2
+
+- revert part of 6.0.1 `VcsModule.name` property is not nullable anymore
+
 ### 6.0.1
 
 - Allow unsetting `VcsModule` properties by null

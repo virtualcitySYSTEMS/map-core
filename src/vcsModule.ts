@@ -11,8 +11,8 @@ import { HiddenObject } from './util/hiddenObjects.js';
 import { FlightInstanceOptions } from './util/flight/flightInstance.js';
 
 export type VcsModuleConfig = {
-  _id?: string | undefined;
-  name?: string | null;
+  _id?: string;
+  name?: string;
   description?: string | null;
   properties?: Record<string, unknown>;
   layers?: LayerOptions[];
@@ -52,7 +52,7 @@ export function markVolatile(
 class VcsModule {
   private _uuid: string;
 
-  name: string | null;
+  name: string;
 
   description: string | undefined | null;
 
@@ -81,7 +81,7 @@ class VcsModule {
     this.startingObliqueCollectionName = config.startingObliqueCollectionName;
     this.projection = config.projection
       ? new Projection(config.projection)
-      : undefined;
+      : config.projection;
     this._config = config;
   }
 
@@ -106,9 +106,12 @@ class VcsModule {
     if (this._config._id) {
       config._id = this._config._id;
     }
-    if (this.name !== undefined) {
-      config.name = this.name;
+    config.name = this.name;
+
+    if (this.properties && Object.keys(this.properties).length > 0) {
+      config.properties = structuredClone(this.properties);
     }
+
     if (this.description !== undefined) {
       config.description = this.description;
     }

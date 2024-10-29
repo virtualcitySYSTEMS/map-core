@@ -89,14 +89,12 @@ describe('Module', () => {
 
     it('should allow unsetting values by null', () => {
       app.setDynamicModule(module);
-      module.name = null;
       module.description = null;
       module.startingViewpointName = null;
       module.startingMapName = null;
       module.projection = null;
       module.setConfigFromApp(app);
       const { config } = module;
-      expect(config.name).to.be.null;
       expect(config.description).to.be.null;
       expect(config.startingViewpointName).to.be.null;
       expect(config.startingMapName).to.be.null;

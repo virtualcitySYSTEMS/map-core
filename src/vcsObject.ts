@@ -57,7 +57,7 @@ class VcsObject {
     };
 
     if (Object.keys(this.properties).length > 0) {
-      config.properties = { ...this.properties };
+      config.properties = structuredClone(this.properties);
     }
 
     return config;
