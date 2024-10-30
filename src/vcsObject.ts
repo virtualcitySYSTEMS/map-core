@@ -57,7 +57,10 @@ class VcsObject {
     };
 
     if (Object.keys(this.properties).length > 0) {
-      config.properties = structuredClone(this.properties);
+      config.properties = JSON.parse(JSON.stringify(this.properties)) as Record<
+        string,
+        unknown
+      >;
     }
 
     return config;

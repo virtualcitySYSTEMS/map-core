@@ -109,7 +109,10 @@ class VcsModule {
     config.name = this.name;
 
     if (this.properties && Object.keys(this.properties).length > 0) {
-      config.properties = structuredClone(this.properties);
+      config.properties = JSON.parse(JSON.stringify(this.properties)) as Record<
+        string,
+        unknown
+      >;
     }
 
     if (this.description !== undefined) {
