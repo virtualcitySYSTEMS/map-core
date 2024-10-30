@@ -90,7 +90,7 @@ class VcsModule {
   }
 
   get config(): VcsModuleConfig {
-    return structuredClone(this._config);
+    return JSON.parse(JSON.stringify(this._config)) as VcsModuleConfig;
   }
 
   /**
