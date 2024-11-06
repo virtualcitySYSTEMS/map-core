@@ -1,3 +1,7 @@
+### 6.0.5
+
+- Fix VectorTileLayer serialization by adding `renderer`
+
 ### 6.0.3
 
 - dont use structured clone on properties.

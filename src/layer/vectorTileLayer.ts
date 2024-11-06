@@ -541,6 +541,10 @@ class VectorTileLayer extends FeatureLayer<
       config.declutter = this._declutter;
     }
 
+    if (this._renderer !== defaultOptions.renderer) {
+      config.renderer = this._renderer;
+    }
+
     return config;
   }
 }
