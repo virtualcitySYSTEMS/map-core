@@ -48,7 +48,7 @@ export function setupScratchLayer(
     projection: mercatorProjection.toJSON(),
     vectorProperties: {
       altitudeMode: 'clampToGround',
-      eyeOffset: [0, 0, -1],
+      eyeOffset: [0, 0, -5],
       primitiveOptions: {
         type: PrimitiveOptionsType.SPHERE,
         geometryOptions: {

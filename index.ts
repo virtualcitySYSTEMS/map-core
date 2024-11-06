@@ -739,6 +739,7 @@ export {
   cartesian2DDistance,
   cartesian2DDistanceSquared,
   cartesian3DDistance,
+  cartesian3DDistanceSquared,
   modulo,
   cartographicToWgs84,
   mercatorToCartesian,

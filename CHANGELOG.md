@@ -1,5 +1,8 @@
 ### 6.0.5
 
+- `CreateFeatureSession` & `EditGeometrySession` both expose a `snapTo` API with which you can control the current interractions snaps.
+- Correctly use 3D distance for absolute features in cesium when determining the snap tolerance distance.
+- Added the `cartesian3DDistanceSquared` helper.
 - Fix VectorTileLayer serialization by adding `renderer`
 
 ### 6.0.3

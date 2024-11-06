@@ -36,6 +36,7 @@ export type CreateFeatureSession<T extends GeometryType> =
     featureAltitudeMode: AltitudeModeType | undefined;
     featureCreated: VcsEvent<Feature<GeometryToType<T>>>;
     creationFinished: VcsEvent<Feature<GeometryToType<T>> | null>;
+    snapTo: SnapType[];
     snapToLayers: VectorLayer[];
     finish(): void;
   };
@@ -118,7 +119,7 @@ function startCreateFeatureSession<T extends GeometryType>(
   check(layer, VectorLayer);
   check(geometryType, ofEnum(GeometryType));
 
-  const snapTo = options?.snapTo ?? [...snapTypes];
+  let snapTo: SnapType[] = options?.snapTo?.slice() ?? snapTypes.slice();
   const showSegmentLength = !options?.hideSegmentLength;
 
   const {
@@ -386,6 +387,18 @@ function startCreateFeatureSession<T extends GeometryType>(
       snapToLayers = layers.slice();
       if (layerSnappingInteraction) {
         layerSnappingInteraction.layers = snapToLayers;
+      }
+    },
+    get snapTo(): SnapType[] {
+      return snapTo.slice();
+    },
+    set snapTo(newSnaps: SnapType[]) {
+      snapTo = newSnaps.slice();
+      if (layerSnappingInteraction) {
+        layerSnappingInteraction.snapTo = snapTo;
+      }
+      if (snappingInteraction) {
+        snappingInteraction.snapTo = snapTo;
       }
     },
     featureCreated,

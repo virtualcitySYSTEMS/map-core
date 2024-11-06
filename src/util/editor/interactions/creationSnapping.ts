@@ -162,6 +162,7 @@ export default class CreationSnapping extends AbstractInteraction {
           maxDistanceSquared,
           this._snapToVertex,
           this._snapToEdge,
+          this._scratchLayer.vectorProperties.altitudeMode,
         );
       }
 
@@ -175,6 +176,7 @@ export default class CreationSnapping extends AbstractInteraction {
           maxDistanceSquared,
           this._snapOrthogonal,
           this._snapParallel,
+          this._scratchLayer.vectorProperties.altitudeMode,
         );
 
         if (this._isPolygon) {
@@ -188,6 +190,7 @@ export default class CreationSnapping extends AbstractInteraction {
             maxDistanceSquared,
             this._snapOrthogonal,
             this._snapParallel,
+            this._scratchLayer.vectorProperties.altitudeMode,
           );
         }
       }

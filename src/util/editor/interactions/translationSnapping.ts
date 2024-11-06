@@ -167,6 +167,7 @@ export default class TranslationSnapping extends AbstractInteraction {
           maxDistanceSquared,
           this._snapToVertex,
           this._snapToEdge,
+          this._scratchLayer.vectorProperties.altitudeMode,
         );
       }
 
@@ -195,6 +196,7 @@ export default class TranslationSnapping extends AbstractInteraction {
             maxDistanceSquared,
             this._snapOrthogonal,
             this._snapParallel,
+            this._scratchLayer.vectorProperties.altitudeMode,
           );
         } else if (this._isPolygon) {
           if (index === 1) {
@@ -207,6 +209,7 @@ export default class TranslationSnapping extends AbstractInteraction {
               maxDistanceSquared,
               this._snapOrthogonal,
               this._snapParallel,
+              this._scratchLayer.vectorProperties.altitudeMode,
             );
           } else {
             results[0] = getAngleSnapResult(
@@ -218,6 +221,7 @@ export default class TranslationSnapping extends AbstractInteraction {
               maxDistanceSquared,
               this._snapOrthogonal,
               this._snapParallel,
+              this._scratchLayer.vectorProperties.altitudeMode,
             );
           }
         }

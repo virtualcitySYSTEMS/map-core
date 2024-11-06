@@ -107,6 +107,7 @@ export default class LayerSnapping extends AbstractInteraction {
         maxDistanceSquared,
         this._snapToVertex,
         this._snapToEdge,
+        this._scratchLayer.vectorProperties.altitudeMode,
       );
 
       if (result) {

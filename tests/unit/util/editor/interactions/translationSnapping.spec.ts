@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { LineString, Polygon } from 'ol/geom.js';
-import { Cartesian2 } from '@vcmap-cesium/engine';
+import { Cartesian2, HeightReference } from '@vcmap-cesium/engine';
 import {
   CesiumMap,
   createVertex,
@@ -456,6 +456,71 @@ describe('translation snapping', () => {
           positionOrPixel: [1, 2.1, 12],
         });
         arrayCloseTo(modifiedEvent.positionOrPixel!, [1.05, 2.05, 12]);
+      });
+
+      describe('with altitude mode absolute', () => {
+        before(() => {
+          scratchLayer.vectorProperties.altitudeMode = HeightReference.NONE;
+        });
+
+        after(() => {
+          scratchLayer.vectorProperties.altitudeMode =
+            HeightReference.CLAMP_TO_GROUND;
+        });
+
+        it('should not snap on top of itself, if absolute', async () => {
+          geometry.setCoordinates([
+            [0, 0, 0],
+            [1, 1, 0],
+            [0, 1, 0],
+            [1, 1.5, 0],
+          ]);
+          const feature = createVertex([0.4, 0.4, 12], {}, 3);
+          await translationSnapping.pipe({
+            ...eventBase,
+            feature,
+            map: cesiumMap,
+            type: EventType.DRAGSTART,
+            position: [0.5, 0.5, 12],
+            positionOrPixel: [0.5, 0.5, 12],
+          });
+          const modifiedEvent = await translationSnapping.pipe({
+            ...eventBase,
+            feature,
+            map: cesiumMap,
+            type: EventType.DRAG,
+            position: [0.5, 0.5, 12],
+            positionOrPixel: [0.5, 0.5, 12],
+          });
+          arrayCloseTo(modifiedEvent.positionOrPixel!, [0.5, 0.5, 12]);
+        });
+
+        it('should snap on top of itself, if absolute but 2D coordinates', async () => {
+          geometry.setCoordinates([
+            [0, 0, 0],
+            [1, 1, 0],
+            [0, 1, 0],
+            [1, 1.5, 0],
+          ]);
+          const feature = createVertex([0.4, 0.4], {}, 3);
+          await translationSnapping.pipe({
+            ...eventBase,
+            feature,
+            map: cesiumMap,
+            type: EventType.DRAGSTART,
+            position: [0.5, 0.6],
+            positionOrPixel: [0.5, 0.6],
+          });
+          const modifiedEvent = await translationSnapping.pipe({
+            ...eventBase,
+            feature,
+            map: cesiumMap,
+            type: EventType.DRAG,
+            position: [0.5, 0.6],
+            positionOrPixel: [0.5, 0.6],
+          });
+          arrayCloseTo(modifiedEvent.positionOrPixel!, [0.55, 0.55]);
+        });
       });
     });
 

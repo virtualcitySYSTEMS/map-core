@@ -50,11 +50,13 @@ import SegmentLengthInteraction from './interactions/segmentLengthInteraction.js
 export type EditGeometrySession = EditorSession<SessionType.EDIT_GEOMETRY> & {
   setFeature(feature?: Feature): void;
   feature: Feature | null;
+  snapTo: SnapType[];
   snapToLayers: VectorLayer[];
 };
 
 type EditGeometryInteraction = {
   interactionChain: InteractionChain;
+  setSnapTo?: (snapTo: SnapType[]) => void;
   destroy(): void;
 };
 
@@ -88,8 +90,13 @@ function createEditLineStringGeometryInteraction(
   const translateVertex = new TranslateVertexInteraction(feature);
   translateVertex.vertexChanged.addEventListener(resetGeometry);
 
+  const translationSnapping = new TranslationSnapping(
+    scratchLayer,
+    geometry,
+    snapTo,
+  );
   const interactions: AbstractInteraction[] = [
-    new TranslationSnapping(scratchLayer, geometry, snapTo),
+    translationSnapping,
     translateVertex,
   ];
 
@@ -133,6 +140,9 @@ function createEditLineStringGeometryInteraction(
 
   return {
     interactionChain,
+    setSnapTo(newSnapTo): void {
+      translationSnapping.snapTo = newSnapTo;
+    },
     destroy: (): void => {
       scratchLayer.removeFeaturesById(
         vertices.map((v) => v.getId()) as string[],
@@ -321,8 +331,13 @@ function createEditSimplePolygonInteraction(
   const translateVertex = new TranslateVertexInteraction(feature);
   translateVertex.vertexChanged.addEventListener(resetGeometry);
 
+  const translationSnapping = new TranslationSnapping(
+    scratchLayer,
+    geometry,
+    snapTo,
+  );
   const interactions: AbstractInteraction[] = [
-    new TranslationSnapping(scratchLayer, geometry, snapTo),
+    translationSnapping,
     translateVertex,
   ];
 
@@ -366,6 +381,9 @@ function createEditSimplePolygonInteraction(
 
   return {
     interactionChain,
+    setSnapTo(newSnapTo): void {
+      translationSnapping.snapTo = newSnapTo;
+    },
     destroy: (): void => {
       scratchLayer.removeFeaturesById(
         vertices.map((v) => v.getId()) as string[],
@@ -459,7 +477,7 @@ function startEditGeometrySession(
   let snapToLayers: VectorLayer[] =
     editVertexOptions?.initialSnapToLayers?.slice() ?? [layer];
 
-  const snapTo = editVertexOptions?.snapTo ?? [...snapTypes];
+  let snapTo = editVertexOptions?.snapTo?.slice() ?? [...snapTypes];
 
   const resetPickingBehavior = setupPickingBehavior(app);
   const altitudeModeChanged = (): void => {
@@ -618,6 +636,16 @@ function startEditGeometrySession(
     },
     get feature(): Feature | null {
       return currentFeature;
+    },
+    get snapTo(): SnapType[] {
+      return snapTo.slice();
+    },
+    set snapTo(newSnaps: SnapType[]) {
+      snapTo = newSnaps.slice();
+      if (layerSnappingInteraction) {
+        layerSnappingInteraction.snapTo = snapTo;
+      }
+      currentInteractionSet?.setSnapTo?.(snapTo);
     },
     get snapToLayers(): VectorLayer[] {
       return snapToLayers.slice();

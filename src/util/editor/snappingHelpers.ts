@@ -3,10 +3,16 @@ import { Fill, Icon, Stroke, Style } from 'ol/style.js';
 import { Feature } from 'ol';
 import { Geometry, Point } from 'ol/geom.js';
 import RegularShape from 'ol/style/RegularShape.js';
-import { Cartesian2, Matrix2, Math as CesiumMath } from '@vcmap-cesium/engine';
+import {
+  Cartesian2,
+  Matrix2,
+  Math as CesiumMath,
+  HeightReference,
+} from '@vcmap-cesium/engine';
 import {
   cartesian2DDistanceSquared,
   cartesian2Intersection,
+  cartesian3DDistanceSquared,
   getCartesianBearing,
   getMidPoint,
 } from '../math.js';
@@ -19,7 +25,10 @@ import {
 } from '../../layer/vectorSymbols.js';
 import { blackColor } from '../../style/styleHelpers.js';
 import { PrimitiveOptionsType } from '../../layer/vectorProperties.js';
-import { isRelativeHeightReference } from '../featureconverter/vectorHeightInfo.js';
+import {
+  isClampedHeightReference,
+  isRelativeHeightReference,
+} from '../featureconverter/vectorHeightInfo.js';
 
 export const snapTypes = ['orthogonal', 'parallel', 'vertex', 'edge'] as const;
 
@@ -254,6 +263,7 @@ function getParallelSnapResult(
  * @param maxDistanceSquared
  * @param snapOrthogonal
  * @param snapParallel
+ * @param heightReference
  */
 export function getAngleSnapResult(
   coordinate: Coordinate,
@@ -264,6 +274,7 @@ export function getAngleSnapResult(
   maxDistanceSquared: number,
   snapOrthogonal = true,
   snapParallel = true,
+  heightReference = HeightReference.CLAMP_TO_GROUND,
 ): SnapResult<'orthogonal' | 'parallel'> | undefined {
   let snapResult: SnapResult<'orthogonal' | 'parallel'> | undefined =
     snapOrthogonal
@@ -279,10 +290,14 @@ export function getAngleSnapResult(
     );
   }
 
+  const getDistanceSquared =
+    coordinate.length === 2 || isClampedHeightReference(heightReference)
+      ? cartesian2DDistanceSquared
+      : cartesian3DDistanceSquared;
+
   if (
     snapResult?.snapped &&
-    cartesian2DDistanceSquared(snapResult.snapped, coordinate) <=
-      maxDistanceSquared
+    getDistanceSquared(snapResult.snapped, coordinate) <= maxDistanceSquared
   ) {
     return snapResult;
   }
@@ -296,6 +311,7 @@ export function getAngleSnapResult(
  * @param maxDistanceSquared
  * @param snapToVertex
  * @param snapToEdge
+ * @param heightReference
  */
 export function getGeometrySnapResult(
   geometries: Geometry[],
@@ -303,9 +319,15 @@ export function getGeometrySnapResult(
   maxDistanceSquared: number,
   snapToVertex = true,
   snapToEdge = true,
+  heightReference = HeightReference.CLAMP_TO_GROUND,
 ): SnapResult<'edge' | 'vertex'> | undefined {
   let distanceSquared = Infinity;
   let result: SnapResult<'vertex' | 'edge'> | undefined;
+
+  const getDistanceSquared =
+    coordinate.length === 2 || isClampedHeightReference(heightReference)
+      ? cartesian2DDistanceSquared
+      : cartesian3DDistanceSquared;
 
   if (snapToVertex) {
     geometries.forEach((geometry) => {
@@ -318,10 +340,7 @@ export function getGeometrySnapResult(
         if (stride > 2) {
           vertex[2] = coordinates[i + 2];
         }
-        const currentDistanceSquared = cartesian2DDistanceSquared(
-          vertex,
-          coordinate,
-        );
+        const currentDistanceSquared = getDistanceSquared(vertex, coordinate);
 
         if (
           currentDistanceSquared < distanceSquared &&
@@ -346,7 +365,7 @@ export function getGeometrySnapResult(
     distanceSquared = Infinity;
     geometries.forEach((geometry) => {
       const closestPoint = geometry.getClosestPoint(coordinate);
-      const currentDistanceSquared = cartesian2DDistanceSquared(
+      const currentDistanceSquared = getDistanceSquared(
         closestPoint,
         coordinate,
       );

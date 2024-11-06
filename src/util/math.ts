@@ -105,6 +105,15 @@ export function cartesian3DDistance(p1: Coordinate, p2: Coordinate): number {
   return Cartesian3.distance(point0, point1);
 }
 
+export function cartesian3DDistanceSquared(
+  p1: Coordinate,
+  p2: Coordinate,
+): number {
+  const point0 = Cartesian3.fromElements(p1[0], p1[1], p1[2]);
+  const point1 = Cartesian3.fromElements(p2[0], p2[1], p2[2]);
+  return Cartesian3.distanceSquared(point0, point1);
+}
+
 /**
  * Avoid JS negative number modulo bug.
  */
