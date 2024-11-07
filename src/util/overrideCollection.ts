@@ -277,7 +277,15 @@ function makeOverrideCollection<
       .forEach((item): void => {
         overrideCollection.remove(item);
         if (item.destroy) {
-          item.destroy();
+          try {
+            item.destroy();
+          } catch (e) {
+            getLogger().error(
+              `Failed to destroy item ${
+                item[overrideCollection.uniqueKey] as string
+              }`,
+            );
+          }
         }
       });
   };

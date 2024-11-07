@@ -1,3 +1,7 @@
+### 6.0.6
+
+- OverrideCollection now catches destroy failures of items on `removeModule`.
+
 ### 6.0.5
 
 - `CreateFeatureSession` & `EditGeometrySession` both expose a `snapTo` API with which you can control the current interractions snaps.
