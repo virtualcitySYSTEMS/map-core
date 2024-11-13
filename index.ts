@@ -394,6 +394,7 @@ export {
   VcsMapRenderEvent,
   VisualisationType,
 } from './src/map/vcsMap.js';
+export { default as PanoramaMap } from './src/map/panoramaMap.js';
 export { default as DefaultObliqueCollection } from './src/oblique/defaultObliqueCollection.js';
 export {
   sortRealWordEdgeCoordinates,
