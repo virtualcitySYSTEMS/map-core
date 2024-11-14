@@ -1,9 +1,7 @@
-// @ts-nocheck
 import {
   Cartesian2,
   Cartesian3,
   CesiumWidget,
-  KeyboardEventModifier,
   Math as CesiumMath,
   PerspectiveFrustum,
   ScreenSpaceEventHandler,
@@ -13,7 +11,7 @@ import {
 import VcsMap, { VcsMapOptions } from './vcsMap.js';
 import PanoramaImage from '../panorama/panoramaImage.js';
 import { mapClassRegistry } from '../classRegistry.js';
-import { PanoramaImageSource } from '../panorama/panoramaImageSource.js';
+import PanoramaImageSource from '../panorama/panoramaImageSource.js';
 
 export type PanoramaMapOptions = VcsMapOptions;
 
@@ -39,68 +37,59 @@ function setupNavigationControls(widget: CesiumWidget): () => void {
   const pointerEventHandler = new ScreenSpaceEventHandler(widget.canvas);
 
   const leftDownHandler = (event: { position: Cartesian2 }): void => {
-    pointerInput.leftDown = true;
-    pointerInput.startPosition = Cartesian2.clone(event.position);
-    pointerInput.position = pointerInput.startPosition;
+    if (!widget.scene.screenSpaceCameraController.enableInputs) {
+      pointerInput.leftDown = true;
+      pointerInput.startPosition = Cartesian2.clone(event.position);
+      pointerInput.position = pointerInput.startPosition;
+    }
   };
   const leftUpHandler = (): void => {
-    pointerInput.leftDown = false;
+    if (!widget.scene.screenSpaceCameraController.enableInputs) {
+      pointerInput.leftDown = false;
+    }
   };
   const mouseMoveHandler = (event: { endPosition: Cartesian2 }): void => {
-    pointerInput.position = event.endPosition;
+    if (!widget.scene.screenSpaceCameraController.enableInputs) {
+      pointerInput.position = event.endPosition;
+    }
   };
 
-  function setupMouseEventForAllKeyModifiers(
-    eventType: ScreenSpaceEventType,
-    handler:
-      | ScreenSpaceEventHandler.MotionEventCallback
-      | ScreenSpaceEventHandler.PositionedEventCallback
-      | ScreenSpaceEventHandler.WheelEventCallback,
-  ): () => void {
-    const removeCallbacks: Array<() => void> = [];
-    [
-      undefined,
-      KeyboardEventModifier.SHIFT,
-      KeyboardEventModifier.CTRL,
-      KeyboardEventModifier.ALT,
-    ].forEach(
-      (keyModifier) => {
-        pointerEventHandler.setInputAction(handler, eventType, keyModifier);
-      },
-      removeCallbacks.push(() => {
-        pointerEventHandler.removeInputAction(eventType);
-      }),
-    );
-    return () => {
-      removeCallbacks.forEach((cb) => cb());
-    };
-  }
-
-  const removeLeftDown = setupMouseEventForAllKeyModifiers(
-    ScreenSpaceEventType.LEFT_DOWN,
+  pointerEventHandler.setInputAction(
     leftDownHandler,
+    ScreenSpaceEventType.LEFT_DOWN,
   );
-  const removeLeftUp = setupMouseEventForAllKeyModifiers(
-    ScreenSpaceEventType.LEFT_UP,
+  pointerEventHandler.setInputAction(
     leftUpHandler,
+    ScreenSpaceEventType.LEFT_UP,
   );
-  const removeMouseMove = setupMouseEventForAllKeyModifiers(
-    ScreenSpaceEventType.MOUSE_MOVE,
+  pointerEventHandler.setInputAction(
     mouseMoveHandler,
+    ScreenSpaceEventType.MOUSE_MOVE,
   );
 
   const frustum = widget.camera.frustum as PerspectiveFrustum;
-  const wheelHandler = setupMouseEventForAllKeyModifiers(
-    ScreenSpaceEventType.WHEEL,
-    (event: number): void => {
+  pointerEventHandler.setInputAction((event: number): void => {
+    if (!widget.scene.screenSpaceCameraController.enableInputs) {
       if (event > 0 && frustum.fov > minFov) {
         frustum.fov -= fovStep;
       } else if (event < 0 && frustum.fov < maxFov) {
         frustum.fov += fovStep;
       }
-    },
-  );
+    }
+  }, ScreenSpaceEventType.WHEEL);
 
+  const ctrlHandler = (event: KeyboardEvent): void => {
+    if (event.altKey) {
+      widget.scene.screenSpaceCameraController.enableInputs =
+        !widget.scene.screenSpaceCameraController.enableInputs;
+    }
+    if (!widget.scene.screenSpaceCameraController.enableInputs) {
+      widget.scene.camera.setView({
+        destination: Cartesian3.fromDegrees(0, 0, 1),
+      });
+    }
+  };
+  document.body.addEventListener('keydown', ctrlHandler);
   const shareToAngleFactor = 0.05;
 
   const clockListener = widget.clock.onTick.addEventListener(() => {
@@ -125,11 +114,8 @@ function setupNavigationControls(widget: CesiumWidget): () => void {
   });
 
   return (): void => {
-    removeLeftDown();
-    removeLeftUp();
-    removeMouseMove();
-    wheelHandler();
     pointerEventHandler.destroy();
+    document.body.removeEventListener('keydown', ctrlHandler);
     clockListener();
   };
 }
@@ -159,8 +145,7 @@ export default class PanoramaMap extends VcsMap {
         terrainShadows: ShadowMode.DISABLED,
       });
 
-      // Allow rotation only, disabling other camera movements
-      this._cesiumWidget.scene.screenSpaceCameraController.enableInputs = false; // Disable translation
+      this._cesiumWidget.scene.screenSpaceCameraController.enableInputs = false;
       this._cesiumWidget.scene.primitives.destroyPrimitives = false;
       this._cesiumWidget.scene.camera.setView({
         destination: Cartesian3.fromDegrees(0.0, 0.0, 30),
@@ -173,11 +158,18 @@ export default class PanoramaMap extends VcsMap {
 
       this.initialized = true;
       setupNavigationControls(this._cesiumWidget);
+      new PanoramaImageSource(
+        this._cesiumWidget.scene,
+        1,
+        Cartesian3.fromDegrees(0, 0, 1),
+      );
+      /*
       this.setCurrentImage(
         new PanoramaImage({
           url: 'exampleData/Trimble_MX60_Hannover_Beispiel/pano_000001_000011.jpg',
         }),
       );
+       */
     }
     await super.initialize();
   }
