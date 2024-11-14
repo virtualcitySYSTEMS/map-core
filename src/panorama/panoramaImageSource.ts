@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Cartesian3, PrimitiveCollection, Scene } from '@vcmap-cesium/engine';
 import { Size } from 'ol/size.js';
 import PanoramaImage from './panoramaImage.js';
@@ -14,7 +13,7 @@ import PanoramaTile, { createTilesForLevel } from './panoramaTile.js';
  * - we can determine which tiles to load by using the cameras heading & FOV
  */
 
-export class PanoramaImageSource {
+export default class PanoramaImageSource {
   private _primitiveCollection = new PrimitiveCollection();
 
   private _cameraChangedListener: (() => void) | undefined;
@@ -42,13 +41,11 @@ export class PanoramaImageSource {
       this._cameraChanged.bind(this),
     );
 
-    this._addLevel(0);
-    /*
     for (let i = 0; i <= maxLevel; i++) {
       this._addLevel(i);
     }
-     */
-    this._levelCollections.get(0)!.primitives.show = true;
+
+    this._levelCollections.get(1)!.primitives.show = true;
   }
 
   get currentLevel(): number {
@@ -63,7 +60,7 @@ export class PanoramaImageSource {
     const primitives = new PrimitiveCollection();
     primitives.show = false;
     const tiles = new Map<string, PanoramaTile>();
-    const tile = new PanoramaTile(0, 0, level, this._position);
+    // const tile = new PanoramaTile(0, 0, level, this._position);
     createTilesForLevel(level, this._position).forEach((tile) => {
       primitives.add(tile.primitive);
       tiles.set(tile.getTileCoordinate().join('/'), tile);
