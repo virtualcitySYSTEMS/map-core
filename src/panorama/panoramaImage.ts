@@ -36,14 +36,14 @@ export default class PanoramaImage {
         geometryInstances: new GeometryInstance({
           geometry: new SphereGeometry({
             vertexFormat: VertexFormat.POSITION_NORMAL_AND_ST,
-            radius: 1.0,
+            radius: 30.0,
           }),
         }),
         appearance: imgMat,
         asynchronous: false,
         modelMatrix: Matrix4.fromTranslationRotationScale(
           new TranslationRotationScale(
-            Cartesian3.fromDegrees(0.0, 0.0, 2),
+            Cartesian3.fromDegrees(0.0, 0.0, 30),
             Quaternion.fromRotationMatrix(
               Matrix3.fromRotationY(CesiumMath.PI_OVER_TWO),
             ),

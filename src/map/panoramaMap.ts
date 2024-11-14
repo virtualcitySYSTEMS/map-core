@@ -163,7 +163,7 @@ export default class PanoramaMap extends VcsMap {
       this._cesiumWidget.scene.screenSpaceCameraController.enableInputs = false; // Disable translation
       this._cesiumWidget.scene.primitives.destroyPrimitives = false;
       this._cesiumWidget.scene.camera.setView({
-        destination: Cartesian3.fromDegrees(0.0, 0.0, 1),
+        destination: Cartesian3.fromDegrees(0.0, 0.0, 30),
         orientation: {
           heading: 0.0,
           pitch: 0.0,
