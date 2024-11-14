@@ -28,20 +28,22 @@ export default class PanoramaImage {
 
   getPrimitive(): Primitive {
     if (!this._primitive) {
+      const imgMat = new MaterialAppearance({
+        material: Material.fromType('Image', { image: this._url }),
+      });
+
       this._primitive = new Primitive({
         geometryInstances: new GeometryInstance({
           geometry: new SphereGeometry({
             vertexFormat: VertexFormat.POSITION_NORMAL_AND_ST,
-            radius: 500000.0,
+            radius: 1.0,
           }),
         }),
-        appearance: new MaterialAppearance({
-          material: Material.fromType('Image', { image: this._url }),
-        }),
+        appearance: imgMat,
         asynchronous: false,
         modelMatrix: Matrix4.fromTranslationRotationScale(
           new TranslationRotationScale(
-            Cartesian3.fromDegrees(0.0, 0.0, 0.0),
+            Cartesian3.fromDegrees(0.0, 0.0, 2),
             Quaternion.fromRotationMatrix(
               Matrix3.fromRotationY(CesiumMath.PI_OVER_TWO),
             ),

@@ -23,8 +23,11 @@ type PointerInput = {
 
 const maxPitch = 85 / CesiumMath.DEGREES_PER_RADIAN;
 const minPitch = -maxPitch;
+const maxFov = CesiumMath.toRadians(120);
+const minFov = CesiumMath.toRadians(10);
+const fovStep = 0.1;
 
-function setupNavigationControls(widget: CesiumWidget): void {
+function setupNavigationControls(widget: CesiumWidget): () => void {
   const pointerInput: PointerInput = {
     startPosition: new Cartesian2(),
     position: new Cartesian2(),
@@ -49,7 +52,8 @@ function setupNavigationControls(widget: CesiumWidget): void {
     eventType: ScreenSpaceEventType,
     handler:
       | ScreenSpaceEventHandler.MotionEventCallback
-      | ScreenSpaceEventHandler.PositionedEventCallback,
+      | ScreenSpaceEventHandler.PositionedEventCallback
+      | ScreenSpaceEventHandler.WheelEventCallback,
   ): () => void {
     const removeCallbacks: Array<() => void> = [];
     [
@@ -83,12 +87,17 @@ function setupNavigationControls(widget: CesiumWidget): void {
     mouseMoveHandler,
   );
 
-  const removeScreenSpaceHandler = () => {
-    removeLeftDown();
-    removeLeftUp();
-    removeMouseMove();
-    pointerEventHandler.destroy();
-  };
+  const frustum = widget.camera.frustum as PerspectiveFrustum;
+  const wheelHandler = setupMouseEventForAllKeyModifiers(
+    ScreenSpaceEventType.WHEEL,
+    (event: number): void => {
+      if (event > 0 && frustum.fov > minFov) {
+        frustum.fov -= fovStep;
+      } else if (event < 0 && frustum.fov < maxFov) {
+        frustum.fov += fovStep;
+      }
+    },
+  );
 
   const shareToAngleFactor = 0.05;
 
@@ -114,7 +123,11 @@ function setupNavigationControls(widget: CesiumWidget): void {
   });
 
   return (): void => {
-    removeScreenSpaceHandler();
+    removeLeftDown();
+    removeLeftUp();
+    removeMouseMove();
+    wheelHandler();
+    pointerEventHandler.destroy();
     clockListener();
   };
 }
@@ -141,14 +154,14 @@ export default class PanoramaMap extends VcsMap {
         scene3DOnly: true,
         baseLayer: false,
         shadows: false,
-        terrainShadows: ShadowMode.ENABLED,
+        terrainShadows: ShadowMode.DISABLED,
       });
 
       // Allow rotation only, disabling other camera movements
       this._cesiumWidget.scene.screenSpaceCameraController.enableInputs = false; // Disable translation
       this._cesiumWidget.scene.primitives.destroyPrimitives = false;
       this._cesiumWidget.scene.camera.setView({
-        destination: Cartesian3.fromDegrees(0.0, 0.0, 0.0),
+        destination: Cartesian3.fromDegrees(0.0, 0.0, 1),
         orientation: {
           heading: 0.0,
           pitch: 0.0,
@@ -156,11 +169,7 @@ export default class PanoramaMap extends VcsMap {
         },
       });
 
-      console.log(
-        this._cesiumWidget.camera.up,
-        this._cesiumWidget.camera.right,
-      );
-
+      this.initialized = true;
       setupNavigationControls(this._cesiumWidget);
       this.setCurrentImage(
         new PanoramaImage({
@@ -187,6 +196,29 @@ export default class PanoramaMap extends VcsMap {
     }
     this._currentImage = image;
     this._cesiumWidget?.scene.primitives.add(image.getPrimitive());
+    /*
+    this._cesiumWidget?.scene.groundPrimitives.add(
+      new GroundPrimitive({
+        geometryInstances: new GeometryInstance({
+          geometry: new PolygonGeometry({
+            polygonHierarchy: new PolygonHierarchy(
+              Cartesian3.fromDegreesArrayHeights([
+                -10, -10, 0.5, 10, -10, 0.5, 10, 10, 0.5, -10, 10, 0.5,
+              ]),
+            ),
+            vertexFormat: VertexFormat.POSITION_AND_COLOR,
+          }),
+        }),
+        appearance: new MaterialAppearance({
+          material: Material.fromType('Color', {
+            color: Color.RED.withAlpha(1),
+          }),
+          translucent: true,
+        }),
+      }),
+    );
+
+     */
   }
 
   deactivate(): void {
