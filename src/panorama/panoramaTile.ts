@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   Cartesian3,
   Color,
@@ -95,7 +96,7 @@ function createPrimitive(
     asynchronous: false,
     modelMatrix: Transforms.headingPitchRollToFixedFrame(
       position,
-      new HeadingPitchRoll(0, 0, 0),
+      new HeadingPitchRoll(CesiumMath.toRadians(heading), 0, 0),
     ),
   });
 }

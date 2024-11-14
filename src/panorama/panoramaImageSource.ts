@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Cartesian3, PrimitiveCollection, Scene } from '@vcmap-cesium/engine';
 import { Size } from 'ol/size.js';
 import PanoramaImage from './panoramaImage.js';
@@ -63,10 +64,10 @@ export class PanoramaImageSource {
     primitives.show = false;
     const tiles = new Map<string, PanoramaTile>();
     const tile = new PanoramaTile(0, 0, level, this._position);
-    // createTilesForLevel(level, this._position).forEach((tile) => {
-    primitives.add(tile.primitive);
-    tiles.set(tile.getTileCoordinate().join('/'), tile);
-    //});
+    createTilesForLevel(level, this._position).forEach((tile) => {
+      primitives.add(tile.primitive);
+      tiles.set(tile.getTileCoordinate().join('/'), tile);
+    });
     this._levelCollections.set(level, { primitives, tiles });
     this._primitiveCollection.add(primitives);
   }

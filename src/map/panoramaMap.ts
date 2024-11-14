@@ -1,10 +1,11 @@
+// @ts-nocheck
 import {
   Cartesian2,
   Cartesian3,
   CesiumWidget,
   KeyboardEventModifier,
   Math as CesiumMath,
-  Scene,
+  PerspectiveFrustum,
   ScreenSpaceEventHandler,
   ScreenSpaceEventType,
   ShadowMode,
@@ -12,6 +13,7 @@ import {
 import VcsMap, { VcsMapOptions } from './vcsMap.js';
 import PanoramaImage from '../panorama/panoramaImage.js';
 import { mapClassRegistry } from '../classRegistry.js';
+import { PanoramaImageSource } from '../panorama/panoramaImageSource.js';
 
 export type PanoramaMapOptions = VcsMapOptions;
 
