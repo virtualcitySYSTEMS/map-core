@@ -11,7 +11,7 @@ import {
 import VcsMap, { VcsMapOptions } from './vcsMap.js';
 import PanoramaImage from '../panorama/panoramaImage.js';
 import { mapClassRegistry } from '../classRegistry.js';
-import PanoramaImageSource from '../panorama/panoramaImageSource.js';
+import { createPanoramaImageSource } from '../panorama/panoramaImageSource.js';
 
 export type PanoramaMapOptions = VcsMapOptions;
 
@@ -27,6 +27,7 @@ const maxFov = CesiumMath.toRadians(120);
 const minFov = CesiumMath.toRadians(10);
 const fovStep = 0.1;
 
+// TODO move to navication controls & setup drag listener instead of "POV" look
 function setupNavigationControls(widget: CesiumWidget): () => void {
   const pointerInput: PointerInput = {
     startPosition: new Cartesian2(),
@@ -78,18 +79,24 @@ function setupNavigationControls(widget: CesiumWidget): () => void {
     }
   }, ScreenSpaceEventType.WHEEL);
 
-  const ctrlHandler = (event: KeyboardEvent): void => {
+  const altHandler = (event: KeyboardEvent): void => {
     if (event.altKey) {
       widget.scene.screenSpaceCameraController.enableInputs =
         !widget.scene.screenSpaceCameraController.enableInputs;
-    }
-    if (!widget.scene.screenSpaceCameraController.enableInputs) {
-      widget.scene.camera.setView({
-        destination: Cartesian3.fromDegrees(0, 0, 1),
-      });
+
+      if (!widget.scene.screenSpaceCameraController.enableInputs) {
+        widget.scene.camera.setView({
+          destination: Cartesian3.fromDegrees(0, 0, 1),
+          orientation: {
+            heading: 0.0,
+            pitch: 0.0,
+            roll: 0.0,
+          },
+        });
+      }
     }
   };
-  document.body.addEventListener('keydown', ctrlHandler);
+  document.body.addEventListener('keydown', altHandler);
   const shareToAngleFactor = 0.05;
 
   const clockListener = widget.clock.onTick.addEventListener(() => {
@@ -115,7 +122,7 @@ function setupNavigationControls(widget: CesiumWidget): () => void {
 
   return (): void => {
     pointerEventHandler.destroy();
-    document.body.removeEventListener('keydown', ctrlHandler);
+    document.body.removeEventListener('keydown', altHandler);
     clockListener();
   };
 }
@@ -135,6 +142,8 @@ export default class PanoramaMap extends VcsMap {
 
   private _currentImage: PanoramaImage | undefined;
 
+  private _destroyImageSource: (() => void) | undefined;
+
   async initialize(): Promise<void> {
     if (!this.initialized) {
       this._cesiumWidget = new CesiumWidget(this.mapElement, {
@@ -147,8 +156,9 @@ export default class PanoramaMap extends VcsMap {
 
       this._cesiumWidget.scene.screenSpaceCameraController.enableInputs = false;
       this._cesiumWidget.scene.primitives.destroyPrimitives = false;
+      this._cesiumWidget.scene.globe.enableLighting = false;
       this._cesiumWidget.scene.camera.setView({
-        destination: Cartesian3.fromDegrees(0.0, 0.0, 30),
+        destination: Cartesian3.fromDegrees(0.0, 0.0, 1),
         orientation: {
           heading: 0.0,
           pitch: 0.0,
@@ -158,9 +168,9 @@ export default class PanoramaMap extends VcsMap {
 
       this.initialized = true;
       setupNavigationControls(this._cesiumWidget);
-      new PanoramaImageSource(
+      this._destroyImageSource = createPanoramaImageSource(
         this._cesiumWidget.scene,
-        1,
+        4,
         Cartesian3.fromDegrees(0, 0, 1),
       );
       /*
@@ -220,6 +230,11 @@ export default class PanoramaMap extends VcsMap {
     if (this._cesiumWidget) {
       this._cesiumWidget.useDefaultRenderLoop = false;
     }
+  }
+
+  destroy(): void {
+    this._destroyImageSource?.();
+    super.destroy();
   }
 }
 mapClassRegistry.registerClass(PanoramaMap.className, PanoramaMap);
