@@ -1,7 +1,12 @@
-import { Cartesian3, PrimitiveCollection, Scene } from '@vcmap-cesium/engine';
+import {
+  Cartesian2,
+  Cartesian3,
+  PrimitiveCollection,
+  Scene,
+} from '@vcmap-cesium/engine';
 import { Size } from 'ol/size.js';
 import PanoramaImage from './panoramaImage.js';
-import PanoramaTile, { createTilesForLevel } from './panoramaTile.js';
+import { createTilesForLevel, PanoramaTile } from './panoramaTile.js';
 
 /**
  * idea:
@@ -13,66 +18,44 @@ import PanoramaTile, { createTilesForLevel } from './panoramaTile.js';
  * - we can determine which tiles to load by using the cameras heading & FOV
  */
 
-export default class PanoramaImageSource {
-  private _primitiveCollection = new PrimitiveCollection();
+type LevelTiles = {
+  primitives: PrimitiveCollection;
+  tiles: Map<string, PanoramaTile>;
+};
 
-  private _cameraChangedListener: (() => void) | undefined;
+function createTileLevel(level: number, position: Cartesian3): LevelTiles {
+  const primitives = new PrimitiveCollection();
+  primitives.show = false;
+  const tiles = new Map<string, PanoramaTile>();
+  // const tile = new PanoramaTile(0, 0, level, this._position);
+  createTilesForLevel(level, position).forEach((tile) => {
+    primitives.add(tile.primitive);
+    tiles.set(tile.getTileCoordinate().join('/'), tile);
+  });
+  return { primitives, tiles };
+}
 
-  private _currentImage: PanoramaImage | undefined;
+export function createPanoramaImageSource(
+  scene: Scene,
+  maxLevel: number,
+  position: Cartesian3,
+): () => void {
+  const primitiveCollection = new PrimitiveCollection();
 
-  private _level = 0;
+  scene.primitives.add(primitiveCollection); // camera changed listener
 
-  private _renderingTiles = new Set<string>();
+  const levelCollections = new Map<number, LevelTiles>();
 
-  private _tileSize: Size = [256, 256];
-
-  private _levelCollections: Map<
-    number,
-    { primitives: PrimitiveCollection; tiles: Map<string, PanoramaTile> }
-  > = new Map();
-
-  constructor(
-    private _scene: Scene,
-    maxLevel: number,
-    private _position: Cartesian3,
-  ) {
-    this._scene.primitives.add(this._primitiveCollection);
-    this._cameraChangedListener = this._scene.camera.changed.addEventListener(
-      this._cameraChanged.bind(this),
-    );
-
-    for (let i = 0; i <= maxLevel; i++) {
-      this._addLevel(i);
-    }
-
-    this._levelCollections.get(1)!.primitives.show = true;
+  for (let i = 0; i <= maxLevel; i++) {
+    const tileLevel = createTileLevel(i, position);
+    levelCollections.set(i, tileLevel);
+    primitiveCollection.add(tileLevel.primitives);
   }
 
-  get currentLevel(): number {
-    return this._level;
-  }
+  levelCollections.get(4)!.primitives.show = true;
 
-  get renderingTiles(): string[] {
-    return Array.from(this._renderingTiles);
-  }
-
-  private _addLevel(level: number): void {
-    const primitives = new PrimitiveCollection();
-    primitives.show = false;
-    const tiles = new Map<string, PanoramaTile>();
-    // const tile = new PanoramaTile(0, 0, level, this._position);
-    createTilesForLevel(level, this._position).forEach((tile) => {
-      primitives.add(tile.primitive);
-      tiles.set(tile.getTileCoordinate().join('/'), tile);
-    });
-    this._levelCollections.set(level, { primitives, tiles });
-    this._primitiveCollection.add(primitives);
-  }
-
-  private _cameraChanged(): void {}
-
-  destroy(): void {
-    this._primitiveCollection.removeAll();
-    this._scene.primitives.remove(this._primitiveCollection);
-  }
+  return () => {
+    primitiveCollection.removeAll();
+    scene.primitives.remove(primitiveCollection);
+  };
 }
