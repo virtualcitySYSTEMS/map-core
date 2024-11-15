@@ -11,8 +11,11 @@ import {
   HeadingPitchRoll,
   VertexFormat,
   Transforms,
+  Cartesian2,
 } from '@vcmap-cesium/engine';
 import { getNumberOfTiles, tileSizeInRadians } from './panoramaTilingScheme.js';
+
+const tileGapFactor = 0 * CesiumMath.toRadians(0.1);
 
 let emptyTileAppearance: MaterialAppearance | undefined;
 function getEmptyTileAppearance(): MaterialAppearance {
@@ -25,6 +28,22 @@ function getEmptyTileAppearance(): MaterialAppearance {
   }
   return emptyTileAppearance;
 }
+
+function getTextureClampSource(): string {}
+
+const source = `
+czm_material czm_getMaterial(czm_materialInput materialInput)
+{
+    czm_material m = czm_getDefaultMaterial(materialInput);
+    vec2 clamped = clamp(materialInput.st, min, max);
+    vec2 scaled = (clamped - min) / (max - min);
+    vec3 t_color = texture(image, scaled).rgb * color.rgb;
+    m.diffuse =  t_color;
+    m.specular = 0.5;
+    m.emission = t_color * vec3(0.5);
+    m.alpha = 1.0;
+    return m;
+}`;
 
 function getDebugTileAppearance(
   x: number,
@@ -52,20 +71,25 @@ function getDebugTileAppearance(
   ctx.fillText(`${level}/${x}/${y}`, 1028 / 2, 1028 / 2);
 
   const [numx, numy] = getNumberOfTiles(level);
-  const material = new Material({
-    fabric: {
-      type: 'Image',
-      uniforms: {
-        image: canvas.toDataURL('image/png'),
-      },
-      components: {
-        diffuse:
-          'texture(image, vec2(materialInput.st.x, materialInput.st.y)).rgb',
-      },
-    },
-  });
+  const sizeX = 1 / numx;
+  const sizeY = 1 / numy;
+
+  const min = new Cartesian2(x * sizeX, 1 - (y * sizeY + sizeY));
+  const max = new Cartesian2(x * sizeX + sizeX, 1 - y * sizeY);
+
   return new MaterialAppearance({
-    material,
+    material: new Material({
+      fabric: {
+        type: 'TileImage',
+        uniforms: {
+          image: canvas.toDataURL('image/png'),
+          color: Color.HOTPINK.withAlpha(0.8),
+          min,
+          max,
+        },
+        source,
+      },
+    }),
   });
 }
 
@@ -75,10 +99,24 @@ function getImageTileAppearance(
   level: number,
 ): MaterialAppearance {
   const [numx, numy] = getNumberOfTiles(level);
+  const sizeX = 1 / numx;
+  const sizeY = 1 / numy;
+
+  const min = new Cartesian2(x * sizeX, 1 - (y * sizeY + sizeY));
+  const max = new Cartesian2(x * sizeX + sizeX, 1 - y * sizeY);
+
   return new MaterialAppearance({
-    material: Material.fromType('Image', {
-      image: `exampleData/pano_000001_000011/${level}/${x}/${y}.jpg`,
-      repeat: { x: numx, y: numy },
+    material: new Material({
+      fabric: {
+        type: 'TileImage',
+        uniforms: {
+          image: `exampleData/pano_000001_000011/${level}/${x}/${y}.jpg`,
+          color: Color.WHITE.withAlpha(1),
+          min,
+          max,
+        },
+        source,
+      },
     }),
   });
 }
@@ -97,20 +135,20 @@ function createPrimitive(
     geometryInstances: [
       new GeometryInstance({
         geometry: new EllipsoidGeometry({
-          vertexFormat: VertexFormat.POSITION_NORMAL_AND_ST,
+          vertexFormat: VertexFormat.POSITION_AND_ST,
           radii: new Cartesian3(1, 1, 1),
           minimumClock: heading,
-          maximumClock: heading + sizeR,
+          maximumClock: heading + sizeR + tileGapFactor,
           minimumCone: tilt,
-          maximumCone: tilt + sizeR,
+          maximumCone: tilt + sizeR + tileGapFactor,
           stackPartitions: (level + 1) * 64,
           slicePartitions: (level + 1) * 64,
         }),
       }),
     ],
-    appearance: getDebugTileAppearance(x, y, level),
+    // appearance: getDebugTileAppearance(x, y, level),
     // appearance: getEmptyTileAppearance(),
-    // appearance: getImageTileAppearance(x, y, level),
+    appearance: getImageTileAppearance(x, y, level),
     asynchronous: false,
     modelMatrix: Transforms.headingPitchRollToFixedFrame(
       position,
@@ -119,25 +157,44 @@ function createPrimitive(
   });
 }
 
-export default class PanoramaTile {
-  private _primitive: Primitive;
+export type PanoramaTile = {
+  readonly x: number;
+  readonly y: number;
+  readonly level: number;
+  readonly position: Cartesian3;
+  readonly primitive: Primitive;
+  getTileCoordinate(): [number, number, number];
+};
 
-  constructor(
-    readonly x: number,
-    readonly y: number,
-    readonly level: number,
-    position: Cartesian3,
-  ) {
-    this._primitive = createPrimitive(x, y, level, position);
-  }
+export function createPanoramaTile(
+  x: number,
+  y: number,
+  level: number,
+  position: Cartesian3,
+): PanoramaTile {
+  const primitive = createPrimitive(x, y, level, position);
+  // primitive.show = level === 1 && x === 0 && y === 0;
 
-  get primitive(): Primitive {
-    return this._primitive;
-  }
-
-  getTileCoordinate(): [number, number, number] {
-    return [this.x, this.y, this.level];
-  }
+  return {
+    get x(): number {
+      return x;
+    },
+    get y(): number {
+      return y;
+    },
+    get level(): number {
+      return level;
+    },
+    get position(): Cartesian3 {
+      return position;
+    },
+    get primitive(): Primitive {
+      return primitive;
+    },
+    getTileCoordinate(): [number, number, number] {
+      return [this.x, this.y, this.level];
+    },
+  };
 }
 
 export function createTilesForLevel(
@@ -149,7 +206,7 @@ export function createTilesForLevel(
   const tiles: PanoramaTile[] = [];
   for (let x = 0; x < maxX; x++) {
     for (let y = 0; y < maxY; y++) {
-      tiles.push(new PanoramaTile(x, y, level, position));
+      tiles.push(createPanoramaTile(x, y, level, position));
     }
   }
 
