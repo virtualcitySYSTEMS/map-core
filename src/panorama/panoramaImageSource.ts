@@ -1,11 +1,13 @@
 import {
+  Camera,
   Cartesian2,
   Cartesian3,
+  PerspectiveFrustum,
   PrimitiveCollection,
   Scene,
+  Math as CesiumMath,
 } from '@vcmap-cesium/engine';
-import { Size } from 'ol/size.js';
-import PanoramaImage from './panoramaImage.js';
+import { Extent } from 'ol/extent.js';
 import { createTilesForLevel, PanoramaTile } from './panoramaTile.js';
 
 /**
@@ -33,6 +35,102 @@ function createTileLevel(level: number, position: Cartesian3): LevelTiles {
     tiles.set(tile.getTileCoordinate().join('/'), tile);
   });
   return { primitives, tiles };
+}
+
+function calculateDegreesPerPixel(
+  camera: Camera,
+  windowSize: Cartesian2,
+): number {}
+
+function calculateTilesInView(camera: Camera): [number, number, number][] {}
+
+/**
+ * Wraps longitude around the globe
+ * @param angle
+ */
+function convertLatitudeRange(angle: number): number {
+  const pi = CesiumMath.PI;
+
+  const simplified = angle - Math.floor(angle / pi) * pi;
+
+  if (simplified < -CesiumMath.PI_OVER_TWO) {
+    return simplified + pi;
+  }
+  if (simplified >= CesiumMath.PI_OVER_TWO) {
+    return simplified - pi;
+  }
+
+  return simplified;
+}
+
+export function calculateView(scene: Scene): Extent {
+  const { camera, canvas } = scene;
+  const { height, width } = canvas;
+  const lon = camera.heading;
+  const lat = camera.pitch;
+
+  const frustum = camera.frustum as PerspectiveFrustum;
+
+  const aspectRation = width / height;
+  let verticalFov;
+  let horizontalFov;
+  if (width > height) {
+    horizontalFov = frustum.fov;
+    verticalFov = 2 * Math.atan(Math.tan(horizontalFov / 2) / aspectRation);
+  } else {
+    verticalFov = frustum.fov;
+    horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * aspectRation);
+  }
+
+  const halfVerticalFov = verticalFov / 2;
+  const halfHorizontalFov = horizontalFov / 2;
+
+  return [
+    CesiumMath.convertLongitudeRange(lon - halfHorizontalFov),
+    convertLatitudeRange(lat - halfVerticalFov),
+    CesiumMath.convertLongitudeRange(lon + halfHorizontalFov),
+    convertLatitudeRange(lat + halfVerticalFov),
+  ];
+}
+
+function unwrapView(extent: Extent, worldExtent: Extent): Extent[] {
+  if (extent[0] < extent[2]) {
+    if (extent[1] < extent[3]) {
+      return [extent];
+    }
+    return [
+      [extent[0], extent[1], extent[2], worldExtent[3]],
+      [extent[0], worldExtent[1], extent[2], extent[3]],
+    ];
+  } else {
+    if (extent[1] < extent[3]) {
+      return [
+        [extent[0], extent[1], worldExtent[2], extent[3]],
+        [worldExtent[0], extent[1], extent[2], extent[3]],
+      ];
+    }
+    return [
+      [extent[0], extent[1], worldExtent[2], worldExtent[3]],
+      [worldExtent[0], worldExtent[1], extent[2], extent[3]],
+    ];
+  }
+}
+
+export function unwrapImageView(extent: Extent): Extent[] {
+  return unwrapView(extent, [0, 0, CesiumMath.TWO_PI, CesiumMath.PI]);
+}
+
+/**
+ * converts a view from [-PI, -PI/2, PI, PI/2] to [0, 0, 2 * PI, PI]
+ * @param extent
+ */
+export function viewToImageView(extent: Extent): Extent {
+  return [
+    extent[0] + CesiumMath.PI,
+    extent[1] + CesiumMath.PI_OVER_TWO,
+    extent[2] + CesiumMath.PI,
+    extent[3] + CesiumMath.PI_OVER_TWO,
+  ];
 }
 
 export function createPanoramaImageSource(

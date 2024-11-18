@@ -12,6 +12,10 @@ import VcsMap, { VcsMapOptions } from './vcsMap.js';
 import PanoramaImage from '../panorama/panoramaImage.js';
 import { mapClassRegistry } from '../classRegistry.js';
 import { createPanoramaImageSource } from '../panorama/panoramaImageSource.js';
+import {
+  createDebugCameraSphere,
+  DebugCameraSphere,
+} from '../panorama/debugCameraSphere.js';
 
 export type PanoramaMapOptions = VcsMapOptions;
 
@@ -28,7 +32,10 @@ const minFov = CesiumMath.toRadians(10);
 const fovStep = 0.1;
 
 // TODO move to navication controls & setup drag listener instead of "POV" look
-function setupNavigationControls(widget: CesiumWidget): () => void {
+function setupNavigationControls(
+  widget: CesiumWidget,
+  debugCamera?: DebugCameraSphere,
+): () => void {
   const pointerInput: PointerInput = {
     startPosition: new Cartesian2(),
     position: new Cartesian2(),
@@ -93,6 +100,11 @@ function setupNavigationControls(widget: CesiumWidget): () => void {
             roll: 0.0,
           },
         });
+        if (debugCamera) {
+          debugCamera.paused = false;
+        }
+      } else if (debugCamera) {
+        debugCamera.paused = true;
       }
     }
   };
@@ -167,12 +179,16 @@ export default class PanoramaMap extends VcsMap {
       });
 
       this.initialized = true;
-      setupNavigationControls(this._cesiumWidget);
-      this._destroyImageSource = createPanoramaImageSource(
+      const debugCamera = createDebugCameraSphere(
         this._cesiumWidget.scene,
-        4,
         Cartesian3.fromDegrees(0, 0, 1),
       );
+      setupNavigationControls(this._cesiumWidget, debugCamera);
+      // this._destroyImageSource = createPanoramaImageSource(
+      //   this._cesiumWidget.scene,
+      //   4,
+      //   Cartesian3.fromDegrees(0, 0, 1),
+      // );
       /*
       this.setCurrentImage(
         new PanoramaImage({
