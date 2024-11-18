@@ -2,11 +2,9 @@ import {
   Cartesian3,
   Color,
   EllipsoidGeometry,
-  GeographicTilingScheme,
   Material,
   MaterialAppearance,
   Primitive,
-  Math as CesiumMath,
   GeometryInstance,
   HeadingPitchRoll,
   VertexFormat,
@@ -14,8 +12,6 @@ import {
   Cartesian2,
 } from '@vcmap-cesium/engine';
 import { getNumberOfTiles, tileSizeInRadians } from './panoramaTilingScheme.js';
-
-const tileGapFactor = 0 * CesiumMath.toRadians(0.1);
 
 let emptyTileAppearance: MaterialAppearance | undefined;
 function getEmptyTileAppearance(): MaterialAppearance {
@@ -29,8 +25,7 @@ function getEmptyTileAppearance(): MaterialAppearance {
   return emptyTileAppearance;
 }
 
-function getTextureClampSource(): string {}
-
+// create a default material that can be cached.
 const source = `
 czm_material czm_getMaterial(czm_materialInput materialInput)
 {
@@ -43,61 +38,50 @@ czm_material czm_getMaterial(czm_materialInput materialInput)
     m.emission = t_color * vec3(0.5);
     m.alpha = 1.0;
     return m;
-}`;
+}
+`;
 
-function getDebugTileAppearance(
-  x: number,
-  y: number,
-  level: number,
-): MaterialAppearance {
+async function addDebugOverlay(
+  src: string,
+  sizeX: number,
+  sizeY: number,
+  text: string,
+): Promise<string> {
   const canvas = document.createElement('canvas');
-  canvas.width = 1028;
-  canvas.height = 1028;
+  canvas.width = sizeX;
+  canvas.height = sizeY;
   const ctx = canvas.getContext('2d')!;
 
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-  ctx.fillRect(0, 0, 1028, 1028);
-  ctx.strokeStyle = 'black';
+  const img = new Image();
+  img.src = src;
+  await new Promise((resolve, reject) => {
+    img.onload = resolve;
+    img.onerror = reject;
+  });
+  ctx.drawImage(img, 0, 0, sizeX, sizeY);
+
+  ctx.strokeStyle = 'hotpink';
   ctx.lineWidth = 5;
-  ctx.strokeRect(0, 0, 1028, 1028);
+  ctx.strokeRect(0, 0, sizeX, sizeY);
 
   ctx.translate(canvas.width, 0);
   ctx.scale(-1, 1); // Flip the context horizontally
 
-  ctx.fillStyle = 'black';
+  ctx.fillStyle = 'hotpink';
   ctx.font = '60px Arial';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(`${level}/${x}/${y}`, 1028 / 2, 1028 / 2);
+  ctx.fillText(text, sizeX / 2, sizeY / 2);
 
-  const [numx, numy] = getNumberOfTiles(level);
-  const sizeX = 1 / numx;
-  const sizeY = 1 / numy;
-
-  const min = new Cartesian2(x * sizeX, 1 - (y * sizeY + sizeY));
-  const max = new Cartesian2(x * sizeX + sizeX, 1 - y * sizeY);
-
-  return new MaterialAppearance({
-    material: new Material({
-      fabric: {
-        type: 'TileImage',
-        uniforms: {
-          image: canvas.toDataURL('image/png'),
-          color: Color.HOTPINK.withAlpha(0.8),
-          min,
-          max,
-        },
-        source,
-      },
-    }),
-  });
+  return canvas.toDataURL('image/png');
 }
 
-function getImageTileAppearance(
+async function getImageTileAppearance(
   x: number,
   y: number,
   level: number,
-): MaterialAppearance {
+  debug?: boolean,
+): Promise<MaterialAppearance> {
   const [numx, numy] = getNumberOfTiles(level);
   const sizeX = 1 / numx;
   const sizeY = 1 / numy;
@@ -105,12 +89,17 @@ function getImageTileAppearance(
   const min = new Cartesian2(x * sizeX, 1 - (y * sizeY + sizeY));
   const max = new Cartesian2(x * sizeX + sizeX, 1 - y * sizeY);
 
+  let image = `exampleData/pano_000001_000011/${level}/${x}/${y}.jpg`;
+  if (debug) {
+    image = await addDebugOverlay(image, 256, 256, `${level}/${x}/${y}`);
+  }
+
   return new MaterialAppearance({
     material: new Material({
       fabric: {
         type: 'TileImage',
         uniforms: {
-          image: `exampleData/pano_000001_000011/${level}/${x}/${y}.jpg`,
+          image,
           color: Color.WHITE.withAlpha(1),
           min,
           max,
@@ -138,17 +127,15 @@ function createPrimitive(
           vertexFormat: VertexFormat.POSITION_AND_ST,
           radii: new Cartesian3(1, 1, 1),
           minimumClock: heading,
-          maximumClock: heading + sizeR + tileGapFactor,
+          maximumClock: heading + sizeR,
           minimumCone: tilt,
-          maximumCone: tilt + sizeR + tileGapFactor,
+          maximumCone: tilt + sizeR,
           stackPartitions: (level + 1) * 64,
           slicePartitions: (level + 1) * 64,
         }),
       }),
     ],
-    // appearance: getDebugTileAppearance(x, y, level),
-    // appearance: getEmptyTileAppearance(),
-    appearance: getImageTileAppearance(x, y, level),
+    appearance: getEmptyTileAppearance(),
     asynchronous: false,
     modelMatrix: Transforms.headingPitchRollToFixedFrame(
       position,
@@ -163,6 +150,7 @@ export type PanoramaTile = {
   readonly level: number;
   readonly position: Cartesian3;
   readonly primitive: Primitive;
+  readonly readyPromise: Promise<void>;
   getTileCoordinate(): [number, number, number];
 };
 
@@ -174,6 +162,13 @@ export function createPanoramaTile(
 ): PanoramaTile {
   const primitive = createPrimitive(x, y, level, position);
   // primitive.show = level === 1 && x === 0 && y === 0;
+  const readyPromise = getImageTileAppearance(x, y, level, true)
+    .then((appearance) => {
+      primitive.appearance = appearance;
+    })
+    .catch((_e) => {
+      console.error('Failed to load image');
+    });
 
   return {
     get x(): number {
@@ -190,6 +185,9 @@ export function createPanoramaTile(
     },
     get primitive(): Primitive {
       return primitive;
+    },
+    get readyPromise(): Promise<void> {
+      return readyPromise;
     },
     getTileCoordinate(): [number, number, number] {
       return [this.x, this.y, this.level];
