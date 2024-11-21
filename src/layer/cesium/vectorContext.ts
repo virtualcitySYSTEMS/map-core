@@ -124,6 +124,12 @@ export function setupScalingPrimitiveCollection(
   });
 }
 
+/**
+ * The context for vector rendering in cesium.
+ * Creates 1 to N primitives / models / billboards / labels for each feature
+ * added to the context depending on its style & vector properties.
+ * Uses the feature converters convert function under the hood to create the primitives.
+ */
 export interface CesiumVectorContext {
   addFeature(
     feature: Feature,
@@ -131,9 +137,11 @@ export interface CesiumVectorContext {
     vectorProperties: VectorProperties,
     scene: Scene,
   ): Promise<void>;
+  hasFeature(feature: Feature): boolean;
   removeFeature(feature: Feature): void;
   updateSplitDirection(splitDirection: SplitDirection): void;
   clear(): void;
+  destroy(): void;
 }
 
 type ConvertedItemIndex = { type: 'primitive' | 'scaled'; index: number };
@@ -357,6 +365,12 @@ export default class VectorContext implements CesiumVectorContext {
         convertedIndices,
       );
     }
+  }
+
+  hasFeature(feature: Feature): boolean {
+    return (
+      this._featureItems.has(feature) || this._convertingFeatures.has(feature)
+    );
   }
 
   removeFeature(feature: Feature): void {

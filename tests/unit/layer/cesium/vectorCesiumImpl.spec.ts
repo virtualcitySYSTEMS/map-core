@@ -92,49 +92,6 @@ describe('VectorCesiumImpl', () => {
       ).to.be.true;
     });
 
-    it('should add a listener to features added to the source, calling _addFeature', async () => {
-      // @ts-expect-error: access private
-      const addFeature = sandbox.spy(vectorCesiumImpl, '_addFeature');
-      await vectorCesiumImpl.initialize();
-      commonLayer.addFeatures([new Feature({})]);
-      expect(addFeature).to.have.been.called;
-    });
-
-    it('should add a listener to removing features on the source, calling _removeFeature', async () => {
-      // @ts-expect-error: access private
-      const removeFeature = sandbox.spy(vectorCesiumImpl, '_removeFeature');
-      commonLayer.addFeatures([feature]);
-      await vectorCesiumImpl.initialize();
-      commonLayer.removeFeaturesById([feature.getId()!]);
-      expect(removeFeature).to.have.been.called;
-    });
-
-    it('should add a listener for changefeature on the source, calling _featureChanged', async () => {
-      // @ts-expect-error: access private
-      const featureChanged = sandbox.spy(vectorCesiumImpl, '_featureChanged');
-      commonLayer.addFeatures([feature]);
-      await vectorCesiumImpl.initialize();
-      feature.set('test', true);
-      expect(featureChanged).to.have.been.called;
-    });
-
-    it('should add a listener to vector properties, calling refresh', async () => {
-      const refresh = sandbox.spy(vectorCesiumImpl, 'refresh');
-      await vectorCesiumImpl.initialize();
-      commonLayer.vectorProperties.allowPicking =
-        !commonLayer.vectorProperties.allowPicking;
-      expect(refresh).to.have.been.called;
-    });
-
-    it('should add all features in the source', async () => {
-      // @ts-expect-error: access private
-      const addFeature = sandbox.spy(vectorCesiumImpl, '_addFeature');
-      commonLayer.addFeatures([feature, pointFeature]);
-      await vectorCesiumImpl.initialize();
-      expect(addFeature).to.have.been.calledWith(feature);
-      expect(addFeature).to.have.been.calledWith(pointFeature);
-    });
-
     it('should update the split direction on initialize', async () => {
       const updateSplitDirection = sandbox.spy(
         vectorCesiumImpl,
@@ -143,36 +100,6 @@ describe('VectorCesiumImpl', () => {
       vectorCesiumImpl.splitDirection = SplitDirection.LEFT;
       await vectorCesiumImpl.initialize();
       expect(updateSplitDirection).to.have.been.calledWith(SplitDirection.LEFT);
-    });
-  });
-
-  describe('_addFeature', () => {
-    beforeEach(async () => {
-      await vectorCesiumImpl.initialize();
-    });
-
-    it('should, if not active, cache a feature, until the layer is active', async () => {
-      commonLayer.addFeatures([feature]);
-      await timeout(100);
-      // @ts-expect-error: access private
-      expect(vectorCesiumImpl._context.primitives.length).to.equal(0);
-
-      await vectorCesiumImpl.activate();
-      await timeout(100);
-      // @ts-expect-error: access private
-      expect(vectorCesiumImpl._context.primitives.length).to.equal(1);
-    });
-
-    it('should, if current map is not a cesium map, cache a feature, until the map is a cesium map', async () => {
-      await app.maps.setActiveMap(openlayers.name);
-      await commonLayer.activate();
-      commonLayer.addFeatures([feature]);
-      await timeout(100);
-      // @ts-expect-error: access private
-      expect(vectorCesiumImpl._context.primitives.length).to.equal(0);
-      await app.maps.setActiveMap(cesiumMap.name);
-      // @ts-expect-error: access private
-      expect(vectorCesiumImpl._context.primitives.length).to.equal(1);
     });
   });
 
@@ -222,15 +149,15 @@ describe('VectorCesiumImpl', () => {
   });
 
   describe('updateStyle', () => {
-    it('should remove and re-add each feature which does not have its own style', async () => {
+    it('should call changed on each feature', async () => {
       await vectorCesiumImpl.initialize();
       await vectorCesiumImpl.activate();
+      const changedF = sandbox.spy(feature, 'changed');
+      const changedP = sandbox.spy(pointFeature, 'changed');
       commonLayer.addFeatures([feature, pointFeature]);
-      // @ts-expect-error: access private
-      const featureChanged = sandbox.spy(vectorCesiumImpl, '_featureChanged');
       vectorCesiumImpl.updateStyle(commonLayer.style);
-      expect(featureChanged).to.have.been.calledOnce;
-      expect(featureChanged).to.have.been.calledWith(feature);
+      expect(changedF).to.have.been.calledOnce;
+      expect(changedP).to.have.been.calledOnce;
     });
   });
 
@@ -268,40 +195,6 @@ describe('VectorCesiumImpl', () => {
       vectorCesiumImpl.destroy();
       // @ts-expect-error: access private
       expect(vectorCesiumImpl._context).to.be.null;
-    });
-
-    it('should remove feature added listeners', () => {
-      vectorCesiumImpl.destroy();
-      // @ts-expect-error: access private
-      const addFeature = sandbox.spy(vectorCesiumImpl, '_addFeature');
-      commonLayer.addFeatures([feature]);
-      expect(addFeature).to.not.have.been.called;
-    });
-
-    it('should remove feature remove listener', () => {
-      // @ts-expect-error: access private
-      const removeFeature = sandbox.spy(vectorCesiumImpl, '_removeFeature');
-      commonLayer.addFeatures([feature]);
-      vectorCesiumImpl.destroy();
-      commonLayer.removeFeaturesById([feature.getId()!]);
-      expect(removeFeature).to.not.have.been.called;
-    });
-
-    it('should remove feature changed listeners', () => {
-      // @ts-expect-error: access private
-      const featureChanged = sandbox.spy(vectorCesiumImpl, '_featureChanged');
-      commonLayer.addFeatures([feature]);
-      vectorCesiumImpl.destroy();
-      feature.set('test', true);
-      expect(featureChanged).to.not.have.been.called;
-    });
-
-    it('should remove vectorPropertiesChanged listeners', () => {
-      const refresh = sandbox.spy(vectorCesiumImpl, 'refresh');
-      vectorCesiumImpl.destroy();
-      commonLayer.vectorProperties.allowPicking =
-        !commonLayer.vectorProperties.allowPicking;
-      expect(refresh).to.not.have.been.called;
     });
   });
 });

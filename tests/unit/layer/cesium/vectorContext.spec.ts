@@ -103,6 +103,7 @@ describe('VectorContext', () => {
         scene,
       );
       expect(vectorContext.primitives.length).to.equal(1);
+      expect(vectorContext.hasFeature(feature)).to.be.true;
     });
 
     it('should add a feature which converts to a scaled primitive', async () => {
@@ -131,6 +132,7 @@ describe('VectorContext', () => {
       );
 
       expect(vectorContext.scaledPrimitives.length).to.equal(1);
+      expect(vectorContext.hasFeature(feature)).to.be.true;
     });
 
     it('should add a feature which converts to a billboard', async () => {
@@ -152,6 +154,7 @@ describe('VectorContext', () => {
       );
 
       expect(vectorContext.billboards.length).to.equal(1);
+      expect(vectorContext.hasFeature(feature)).to.be.true;
     });
 
     it('should add a feature which converts to a label', async () => {
@@ -170,6 +173,25 @@ describe('VectorContext', () => {
         scene,
       );
       expect(vectorContext.labels.length).to.equal(1);
+      expect(vectorContext.hasFeature(feature)).to.be.true;
+    });
+
+    it('should return hasFeature true, even if the feature is still converting', async () => {
+      const feature = new Feature({
+        geometry: new Point([1, 1, 1]),
+      });
+      const promise = vectorContext.addFeature(
+        feature,
+        new Style({
+          text: new OlText({
+            text: 'foo',
+          }),
+        }),
+        new VectorProperties({}),
+        scene,
+      );
+      expect(vectorContext.hasFeature(feature)).to.be.true;
+      await promise;
     });
   });
 

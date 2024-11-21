@@ -110,6 +110,12 @@ class ClusterContext implements CesiumVectorContext {
     }
   }
 
+  hasFeature(feature: Feature): boolean {
+    return (
+      this._featureItems.has(feature) || this._convertingFeatures.has(feature)
+    );
+  }
+
   removeFeature(feature: Feature): void {
     this._convertingFeatures.get(feature)?.();
     this._convertingFeatures.delete(feature);

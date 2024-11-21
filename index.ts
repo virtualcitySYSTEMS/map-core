@@ -105,6 +105,10 @@ export {
   getTileHash,
   getTileWgs84Extent,
 } from './src/layer/cesium/vcsTile/vcsTileHelpers.js';
+export {
+  createSourceVectorContextSync,
+  SourceVectorContextSync,
+} from './src/layer/cesium/sourceVectorContextSync.js';
 export { default as CzmlLayer, CzmlOptions } from './src/layer/czmlLayer.js';
 export {
   default as DataSourceLayer,

@@ -1,3 +1,8 @@
+### 6.1.0
+
+- Adds a new `sourceVectorContextSync` to synchronize a vector source with a cesium `VectorContext`.
+- `VectorContext` now implements the `hasFeature` interface, returning a boolean if the feature is currently managed by the context.
+
 ### 6.0.6
 
 - OverrideCollection now catches destroy failures of items on `removeModule`.
