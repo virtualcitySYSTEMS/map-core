@@ -3,6 +3,7 @@
 - Adds a new `sourceVectorContextSync` to synchronize a vector source with a cesium `VectorContext`.
 - `VectorContext` now implements the `hasFeature` interface, returning a boolean if the feature is currently managed by the context.
 - Adds the `SourceObliqueSync` to sync a vector source with an oblique source.
+- Adds new string templating capabilities. `renderTemplate` can handle string templates with `{{}}` placeholders and ol style expressions.
 
 ### 6.0.6
 
