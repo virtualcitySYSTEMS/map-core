@@ -2,6 +2,7 @@
 
 - Adds a new `sourceVectorContextSync` to synchronize a vector source with a cesium `VectorContext`.
 - `VectorContext` now implements the `hasFeature` interface, returning a boolean if the feature is currently managed by the context.
+- Adds the `SourceObliqueSync` to sync a vector source with an oblique source.
 
 ### 6.0.6
 

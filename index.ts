@@ -188,6 +188,10 @@ export {
 } from './src/layer/oblique/obliqueHelpers.js';
 export { default as VectorObliqueImpl } from './src/layer/oblique/vectorObliqueImpl.js';
 export {
+  createSourceObliqueSync,
+  SourceObliqueSync,
+} from './src/layer/oblique/sourceObliqueSync.js';
+export {
   default as OpenStreetMapLayer,
   OpenStreetMapOptions,
 } from './src/layer/openStreetMapLayer.js';
