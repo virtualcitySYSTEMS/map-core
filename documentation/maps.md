@@ -105,3 +105,21 @@ vcsApp.maps.setTarget('myMapUUID');
 > - You'll need to define `mapElement` css class like above
 > - You'll need to manually set canvas size on `cesium-widget canvas` like above
 > - You'll need a start script initializing vcs app
+
+### Exclusive Map Control
+
+The `exclusiveMapControl` concept allows a single feature or module to take control of map navigation interactions, such as pointer events, keyboard events, or API-driven map movement. This ensures that only the designated owner can interact with the map in specific ways, avoiding conflicts with other parts of the application.
+
+#### Requesting Exclusive Map Controls
+
+You can request exclusive control of the map's movement or interaction by calling `requestExclusiveMapControls`. This method takes the following parameters:
+
+- **`options`**: An object specifying which controls to disable. It includes:
+  - **`pointerEvents`**: Disables pointer-based map interactions.
+  - **`keyEvents`**: Disables keyboard-based map interactions.
+  - **`apiCalls`**: Disables programmatic map movement through API calls.
+- **`removed`**: A callback function to be invoked when the exclusive map controls are forcefully removed.
+- **`id` (optional)**: A unique identifier for the owner of the exclusive controls. If not provided, a UUID will be generated.
+
+The Method returns a function to release the exclusive controls. Alternatively, if all options are provided as false, the controls will also be released.
+There is also an exclusiveMapControlsChanged event that is fired when the exclusive controls change.

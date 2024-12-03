@@ -4,6 +4,8 @@
 - `VectorContext` now implements the `hasFeature` interface, returning a boolean if the feature is currently managed by the context.
 - Adds the `SourceObliqueSync` to sync a vector source with an oblique source.
 - Adds new string templating capabilities. `renderTemplate` can handle string templates with `{{}}` placeholders and ol style expressions.
+- Adds a rotation api that provides `startRotation` which returns a stop function. It rotates around a given or current viewpoint.
+- In mapCollection the `requestExclusiveMapControls` has been extended by an ID to identify the current map control holder. There is additionally an event `exclusiveMapControlsChanged` which is emitted when the exclusiveMapControls are changed.
 
 ### 6.0.6
 
