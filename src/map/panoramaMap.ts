@@ -183,7 +183,7 @@ export default class PanoramaMap extends VcsMap {
         this._cesiumWidget.scene,
         Cartesian3.fromDegrees(0, 0, 1),
       );
-      setupNavigationControls(this._cesiumWidget, debugCamera);
+      setupNavigationControls(this._cesiumWidget);
       // this._destroyImageSource = createPanoramaImageSource(
       //   this._cesiumWidget.scene,
       //   4,
