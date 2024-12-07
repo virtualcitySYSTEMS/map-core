@@ -9,6 +9,7 @@ import {
 } from '@vcmap-cesium/engine';
 import { Extent } from 'ol/extent.js';
 import { createTilesForLevel, PanoramaTile } from './panoramaTile.js';
+import { Coordinate } from 'ol/coordinate.js';
 
 /**
  * idea:
@@ -18,6 +19,10 @@ import { createTilesForLevel, PanoramaTile } from './panoramaTile.js';
  * - given the fov of the camera, we can determine the scene current meters per pixel (if the sphere where the world)
  * - we can determine the current _level_ by using the next best meters per pixel.
  * - we can determine which tiles to load by using the cameras heading & FOV
+ */
+
+/**
+ * - use haversine distance (or cartesisan distance in 3D space) to determine distance between tile borders
  */
 
 type LevelTiles = {
@@ -63,6 +68,11 @@ function convertLatitudeRange(angle: number): number {
   return simplified;
 }
 
+function adjustForTilt(coord: [number, number]): [number, number] {
+  coord[0] += Math.cos(coord[1]) * (coord[0] - coord[1]);
+  return coord;
+}
+
 export function calculateView(scene: Scene): Extent {
   const { camera, canvas } = scene;
   const { height, width } = canvas;
@@ -85,12 +95,17 @@ export function calculateView(scene: Scene): Extent {
   const halfVerticalFov = verticalFov / 2;
   const halfHorizontalFov = horizontalFov / 2;
 
-  return [
+  const min = [
     CesiumMath.convertLongitudeRange(lon - halfHorizontalFov),
     convertLatitudeRange(lat - halfVerticalFov),
+  ];
+
+  const max = [
     CesiumMath.convertLongitudeRange(lon + halfHorizontalFov),
     convertLatitudeRange(lat + halfVerticalFov),
   ];
+
+  return [...adjustForTilt(min), ...adjustForTilt(max)];
 }
 
 function unwrapView(extent: Extent, worldExtent: Extent): Extent[] {
@@ -121,15 +136,15 @@ export function unwrapImageView(extent: Extent): Extent[] {
 }
 
 /**
- * converts a view from [-PI, -PI/2, PI, PI/2] to [0, 0, 2 * PI, PI]
+ * converts a view from global [-PI, -PI/2, PI, PI/2] to [0, 0, 2 * PI, PI] and changes the origin from center to top left
  * @param extent
  */
 export function viewToImageView(extent: Extent): Extent {
   return [
     extent[0] + CesiumMath.PI,
-    extent[1] + CesiumMath.PI_OVER_TWO,
+    CesiumMath.PI - (extent[3] + CesiumMath.PI_OVER_TWO), // we change the direction of the y-axis, hence max y is now min y and vice versa
     extent[2] + CesiumMath.PI,
-    extent[3] + CesiumMath.PI_OVER_TWO,
+    CesiumMath.PI - (extent[1] + CesiumMath.PI_OVER_TWO),
   ];
 }
 

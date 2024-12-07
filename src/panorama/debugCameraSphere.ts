@@ -60,6 +60,7 @@ function drawView(scene: Scene, ctx: CanvasRenderingContext2D): void {
   );
 
   unwrappedImageViews.forEach((imageViewDegrees) => {
+    console.log(imageViewDegrees);
     ctx.strokeStyle = 'lime';
     ctx.lineWidth = 5;
     ctx.strokeRect(
