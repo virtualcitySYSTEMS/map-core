@@ -7,7 +7,7 @@ export type ImageCoordinates = {
 
 /**
  * Stereographic projection with a custom tangent point (phi0, theta0, radius).
- *
+ * Formel _müsste_ kugelzentrisch sein.
  * @param point - The point on the sphere in radian [phi, theta].
  * @param origin - The tangent point coordinates [phi0, theta0].
  * @param {number} radius - Radius of the sphere.
