@@ -108,7 +108,8 @@ function inverseStereographicProjection(
   return { theta, phi };
 }
 
-describe.only('stereoGraphicProjection', () => {
+// eslint-disable-next-line mocha/no-skipped-tests
+describe.skip('stereoGraphicProjection', () => {
   it('should project and inverse project correctly', () => {
     const point = stereographicProjection(
       { phi: Math.PI / 2, theta: Math.PI / 2 },

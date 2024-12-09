@@ -71,21 +71,37 @@ function drawCoordinate(ctx: CanvasRenderingContext2D, coord: number[]): void {
   ctx.stroke();
 }
 
+function drawLatitude(ctx: CanvasRenderingContext2D, latitude: number): void {
+  ctx.beginPath();
+  const latitudeDegrees = CesiumMath.toDegrees(latitude);
+  ctx.moveTo(0, latitudeDegrees * PIXEL_PER_DEGREES);
+  ctx.lineTo(360 * PIXEL_PER_DEGREES, latitudeDegrees * PIXEL_PER_DEGREES);
+  ctx.stroke();
+}
+
 function drawView(scene: Scene, ctx: CanvasRenderingContext2D): void {
   ctx.clearRect(0, 0, 360 * PIXEL_PER_DEGREES, 180 * PIXEL_PER_DEGREES);
   drawGrid(ctx);
   const cameraView = calculateView(scene);
-  const imageView = viewToImageView(cameraView);
-  console.log('imageView', imageView);
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = 'lime';
-  drawCoordinate(ctx, imageView.topLeft);
-  drawCoordinate(ctx, imageView.topRight);
-  ctx.strokeStyle = 'orange';
-  drawCoordinate(ctx, imageView.bottomRight);
-  drawCoordinate(ctx, imageView.bottomLeft);
-  ctx.strokeStyle = 'purple';
-  drawCoordinate(ctx, imageView.center);
+  if (cameraView) {
+    const imageView = viewToImageView(cameraView);
+    console.log('imageView', imageView);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'lime';
+    drawCoordinate(ctx, imageView.topLeft);
+    ctx.strokeStyle = 'green';
+    drawLatitude(ctx, imageView.topRight[1]);
+    ctx.strokeStyle = 'red';
+    drawCoordinate(ctx, imageView.topRight);
+    ctx.strokeStyle = 'orange';
+    drawCoordinate(ctx, imageView.bottomRight);
+    ctx.strokeStyle = 'pink';
+    drawCoordinate(ctx, imageView.bottomLeft);
+    ctx.strokeStyle = 'cyan';
+    drawLatitude(ctx, imageView.bottomRight[1]);
+    ctx.strokeStyle = 'purple';
+    drawCoordinate(ctx, imageView.center);
+  }
 }
 
 function createMaterial(canvas: HTMLCanvasElement): MaterialAppearance {
@@ -141,6 +157,7 @@ export function createDebugCameraSphere(
       primitive.appearance = createMaterial(canvas);
     }
   });
+  scene.camera.percentageChanged = 0.1;
 
   return {
     get paused(): boolean {
