@@ -6,13 +6,19 @@ import {
   PrimitiveCollection,
   Scene,
   Math as CesiumMath,
+  Transforms,
+  HeadingPitchRoll,
+  Matrix4,
+  Rotation,
+  Matrix3,
 } from '@vcmap-cesium/engine';
 import { Coordinate } from 'ol/coordinate.js';
 import { createTilesForLevel, PanoramaTile } from './panoramaTile.js';
+import { inverseStereographicProjectionWithTangentPoint } from './stereoGraphicProjection.js';
 import {
-  inverseStereographicProjectionWithTangentPoint,
-  stereographicProjectionWithTangentPoint,
-} from './stereoGraphicProjection.js';
+  cartesianToSpherical,
+  sphericalToCartesian,
+} from './sphericalCoordinates.js';
 
 type ViewExtent = {
   topLeft: Coordinate;
@@ -88,47 +94,117 @@ function adjustForTilt(coord: [number, number]): [number, number] {
   return coord;
 }
 
-export function calculateView(scene: Scene): ViewExtent {
+function sphericalCameraToSphericalSphere(
+  coord: [number, number],
+): [number, number] {
+  return [
+    CesiumMath.convertLongitudeRange(coord[0]) + CesiumMath.PI,
+    CesiumMath.PI - (convertLatitudeRange(coord[1]) + CesiumMath.PI_OVER_TWO),
+  ];
+}
+
+export function calculateView(scene: Scene): undefined | ViewExtent {
   const { camera, canvas } = scene;
   const { height, width } = canvas;
   const lon = camera.heading;
   const lat = camera.pitch;
-
-  const center = [lon, lat];
-
   const frustum = camera.frustum as PerspectiveFrustum;
+  const center = sphericalCameraToSphericalSphere([lon, lat]);
+  const cameraDirection = sphericalToCartesian(center);
+  const cameraRight = new Cartesian3(Math.cos(lon), Math.sin(lon), 0);
+  const up = Cartesian3.cross(cameraDirection, cameraRight, new Cartesian3());
 
-  const aspectRation = width / height;
+  const { aspectRatio } = frustum;
   let verticalFov;
   let horizontalFov;
   if (width > height) {
     horizontalFov = frustum.fov;
-    verticalFov = 2 * Math.atan(Math.tan(horizontalFov / 2) / aspectRation);
+    verticalFov = 2 * Math.atan(Math.tan(horizontalFov / 2) / aspectRatio);
   } else {
     verticalFov = frustum.fov;
-    horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * aspectRation);
+    horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * aspectRatio);
   }
 
   const halfVerticalFov = verticalFov / 2;
   const halfHorizontalFov = horizontalFov / 2;
 
+  const cameraRotation = Matrix4.inverse(
+    Matrix4.fromRotation(
+      Matrix3.multiply(
+        Matrix3.fromRotationZ(lon),
+        Matrix3.fromRotationY(lat),
+        new Matrix3(),
+      ),
+    ),
+    new Matrix4(),
+  );
+
+  const cartesianOrigin = new Cartesian3(1, 0, 0);
+
+  const rotationPlusVertical = Matrix3.fromRotationY(halfVerticalFov);
+  const rotationMinusVertical = Matrix3.fromRotationY(-halfVerticalFov);
+
+  const rotationPlusHorizontal = Matrix3.fromRotationZ(halfHorizontalFov);
+  const rotationMinusHorizontal = Matrix3.fromRotationZ(-halfHorizontalFov);
+
   // Calculate coordinates on the far plane
-  const topLeft = [-Math.tan(halfHorizontalFov), Math.tan(halfVerticalFov)];
-  const topRight = [Math.tan(halfHorizontalFov), Math.tan(halfVerticalFov)];
-  const bottomLeft = [-Math.tan(halfHorizontalFov), -Math.tan(halfVerticalFov)];
-  const bottomRight = [Math.tan(halfHorizontalFov), -Math.tan(halfVerticalFov)];
+  const topLeft = Matrix4.multiplyByPoint(
+    Matrix4.fromRotation(
+      Matrix3.multiply(
+        rotationMinusHorizontal,
+        rotationPlusVertical,
+        new Matrix3(),
+      ),
+    ),
+    cartesianOrigin,
+    new Cartesian3(),
+  );
+  Matrix4.multiplyByPoint(cameraRotation, topLeft, topLeft);
+  const topRight = Matrix4.multiplyByPoint(
+    Matrix4.fromRotation(rotationPlusVertical),
+    cartesianOrigin,
+    new Cartesian3(),
+  );
+  Matrix4.multiplyByPoint(cameraRotation, topRight, topRight);
+  const bottomLeft = Matrix4.multiplyByPoint(
+    Matrix4.fromRotation(
+      Matrix3.multiply(
+        rotationMinusHorizontal,
+        rotationMinusVertical,
+        new Matrix3(),
+      ),
+    ),
+    cartesianCenter,
+    new Cartesian3(),
+  );
+  const bottomRight = Matrix4.multiplyByPoint(
+    Matrix4.fromRotation(
+      Matrix3.multiply(
+        rotationPlusHorizontal,
+        rotationMinusVertical,
+        new Matrix3(),
+      ),
+    ),
+    cartesianCenter,
+    new Cartesian3(),
+  );
+
+  console.log('FOV', [horizontalFov, verticalFov].map(CesiumMath.toDegrees));
+  console.log('center', center.map(CesiumMath.toDegrees), cartesianCenter);
+  console.log(
+    'topLeft',
+    cartesianToSpherical(topLeft).map(CesiumMath.toDegrees),
+  );
+  console.log(
+    'topRight',
+    cartesianToSpherical(topRight).map(CesiumMath.toDegrees),
+  );
 
   return {
-    topLeft: inverseStereographicProjectionWithTangentPoint(topLeft, center),
-    topRight: inverseStereographicProjectionWithTangentPoint(topRight, center),
-    bottomLeft: inverseStereographicProjectionWithTangentPoint(
-      bottomLeft,
-      center,
-    ),
-    bottomRight: inverseStereographicProjectionWithTangentPoint(
-      bottomRight,
-      center,
-    ),
+    topLeft: cartesianToSpherical(topLeft),
+    topRight: cartesianToSpherical(topRight),
+    bottomLeft: cartesianToSpherical(bottomLeft),
+    bottomRight: cartesianToSpherical(bottomRight),
     center,
   };
 }
@@ -165,13 +241,6 @@ export function unwrapImageView(extent: ViewExtent): ViewExtent {
 }
  */
 
-function sphereCoordinateToImageCoordinate(coord: Coordinate): Coordinate {
-  return [
-    CesiumMath.convertLongitudeRange(coord[0]) + CesiumMath.PI,
-    CesiumMath.PI - (convertLatitudeRange(coord[1]) + CesiumMath.PI_OVER_TWO),
-  ];
-}
-
 export function viewApplyToCoordinates(
   extent: ViewExtent,
   callback: (coord: Coordinate) => Coordinate,
@@ -193,13 +262,9 @@ export function viewApplyToCoordinates(
  */
 export function viewToImageView(
   extent: ViewExtent,
-  result?: ViewExtent,
+  _result?: ViewExtent,
 ): ViewExtent {
-  return viewApplyToCoordinates(
-    extent,
-    sphereCoordinateToImageCoordinate,
-    result,
-  );
+  return extent;
 }
 
 export function createPanoramaImageSource(
