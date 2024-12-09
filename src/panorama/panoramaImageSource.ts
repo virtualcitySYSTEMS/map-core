@@ -7,9 +7,20 @@ import {
   Scene,
   Math as CesiumMath,
 } from '@vcmap-cesium/engine';
-import { Extent } from 'ol/extent.js';
-import { createTilesForLevel, PanoramaTile } from './panoramaTile.js';
 import { Coordinate } from 'ol/coordinate.js';
+import { createTilesForLevel, PanoramaTile } from './panoramaTile.js';
+import {
+  inverseStereographicProjectionWithTangentPoint,
+  stereographicProjectionWithTangentPoint,
+} from './stereoGraphicProjection.js';
+
+type ViewExtent = {
+  topLeft: Coordinate;
+  topRight: Coordinate;
+  bottomLeft: Coordinate;
+  bottomRight: Coordinate;
+  center: Coordinate;
+};
 
 /**
  * idea:
@@ -45,9 +56,13 @@ function createTileLevel(level: number, position: Cartesian3): LevelTiles {
 function calculateDegreesPerPixel(
   camera: Camera,
   windowSize: Cartesian2,
-): number {}
+): number {
+  return 0;
+}
 
-function calculateTilesInView(camera: Camera): [number, number, number][] {}
+function calculateTilesInView(camera: Camera): [number, number, number][] {
+  return [];
+}
 
 /**
  * Wraps longitude around the globe
@@ -73,11 +88,13 @@ function adjustForTilt(coord: [number, number]): [number, number] {
   return coord;
 }
 
-export function calculateView(scene: Scene): Extent {
+export function calculateView(scene: Scene): ViewExtent {
   const { camera, canvas } = scene;
   const { height, width } = canvas;
   const lon = camera.heading;
   const lat = camera.pitch;
+
+  const center = [lon, lat];
 
   const frustum = camera.frustum as PerspectiveFrustum;
 
@@ -95,20 +112,32 @@ export function calculateView(scene: Scene): Extent {
   const halfVerticalFov = verticalFov / 2;
   const halfHorizontalFov = horizontalFov / 2;
 
-  const min = [
-    CesiumMath.convertLongitudeRange(lon - halfHorizontalFov),
-    convertLatitudeRange(lat - halfVerticalFov),
-  ];
+  // Calculate coordinates on the far plane
+  const topLeft = [-Math.tan(halfHorizontalFov), Math.tan(halfVerticalFov)];
+  const topRight = [Math.tan(halfHorizontalFov), Math.tan(halfVerticalFov)];
+  const bottomLeft = [-Math.tan(halfHorizontalFov), -Math.tan(halfVerticalFov)];
+  const bottomRight = [Math.tan(halfHorizontalFov), -Math.tan(halfVerticalFov)];
 
-  const max = [
-    CesiumMath.convertLongitudeRange(lon + halfHorizontalFov),
-    convertLatitudeRange(lat + halfVerticalFov),
-  ];
-
-  return [...adjustForTilt(min), ...adjustForTilt(max)];
+  return {
+    topLeft: inverseStereographicProjectionWithTangentPoint(topLeft, center),
+    topRight: inverseStereographicProjectionWithTangentPoint(topRight, center),
+    bottomLeft: inverseStereographicProjectionWithTangentPoint(
+      bottomLeft,
+      center,
+    ),
+    bottomRight: inverseStereographicProjectionWithTangentPoint(
+      bottomRight,
+      center,
+    ),
+    center,
+  };
 }
 
-function unwrapView(extent: Extent, worldExtent: Extent): Extent[] {
+/*
+function unwrapViewCoordinate(
+  coordinate: Coordinate,
+  worldExtent: [number, number, number, number],
+): ViewExtent[] {
   if (extent[0] < extent[2]) {
     if (extent[1] < extent[3]) {
       return [extent];
@@ -131,21 +160,46 @@ function unwrapView(extent: Extent, worldExtent: Extent): Extent[] {
   }
 }
 
-export function unwrapImageView(extent: Extent): Extent[] {
-  return unwrapView(extent, [0, 0, CesiumMath.TWO_PI, CesiumMath.PI]);
+export function unwrapImageView(extent: ViewExtent): ViewExtent {
+  return extent;
+}
+ */
+
+function sphereCoordinateToImageCoordinate(coord: Coordinate): Coordinate {
+  return [
+    CesiumMath.convertLongitudeRange(coord[0]) + CesiumMath.PI,
+    CesiumMath.PI - (convertLatitudeRange(coord[1]) + CesiumMath.PI_OVER_TWO),
+  ];
+}
+
+export function viewApplyToCoordinates(
+  extent: ViewExtent,
+  callback: (coord: Coordinate) => Coordinate,
+  result?: ViewExtent,
+): ViewExtent {
+  const viewExtent = result ?? structuredClone(extent);
+  viewExtent.topLeft = callback(extent.topLeft);
+  viewExtent.topRight = callback(extent.topRight);
+  viewExtent.bottomLeft = callback(extent.bottomLeft);
+  viewExtent.bottomRight = callback(extent.bottomRight);
+  viewExtent.center = callback(extent.center);
+  return viewExtent;
 }
 
 /**
  * converts a view from global [-PI, -PI/2, PI, PI/2] to [0, 0, 2 * PI, PI] and changes the origin from center to top left
  * @param extent
+ * @param result
  */
-export function viewToImageView(extent: Extent): Extent {
-  return [
-    extent[0] + CesiumMath.PI,
-    CesiumMath.PI - (extent[3] + CesiumMath.PI_OVER_TWO), // we change the direction of the y-axis, hence max y is now min y and vice versa
-    extent[2] + CesiumMath.PI,
-    CesiumMath.PI - (extent[1] + CesiumMath.PI_OVER_TWO),
-  ];
+export function viewToImageView(
+  extent: ViewExtent,
+  result?: ViewExtent,
+): ViewExtent {
+  return viewApplyToCoordinates(
+    extent,
+    sphereCoordinateToImageCoordinate,
+    result,
+  );
 }
 
 export function createPanoramaImageSource(

@@ -1,4 +1,3 @@
-import { getHeight, getWidth } from 'ol/extent.js';
 import {
   Scene,
   Math as CesiumMath,
@@ -14,7 +13,7 @@ import {
 } from '@vcmap-cesium/engine';
 import {
   calculateView,
-  unwrapImageView,
+  viewApplyToCoordinates,
   viewToImageView,
 } from './panoramaImageSource.js';
 
@@ -50,26 +49,43 @@ function drawGrid(ctx: CanvasRenderingContext2D): void {
   }
 }
 
+function drawCoordinate(ctx: CanvasRenderingContext2D, coord: number[]): void {
+  const degreesCord = coord.map((value) => CesiumMath.toDegrees(value));
+  ctx.beginPath();
+  ctx.moveTo(
+    degreesCord[0] * PIXEL_PER_DEGREES - PIXEL_PER_DEGREES,
+    degreesCord[1] * PIXEL_PER_DEGREES,
+  );
+  ctx.lineTo(
+    degreesCord[0] * PIXEL_PER_DEGREES + PIXEL_PER_DEGREES,
+    degreesCord[1] * PIXEL_PER_DEGREES,
+  );
+  ctx.moveTo(
+    degreesCord[0] * PIXEL_PER_DEGREES,
+    degreesCord[1] * PIXEL_PER_DEGREES - PIXEL_PER_DEGREES,
+  );
+  ctx.lineTo(
+    degreesCord[0] * PIXEL_PER_DEGREES,
+    degreesCord[1] * PIXEL_PER_DEGREES + PIXEL_PER_DEGREES,
+  );
+  ctx.stroke();
+}
+
 function drawView(scene: Scene, ctx: CanvasRenderingContext2D): void {
   ctx.clearRect(0, 0, 360 * PIXEL_PER_DEGREES, 180 * PIXEL_PER_DEGREES);
   drawGrid(ctx);
   const cameraView = calculateView(scene);
   const imageView = viewToImageView(cameraView);
-  const unwrappedImageViews = unwrapImageView(imageView).map((view) =>
-    view.map(CesiumMath.toDegrees),
-  );
-
-  unwrappedImageViews.forEach((imageViewDegrees) => {
-    console.log(imageViewDegrees);
-    ctx.strokeStyle = 'lime';
-    ctx.lineWidth = 5;
-    ctx.strokeRect(
-      Math.floor(imageViewDegrees[0]) * PIXEL_PER_DEGREES,
-      Math.floor(imageViewDegrees[1]) * PIXEL_PER_DEGREES,
-      Math.ceil(getWidth(imageViewDegrees)) * PIXEL_PER_DEGREES,
-      Math.ceil(getHeight(imageViewDegrees)) * PIXEL_PER_DEGREES,
-    );
-  });
+  console.log('imageView', imageView);
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = 'lime';
+  drawCoordinate(ctx, imageView.topLeft);
+  drawCoordinate(ctx, imageView.topRight);
+  ctx.strokeStyle = 'orange';
+  drawCoordinate(ctx, imageView.bottomRight);
+  drawCoordinate(ctx, imageView.bottomLeft);
+  ctx.strokeStyle = 'purple';
+  drawCoordinate(ctx, imageView.center);
 }
 
 function createMaterial(canvas: HTMLCanvasElement): MaterialAppearance {
