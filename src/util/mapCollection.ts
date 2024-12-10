@@ -467,6 +467,13 @@ class MapCollection extends Collection<VcsMap> {
     };
   }
 
+  resetExclusiveMapControls(): void {
+    this.requestExclusiveMapControls(
+      { keyEvents: false, apiCalls: false, pointerEvents: false },
+      () => {},
+    );
+  }
+
   destroy(): void {
     super.destroy();
     [...this._layerCollection].forEach((l) => {

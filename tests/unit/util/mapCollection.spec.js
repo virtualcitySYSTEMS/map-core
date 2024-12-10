@@ -609,5 +609,15 @@ describe('MapCollection', () => {
       reset1();
       expect(cesiumMap.movementApiCallsDisabled).to.be.true;
     });
+    it('should reset exclusive map controls', () => {
+      mapCollection.requestExclusiveMapControls(
+        disableMovementOptions,
+        () => {},
+      );
+
+      mapCollection.resetExclusiveMapControls();
+
+      expect(cesiumMap.movementApiCallsDisabled).to.be.false;
+    });
   });
 });
