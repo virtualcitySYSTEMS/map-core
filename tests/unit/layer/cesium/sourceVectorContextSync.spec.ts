@@ -318,6 +318,77 @@ describe('sourceVectorContextSync', () => {
     });
   });
 
+  describe('providing function vector properties', () => {
+    let vectorSource: VectorSource;
+    let vectorContext: VectorContext;
+    let sourceSync: SourceVectorContextSync;
+    let feature1: Feature;
+    let feature2: Feature;
+    let vectorProperties2: VectorProperties;
+
+    beforeEach(() => {
+      vectorSource = new VectorSource();
+      vectorContext = new VectorContext(
+        map,
+        rootCollection,
+        SplitDirection.NONE,
+      );
+      vectorProperties2 = new VectorProperties({});
+      sourceSync = createSourceVectorContextSync(
+        vectorSource,
+        vectorContext,
+        map.getScene()!,
+        style,
+        (f) => {
+          if (f === feature1) {
+            return vectorProperties;
+          }
+          return vectorProperties2;
+        },
+      );
+      feature1 = createFeature();
+      feature2 = createFeature();
+      sourceSync.activate();
+    });
+
+    afterEach(() => {
+      vectorSource.dispose();
+      vectorContext.destroy();
+      sourceSync.destroy();
+      vectorProperties2.destroy();
+    });
+
+    it('should add the features to the context', () => {
+      vectorSource.addFeatures([feature1, feature2]);
+      [feature1, feature2].forEach((f) => {
+        expect(vectorContext.hasFeature(f)).to.be.true;
+      });
+    });
+
+    it('should add listeners to both vector properties', async () => {
+      vectorSource.addFeatures([feature1, feature2]);
+      await timeout(100);
+      const primitiveCollection = rootCollection.get(0) as PrimitiveCollection;
+      expect(primitiveCollection.length).to.equal(2);
+      const p = primitiveCollection.get(0) as Primitive;
+      vectorProperties.propertyChanged.raiseEvent(['modelAutoScale']);
+      await timeout(100);
+      expect(primitiveCollection.length).to.equal(2);
+      const p2 = primitiveCollection.get(0) as Primitive;
+      expect(p).to.not.equal(p2);
+      expect(vectorContext.hasFeature(feature1)).to.be.true;
+      expect(vectorContext.hasFeature(feature2)).to.be.true;
+
+      vectorProperties2.propertyChanged.raiseEvent(['modelAutoScale']);
+      await timeout(100);
+      expect(primitiveCollection.length).to.equal(2);
+      const p3 = primitiveCollection.get(0) as Primitive;
+      expect(p2).to.not.equal(p3);
+      expect(vectorContext.hasFeature(feature1)).to.be.true;
+      expect(vectorContext.hasFeature(feature2)).to.be.true;
+    });
+  });
+
   describe('destroying a sourceVectorContextSync', () => {
     let vectorSource: VectorSource;
     let vectorContext: VectorContext;

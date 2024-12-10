@@ -7,8 +7,9 @@ import type { ViewpointOptions } from './util/viewpoint.js';
 import type { ObliqueCollectionOptions } from './oblique/obliqueCollection.js';
 import type VcsApp from './vcsApp.js';
 import { moduleIdSymbol } from './moduleIdSymbol.js';
-import { HiddenObject } from './util/hiddenObjects.js';
-import { FlightInstanceOptions } from './util/flight/flightInstance.js';
+import type { HiddenObject } from './util/hiddenObjects.js';
+import type { FlightInstanceOptions } from './util/flight/flightInstance.js';
+import type { VectorClusterGroupOptions } from './vectorCluster/vectorClusterGroup.js';
 
 export type VcsModuleConfig = {
   _id?: string;
@@ -16,6 +17,7 @@ export type VcsModuleConfig = {
   description?: string | null;
   properties?: Record<string, unknown>;
   layers?: LayerOptions[];
+  vectorClusterGroups?: VectorClusterGroupOptions[];
   maps?: VcsMapOptions[];
   styles?: StyleItemOptions[];
   viewpoints?: ViewpointOptions[];

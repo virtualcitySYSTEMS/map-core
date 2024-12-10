@@ -141,6 +141,17 @@ describe('renderTemplate', () => {
       );
       expect(html.trim()).to.equal('5');
     });
+
+    it('should render a template conditionally, even if there are too many whitespaces on the object key', () => {
+      const html = renderTemplate(
+        `
+{{#if number }}
+{{ number }}
+{{/if}}`,
+        data,
+      );
+      expect(html.trim()).to.equal('5');
+    });
   });
 
   describe('loop rendering', () => {
@@ -193,6 +204,17 @@ describe('renderTemplate', () => {
         data,
       );
       expect(html.trim()).to.equal('1 2 3\n4 5 6\n7 8 9');
+    });
+
+    it('should iterate, even if there is a whitespace at the end', () => {
+      const html = renderTemplate(
+        `
+{{#each (number, index) in array }}
+{{index}}: {{number}}
+{{/each}}`,
+        data,
+      );
+      expect(html.trim()).to.equal('0: 1\n1: 2\n2: 3');
     });
   });
 

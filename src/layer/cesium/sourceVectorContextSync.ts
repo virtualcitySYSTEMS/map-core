@@ -5,7 +5,7 @@ import type { Feature } from 'ol';
 import { StyleLike } from 'ol/style/Style.js';
 import type { Scene } from '@vcmap-cesium/engine';
 import type VectorContext from './vectorContext.js';
-import type ClusterContext from './clusterContext.js';
+import type VectorClusterCesiumContext from '../../vectorCluster/vectorClusterCesiumContext.js';
 import VectorProperties from '../vectorProperties.js';
 
 export type SourceVectorContextSync = {
@@ -26,21 +26,35 @@ export type SourceVectorContextSync = {
  * @param context
  * @param scene
  * @param style
- * @param vectorProperties
+ * @param vectorProperties - the vector properties or a function returning vector properties for a feature
  */
 export function createSourceVectorContextSync(
   source: VectorSource,
-  context: VectorContext | ClusterContext,
+  context: VectorContext | VectorClusterCesiumContext,
   scene: Scene,
   style: StyleLike,
-  vectorProperties: VectorProperties,
+  vectorProperties: VectorProperties | ((f: Feature) => VectorProperties),
 ): SourceVectorContextSync {
   const featureToAdd = new Set<Feature>();
   let active = false;
+  const vectorPropertiesChanged = new Map<VectorProperties, () => void>();
+  const getVectorProperties =
+    typeof vectorProperties === 'function'
+      ? vectorProperties
+      : (): VectorProperties => vectorProperties;
+
+  let refresh: () => void;
   const addFeature = async (feature: Feature): Promise<void> => {
+    const featureVectorProperties = getVectorProperties(feature);
+    if (!vectorPropertiesChanged.has(featureVectorProperties)) {
+      vectorPropertiesChanged.set(
+        featureVectorProperties,
+        featureVectorProperties.propertyChanged.addEventListener(refresh),
+      );
+    }
     if (active) {
       // XXX cluster check here? or on init?
-      await context.addFeature(feature, style, vectorProperties, scene);
+      await context.addFeature(feature, style, featureVectorProperties, scene);
     } else {
       featureToAdd.add(feature);
     }
@@ -74,7 +88,7 @@ export function createSourceVectorContextSync(
     featureToAdd.clear();
   };
 
-  const refresh = (): void => {
+  refresh = (): void => {
     context.clear();
     addFeatures(source.getFeatures());
   };
@@ -95,9 +109,6 @@ export function createSourceVectorContextSync(
     }),
   ];
 
-  const removeVectorPropertiesChangeHandler =
-    vectorProperties.propertyChanged.addEventListener(refresh);
-
   addFeatures(source.getFeatures());
 
   return {
@@ -114,7 +125,10 @@ export function createSourceVectorContextSync(
     refresh,
     destroy(): void {
       unByKey(olListeners);
-      removeVectorPropertiesChangeHandler();
+      vectorPropertiesChanged.forEach((removeListener) => {
+        removeListener();
+      });
+      vectorPropertiesChanged.clear();
     },
   };
 }

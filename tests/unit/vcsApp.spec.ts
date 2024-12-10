@@ -1,10 +1,13 @@
-import { expect } from 'chai';
+import { expect, use } from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 import sinon, { type SinonSpy } from 'sinon';
 import VectorLayer from '../../src/layer/vectorLayer.js';
 import Viewpoint from '../../src/util/viewpoint.js';
 import VcsModule from '../../src/vcsModule.js';
 import OpenlayersMap from '../../src/map/openlayersMap.js';
 import VcsApp from '../../src/vcsApp.js';
+
+use(chaiAsPromised);
 
 describe('vcsApp', () => {
   describe('adding of a module', () => {
@@ -338,9 +341,10 @@ describe('vcsApp', () => {
         app.destroy();
       });
 
-      it('should throw an error', () => {
-        expect(app.addModule(module)).to.throw;
+      it('should throw an error', async () => {
+        await expect(app.addModule(module)).to.eventually.be.rejected;
       });
+
       it('should remove already added items of the invalid module', async () => {
         try {
           await app.addModule(module);
@@ -349,6 +353,7 @@ describe('vcsApp', () => {
         }
         expect(app.maps.hasKey('foo')).to.be.false;
       });
+
       it('should add second module, if first crashes', async () => {
         const secondModule = new VcsModule({ name: 'second' });
         try {

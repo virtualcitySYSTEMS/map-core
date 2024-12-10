@@ -29,7 +29,7 @@ import Projection, {
 import { createSync } from '../../vectorSymbols.js';
 import VectorProperties from '../../vectorProperties.js';
 import CesiumMap from '../../../map/cesiumMap.js';
-import { TileProvider } from '../../../../index.js';
+import type TileProvider from '../../tileProvider/tileProvider.js';
 
 let vectorProperties: VectorProperties | undefined;
 function getDebugVectorProperties(): VectorProperties {

@@ -18,13 +18,20 @@ import { mapClassRegistry } from '../classRegistry.js';
 import type LayerCollection from '../util/layerCollection.js';
 import type Layer from '../layer/layer.js';
 import { DisableMapControlOptions } from '../util/mapCollection.js';
+import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
 
 export function ensureLayerInCollection(
   layers: OLCollection<OLLayer>,
   layer: OLLayer,
   layerCollection: LayerCollection,
 ): void {
-  const targetIndex = layerCollection.indexOfKey(layer[vcsLayerName]) as number;
+  let targetIndex = -1;
+  if (layer[vectorClusterGroupName]) {
+    targetIndex = layerCollection.size;
+  } else {
+    targetIndex = layerCollection.indexOfKey(layer[vcsLayerName]) as number;
+  }
+
   if (targetIndex > -1) {
     const layerArray = layers.getArray();
 

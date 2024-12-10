@@ -1,5 +1,5 @@
-import { getUid } from 'ol/util.js';
 import VectorSource from 'ol/source/Vector.js';
+import Feature from 'ol/Feature.js';
 
 /**
  * @class
@@ -11,15 +11,12 @@ class ClusterEnhancedVectorSource extends VectorSource {
    * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @param {boolean=} silent
    */
-  removeFeature(feature, silent) {
-    const featureKey = getUid(feature);
-    if (featureKey in this.nullGeometryFeatures_) {
-      delete this.nullGeometryFeatures_[featureKey];
-    } else if (this.featuresRtree_) {
-      this.featuresRtree_.remove(feature);
+  removeFeature(feature: Feature, silent?: boolean): void {
+    if (!feature) {
+      return;
     }
-    this.removeFeatureInternal(feature);
-    if (!silent) {
+    const removed = this.removeFeatureInternal(feature);
+    if (removed && !silent) {
       this.changed();
     }
   }
@@ -28,7 +25,7 @@ class ClusterEnhancedVectorSource extends VectorSource {
    * @param {import("ol").Feature<import("ol/geom/Geometry").default>} feature
    * @param {boolean=} silent
    */
-  addFeature(feature, silent) {
+  addFeature(feature: Feature, silent?: boolean): void {
     this.addFeatureInternal(feature);
     if (!silent) {
       this.changed();

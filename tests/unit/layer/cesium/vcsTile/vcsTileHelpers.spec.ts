@@ -27,15 +27,15 @@ describe('getDataTiles', () => {
     expect(dataRange).to.have.ordered.members([18, 19]);
   });
 
-  it('should throw, if min level is below data level', () => {
+  it('should throw, all levels are bellow min level', () => {
     expect(() => {
       getDataTiles(
+        8,
         9,
-        20,
         new TileProvider({
           baseLevels: [10, 19],
         }),
       );
-    }).to.throw;
+    }).to.throw(Error);
   });
 });

@@ -5,10 +5,11 @@ import {
   Cesium3DTileFeature,
   Cesium3DTilePointFeature,
   Entity,
+  Scene,
+  Cartesian2,
 } from '@vcmap-cesium/engine';
+import OLMap from 'ol/Map.js';
 import type { Feature } from 'ol/index.js';
-import type { Layer as OLLayer } from 'ol/layer.js';
-
 import AbstractInteraction, {
   type EventFeature,
   type InteractionEvent,
@@ -24,6 +25,128 @@ import { originalFeatureSymbol } from '../layer/vectorSymbols.js';
 import type OpenlayersMap from '../map/openlayersMap.js';
 import type ObliqueMap from '../map/obliqueMap.js';
 import type CesiumMap from '../map/cesiumMap.js';
+import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
+
+/**
+ * This is the return from cesium scene.pick and scene.drillPick, which returns "any". We cast to this type.
+ */
+type CesiumPickObject = {
+  primitive?: {
+    olFeature?: Feature;
+    pointCloudShading?: { attenuation: unknown };
+    [vcsLayerName]?: string;
+  };
+  id?: {
+    olFeature?: Feature;
+    [vcsLayerName]?: string;
+  };
+};
+
+function getFeaturesFromOlMap(
+  map: OLMap,
+  pixel: [number, number],
+  hitTolerance: number,
+  drill = 0,
+): Feature[] {
+  const features: Feature[] = [];
+  let i = 0;
+  map.forEachFeatureAtPixel(
+    pixel,
+    (feat) => {
+      if (
+        feat &&
+        (feat.get('olcs_allowPicking') == null ||
+          feat.get('olcs_allowPicking') === true)
+      ) {
+        const feature =
+          (feat as Feature)[originalFeatureSymbol] || (feat as Feature);
+        if (feature[vectorClusterGroupName]) {
+          const clusterFeatures = feature.get('features') as Feature[];
+          if (clusterFeatures.length === 1) {
+            features.push(clusterFeatures[0]);
+          } else {
+            // not sure about spreading the cluster features.
+            // since, even thought they are there, they are not rendered and
+            // clusters should probably be handled differently anyway.
+            features.push(feature, ...clusterFeatures);
+          }
+        } else {
+          features.push(feature);
+        }
+      }
+      i += 1;
+      return i >= drill;
+    },
+    { hitTolerance },
+  );
+
+  return features;
+}
+
+function getFeatureFromPickObject(
+  object: CesiumPickObject,
+): EventFeature | EventFeature[] | undefined {
+  let feature: EventFeature | undefined;
+  if (object.primitive && object.primitive.olFeature) {
+    feature = object.primitive.olFeature;
+    if (feature[vectorClusterGroupName]) {
+      const clusterFeatures = feature.get('features') as Feature[];
+      // not sure about spreading the cluster features.
+      // since, even thought they are there, they are not rendered and
+      // clusters should probably be handled differently anyway.
+      return [feature, ...clusterFeatures];
+    }
+  } else if (
+    object.primitive &&
+    object.primitive[vcsLayerName] &&
+    (object instanceof Cesium3DTileFeature ||
+      object instanceof Cesium3DTilePointFeature)
+  ) {
+    // cesium 3d tileset
+    feature = object;
+    const symbols = Object.getOwnPropertySymbols(object.primitive);
+    const symbolLength = symbols.length;
+    for (let i = 0; i < symbolLength; i++) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      feature[symbols[i]] = object.primitive[symbols[i]];
+    }
+  } else if (object.id && object.id.olFeature) {
+    // cluster size === 1
+    feature = object.id.olFeature;
+  } else if (
+    object.id &&
+    object.id[vcsLayerName] &&
+    object.id instanceof Entity
+  ) {
+    // entity
+    feature = object.id;
+  }
+
+  return feature;
+}
+
+function getFeaturesFromScene(
+  scene: Scene,
+  windowPosition: Cartesian2,
+  hitTolerance: number,
+  drill = 0,
+): EventFeature[] {
+  const pickObjects =
+    drill > 0
+      ? (scene.drillPick(
+          windowPosition,
+          drill,
+          hitTolerance,
+          hitTolerance,
+        ) as CesiumPickObject[])
+      : ([
+          scene.pick(windowPosition, hitTolerance, hitTolerance),
+        ] as CesiumPickObject[]);
+
+  return pickObjects.flatMap(getFeatureFromPickObject).filter((i) => !!i);
+}
 
 /**
  * @group Interaction
@@ -48,6 +171,10 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
    * The number of pixels to take into account for picking features
    */
   hitTolerance = 10;
+
+  drillPick = EventType.CLICK;
+
+  drillPickDepth = 10;
 
   private _draggingFeature: EventFeature | null = null;
 
@@ -97,57 +224,42 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
     super.setActive(active);
   }
 
+  private _drillDepthForEvent(event: InteractionEvent): number {
+    if (event.type & this.drillPick) {
+      return this.drillPickDepth;
+    }
+    return 0;
+  }
+
   private _openlayersHandler(
     event: InteractionEvent,
   ): Promise<InteractionEvent> {
-    let found: Feature | null = null;
-    let foundLayer: OLLayer | null = null;
-    (event.map as OpenlayersMap).olMap!.forEachFeatureAtPixel(
+    const features = getFeaturesFromOlMap(
+      (event.map as OpenlayersMap).olMap!,
       [event.windowPosition.x, event.windowPosition.y],
-      (feat, layer) => {
-        if (
-          feat &&
-          (feat.get('olcs_allowPicking') == null ||
-            feat.get('olcs_allowPicking') === true)
-        ) {
-          found = feat as Feature;
-          foundLayer = layer;
-        }
-        return true;
-      },
-      { hitTolerance: this.hitTolerance },
+      this.hitTolerance,
+      this._drillDepthForEvent(event),
     );
 
-    if (found && foundLayer) {
-      event.feature = found as Feature;
-      if (event.feature.get('features') as Feature[] | undefined) {
-        event.feature[vcsLayerName] = foundLayer[vcsLayerName];
-      }
+    if (features.length > 0) {
+      event.feature = features[0];
+      event.features = features;
       event.exactPosition = true;
     }
     return Promise.resolve(event);
   }
 
   private _obliqueHandler(event: InteractionEvent): Promise<InteractionEvent> {
-    let found: Feature | null = null;
-    let foundLayer: OLLayer | null = null;
-    (event.map as ObliqueMap).olMap!.forEachFeatureAtPixel(
+    const features = getFeaturesFromOlMap(
+      (event.map as ObliqueMap).olMap!,
       [event.windowPosition.x, event.windowPosition.y],
-      (feat, layer) => {
-        if (feat) {
-          found = (feat as Feature)[originalFeatureSymbol] || (feat as Feature);
-        }
-        foundLayer = layer;
-        return true;
-      },
-      { hitTolerance: this.hitTolerance },
+      this.hitTolerance,
+      this._drillDepthForEvent(event),
     );
 
-    if (found && foundLayer) {
-      event.feature = found as Feature;
-      if (event.feature.get('features') as Feature[] | undefined) {
-        event.feature[vcsLayerName] = foundLayer[vcsLayerName];
-      }
+    if (features.length > 0) {
+      event.feature = features[0];
+      event.features = features;
       event.exactPosition = true;
     }
     return Promise.resolve(event);
@@ -161,21 +273,12 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
       return Promise.resolve(event);
     }
 
-    const object = scene.pick(
+    const features = getFeaturesFromScene(
+      scene,
       event.windowPosition,
       this.hitTolerance,
-      this.hitTolerance,
-    ) as {
-      primitive?: {
-        olFeature?: Feature;
-        pointCloudShading?: { attenuation: unknown };
-        [vcsLayerName]?: string;
-      };
-      id?: {
-        olFeature?: Feature;
-        [vcsLayerName]?: string;
-      };
-    };
+      this._drillDepthForEvent(event),
+    );
 
     let scratchCartographic = new Cartographic();
     let scratchCartesian = new Cartesian3();
@@ -220,44 +323,15 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
       return Promise.resolve(event);
     };
 
-    if (object) {
-      if (object.primitive && object.primitive.olFeature) {
-        // vector & vectorCluster
-        event.feature = object.primitive.olFeature;
-      } else if (
-        object.primitive &&
-        object.primitive[vcsLayerName] &&
-        (object instanceof Cesium3DTileFeature ||
-          object instanceof Cesium3DTilePointFeature)
-      ) {
-        // building
-        event.feature = object;
-        const symbols = Object.getOwnPropertySymbols(object.primitive);
-        const symbolLength = symbols.length;
-        for (let i = 0; i < symbolLength; i++) {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          event.feature[symbols[i]] = object.primitive[symbols[i]];
-        }
-      } else if (object.id && object.id.olFeature) {
-        // cluster size === 1
-        event.feature = object.id.olFeature;
-      } else if (
-        object.id &&
-        object.id[vcsLayerName] &&
-        object.id instanceof Entity
-      ) {
-        // entity
-        event.feature = object.id;
-      }
-
+    if (features.length > 0) {
+      event.feature = features[0];
+      event.features = features;
       if (!(event.type & this.pickPosition)) {
         return Promise.resolve(event);
       }
 
       if (scene.pickPositionSupported) {
-        if (object.primitive && this.pickTranslucent) {
+        if (this.pickTranslucent) {
           scene.pickTranslucentDepth = true;
           event.exactPosition = true;
         }

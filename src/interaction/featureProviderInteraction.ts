@@ -21,38 +21,41 @@ class FeatureProviderInteraction extends AbstractInteraction {
 
   // eslint-disable-next-line class-methods-use-this
   async pipe(event: InteractionEvent): Promise<InteractionEvent> {
-    if (!event.feature) {
-      const layersWithProvider = [...event.map.layerCollection]
-        .filter((l) => {
-          return (
-            l.featureProvider &&
-            l.active &&
-            l.isSupported(event.map) &&
-            l.featureProvider.isSupported(event.map)
-          );
-        })
-        .reverse();
-
-      if (layersWithProvider.length > 0) {
-        const resolution = event.map.getCurrentResolution(
-          event.position as Coordinate,
+    const layersWithProvider = [...event.map.layerCollection]
+      .filter((l) => {
+        return (
+          l.featureProvider &&
+          l.active &&
+          l.isSupported(event.map) &&
+          l.featureProvider.isSupported(event.map)
         );
-        const features = (
-          await Promise.all(
-            layersWithProvider.map(
-              (l) =>
-                l.featureProvider?.getFeaturesByCoordinate?.(
-                  event.position as Coordinate,
-                  resolution,
-                  l.headers,
-                ),
-            ),
-          )
-        ).flat();
+      })
+      .reverse();
 
-        if (features.length > 0) {
+    if (layersWithProvider.length > 0) {
+      const resolution = event.map.getCurrentResolution(
+        event.position as Coordinate,
+      );
+      const features = (
+        await Promise.all(
+          layersWithProvider.map(
+            (l) =>
+              l.featureProvider?.getFeaturesByCoordinate?.(
+                event.position as Coordinate,
+                resolution,
+                l.headers,
+              ),
+          ),
+        )
+      )
+        .filter((f) => !!f)
+        .flat();
+
+      if (features.length > 0) {
+        if (!event.feature) {
           event.feature = features[0];
         }
+        event.features = [...(event.features ?? []), ...features];
       }
     }
     return event;

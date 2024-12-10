@@ -122,7 +122,7 @@ describe('ObliqueProvider', () => {
     });
 
     it('should throw, if there is no set collection', () => {
-      expect(obliqueProvider.activate.bind(obliqueProvider)).to.throw;
+      expect(obliqueProvider.activate.bind(obliqueProvider)).to.throw(Error);
     });
 
     it('should set the oblique provider active', () => {

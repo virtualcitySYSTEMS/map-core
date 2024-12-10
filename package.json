@@ -39,6 +39,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/chai": "^4.3.16",
+    "@types/chai-as-promised": "^8.0.1",
     "@types/geojson": "^7946.0.10",
     "@types/mocha": "^10.0.7",
     "@types/node": "^20.16.5",
@@ -50,6 +51,7 @@
     "c8": "^10.1.2",
     "canvas": "^2.11.2",
     "chai": "^4.4.1",
+    "chai-as-promised": "^8.0.1",
     "eslint": "^8.38.0",
     "jsdom": "^24.1.0",
     "jsdom-global": "^3.0.2",

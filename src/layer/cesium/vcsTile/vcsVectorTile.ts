@@ -19,8 +19,8 @@ import {
   VcsTileType,
 } from './vcsTileHelpers.js';
 import CesiumMap from '../../../map/cesiumMap.js';
-import { TileProvider } from '../../../../index.js';
 import VectorProperties from '../../vectorProperties.js';
+import type TileProvider from '../../tileProvider/tileProvider.js';
 
 export default class VcsVectorTile implements VcsTile {
   state = VcsTileState.LOADING;

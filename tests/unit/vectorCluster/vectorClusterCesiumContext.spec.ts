@@ -1,14 +1,14 @@
-import { CustomDataSource, Scene, SplitDirection } from '@vcmap-cesium/engine';
+import { CustomDataSource, Scene } from '@vcmap-cesium/engine';
 import Feature from 'ol/Feature.js';
 import { expect } from 'chai';
 import { LineString, Point } from 'ol/geom.js';
 import { Fill, RegularShape, Style } from 'ol/style.js';
 import OlText from 'ol/style/Text.js';
 import Stroke from 'ol/style/Stroke.js';
-import VectorProperties from '../../../../src/layer/vectorProperties.js';
-import { CesiumMap } from '../../../../index.js';
-import { getCesiumMap } from '../../helpers/cesiumHelpers.js';
-import ClusterContext from '../../../../src/layer/cesium/clusterContext.js';
+import VectorProperties from '../../../src/layer/vectorProperties.js';
+import { CesiumMap } from '../../../index.js';
+import { getCesiumMap } from '../helpers/cesiumHelpers.js';
+import VectorClusterCesiumContext from '../../../src/vectorCluster/vectorClusterCesiumContext.js';
 
 describe('ClusterContext', () => {
   let dataSource: CustomDataSource;
@@ -27,26 +27,26 @@ describe('ClusterContext', () => {
   });
 
   describe('constructor', () => {
-    let clusterContext: ClusterContext;
+    let clusterContext: VectorClusterCesiumContext;
 
     before(() => {
-      clusterContext = new ClusterContext(dataSource, SplitDirection.NONE);
+      clusterContext = new VectorClusterCesiumContext(dataSource);
     });
 
     after(() => {
       clusterContext.destroy();
     });
 
-    it('should use the data source entites', () => {
+    it('should use the data source entities', () => {
       expect(clusterContext.entities).to.equal(dataSource.entities);
     });
   });
 
   describe('adding a feature', () => {
-    let clusterContext: ClusterContext;
+    let clusterContext: VectorClusterCesiumContext;
 
     before(() => {
-      clusterContext = new ClusterContext(dataSource, SplitDirection.NONE);
+      clusterContext = new VectorClusterCesiumContext(dataSource);
     });
 
     afterEach(() => {
@@ -117,13 +117,37 @@ describe('ClusterContext', () => {
       );
       expect(clusterContext.entities.values).to.have.lengthOf(0);
     });
+
+    it('should add a feature which converts to a billboard & label as one entity', async () => {
+      const feature = new Feature({
+        geometry: new Point([1, 1, 1]),
+      });
+
+      await clusterContext.addFeature(
+        feature,
+        new Style({
+          image: new RegularShape({
+            points: 0,
+            radius: 1,
+            fill: new Fill({ color: '#ff0000' }),
+          }),
+          text: new OlText({
+            text: 'foo',
+          }),
+        }),
+        new VectorProperties({}),
+        scene,
+      );
+
+      expect(clusterContext.entities.values).to.have.lengthOf(1);
+    });
   });
 
   describe('reference setting on primitives', () => {
-    let clusterContext: ClusterContext;
+    let clusterContext: VectorClusterCesiumContext;
 
     before(() => {
-      clusterContext = new ClusterContext(dataSource, SplitDirection.NONE);
+      clusterContext = new VectorClusterCesiumContext(dataSource);
     });
 
     afterEach(() => {
@@ -184,10 +208,10 @@ describe('ClusterContext', () => {
 
   describe('removing a feature', () => {
     describe('if the feature was already converted', () => {
-      let clusterContext: ClusterContext;
+      let clusterContext: VectorClusterCesiumContext;
 
       before(() => {
-        clusterContext = new ClusterContext(dataSource, SplitDirection.NONE);
+        clusterContext = new VectorClusterCesiumContext(dataSource);
       });
 
       afterEach(() => {
@@ -244,10 +268,10 @@ describe('ClusterContext', () => {
     });
 
     describe('if the feature is currently being converted', () => {
-      let clusterContext: ClusterContext;
+      let clusterContext: VectorClusterCesiumContext;
 
       before(() => {
-        clusterContext = new ClusterContext(dataSource, SplitDirection.NONE);
+        clusterContext = new VectorClusterCesiumContext(dataSource);
       });
 
       after(() => {
@@ -281,10 +305,10 @@ describe('ClusterContext', () => {
   });
 
   describe('adding a feature twice', () => {
-    let clusterContext: ClusterContext;
+    let clusterContext: VectorClusterCesiumContext;
 
     before(() => {
-      clusterContext = new ClusterContext(dataSource, SplitDirection.NONE);
+      clusterContext = new VectorClusterCesiumContext(dataSource);
     });
 
     afterEach(() => {

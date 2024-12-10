@@ -52,6 +52,8 @@ import FlightInstance, {
 } from './util/flight/flightInstance.js';
 import FlightCollection from './util/flight/flightCollection.js';
 import DisplayQuality from './util/displayQuality/displayQuality.js';
+import VectorClusterGroup from './vectorCluster/vectorClusterGroup.js';
+import VectorClusterGroupCollection from './vectorCluster/vectorClusterGroupCollection.js';
 
 function getLogger(): Logger {
   return getLoggerByName('init');
@@ -103,6 +105,11 @@ class VcsApp {
   private _layerClassRegistry: OverrideClassRegistry<typeof Layer>;
 
   private _layers: OverrideCollection<Layer, LayerCollection>;
+
+  private _vectorClusterGroups: OverrideCollection<
+    VectorClusterGroup,
+    VectorClusterGroupCollection
+  >;
 
   private _obliqueCollections: OverrideCollection<ObliqueCollection>;
 
@@ -182,6 +189,14 @@ class VcsApp {
       getLayerIndex,
     );
     this._layers.locale = this.locale;
+
+    this._vectorClusterGroups = makeOverrideCollection(
+      this._layers.vectorClusterGroups,
+      getDynamicModuleId,
+      undefined,
+      (config) => new VectorClusterGroup(config),
+      VectorClusterGroup,
+    );
 
     this._obliqueCollections = makeOverrideCollection(
       new Collection(),
@@ -286,6 +301,13 @@ class VcsApp {
     return this._layers;
   }
 
+  get vectorClusterGroups(): OverrideCollection<
+    VectorClusterGroup,
+    VectorClusterGroupCollection
+  > {
+    return this._vectorClusterGroups;
+  }
+
   get obliqueCollections(): OverrideCollection<ObliqueCollection> {
     return this._obliqueCollections;
   }
@@ -383,6 +405,10 @@ class VcsApp {
 
     await this._styles.parseItems(config.styles, module._id);
     await this._layers.parseItems(config.layers, module._id);
+    await this._vectorClusterGroups.parseItems(
+      config.vectorClusterGroups,
+      module._id,
+    );
     // TODO add ade here
 
     await this._obliqueCollections.parseItems(
@@ -516,6 +542,8 @@ class VcsApp {
     const config = this._modules.getByKey(moduleId)!.toJSON();
     config.maps = this._maps.serializeModule(moduleId);
     config.layers = this._layers.serializeModule(moduleId);
+    config.vectorClusterGroups =
+      this._vectorClusterGroups.serializeModule(moduleId);
     config.obliqueCollections =
       this._obliqueCollections.serializeModule(moduleId);
     config.viewpoints = this._viewpoints.serializeModule(moduleId);
@@ -563,6 +591,7 @@ class VcsApp {
       this._obliqueCollections.removeModule(moduleId),
       this._hiddenObjects.removeModule(moduleId),
       this._flights.removeModule(moduleId),
+      this._vectorClusterGroups.removeModule(moduleId),
     ]);
   }
 

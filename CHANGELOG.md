@@ -6,6 +6,9 @@
 - Adds new string templating capabilities. `renderTemplate` can handle string templates with `{{}}` placeholders and ol style expressions.
 - Adds a rotation api that provides `startRotation` which returns a stop function. It rotates around a given or current viewpoint.
 - In mapCollection the `requestExclusiveMapControls` has been extended by an ID to identify the current map control holder. There is additionally an event `exclusiveMapControlsChanged` which is emitted when the exclusiveMapControls are changed.
+- Adds `VectorClusterGroup` concept to the `VcsApp`. For more details see [the documentation](documentation/vectorClusterGroup.md).
+- The `FeatureAtPixelInteraction` has been extended by a drill pick API. The `InteractionEvent` now has a `features` property along
+  with the `feature` property. Drill pick will return all features (to a certain depth) at the pixel, not just the topmost one.
 
 ### 6.0.6
 

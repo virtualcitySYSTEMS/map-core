@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
+import { parseBoolean } from '@vcsuite/parsers';
 import { check } from '@vcsuite/check';
 import IndexedCollection from './indexedCollection.js';
 import ExclusiveManager from './exclusiveManager.js';
@@ -7,12 +7,20 @@ import VcsEvent from '../vcsEvent.js';
 import GlobalHider from '../layer/globalHider.js';
 // eslint-disable-next-line import/no-named-default
 import type { default as Layer, SplitLayer } from '../layer/layer.js';
+import VectorClusterGroupCollection from '../vectorCluster/vectorClusterGroupCollection.js';
+import type VectorLayer from '../layer/vectorLayer.js';
+import { destroyCollection } from '../vcsModuleHelpers.js';
 
 /**
  * The largest integer zindex which can be safely assigned to a layer (equal to Number.MAX_SAFE_INTEGER)
  * You should use this to ensure layers are always rendered on top.
  */
 export const maxZIndex = Number.MAX_SAFE_INTEGER;
+
+export type LayerCollectionOptions = {
+  vectorClusterGroupCollection?: VectorClusterGroupCollection;
+  destroyVectorClusterGroupCollection?: boolean;
+};
 
 /**
  * A collection of layers. Manages rendering order and layer exclusivity. Emits state changes for convenience. Passed to
@@ -57,6 +65,8 @@ class LayerCollection extends IndexedCollection<Layer> {
    */
   private _globalHider: GlobalHider;
 
+  private _vectorClusterGroups: VectorClusterGroupCollection;
+
   /**
    * Locale for this layerCollection, will be synchronized by the vcsApp, if part of an vcsApp.
    * This Locale will be set on all Member Layers. On setting the Locale this will trigger a reload of all locale
@@ -64,7 +74,11 @@ class LayerCollection extends IndexedCollection<Layer> {
    */
   private _locale: string;
 
-  constructor() {
+  private _vectorClusterGroupListeners: (() => void) | undefined;
+
+  destroyVectorClusterGroupCollection: boolean;
+
+  constructor(options: LayerCollectionOptions = {}) {
     super();
 
     this._layerEventListeners = {};
@@ -73,6 +87,18 @@ class LayerCollection extends IndexedCollection<Layer> {
     this.exclusiveManager = new ExclusiveManager();
     this._globalHider = new GlobalHider();
     this._locale = 'en';
+    if (options.vectorClusterGroupCollection) {
+      this._vectorClusterGroups = options.vectorClusterGroupCollection;
+    } else {
+      this._vectorClusterGroups = new VectorClusterGroupCollection(
+        this._globalHider,
+      );
+    }
+    this.destroyVectorClusterGroupCollection = parseBoolean(
+      options.destroyVectorClusterGroupCollection,
+      !options.vectorClusterGroupCollection,
+    );
+    this._setupVectorClusterGroupListeners();
   }
 
   /**
@@ -102,6 +128,7 @@ class LayerCollection extends IndexedCollection<Layer> {
     this._array.forEach((layer) => {
       layer.setGlobalHider(this._globalHider);
     });
+    this.vectorClusterGroups.globalHider = this._globalHider;
   }
 
   get locale(): string {
@@ -117,6 +144,10 @@ class LayerCollection extends IndexedCollection<Layer> {
         layer.locale = this._locale;
       });
     }
+  }
+
+  get vectorClusterGroups(): VectorClusterGroupCollection {
+    return this._vectorClusterGroups;
   }
 
   private _listenToLayerEvents(layer: Layer): void {
@@ -148,6 +179,25 @@ class LayerCollection extends IndexedCollection<Layer> {
         ),
       );
     }
+
+    if ((layer as VectorLayer).vectorClusterGroupChanged) {
+      listeners.push(
+        (layer as VectorLayer).vectorClusterGroupChanged.addEventListener(
+          ({ newGroup, oldGroup }) => {
+            if (oldGroup) {
+              this._vectorClusterGroups
+                .getByKey(oldGroup)
+                ?.removeLayer(layer as VectorLayer);
+            }
+            if (newGroup) {
+              this._vectorClusterGroups
+                .getByKey(newGroup)
+                ?.addLayer(layer as VectorLayer);
+            }
+          },
+        ),
+      );
+    }
     this._layerEventListeners[layer.name] = listeners;
   }
 
@@ -158,7 +208,7 @@ class LayerCollection extends IndexedCollection<Layer> {
    */
   private _findZIndexPosition(zIndex: number): number | null {
     const usedIndex = this._array.findIndex(
-      // @ts-ignore
+      // @ts-expect-error: z index is undefined
       (l) => l[this._zIndexSymbol] > zIndex,
     );
     return usedIndex > -1 ? usedIndex : null;
@@ -173,7 +223,7 @@ class LayerCollection extends IndexedCollection<Layer> {
   private _zIndexChanged(layer: Layer): void {
     const currentIndex = this.indexOf(layer);
     if (currentIndex > -1) {
-      // @ts-ignore
+      // @ts-expect-error: z index is undefined
       layer[this._zIndexSymbol] = layer.zIndex;
       let zIndexPosition = this._findZIndexPosition(layer.zIndex);
       if (
@@ -197,27 +247,41 @@ class LayerCollection extends IndexedCollection<Layer> {
    */
   private _ensureLocalZIndex(layer: Layer): void {
     const currentIndex = this.indexOf(layer);
-    // @ts-ignore
+    // @ts-expect-error: z index is undefined
     const currentLayerZIndex = layer[this._zIndexSymbol] as number;
     if (currentIndex > 0) {
-      // @ts-ignore
+      // @ts-expect-error: z index is undefined
       const below: number = this._array[currentIndex - 1][
         this._zIndexSymbol
       ] as number;
       if (below > currentLayerZIndex) {
-        // @ts-ignore
+        // @ts-expect-error: z index is undefined
         layer[this._zIndexSymbol] = below;
       }
     }
 
     if (currentIndex < this._array.length - 1) {
-      // @ts-ignore
+      // @ts-expect-error: z index is undefined
       const above = this._array[currentIndex + 1][this._zIndexSymbol] as number;
       if (above < currentLayerZIndex) {
-        // @ts-ignore
+        // @ts-expect-error: z index is undefined
         layer[this._zIndexSymbol] = above;
       }
     }
+  }
+
+  private _setupVectorClusterGroupListeners(): void {
+    this._vectorClusterGroupListeners =
+      this._vectorClusterGroups.added.addEventListener((collection) => {
+        this._array
+          .filter(
+            (layer) =>
+              (layer as VectorLayer).vectorClusterGroup === collection.name,
+          )
+          .forEach((layer) => {
+            collection.addLayer(layer as VectorLayer);
+          });
+      });
   }
 
   /**
@@ -235,13 +299,18 @@ class LayerCollection extends IndexedCollection<Layer> {
     }
     const insertedAt = super.add(layer, usedIndex);
     if (insertedAt != null) {
-      // @ts-ignore
+      // @ts-expect-error: z index is undefined
       layer[this._zIndexSymbol] = layer.zIndex;
       layer.setGlobalHider(this._globalHider);
       layer.locale = this.locale;
       this._ensureLocalZIndex(layer);
       this._listenToLayerEvents(layer);
       this.exclusiveManager.registerLayer(layer);
+      if ((layer as VectorLayer).vectorClusterGroup) {
+        this._vectorClusterGroups
+          .getByKey((layer as VectorLayer).vectorClusterGroup)
+          ?.addLayer(layer as VectorLayer);
+      }
     }
     return insertedAt;
   }
@@ -253,10 +322,15 @@ class LayerCollection extends IndexedCollection<Layer> {
       });
       delete this._layerEventListeners[layer.name];
     }
-    // @ts-ignore
+    // @ts-expect-error: z index is undefined
     delete layer[this._zIndexSymbol];
     layer.setGlobalHider();
     this.exclusiveManager.unregisterLayer(layer);
+    if ((layer as VectorLayer).vectorClusterGroup) {
+      this._vectorClusterGroups
+        .getByKey((layer as VectorLayer).vectorClusterGroup)
+        ?.removeLayer(layer as VectorLayer);
+    }
     return super._remove(layer);
   }
 
@@ -267,7 +341,7 @@ class LayerCollection extends IndexedCollection<Layer> {
         r();
       });
     this._array.forEach((l) => {
-      // @ts-ignore
+      // @ts-expect-error: z index is undefined
       delete l[this._zIndexSymbol];
     });
 
@@ -286,6 +360,10 @@ class LayerCollection extends IndexedCollection<Layer> {
     this._layerEventListeners = {};
     this.exclusiveManager.destroy();
     this._globalHider.destroy();
+    this._vectorClusterGroupListeners?.();
+    if (this.destroyVectorClusterGroupCollection) {
+      destroyCollection(this._vectorClusterGroups);
+    }
     super.destroy();
   }
 }

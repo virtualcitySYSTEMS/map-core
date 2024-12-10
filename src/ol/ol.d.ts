@@ -42,6 +42,7 @@ import {
   globalHiderLastUpdated,
 } from '../layer/vectorHelpers.js';
 import { validityPlaceholder } from '../util/editor/interactions/createPolygonInteraction.js';
+import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
 
 declare module 'ol/geom.js' {
   interface Geometry {
@@ -113,6 +114,7 @@ declare module 'ol/index.js' {
     [handlerSymbol]?: AxisAndPlanes;
     [vertexSymbol]?: boolean;
     [createSync]?: boolean;
+    [vectorClusterGroupName]?: string;
   }
 
   class CanvasTileRenderer extends CanvasImmediateRenderer {
@@ -141,6 +143,7 @@ declare module 'ol/style.js' {
 declare module 'ol/layer.js' {
   interface Layer {
     [vcsLayerName]: string;
+    [vectorClusterGroupName]?: string;
   }
 }
 

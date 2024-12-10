@@ -59,6 +59,10 @@ export type InteractionEvent = MapEvent & {
    */
   feature?: EventFeature;
   /**
+   * further features at said location. includes .feature
+   */
+  features?: EventFeature[];
+  /**
    * if set to true, the event chain is interrupted
    */
   stopPropagation?: boolean;

@@ -139,7 +139,6 @@ export interface CesiumVectorContext {
   ): Promise<void>;
   hasFeature(feature: Feature): boolean;
   removeFeature(feature: Feature): void;
-  updateSplitDirection(splitDirection: SplitDirection): void;
   clear(): void;
   destroy(): void;
 }
@@ -148,6 +147,9 @@ type ConvertedItemIndex = { type: 'primitive' | 'scaled'; index: number };
 
 type ConvertedIndices = { primitive?: number; scaled?: number };
 
+/**
+ * The generic implementation of the vector context for Cesium
+ */
 export default class VectorContext implements CesiumVectorContext {
   primitives = new PrimitiveCollection();
 

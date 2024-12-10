@@ -62,7 +62,6 @@ export {
   getExtentFromTileset,
   default as CesiumTilesetCesiumImpl,
 } from './src/layer/cesium/cesiumTilesetCesiumImpl.js';
-export { default as ClusterContext } from './src/layer/cesium/clusterContext.js';
 export { default as DataSourceCesiumImpl } from './src/layer/cesium/dataSourceCesiumImpl.js';
 export { default as OpenStreetMapCesiumImpl } from './src/layer/cesium/openStreetMapCesiumImpl.js';
 export { default as RasterLayerCesiumImpl } from './src/layer/cesium/rasterLayerCesiumImpl.js';
@@ -265,6 +264,28 @@ export {
   default as URLTemplateTileProvider,
   URLTemplateTileProviderOptions,
 } from './src/layer/tileProvider/urlTemplateTileProvider.js';
+export {
+  default as ClusterContext,
+  default as VectorClusterCesiumContext,
+} from './src/vectorCluster/vectorClusterCesiumContext.js';
+export {
+  default as VectorClusterStyleItem,
+  VectorClusterStyleItemOptions,
+  VectorClusterTemplateFunction,
+  getDefaultClusterStyleItem,
+  getDefaultClusterHighlightStyleItem,
+} from './src/vectorCluster/vectorClusterStyleItem.js';
+export { default as VectorClusterGroupCesiumImpl } from './src/vectorCluster/vectorClusterGroupCesiumImpl.js';
+export { default as VectorClusterGroupOpenlayersImpl } from './src/vectorCluster/vectorClusterGroupOpenlayersImpl.js';
+export {
+  default as VectorClusterGroup,
+  VectorClusterGroupOptions,
+  VectorClusterGroupImplementationOptions,
+} from './src/vectorCluster/vectorClusterGroup.js';
+export { default as VectorClusterGroupImpl } from './src/vectorCluster/vectorClusterGroupImpl.js';
+export { default as VectorClusterGroupObliqueImpl } from './src/vectorCluster/vectorClusterGroupObliqueImpl.js';
+export { default as VectorClusterGroupCollection } from './src/vectorCluster/vectorClusterGroupCollection.js';
+export { vectorClusterGroupName } from './src/vectorCluster/vectorClusterSymbols.js';
 export {
   default as TMSLayer,
   TMSOptions,

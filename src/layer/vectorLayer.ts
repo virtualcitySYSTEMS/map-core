@@ -41,10 +41,11 @@ import { originalStyle, updateOriginalStyle } from './featureVisibility.js';
 import StyleItem, { StyleItemOptions } from '../style/styleItem.js';
 import { layerClassRegistry } from '../classRegistry.js';
 
-import VcsMap from '../map/vcsMap.js';
+import type VcsMap from '../map/vcsMap.js';
 import { GeoJSONwriteOptions } from './geojsonHelpers.js';
 import { vcsLayerName } from './layerSymbols.js';
 import CesiumTilesetCesiumImpl from './cesium/cesiumTilesetCesiumImpl.js';
+import VcsEvent from '../vcsEvent.js';
 
 export type VectorOptions = FeatureLayerOptions & {
   /**
@@ -61,6 +62,7 @@ export type VectorOptions = FeatureLayerOptions & {
    */
   isDynamic?: boolean;
   vectorProperties?: VectorPropertiesOptions;
+  vectorClusterGroup?: string;
 };
 
 export type VectorImplementationOptions = FeatureLayerImplementationOptions & {
@@ -98,6 +100,7 @@ class VectorLayer
       highlightStyle: undefined,
       isDynamic: false,
       vectorProperties: {}, // XXX or should we return VectorProperties default options?
+      vectorClusterGroup: undefined,
     };
   }
 
@@ -137,6 +140,13 @@ class VectorLayer
   vectorProperties: VectorProperties;
 
   private _initialStyle: StyleItemOptions | undefined;
+
+  private _vectorClusterGroup: string | undefined;
+
+  vectorClusterGroupChanged = new VcsEvent<{
+    newGroup?: string;
+    oldGroup?: string;
+  }>();
 
   constructor(options: VectorOptions) {
     super(options);
@@ -179,6 +189,7 @@ class VectorLayer
     }
 
     this._initialStyle = initialStyle;
+    this._vectorClusterGroup = options.vectorClusterGroup;
   }
 
   get allowPicking(): boolean {
@@ -199,6 +210,24 @@ class VectorLayer
       this._visibility = visible;
       // eslint-disable-next-line no-void
       void this.forceRedraw();
+    }
+  }
+
+  get vectorClusterGroup(): string | undefined {
+    return this._vectorClusterGroup;
+  }
+
+  set vectorClusterGroup(newGroup: string | undefined) {
+    if (this._vectorClusterGroup !== newGroup) {
+      const oldGroup = this._vectorClusterGroup;
+      this._vectorClusterGroup = newGroup;
+      // this will destroy any current implementations which are potentially active and recreate them if needed
+      this.forceRedraw().catch(() => {
+        this.getLogger().warning(
+          'Failed to redraw after setting vector cluster group',
+        );
+      });
+      this.vectorClusterGroupChanged.raiseEvent({ newGroup, oldGroup });
     }
   }
 
@@ -264,7 +293,7 @@ class VectorLayer
     | VectorCesiumImpl
     | CesiumTilesetCesiumImpl
   )[] {
-    if (!this.visibility) {
+    if (!this.visibility || !!this.vectorClusterGroup) {
       return [];
     }
 
@@ -504,6 +533,10 @@ class VectorLayer
     const vectorPropertiesConfig = this.vectorProperties.getVcsMeta();
     if (Object.keys(vectorPropertiesConfig).length > 0) {
       config.vectorProperties = vectorPropertiesConfig;
+    }
+
+    if (this._vectorClusterGroup !== defaultOptions.vectorClusterGroup) {
+      config.vectorClusterGroup = this._vectorClusterGroup;
     }
 
     return config;

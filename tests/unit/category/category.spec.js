@@ -120,7 +120,7 @@ describe('Category', () => {
       const category = new Category({ keyProperty: 'foo' });
       expect(() => {
         category.setCollection(new IndexedCollection());
-      }).to.throw;
+      }).to.throw(Error);
       category.destroy();
     });
 
@@ -460,7 +460,9 @@ describe('Category', () => {
         });
 
         it('should throw on resetting keyProperty', () => {
-          expect(() => category.mergeOptions({ keyProperty: 'foo' })).to.throw;
+          expect(() => category.mergeOptions({ keyProperty: 'foo' })).to.throw(
+            Error,
+          );
         });
       });
 
@@ -487,37 +489,37 @@ describe('Category', () => {
               ...options,
               classRegistryName: 'layerClassRegistry',
             }),
-          ).to.throw;
+          ).to.throw(Error);
         });
 
         it('should throw on resetting featureProperty', () => {
           expect(() =>
             category.mergeOptions({ ...options, featureProperty: 'foo' }),
-          ).to.throw;
+          ).to.throw(Error);
         });
 
         it('should throw on resetting keyProperty', () => {
           expect(() =>
             category.mergeOptions({ ...options, keyProperty: 'foo' }),
-          ).to.throw;
+          ).to.throw(Error);
         });
 
         it('should throw on omitting classRegistryName', () => {
           const missingOptions = { ...options };
           delete missingOptions.classRegistryName;
-          expect(() => category.mergeOptions(missingOptions)).to.throw;
+          expect(() => category.mergeOptions(missingOptions)).to.throw(Error);
         });
 
         it('should throw on omitting featureProperty', () => {
           const missingOptions = { ...options };
           delete missingOptions.featureProperty;
-          expect(() => category.mergeOptions(missingOptions)).to.throw;
+          expect(() => category.mergeOptions(missingOptions)).to.throw(Error);
         });
 
         it('should throw on omitting keyProperty', () => {
           const missingOptions = { ...options };
           delete missingOptions.keyProperty;
-          expect(() => category.mergeOptions(missingOptions)).to.throw;
+          expect(() => category.mergeOptions(missingOptions)).to.throw(Error);
         });
       });
     });

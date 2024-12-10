@@ -59,6 +59,7 @@ import type LayerCollection from '../util/layerCollection.js';
 import type Layer from '../layer/layer.js';
 import VcsEvent from '../vcsEvent.js';
 import { DisableMapControlOptions } from '../util/mapCollection.js';
+import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
 
 export type CesiumMapOptions = VcsMapOptions & {
   /**
@@ -158,9 +159,15 @@ export async function ensureInDataSourceCollection(
   dataSource: CustomDataSource,
   layerCollection: LayerCollection,
 ): Promise<void> {
-  const targetIndex = layerCollection.indexOfKey(
-    dataSource[vcsLayerName],
-  ) as number;
+  let targetIndex = -1;
+  if (dataSource[vectorClusterGroupName]) {
+    targetIndex = layerCollection.size;
+  } else {
+    targetIndex = layerCollection.indexOfKey(
+      dataSource[vcsLayerName],
+    ) as number;
+  }
+
   if (targetIndex > -1) {
     if (!dataSourceCollection.contains(dataSource)) {
       await dataSourceCollection.add(dataSource);
@@ -1287,6 +1294,32 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
       !this.dataSourceDisplay.dataSources.isDestroyed()
     ) {
       this.dataSourceDisplay.dataSources.remove(dataSource);
+    }
+  }
+
+  async addClusterDataSource(dataSource: CustomDataSource): Promise<void> {
+    const clusterDataSources = this.getClusterDatasources();
+    if (!clusterDataSources) {
+      throw new Error('Cannot add data source to uninitialized map');
+    }
+    if (this.validateVisualization(dataSource)) {
+      this.addVisualization(dataSource);
+      await ensureInDataSourceCollection(
+        clusterDataSources,
+        dataSource,
+        this.layerCollection,
+      );
+    }
+  }
+
+  removeClusterDataSource(dataSource: CustomDataSource): void {
+    this.removeVisualization(dataSource);
+    if (
+      this._clusterDataSourceDisplay &&
+      !this._clusterDataSourceDisplay.isDestroyed() &&
+      !this._clusterDataSourceDisplay.dataSources.isDestroyed()
+    ) {
+      this._clusterDataSourceDisplay.dataSources.remove(dataSource);
     }
   }
 

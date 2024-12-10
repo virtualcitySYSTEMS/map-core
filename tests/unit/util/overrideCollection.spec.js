@@ -29,7 +29,9 @@ describe('override collections', () => {
 
     it('should throw an error, when trying to make a colleciton an override collection twice', () => {
       const collection = makeOverrideCollection(new Collection(), getModuleId);
-      expect(() => makeOverrideCollection(collection, getModuleId)).to.throw;
+      expect(() => makeOverrideCollection(collection, getModuleId)).to.throw(
+        Error,
+      );
     });
   });
 

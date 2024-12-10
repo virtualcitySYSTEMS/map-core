@@ -240,7 +240,7 @@ describe('Layer', () => {
     });
 
     it('should not deactivate the impl, if inactive', async () => {
-      await AL.mapActivated(map);
+      await AL.mapDeactivated(map);
       expect(impl.active).to.be.true;
     });
 
@@ -248,7 +248,7 @@ describe('Layer', () => {
       const map2 = await getOpenlayersMap();
       const [impl2] = AL.getImplementationsForMap(map2);
       await impl2.activate();
-      await AL.mapActivated(map);
+      await AL.mapDeactivated(map);
       expect(impl2.active).to.be.true;
       map2.destroy();
     });

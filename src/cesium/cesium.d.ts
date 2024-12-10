@@ -27,6 +27,7 @@ import {
   updateFeatureOverride,
 } from '../layer/cesium/cesiumTilesetCesiumImpl.js';
 import { isTiledFeature } from '../layer/featureStoreLayer.js';
+import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
 
 declare module '@vcmap-cesium/engine' {
   interface Scene {
@@ -61,6 +62,7 @@ declare module '@vcmap-cesium/engine' {
     getPropertyInherited(key: string): any;
     getAttributes(): Record<string, unknown>;
     [vcsLayerName]?: string;
+    [vectorClusterGroupName]?: string;
     [globalHidden]?: boolean;
     [hidden]?: boolean;
     [highlighted]?: VectorStyleItem;
@@ -112,6 +114,7 @@ declare module '@vcmap-cesium/engine' {
 
   interface CustomDataSource {
     [vcsLayerName]?: string;
+    [vectorClusterGroupName]?: string;
   }
 
   interface CzmlDataSource {

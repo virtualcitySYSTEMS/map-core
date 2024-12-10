@@ -465,7 +465,7 @@ describe('util.clipping.ClippingObjectManager', () => {
           [clippingObject],
           cb,
         ),
-      ).to.not.throw;
+      ).to.not.throw(Error);
     });
   });
 

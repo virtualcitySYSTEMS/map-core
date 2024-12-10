@@ -192,19 +192,19 @@ function getConditionalBlocks(
     conditionalOpenings,
     conditionalClosings,
     (block) => {
-      const elsIfs = elseIfs.filter((tag) => tagWithinBlock(tag, block));
+      const blockElseIfs = elseIfs.filter((tag) => tagWithinBlock(tag, block));
       const elseStatement = elses.find((tag) => tagWithinBlock(tag, block));
       if (
         elseStatement &&
-        elsIfs.length > 0 &&
-        elseStatement.index < elsIfs.at(-1)!.index
+        blockElseIfs.length > 0 &&
+        elseStatement.index < blockElseIfs.at(-1)!.index
       ) {
         throw new Error('{{else}} must be the last entry in a block');
       }
       conditionalBlocks.push({
         ...block,
         elseStatement,
-        elseIfs,
+        elseIfs: blockElseIfs,
       });
     },
     (block) => {
@@ -280,7 +280,7 @@ function expandConditionalsAndLoops(
           partialBlocks.push(...block.elseIfs);
         }
         let trueStatementIndex = partialBlocks.findIndex((s) =>
-          evaluateExpression(s[1], data, BooleanType),
+          evaluateExpression(s[1].trim(), data, BooleanType),
         );
         if (trueStatementIndex === -1 && block.elseStatement) {
           trueStatementIndex = partialBlocks.length;
@@ -309,7 +309,7 @@ function expandConditionalsAndLoops(
   getForEachBlocks(renderedTemplate)
     .reverse()
     .forEach((block) => {
-      const obj = evaluateExpression(block.opening[2], data, NoneType);
+      const obj = evaluateExpression(block.opening[2].trim(), data, NoneType);
       let keyValuePairs;
       if (is(obj, Object)) {
         keyValuePairs = Object.entries(obj);

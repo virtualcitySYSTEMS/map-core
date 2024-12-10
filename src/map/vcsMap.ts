@@ -18,6 +18,8 @@ import type Viewpoint from '../util/viewpoint.js';
 import type Layer from '../layer/layer.js';
 import type { MapEvent } from '../interaction/abstractInteraction.js';
 import type { DisableMapControlOptions } from '../util/mapCollection.js';
+import type VectorClusterGroup from '../vectorCluster/vectorClusterGroup.js';
+import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
 
 function getLogger(): Logger {
   return getLoggerByName('vcMap');
@@ -106,7 +108,9 @@ class VcsMap<
    */
   fallbackToCurrentMap: boolean;
 
-  private _visualizations: Map<string, Set<V>>;
+  private _visualizations = new Map<string, Set<V>>();
+
+  private _clusterVisualizations = new Map<string, Set<V>>();
 
   private _state: MapState;
 
@@ -125,7 +129,7 @@ class VcsMap<
    */
   private _splitPosition: number;
 
-  private _postRender: VcsEvent<VcsMapRenderEvent<V>>;
+  private _postRender = new VcsEvent<VcsMapRenderEvent<V>>();
 
   /**
    * @param  options
@@ -162,8 +166,6 @@ class VcsMap<
       defaultOptions.fallbackToCurrentMap,
     );
 
-    this._visualizations = new Map();
-
     this._state = MapState.INACTIVE;
 
     this.stateChanged = new VcsEvent();
@@ -171,8 +173,6 @@ class VcsMap<
     this.pointerInteractionEvent = new VcsEvent();
 
     this._splitPosition = 0.5;
-
-    this._postRender = new VcsEvent();
   }
 
   /**
@@ -253,12 +253,24 @@ class VcsMap<
     [...this._layerCollection].forEach((l) => {
       l.removedFromMap(this);
     });
+    [...this._layerCollection.vectorClusterGroups].forEach((g) => {
+      g.removedFromMap(this);
+    });
+
     this._layerCollection = layerCollection;
 
     if (this.active) {
       [...this._layerCollection].forEach((l) => {
-        // eslint-disable-next-line no-void
-        void l.mapActivated(this);
+        l.mapActivated(this).catch((_e) => {
+          this.getLogger().error(`Failed to activate map on layer: ${l.name}`);
+        });
+      });
+      [...this._layerCollection.vectorClusterGroups].forEach((g) => {
+        g.mapActivated(this).catch((_e) => {
+          this.getLogger().error(
+            `Failed to activate map on vector cluster group: ${g.name}`,
+          );
+        });
       });
     }
 
@@ -293,16 +305,28 @@ class VcsMap<
       cb();
     });
 
+    const added = (i: Layer | VectorClusterGroup): void => {
+      if (this.active) {
+        i.mapActivated(this).catch((_e) => {
+          this.getLogger().error(`Failed to activate map on layer: ${i.name}`);
+        });
+      }
+    };
+
+    const removed = (i: Layer | VectorClusterGroup): void => {
+      i.removedFromMap(this);
+    };
+
     this._collectionListeners = [
       this.layerCollection.moved.addEventListener((layer) => {
         this.indexChanged(layer);
       }),
-      this.layerCollection.added.addEventListener((layer) => {
-        this._layerAdded(layer);
-      }),
-      this.layerCollection.removed.addEventListener((layer) => {
-        this._layerRemoved(layer);
-      }),
+      this.layerCollection.added.addEventListener(added),
+      this.layerCollection.removed.addEventListener(removed),
+      this.layerCollection.vectorClusterGroups.added.addEventListener(added),
+      this.layerCollection.vectorClusterGroups.removed.addEventListener(
+        removed,
+      ),
     ];
   }
 
@@ -343,27 +367,19 @@ class VcsMap<
   indexChanged(_layer: Layer): void {}
 
   /**
-   * is called if a layer is added to the layerCollection.
-   */
-  private _layerAdded(layer: Layer): void {
-    if (this.active) {
-      // eslint-disable-next-line no-void
-      void layer.mapActivated(this);
-    }
-  }
-
-  /**
-   * is called if a layer is added to the layerCollection.
-   */
-  private _layerRemoved(layer: Layer): void {
-    layer.removedFromMap(this);
-  }
-
-  /**
    * Validates a visualization. A visualization must have the vcsLayeName symbol set and a layer with said name must be
    * part of the maps layerCollection.
    */
-  validateVisualization(item: V): item is V & { [vcsLayerName]: string } {
+  validateVisualization(item: V): item is V & {
+    [vcsLayerName]?: string;
+    [vectorClusterGroupName]?: string;
+  } {
+    const vectorCluster = (item as OLLayer)[vectorClusterGroupName];
+    if (vectorCluster) {
+      return this.layerCollection.vectorClusterGroups.hasKey(
+        vectorCluster,
+      ) as boolean;
+    }
     const layerName = item[vcsLayerName];
     if (layerName == null) {
       this.getLogger().warning('item is missing vcsLayerName symbol');
@@ -376,45 +392,75 @@ class VcsMap<
   /**
    * Adds a visualization to the visualizations map for its layer. The visualization must be valid, use validateVisualization first
    */
-  addVisualization(item: V): void {
+  addVisualization(item: V & { [vectorClusterGroupName]?: string }): void {
     if (!this.validateVisualization(item)) {
       throw new Error(
         'Visualization item is not valid, validate before adding',
       );
     }
-    const layerName = item[vcsLayerName];
-    if (!this._visualizations.has(layerName)) {
-      this._visualizations.set(layerName, new Set());
+    let name: string;
+    let setMap;
+    if (item[vectorClusterGroupName]) {
+      name = item[vectorClusterGroupName];
+      setMap = this._clusterVisualizations;
+    } else {
+      name = item[vcsLayerName]!;
+      setMap = this._visualizations;
     }
-    (this._visualizations.get(layerName) as Set<V>).add(item);
+
+    if (!setMap.has(name)) {
+      setMap.set(name, new Set());
+    }
+    (setMap.get(name) as Set<V>).add(item);
   }
 
   /**
    * Removes a visualization
    */
-  removeVisualization(item: V): void {
-    const layerName = item[vcsLayerName];
-    const viz = layerName ? this._visualizations.get(layerName) : undefined;
-    if (viz && layerName) {
+  removeVisualization(item: V & { [vectorClusterGroupName]?: string }): void {
+    let name: string | undefined;
+    let setMap;
+    if (item[vectorClusterGroupName]) {
+      name = item[vectorClusterGroupName];
+      setMap = this._clusterVisualizations;
+    } else {
+      name = item[vcsLayerName];
+      setMap = this._visualizations;
+    }
+
+    const viz = name ? setMap.get(name) : undefined;
+    if (viz && name) {
       viz.delete(item);
       if (viz.size === 0) {
-        this._visualizations.delete(layerName);
+        setMap.delete(name);
       }
     }
   }
 
   /**
-   * Gets the visualizations for a specific layer.
+   * Gets the visualizations for a specific layer
    */
   getVisualizationsForLayer(layer: Layer): Set<V> | undefined {
     return this._visualizations.get(layer.name);
   }
 
   /**
+   * Gets the visualizations of a vector cluster group
+   */
+  getVisualizationsForVectorClusterGroup(
+    group: VectorClusterGroup,
+  ): Set<V> | undefined {
+    return this._clusterVisualizations.get(group.name);
+  }
+
+  /**
    * Get all visualizations added to this map.
    */
   getVisualizations(): V[] {
-    return [...this._visualizations.values()]
+    return [
+      ...this._visualizations.values(),
+      ...this._clusterVisualizations.values(),
+    ]
       .map((layerVisualizations) => [...layerVisualizations])
       .flat();
   }
@@ -433,9 +479,12 @@ class VcsMap<
         return;
       }
       this._state = MapState.ACTIVE;
-      await Promise.all(
-        [...this.layerCollection].map((layer) => layer.mapActivated(this)),
-      );
+      await Promise.all([
+        ...[...this.layerCollection].map((layer) => layer.mapActivated(this)),
+        ...[...this.layerCollection.vectorClusterGroups].map((clusterGroup) =>
+          clusterGroup.mapActivated(this),
+        ),
+      ]);
       if (this._state !== MapState.ACTIVE) {
         return;
       }
@@ -453,6 +502,9 @@ class VcsMap<
       [...this.layerCollection].forEach((layer) => {
         layer.mapDeactivated(this);
       });
+      [...this.layerCollection.vectorClusterGroups].forEach((clusterGroup) =>
+        clusterGroup.mapDeactivated(this),
+      );
       this.stateChanged.raiseEvent(this._state);
     }
   }
@@ -558,6 +610,9 @@ class VcsMap<
     if (this.layerCollection) {
       [...this.layerCollection].forEach((l) => {
         l.removedFromMap(this);
+      });
+      [...this.layerCollection.vectorClusterGroups].forEach((g) => {
+        g.removedFromMap(this);
       });
     }
     if (this.stateChanged) {

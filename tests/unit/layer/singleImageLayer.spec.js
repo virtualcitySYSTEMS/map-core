@@ -39,7 +39,7 @@ describe('SingleImageLayer', () => {
         projection: wgs84Projection.toJSON(),
         coordinates: [0, 0],
       });
-      expect(layer.setExtent.bind(layer, extent)).to.throw;
+      expect(layer.setExtent.bind(layer, extent)).to.throw(Error);
     });
   });
 
