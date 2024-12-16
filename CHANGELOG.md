@@ -11,6 +11,11 @@
   with the `feature` property. Drill pick will return all features (to a certain depth) at the pixel, not just the topmost one.
 - Adds a `resetExclusiveMapControls` in the mapCollection to reset the exclusiveMapControls.
 
+### 6.0.7
+
+- Fix error on initializing an `Extent` without providing options
+- Fix handling of projection prefixes
+
 ### 6.0.6
 
 - OverrideCollection now catches destroy failures of items on `removeModule`.

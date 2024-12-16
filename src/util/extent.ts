@@ -57,7 +57,13 @@ class Extent {
 
   constructor(options: ExtentOptions = {}) {
     this.projection = new Projection(options.projection);
-    this.extent = options.coordinates || this.projection.proj.getExtent();
+    this.extent = options.coordinates ||
+      this.projection.proj?.getExtent() || [
+        -Infinity,
+        -Infinity,
+        Infinity,
+        Infinity,
+      ];
   }
 
   getCoordinatesInProjection(

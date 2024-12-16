@@ -45,10 +45,16 @@ let defaultProjectionOption: ProjectionOptions = {
 
 function parseEPSGCode(value?: string | number, prefix = 'EPSG:'): string {
   if (value) {
-    const regex = new RegExp(`^(?:${prefix})?(\\d+)`, 'i');
+    const regex = new RegExp(`^(?:${prefix})?:?(\\d+)`, 'i');
     const matches = `${value}`.match(regex);
     if (matches && matches[1]) {
-      return prefix ? `${prefix}${matches[1]}` : matches[1];
+      if (prefix) {
+        if (prefix.endsWith(':')) {
+          return `${prefix}${matches[1]}`;
+        }
+        return `${prefix}:${matches[1]}`;
+      }
+      return matches[1];
     }
   }
   return '';
@@ -56,20 +62,24 @@ function parseEPSGCode(value?: string | number, prefix = 'EPSG:'): string {
 
 function validateProjectionOptions(options: ProjectionOptions): boolean {
   let proj = null;
-  if (options.epsg) {
+  const epsg = parseEPSGCode(options.epsg, options.prefix);
+
+  if (epsg) {
     try {
-      proj = proj4(parseEPSGCode(options.epsg));
+      proj = proj4(parseEPSGCode(epsg));
     } catch (error) {
       proj = null;
     }
-  }
-  if (options.proj4) {
-    try {
-      proj = proj4(options.proj4);
-    } catch (error) {
-      proj = null;
+
+    if (options.proj4) {
+      try {
+        proj = proj4(options.proj4);
+      } catch (error) {
+        proj = null;
+      }
     }
   }
+
   return proj != null;
 }
 
