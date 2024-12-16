@@ -1,3 +1,8 @@
+### 6.0.7
+
+- Fix error on initializing an `Extent` without providing options
+- Fix handling of projection prefixes
+
 ### 6.0.6
 
 - OverrideCollection now catches destroy failures of items on `removeModule`.

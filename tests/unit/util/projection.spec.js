@@ -75,6 +75,14 @@ describe('Projection', () => {
       });
     });
     describe('handling of custom prefixes', () => {
+      it('should handle prefix without colon', () => {
+        const projection = new Projection({
+          epsg: 'EPSG:25833',
+          proj4: '+proj=utm +zone=33 +ellps=GRS80 +units=m +no_defs',
+          prefix: 'EPSG',
+        });
+        expect(projection).to.have.property('epsg', 'EPSG:25833');
+      });
       it('should allow custom prefixes', () => {
         const projection = new Projection({
           epsg: 'FOO:25833',
@@ -146,6 +154,14 @@ describe('Projection', () => {
       });
       expect(validate).to.be.false;
     });
+    it('should return false on invalid epsg code with valid definitions', () => {
+      const validate = Projection.validateOptions({
+        epsg: 'EPSG25832',
+        proj4:
+          '+proj=utm +zone=32 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
+      });
+      expect(validate).to.be.false;
+    });
   });
   describe('parseEPSGCode', () => {
     it('should handle valid epsg codes and return `EPSG:4326`', () => {
@@ -164,6 +180,10 @@ describe('Projection', () => {
       expect(Projection.parseEPSGCode('4326', 'FOO:')).to.equal('FOO:4326');
       expect(Projection.parseEPSGCode(4326, 'FOO:')).to.equal('FOO:4326');
       expect(Projection.parseEPSGCode('FOO:4326', 'FOO:')).to.equal('FOO:4326');
+      expect(Projection.parseEPSGCode('FOO:4326', 'FOO')).to.equal('FOO:4326');
+      expect(Projection.parseEPSGCode('FOO4326', 'FOO')).to.equal('FOO:4326');
+      expect(Projection.parseEPSGCode('FOO4326', 'FOO:')).to.equal('');
+      expect(Projection.parseEPSGCode('FOO4326', '')).to.equal('');
       expect(Projection.parseEPSGCode('epsg:4326', '')).to.equal('');
       expect(Projection.parseEPSGCode('EPSG:4326', '')).to.equal('');
     });
