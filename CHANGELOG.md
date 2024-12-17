@@ -10,6 +10,7 @@
 - The `FeatureAtPixelInteraction` has been extended by a drill pick API. The `InteractionEvent` now has a `features` property along
   with the `feature` property. Drill pick will return all features (to a certain depth) at the pixel, not just the topmost one.
 - Adds a `resetExclusiveMapControls` in the mapCollection to reset the exclusiveMapControls.
+- Adds a `renderScreenshot` function to the core that returns a canvas.
 
 ### 6.0.7
 

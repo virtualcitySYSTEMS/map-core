@@ -867,3 +867,4 @@ export {
   startRotation,
   rotationMapControlSymbol,
 } from './src/util/rotation.js';
+export { default as renderScreenshot } from './src/util/renderScreenshot.js';
