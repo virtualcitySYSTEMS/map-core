@@ -11,7 +11,7 @@ import {
 import VcsMap, { VcsMapOptions } from './vcsMap.js';
 import PanoramaImage from '../panorama/panoramaImage.js';
 import { mapClassRegistry } from '../classRegistry.js';
-import { createPanoramaImageSource } from '../panorama/panoramaImageSource.js';
+// import { createPanoramaImageSource } from '../panorama/panoramaImageSource.js';
 import {
   createDebugCameraSphere,
   DebugCameraSphere,
@@ -24,6 +24,8 @@ type PointerInput = {
   position: Cartesian2;
   leftDown: boolean;
 };
+
+const CAMERA_POSITION = Cartesian3.fromDegrees(13, 52, 1);
 
 const maxPitch = 85 / CesiumMath.DEGREES_PER_RADIAN;
 const minPitch = -maxPitch;
@@ -93,7 +95,7 @@ function setupNavigationControls(
 
       if (!widget.scene.screenSpaceCameraController.enableInputs) {
         widget.scene.camera.setView({
-          destination: Cartesian3.fromDegrees(0, 0, 1),
+          destination: CAMERA_POSITION,
           orientation: {
             heading: 0.0,
             pitch: 0.0,
@@ -170,7 +172,7 @@ export default class PanoramaMap extends VcsMap {
       this._cesiumWidget.scene.primitives.destroyPrimitives = false;
       this._cesiumWidget.scene.globe.enableLighting = false;
       this._cesiumWidget.scene.camera.setView({
-        destination: Cartesian3.fromDegrees(0.0, 0.0, 1),
+        destination: CAMERA_POSITION,
         orientation: {
           heading: 0.0,
           pitch: 0.0,
@@ -181,7 +183,7 @@ export default class PanoramaMap extends VcsMap {
       this.initialized = true;
       const debugCamera = createDebugCameraSphere(
         this._cesiumWidget.scene,
-        Cartesian3.fromDegrees(0, 0, 1),
+        CAMERA_POSITION,
       );
       setupNavigationControls(this._cesiumWidget, debugCamera);
       // this._destroyImageSource = createPanoramaImageSource(

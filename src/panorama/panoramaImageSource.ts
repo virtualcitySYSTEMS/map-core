@@ -1,24 +1,16 @@
 import {
-  Camera,
-  Cartesian2,
   Cartesian3,
   PerspectiveFrustum,
   PrimitiveCollection,
   Scene,
   Math as CesiumMath,
-  Transforms,
-  HeadingPitchRoll,
   Matrix4,
-  Rotation,
   Matrix3,
 } from '@vcmap-cesium/engine';
 import { Coordinate } from 'ol/coordinate.js';
 import { createTilesForLevel, PanoramaTile } from './panoramaTile.js';
-import { inverseStereographicProjectionWithTangentPoint } from './stereoGraphicProjection.js';
-import {
-  cartesianToSpherical,
-  sphericalToCartesian,
-} from './sphericalCoordinates.js';
+import { cartesianToSpherical } from './sphericalCoordinates.js';
+import { sphericalCameraToSphericalSphere } from './cameraHelpers.js';
 
 type ViewExtent = {
   topLeft: Coordinate;
@@ -58,7 +50,7 @@ function createTileLevel(level: number, position: Cartesian3): LevelTiles {
   });
   return { primitives, tiles };
 }
-
+/*
 function calculateDegreesPerPixel(
   camera: Camera,
   windowSize: Cartesian2,
@@ -70,39 +62,17 @@ function calculateTilesInView(camera: Camera): [number, number, number][] {
   return [];
 }
 
-/**
- * Wraps longitude around the globe
- * @param angle
  */
-function convertLatitudeRange(angle: number): number {
-  const pi = CesiumMath.PI;
 
-  const simplified = angle - Math.floor(angle / pi) * pi;
-
-  if (simplified < -CesiumMath.PI_OVER_TWO) {
-    return simplified + pi;
-  }
-  if (simplified >= CesiumMath.PI_OVER_TWO) {
-    return simplified - pi;
-  }
-
-  return simplified;
-}
-
+/*
 function adjustForTilt(coord: [number, number]): [number, number] {
   coord[0] += Math.cos(coord[1]) * (coord[0] - coord[1]);
   return coord;
 }
 
-function sphericalCameraToSphericalSphere(
-  coord: [number, number],
-): [number, number] {
-  return [
-    CesiumMath.convertLongitudeRange(coord[0]) + CesiumMath.PI,
-    CesiumMath.PI - (convertLatitudeRange(coord[1]) + CesiumMath.PI_OVER_TWO),
-  ];
-}
+ */
 
+// XXX this was an idea, dont work
 export function calculateView(scene: Scene): undefined | ViewExtent {
   const { camera, canvas } = scene;
   const { height, width } = canvas;
@@ -110,9 +80,6 @@ export function calculateView(scene: Scene): undefined | ViewExtent {
   const lat = camera.pitch;
   const frustum = camera.frustum as PerspectiveFrustum;
   const center = sphericalCameraToSphericalSphere([lon, lat]);
-  const cameraDirection = sphericalToCartesian(center);
-  const cameraRight = new Cartesian3(Math.cos(lon), Math.sin(lon), 0);
-  const up = Cartesian3.cross(cameraDirection, cameraRight, new Cartesian3());
 
   const { aspectRatio } = frustum;
   let verticalFov;
@@ -174,7 +141,7 @@ export function calculateView(scene: Scene): undefined | ViewExtent {
         new Matrix3(),
       ),
     ),
-    cartesianCenter,
+    cartesianOrigin,
     new Cartesian3(),
   );
   const bottomRight = Matrix4.multiplyByPoint(
@@ -185,12 +152,12 @@ export function calculateView(scene: Scene): undefined | ViewExtent {
         new Matrix3(),
       ),
     ),
-    cartesianCenter,
+    cartesianOrigin,
     new Cartesian3(),
   );
 
   console.log('FOV', [horizontalFov, verticalFov].map(CesiumMath.toDegrees));
-  console.log('center', center.map(CesiumMath.toDegrees), cartesianCenter);
+  console.log('center', center.map(CesiumMath.toDegrees));
   console.log(
     'topLeft',
     cartesianToSpherical(topLeft).map(CesiumMath.toDegrees),
