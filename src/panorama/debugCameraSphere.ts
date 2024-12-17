@@ -10,12 +10,10 @@ import {
   Cartesian3,
   Transforms,
   HeadingPitchRoll,
+  Color,
+  Matrix4,
 } from '@vcmap-cesium/engine';
-import {
-  calculateView,
-  viewApplyToCoordinates,
-  viewToImageView,
-} from './panoramaImageSource.js';
+import { getFov, getProjectedFov } from './cameraHelpers.js';
 
 export type DebugCameraSphere = {
   paused: boolean;
@@ -82,25 +80,23 @@ function drawLatitude(ctx: CanvasRenderingContext2D, latitude: number): void {
 function drawView(scene: Scene, ctx: CanvasRenderingContext2D): void {
   ctx.clearRect(0, 0, 360 * PIXEL_PER_DEGREES, 180 * PIXEL_PER_DEGREES);
   drawGrid(ctx);
-  const cameraView = calculateView(scene);
+  const cameraView = getProjectedFov(scene.camera);
   if (cameraView) {
-    const imageView = viewToImageView(cameraView);
-    console.log('imageView', imageView);
     ctx.lineWidth = 2;
     ctx.strokeStyle = 'lime';
-    drawCoordinate(ctx, imageView.topLeft);
+    drawCoordinate(ctx, cameraView.topLeft);
     ctx.strokeStyle = 'green';
-    drawLatitude(ctx, imageView.topRight[1]);
+    drawLatitude(ctx, cameraView.topRight[1]);
     ctx.strokeStyle = 'red';
-    drawCoordinate(ctx, imageView.topRight);
+    drawCoordinate(ctx, cameraView.topRight);
     ctx.strokeStyle = 'orange';
-    drawCoordinate(ctx, imageView.bottomRight);
+    drawCoordinate(ctx, cameraView.bottomRight);
     ctx.strokeStyle = 'pink';
-    drawCoordinate(ctx, imageView.bottomLeft);
+    drawCoordinate(ctx, cameraView.bottomLeft);
     ctx.strokeStyle = 'cyan';
-    drawLatitude(ctx, imageView.bottomRight[1]);
+    drawLatitude(ctx, cameraView.bottomLeft[1]);
     ctx.strokeStyle = 'purple';
-    drawCoordinate(ctx, imageView.center);
+    drawCoordinate(ctx, cameraView.center);
   }
 }
 
@@ -134,6 +130,74 @@ function createPrimitive(
   });
 }
 
+function createFovPrimitive(
+  position: Cartesian3,
+  color = Color.RED.withAlpha(0.7),
+): Primitive {
+  return new Primitive({
+    geometryInstances: [
+      new GeometryInstance({
+        geometry: new SphereGeometry({
+          vertexFormat: VertexFormat.POSITION_AND_ST,
+          radius: 0.02,
+        }),
+      }),
+    ],
+    appearance: new MaterialAppearance({
+      translucent: true,
+      material: Material.fromType('Color', { color }),
+    }),
+    asynchronous: false,
+    modelMatrix: Matrix4.fromTranslation(position),
+  });
+}
+
+export function createFovPrimitives(scene: Scene): {
+  update(): void;
+  destroy(): void;
+} {
+  const { camera } = scene;
+
+  const cornerToUnit = (corner: Cartesian3): Cartesian3 => {
+    const direction = Cartesian3.subtract(
+      corner,
+      camera.position,
+      new Cartesian3(),
+    );
+    Cartesian3.normalize(direction, direction);
+    const newPos = Cartesian3.add(camera.position, direction, new Cartesian3());
+    console.log(corner, newPos);
+    return newPos;
+  };
+  const fov = getFov(camera);
+  const primitives = [...Object.values(fov)].map((corner) =>
+    createFovPrimitive(cornerToUnit(corner)),
+  );
+  primitives.push(
+    createFovPrimitive(camera.position, Color.GREEN.withAlpha(0.7)),
+  );
+  primitives.forEach((primitive) => {
+    scene.primitives.add(primitive);
+  });
+
+  function update(): void {
+    const newFov = getFov(camera);
+    [...Object.values(newFov)].forEach((corner, index) => {
+      primitives[index].modelMatrix = Matrix4.fromTranslation(
+        cornerToUnit(corner),
+      );
+    });
+  }
+
+  function destroy(): void {
+    primitives.forEach((primitive) => {
+      scene.primitives.remove(primitive);
+    });
+  }
+
+  return { update, destroy };
+}
+
 export function createDebugCameraSphere(
   scene: Scene,
   position: Cartesian3,
@@ -146,15 +210,17 @@ export function createDebugCameraSphere(
   ctx.translate(360 * PIXEL_PER_DEGREES, 0);
   ctx.scale(-1, 1); // Flip the context horizontally
   drawView(scene, ctx);
-  const primitive = createPrimitive(canvas, position);
-  scene.primitives.add(primitive);
+  // const primitive = createPrimitive(canvas, position);
+  // scene.primitives.add(primitive);
 
   let paused = false;
 
+  const fovPrimitives = createFovPrimitives(scene);
   const changeListener = scene.camera.changed.addEventListener(() => {
     if (!paused) {
       drawView(scene, ctx);
-      primitive.appearance = createMaterial(canvas);
+      fovPrimitives.update();
+      // primitive.appearance = createMaterial(canvas);
     }
   });
   scene.camera.percentageChanged = 0.1;
@@ -167,7 +233,8 @@ export function createDebugCameraSphere(
       paused = value;
     },
     destroy(): void {
-      scene.primitives.remove(primitive);
+      // scene.primitives.remove(primitive);
+      fovPrimitives.destroy();
       changeListener();
     },
   };
