@@ -12,6 +12,8 @@ import {
   HeadingPitchRoll,
   Color,
   Matrix4,
+  PolylineGeometry,
+  PolylineMaterialAppearance,
 } from '@vcmap-cesium/engine';
 import { getFov, getProjectedFov } from './cameraHelpers.js';
 
@@ -81,20 +83,21 @@ function drawView(scene: Scene, ctx: CanvasRenderingContext2D): void {
   ctx.clearRect(0, 0, 360 * PIXEL_PER_DEGREES, 180 * PIXEL_PER_DEGREES);
   drawGrid(ctx);
   const cameraView = getProjectedFov(scene.camera);
+  console.log(cameraView);
   if (cameraView) {
     ctx.lineWidth = 2;
-    ctx.strokeStyle = 'lime';
-    drawCoordinate(ctx, cameraView.topLeft);
     ctx.strokeStyle = 'green';
     drawLatitude(ctx, cameraView.topRight[1]);
+    ctx.strokeStyle = 'cyan';
+    drawLatitude(ctx, cameraView.bottomLeft[1]);
+    ctx.strokeStyle = 'lime';
+    drawCoordinate(ctx, cameraView.topLeft);
     ctx.strokeStyle = 'red';
     drawCoordinate(ctx, cameraView.topRight);
     ctx.strokeStyle = 'orange';
     drawCoordinate(ctx, cameraView.bottomRight);
     ctx.strokeStyle = 'pink';
     drawCoordinate(ctx, cameraView.bottomLeft);
-    ctx.strokeStyle = 'cyan';
-    drawLatitude(ctx, cameraView.bottomLeft[1]);
     ctx.strokeStyle = 'purple';
     drawCoordinate(ctx, cameraView.center);
   }
@@ -132,9 +135,11 @@ function createPrimitive(
 
 function createFovPrimitive(
   position: Cartesian3,
+  center: Cartesian3,
+  scene: Scene,
   color = Color.RED.withAlpha(0.7),
-): Primitive {
-  return new Primitive({
+): { update: (position: Cartesian3) => void; destroy: () => void } {
+  const pointPrimitive = new Primitive({
     geometryInstances: [
       new GeometryInstance({
         geometry: new SphereGeometry({
@@ -150,6 +155,45 @@ function createFovPrimitive(
     asynchronous: false,
     modelMatrix: Matrix4.fromTranslation(position),
   });
+
+  const createLinePrimitve = (corner: Cartesian3): Primitive =>
+    new Primitive({
+      geometryInstances: [
+        new GeometryInstance({
+          geometry: new PolylineGeometry({
+            positions: [center, corner],
+          }),
+        }),
+      ],
+      appearance: new PolylineMaterialAppearance({
+        renderState: {
+          depthTest: {
+            enabled: true,
+          },
+          lineWidth: 1,
+        },
+        translucent: color.alpha !== 1,
+        material: Material.fromType('Color', { color }),
+      }),
+      asynchronous: false,
+      releaseGeometryInstances: false,
+    });
+  let linePrimitive = createLinePrimitve(position);
+  scene.primitives.add(pointPrimitive);
+  scene.primitives.add(linePrimitive);
+
+  return {
+    update(newPosition: Cartesian3): void {
+      pointPrimitive.modelMatrix = Matrix4.fromTranslation(newPosition);
+      scene.primitives.remove(linePrimitive);
+      linePrimitive = createLinePrimitve(newPosition);
+      scene.primitives.add(linePrimitive);
+    },
+    destroy(): void {
+      scene.primitives.remove(pointPrimitive);
+      scene.primitives.remove(linePrimitive);
+    },
+  };
 }
 
 export function createFovPrimitives(scene: Scene): {
@@ -166,32 +210,31 @@ export function createFovPrimitives(scene: Scene): {
     );
     Cartesian3.normalize(direction, direction);
     const newPos = Cartesian3.add(camera.position, direction, new Cartesian3());
-    console.log(corner, newPos);
     return newPos;
   };
   const fov = getFov(camera);
   const primitives = [...Object.values(fov)].map((corner) =>
-    createFovPrimitive(cornerToUnit(corner)),
+    createFovPrimitive(cornerToUnit(corner), camera.position, scene),
   );
   primitives.push(
-    createFovPrimitive(camera.position, Color.GREEN.withAlpha(0.7)),
+    createFovPrimitive(
+      camera.position,
+      camera.position,
+      scene,
+      Color.GREEN.withAlpha(0.7),
+    ),
   );
-  primitives.forEach((primitive) => {
-    scene.primitives.add(primitive);
-  });
 
   function update(): void {
     const newFov = getFov(camera);
     [...Object.values(newFov)].forEach((corner, index) => {
-      primitives[index].modelMatrix = Matrix4.fromTranslation(
-        cornerToUnit(corner),
-      );
+      primitives[index].update(cornerToUnit(corner));
     });
   }
 
   function destroy(): void {
     primitives.forEach((primitive) => {
-      scene.primitives.remove(primitive);
+      primitive.destroy();
     });
   }
 
@@ -210,8 +253,8 @@ export function createDebugCameraSphere(
   ctx.translate(360 * PIXEL_PER_DEGREES, 0);
   ctx.scale(-1, 1); // Flip the context horizontally
   drawView(scene, ctx);
-  // const primitive = createPrimitive(canvas, position);
-  // scene.primitives.add(primitive);
+  const primitive = createPrimitive(canvas, position);
+  scene.primitives.add(primitive);
 
   let paused = false;
 
@@ -220,7 +263,7 @@ export function createDebugCameraSphere(
     if (!paused) {
       drawView(scene, ctx);
       fovPrimitives.update();
-      // primitive.appearance = createMaterial(canvas);
+      primitive.appearance = createMaterial(canvas);
     }
   });
   scene.camera.percentageChanged = 0.1;
