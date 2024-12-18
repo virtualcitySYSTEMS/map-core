@@ -10,11 +10,13 @@ import {
 } from './sphericalCoordinates.js';
 
 export type Fov = {
+  top: Cartesian3;
+  right: Cartesian3;
+  bottom: Cartesian3;
+  left: Cartesian3;
   topLeft: Cartesian3;
-  topCenter: Cartesian3;
   topRight: Cartesian3;
   bottomLeft: Cartesian3;
-  bottomCenter: Cartesian3;
   bottomRight: Cartesian3;
   center: Cartesian3;
 };
@@ -53,51 +55,38 @@ export function getFov(camera: Camera): Fov {
     hNearHalf,
     new Cartesian3(),
   );
+
   const rightHalfWidth = Cartesian3.multiplyByScalar(
     camera.right,
     wNearHalf,
     new Cartesian3(),
   );
 
-  const topLeft = Cartesian3.subtract(
-    Cartesian3.add(cNear, upHalfHeight, new Cartesian3()),
-    rightHalfWidth,
-    new Cartesian3(),
-  );
-
-  const topCenter = Cartesian3.add(cNear, upHalfHeight, new Cartesian3());
-
-  const topRight = Cartesian3.add(
-    Cartesian3.add(cNear, upHalfHeight, new Cartesian3()),
-    rightHalfWidth,
-    new Cartesian3(),
-  );
-
-  const bottomLeft = Cartesian3.subtract(
-    Cartesian3.subtract(cNear, upHalfHeight, new Cartesian3()),
-    rightHalfWidth,
-    new Cartesian3(),
-  );
-
-  const bottomCenter = Cartesian3.subtract(
-    cNear,
-    upHalfHeight,
-    new Cartesian3(),
-  );
-
-  const bottomRight = Cartesian3.add(
-    Cartesian3.subtract(cNear, upHalfHeight, new Cartesian3()),
-    rightHalfWidth,
-    new Cartesian3(),
-  );
-
   return {
-    topLeft,
-    topCenter,
-    topRight,
-    bottomLeft,
-    bottomCenter,
-    bottomRight,
+    top: Cartesian3.add(cNear, upHalfHeight, new Cartesian3()),
+    right: Cartesian3.add(cNear, rightHalfWidth, new Cartesian3()),
+    bottom: Cartesian3.subtract(cNear, upHalfHeight, new Cartesian3()),
+    left: Cartesian3.subtract(cNear, rightHalfWidth, new Cartesian3()),
+    topLeft: Cartesian3.subtract(
+      Cartesian3.add(cNear, upHalfHeight, new Cartesian3()),
+      rightHalfWidth,
+      new Cartesian3(),
+    ),
+    topRight: Cartesian3.add(
+      Cartesian3.add(cNear, upHalfHeight, new Cartesian3()),
+      rightHalfWidth,
+      new Cartesian3(),
+    ),
+    bottomLeft: Cartesian3.subtract(
+      Cartesian3.subtract(cNear, upHalfHeight, new Cartesian3()),
+      rightHalfWidth,
+      new Cartesian3(),
+    ),
+    bottomRight: Cartesian3.add(
+      Cartesian3.subtract(cNear, upHalfHeight, new Cartesian3()),
+      rightHalfWidth,
+      new Cartesian3(),
+    ),
     center: cNear,
   };
 }
