@@ -213,9 +213,23 @@ export function createFovPrimitives(scene: Scene): {
     return newPos;
   };
   const fov = getFov(camera);
-  const primitives = [...Object.values(fov)].map((corner) =>
-    createFovPrimitive(cornerToUnit(corner), camera.position, scene),
-  );
+  const primitives = Object.entries(fov).map(([key, corner]) => {
+    const isEdge = ['top', 'bottom', 'left', 'right'].includes(key);
+    let color = Color.RED.withAlpha(0.7);
+    if (isEdge) {
+      color = Color.PINK.withAlpha(0.7);
+    }
+    if (key === 'center') {
+      color = Color.GREEN.withAlpha(0.7);
+    }
+    return createFovPrimitive(
+      cornerToUnit(corner),
+      camera.position,
+      scene,
+      color,
+    );
+  });
+
   primitives.push(
     createFovPrimitive(
       camera.position,
