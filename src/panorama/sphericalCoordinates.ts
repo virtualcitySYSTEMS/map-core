@@ -1,7 +1,13 @@
-import { Cartesian3, Math as CesiumMath } from '@vcmap-cesium/engine';
+import {
+  Cartesian3,
+  Math as CesiumMath,
+  Matrix3,
+  Matrix4,
+  Transforms,
+} from '@vcmap-cesium/engine';
 
 /**
- * Spherical coordiantes for a unit sphere where:
+ * Spherical coordinates for a unit sphere where:
  * The north pole is [0, 0],
  * The south pole is [0, PI],
  * And the valid range for phi is 0 to 2 * PI.
@@ -40,9 +46,13 @@ const scratchLocal = new Cartesian3();
 export function globalCartesianToSpherical(
   cartesian: Cartesian3,
   origin: Cartesian3,
+  rotationZ = 0,
 ): [number, number] {
-  // missing east north up rotation.
-  Cartesian3.subtract(cartesian, origin, scratchLocal);
+  const transform = Transforms.eastNorthUpToFixedFrame(origin); // performance, this is FIX for an image
+  Matrix4.inverse(transform, transform);
+  Matrix4.multiplyByPoint(transform, cartesian, scratchLocal);
+  Matrix4.fromRotation(Matrix3.fromRotationZ(rotationZ), transform);
+  Matrix4.multiplyByPoint(transform, scratchLocal, scratchLocal);
   Cartesian3.normalize(scratchLocal, scratchLocal);
   return cartesianToSpherical(scratchLocal);
 }

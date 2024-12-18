@@ -11,9 +11,12 @@ import {
 
 export type Fov = {
   topLeft: Cartesian3;
+  topCenter: Cartesian3;
   topRight: Cartesian3;
   bottomLeft: Cartesian3;
+  bottomCenter: Cartesian3;
   bottomRight: Cartesian3;
+  center: Cartesian3;
 };
 
 export type ProjectedFov = {
@@ -62,6 +65,8 @@ export function getFov(camera: Camera): Fov {
     new Cartesian3(),
   );
 
+  const topCenter = Cartesian3.add(cNear, upHalfHeight, new Cartesian3());
+
   const topRight = Cartesian3.add(
     Cartesian3.add(cNear, upHalfHeight, new Cartesian3()),
     rightHalfWidth,
@@ -74,6 +79,12 @@ export function getFov(camera: Camera): Fov {
     new Cartesian3(),
   );
 
+  const bottomCenter = Cartesian3.subtract(
+    cNear,
+    upHalfHeight,
+    new Cartesian3(),
+  );
+
   const bottomRight = Cartesian3.add(
     Cartesian3.subtract(cNear, upHalfHeight, new Cartesian3()),
     rightHalfWidth,
@@ -82,9 +93,12 @@ export function getFov(camera: Camera): Fov {
 
   return {
     topLeft,
+    topCenter,
     topRight,
     bottomLeft,
+    bottomCenter,
     bottomRight,
+    center: cNear,
   };
 }
 
@@ -99,11 +113,28 @@ export function sphericalCameraToSphericalSphere(
 
 export function getProjectedFov(camera: Camera): ProjectedFov {
   const fov = getFov(camera);
+  const rotationZ = CesiumMath.PI_OVER_FOUR;
   return {
-    topLeft: globalCartesianToSpherical(fov.topLeft, camera.position),
-    topRight: globalCartesianToSpherical(fov.topRight, camera.position),
-    bottomLeft: globalCartesianToSpherical(fov.bottomLeft, camera.position),
-    bottomRight: globalCartesianToSpherical(fov.bottomRight, camera.position),
+    topLeft: globalCartesianToSpherical(
+      fov.topLeft,
+      camera.position,
+      rotationZ,
+    ),
+    topRight: globalCartesianToSpherical(
+      fov.topRight,
+      camera.position,
+      rotationZ,
+    ),
+    bottomLeft: globalCartesianToSpherical(
+      fov.bottomLeft,
+      camera.position,
+      rotationZ,
+    ),
+    bottomRight: globalCartesianToSpherical(
+      fov.bottomRight,
+      camera.position,
+      rotationZ,
+    ),
     center: sphericalCameraToSphericalSphere([camera.heading, camera.pitch]),
   };
 }
