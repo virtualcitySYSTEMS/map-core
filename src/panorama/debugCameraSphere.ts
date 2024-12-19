@@ -9,7 +9,6 @@ import {
   GeometryInstance,
   Cartesian3,
   Transforms,
-  HeadingPitchRoll,
   Color,
   Matrix4,
   PolylineGeometry,
@@ -83,7 +82,6 @@ function drawView(scene: Scene, ctx: CanvasRenderingContext2D): void {
   ctx.clearRect(0, 0, 360 * PIXEL_PER_DEGREES, 180 * PIXEL_PER_DEGREES);
   drawGrid(ctx);
   const cameraView = getProjectedFov(scene.camera);
-  console.log(cameraView);
   if (cameraView) {
     ctx.lineWidth = 2;
     ctx.strokeStyle = 'green';
@@ -126,10 +124,7 @@ function createPrimitive(
     ],
     appearance: createMaterial(canvas),
     asynchronous: false,
-    modelMatrix: Transforms.headingPitchRollToFixedFrame(
-      position,
-      new HeadingPitchRoll(CesiumMath.PI_OVER_TWO, 0, 0),
-    ),
+    modelMatrix: Transforms.eastNorthUpToFixedFrame(position),
   });
 }
 
@@ -255,6 +250,42 @@ export function createFovPrimitives(scene: Scene): {
   return { update, destroy };
 }
 
+/**
+ * Create axis primitives for debugging purposes. The axis represent the spheres cartesian coordinate system. The axis have a length of 1.
+ */
+function createAxisPrimitives(position: Cartesian3): Primitive[] {
+  const modelMatrix = Transforms.eastNorthUpToFixedFrame(position);
+  const directionColors: [Cartesian3, Color][] = [
+    [new Cartesian3(1, 0, 0), Color.RED],
+    [new Cartesian3(0, 1, 0), Color.GREEN],
+    [new Cartesian3(0, 0, 1), Color.BLUE],
+    [new Cartesian3(-1, 0, 0), Color.RED.withAlpha(0.2)],
+    [new Cartesian3(0, -1, 0), Color.GREEN.withAlpha(0.2)],
+    [new Cartesian3(0, 0, -1), Color.BLUE.withAlpha(0.2)],
+  ];
+
+  return directionColors.map(([direction, color]) => {
+    Matrix4.multiplyByPoint(modelMatrix, direction, direction);
+
+    return new Primitive({
+      geometryInstances: [
+        new GeometryInstance({
+          geometry: new PolylineGeometry({
+            positions: [position, direction],
+          }),
+        }),
+      ],
+      appearance: new PolylineMaterialAppearance({
+        translucent: true,
+        material: Material.fromType('Color', {
+          color,
+        }),
+      }),
+      asynchronous: false,
+    });
+  });
+}
+
 export function createDebugCameraSphere(
   scene: Scene,
   position: Cartesian3,
@@ -282,6 +313,11 @@ export function createDebugCameraSphere(
   });
   scene.camera.percentageChanged = 0.1;
 
+  const axisPrimitives = createAxisPrimitives(position);
+  axisPrimitives.forEach((axis) => {
+    scene.primitives.add(axis);
+  });
+
   return {
     get paused(): boolean {
       return paused;
@@ -290,7 +326,10 @@ export function createDebugCameraSphere(
       paused = value;
     },
     destroy(): void {
-      // scene.primitives.remove(primitive);
+      scene.primitives.remove(primitive);
+      axisPrimitives.forEach((axis) => {
+        scene.primitives.remove(axis);
+      });
       fovPrimitives.destroy();
       changeListener();
     },
