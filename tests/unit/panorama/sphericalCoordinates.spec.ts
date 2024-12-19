@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { Cartesian3, Math as CesiumMath } from '@vcmap-cesium/engine';
 import {
   cartesianToSpherical,
-  globalCartesianToSpherical,
+  globalCartesianToImageSpherical,
   sphericalToCartesian,
 } from '../../../src/panorama/sphericalCoordinates.js';
 
@@ -127,7 +127,7 @@ describe.only('sphericalCoordinates', () => {
       new Cartesian3(0, 0, 1),
       new Cartesian3(),
     );
-    const spherical = globalCartesianToSpherical(globalCartesian, origin);
+    const spherical = globalCartesianToImageSpherical(globalCartesian, origin);
     expect(spherical).to.eql([Math.PI / 2, Math.PI / 2]);
   });
 });

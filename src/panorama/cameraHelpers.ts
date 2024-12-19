@@ -5,8 +5,8 @@ import {
   PerspectiveFrustum,
 } from '@vcmap-cesium/engine';
 import {
-  convertLatitudeRange,
-  globalCartesianToSpherical,
+  convertCameraLatitudeRange,
+  globalCartesianToImageSpherical,
 } from './sphericalCoordinates.js';
 
 export type Fov = {
@@ -96,33 +96,23 @@ export function sphericalCameraToSphericalSphere(
 ): [number, number] {
   return [
     CesiumMath.convertLongitudeRange(coord[0]) + CesiumMath.PI,
-    CesiumMath.PI - (convertLatitudeRange(coord[1]) + CesiumMath.PI_OVER_TWO),
+    CesiumMath.PI -
+      (convertCameraLatitudeRange(coord[1]) + CesiumMath.PI_OVER_TWO),
   ];
 }
 
 export function getProjectedFov(camera: Camera): ProjectedFov {
   const fov = getFov(camera);
-  const rotationZ = CesiumMath.PI_OVER_FOUR;
   return {
-    topLeft: globalCartesianToSpherical(
-      fov.topLeft,
-      camera.position,
-      rotationZ,
-    ),
-    topRight: globalCartesianToSpherical(
-      fov.topRight,
-      camera.position,
-      rotationZ,
-    ),
-    bottomLeft: globalCartesianToSpherical(
+    topLeft: globalCartesianToImageSpherical(fov.topLeft, camera.position),
+    topRight: globalCartesianToImageSpherical(fov.topRight, camera.position),
+    bottomLeft: globalCartesianToImageSpherical(
       fov.bottomLeft,
       camera.position,
-      rotationZ,
     ),
-    bottomRight: globalCartesianToSpherical(
+    bottomRight: globalCartesianToImageSpherical(
       fov.bottomRight,
       camera.position,
-      rotationZ,
     ),
     center: sphericalCameraToSphericalSphere([camera.heading, camera.pitch]),
   };
