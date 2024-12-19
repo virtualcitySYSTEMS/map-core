@@ -13,10 +13,47 @@ import {
  * And the valid range for phi is 0 to 2 * PI.
  */
 
-const scratchNormal = new Cartesian3();
+/**
+ * Wraps latitude around the globe (-PI/2 to PI/2) in camera spherical coordinates.
+ * @param angle
+ */
+export function convertCameraLatitudeRange(angle: number): number {
+  const pi = CesiumMath.PI;
+
+  const simplified = angle - Math.floor(angle / pi) * pi;
+
+  if (simplified < -CesiumMath.PI_OVER_TWO) {
+    return simplified + pi;
+  }
+  if (simplified >= CesiumMath.PI_OVER_TWO) {
+    return simplified - pi;
+  }
+
+  return simplified;
+}
 
 /**
- * Converts a Cartesian coordinate in the spheres reference system to spherical coordinates.
+ * Wraps longitude around the globe (0 to 2 * PI) in image spherical coordinates.
+ * @param angle
+ */
+export function convertImageLongitudeAngle(angle: number): number {
+  const twoPI = CesiumMath.TWO_PI;
+
+  const simplified = angle - Math.floor(angle / twoPI) * twoPI;
+
+  if (simplified < 0) {
+    return simplified + twoPI;
+  }
+  if (simplified >= twoPI) {
+    return simplified - twoPI;
+  }
+
+  return simplified;
+}
+
+const scratchNormal = new Cartesian3();
+/**
+ * Converts a Cartesian coordinate in the spheres reference system to spherical coordinates (of the spheres reference system).
  * @param cartesian
  * @returns The spherical coordinates [phi, theta].
  */
@@ -27,6 +64,18 @@ export function cartesianToSpherical(cartesian: Cartesian3): [number, number] {
   const theta = Math.acos(z);
 
   return [phi, theta];
+}
+
+/**
+ * Converts a cartesian coordinate in the spheres reference system to spherical coordinates in the flipped image reference system.
+ * @param cartesian
+ * @returns The spherical coordinates [phi, theta].
+ */
+export function cartesianToImageSpherical(
+  cartesian: Cartesian3,
+): [number, number] {
+  const spherical = cartesianToSpherical(cartesian);
+  return [convertImageLongitudeAngle(-spherical[0]), spherical[1]];
 }
 
 /**
@@ -43,46 +92,27 @@ export function sphericalToCartesian(spherical: [number, number]): Cartesian3 {
 }
 
 const scratchLocal = new Cartesian3();
-export function globalCartesianToSpherical(
+
+/**
+ * Takes a global cesium cartesian in ECEF and converts it to spherical coordinates on the flipped image.
+ * @param cartesian
+ * @param origin
+ * @param rotationZ
+ */
+export function globalCartesianToImageSpherical(
   cartesian: Cartesian3,
   origin: Cartesian3,
   rotationZ = 0,
 ): [number, number] {
-  const transform = Transforms.eastNorthUpToFixedFrame(origin); // performance, this is FIX for an image
+  // performance, this is FIX for an image and can be passed in. so the entire transformation matrix can be passed in
+  const transform = Transforms.eastNorthUpToFixedFrame(origin);
   Matrix4.inverse(transform, transform);
   Matrix4.multiplyByPoint(transform, cartesian, scratchLocal);
-  Matrix4.fromRotation(Matrix3.fromRotationZ(rotationZ), transform);
-  Matrix4.multiplyByPoint(transform, scratchLocal, scratchLocal);
+  if (rotationZ) {
+    Matrix4.fromRotation(Matrix3.fromRotationZ(-rotationZ), transform);
+    Matrix4.multiplyByPoint(transform, scratchLocal, scratchLocal);
+  }
+
   Cartesian3.normalize(scratchLocal, scratchLocal);
-  return cartesianToSpherical(scratchLocal);
-}
-
-export function sphericalToGlobalCartesian(
-  spherical: [number, number],
-  origin: Cartesian3,
-): Cartesian3 {
-  const cartesian = sphericalToCartesian([
-    spherical[0] - Math.PI,
-    spherical[1],
-  ]);
-  return Cartesian3.add(origin, cartesian, cartesian);
-}
-
-/**
- * Wraps longitude around the globe
- * @param angle
- */
-export function convertLatitudeRange(angle: number): number {
-  const pi = CesiumMath.PI;
-
-  const simplified = angle - Math.floor(angle / pi) * pi;
-
-  if (simplified < -CesiumMath.PI_OVER_TWO) {
-    return simplified + pi;
-  }
-  if (simplified >= CesiumMath.PI_OVER_TWO) {
-    return simplified - pi;
-  }
-
-  return simplified;
+  return cartesianToImageSpherical(scratchLocal);
 }
