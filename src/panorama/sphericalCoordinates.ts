@@ -1,10 +1,5 @@
-import {
-  Cartesian3,
-  Math as CesiumMath,
-  Matrix3,
-  Matrix4,
-  Transforms,
-} from '@vcmap-cesium/engine';
+import { Cartesian3, Math as CesiumMath, Matrix4 } from '@vcmap-cesium/engine';
+import type { PanoramaImage } from './panoramaImage.js';
 
 /**
  * Spherical coordinates for a unit sphere where:
@@ -12,25 +7,6 @@ import {
  * The south pole is [0, PI],
  * And the valid range for phi is 0 to 2 * PI.
  */
-
-/**
- * Wraps latitude around the globe (-PI/2 to PI/2) in camera spherical coordinates.
- * @param angle
- */
-export function convertCameraLatitudeRange(angle: number): number {
-  const pi = CesiumMath.PI;
-
-  const simplified = angle - Math.floor(angle / pi) * pi;
-
-  if (simplified < -CesiumMath.PI_OVER_TWO) {
-    return simplified + pi;
-  }
-  if (simplified >= CesiumMath.PI_OVER_TWO) {
-    return simplified - pi;
-  }
-
-  return simplified;
-}
 
 /**
  * Wraps longitude around the globe (0 to 2 * PI) in image spherical coordinates.
@@ -96,23 +72,13 @@ const scratchLocal = new Cartesian3();
 /**
  * Takes a global cesium cartesian in ECEF and converts it to spherical coordinates on the flipped image.
  * @param cartesian
- * @param origin
- * @param rotationZ
+ * @param image
  */
 export function globalCartesianToImageSpherical(
   cartesian: Cartesian3,
-  origin: Cartesian3,
-  rotationZ = 0,
+  image: PanoramaImage,
 ): [number, number] {
-  // performance, this is FIX for an image and can be passed in. so the entire transformation matrix can be passed in
-  const transform = Transforms.eastNorthUpToFixedFrame(origin);
-  Matrix4.inverse(transform, transform);
-  Matrix4.multiplyByPoint(transform, cartesian, scratchLocal);
-  if (rotationZ) {
-    Matrix4.fromRotation(Matrix3.fromRotationZ(-rotationZ), transform);
-    Matrix4.multiplyByPoint(transform, scratchLocal, scratchLocal);
-  }
-
+  Matrix4.multiplyByPoint(image.invModelMatrix, cartesian, scratchLocal);
   Cartesian3.normalize(scratchLocal, scratchLocal);
   return cartesianToImageSpherical(scratchLocal);
 }

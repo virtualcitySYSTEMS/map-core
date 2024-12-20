@@ -1,65 +1,75 @@
 import {
   Cartesian3,
-  GeometryInstance,
-  Material,
-  MaterialAppearance,
-  Matrix3,
   Matrix4,
-  Primitive,
-  SphereGeometry,
-  TranslationRotationScale,
-  VertexFormat,
-  Math as CesiumMath,
-  Quaternion,
+  Transforms,
+  HeadingPitchRoll,
 } from '@vcmap-cesium/engine';
 
-export type PanoramaMapOptions = {
-  url: string;
+export type PanoramaImageOptions = {
+  rootUrl: string;
+  name: string;
+  position: { x: number; y: number; z: number };
+  orientation: { heading: number; pitch: number; roll: number };
 };
 
-export default class PanoramaImage {
-  private _url: string;
+export type PanoramaImage = {
+  readonly rootUrl: string;
+  readonly name: string;
+  /**
+   * position ECEF
+   */
+  readonly position: Cartesian3;
+  /**
+   * HeadingPitchRoll in radians
+   */
+  readonly orientation: HeadingPitchRoll;
+  readonly modelMatrix: Matrix4;
+  readonly invModelMatrix: Matrix4;
+};
 
-  private _primitive: Primitive | undefined;
+export function createPanoramaImage(
+  options: PanoramaImageOptions,
+): PanoramaImage {
+  const { rootUrl, name, position, orientation } = options;
 
-  constructor(options: PanoramaMapOptions) {
-    this._url = options.url;
-  }
+  const cartesianPosition = Cartesian3.fromDegrees(
+    position.x,
+    position.y,
+    position.z,
+  );
+  const headingPitchRoll = HeadingPitchRoll.fromDegrees(
+    orientation.heading,
+    orientation.pitch,
+    orientation.roll,
+  );
+  const modelMatrix = Transforms.headingPitchRollToFixedFrame(
+    cartesianPosition,
+    headingPitchRoll,
+  );
 
-  getPrimitive(): Primitive {
-    if (!this._primitive) {
-      const imgMat = new MaterialAppearance({
-        material: Material.fromType('Image', { image: this._url }),
-      });
+  const invModelMatrix = Matrix4.inverseTransformation(
+    modelMatrix,
+    new Matrix4(),
+  );
 
-      this._primitive = new Primitive({
-        geometryInstances: new GeometryInstance({
-          geometry: new SphereGeometry({
-            vertexFormat: VertexFormat.POSITION_NORMAL_AND_ST,
-            radius: 30.0,
-          }),
-        }),
-        appearance: imgMat,
-        asynchronous: false,
-        modelMatrix: Matrix4.fromTranslationRotationScale(
-          new TranslationRotationScale(
-            Cartesian3.fromDegrees(0.0, 0.0, 30),
-            Quaternion.fromRotationMatrix(
-              Matrix3.fromRotationY(CesiumMath.PI_OVER_TWO),
-            ),
-          ),
-        ),
-      });
-    }
-    return this._primitive;
-  }
-
-  destroy(): void {
-    if (this._primitive) {
-      if (!this._primitive?.isDestroyed()) {
-        this._primitive.destroy();
-      }
-      this._primitive = undefined;
-    }
-  }
+  return {
+    get rootUrl(): string {
+      return rootUrl;
+    },
+    get name(): string {
+      return name;
+    },
+    get position(): Cartesian3 {
+      return cartesianPosition;
+    },
+    get orientation(): HeadingPitchRoll {
+      return headingPitchRoll;
+    },
+    get modelMatrix(): Matrix4 {
+      return modelMatrix;
+    },
+    get invModelMatrix(): Matrix4 {
+      return invModelMatrix;
+    },
+  };
 }
