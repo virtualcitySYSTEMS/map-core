@@ -2,6 +2,11 @@
 
 Panorama image handling in the VCMap.
 
+## Current Challenges
+
+- Camera orientation and navigation. currently, the camera turns around ellipsoid up and not around the spheres coordiante system.
+- Navigation only works, if the image is not tilted.
+
 ## Data Structure & Format
 
 The following outlines the two levels of data structure for panorama images in the VCMap. Basically we have to distinguish between
@@ -154,3 +159,42 @@ This is the `VCMap` interface which allows us to treat the panorama data as a ma
 - Can determine, if a viewpoint is visible (by using min / max depth)
 - Can load / unload data sets. (More than one at a time?).
   - Maintains an index of all currently available images if more than one datasource can be loaded.
+
+## Concepts: Coordinate Systems
+
+The panorama image is rendered into a sphere using the cesium renderer. There is some
+coordinate magic to take into account. There are three coordinate systems to consider:
+
+- The cartesian world coordinate system (ECEF) which is used by cesium. This is the coordinate system the camera moves in.
+- The cartesian sphere coordinate system which is used to render the sphere.
+  This is a coordinate system where the sphere is positioned in ECEF using the images modelMatrix. The camera is always at the origin.
+  It must be ensured, that the camera is aligned to the spheres up vector. It may not roll, otherwise FOV calculations will be off.
+- The spherical coordinate system of the flipped image we are rendering into the sphere.
+
+Transformation: ECEF -> image coordinate. You can find these transformations in the `sphericalCoordinates.ts` module.
+`globalCartesianToImageSpherical` does the following:
+
+- You can move from ECEF into the spheres cartesian coordinate system by inversing the images model matrix.
+- You can then place the cartesian sphere coordinate system into the spherical coordinate system by normalizing this point.
+  This places the point on the unit sphere. You can then calculate the spherical coordinates.
+- We then flip the X axis, same as the image data, to get the correct image coordinates.
+
+## Concept: FOV
+
+The FOV is defined by the camera. Once calculated in ECEF, we move it to image coordinates system and create the
+bounds. Helper functions are found `fovHelpers.ts`. The following restriction apply:
+
+- The FOV can wrap around the X axis. You will get one in general or two bounds if it wraps around.
+- We do not wrap around the Y axis. This is a restriction of the current implementation.
+- Thus, you must ensure that the camera is always aligned to the spheres up vector.
+- You must restrict the view, so the pole will never be in view (slightly is not a problem, since we render a shell)
+
+## Concept: Tiling
+
+The image data is tiled. We request tiles based on the current FOV _extent_ (we thus load too many tiles).
+The tile leve is determined by the current FOV bounds number of pixel & angle _at the center_ this means, when looking
+upward (or downward) higher resolution tiles are loaded then at the equator. To not tax the GPU too much we do the
+following:
+
+- We always render a level 0 (or maybe 1, could be configurable) shell around the sphere.
+- Starting at level 3, we stop rendering polar regions directly, in this case, only the shell is rendered at the polar regions.

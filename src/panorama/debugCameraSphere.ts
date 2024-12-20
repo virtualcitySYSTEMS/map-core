@@ -8,18 +8,18 @@ import {
   SphereGeometry,
   GeometryInstance,
   Cartesian3,
-  Transforms,
   Color,
   Matrix4,
   PolylineGeometry,
   PolylineMaterialAppearance,
 } from '@vcmap-cesium/engine';
+import { isEmpty } from 'ol/extent.js';
 import {
   getFov,
   getFovImageSphericalExtent,
   getProjectedFov,
 } from './fovHelpers.js';
-import { isEmpty } from 'ol/extent.js';
+import type { PanoramaImage } from './panoramaImage.js';
 
 export type DebugCameraSphere = {
   paused: boolean;
@@ -83,10 +83,14 @@ function drawLatitude(ctx: CanvasRenderingContext2D, latitude: number): void {
   ctx.stroke();
 }
 
-function drawView(scene: Scene, ctx: CanvasRenderingContext2D): void {
+function drawView(
+  scene: Scene,
+  image: PanoramaImage,
+  ctx: CanvasRenderingContext2D,
+): void {
   ctx.clearRect(0, 0, 360 * PIXEL_PER_DEGREES, 180 * PIXEL_PER_DEGREES);
   drawGrid(ctx);
-  const cameraView = getProjectedFov(scene.camera);
+  const cameraView = getProjectedFov(scene.camera, image);
   if (cameraView) {
     ctx.lineWidth = 2;
     ctx.strokeStyle = 'green';
@@ -106,22 +110,24 @@ function drawView(scene: Scene, ctx: CanvasRenderingContext2D): void {
   }
 
   ctx.strokeStyle = 'red';
-  const extent = getFovImageSphericalExtent(scene.camera);
-  if (!isEmpty(extent)) {
-    const [minLon, minLat, maxLon, maxLat] = extent.map(CesiumMath.toDegrees);
-    console.log(
-      minLon * PIXEL_PER_DEGREES,
-      minLat * PIXEL_PER_DEGREES,
-      (maxLon - minLon) * PIXEL_PER_DEGREES,
-      (maxLat - minLat) * PIXEL_PER_DEGREES,
-    );
-    ctx.strokeRect(
-      minLon * PIXEL_PER_DEGREES,
-      minLat * PIXEL_PER_DEGREES,
-      (maxLon - minLon) * PIXEL_PER_DEGREES,
-      (maxLat - minLat) * PIXEL_PER_DEGREES,
-    );
-  }
+  const extents = getFovImageSphericalExtent(scene.camera, image);
+  extents.forEach((extent) => {
+    if (!isEmpty(extent)) {
+      const [minLon, minLat, maxLon, maxLat] = extent.map(CesiumMath.toDegrees);
+      console.log(
+        minLon * PIXEL_PER_DEGREES,
+        minLat * PIXEL_PER_DEGREES,
+        (maxLon - minLon) * PIXEL_PER_DEGREES,
+        (maxLat - minLat) * PIXEL_PER_DEGREES,
+      );
+      ctx.strokeRect(
+        minLon * PIXEL_PER_DEGREES,
+        minLat * PIXEL_PER_DEGREES,
+        (maxLon - minLon) * PIXEL_PER_DEGREES,
+        (maxLat - minLat) * PIXEL_PER_DEGREES,
+      );
+    }
+  });
 }
 
 function createMaterial(canvas: HTMLCanvasElement): MaterialAppearance {
@@ -134,7 +140,7 @@ function createMaterial(canvas: HTMLCanvasElement): MaterialAppearance {
 
 function createPrimitive(
   canvas: HTMLCanvasElement,
-  position: Cartesian3,
+  image: PanoramaImage,
 ): Primitive {
   return new Primitive({
     geometryInstances: [
@@ -147,7 +153,7 @@ function createPrimitive(
     ],
     appearance: createMaterial(canvas),
     asynchronous: false,
-    modelMatrix: Transforms.eastNorthUpToFixedFrame(position),
+    modelMatrix: image.modelMatrix,
   });
 }
 
@@ -276,8 +282,7 @@ export function createFovPrimitives(scene: Scene): {
 /**
  * Create axis primitives for debugging purposes. The axis represent the spheres cartesian coordinate system. The axis have a length of 1.
  */
-function createAxisPrimitives(position: Cartesian3): Primitive[] {
-  const modelMatrix = Transforms.eastNorthUpToFixedFrame(position);
+function createAxisPrimitives(image: PanoramaImage): Primitive[] {
   const directionColors: [Cartesian3, Color][] = [
     [new Cartesian3(1, 0, 0), Color.RED],
     [new Cartesian3(0, 1, 0), Color.GREEN],
@@ -288,13 +293,13 @@ function createAxisPrimitives(position: Cartesian3): Primitive[] {
   ];
 
   return directionColors.map(([direction, color]) => {
-    Matrix4.multiplyByPoint(modelMatrix, direction, direction);
+    Matrix4.multiplyByPoint(image.modelMatrix, direction, direction);
 
     return new Primitive({
       geometryInstances: [
         new GeometryInstance({
           geometry: new PolylineGeometry({
-            positions: [position, direction],
+            positions: [image.position, direction],
           }),
         }),
       ],
@@ -311,7 +316,7 @@ function createAxisPrimitives(position: Cartesian3): Primitive[] {
 
 export function createDebugCameraSphere(
   scene: Scene,
-  position: Cartesian3,
+  image: PanoramaImage,
 ): DebugCameraSphere {
   const canvas = document.createElement('canvas');
   canvas.width = 360 * PIXEL_PER_DEGREES;
@@ -320,8 +325,8 @@ export function createDebugCameraSphere(
   const ctx = canvas.getContext('2d')!;
   ctx.translate(360 * PIXEL_PER_DEGREES, 0);
   ctx.scale(-1, 1); // Flip the context horizontally
-  drawView(scene, ctx);
-  const primitive = createPrimitive(canvas, position);
+  drawView(scene, image, ctx);
+  const primitive = createPrimitive(canvas, image);
   scene.primitives.add(primitive);
 
   let paused = false;
@@ -329,14 +334,14 @@ export function createDebugCameraSphere(
   const fovPrimitives = createFovPrimitives(scene);
   const changeListener = scene.camera.changed.addEventListener(() => {
     if (!paused) {
-      drawView(scene, ctx);
+      drawView(scene, image, ctx);
       fovPrimitives.update();
       primitive.appearance = createMaterial(canvas);
     }
   });
   scene.camera.percentageChanged = 0.1;
 
-  const axisPrimitives = createAxisPrimitives(position);
+  const axisPrimitives = createAxisPrimitives(image);
   axisPrimitives.forEach((axis) => {
     scene.primitives.add(axis);
   });
