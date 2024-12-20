@@ -14,7 +14,12 @@ import {
   PolylineGeometry,
   PolylineMaterialAppearance,
 } from '@vcmap-cesium/engine';
-import { getFov, getProjectedFov } from './cameraHelpers.js';
+import {
+  getFov,
+  getFovImageSphericalExtent,
+  getProjectedFov,
+} from './fovHelpers.js';
+import { isEmpty } from 'ol/extent.js';
 
 export type DebugCameraSphere = {
   paused: boolean;
@@ -98,6 +103,24 @@ function drawView(scene: Scene, ctx: CanvasRenderingContext2D): void {
     drawCoordinate(ctx, cameraView.bottomLeft);
     ctx.strokeStyle = 'purple';
     drawCoordinate(ctx, cameraView.center);
+  }
+
+  ctx.strokeStyle = 'red';
+  const extent = getFovImageSphericalExtent(scene.camera);
+  if (!isEmpty(extent)) {
+    const [minLon, minLat, maxLon, maxLat] = extent.map(CesiumMath.toDegrees);
+    console.log(
+      minLon * PIXEL_PER_DEGREES,
+      minLat * PIXEL_PER_DEGREES,
+      (maxLon - minLon) * PIXEL_PER_DEGREES,
+      (maxLat - minLat) * PIXEL_PER_DEGREES,
+    );
+    ctx.strokeRect(
+      minLon * PIXEL_PER_DEGREES,
+      minLat * PIXEL_PER_DEGREES,
+      (maxLon - minLon) * PIXEL_PER_DEGREES,
+      (maxLat - minLat) * PIXEL_PER_DEGREES,
+    );
   }
 }
 
