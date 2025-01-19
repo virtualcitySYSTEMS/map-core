@@ -4,6 +4,10 @@ import {
   Transforms,
   HeadingPitchRoll,
 } from '@vcmap-cesium/engine';
+import {
+  createPanoramaTileProvider,
+  PanoramaTileProvider,
+} from './panoramaTileProvider.js';
 
 export type PanoramaImageOptions = {
   rootUrl: string;
@@ -13,6 +17,9 @@ export type PanoramaImageOptions = {
 };
 
 export type PanoramaImage = {
+  /**
+   * The root URL, without trailing slash
+   */
   readonly rootUrl: string;
   readonly name: string;
   /**
@@ -25,6 +32,8 @@ export type PanoramaImage = {
   readonly orientation: HeadingPitchRoll;
   readonly modelMatrix: Matrix4;
   readonly invModelMatrix: Matrix4;
+  readonly tileProvider: PanoramaTileProvider;
+  destroy(): void;
 };
 
 export function createPanoramaImage(
@@ -52,6 +61,12 @@ export function createPanoramaImage(
     new Matrix4(),
   );
 
+  const tileProvider = createPanoramaTileProvider(
+    'static',
+    `${rootUrl}/${name}`,
+    cartesianPosition,
+  );
+
   return {
     get rootUrl(): string {
       return rootUrl;
@@ -70,6 +85,12 @@ export function createPanoramaImage(
     },
     get invModelMatrix(): Matrix4 {
       return invModelMatrix;
+    },
+    get tileProvider(): PanoramaTileProvider {
+      return tileProvider;
+    },
+    destroy(): void {
+      tileProvider.destroy();
     },
   };
 }
