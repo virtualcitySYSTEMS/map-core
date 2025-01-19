@@ -10,8 +10,27 @@ import {
   VertexFormat,
   Transforms,
   Cartesian2,
+  GoogleMaps,
 } from '@vcmap-cesium/engine';
 import { getNumberOfTiles, tileSizeInRadians } from './panoramaTilingScheme.js';
+import mapTilesApiEndpoint = module;
+
+/**
+ * Tile coordinate in format [x, y, level]
+ */
+export type TileCoordinate = [number, number, number];
+
+export type PanoramaTile = {
+  readonly position: Cartesian3;
+  readonly primitive: Primitive;
+  readonly key: string;
+  getTileCoordinate(): TileCoordinate;
+  destroy(): void;
+};
+
+export function tileCoordinateToString([x, y, level]: TileCoordinate): string {
+  return `${level}/${x}/${y}`;
+}
 
 let emptyTileAppearance: MaterialAppearance | undefined;
 function getEmptyTileAppearance(): MaterialAppearance {
@@ -25,7 +44,7 @@ function getEmptyTileAppearance(): MaterialAppearance {
   return emptyTileAppearance;
 }
 
-// create a default material that can be cached.
+// TODO create a default material that can be cached.
 const source = `
 czm_material czm_getMaterial(czm_materialInput materialInput)
 {
@@ -41,30 +60,17 @@ czm_material czm_getMaterial(czm_materialInput materialInput)
 }
 `;
 
-async function addDebugOverlay(
-  src: string,
+function addDebugOverlay(
+  ctx: CanvasRenderingContext2D,
   sizeX: number,
   sizeY: number,
   text: string,
-): Promise<string> {
-  const canvas = document.createElement('canvas');
-  canvas.width = sizeX;
-  canvas.height = sizeY;
-  const ctx = canvas.getContext('2d')!;
-
-  const img = new Image();
-  img.src = src;
-  await new Promise((resolve, reject) => {
-    img.onload = resolve;
-    img.onerror = reject;
-  });
-  ctx.drawImage(img, 0, 0, sizeX, sizeY);
-
+): void {
   ctx.strokeStyle = 'hotpink';
   ctx.lineWidth = 5;
   ctx.strokeRect(0, 0, sizeX, sizeY);
 
-  ctx.translate(canvas.width, 0);
+  ctx.translate(sizeX, 0);
   ctx.scale(-1, 1); // Flip the context horizontally
 
   ctx.fillStyle = 'hotpink';
@@ -72,26 +78,28 @@ async function addDebugOverlay(
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(text, sizeX / 2, sizeY / 2);
-
-  return canvas.toDataURL('image/png');
 }
 
-async function getImageTileAppearance(
-  x: number,
-  y: number,
-  level: number,
-  debug?: boolean,
-): Promise<MaterialAppearance> {
+function getImageTileAppearance(
+  [x, y, level]: TileCoordinate,
+  image: ImageBitmap,
+  tileSize: [number, number] = [256, 256],
+  debug = false,
+): MaterialAppearance {
   const [numx, numy] = getNumberOfTiles(level);
   const sizeX = 1 / numx;
   const sizeY = 1 / numy;
 
   const min = new Cartesian2(x * sizeX, 1 - (y * sizeY + sizeY));
   const max = new Cartesian2(x * sizeX + sizeX, 1 - y * sizeY);
+  const canvas = document.createElement('canvas'); // XXX offscreen canvas? worker?
+  canvas.width = tileSize[0];
+  canvas.height = tileSize[1];
+  const ctx = canvas.getContext('2d')!;
 
-  let image = `exampleData/pano_000001_000011/${level}/${x}/${y}.jpg`;
+  ctx.drawImage(image, 0, 0, tileSize[0], tileSize[1]);
   if (debug) {
-    image = await addDebugOverlay(image, 256, 256, `${level}/${x}/${y}`);
+    addDebugOverlay(ctx, tileSize[0], tileSize[1], `${level}/${x}/${y}`);
   }
 
   return new MaterialAppearance({
@@ -99,7 +107,7 @@ async function getImageTileAppearance(
       fabric: {
         type: 'TileImage',
         uniforms: {
-          image,
+          image: canvas.toDataURL('image/png'),
           color: Color.WHITE.withAlpha(1),
           min,
           max,
@@ -111,9 +119,7 @@ async function getImageTileAppearance(
 }
 
 function createPrimitive(
-  x: number,
-  y: number,
-  level: number,
+  [x, y, level]: TileCoordinate,
   position: Cartesian3,
 ): Primitive {
   const sizeR = tileSizeInRadians(level);
@@ -144,69 +150,37 @@ function createPrimitive(
   });
 }
 
-export type PanoramaTile = {
-  readonly x: number;
-  readonly y: number;
-  readonly level: number;
-  readonly position: Cartesian3;
-  readonly primitive: Primitive;
-  readonly readyPromise: Promise<void>;
-  getTileCoordinate(): [number, number, number];
-};
-
 export function createPanoramaTile(
-  x: number,
-  y: number,
-  level: number,
-  position: Cartesian3,
+  tileCoordinate: TileCoordinate,
+  image: ImageBitmap,
+  origin: Cartesian3,
 ): PanoramaTile {
-  const primitive = createPrimitive(x, y, level, position);
+  const key = tileCoordinateToString(tileCoordinate);
+  const [x, y, level] = tileCoordinate;
+  const primitive = createPrimitive(tileCoordinate, origin);
   // primitive.show = level === 1 && x === 0 && y === 0;
-  const readyPromise = getImageTileAppearance(x, y, level, true)
-    .then((appearance) => {
-      primitive.appearance = appearance;
-    })
-    .catch((_e) => {
-      console.error('Failed to load image');
-    });
+  primitive.appearance = getImageTileAppearance(
+    tileCoordinate,
+    image,
+    [256, 256],
+    true,
+  );
 
   return {
-    get x(): number {
-      return x;
-    },
-    get y(): number {
-      return y;
-    },
-    get level(): number {
-      return level;
-    },
     get position(): Cartesian3 {
-      return position;
+      return origin;
     },
     get primitive(): Primitive {
       return primitive;
     },
-    get readyPromise(): Promise<void> {
-      return readyPromise;
+    get key(): string {
+      return key;
     },
-    getTileCoordinate(): [number, number, number] {
-      return [this.x, this.y, this.level];
+    getTileCoordinate(): TileCoordinate {
+      return [x, y, level];
+    },
+    destroy(): void {
+      primitive.destroy();
     },
   };
-}
-
-export function createTilesForLevel(
-  level: number,
-  position: Cartesian3,
-): PanoramaTile[] {
-  const [maxX, maxY] = getNumberOfTiles(level);
-
-  const tiles: PanoramaTile[] = [];
-  for (let x = 0; x < maxX; x++) {
-    for (let y = 0; y < maxY; y++) {
-      tiles.push(createPanoramaTile(x, y, level, position));
-    }
-  }
-
-  return tiles;
 }
