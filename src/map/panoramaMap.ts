@@ -8,7 +8,7 @@ import {
   ShadowMode,
 } from '@vcmap-cesium/engine';
 import VcsMap, { VcsMapOptions } from './vcsMap.js';
-import PanoramaImageLegacy, {
+import {
   createPanoramaImage,
   PanoramaImage,
 } from '../panorama/panoramaImage.js';
@@ -17,6 +17,10 @@ import {
   createDebugCameraSphere,
   DebugCameraSphere,
 } from '../panorama/debugCameraSphere.js';
+import {
+  createPanoramaImageView,
+  PanoramaImageView,
+} from '../panorama/panoramaImageView.js';
 
 export type PanoramaMapOptions = VcsMapOptions;
 
@@ -154,7 +158,9 @@ export default class PanoramaMap extends VcsMap {
 
   private _cesiumWidget: CesiumWidget | undefined;
 
-  private _currentImage: PanoramaImageLegacy | undefined;
+  private _currentImage: PanoramaImage | undefined;
+
+  private _currentImageView: PanoramaImageView | undefined;
 
   private _destroyImageSource: (() => void) | undefined;
 
@@ -188,7 +194,7 @@ export default class PanoramaMap extends VcsMap {
       // });
 
       const image = createPanoramaImage({
-        rootUrl: '',
+        rootUrl: 'exampleData/panoramaImages',
         name: 'pano_000001_000011',
         position: {
           x: 52.477762,
@@ -196,25 +202,24 @@ export default class PanoramaMap extends VcsMap {
           z: 56.12,
         },
         orientation: {
-          heading: -165.52229,
-          pitch: 0,
-          roll: -45,
-        },
-      });
-
-      this._cesiumWidget.scene.camera.setView({
-        destination: image.position,
-        orientation: {
           heading: 0,
           pitch: 0,
           roll: 0,
         },
       });
+
+      this._currentImageView = createPanoramaImageView(
+        this._cesiumWidget.scene,
+        image,
+      );
+
+      /*
       const debugCamera = createDebugCameraSphere(
         this._cesiumWidget.scene,
         image,
       );
-      setupNavigationControls(this._cesiumWidget, image, debugCamera);
+       */
+      setupNavigationControls(this._cesiumWidget, image);
       // this._destroyImageSource = createPanoramaImageSource(
       //   this._cesiumWidget.scene,
       //   4,
@@ -239,7 +244,8 @@ export default class PanoramaMap extends VcsMap {
     }
   }
 
-  setCurrentImage(image: PanoramaImageLegacy): void {
+  /*
+  setCurrentImage(image: PanoramaImage): void {
     if (this._currentImage) {
       this._cesiumWidget?.scene.primitives.remove(
         this._currentImage.getPrimitive(),
@@ -247,7 +253,6 @@ export default class PanoramaMap extends VcsMap {
     }
     this._currentImage = image;
     this._cesiumWidget?.scene.primitives.add(image.getPrimitive());
-    /*
     this._cesiumWidget?.scene.groundPrimitives.add(
       new GroundPrimitive({
         geometryInstances: new GeometryInstance({
@@ -268,10 +273,8 @@ export default class PanoramaMap extends VcsMap {
         }),
       }),
     );
-
-     */
   }
-
+  */
   deactivate(): void {
     super.deactivate();
     if (this._cesiumWidget) {
@@ -281,6 +284,7 @@ export default class PanoramaMap extends VcsMap {
 
   destroy(): void {
     this._destroyImageSource?.();
+    this._currentImageView?.destroy();
     super.destroy();
   }
 }
