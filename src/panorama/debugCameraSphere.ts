@@ -20,6 +20,7 @@ import {
   getProjectedFov,
 } from './fovHelpers.js';
 import type { PanoramaImage } from './panoramaImage.js';
+import { getNumberOfTiles, tileSizeInRadians } from './panoramaTile.js';
 
 export type DebugCameraSphere = {
   paused: boolean;
@@ -27,6 +28,19 @@ export type DebugCameraSphere = {
 };
 
 const PIXEL_PER_DEGREES = 5;
+
+const source = `
+czm_material czm_getMaterial(czm_materialInput materialInput)
+{
+    czm_material m = czm_getDefaultMaterial(materialInput);
+    vec3 t_color = texture(image, materialInput.st).rgb * color.rgb;
+    m.diffuse =  t_color;
+    m.specular = 0.5;
+    m.emission = t_color * vec3(0.5);
+    m.alpha = 1.0;
+    return m;
+}
+`;
 
 function drawGrid(ctx: CanvasRenderingContext2D): void {
   ctx.strokeStyle = 'black';
@@ -50,6 +64,32 @@ function drawGrid(ctx: CanvasRenderingContext2D): void {
     ctx.lineTo(360 * PIXEL_PER_DEGREES, i * PIXEL_PER_DEGREES);
     ctx.stroke();
     ctx.fillText(i.toString(), 10, i * PIXEL_PER_DEGREES);
+  }
+}
+
+function drawTiles(ctx: CanvasRenderingContext2D, level = 0): void {
+  const [maxX, maxY] = getNumberOfTiles(level);
+  const tileSize = CesiumMath.toDegrees(tileSizeInRadians(level));
+  for (let x = 0; x < maxX; x++) {
+    for (let y = 0; y < maxY; y++) {
+      ctx.strokeStyle = 'cyan';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(
+        x * tileSize * PIXEL_PER_DEGREES,
+        y * tileSize * PIXEL_PER_DEGREES,
+        tileSize * PIXEL_PER_DEGREES,
+        tileSize * PIXEL_PER_DEGREES,
+      );
+      ctx.fillStyle = 'cyan';
+      ctx.font = '10px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(
+        `${level}/${x}/${y}`,
+        x * tileSize * PIXEL_PER_DEGREES + (tileSize * PIXEL_PER_DEGREES) / 2,
+        y * tileSize * PIXEL_PER_DEGREES + (tileSize * PIXEL_PER_DEGREES) / 2,
+      );
+    }
   }
 }
 
@@ -90,6 +130,7 @@ function drawView(
 ): void {
   ctx.clearRect(0, 0, 360 * PIXEL_PER_DEGREES, 180 * PIXEL_PER_DEGREES);
   drawGrid(ctx);
+  drawTiles(ctx);
   const cameraView = getProjectedFov(scene.camera, image);
   if (cameraView) {
     ctx.lineWidth = 2;
@@ -114,12 +155,6 @@ function drawView(
   extents.forEach((extent) => {
     if (!isEmpty(extent)) {
       const [minLon, minLat, maxLon, maxLat] = extent.map(CesiumMath.toDegrees);
-      console.log(
-        minLon * PIXEL_PER_DEGREES,
-        minLat * PIXEL_PER_DEGREES,
-        (maxLon - minLon) * PIXEL_PER_DEGREES,
-        (maxLat - minLat) * PIXEL_PER_DEGREES,
-      );
       ctx.strokeRect(
         minLon * PIXEL_PER_DEGREES,
         minLat * PIXEL_PER_DEGREES,
@@ -132,9 +167,17 @@ function drawView(
 
 function createMaterial(canvas: HTMLCanvasElement): MaterialAppearance {
   return new MaterialAppearance({
-    material: Material.fromType('Image', {
-      image: canvas.toDataURL('image/png'),
+    material: new Material({
+      fabric: {
+        type: 'DebugTileImage',
+        uniforms: {
+          image: canvas.toDataURL('image/png'),
+          color: Color.HOTPINK.withAlpha(1),
+        },
+        source,
+      },
     }),
+    translucent: true,
   });
 }
 
@@ -146,7 +189,7 @@ function createPrimitive(
     geometryInstances: [
       new GeometryInstance({
         geometry: new SphereGeometry({
-          vertexFormat: VertexFormat.POSITION_AND_ST,
+          vertexFormat: VertexFormat.POSITION_NORMAL_AND_ST,
           radius: 0.9,
         }),
       }),

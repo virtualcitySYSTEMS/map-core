@@ -8,6 +8,7 @@ import {
   createPanoramaTileProvider,
   PanoramaTileProvider,
 } from './panoramaTileProvider.js';
+import type { TileSize } from './panoramaTile.js';
 
 export type PanoramaImageOptions = {
   rootUrl: string;
@@ -38,6 +39,7 @@ export type PanoramaImage = {
 
 export function createPanoramaImage(
   options: PanoramaImageOptions,
+  tileSize: TileSize,
 ): PanoramaImage {
   const { rootUrl, name, position, orientation } = options;
 
@@ -65,6 +67,7 @@ export function createPanoramaImage(
     'static',
     `${rootUrl}/${name}`,
     cartesianPosition,
+    tileSize,
   );
 
   return {

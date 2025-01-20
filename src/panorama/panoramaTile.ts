@@ -1,35 +1,50 @@
 import {
+  Cartesian2,
   Cartesian3,
   Color,
   EllipsoidGeometry,
-  Material,
-  MaterialAppearance,
-  Primitive,
   GeometryInstance,
   HeadingPitchRoll,
-  VertexFormat,
+  Material,
+  MaterialAppearance,
+  Math as CesiumMath,
+  Primitive,
   Transforms,
-  Cartesian2,
-  GoogleMaps,
+  VertexFormat,
 } from '@vcmap-cesium/engine';
-import { getNumberOfTiles, tileSizeInRadians } from './panoramaTilingScheme.js';
-import mapTilesApiEndpoint = module;
+import { Extent } from 'ol/extent.js';
 
 /**
  * Tile coordinate in format [x, y, level]
  */
-export type TileCoordinate = [number, number, number];
+export type TileCoordinate = {
+  readonly x: number;
+  readonly y: number;
+  readonly level: number;
+  readonly key: string;
+};
+
+export type TileSize = [number, number];
 
 export type PanoramaTile = {
   readonly position: Cartesian3;
   readonly primitive: Primitive;
-  readonly key: string;
-  getTileCoordinate(): TileCoordinate;
+  readonly tileCoordinate: TileCoordinate;
   destroy(): void;
 };
 
-export function tileCoordinateToString([x, y, level]: TileCoordinate): string {
-  return `${level}/${x}/${y}`;
+export function createTileCoordinate(
+  x: number,
+  y: number,
+  level: number,
+): TileCoordinate {
+  return {
+    // XXX Object.freeze to prevent mutability?
+    x,
+    y,
+    level,
+    key: `${level}/${x}/${y}`,
+  };
 }
 
 let emptyTileAppearance: MaterialAppearance | undefined;
@@ -39,6 +54,8 @@ function getEmptyTileAppearance(): MaterialAppearance {
       material: Material.fromType('Color', {
         color: Color.HOTPINK.withAlpha(0.8),
       }),
+      faceForward: false,
+      translucent: true,
     });
   }
   return emptyTileAppearance;
@@ -62,28 +79,77 @@ czm_material czm_getMaterial(czm_materialInput materialInput)
 
 function addDebugOverlay(
   ctx: CanvasRenderingContext2D,
-  sizeX: number,
-  sizeY: number,
+  tileSize: TileSize,
   text: string,
 ): void {
   ctx.strokeStyle = 'hotpink';
   ctx.lineWidth = 5;
-  ctx.strokeRect(0, 0, sizeX, sizeY);
+  ctx.strokeRect(0, 0, tileSize[0], tileSize[1]);
 
-  ctx.translate(sizeX, 0);
+  ctx.translate(tileSize[0], 0);
   ctx.scale(-1, 1); // Flip the context horizontally
 
   ctx.fillStyle = 'hotpink';
   ctx.font = '60px Arial';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(text, sizeX / 2, sizeY / 2);
+  ctx.fillText(text, tileSize[0] / 2, tileSize[1] / 2);
+}
+
+export function getNumberOfTiles(level: number): [number, number] {
+  const maxX = 2 ** level * 2;
+  const maxY = 2 ** level;
+  return [maxX, maxY];
+}
+
+export function tileSizeInRadians(level: number): number {
+  return CesiumMath.PI / 2 ** level;
+}
+
+export function tileCoordinateFromImageCoordinate(
+  spherical: [number, number],
+  level: number,
+): TileCoordinate {
+  const tileSize = tileSizeInRadians(level);
+
+  const tileX = Math.floor(spherical[0] / tileSize);
+  const tileY = Math.floor(spherical[1] / tileSize);
+
+  return createTileCoordinate(tileX, tileY, level);
+}
+
+export function getTileCoordinatesInImageExtent(
+  extent: Extent,
+  level: number,
+): TileCoordinate[] {
+  const bottomLeft = tileCoordinateFromImageCoordinate(
+    [extent[0], extent[1]],
+    level,
+  );
+  const topRight = tileCoordinateFromImageCoordinate(
+    [extent[2], extent[3]],
+    level,
+  );
+
+  const numberOfLines = topRight.y - bottomLeft.y;
+  const tileCoordinates = new Array<TileCoordinate>(
+    (topRight.x - bottomLeft.x) * numberOfLines,
+  );
+  for (let i = bottomLeft.x; i <= topRight.x; i++) {
+    for (let j = bottomLeft.y; j <= topRight.y; j++) {
+      tileCoordinates[
+        (i - bottomLeft.x) * (numberOfLines + 1) + (j - bottomLeft.y)
+      ] = createTileCoordinate(i, j, level);
+    }
+  }
+
+  return tileCoordinates;
 }
 
 function getImageTileAppearance(
-  [x, y, level]: TileCoordinate,
+  { x, y, level }: TileCoordinate,
   image: ImageBitmap,
-  tileSize: [number, number] = [256, 256],
+  tileSize: TileSize = [256, 256],
   debug = false,
 ): MaterialAppearance {
   const [numx, numy] = getNumberOfTiles(level);
@@ -99,7 +165,7 @@ function getImageTileAppearance(
 
   ctx.drawImage(image, 0, 0, tileSize[0], tileSize[1]);
   if (debug) {
-    addDebugOverlay(ctx, tileSize[0], tileSize[1], `${level}/${x}/${y}`);
+    addDebugOverlay(ctx, tileSize, `${level}/${x}/${y}`);
   }
 
   return new MaterialAppearance({
@@ -119,7 +185,7 @@ function getImageTileAppearance(
 }
 
 function createPrimitive(
-  [x, y, level]: TileCoordinate,
+  { x, y, level }: TileCoordinate,
   position: Cartesian3,
 ): Primitive {
   const sizeR = tileSizeInRadians(level);
@@ -154,15 +220,14 @@ export function createPanoramaTile(
   tileCoordinate: TileCoordinate,
   image: ImageBitmap,
   origin: Cartesian3,
+  tileSize: TileSize,
 ): PanoramaTile {
-  const key = tileCoordinateToString(tileCoordinate);
-  const [x, y, level] = tileCoordinate;
   const primitive = createPrimitive(tileCoordinate, origin);
   // primitive.show = level === 1 && x === 0 && y === 0;
   primitive.appearance = getImageTileAppearance(
     tileCoordinate,
     image,
-    [256, 256],
+    tileSize,
     true,
   );
 
@@ -173,11 +238,8 @@ export function createPanoramaTile(
     get primitive(): Primitive {
       return primitive;
     },
-    get key(): string {
-      return key;
-    },
-    getTileCoordinate(): TileCoordinate {
-      return [x, y, level];
+    get tileCoordinate(): TileCoordinate {
+      return tileCoordinate;
     },
     destroy(): void {
       primitive.destroy();

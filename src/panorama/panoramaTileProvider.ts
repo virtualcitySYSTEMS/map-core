@@ -5,7 +5,7 @@ import {
   createPanoramaTile,
   PanoramaTile,
   TileCoordinate,
-  tileCoordinateToString,
+  TileSize,
 } from './panoramaTile.js';
 import VcsEvent from '../vcsEvent.js';
 
@@ -20,6 +20,7 @@ export type PanoramaTileProvider = {
   destroy(): void;
   loadTiles(tileCoordinate: TileCoordinate[]): void;
   readonly loading: boolean;
+  readonly tileSize: TileSize;
   tileLoaded: VcsEvent<PanoramaTile>;
   tileError: VcsEvent<{ tileCoordinate: TileCoordinate; error: Error }>;
   allTilesLoaded: VcsEvent<void>;
@@ -36,7 +37,7 @@ class PanoramaTileCache extends LRUCache<PanoramaTile> {
   expireCache(usedTiles: Record<string, boolean> = {}): void {
     while (this.canExpireCache()) {
       const tile = this.peekLast();
-      if (usedTiles[tile.key]) {
+      if (usedTiles[tile.tileCoordinate.key]) {
         break;
       } else {
         this.pop().destroy();
@@ -50,19 +51,20 @@ function addTileToCache(
   cache: PanoramaTileCache,
   currentlyVisibleTileKeys: Record<string, boolean>,
 ): void {
-  cache.set(tile.key, tile);
+  cache.set(tile.tileCoordinate.key, tile);
   cache.expireCache(currentlyVisibleTileKeys);
 }
 
 function createStaticLoadingStrategy(
   rootUrl: string,
   origin: Cartesian3,
+  tileSize: TileSize,
 ): TileLoadStrategy {
   return async (
     tileCoordinate: TileCoordinate,
     abort: AbortSignal,
   ): Promise<PanoramaTile | null | Error> => {
-    const src = `${rootUrl}/${tileCoordinateToString(tileCoordinate)}.jpg`;
+    const src = `${rootUrl}/${tileCoordinate.key}.jpg`;
     try {
       const response = await fetch(src, { signal: abort });
       if (!response.ok) {
@@ -72,7 +74,7 @@ function createStaticLoadingStrategy(
       }
       const blob = await response.blob();
       const image = await createImageBitmap(blob);
-      return createPanoramaTile(tileCoordinate, image, origin);
+      return createPanoramaTile(tileCoordinate, image, origin, tileSize);
     } catch (e) {
       if ((e as DOMException).name === 'AbortError') {
         return null;
@@ -86,6 +88,7 @@ export function createPanoramaTileProvider(
   strategy: PanoramaTileProviderStrategy,
   rootUrl: string,
   origin: Cartesian3,
+  tileSize: TileSize,
   maxCacheSize?: number,
   concurrency = 6,
 ): PanoramaTileProvider {
@@ -93,7 +96,7 @@ export function createPanoramaTileProvider(
   let currentlyVisibleTiles: Record<string, boolean> = {};
   let strategyFunction: TileLoadStrategy;
   if (strategy === 'static') {
-    strategyFunction = createStaticLoadingStrategy(rootUrl, origin);
+    strategyFunction = createStaticLoadingStrategy(rootUrl, origin, tileSize);
   } else {
     throw new Error(`Unknown strategy: ${strategy}`);
   }
@@ -119,9 +122,8 @@ export function createPanoramaTileProvider(
     async function* loadNextTileGenerator(): AsyncGenerator<void> {
       while (currentTileIndex >= 0 && !abortSignal.aborted) {
         const tileCoordinate = tileCoordinates[currentTileIndex];
-        const stringKey = tileCoordinateToString(tileCoordinate);
-        if (cache.containsKey(stringKey)) {
-          tileLoaded.raiseEvent(cache.get(stringKey));
+        if (cache.containsKey(tileCoordinate.key)) {
+          tileLoaded.raiseEvent(cache.get(tileCoordinate.key));
           yield;
         }
         currentTileIndex -= 1;
@@ -165,16 +167,17 @@ export function createPanoramaTileProvider(
     loadTiles(tileCoordinates: TileCoordinate[]): void {
       loading = true;
       currentlyVisibleTiles = Object.fromEntries(
-        tileCoordinates.map((key) => [tileCoordinateToString(key), true]),
+        tileCoordinates.map((tile) => [tile.key, true]),
       );
       abortController?.abort();
-      if (!abortController) {
-        abortController = new AbortController();
-      }
+      abortController = new AbortController();
       loadTilesQueue(tileCoordinates, abortController.signal);
     },
     get loading(): boolean {
       return loading;
+    },
+    get tileSize(): TileSize {
+      return tileSize;
     },
     tileLoaded,
     tileError,
