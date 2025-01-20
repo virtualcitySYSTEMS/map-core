@@ -39,9 +39,10 @@ const fovStep = 0.1;
 // TODO move to navication controls & setup drag listener instead of "POV" look
 function setupNavigationControls(
   widget: CesiumWidget,
-  image: PanoramaImage,
+  view: PanoramaImageView,
   debugCamera?: DebugCameraSphere,
 ): () => void {
+  const { image } = view;
   const pointerInput: PointerInput = {
     startPosition: new Cartesian2(),
     position: new Cartesian2(),
@@ -108,8 +109,10 @@ function setupNavigationControls(
         });
         if (debugCamera) {
           debugCamera.paused = false;
+          view.suspendTileLoading = false;
         }
       } else if (debugCamera) {
+        view.suspendTileLoading = true;
         debugCamera.paused = true;
       }
     }
@@ -158,8 +161,6 @@ export default class PanoramaMap extends VcsMap {
 
   private _cesiumWidget: CesiumWidget | undefined;
 
-  private _currentImage: PanoramaImage | undefined;
-
   private _currentImageView: PanoramaImageView | undefined;
 
   private _destroyImageSource: (() => void) | undefined;
@@ -193,33 +194,40 @@ export default class PanoramaMap extends VcsMap {
       //   },
       // });
 
-      const image = createPanoramaImage({
-        rootUrl: 'exampleData/panoramaImages',
-        name: 'pano_000001_000011',
-        position: {
-          x: 52.477762,
-          y: 9.7283938,
-          z: 56.12,
+      const image = createPanoramaImage(
+        {
+          rootUrl: 'exampleData/panoramaImages',
+          name: 'pano_000001_000011',
+          position: {
+            x: 52.477762,
+            y: 9.7283938,
+            z: 56.12,
+          },
+          orientation: {
+            heading: 0,
+            pitch: 0,
+            roll: 0,
+          },
         },
-        orientation: {
-          heading: 0,
-          pitch: 0,
-          roll: 0,
-        },
-      });
+        [256, 256],
+      );
 
       this._currentImageView = createPanoramaImageView(
         this._cesiumWidget.scene,
         image,
+        5,
       );
 
-      /*
       const debugCamera = createDebugCameraSphere(
         this._cesiumWidget.scene,
         image,
       );
-       */
-      setupNavigationControls(this._cesiumWidget, image);
+
+      setupNavigationControls(
+        this._cesiumWidget,
+        this._currentImageView,
+        debugCamera,
+      );
       // this._destroyImageSource = createPanoramaImageSource(
       //   this._cesiumWidget.scene,
       //   4,

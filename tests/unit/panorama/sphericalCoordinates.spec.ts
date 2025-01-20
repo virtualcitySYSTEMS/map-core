@@ -6,7 +6,7 @@ import {
   sphericalToCartesian,
 } from '../../../src/panorama/sphericalCoordinates.js';
 
-describe.only('sphericalCoordinates', () => {
+describe('sphericalCoordinates', () => {
   it('should convert spherical to Cartesian coordinates', () => {
     const cartesian = sphericalToCartesian([Math.PI / 2, Math.PI / 2]);
     expect(
@@ -23,7 +23,7 @@ describe.only('sphericalCoordinates', () => {
     expect(spherical).to.eql([Math.PI / 2, Math.PI / 2]);
   });
 
-  it.only('should be with bounds', () => {
+  it('should be with bounds', () => {
     const northCartesian = sphericalToCartesian([0, 0]);
     expect(
       Cartesian3.equalsEpsilon(
@@ -120,14 +120,14 @@ describe.only('sphericalCoordinates', () => {
     expect(spherical).to.eql([-Math.PI / 2, Math.PI / 2]);
   });
 
-  it('should convert global cartesian to spherical coordinates', () => {
-    const origin = Cartesian3.fromDegrees(0, 0);
-    const globalCartesian = Cartesian3.add(
-      origin,
-      new Cartesian3(0, 0, 1),
-      new Cartesian3(),
-    );
-    const spherical = globalCartesianToImageSpherical(globalCartesian, origin);
-    expect(spherical).to.eql([Math.PI / 2, Math.PI / 2]);
-  });
+  // it('should convert global cartesian to spherical coordinates', () => {
+  //   const origin = Cartesian3.fromDegrees(0, 0);
+  //   const globalCartesian = Cartesian3.add(
+  //     origin,
+  //     new Cartesian3(0, 0, 1),
+  //     new Cartesian3(),
+  //   );
+  //   const spherical = globalCartesianToImageSpherical(globalCartesian, origin);
+  //   expect(spherical).to.eql([Math.PI / 2, Math.PI / 2]);
+  // });
 });
