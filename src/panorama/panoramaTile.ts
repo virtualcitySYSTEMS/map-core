@@ -156,8 +156,8 @@ function getImageTileAppearance(
   const sizeX = 1 / numx;
   const sizeY = 1 / numy;
 
-  const min = new Cartesian2(x * sizeX, 1 - (y * sizeY + sizeY));
-  const max = new Cartesian2(x * sizeX + sizeX, 1 - y * sizeY);
+  const min = new Cartesian2(1 - x * sizeX - sizeX, 1 - (y * sizeY + sizeY));
+  const max = new Cartesian2(1 - x * sizeX, 1 - y * sizeY);
   const canvas = document.createElement('canvas'); // XXX offscreen canvas? worker?
   canvas.width = tileSize[0];
   canvas.height = tileSize[1];
@@ -189,17 +189,17 @@ function createPrimitive(
   position: Cartesian3,
 ): Primitive {
   const sizeR = tileSizeInRadians(level);
-  const heading = x * sizeR;
-  const tilt = y * sizeR;
+  const heading = CesiumMath.TWO_PI - x * sizeR;
 
+  const tilt = y * sizeR;
   return new Primitive({
     geometryInstances: [
       new GeometryInstance({
         geometry: new EllipsoidGeometry({
           vertexFormat: VertexFormat.POSITION_AND_ST,
           radii: new Cartesian3(1, 1, 1),
-          minimumClock: heading,
-          maximumClock: heading + sizeR,
+          minimumClock: heading - sizeR,
+          maximumClock: heading,
           minimumCone: tilt,
           maximumCone: tilt + sizeR,
           stackPartitions: (level + 1) * 64,

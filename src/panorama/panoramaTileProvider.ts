@@ -122,18 +122,18 @@ export function createPanoramaTileProvider(
     async function* loadNextTileGenerator(): AsyncGenerator<void> {
       while (currentTileIndex >= 0 && !abortSignal.aborted) {
         const tileCoordinate = tileCoordinates[currentTileIndex];
+        currentTileIndex -= 1;
         if (cache.containsKey(tileCoordinate.key)) {
           tileLoaded.raiseEvent(cache.get(tileCoordinate.key));
-          yield;
-        }
-        currentTileIndex -= 1;
-        // eslint-disable-next-line no-await-in-loop
-        const result = await strategyFunction(tileCoordinate, abortSignal);
-        if (result instanceof Error) {
-          tileError.raiseEvent({ tileCoordinate, error: result });
-        } else if (result) {
-          addTileToCache(result, cache, currentlyVisibleTiles);
-          tileLoaded.raiseEvent(result);
+        } else {
+          // eslint-disable-next-line no-await-in-loop
+          const result = await strategyFunction(tileCoordinate, abortSignal);
+          if (result instanceof Error) {
+            tileError.raiseEvent({ tileCoordinate, error: result });
+          } else if (result) {
+            addTileToCache(result, cache, currentlyVisibleTiles);
+            tileLoaded.raiseEvent(result);
+          }
         }
         yield;
       }
