@@ -70,7 +70,7 @@ czm_material czm_getMaterial(czm_materialInput materialInput)
     m.diffuse =  t_color;
     m.specular = 0.5;
     m.emission = t_color * vec3(0.5);
-    m.alpha = 1.0;
+    m.alpha = (t_color.rgb == vec3(1.0, 1.0, 1.0)) ? 0.0 : 1.0;
     return m;
 }
 `;
@@ -175,7 +175,7 @@ function getImageTileAppearance(
         type: 'TileImage',
         uniforms: {
           image: canvas.toDataURL('image/png'),
-          color: Color.WHITE.withAlpha(1),
+          color: Color.WHITE.withAlpha(0.0),
           min,
           max,
         },
