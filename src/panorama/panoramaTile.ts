@@ -54,8 +54,6 @@ function getEmptyTileAppearance(): MaterialAppearance {
       material: Material.fromType('Color', {
         color: Color.HOTPINK.withAlpha(0.8),
       }),
-      faceForward: false,
-      translucent: true,
     });
   }
   return emptyTileAppearance;
@@ -112,7 +110,8 @@ export function tileCoordinateFromImageCoordinate(
 ): TileCoordinate {
   const tileSize = tileSizeInRadians(level);
 
-  const tileX = Math.floor(spherical[0] / tileSize);
+  const [numTilesX] = getNumberOfTiles(level);
+  const tileX = numTilesX - Math.ceil(spherical[0] / tileSize);
   const tileY = Math.floor(spherical[1] / tileSize);
 
   return createTileCoordinate(tileX, tileY, level);
@@ -122,12 +121,13 @@ export function getTileCoordinatesInImageExtent(
   extent: Extent,
   level: number,
 ): TileCoordinate[] {
+  // the extent is flipped along the X axis, we need to take this into account.
   const bottomLeft = tileCoordinateFromImageCoordinate(
-    [extent[0], extent[1]],
+    [extent[2], extent[1]],
     level,
   );
   const topRight = tileCoordinateFromImageCoordinate(
-    [extent[2], extent[3]],
+    [extent[0], extent[3]],
     level,
   );
 
@@ -149,15 +149,16 @@ export function getTileCoordinatesInImageExtent(
 function getImageTileAppearance(
   { x, y, level }: TileCoordinate,
   image: ImageBitmap,
-  tileSize: TileSize = [256, 256],
+  tileSize: TileSize,
   debug = false,
 ): MaterialAppearance {
   const [numx, numy] = getNumberOfTiles(level);
   const sizeX = 1 / numx;
   const sizeY = 1 / numy;
 
-  const min = new Cartesian2(1 - x * sizeX - sizeX, 1 - (y * sizeY + sizeY));
-  const max = new Cartesian2(1 - x * sizeX, 1 - y * sizeY);
+  const min = new Cartesian2(x * sizeX, 1 - (y * sizeY + sizeY));
+  const max = new Cartesian2(x * sizeX + sizeX, 1 - y * sizeY);
+
   const canvas = document.createElement('canvas'); // XXX offscreen canvas? worker?
   canvas.width = tileSize[0];
   canvas.height = tileSize[1];
@@ -180,7 +181,10 @@ function getImageTileAppearance(
         },
         source,
       },
+      translucent: false,
     }),
+    closed: false,
+    flat: true,
   });
 }
 
@@ -189,7 +193,7 @@ function createPrimitive(
   position: Cartesian3,
 ): Primitive {
   const sizeR = tileSizeInRadians(level);
-  const heading = CesiumMath.TWO_PI - x * sizeR;
+  const heading = x * sizeR;
 
   const tilt = y * sizeR;
   return new Primitive({
@@ -198,8 +202,8 @@ function createPrimitive(
         geometry: new EllipsoidGeometry({
           vertexFormat: VertexFormat.POSITION_AND_ST,
           radii: new Cartesian3(1, 1, 1),
-          minimumClock: heading - sizeR,
-          maximumClock: heading,
+          minimumClock: heading,
+          maximumClock: heading + sizeR,
           minimumCone: tilt,
           maximumCone: tilt + sizeR,
           stackPartitions: (level + 1) * 64,

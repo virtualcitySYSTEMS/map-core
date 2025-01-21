@@ -23,6 +23,10 @@ export type PanoramaImageView = {
    */
   suspendTileLoading: boolean;
   destroy(): void;
+  /**
+   * force a render of the panorama image
+   */
+  render(): void;
 };
 
 const baseTileCoordinates: TileCoordinate[] = [
@@ -75,7 +79,7 @@ export function createPanoramaImageView(
     levelPixelPerRadians[i] = getLevelPixelPerRadians(i, tileSize);
   }
   let suspendTileLoading = false;
-  camera.changed.addEventListener(() => {
+  const render = (): void => {
     if (suspendTileLoading) {
       return;
     }
@@ -113,7 +117,9 @@ export function createPanoramaImageView(
     });
 
     image.tileProvider.loadTiles(currentTileCoordinates);
-  });
+  };
+  camera.changed.addEventListener(render);
+  render();
 
   return {
     image,
@@ -127,5 +133,6 @@ export function createPanoramaImageView(
     set suspendTileLoading(value: boolean) {
       suspendTileLoading = value;
     },
+    render,
   };
 }

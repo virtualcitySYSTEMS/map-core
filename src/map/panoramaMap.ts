@@ -209,24 +209,24 @@ export default class PanoramaMap extends VcsMap {
             roll: 0,
           },
         },
-        [256, 256],
+        [1024, 1024],
       );
 
       this._currentImageView = createPanoramaImageView(
         this._cesiumWidget.scene,
         image,
-        5,
+        4,
       );
 
-      const debugCamera = createDebugCameraSphere(
-        this._cesiumWidget.scene,
-        image,
-      );
+      // const debugCamera = createDebugCameraSphere(
+      //   this._cesiumWidget.scene,
+      //   image,
+      // );
 
       setupNavigationControls(
         this._cesiumWidget,
         this._currentImageView,
-        debugCamera,
+        // debugCamera,
       );
       // this._destroyImageSource = createPanoramaImageSource(
       //   this._cesiumWidget.scene,

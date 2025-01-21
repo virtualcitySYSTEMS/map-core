@@ -128,7 +128,10 @@ export function createPanoramaTileProvider(
         } else {
           // eslint-disable-next-line no-await-in-loop
           const result = await strategyFunction(tileCoordinate, abortSignal);
-          if (result instanceof Error) {
+          if (cache.containsKey(tileCoordinate.key)) {
+            // cached in a previous iteration but got aborted too late.
+            tileLoaded.raiseEvent(cache.get(tileCoordinate.key));
+          } else if (result instanceof Error) {
             tileError.raiseEvent({ tileCoordinate, error: result });
           } else if (result) {
             addTileToCache(result, cache, currentlyVisibleTiles);
