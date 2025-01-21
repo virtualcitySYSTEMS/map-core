@@ -26,6 +26,7 @@ contains two layers:
 
 - one RGB layer and
 - one depth layer (32bit grey scale). The depth layer is optional?
+- the idea. use ktx2 for compression should work if passing the blob to web gls `texture` command.
 
 If COGs are not possible, a fallback `static` image data structure can be used.
 
