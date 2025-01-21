@@ -95,9 +95,9 @@ export function createPanoramaImageView(
     if (currentRadiansPerPixel > levelPixelPerRadians[maxLevel]) {
       currentLevel = maxLevel;
     } else if (currentRadiansPerPixel > levelPixelPerRadians[0]) {
-      currentLevel =
-        levelPixelPerRadians.findIndex((rpp) => rpp >= currentRadiansPerPixel) -
-        1;
+      currentLevel = levelPixelPerRadians.findIndex(
+        (rpp) => rpp >= currentRadiansPerPixel,
+      );
     }
 
     currentTileCoordinates = [
