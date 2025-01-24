@@ -25,7 +25,6 @@ import { originalFeatureSymbol } from '../layer/vectorSymbols.js';
 import type OpenlayersMap from '../map/openlayersMap.js';
 import type ObliqueMap from '../map/obliqueMap.js';
 import type CesiumMap from '../map/cesiumMap.js';
-import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
 
 /**
  * This is the return from cesium scene.pick and scene.drillPick, which returns "any". We cast to this type.
@@ -42,14 +41,12 @@ type CesiumPickObject = {
   };
 };
 
-function getFeaturesFromOlMap(
+function getFeatureFromOlMap(
   map: OLMap,
   pixel: [number, number],
   hitTolerance: number,
-  drill = 0,
-): Feature[] {
-  const features: Feature[] = [];
-  let i = 0;
+): Feature | undefined {
+  let feature: Feature | undefined;
   map.forEachFeatureAtPixel(
     pixel,
     (feat) => {
@@ -58,44 +55,22 @@ function getFeaturesFromOlMap(
         (feat.get('olcs_allowPicking') == null ||
           feat.get('olcs_allowPicking') === true)
       ) {
-        const feature =
-          (feat as Feature)[originalFeatureSymbol] || (feat as Feature);
-        if (feature[vectorClusterGroupName]) {
-          const clusterFeatures = feature.get('features') as Feature[];
-          if (clusterFeatures.length === 1) {
-            features.push(clusterFeatures[0]);
-          } else {
-            // not sure about spreading the cluster features.
-            // since, even thought they are there, they are not rendered and
-            // clusters should probably be handled differently anyway.
-            features.push(feature, ...clusterFeatures);
-          }
-        } else {
-          features.push(feature);
-        }
+        feature = (feat as Feature)[originalFeatureSymbol] || (feat as Feature);
       }
-      i += 1;
-      return i >= drill;
+      return true;
     },
     { hitTolerance },
   );
 
-  return features;
+  return feature;
 }
 
 function getFeatureFromPickObject(
   object: CesiumPickObject,
-): EventFeature | EventFeature[] | undefined {
+): EventFeature | undefined {
   let feature: EventFeature | undefined;
   if (object.primitive && object.primitive.olFeature) {
     feature = object.primitive.olFeature;
-    if (feature[vectorClusterGroupName]) {
-      const clusterFeatures = feature.get('features') as Feature[];
-      // not sure about spreading the cluster features.
-      // since, even thought they are there, they are not rendered and
-      // clusters should probably be handled differently anyway.
-      return [feature, ...clusterFeatures];
-    }
   } else if (
     object.primitive &&
     object.primitive[vcsLayerName] &&
@@ -127,25 +102,18 @@ function getFeatureFromPickObject(
   return feature;
 }
 
-function getFeaturesFromScene(
+function getFeatureFromScene(
   scene: Scene,
   windowPosition: Cartesian2,
   hitTolerance: number,
-  drill = 0,
-): EventFeature[] {
-  const pickObjects =
-    drill > 0
-      ? (scene.drillPick(
-          windowPosition,
-          drill,
-          hitTolerance,
-          hitTolerance,
-        ) as CesiumPickObject[])
-      : ([
-          scene.pick(windowPosition, hitTolerance, hitTolerance),
-        ] as CesiumPickObject[]);
+): EventFeature | undefined {
+  const pickObject = scene.pick(
+    windowPosition,
+    hitTolerance,
+    hitTolerance,
+  ) as CesiumPickObject;
 
-  return pickObjects.flatMap(getFeatureFromPickObject).filter((i) => !!i);
+  return getFeatureFromPickObject(pickObject);
 }
 
 /**
@@ -171,10 +139,6 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
    * The number of pixels to take into account for picking features
    */
   hitTolerance = 10;
-
-  drillPick = EventType.CLICK;
-
-  drillPickDepth = 10;
 
   private _draggingFeature: EventFeature | null = null;
 
@@ -224,42 +188,31 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
     super.setActive(active);
   }
 
-  private _drillDepthForEvent(event: InteractionEvent): number {
-    if (event.type & this.drillPick) {
-      return this.drillPickDepth;
-    }
-    return 0;
-  }
-
   private _openlayersHandler(
     event: InteractionEvent,
   ): Promise<InteractionEvent> {
-    const features = getFeaturesFromOlMap(
+    const feature = getFeatureFromOlMap(
       (event.map as OpenlayersMap).olMap!,
       [event.windowPosition.x, event.windowPosition.y],
       this.hitTolerance,
-      this._drillDepthForEvent(event),
     );
 
-    if (features.length > 0) {
-      event.feature = features[0];
-      event.features = features;
+    if (feature) {
+      event.feature = feature;
       event.exactPosition = true;
     }
     return Promise.resolve(event);
   }
 
   private _obliqueHandler(event: InteractionEvent): Promise<InteractionEvent> {
-    const features = getFeaturesFromOlMap(
+    const feature = getFeatureFromOlMap(
       (event.map as ObliqueMap).olMap!,
       [event.windowPosition.x, event.windowPosition.y],
       this.hitTolerance,
-      this._drillDepthForEvent(event),
     );
 
-    if (features.length > 0) {
-      event.feature = features[0];
-      event.features = features;
+    if (feature) {
+      event.feature = feature;
       event.exactPosition = true;
     }
     return Promise.resolve(event);
@@ -273,11 +226,10 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
       return Promise.resolve(event);
     }
 
-    const features = getFeaturesFromScene(
+    const feature = getFeatureFromScene(
       scene,
       event.windowPosition,
       this.hitTolerance,
-      this._drillDepthForEvent(event),
     );
 
     let scratchCartographic = new Cartographic();
@@ -323,9 +275,8 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
       return Promise.resolve(event);
     };
 
-    if (features.length > 0) {
-      event.feature = features[0];
-      event.features = features;
+    if (feature) {
+      event.feature = feature;
       if (!(event.type & this.pickPosition)) {
         return Promise.resolve(event);
       }

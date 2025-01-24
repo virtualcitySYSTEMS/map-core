@@ -1,5 +1,7 @@
 import type { Coordinate } from 'ol/coordinate.js';
 
+import Point from 'ol/geom/Point.js';
+import Feature from 'ol/Feature.js';
 import AbstractInteraction, {
   type InteractionEvent,
 } from './abstractInteraction.js';
@@ -8,6 +10,10 @@ import {
   ModificationKeyType,
   PointerKeyType,
 } from './interactionType.js';
+import {
+  isProvidedClusterFeature,
+  isProvidedFeature,
+} from '../featureProvider/featureProviderSymbols.js';
 
 /**
  * @group Interaction
@@ -52,10 +58,15 @@ class FeatureProviderInteraction extends AbstractInteraction {
         .flat();
 
       if (features.length > 0) {
-        if (!event.feature) {
+        if (features.length > 1) {
+          const feature = new Feature({ features });
+          feature[isProvidedFeature] = true; // backward compatibility, may remove in future
+          feature[isProvidedClusterFeature] = true;
+          feature.setGeometry(new Point(event.position as Coordinate));
+          event.feature = feature;
+        } else if (!event.feature) {
           event.feature = features[0];
         }
-        event.features = [...(event.features ?? []), ...features];
       }
     }
     return event;

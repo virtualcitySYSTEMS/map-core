@@ -37,7 +37,6 @@ import {
 describe('FeatureAtPixelInteraction', () => {
   let sandbox: SinonSandbox;
   let pick: SinonStub;
-  let drillPick: SinonStub;
   let sceneStub: Scene;
   /** @type {import("@vcmap/core").FeatureAtPixelInteraction} */
   let fap: FeatureAtPixelInteraction;
@@ -65,12 +64,10 @@ describe('FeatureAtPixelInteraction', () => {
     sceneStub = cesiumMap.getScene()!;
     sceneStub.pickTranslucentDepth = false;
     pick = sandbox.stub(sceneStub, 'pick');
-    drillPick = sandbox.stub(sceneStub, 'drillPick');
     positionSpy = sandbox
       .stub(sceneStub, 'pickPosition')
       .returns(cartesianPosition.clone());
     fap = new FeatureAtPixel();
-    fap.drillPickDepth = 0;
   });
 
   afterEach(() => {
@@ -83,7 +80,6 @@ describe('FeatureAtPixelInteraction', () => {
 
   function setup3DTest(dummy: unknown): Promise<InteractionEvent> {
     pick.returns(dummy);
-    drillPick.returns([dummy]);
     const event: InteractionEvent = {
       pointer: PointerKeyType.LEFT,
       pointerEvent: PointerEventType.MOVE,
@@ -198,45 +194,6 @@ describe('FeatureAtPixelInteraction', () => {
 
     it('should pick a feature', async () => {
       const windowPosition = new Cartesian2(0, 0);
-      const event: InteractionEvent = {
-        pointer: PointerKeyType.LEFT,
-        pointerEvent: PointerEventType.MOVE,
-        map,
-        type: EventType.CLICK,
-        key: ModificationKeyType.NONE,
-        windowPosition,
-      };
-
-      const featureEvent = await fap.pipe(event);
-      expect(featureEvent).to.have.property('feature', normalFeature);
-    });
-
-    it('should differentiate clusters in 2D', async () => {
-      const windowPosition = new Cartesian2(1, 0);
-      const event: InteractionEvent = {
-        pointer: PointerKeyType.LEFT,
-        pointerEvent: PointerEventType.MOVE,
-        map,
-        type: EventType.CLICK,
-        key: ModificationKeyType.NONE,
-        windowPosition,
-      };
-
-      const featureEvent = await fap.pipe(event);
-
-      expect(featureEvent).to.have.property('feature', clusterFeature);
-      expect(featureEvent)
-        .to.have.property('features')
-        .and.to.have.ordered.members([
-          clusterFeature,
-          normalFeature,
-          normalFeature,
-        ]);
-    });
-
-    it('should use the clustered feature, if the cluster is picked with only one feature', async () => {
-      clusterFeature.set('features', [normalFeature]);
-      const windowPosition = new Cartesian2(1, 0);
       const event: InteractionEvent = {
         pointer: PointerKeyType.LEFT,
         pointerEvent: PointerEventType.MOVE,
@@ -416,155 +373,6 @@ describe('FeatureAtPixelInteraction', () => {
         fap.pickTranslucent = true;
         await fap.pipe(event);
         expect(sceneStub).to.have.property('pickTranslucentDepth', true);
-      });
-    });
-  });
-
-  describe('drillPick', () => {
-    beforeEach(() => {
-      fap.drillPickDepth = 10;
-    });
-
-    describe('OpenlayersMap', () => {
-      let normalFeature: Feature;
-      let clusterFeature: Feature;
-      let map: OpenlayersMap;
-      let forEachFeatureAtPixel: (
-        w: Coordinate,
-        cb: (...args: Feature[]) => boolean | void,
-      ) => void;
-
-      before(() => {
-        normalFeature = new Feature({});
-        forEachFeatureAtPixel = (
-          w: Coordinate,
-          cb: (...args: Feature[]) => boolean | void,
-        ): void => {
-          for (let i = 0; i < w[0]; i++) {
-            let returnValue: boolean | void;
-            if (w[1] === 1 && i % 2 === 0) {
-              returnValue = cb(clusterFeature);
-            } else {
-              returnValue = cb(normalFeature);
-            }
-            if (returnValue) {
-              break;
-            }
-          }
-        };
-
-        const dummyMap = {
-          forEachFeatureAtPixel,
-          setTarget(): void {},
-        };
-        map = new OpenlayersMap({});
-        // @ts-expect-error: bad joojoo, but still
-        map._olMap = dummyMap;
-      });
-
-      beforeEach(() => {
-        clusterFeature = new Feature({
-          features: [normalFeature, normalFeature],
-        });
-        clusterFeature[vectorClusterGroupName] = 'foo';
-      });
-
-      after(() => {
-        map.destroy();
-      });
-
-      it('should pick all features at position', async () => {
-        const windowPosition = new Cartesian2(4, 0);
-        const event: InteractionEvent = {
-          pointer: PointerKeyType.LEFT,
-          pointerEvent: PointerEventType.MOVE,
-          map,
-          type: EventType.CLICK,
-          key: ModificationKeyType.NONE,
-          windowPosition,
-        };
-
-        const featureEvent = await fap.pipe(event);
-        expect(featureEvent.features).to.have.lengthOf(4);
-        expect(featureEvent.feature).to.equal(featureEvent.features?.[0]);
-      });
-
-      it('should spread cluster features', async () => {
-        const windowPosition = new Cartesian2(4, 1);
-        const event: InteractionEvent = {
-          pointer: PointerKeyType.LEFT,
-          pointerEvent: PointerEventType.MOVE,
-          map,
-          type: EventType.CLICK,
-          key: ModificationKeyType.NONE,
-          windowPosition,
-        };
-
-        const featureEvent = await fap.pipe(event);
-        expect(featureEvent.features).to.have.lengthOf(8);
-        expect(featureEvent.feature).to.equal(featureEvent.features?.[0]);
-      });
-
-      it('should stop after drill depth is reached', async () => {
-        const windowPosition = new Cartesian2(100, 0);
-        const event: InteractionEvent = {
-          pointer: PointerKeyType.LEFT,
-          pointerEvent: PointerEventType.MOVE,
-          map,
-          type: EventType.CLICK,
-          key: ModificationKeyType.NONE,
-          windowPosition,
-        };
-
-        const featureEvent = await fap.pipe(event);
-        expect(featureEvent.features).to.have.lengthOf(10);
-        expect(featureEvent.feature).to.equal(featureEvent.features?.[0]);
-      });
-    });
-
-    describe('Cesium', () => {
-      it('should detect vector primitive features in 3D -> obj.primitive.olFeature', () => {
-        const olFeature = 'test';
-        const dummy = {
-          primitive: { olFeature },
-        };
-        return setup3DTest(dummy).then((event) => {
-          expect(event).to.have.property('feature', 'test');
-        });
-      });
-
-      it('should detect 3DTileFeatures, aka buildings -> obj.primitive with layerName', () => {
-        const dummy = createDummyCesium3DTileFeature(
-          {},
-          { [vcsLayerName]: 'test' },
-        );
-        return setup3DTest(dummy).then((event) => {
-          expect(event)
-            .to.have.property('feature')
-            .to.have.property(vcsLayerName, 'test');
-        });
-      });
-
-      it('should detect vector entity features in 3D -> obj.id.olFeature', () => {
-        const olFeature = 'test';
-        const dummy = {
-          id: { olFeature },
-        };
-        return setup3DTest(dummy).then((event) => {
-          expect(event).to.have.property('feature', 'test');
-        });
-      });
-
-      it('should detect 3D Entities in 3D -> obj.id with layerName', () => {
-        const dummy = {
-          id: new Entity(),
-        };
-        dummy.id[vcsLayerName] = 'test';
-        return setup3DTest(dummy).then((event) => {
-          expect(event)
-            .to.have.property('feature')
-            .to.have.property(vcsLayerName, 'test');
-        });
       });
     });
   });
