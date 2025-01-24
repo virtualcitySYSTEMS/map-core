@@ -6,6 +6,7 @@ import Viewpoint from '../../src/util/viewpoint.js';
 import VcsModule from '../../src/vcsModule.js';
 import OpenlayersMap from '../../src/map/openlayersMap.js';
 import VcsApp from '../../src/vcsApp.js';
+import ClippingPolygonObject from '../../src/util/clipping/clippingPolygonObject.js';
 
 use(chaiAsPromised);
 
@@ -33,6 +34,17 @@ describe('vcsApp', () => {
           startingViewpointName: 'foo',
           startingMapName: 'foo',
           hiddenObjects: [{ id: 'foo' }, { id: 'bar' }],
+          clippingPolygons: [
+            {
+              name: 'foo',
+              coordinates: [
+                [1, 1, 1],
+                [2, 2, 2],
+                [3, 3, 3],
+              ],
+              activeOnStartup: true,
+            },
+          ],
         });
         app = new VcsApp();
         added = sinon.spy();
@@ -63,6 +75,12 @@ describe('vcsApp', () => {
         const layer = app.layers.getByKey('bar');
         expect(layer).to.be.an.instanceOf(VectorLayer);
         expect(layer!.active || layer!.loading).to.be.true; // we do not wait for layers. so all good _as long as its not inactive_
+      });
+
+      it('should activate clipping polygons which are active on startup', () => {
+        const clippingPolygon = app.clippingPolygons.getByKey('foo');
+        expect(clippingPolygon).to.be.an.instanceOf(ClippingPolygonObject);
+        expect(clippingPolygon!.active).to.be.true;
       });
 
       it('should activate the starting map', () => {

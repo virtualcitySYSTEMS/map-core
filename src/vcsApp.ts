@@ -54,6 +54,10 @@ import FlightCollection from './util/flight/flightCollection.js';
 import DisplayQuality from './util/displayQuality/displayQuality.js';
 import VectorClusterGroup from './vectorCluster/vectorClusterGroup.js';
 import VectorClusterGroupCollection from './vectorCluster/vectorClusterGroupCollection.js';
+import ClippingPolygonObject, {
+  ClippingPolygonObjectOptions,
+} from './util/clipping/clippingPolygonObject.js';
+import ClippingPolygonObjectCollection from './util/clipping/clippingPolygonObjectCollection.js';
 
 function getLogger(): Logger {
   return getLoggerByName('init');
@@ -122,6 +126,8 @@ class VcsApp {
   private _modules: IndexedCollection<VcsModule>;
 
   private _hiddenObjects: OverrideCollection<HiddenObject>;
+
+  private _clippingPolygons: OverrideCollection<ClippingPolygonObject>;
 
   private _flights: OverrideCollection<FlightInstance, FlightCollection>;
 
@@ -232,6 +238,14 @@ class VcsApp {
       this._layers.globalHider,
     );
 
+    this._clippingPolygons = makeOverrideCollection(
+      new ClippingPolygonObjectCollection(this),
+      getDynamicModuleId,
+      undefined,
+      (clippingPolygonOptions: ClippingPolygonObjectOptions) =>
+        new ClippingPolygonObject(clippingPolygonOptions),
+    );
+
     this._flights = makeOverrideCollection(
       new FlightCollection(this),
       getDynamicModuleId,
@@ -328,6 +342,10 @@ class VcsApp {
     return this._hiddenObjects;
   }
 
+  get clippingPolygons(): OverrideCollection<ClippingPolygonObject> {
+    return this._clippingPolygons;
+  }
+
   get flights(): OverrideCollection<FlightInstance, FlightCollection> {
     return this._flights;
   }
@@ -418,6 +436,10 @@ class VcsApp {
     await this._viewpoints.parseItems(config.viewpoints, module._id);
     await this._maps.parseItems(config.maps, module._id);
     await this._hiddenObjects.parseItems(config.hiddenObjects, module._id);
+    await this._clippingPolygons.parseItems(
+      config.clippingPolygons,
+      module._id,
+    );
     await this._flights.parseItems(config.flights, module._id);
 
     if (Array.isArray(config.categories)) {
@@ -441,6 +463,14 @@ class VcsApp {
             );
             getLogger().error(String(err));
           });
+        }
+      });
+
+    [...this._clippingPolygons]
+      .filter((c) => c[moduleIdSymbol] === module._id)
+      .forEach((c) => {
+        if (c.activeOnStartup) {
+          c.activate();
         }
       });
 
@@ -551,6 +581,9 @@ class VcsApp {
     config.hiddenObjects = this._hiddenObjects.serializeModule(
       moduleId,
     ) as HiddenObject[];
+    config.clippingPolygons = this._clippingPolygons.serializeModule(
+      moduleId,
+    ) as ClippingPolygonObjectOptions[];
     config.flights = this._flights.serializeModule(moduleId);
     config.categories = [...this._categories]
       .map((c) => c.serializeModule(moduleId))
@@ -590,6 +623,7 @@ class VcsApp {
       this._styles.removeModule(moduleId),
       this._obliqueCollections.removeModule(moduleId),
       this._hiddenObjects.removeModule(moduleId),
+      this._clippingPolygons.removeModule(moduleId),
       this._flights.removeModule(moduleId),
       this._vectorClusterGroups.removeModule(moduleId),
     ]);
@@ -632,8 +666,10 @@ class VcsApp {
     destroyCollection(this._layers);
     destroyCollection(this._obliqueCollections);
     destroyCollection(this._viewpoints);
+    destroyCollection(this._flights);
     destroyCollection(this._styles);
     destroyCollection(this._categories);
+    destroyCollection(this._clippingPolygons);
     this._modules.destroy();
     this._hiddenObjects.destroy();
     this._mapClassRegistry.destroy();

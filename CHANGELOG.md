@@ -10,6 +10,8 @@
 - The `FeatureProviderInteraction` will now return a cluster feature, if more than one feature is provided at the position.
 - Adds a `resetExclusiveMapControls` in the mapCollection to reset the exclusiveMapControls.
 - Adds a `renderScreenshot` function to the core that returns a canvas.
+- Adds new `ClippingPolygonObject` and a `ClippingPolygonObjectCollection` to the `VcsApp`, which allows configured clipping regions. For more details see [the documentation](documentation/clipping.md).
+- Adds new events `visualizationAdded` and `visualizationRemoved` to `VcsMap`, which allows tracking of layer implementations being added or removed.
 
 ### 6.0.7
 

@@ -10,6 +10,7 @@ import { moduleIdSymbol } from './moduleIdSymbol.js';
 import type { HiddenObject } from './util/hiddenObjects.js';
 import type { FlightInstanceOptions } from './util/flight/flightInstance.js';
 import type { VectorClusterGroupOptions } from './vectorCluster/vectorClusterGroup.js';
+import type { ClippingPolygonObjectOptions } from './util/clipping/clippingPolygonObject.js';
 
 export type VcsModuleConfig = {
   _id?: string;
@@ -28,6 +29,7 @@ export type VcsModuleConfig = {
   obliqueCollections?: ObliqueCollectionOptions[];
   categories?: { name: string; items: object[] }[];
   hiddenObjects?: HiddenObject[];
+  clippingPolygons?: ClippingPolygonObjectOptions[];
   flights?: FlightInstanceOptions[];
 };
 

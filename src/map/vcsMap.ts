@@ -120,6 +120,16 @@ class VcsMap<
   stateChanged: VcsEvent<MapState>;
 
   /**
+   * Event raised when a visualization is added to the map
+   */
+  visualizationAdded: VcsEvent<VisualisationType>;
+
+  /**
+   * Event raised when a visualization is removed from the map
+   */
+  visualizationRemoved: VcsEvent<VisualisationType>;
+
+  /**
    * Event raised then the map has a pointer interaction. Raises {@link MapEvent}.
    */
   pointerInteractionEvent: VcsEvent<MapEvent>;
@@ -169,6 +179,10 @@ class VcsMap<
     this._state = MapState.INACTIVE;
 
     this.stateChanged = new VcsEvent();
+
+    this.visualizationAdded = new VcsEvent();
+
+    this.visualizationRemoved = new VcsEvent();
 
     this.pointerInteractionEvent = new VcsEvent();
 
@@ -412,6 +426,7 @@ class VcsMap<
       setMap.set(name, new Set());
     }
     (setMap.get(name) as Set<V>).add(item);
+    this.visualizationAdded.raiseEvent(item);
   }
 
   /**
@@ -434,6 +449,7 @@ class VcsMap<
       if (viz.size === 0) {
         setMap.delete(name);
       }
+      this.visualizationRemoved.raiseEvent(item);
     }
   }
 
@@ -618,6 +634,9 @@ class VcsMap<
     if (this.stateChanged) {
       this.stateChanged.destroy();
     }
+
+    this.visualizationAdded.destroy();
+    this.visualizationRemoved.destroy();
 
     if (this.destroyLayerCollection && this.layerCollection) {
       this.layerCollection.destroy();

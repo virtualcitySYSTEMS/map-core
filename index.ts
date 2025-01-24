@@ -526,6 +526,12 @@ export {
   ClippingPlaneCreationOptions,
 } from './src/util/clipping/clippingPlaneHelper.js';
 export {
+  default as ClippingPolygonObject,
+  ClippingPolygonObjectOptions,
+  ClippingPolygonObjectState,
+} from './src/util/clipping/clippingPolygonObject.js';
+export { default as ClippingPolygonObjectCollection } from './src/util/clipping/clippingPolygonObjectCollection.js';
+export {
   default as DisplayQuality,
   DisplayQualityLevel,
   DisplayQualityOptions,
