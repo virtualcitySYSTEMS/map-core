@@ -107,13 +107,14 @@ function getFeatureFromScene(
   windowPosition: Cartesian2,
   hitTolerance: number,
 ): EventFeature | undefined {
-  const pickObject = scene.pick(
-    windowPosition,
-    hitTolerance,
-    hitTolerance,
-  ) as CesiumPickObject;
+  const pickObject = scene.pick(windowPosition, hitTolerance, hitTolerance) as
+    | CesiumPickObject
+    | undefined;
 
-  return getFeatureFromPickObject(pickObject);
+  if (pickObject) {
+    return getFeatureFromPickObject(pickObject);
+  }
+  return pickObject;
 }
 
 /**
