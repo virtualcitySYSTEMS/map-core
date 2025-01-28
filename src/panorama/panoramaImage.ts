@@ -64,8 +64,8 @@ export function createPanoramaImage(
   );
 
   const tileProvider = createPanoramaTileProvider(
-    'static',
-    `${rootUrl}/${name}`,
+    'cog',
+    `${rootUrl}/${name}_tiled.tif`,
     cartesianPosition,
     tileSize,
   );

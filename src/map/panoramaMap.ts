@@ -209,7 +209,7 @@ export default class PanoramaMap extends VcsMap {
             roll: 0,
           },
         },
-        [1024, 1024],
+        [512, 512],
       );
 
       this._currentImageView = createPanoramaImageView(
@@ -217,6 +217,9 @@ export default class PanoramaMap extends VcsMap {
         image,
         4,
       );
+
+      // @ts-expect-error missing global
+      window.vcs.view = this._currentImageView;
 
       // const debugCamera = createDebugCameraSphere(
       //   this._cesiumWidget.scene,
