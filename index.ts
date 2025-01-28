@@ -32,7 +32,10 @@ export {
   default as AbstractFeatureProvider,
   AbstractFeatureProviderOptions,
 } from './src/featureProvider/abstractFeatureProvider.js';
-export { isProvidedFeature } from './src/featureProvider/featureProviderSymbols.js';
+export {
+  isProvidedFeature,
+  isProvidedClusterFeature,
+} from './src/featureProvider/featureProviderSymbols.js';
 export {
   default as TileProviderFeatureProvider,
   TileProviderFeatureProviderOptions,

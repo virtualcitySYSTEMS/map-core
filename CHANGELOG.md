@@ -7,7 +7,7 @@
 - Adds a rotation api that provides `startRotation` which returns a stop function. It rotates around a given or current viewpoint.
 - In mapCollection the `requestExclusiveMapControls` has been extended by an ID to identify the current map control holder. There is additionally an event `exclusiveMapControlsChanged` which is emitted when the exclusiveMapControls are changed.
 - Adds `VectorClusterGroup` concept to the `VcsApp`. For more details see [the documentation](documentation/vectorClusterGroup.md).
-- The `FeatureProviderInteraction` will now return a cluster feature, if more than one feature is provided at the position.
+- The `FeatureProviderInteraction` will now return a cluster feature, if more than one feature is provided at the position. Adds new symbol `isProvidedClusterFeature`, which is added to cluster features by FeatureProviders
 - Adds a `resetExclusiveMapControls` in the mapCollection to reset the exclusiveMapControls.
 - Adds a `renderScreenshot` function to the core that returns a canvas.
 - Adds new `ClippingPolygonObject` and a `ClippingPolygonObjectCollection` to the `VcsApp`, which allows configured clipping regions. For more details see [the documentation](documentation/clipping.md).
