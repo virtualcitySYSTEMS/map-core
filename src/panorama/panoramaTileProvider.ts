@@ -8,13 +8,17 @@ import {
   TileSize,
 } from './panoramaTile.js';
 import VcsEvent from '../vcsEvent.js';
+import { createCogLoadingStrategy } from './geotiffStrategy.js';
 
 export type PanoramaTileProviderStrategy = 'static' | 'cog';
 
-type TileLoadStrategy = (
-  tileCoordinate: TileCoordinate,
-  abort: AbortSignal,
-) => Promise<PanoramaTile | null | Error>;
+export type TileLoadStrategy = {
+  loadTile(
+    tileCoordinate: TileCoordinate,
+    abort: AbortSignal,
+  ): Promise<PanoramaTile | null | Error>;
+  destroy(): void;
+};
 
 export type PanoramaTileProvider = {
   destroy(): void;
@@ -60,27 +64,30 @@ function createStaticLoadingStrategy(
   origin: Cartesian3,
   tileSize: TileSize,
 ): TileLoadStrategy {
-  return async (
-    tileCoordinate: TileCoordinate,
-    abort: AbortSignal,
-  ): Promise<PanoramaTile | null | Error> => {
-    const src = `${rootUrl}/${tileCoordinate.key}.jpg`;
-    try {
-      const response = await fetch(src, { signal: abort });
-      if (!response.ok) {
-        getLogger('StaticPanoramaTileProvider').warning(
-          `Failed to load tile: ${src}`,
-        );
+  return {
+    async loadTile(
+      tileCoordinate: TileCoordinate,
+      abort: AbortSignal,
+    ): Promise<PanoramaTile | null | Error> {
+      const src = `${rootUrl}/${tileCoordinate.key}.jpg`;
+      try {
+        const response = await fetch(src, { signal: abort });
+        if (!response.ok) {
+          getLogger('StaticPanoramaTileProvider').warning(
+            `Failed to load tile: ${src}`,
+          );
+        }
+        const blob = await response.blob();
+        const image = await createImageBitmap(blob);
+        return createPanoramaTile(tileCoordinate, image, origin, tileSize);
+      } catch (e) {
+        if ((e as DOMException).name === 'AbortError') {
+          return null;
+        }
+        return e as Error;
       }
-      const blob = await response.blob();
-      const image = await createImageBitmap(blob);
-      return createPanoramaTile(tileCoordinate, image, origin, tileSize);
-    } catch (e) {
-      if ((e as DOMException).name === 'AbortError') {
-        return null;
-      }
-      return e as Error;
-    }
+    },
+    destroy(): void {},
   };
 }
 
@@ -90,15 +97,17 @@ export function createPanoramaTileProvider(
   origin: Cartesian3,
   tileSize: TileSize,
   maxCacheSize?: number,
-  concurrency = 6,
+  concurrency = 1,
 ): PanoramaTileProvider {
   const cache = new PanoramaTileCache(maxCacheSize);
   let currentlyVisibleTiles: Record<string, boolean> = {};
-  let strategyFunction: TileLoadStrategy;
+  let loadStrategy: TileLoadStrategy;
   if (strategy === 'static') {
-    strategyFunction = createStaticLoadingStrategy(rootUrl, origin, tileSize);
+    loadStrategy = createStaticLoadingStrategy(rootUrl, origin, tileSize);
+  } else if (strategy === 'cog') {
+    loadStrategy = createCogLoadingStrategy(rootUrl, origin, tileSize);
   } else {
-    throw new Error(`Unknown strategy: ${strategy}`);
+    throw new Error(`Unknown strategy: ${String(strategy)}`);
   }
   let abortController: AbortController | null = null;
   let loading = false;
@@ -127,7 +136,10 @@ export function createPanoramaTileProvider(
           tileLoaded.raiseEvent(cache.get(tileCoordinate.key));
         } else {
           // eslint-disable-next-line no-await-in-loop
-          const result = await strategyFunction(tileCoordinate, abortSignal);
+          const result = await loadStrategy.loadTile(
+            tileCoordinate,
+            abortSignal,
+          );
           if (cache.containsKey(tileCoordinate.key)) {
             // cached in a previous iteration but got aborted too late.
             tileLoaded.raiseEvent(cache.get(tileCoordinate.key));
