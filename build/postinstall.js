@@ -32,6 +32,24 @@ async function fixNode16RelativeImport(dir) {
   }
 }
 
+async function fixOpenlayersPaletteTextureUint8Array() {
+  const fileName = path.join(
+    process.cwd(),
+    'node_modules',
+    'ol',
+    'webgl',
+    'PaletteTexture.d.ts',
+  );
+  if (fs.existsSync(fileName)) {
+    const content = await fs.promises.readFile(fileName, 'utf-8');
+    const fixedContent = content.replace(
+      /Uint8Array<ArrayBufferLike>/g,
+      'Uint8Array',
+    );
+    await fs.promises.writeFile(fileName, fixedContent);
+  }
+}
+
 /**
  * Fixes relative imports in openlayers TS definitions
  * @returns {Promise<void>}
@@ -42,6 +60,7 @@ async function fixOpenlayers() {
     fixNode16RelativeImport(
       path.join(process.cwd(), 'node_modules', 'geotiff', 'dist-module'),
     ),
+    fixOpenlayersPaletteTextureUint8Array(),
   ]);
 }
 

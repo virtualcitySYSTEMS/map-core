@@ -12,6 +12,10 @@
 - Adds a `renderScreenshot` function to the core that returns a canvas.
 - Adds new `ClippingPolygonObject` and a `ClippingPolygonObjectCollection` to the `VcsApp`, which allows configured clipping regions. For more details see [the documentation](documentation/clipping.md).
 - Adds new events `visualizationAdded` and `visualizationRemoved` to `VcsMap`, which allows tracking of layer implementations being added or removed.
+- Update Dependencies
+  - openlayers to 10.3.1
+  - proj4 to 2.15.0
+  - uuid 11.0.5
 
 ### 6.0.7
 
