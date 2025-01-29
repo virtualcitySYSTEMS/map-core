@@ -21,19 +21,32 @@ loaded into the client at once. This will be done on a single level, depending o
 ### Panorama Image
 
 This is the actual image data as represented by the image.jsons metadata. The image data should be accessible relative to the
-provided metadata. It is planned to use COG (Cloud Optimized GeoTIFF) for the image data. The image data
-contains two layers:
+provided metadata. It is planned to use COG (Cloud Optimized GeoTIFF) for the image data. We can provide three COG images.
 
-- one RGB layer and
-- one depth layer (32bit grey scale). The depth layer is optional?
+- one RGB image and (tiled & with overviews)
+- one Intensity grey scale image and (tiled and with the same overviews as the RGB image) (optional?)
+- one depth image (32bit grey scale). (tiled at the highest level of the other images) (optional?)
 - the idea. use ktx2 for compression should work if passing the blob to web gls `texture` command.
+
+To create the COGs using gdal, you can do the following
+
+```bash
+# flip the image on the Y axis and set the bounds to the whole world.
+gdal_translate -of GTiff -a_srs EPSG:4326 -a_ullr 180 90 -180 -90  input.jpg geo_tiff.tif
+# we require 2 level zero tiles. 16384x8192 pixels will guarantee this in 5 levels with a block size of 512. you will have to calculate the correct size for your image.
+gdalwarp -ts 16384 8192 -overwrite geo_tiff.tif geo_tiff_warpped.tif
+# create the overviews. this creates levels 4 to 0. you can omit 0.
+gdaladdo -r average --config GDAL_TIFF_OVR_BLOCKSIZE 512 geo_tiff_warpped.tif 2 4 8 16
+# create the image COG
+gdal_translate geo_tiff_warpped.tif geo_tiff_tiled.tif -co COMPRESS=JPEG -co JPEG_QUALITY=85 -co TILED=YES -co COPY_SRC_OVERVIEWS=YES -co BLOCKXSIZE=512 -co BLOCKYSIZE=512
+```
 
 If COGs are not possible, a fallback `static` image data structure can be used.
 
 The raw image data needs to be processed in the flowing manner:
 
 - flipped on the Y axis (because we render it on the inside of a sphere)
-- tiled using a default tile size of 1024x1024 pixels and a geographic tiling scheme with two level 0 base tiles.
+- tiled using a default tile size of 512x512 pixels and a geographic tiling scheme with two level 0 base tiles.
 
 ### Static Data Structure
 
@@ -49,7 +62,10 @@ Given / as the root of the data set, the data should be structured as follows fo
     - 1235/
       - 1235.json
 - images/
-  - imageName.gtiff
+  - imageName/
+    - rgb.gtiff
+    - depth.gtiff
+    - intensity.gtiff
 ```
 
 and for the static files approach:
@@ -67,6 +83,14 @@ and for the static files approach:
   - imageName/
     - tileset.json
     - rgb/
+      - 0/
+        - 0/
+          - 0.png
+          - 1.png
+        - 1/
+          - 0.png
+          - 1.png
+    - intensity/
       - 0/
         - 0/
           - 0.png

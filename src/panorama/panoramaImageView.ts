@@ -78,7 +78,7 @@ export function createPanoramaImageView(
   for (let i = 0; i <= maxLevel; i++) {
     levelPixelPerRadians[i] = getLevelPixelPerRadians(i, tileSize);
   }
-  let suspendTileLoading = true;
+  let suspendTileLoading = false;
   const render = (): void => {
     if (suspendTileLoading) {
       return;
