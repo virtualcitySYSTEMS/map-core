@@ -29,10 +29,15 @@ export type PanoramaImageView = {
   render(): void;
 };
 
-const baseTileCoordinates: TileCoordinate[] = [
-  createTileCoordinate(0, 0, 0),
-  createTileCoordinate(1, 0, 0),
-];
+function createMinLevelTiles(minLevel: number): TileCoordinate[] {
+  const tiles: TileCoordinate[] = [];
+  for (let x = 0; x < 2 ** minLevel * 2; x++) {
+    for (let y = 0; y < 2 ** minLevel; y++) {
+      tiles.push(createTileCoordinate(x, y, minLevel));
+    }
+  }
+  return tiles;
+}
 
 function getLevelPixelPerRadians(level: number, tileSize: TileSize): number {
   return tileSize[0] / tileSizeInRadians(level);
@@ -41,17 +46,18 @@ function getLevelPixelPerRadians(level: number, tileSize: TileSize): number {
 export function createPanoramaImageView(
   scene: Scene,
   image: PanoramaImage,
-  maxLevel: number,
 ): PanoramaImageView {
   const primitiveCollection = scene.primitives.add(
     new PrimitiveCollection({ destroyPrimitives: false, show: true }),
   ) as PrimitiveCollection;
+  const { tileSize, maxLevel, minLevel } = image;
+  const baseTileCoordinates = createMinLevelTiles(minLevel);
   let currentTileCoordinates: TileCoordinate[] = [...baseTileCoordinates];
   const currentTiles = new Map<string, PanoramaTile>();
   image.tileProvider.tileLoaded.addEventListener((tile) => {
     if (!currentTiles.has(tile.tileCoordinate.key)) {
       currentTiles.set(tile.tileCoordinate.key, tile);
-      if (tile.tileCoordinate.level === 0) {
+      if (tile.tileCoordinate.level === minLevel) {
         tile.primitive.modelMatrix = Matrix4.multiplyByScale(
           tile.primitive.modelMatrix,
           new Cartesian3(1.01, 1.01, 1.01),
@@ -73,10 +79,9 @@ export function createPanoramaImageView(
     },
   });
 
-  const { tileSize } = image.tileProvider;
   const levelPixelPerRadians = new Array<number>(maxLevel); // XXX can be cached or pre calculated?
-  for (let i = 0; i <= maxLevel; i++) {
-    levelPixelPerRadians[i] = getLevelPixelPerRadians(i, tileSize);
+  for (let i = 0; i <= maxLevel - minLevel; i++) {
+    levelPixelPerRadians[i] = getLevelPixelPerRadians(i + minLevel, tileSize);
   }
   let suspendTileLoading = false;
   const render = (): void => {
@@ -91,13 +96,13 @@ export function createPanoramaImageView(
     const currentScenePixelWidth = scene.canvas.width;
     const currentRadiansPerPixel =
       currentScenePixelWidth / currentImageRadiansWidth;
-    let currentLevel = 0;
-    if (currentRadiansPerPixel > levelPixelPerRadians[maxLevel]) {
+    let currentLevel = minLevel;
+    if (currentRadiansPerPixel > levelPixelPerRadians[maxLevel - minLevel]) {
       currentLevel = maxLevel;
     } else if (currentRadiansPerPixel > levelPixelPerRadians[0]) {
-      currentLevel = levelPixelPerRadians.findIndex(
-        (rpp) => rpp >= currentRadiansPerPixel,
-      );
+      currentLevel =
+        levelPixelPerRadians.findIndex((rpp) => rpp >= currentRadiansPerPixel) +
+        minLevel;
     }
 
     currentTileCoordinates = [

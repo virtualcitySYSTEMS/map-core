@@ -4,6 +4,7 @@ import {
   Transforms,
   HeadingPitchRoll,
 } from '@vcmap-cesium/engine';
+import { fromUrl, GeoTIFF, GeoTIFFImage } from 'geotiff';
 import {
   createPanoramaTileProvider,
   PanoramaTileProvider,
@@ -15,6 +16,12 @@ export type PanoramaImageOptions = {
   name: string;
   position: { x: number; y: number; z: number };
   orientation: { heading: number; pitch: number; roll: number };
+};
+
+type PanoramaImageMetadata = {
+  tileSize: TileSize;
+  minLevel: number;
+  maxLevel: number;
 };
 
 export type PanoramaImage = {
@@ -33,15 +40,44 @@ export type PanoramaImage = {
   readonly orientation: HeadingPitchRoll;
   readonly modelMatrix: Matrix4;
   readonly invModelMatrix: Matrix4;
+  // the following properties are "tiled" specific
+  readonly image: GeoTIFF;
   readonly tileProvider: PanoramaTileProvider;
+  readonly tileSize: TileSize;
+  readonly minLevel: number;
+  readonly maxLevel: number;
   destroy(): void;
 };
 
-export function createPanoramaImage(
+async function loadRGBImages(
+  rootUrl: string,
+): Promise<{ image: GeoTIFF; rgb: GeoTIFFImage[] } & PanoramaImageMetadata> {
+  const image = await fromUrl(rootUrl);
+  let imageCount = await image.getImageCount();
+  const promises = [];
+  while (imageCount) {
+    imageCount -= 1;
+    promises.push(image.getImage(imageCount));
+  }
+  const rgb = await Promise.all(promises);
+  const minLevelImage = rgb[0];
+  const tileSize: TileSize = [
+    minLevelImage.getTileWidth(),
+    minLevelImage.getTileHeight(),
+  ];
+
+  const minLevel = minLevelImage.getHeight() / tileSize[0] - 1;
+  const maxLevel = rgb.length - 1 + minLevel;
+  return { image, rgb, tileSize, minLevel, maxLevel };
+}
+
+export async function createPanoramaImage(
   options: PanoramaImageOptions,
-  tileSize: TileSize,
-): PanoramaImage {
+): Promise<PanoramaImage> {
   const { rootUrl, name, position, orientation } = options;
+  const { image, rgb, tileSize, minLevel, maxLevel } = await loadRGBImages(
+    `${rootUrl}/${name}/rgb.tif`,
+  );
 
   const cartesianPosition = Cartesian3.fromDegrees(
     position.x,
@@ -64,10 +100,10 @@ export function createPanoramaImage(
   );
 
   const tileProvider = createPanoramaTileProvider(
-    'cog',
-    `${rootUrl}/${name}_tiled.tif`,
+    rgb,
     cartesianPosition,
     tileSize,
+    minLevel,
   );
 
   return {
@@ -92,8 +128,21 @@ export function createPanoramaImage(
     get tileProvider(): PanoramaTileProvider {
       return tileProvider;
     },
+    get image(): GeoTIFF {
+      return image;
+    },
+    get tileSize(): TileSize {
+      return tileSize;
+    },
+    get minLevel(): number {
+      return minLevel;
+    },
+    get maxLevel(): number {
+      return maxLevel;
+    },
     destroy(): void {
       tileProvider.destroy();
+      image.close();
     },
   };
 }
