@@ -1,6 +1,7 @@
 import LRUCache from 'ol/structs/LRUCache.js';
 import { Cartesian3 } from '@vcmap-cesium/engine';
 import { getLogger } from '@vcsuite/logger';
+import { GeoTIFFImage, Pool } from 'geotiff';
 import {
   createPanoramaTile,
   PanoramaTile,
@@ -8,23 +9,13 @@ import {
   TileSize,
 } from './panoramaTile.js';
 import VcsEvent from '../vcsEvent.js';
-import { createCogLoadingStrategy } from './geotiffStrategy.js';
-
-export type PanoramaTileProviderStrategy = 'static' | 'cog';
-
-export type TileLoadStrategy = {
-  loadTile(
-    tileCoordinate: TileCoordinate,
-    abort: AbortSignal,
-  ): Promise<PanoramaTile | null | Error>;
-  destroy(): void;
-};
 
 export type PanoramaTileProvider = {
   destroy(): void;
   loadTiles(tileCoordinate: TileCoordinate[]): void;
   readonly loading: boolean;
   readonly tileSize: TileSize;
+  readonly minLevel: number;
   tileLoaded: VcsEvent<PanoramaTile>;
   tileError: VcsEvent<{ tileCoordinate: TileCoordinate; error: Error }>;
   allTilesLoaded: VcsEvent<void>;
@@ -59,56 +50,32 @@ function addTileToCache(
   cache.expireCache(currentlyVisibleTileKeys);
 }
 
-function createStaticLoadingStrategy(
-  rootUrl: string,
-  origin: Cartesian3,
+function getImageDataFromRGBReadRaster(
+  readRaster: Uint8Array,
   tileSize: TileSize,
-): TileLoadStrategy {
-  return {
-    async loadTile(
-      tileCoordinate: TileCoordinate,
-      abort: AbortSignal,
-    ): Promise<PanoramaTile | null | Error> {
-      const src = `${rootUrl}/${tileCoordinate.key}.jpg`;
-      try {
-        const response = await fetch(src, { signal: abort });
-        if (!response.ok) {
-          getLogger('StaticPanoramaTileProvider').warning(
-            `Failed to load tile: ${src}`,
-          );
-        }
-        const blob = await response.blob();
-        const image = await createImageBitmap(blob);
-        return createPanoramaTile(tileCoordinate, image, origin, tileSize);
-      } catch (e) {
-        if ((e as DOMException).name === 'AbortError') {
-          return null;
-        }
-        return e as Error;
-      }
-    },
-    destroy(): void {},
-  };
+): ImageData {
+  const clampedArray = new Uint8ClampedArray((readRaster.length / 3) * 4);
+  clampedArray.fill(255);
+  for (let i = 0; i < readRaster.length; i += 3) {
+    clampedArray[(i / 3) * 4] = readRaster[i];
+    clampedArray[(i / 3) * 4 + 1] = readRaster[i + 1];
+    clampedArray[(i / 3) * 4 + 2] = readRaster[i + 2];
+  }
+  return new ImageData(clampedArray, tileSize[0], tileSize[1]);
 }
 
 export function createPanoramaTileProvider(
-  strategy: PanoramaTileProviderStrategy,
-  rootUrl: string,
+  levelImages: GeoTIFFImage[],
   origin: Cartesian3,
   tileSize: TileSize,
+  minLevel: number,
   maxCacheSize?: number,
   concurrency = 1,
 ): PanoramaTileProvider {
   const cache = new PanoramaTileCache(maxCacheSize);
+  const pool = new Pool();
+
   let currentlyVisibleTiles: Record<string, boolean> = {};
-  let loadStrategy: TileLoadStrategy;
-  if (strategy === 'static') {
-    loadStrategy = createStaticLoadingStrategy(rootUrl, origin, tileSize);
-  } else if (strategy === 'cog') {
-    loadStrategy = createCogLoadingStrategy(rootUrl, origin, tileSize);
-  } else {
-    throw new Error(`Unknown strategy: ${String(strategy)}`);
-  }
   let abortController: AbortController | null = null;
   let loading = false;
 
@@ -121,6 +88,37 @@ export function createPanoramaTileProvider(
 
   const destroy = (): void => {
     cache.clear();
+    pool.destroy();
+  };
+
+  const loadTile = async (
+    tileCoordinate: TileCoordinate,
+    abort: AbortSignal,
+  ): Promise<PanoramaTile | null | Error> => {
+    const levelImage = levelImages[tileCoordinate.level - minLevel];
+    if (levelImage) {
+      const windowOrigin = [
+        tileCoordinate.x * tileSize[0],
+        tileCoordinate.y * tileSize[1],
+      ];
+      const tileImage = await levelImage.readRGB({
+        window: [
+          ...windowOrigin,
+          windowOrigin[0] + tileSize[0],
+          windowOrigin[1] + tileSize[1],
+        ],
+        width: tileSize[0],
+        height: tileSize[1],
+        signal: abort,
+        pool,
+      });
+      const image = await createImageBitmap(
+        getImageDataFromRGBReadRaster(tileImage as Uint8Array, tileSize),
+      );
+
+      return createPanoramaTile(tileCoordinate, image, origin, tileSize);
+    }
+    return null;
   };
 
   const loadTilesQueue = (
@@ -136,10 +134,7 @@ export function createPanoramaTileProvider(
           tileLoaded.raiseEvent(cache.get(tileCoordinate.key));
         } else {
           // eslint-disable-next-line no-await-in-loop
-          const result = await loadStrategy.loadTile(
-            tileCoordinate,
-            abortSignal,
-          );
+          const result = await loadTile(tileCoordinate, abortSignal);
           if (cache.containsKey(tileCoordinate.key)) {
             // cached in a previous iteration but got aborted too late.
             tileLoaded.raiseEvent(cache.get(tileCoordinate.key));
@@ -193,6 +188,9 @@ export function createPanoramaTileProvider(
     },
     get tileSize(): TileSize {
       return tileSize;
+    },
+    get minLevel(): number {
+      return minLevel;
     },
     tileLoaded,
     tileError,

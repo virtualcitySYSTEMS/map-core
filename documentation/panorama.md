@@ -23,7 +23,7 @@ loaded into the client at once. This will be done on a single level, depending o
 This is the actual image data as represented by the image.jsons metadata. The image data should be accessible relative to the
 provided metadata. It is planned to use COG (Cloud Optimized GeoTIFF) for the image data. We can provide three COG images.
 
-- one RGB image and (tiled & with overviews)
+- one RGB image and (tiled & with overviews, mandatory)
 - one Intensity grey scale image and (tiled and with the same overviews as the RGB image) (optional?)
 - one depth image (32bit grey scale). (tiled at the highest level of the other images) (optional?)
 - the idea. use ktx2 for compression should work if passing the blob to web gls `texture` command.
@@ -40,8 +40,6 @@ gdaladdo -r average --config GDAL_TIFF_OVR_BLOCKSIZE 512 geo_tiff_warpped.tif 2 
 # create the image COG
 gdal_translate geo_tiff_warpped.tif geo_tiff_tiled.tif -co COMPRESS=JPEG -co JPEG_QUALITY=85 -co TILED=YES -co COPY_SRC_OVERVIEWS=YES -co BLOCKXSIZE=512 -co BLOCKYSIZE=512
 ```
-
-If COGs are not possible, a fallback `static` image data structure can be used.
 
 The raw image data needs to be processed in the flowing manner:
 
@@ -63,57 +61,16 @@ Given / as the root of the data set, the data should be structured as follows fo
       - 1235.json
 - images/
   - imageName/
-    - rgb.gtiff
-    - depth.gtiff
-    - intensity.gtiff
-```
-
-and for the static files approach:
-
-```
-- /
-- images.json
-- metaTiles/
-  - 12/
-    - 1234/
-      - 1234.json
-    - 1235/
-      - 1235.json
-- images/
-  - imageName/
-    - tileset.json
-    - rgb/
-      - 0/
-        - 0/
-          - 0.png
-          - 1.png
-        - 1/
-          - 0.png
-          - 1.png
-    - intensity/
-      - 0/
-        - 0/
-          - 0.png
-          - 1.png
-        - 1/
-          - 0.png
-          - 1.png
-    - depth/
-      - 4/
-        - 0/
-          - 0.png
-          - 1.png
-        - 1/
-          - 0.png
-          - 1.png
+    - rgb.tif
+    - depth.tif
+    - intensity.tif
 ```
 
 The `images.json` contains the metadata of the image metadata in the data set.
 The `metaTiles` directory contains the metadata of the images in a tiled structure.
 The `images` directory contains the actual image data.
 
-When resolving an image by name, this can always be done by adding `images/${imageName}.{format}` to the root url for COG
-and `images/${imageName}/tileset.json` for the static files approach.
+When resolving an image by name, this can always be done by adding `images/${imageName}/rgb.{format}` to the root url.
 
 ## Runtime Objects
 
@@ -133,12 +90,12 @@ The following behavior is unclear and depends on whether we can load multiple da
 
 ### PanoramaImage
 
-Holds all the metadata required to render the image:
+Holds all the metadata required to render the image. This loads the COG headers and attaches them to the image
 
 - name
 - position
-- orientation.
-- Potentially others (such as min / max depth).
+- orientation
+- `GeoTIFF.GeoTIFF`
 
 Behavior:
 
