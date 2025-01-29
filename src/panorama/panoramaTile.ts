@@ -111,7 +111,7 @@ export function tileCoordinateFromImageCoordinate(
   const tileSize = tileSizeInRadians(level);
 
   const [numTilesX] = getNumberOfTiles(level);
-  const tileX = numTilesX - Math.ceil(spherical[0] / tileSize);
+  const tileX = numTilesX - 1 - Math.ceil(spherical[0] / tileSize);
   const tileY = Math.floor(spherical[1] / tileSize);
 
   return createTileCoordinate(tileX, tileY, level);

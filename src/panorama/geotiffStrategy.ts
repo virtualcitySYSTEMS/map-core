@@ -1,4 +1,4 @@
-import { fromUrl, GeoTIFF, GeoTIFFImage } from 'geotiff';
+import { fromUrl, GeoTIFF, GeoTIFFImage, Pool } from 'geotiff';
 import { Cartesian3 } from '@vcmap-cesium/engine';
 import {
   createPanoramaTile,
@@ -171,6 +171,7 @@ export function createCogLoadingStrategy(
   tileSize: TileSize,
 ): TileLoadStrategy {
   const ready = fetchImages(rootUrl);
+  const pool = new Pool();
 
   return {
     async loadTile(
@@ -180,17 +181,20 @@ export function createCogLoadingStrategy(
       const { rgb } = await ready;
       const levelImage = rgb[tileCoordinate.level];
       if (levelImage) {
+        const windowOrigin = [
+          tileCoordinate.x * tileSize[0],
+          tileCoordinate.y * tileSize[1],
+        ];
         const tileImage = await levelImage.readRGB({
           window: [
-            tileCoordinate.x * tileSize[0],
-            tileCoordinate.y * tileSize[1],
-            (tileCoordinate.x + 1) * tileSize[0],
-            (tileCoordinate.x + 1) * tileSize[1],
+            ...windowOrigin,
+            windowOrigin[0] + tileSize[0],
+            windowOrigin[1] + tileSize[1],
           ],
           width: tileSize[0],
           height: tileSize[1],
           signal: abort,
-          enableAlpha: true,
+          pool,
         });
         const image = await createImageBitmap(
           getImageDataFromRGBReadRaster(tileImage as Uint8Array, tileSize),
@@ -204,6 +208,7 @@ export function createCogLoadingStrategy(
       ready
         .then(({ rgb, image }) => {
           image.close(); // not entirely sure how to clear these things.
+          pool.destroy();
           rgb.length = 0;
         })
         .catch((e) => {

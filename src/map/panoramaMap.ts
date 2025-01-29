@@ -218,7 +218,6 @@ export default class PanoramaMap extends VcsMap {
         4,
       );
 
-      // @ts-expect-error missing global
       window.vcs.view = this._currentImageView;
 
       // const debugCamera = createDebugCameraSphere(
