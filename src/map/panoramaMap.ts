@@ -8,7 +8,10 @@ import {
   ShadowMode,
 } from '@vcmap-cesium/engine';
 import VcsMap, { VcsMapOptions } from './vcsMap.js';
-import { createPanoramaImage } from '../panorama/panoramaImage.js';
+import {
+  createPanoramaImage,
+  PanoramaImage,
+} from '../panorama/panoramaImage.js';
 import { mapClassRegistry } from '../classRegistry.js';
 import { DebugCameraSphere } from '../panorama/debugCameraSphere.js';
 import {
@@ -157,7 +160,7 @@ export default class PanoramaMap extends VcsMap {
 
   private _currentImageView: PanoramaImageView | undefined;
 
-  private _destroyImageSource: (() => void) | undefined;
+  private _currentImage: PanoramaImage | undefined;
 
   async initialize(): Promise<void> {
     if (!this.initialized) {
@@ -173,20 +176,6 @@ export default class PanoramaMap extends VcsMap {
       this._cesiumWidget.scene.primitives.destroyPrimitives = false;
       this._cesiumWidget.scene.globe.enableLighting = false;
       this.initialized = true;
-      // const image = createPanoramaImage({
-      //   rootUrl: '',
-      //   name: 'pano_000001_000011',
-      //   position: {
-      //     x: 52.477762,
-      //     y: 9.7283938,
-      //     z: 56.12,
-      //   },
-      //   orientation: {
-      //     heading: -165.52229,
-      //     pitch: -0.92061,
-      //     roll: -0.65027,
-      //   },
-      // });
 
       const image = await createPanoramaImage({
         rootUrl: 'exampleData/panoramaImages',
@@ -202,34 +191,13 @@ export default class PanoramaMap extends VcsMap {
           roll: 0,
         },
       });
-
       this._currentImageView = createPanoramaImageView(
         this._cesiumWidget.scene,
         image,
       );
+      this._currentImage = image;
 
-      // const debugCamera = createDebugCameraSphere(
-      //   this._cesiumWidget.scene,
-      //   image,
-      // );
-
-      setupNavigationControls(
-        this._cesiumWidget,
-        this._currentImageView,
-        // debugCamera,
-      );
-      // this._destroyImageSource = createPanoramaImageSource(
-      //   this._cesiumWidget.scene,
-      //   4,
-      //   Cartesian3.fromDegrees(0, 0, 1),
-      // );
-      /*
-      this.setCurrentImage(
-        new PanoramaImage({
-          url: 'exampleData/Trimble_MX60_Hannover_Beispiel/pano_000001_000011.jpg',
-        }),
-      );
-       */
+      setupNavigationControls(this._cesiumWidget, this._currentImageView);
     }
     await super.initialize();
   }
@@ -242,37 +210,6 @@ export default class PanoramaMap extends VcsMap {
     }
   }
 
-  /*
-  setCurrentImage(image: PanoramaImage): void {
-    if (this._currentImage) {
-      this._cesiumWidget?.scene.primitives.remove(
-        this._currentImage.getPrimitive(),
-      );
-    }
-    this._currentImage = image;
-    this._cesiumWidget?.scene.primitives.add(image.getPrimitive());
-    this._cesiumWidget?.scene.groundPrimitives.add(
-      new GroundPrimitive({
-        geometryInstances: new GeometryInstance({
-          geometry: new PolygonGeometry({
-            polygonHierarchy: new PolygonHierarchy(
-              Cartesian3.fromDegreesArrayHeights([
-                -10, -10, 0.5, 10, -10, 0.5, 10, 10, 0.5, -10, 10, 0.5,
-              ]),
-            ),
-            vertexFormat: VertexFormat.POSITION_AND_COLOR,
-          }),
-        }),
-        appearance: new MaterialAppearance({
-          material: Material.fromType('Color', {
-            color: Color.RED.withAlpha(1),
-          }),
-          translucent: true,
-        }),
-      }),
-    );
-  }
-  */
   deactivate(): void {
     super.deactivate();
     if (this._cesiumWidget) {
@@ -281,7 +218,7 @@ export default class PanoramaMap extends VcsMap {
   }
 
   destroy(): void {
-    this._destroyImageSource?.();
+    this._currentImage?.destroy();
     this._currentImageView?.destroy();
     super.destroy();
   }
