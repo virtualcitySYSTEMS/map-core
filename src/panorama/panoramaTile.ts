@@ -157,6 +157,7 @@ export function getTileSphericalCenter(
 
   const phi = (numTilesX - 1 - (tileCoordinate.x - 0.5)) * sizeR;
   const theta = (tileCoordinate.y + 0.5) * sizeR;
+
   return [phi, theta];
 }
 
@@ -173,7 +174,7 @@ export function getDistanceToTileCoordinate(
   const distance = cartesian2DDistance(position, center);
 
   if (distance > Math.PI) {
-    return Math.abs(distance - Math.PI);
+    return Math.abs(CesiumMath.TWO_PI - distance);
   }
   return distance;
 }
