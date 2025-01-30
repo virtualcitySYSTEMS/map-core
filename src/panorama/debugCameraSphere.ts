@@ -151,7 +151,7 @@ function drawView(
   }
 
   ctx.strokeStyle = 'red';
-  const extents = getFovImageSphericalExtent(scene.camera, image);
+  const { extents } = getFovImageSphericalExtent(scene.camera, image);
   extents.forEach((extent) => {
     if (!isEmpty(extent)) {
       const [minLon, minLat, maxLon, maxLat] = extent.map(CesiumMath.toDegrees);
