@@ -188,7 +188,7 @@ function getBottomBound(projectedFov: ProjectedFov): number {
 export function getFovImageSphericalExtent(
   camera: Camera,
   image: PanoramaImage,
-): Extent[] {
+): { extents: [Extent] | [Extent, Extent]; center: [number, number] } {
   const fov = getFov(camera, scratchExtentFov);
   const projectedFov = projectFov(fov, image, scratchExtentProjectedFov);
   const simpleExtent = [
@@ -198,12 +198,18 @@ export function getFovImageSphericalExtent(
     getBottomBound(projectedFov),
   ];
 
+  let extents: [Extent] | [Extent, Extent];
   if (simpleExtent[0] > simpleExtent[2]) {
-    return [
+    extents = [
       [simpleExtent[0], simpleExtent[1], CesiumMath.TWO_PI, simpleExtent[3]],
       [0, simpleExtent[1], simpleExtent[2], simpleExtent[3]],
     ];
   } else {
-    return [simpleExtent];
+    extents = [simpleExtent];
   }
+
+  return {
+    extents,
+    center: projectedFov.center,
+  };
 }

@@ -8,6 +8,7 @@ import { getWidth } from 'ol/extent.js';
 import type { PanoramaImage } from './panoramaImage.js';
 import {
   createTileCoordinate,
+  getDistanceToTileCoordinate,
   getTileCoordinatesInImageExtent,
   PanoramaTile,
   TileCoordinate,
@@ -88,7 +89,10 @@ export function createPanoramaImageView(
     if (suspendTileLoading) {
       return;
     }
-    const extents = getFovImageSphericalExtent(camera, image);
+    const { extents, center: imageCenter } = getFovImageSphericalExtent(
+      camera,
+      image,
+    );
     const currentImageRadiansWidth = extents.reduce(
       (acc, extent) => acc + getWidth(extent),
       0,
@@ -110,9 +114,14 @@ export function createPanoramaImageView(
       ...extents.flatMap((e) =>
         getTileCoordinatesInImageExtent(e, currentLevel),
       ),
-    ];
-
-    // TODO sort by center
+    ]
+      .map((tc) => ({
+        tc,
+        distance: getDistanceToTileCoordinate(imageCenter, tc),
+      }))
+      // we sort furthest first, since tiles are loaded from the back of the array with pop.
+      .sort((a, b) => b.distance - a.distance)
+      .map((tc) => tc.tc);
 
     currentTiles.forEach((tile) => {
       if (

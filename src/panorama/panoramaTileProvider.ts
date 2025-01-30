@@ -12,6 +12,10 @@ import VcsEvent from '../vcsEvent.js';
 
 export type PanoramaTileProvider = {
   destroy(): void;
+  /**
+   * Load the tiles for the given tile coordinates. Last coordinates get loaded first, LIFO
+   * @param tileCoordinate
+   */
   loadTiles(tileCoordinate: TileCoordinate[]): void;
   readonly loading: boolean;
   tileLoaded: VcsEvent<PanoramaTile>;
