@@ -28,6 +28,7 @@ export type PanoramaImageView = {
    * force a render of the panorama image
    */
   render(): void;
+  getCurrentTiles(): PanoramaTile[];
 };
 
 function createMinLevelTiles(minLevel: number): TileCoordinate[] {
@@ -109,12 +110,22 @@ export function createPanoramaImageView(
         minLevel;
     }
 
-    currentTileCoordinates = [
-      ...baseTileCoordinates,
-      ...extents.flatMap((e) =>
-        getTileCoordinatesInImageExtent(e, currentLevel),
-      ),
-    ]
+    if (extents.length === 1) {
+      currentTileCoordinates = [
+        ...baseTileCoordinates,
+        ...getTileCoordinatesInImageExtent(extents[0], currentLevel),
+      ];
+    } else {
+      const leftExtent = extents[0];
+      const rightExtent = extents[1];
+      leftExtent[2] -= 0.0001; // dont overlap the extents since 0 === 2 * PI
+      currentTileCoordinates = [
+        ...baseTileCoordinates,
+        ...getTileCoordinatesInImageExtent(leftExtent, currentLevel),
+        ...getTileCoordinatesInImageExtent(rightExtent, currentLevel),
+      ];
+    }
+    currentTileCoordinates = currentTileCoordinates
       .map((tc) => ({
         tc,
         distance: getDistanceToTileCoordinate(imageCenter, tc),
@@ -148,6 +159,9 @@ export function createPanoramaImageView(
     },
     set suspendTileLoading(value: boolean) {
       suspendTileLoading = value;
+    },
+    getCurrentTiles(): PanoramaTile[] {
+      return [...currentTiles.values()];
     },
     render,
   };

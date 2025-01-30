@@ -110,11 +110,13 @@ export function tileCoordinateFromImageCoordinate(
   level: number,
 ): TileCoordinate {
   const tileSize = tileSizeInRadians(level);
-
   const [numTilesX] = getNumberOfTiles(level);
-  const tileX = numTilesX - 1 - Math.floor(spherical[0] / tileSize);
+  let tileX = numTilesX - 1 - Math.floor(spherical[0] / tileSize);
   const tileY = Math.floor(spherical[1] / tileSize);
-
+  if (tileX < 0) {
+    // wrap around 2 * PI
+    tileX = numTilesX + tileX;
+  }
   return createTileCoordinate(tileX, tileY, level);
 }
 
@@ -257,7 +259,6 @@ export function createPanoramaTile(
   tileSize: TileSize,
 ): PanoramaTile {
   const primitive = createPrimitive(tileCoordinate, origin);
-  // primitive.show = level === 1 && x === 0 && y === 0;
   primitive.appearance = getImageTileAppearance(
     tileCoordinate,
     image,

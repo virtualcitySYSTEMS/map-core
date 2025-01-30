@@ -183,7 +183,7 @@ function getBottomBound(projectedFov: ProjectedFov): number {
  * Furthermore, the camera has to be aligned with the up axis of the sphere. it is not allowed to be rolled.
  * @param camera
  * @param image - the panorama image to create the projected fov for
- * @returns The extent of the fov in image spherical coordinates.
+ * @returns The extent of the fov in image spherical coordinates and the center. if providing more than on extent, the first will be up until 2 * PI and the second starting at 0.
  */
 export function getFovImageSphericalExtent(
   camera: Camera,
