@@ -13,6 +13,7 @@ import {
   VertexFormat,
 } from '@vcmap-cesium/engine';
 import { Extent } from 'ol/extent.js';
+import { cartesian2DDistance } from '../util/math.js';
 
 /**
  * Tile coordinate in format [x, y, level]
@@ -111,7 +112,7 @@ export function tileCoordinateFromImageCoordinate(
   const tileSize = tileSizeInRadians(level);
 
   const [numTilesX] = getNumberOfTiles(level);
-  const tileX = numTilesX - 1 - Math.ceil(spherical[0] / tileSize);
+  const tileX = numTilesX - 1 - Math.floor(spherical[0] / tileSize);
   const tileY = Math.floor(spherical[1] / tileSize);
 
   return createTileCoordinate(tileX, tileY, level);
@@ -144,6 +145,35 @@ export function getTileCoordinatesInImageExtent(
   }
 
   return tileCoordinates;
+}
+
+export function getTileSphericalCenter(
+  tileCoordinate: TileCoordinate,
+): [number, number] {
+  const sizeR = tileSizeInRadians(tileCoordinate.level);
+  const [numTilesX] = getNumberOfTiles(tileCoordinate.level);
+
+  const phi = (numTilesX - 1 - (tileCoordinate.x - 0.5)) * sizeR;
+  const theta = (tileCoordinate.y + 0.5) * sizeR;
+  return [phi, theta];
+}
+
+/**
+ * @param tileCoordinate - the tile coordinate to calculate the distance to
+ * @param position - the spherical position to calculate the distance from
+ * @returns the distance in radians. this is only used for relative comparison.
+ */
+export function getDistanceToTileCoordinate(
+  position: [number, number],
+  tileCoordinate: TileCoordinate,
+): number {
+  const center = getTileSphericalCenter(tileCoordinate);
+  const distance = cartesian2DDistance(position, center);
+
+  if (distance > Math.PI) {
+    return Math.abs(distance - Math.PI);
+  }
+  return distance;
 }
 
 function getImageTileAppearance(
