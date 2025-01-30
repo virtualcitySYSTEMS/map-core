@@ -14,8 +14,6 @@ export type PanoramaTileProvider = {
   destroy(): void;
   loadTiles(tileCoordinate: TileCoordinate[]): void;
   readonly loading: boolean;
-  readonly tileSize: TileSize;
-  readonly minLevel: number;
   tileLoaded: VcsEvent<PanoramaTile>;
   tileError: VcsEvent<{ tileCoordinate: TileCoordinate; error: Error }>;
   allTilesLoaded: VcsEvent<void>;
@@ -185,12 +183,6 @@ export function createPanoramaTileProvider(
     },
     get loading(): boolean {
       return loading;
-    },
-    get tileSize(): TileSize {
-      return tileSize;
-    },
-    get minLevel(): number {
-      return minLevel;
     },
     tileLoaded,
     tileError,

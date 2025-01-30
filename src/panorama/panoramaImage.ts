@@ -84,11 +84,13 @@ export async function createPanoramaImage(
     position.y,
     position.z,
   );
+
   const headingPitchRoll = HeadingPitchRoll.fromDegrees(
     orientation.heading,
     orientation.pitch,
     orientation.roll,
   );
+
   const modelMatrix = Transforms.headingPitchRollToFixedFrame(
     cartesianPosition,
     headingPitchRoll,
