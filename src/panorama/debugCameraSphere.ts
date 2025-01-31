@@ -18,29 +18,25 @@ import {
   getFov,
   getFovImageSphericalExtent,
   getProjectedFov,
-} from './fovHelpers.js';
+} from './panoramaCameraHelpers.js';
 import type { PanoramaImage } from './panoramaImage.js';
 import { getNumberOfTiles, tileSizeInRadians } from './panoramaTile.js';
 
-export type DebugCameraSphere = {
-  paused: boolean;
+export type DebugCameraSphereOptions = {
+  paused?: boolean;
+  grid?: boolean;
+  tileGrid?: number | false;
+  fov?: boolean;
+  cameraAxis?: boolean;
+  clickedPosition?: [number, number] | null;
+};
+
+export type DebugCameraSphere = DebugCameraSphereOptions & {
+  setClickedPosition(position?: [number, number]): void;
   destroy(): void;
 };
 
 const PIXEL_PER_DEGREES = 5;
-
-const source = `
-czm_material czm_getMaterial(czm_materialInput materialInput)
-{
-    czm_material m = czm_getDefaultMaterial(materialInput);
-    vec3 t_color = texture(image, materialInput.st).rgb * color.rgb;
-    m.diffuse =  t_color;
-    m.specular = 0.5;
-    m.emission = t_color * vec3(0.5);
-    m.alpha = 1.0;
-    return m;
-}
-`;
 
 function drawGrid(ctx: CanvasRenderingContext2D): void {
   ctx.strokeStyle = 'black';
@@ -127,57 +123,65 @@ function drawView(
   scene: Scene,
   image: PanoramaImage,
   ctx: CanvasRenderingContext2D,
+  options: Required<DebugCameraSphereOptions>,
 ): void {
   ctx.clearRect(0, 0, 360 * PIXEL_PER_DEGREES, 180 * PIXEL_PER_DEGREES);
-  drawGrid(ctx);
-  drawTiles(ctx);
-  const cameraView = getProjectedFov(scene.camera, image);
-  if (cameraView) {
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = 'green';
-    drawLatitude(ctx, cameraView.topRight[1]);
-    ctx.strokeStyle = 'cyan';
-    drawLatitude(ctx, cameraView.bottomLeft[1]);
-    ctx.strokeStyle = 'lime';
-    drawCoordinate(ctx, cameraView.topLeft);
-    ctx.strokeStyle = 'red';
-    drawCoordinate(ctx, cameraView.topRight);
-    ctx.strokeStyle = 'orange';
-    drawCoordinate(ctx, cameraView.bottomRight);
-    ctx.strokeStyle = 'pink';
-    drawCoordinate(ctx, cameraView.bottomLeft);
-    ctx.strokeStyle = 'purple';
-    drawCoordinate(ctx, cameraView.center);
+  if (options.grid) {
+    drawGrid(ctx);
   }
-
-  ctx.strokeStyle = 'red';
-  const { extents } = getFovImageSphericalExtent(scene.camera, image);
-  extents.forEach((extent) => {
-    if (!isEmpty(extent)) {
-      const [minLon, minLat, maxLon, maxLat] = extent.map(CesiumMath.toDegrees);
-      ctx.strokeRect(
-        minLon * PIXEL_PER_DEGREES,
-        minLat * PIXEL_PER_DEGREES,
-        (maxLon - minLon) * PIXEL_PER_DEGREES,
-        (maxLat - minLat) * PIXEL_PER_DEGREES,
-      );
+  if (options.tileGrid) {
+    drawTiles(ctx, options.tileGrid);
+  }
+  if (options.fov) {
+    const cameraView = getProjectedFov(scene.camera, image);
+    if (cameraView) {
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'green';
+      drawLatitude(ctx, cameraView.topRight[1]);
+      ctx.strokeStyle = 'cyan';
+      drawLatitude(ctx, cameraView.bottomLeft[1]);
+      ctx.strokeStyle = 'lime';
+      drawCoordinate(ctx, cameraView.topLeft);
+      ctx.strokeStyle = 'red';
+      drawCoordinate(ctx, cameraView.topRight);
+      ctx.strokeStyle = 'orange';
+      drawCoordinate(ctx, cameraView.bottomRight);
+      ctx.strokeStyle = 'pink';
+      drawCoordinate(ctx, cameraView.bottomLeft);
+      ctx.strokeStyle = 'purple';
+      drawCoordinate(ctx, cameraView.center);
     }
-  });
+
+    ctx.strokeStyle = 'red';
+    const { extents } = getFovImageSphericalExtent(scene.camera, image);
+    extents.forEach((extent) => {
+      if (!isEmpty(extent)) {
+        const [minLon, minLat, maxLon, maxLat] = extent.map(
+          CesiumMath.toDegrees,
+        );
+        ctx.strokeRect(
+          minLon * PIXEL_PER_DEGREES,
+          minLat * PIXEL_PER_DEGREES,
+          (maxLon - minLon) * PIXEL_PER_DEGREES,
+          (maxLat - minLat) * PIXEL_PER_DEGREES,
+        );
+      }
+    });
+  }
+  if (options.clickedPosition) {
+    ctx.strokeStyle = 'hotpink';
+    drawCoordinate(ctx, options.clickedPosition);
+  }
 }
 
 function createMaterial(canvas: HTMLCanvasElement): MaterialAppearance {
   return new MaterialAppearance({
-    material: new Material({
-      fabric: {
-        type: 'DebugTileImage',
-        uniforms: {
-          image: canvas.toDataURL('image/png'),
-          color: Color.HOTPINK.withAlpha(1),
-        },
-        source,
-      },
+    material: Material.fromType('Image', {
+      image: canvas,
     }),
     translucent: true,
+    closed: false,
+    flat: true,
   });
 }
 
@@ -205,7 +209,11 @@ function createFovPrimitive(
   center: Cartesian3,
   scene: Scene,
   color = Color.RED.withAlpha(0.7),
-): { update: (position: Cartesian3) => void; destroy: () => void } {
+): {
+  update: (position: Cartesian3) => void;
+  destroy: () => void;
+  show: boolean;
+} {
   const pointPrimitive = new Primitive({
     geometryInstances: [
       new GeometryInstance({
@@ -260,10 +268,18 @@ function createFovPrimitive(
       scene.primitives.remove(pointPrimitive);
       scene.primitives.remove(linePrimitive);
     },
+    get show(): boolean {
+      return linePrimitive.show && pointPrimitive.show;
+    },
+    set show(value: boolean) {
+      linePrimitive.show = value;
+      pointPrimitive.show = value;
+    },
   };
 }
 
 export function createFovPrimitives(scene: Scene): {
+  show: boolean;
   update(): void;
   destroy(): void;
 } {
@@ -318,8 +334,20 @@ export function createFovPrimitives(scene: Scene): {
       primitive.destroy();
     });
   }
-
-  return { update, destroy };
+  let show = true;
+  return {
+    get show(): boolean {
+      return show;
+    },
+    set show(value: boolean) {
+      show = value;
+      primitives.forEach((primitive) => {
+        primitive.show = value;
+      });
+    },
+    update,
+    destroy,
+  };
 }
 
 /**
@@ -360,24 +388,33 @@ function createAxisPrimitives(image: PanoramaImage): Primitive[] {
 export function createDebugCameraSphere(
   scene: Scene,
   image: PanoramaImage,
+  options: DebugCameraSphereOptions = {},
 ): DebugCameraSphere {
   const canvas = document.createElement('canvas');
   canvas.width = 360 * PIXEL_PER_DEGREES;
   canvas.height = 180 * PIXEL_PER_DEGREES;
+  const currentOptions: Required<DebugCameraSphereOptions> = {
+    paused: false,
+    grid: true,
+    tileGrid: 0,
+    fov: false,
+    cameraAxis: true,
+    clickedPosition: null,
+    ...options,
+  };
 
   const ctx = canvas.getContext('2d')!;
   ctx.translate(360 * PIXEL_PER_DEGREES, 0);
   ctx.scale(-1, 1); // Flip the context horizontally
-  drawView(scene, image, ctx);
+  drawView(scene, image, ctx, currentOptions);
   const primitive = createPrimitive(canvas, image);
   scene.primitives.add(primitive);
 
-  let paused = false;
-
   const fovPrimitives = createFovPrimitives(scene);
+  fovPrimitives.show = currentOptions.fov;
   const changeListener = scene.camera.changed.addEventListener(() => {
-    if (!paused) {
-      drawView(scene, image, ctx);
+    if (!currentOptions.paused) {
+      drawView(scene, image, ctx, currentOptions);
       fovPrimitives.update();
       primitive.appearance = createMaterial(canvas);
     }
@@ -386,15 +423,49 @@ export function createDebugCameraSphere(
 
   const axisPrimitives = createAxisPrimitives(image);
   axisPrimitives.forEach((axis) => {
+    axis.show = currentOptions.cameraAxis;
     scene.primitives.add(axis);
   });
 
   return {
     get paused(): boolean {
-      return paused;
+      return currentOptions.paused;
     },
     set paused(value: boolean) {
-      paused = value;
+      currentOptions.paused = value;
+    },
+    get grid(): boolean {
+      return currentOptions.grid;
+    },
+    set grid(value: boolean) {
+      currentOptions.grid = value;
+    },
+    get tileGrid(): number | false {
+      return currentOptions.tileGrid;
+    },
+    set tileGrid(value: number | false) {
+      currentOptions.tileGrid = value;
+    },
+    get fov(): boolean {
+      return currentOptions.fov;
+    },
+    set fov(value: boolean) {
+      currentOptions.fov = value;
+      fovPrimitives.show = value;
+    },
+    get cameraAxis(): boolean {
+      return currentOptions.cameraAxis;
+    },
+    set cameraAxis(value: boolean) {
+      currentOptions.cameraAxis = value;
+      axisPrimitives.forEach((axis) => {
+        axis.show = currentOptions.cameraAxis;
+      });
+    },
+    setClickedPosition(position?: [number, number]): void {
+      currentOptions.clickedPosition = position ?? null;
+      drawView(scene, image, ctx, currentOptions);
+      primitive.appearance = createMaterial(canvas);
     },
     destroy(): void {
       scene.primitives.remove(primitive);

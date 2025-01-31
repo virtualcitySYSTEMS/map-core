@@ -4,6 +4,7 @@ import {
   Cartesian3,
   PerspectiveFrustum,
   Math as CesiumMath,
+  Cartesian2,
 } from '@vcmap-cesium/engine';
 import { globalCartesianToImageSpherical } from './sphericalCoordinates.js';
 import type { PanoramaImage } from './panoramaImage.js';
@@ -212,4 +213,29 @@ export function getFovImageSphericalExtent(
     extents,
     center: projectedFov.center,
   };
+}
+
+/**
+ * creates a ray from the camera to the window position and try to intersect it with the unit sphere.
+ * @param windowPosition
+ * @param camera
+ * @param panoramaImage
+ */
+export function windowPositionToImageSpherical(
+  windowPosition: Cartesian2,
+  camera: Camera,
+  panoramaImage: PanoramaImage,
+): [number, number] | undefined {
+  const ray = camera.getPickRay(windowPosition);
+  if (!ray) {
+    return undefined;
+  }
+
+  const intersectionPoint = Cartesian3.add(
+    ray.origin,
+    ray.direction,
+    new Cartesian3(),
+  );
+
+  return globalCartesianToImageSpherical(intersectionPoint, panoramaImage);
 }
