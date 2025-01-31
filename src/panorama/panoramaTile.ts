@@ -15,6 +15,9 @@ import {
 import { Extent } from 'ol/extent.js';
 import { cartesian2DDistance } from '../util/math.js';
 
+const MAX_TEXTURE_LOAD_MS = 10 * 1000; // 10s
+const TEXTURE_WAIT_INTERVAL_MS = 60; // 10s
+
 /**
  * Tile coordinate in format [x, y, level]
  */
@@ -61,17 +64,18 @@ function getEmptyTileAppearance(): MaterialAppearance {
 }
 
 // TODO create a default material that can be cached.
+// FIXME find a way to wait for the texture before rendering. using "WHITE" does not work, since burned texture is also white.
 const source = `
 czm_material czm_getMaterial(czm_materialInput materialInput)
 {
     czm_material m = czm_getDefaultMaterial(materialInput);
     vec2 clamped = clamp(materialInput.st, min, max);
     vec2 scaled = (clamped - min) / (max - min);
-    vec3 t_color = texture(image, scaled).rgb * color.rgb;
-    m.diffuse =  t_color;
+    vec4 t_color = texture(image, scaled);
+    m.diffuse = t_color.rgb;
     m.specular = 0.5;
-    m.emission = t_color * vec3(0.5);
-    m.alpha = (t_color.rgb == vec3(1.0, 1.0, 1.0)) ? 0.0 : 1.0;
+    m.emission = t_color.rgb * vec3(0.5);
+    m.alpha = alpha;
     return m;
 }
 `;
@@ -207,10 +211,11 @@ function getImageTileAppearance(
       fabric: {
         type: 'TileImage',
         uniforms: {
-          image: canvas.toDataURL('image/png'),
+          image: canvas,
           color: Color.WHITE.withAlpha(0.0),
           min,
           max,
+          alpha: 0,
         },
         source,
       },
@@ -245,7 +250,7 @@ function createPrimitive(
       }),
     ],
     appearance: getEmptyTileAppearance(),
-    asynchronous: false,
+    asynchronous: true,
     modelMatrix: Transforms.headingPitchRollToFixedFrame(
       position,
       new HeadingPitchRoll(0, 0, 0),
@@ -267,6 +272,26 @@ export function createPanoramaTile(
     true,
   );
 
+  // IDEA maybe find a better place to do this? or find a better way to wait for the texture to be loaded.
+  let textureWaiting = 0;
+  const interval = setInterval(() => {
+    textureWaiting += TEXTURE_WAIT_INTERVAL_MS;
+    if (
+      primitive.ready &&
+      // eslint-disable-next-line no-underscore-dangle
+      (
+        primitive.appearance.material as Material & {
+          _textures: { image?: any };
+        }
+      )._textures.image
+    ) {
+      (primitive.appearance.material.uniforms as { alpha: number }).alpha = 1.0;
+      clearInterval(interval);
+    } else if (textureWaiting > MAX_TEXTURE_LOAD_MS) {
+      clearInterval(interval);
+    }
+  }, TEXTURE_WAIT_INTERVAL_MS);
+
   return {
     get position(): Cartesian3 {
       return origin;
@@ -279,6 +304,7 @@ export function createPanoramaTile(
     },
     destroy(): void {
       primitive.destroy();
+      clearInterval(interval);
     },
   };
 }
