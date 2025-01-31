@@ -15,7 +15,7 @@ import {
   TileSize,
   tileSizeInRadians,
 } from './panoramaTile.js';
-import { getFovImageSphericalExtent } from './fovHelpers.js';
+import { getFovImageSphericalExtent } from './panoramaCameraHelpers.js';
 
 export type PanoramaImageView = {
   image: PanoramaImage;
