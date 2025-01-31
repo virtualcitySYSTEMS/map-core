@@ -164,7 +164,7 @@ Transformation: ECEF -> image coordinate. You can find these transformations in 
 ## Concept: FOV
 
 The FOV is defined by the camera. Once calculated in ECEF, we move it to image coordinates system and create the
-bounds. Helper functions are found `fovHelpers.ts`. The following restriction apply:
+bounds. Helper functions are found `panoramaCameraHelpers.ts`. The following restriction apply:
 
 - The FOV can wrap around the X axis. You will get one in general or two bounds if it wraps around.
 - We do not wrap around the Y axis. This is a restriction of the current implementation.
