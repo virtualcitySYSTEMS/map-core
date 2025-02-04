@@ -3,6 +3,7 @@ import {
   Matrix4,
   Transforms,
   HeadingPitchRoll,
+  Cartesian4,
 } from '@vcmap-cesium/engine';
 import { fromUrl, GeoTIFF, GeoTIFFImage } from 'geotiff';
 import {
@@ -39,6 +40,7 @@ export type PanoramaImage = {
    */
   readonly orientation: HeadingPitchRoll;
   readonly modelMatrix: Matrix4;
+  readonly up: Cartesian3;
   readonly invModelMatrix: Matrix4;
   // the following properties are "tiled" specific
   readonly image: GeoTIFF;
@@ -96,6 +98,10 @@ export async function createPanoramaImage(
     headingPitchRoll,
   );
 
+  const upCart4 = Matrix4.getColumn(modelMatrix, 2, new Cartesian4());
+  Cartesian4.normalize(upCart4, upCart4);
+  const up = Cartesian3.fromCartesian4(upCart4, new Cartesian3());
+
   const invModelMatrix = Matrix4.inverseTransformation(
     modelMatrix,
     new Matrix4(),
@@ -123,6 +129,9 @@ export async function createPanoramaImage(
     },
     get modelMatrix(): Matrix4 {
       return modelMatrix;
+    },
+    get up(): Cartesian3 {
+      return up;
     },
     get invModelMatrix(): Matrix4 {
       return invModelMatrix;

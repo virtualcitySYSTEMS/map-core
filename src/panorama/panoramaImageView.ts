@@ -1,9 +1,4 @@
-import {
-  Cartesian3,
-  Matrix4,
-  PrimitiveCollection,
-  Scene,
-} from '@vcmap-cesium/engine';
+import { Cartesian3, Matrix4, PrimitiveCollection } from '@vcmap-cesium/engine';
 import { getWidth } from 'ol/extent.js';
 import type { PanoramaImage } from './panoramaImage.js';
 import {
@@ -16,6 +11,8 @@ import {
   tileSizeInRadians,
 } from './panoramaTile.js';
 import { getFovImageSphericalExtent } from './panoramaCameraHelpers.js';
+import { setupPanoramaNavigation } from './panoramaNavigation.js';
+import PanoramaMap from '../map/panoramaMap.js';
 
 export type PanoramaImageView = {
   image: PanoramaImage;
@@ -46,9 +43,10 @@ function getLevelPixelPerRadians(level: number, tileSize: TileSize): number {
 }
 
 export function createPanoramaImageView(
-  scene: Scene,
+  map: PanoramaMap,
   image: PanoramaImage,
 ): PanoramaImageView {
+  const { scene } = map.getCesiumWidget();
   const primitiveCollection = scene.primitives.add(
     new PrimitiveCollection({ destroyPrimitives: false, show: true }),
   ) as PrimitiveCollection;
@@ -148,12 +146,10 @@ export function createPanoramaImageView(
   camera.changed.addEventListener(render);
   render();
 
+  const nav = setupPanoramaNavigation(map, image);
+
   return {
     image,
-    destroy(): void {
-      scene.primitives.remove(primitiveCollection);
-      currentTiles.clear();
-    },
     get suspendTileLoading(): boolean {
       return suspendTileLoading;
     },
@@ -164,5 +160,10 @@ export function createPanoramaImageView(
       return [...currentTiles.values()];
     },
     render,
+    destroy(): void {
+      scene.primitives.remove(primitiveCollection);
+      currentTiles.clear();
+      nav.destroy();
+    },
   };
 }
