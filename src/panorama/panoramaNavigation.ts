@@ -1,38 +1,37 @@
 import {
   Cartesian2,
-  CesiumWidget,
   Math as CesiumMath,
   PerspectiveFrustum,
   ScreenSpaceEventType,
 } from '@vcmap-cesium/engine';
-import { PanoramaImageView } from './panoramaImageView.js';
-import { DebugCameraSphere } from './debugCameraSphere.js';
-import VcsEvent from '../vcsEvent.js';
 import { windowPositionToImageSpherical } from './panoramaCameraHelpers.js';
 import PanoramaMap from '../map/panoramaMap.js';
+import {
+  PointerEventType,
+  PointerKeyType,
+} from '../interaction/interactionType.js';
+import { PanoramaImage } from './panoramaImage.js';
+import VcsEvent from '../vcsEvent.js';
 
 export type PanoramaNavigationControls = {
-  readonly fovChanged: VcsEvent<number>;
-  debugCamera?: DebugCameraSphere;
+  readonly fovChanged: VcsEvent<void>;
   destroy(): void;
 };
 
-const maxPitch = 85 / CesiumMath.DEGREES_PER_RADIAN;
-const minPitch = -maxPitch;
-const maxFov = CesiumMath.toRadians(120);
-const minFov = CesiumMath.toRadians(10);
-const fovStep = 0.1;
+const MAX_PITCH = CesiumMath.toRadians(85);
+const MIN_PITCH = -MAX_PITCH;
+const MAX_FOV = CesiumMath.toRadians(120);
+const MIN_FOV = CesiumMath.toRadians(10);
+const FOV_STEP = 0.1;
 
-// TODO move to navication controls & setup drag listener instead of "POV" look
 export function setupPanoramaNavigation(
   map: PanoramaMap,
-  widget: CesiumWidget,
-  view: PanoramaImageView,
+  image: PanoramaImage,
 ): PanoramaNavigationControls {
-  const { image } = view;
+  const widget = map.getCesiumWidget();
   const { camera } = widget;
   const frustum = camera.frustum as PerspectiveFrustum;
-  let debugCamera: DebugCameraSphere | undefined;
+  const fovChanged = new VcsEvent<void>();
 
   const pointerInput: {
     startPosition: Cartesian2;
@@ -44,116 +43,76 @@ export function setupPanoramaNavigation(
     leftDown: false,
   };
 
-  const leftDownHandler = (event: { position: Cartesian2 }): void => {
-    pointerInput.leftDown = true;
-    const imageSpherical = windowPositionToImageSpherical(
-      event.position,
-      camera,
-      image,
-    );
-    if (debugCamera) {
-      debugCamera.setClickedPosition(imageSpherical);
+  map.pointerInteractionEvent.addEventListener((event) => {
+    if (event.pointer === PointerKeyType.LEFT) {
+      if (event.pointerEvent === PointerEventType.DOWN) {
+        pointerInput.leftDown = true;
+        // set the spherical position of the pointer on the sphere here.
+        pointerInput.position = event.windowPosition.clone(
+          pointerInput.position,
+        );
+        pointerInput.startPosition = event.windowPosition.clone(
+          pointerInput.startPosition,
+        );
+      } else {
+        pointerInput.leftDown = false;
+      }
+    } else if (
+      event.pointerEvent === PointerEventType.MOVE &&
+      pointerInput.leftDown
+    ) {
+      pointerInput.position = event.windowPosition.clone(pointerInput.position);
     }
-    // set the spherical position of the pointer on the sphere here.
-    pointerInput.startPosition = event.position;
-    pointerInput.position = event.position.clone();
-  };
+  });
 
-  const leftUpHandler = (): void => {
-    pointerInput.leftDown = false;
-  };
-
-  const mouseMoveHandler = (event: { endPosition: Cartesian2 }): void => {
-    if (pointerInput.leftDown) {
-      pointerInput.position = event.endPosition;
-      // calculate the distance between the start and end position _on the sphere_ rotate by the given amount along the spheres axis.
-    }
-  };
-
-  map.screenSpaceEventHandler.setInputAction(
-    leftDownHandler,
-    ScreenSpaceEventType.LEFT_DOWN,
-  );
-  map.screenSpaceEventHandler.setInputAction(
-    leftUpHandler,
-    ScreenSpaceEventType.LEFT_UP,
-  );
-  map.screenSpaceEventHandler.setInputAction(
-    mouseMoveHandler,
-    ScreenSpaceEventType.MOUSE_MOVE,
-  );
-
-  const fovChanged = new VcsEvent<number>();
   map.screenSpaceEventHandler.setInputAction((event: number): void => {
-    if (event > 0 && frustum.fov > minFov) {
-      frustum.fov -= fovStep;
-    } else if (event < 0 && frustum.fov < maxFov) {
-      frustum.fov += fovStep;
+    if (event > 0 && frustum.fov > MIN_FOV) {
+      frustum.fov -= FOV_STEP;
+      fovChanged.raiseEvent(); // IDEA since this only changes the FOV, maybe we can optimize this?
+    } else if (event < 0 && frustum.fov < MAX_FOV) {
+      frustum.fov += FOV_STEP;
+      fovChanged.raiseEvent(); // IDEA since this only changes the FOV, maybe we can optimize this?
     }
   }, ScreenSpaceEventType.WHEEL);
 
-  const altHandler = (event: KeyboardEvent): void => {
-    if (event.altKey) {
-      widget.scene.screenSpaceCameraController.enableInputs =
-        !widget.scene.screenSpaceCameraController.enableInputs;
-
-      if (!widget.scene.screenSpaceCameraController.enableInputs) {
-        widget.scene.camera.setView({
-          destination: image.position,
-          orientation: {
-            heading: 0,
-            pitch: 0,
-            roll: 0,
-          },
-        });
-        if (debugCamera) {
-          debugCamera.paused = false;
-          view.suspendTileLoading = false;
-        }
-      } else if (debugCamera) {
-        view.suspendTileLoading = true;
-        debugCamera.paused = true;
-      }
-    }
-  };
-  document.body.addEventListener('keydown', altHandler);
-
-  const shareToAngleFactor = 0.05;
   const clockListener = widget.clock.onTick.addEventListener(() => {
-    if (pointerInput.leftDown) {
-      const { clientWidth, clientHeight } = widget.canvas;
+    if (
+      pointerInput.leftDown &&
+      !widget.scene.screenSpaceCameraController.enableInputs
+    ) {
       const { position, startPosition } = pointerInput;
+      const startImagePosition = windowPositionToImageSpherical(
+        startPosition,
+        camera,
+        image,
+      );
+      const newImagePosition = windowPositionToImageSpherical(
+        position,
+        camera,
+        image,
+      );
 
-      // Distance of current pointer position to the initial/start position on leftDown as share of clientWidth
-      const xShare = (position.x - startPosition.x) / clientWidth;
-      // Distance of current pointer position to the initial/start position on leftDown as share of clientHeight
-      const yShare = -(position.y - startPosition.y) / clientHeight;
+      if (startImagePosition && newImagePosition) {
+        const diffX = startImagePosition[0] - newImagePosition[0];
+        const diffY = startImagePosition[1] - newImagePosition[1];
+        widget.camera.look(image.up, diffX);
+        widget.camera.look(camera.right, diffY);
 
-      widget.camera.look(widget.camera.position, xShare * shareToAngleFactor);
-      const yAmount = yShare * shareToAngleFactor;
-      if (
-        widget.camera.pitch + yAmount > minPitch &&
-        widget.camera.pitch + yAmount < maxPitch
-      ) {
-        widget.camera.lookUp(yAmount);
+        if (camera.pitch > MAX_PITCH) {
+          camera.look(camera.right, camera.pitch - MAX_PITCH);
+        } else if (camera.pitch < MIN_PITCH) {
+          camera.look(camera.right, camera.pitch - MIN_PITCH);
+        }
+        pointerInput.startPosition = position.clone(startPosition);
       }
     }
   });
 
   return {
-    get fovChanged(): VcsEvent<number> {
-      return fovChanged;
-    },
-    get debugCamera(): DebugCameraSphere | undefined {
-      return debugCamera;
-    },
-    set debugCamera(value: DebugCameraSphere | undefined) {
-      debugCamera = value;
-    },
+    fovChanged,
     destroy(): void {
-      document.body.removeEventListener('keydown', altHandler);
-      fovChanged.destroy();
       clockListener();
+      fovChanged.destroy();
     },
   };
 }
