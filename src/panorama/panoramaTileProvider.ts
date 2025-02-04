@@ -141,7 +141,9 @@ export function createPanoramaTileProvider(
             // cached in a previous iteration but got aborted too late.
             tileLoaded.raiseEvent(cache.get(tileCoordinate.key));
           } else if (result instanceof Error) {
-            tileError.raiseEvent({ tileCoordinate, error: result });
+            if (result.name !== 'AbortError') {
+              tileError.raiseEvent({ tileCoordinate, error: result });
+            }
           } else if (result) {
             addTileToCache(result, cache, currentlyVisibleTiles);
             tileLoaded.raiseEvent(result);
@@ -170,8 +172,10 @@ export function createPanoramaTileProvider(
         }
       })
       .catch((e) => {
-        getLogger('PanoramaTileProvider').warning('Error loading tiles');
-        getLogger('PanoramaTileProvider').warning(String(e));
+        if ((e as Error).name !== 'AbortError') {
+          getLogger('PanoramaTileProvider').warning('Error loading tiles');
+          getLogger('PanoramaTileProvider').warning(String(e));
+        }
       });
   };
 
