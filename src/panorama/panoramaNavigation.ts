@@ -23,6 +23,8 @@ const MIN_PITCH = -MAX_PITCH;
 const MAX_FOV = CesiumMath.toRadians(120);
 const MIN_FOV = CesiumMath.toRadians(10);
 const FOV_STEP = 0.1;
+const INERTIA_DECAY = 0.8;
+const DECAY_FRAMES = 60;
 
 export function setupPanoramaNavigation(
   map: PanoramaMap,
@@ -75,35 +77,60 @@ export function setupPanoramaNavigation(
     }
   }, ScreenSpaceEventType.WHEEL);
 
+  let yInertia = 0;
+  let xInertia = 0;
+  let decay = 0;
+
+  function ensurePitch(): void {
+    if (camera.pitch > MAX_PITCH) {
+      camera.look(camera.right, camera.pitch - MAX_PITCH);
+    } else if (camera.pitch < MIN_PITCH) {
+      camera.look(camera.right, camera.pitch - MIN_PITCH);
+    }
+  }
+
+  // IDEA maybe not attach to the clock to avoid blocking by renderer.
   const clockListener = widget.clock.onTick.addEventListener(() => {
-    if (
-      pointerInput.leftDown &&
-      !widget.scene.screenSpaceCameraController.enableInputs
-    ) {
-      const { position, startPosition } = pointerInput;
-      const startImagePosition = windowPositionToImageSpherical(
-        startPosition,
-        camera,
-        image,
-      );
-      const newImagePosition = windowPositionToImageSpherical(
-        position,
-        camera,
-        image,
-      );
+    if (!widget.scene.screenSpaceCameraController.enableInputs) {
+      if (pointerInput.leftDown) {
+        const { position, startPosition } = pointerInput;
+        const startImagePosition = windowPositionToImageSpherical(
+          startPosition,
+          camera,
+          image,
+        );
+        const newImagePosition = windowPositionToImageSpherical(
+          position,
+          camera,
+          image,
+        );
 
-      if (startImagePosition && newImagePosition) {
-        const diffX = startImagePosition[0] - newImagePosition[0];
-        const diffY = startImagePosition[1] - newImagePosition[1];
-        widget.camera.look(image.up, diffX);
-        widget.camera.look(camera.right, diffY);
+        if (startImagePosition && newImagePosition) {
+          let diffX = startImagePosition[0] - newImagePosition[0];
+          if (diffX > CesiumMath.PI) {
+            diffX -= CesiumMath.TWO_PI;
+          } else if (diffX < -CesiumMath.PI) {
+            diffX += CesiumMath.TWO_PI;
+          }
+          const diffY = startImagePosition[1] - newImagePosition[1];
+          widget.camera.look(image.up, diffX);
+          widget.camera.look(camera.right, diffY);
 
-        if (camera.pitch > MAX_PITCH) {
-          camera.look(camera.right, camera.pitch - MAX_PITCH);
-        } else if (camera.pitch < MIN_PITCH) {
-          camera.look(camera.right, camera.pitch - MIN_PITCH);
+          yInertia = diffY;
+          xInertia = diffX;
+          decay = 0;
+
+          ensurePitch();
+          pointerInput.startPosition = position.clone(startPosition);
         }
-        pointerInput.startPosition = position.clone(startPosition);
+      } else if (decay < DECAY_FRAMES) {
+        decay += 1;
+        xInertia *= INERTIA_DECAY;
+        widget.camera.look(image.up, xInertia);
+        yInertia *= INERTIA_DECAY;
+        widget.camera.look(camera.right, yInertia);
+
+        ensurePitch();
       }
     }
   });
