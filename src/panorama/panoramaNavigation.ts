@@ -3,18 +3,13 @@ import {
   CesiumWidget,
   Math as CesiumMath,
   PerspectiveFrustum,
-  ScreenSpaceEventHandler,
   ScreenSpaceEventType,
 } from '@vcmap-cesium/engine';
 import { PanoramaImageView } from './panoramaImageView.js';
 import { DebugCameraSphere } from './debugCameraSphere.js';
 import VcsEvent from '../vcsEvent.js';
 import { windowPositionToImageSpherical } from './panoramaCameraHelpers.js';
-
-type PointerInput = {
-  position: Cartesian2;
-  leftDown: boolean;
-};
+import PanoramaMap from '../map/panoramaMap.js';
 
 export type PanoramaNavigationControls = {
   readonly fovChanged: VcsEvent<number>;
@@ -30,11 +25,12 @@ const fovStep = 0.1;
 
 // TODO move to navication controls & setup drag listener instead of "POV" look
 export function setupPanoramaNavigation(
+  map: PanoramaMap,
   widget: CesiumWidget,
   view: PanoramaImageView,
 ): PanoramaNavigationControls {
   const { image } = view;
-  const { camera, canvas } = widget;
+  const { camera } = widget;
   const frustum = camera.frustum as PerspectiveFrustum;
   let debugCamera: DebugCameraSphere | undefined;
 
@@ -47,8 +43,6 @@ export function setupPanoramaNavigation(
     position: new Cartesian2(),
     leftDown: false,
   };
-
-  const pointerEventHandler = new ScreenSpaceEventHandler(canvas);
 
   const leftDownHandler = (event: { position: Cartesian2 }): void => {
     pointerInput.leftDown = true;
@@ -76,21 +70,21 @@ export function setupPanoramaNavigation(
     }
   };
 
-  pointerEventHandler.setInputAction(
+  map.screenSpaceEventHandler.setInputAction(
     leftDownHandler,
     ScreenSpaceEventType.LEFT_DOWN,
   );
-  pointerEventHandler.setInputAction(
+  map.screenSpaceEventHandler.setInputAction(
     leftUpHandler,
     ScreenSpaceEventType.LEFT_UP,
   );
-  pointerEventHandler.setInputAction(
+  map.screenSpaceEventHandler.setInputAction(
     mouseMoveHandler,
     ScreenSpaceEventType.MOUSE_MOVE,
   );
 
   const fovChanged = new VcsEvent<number>();
-  pointerEventHandler.setInputAction((event: number): void => {
+  map.screenSpaceEventHandler.setInputAction((event: number): void => {
     if (event > 0 && frustum.fov > minFov) {
       frustum.fov -= fovStep;
     } else if (event < 0 && frustum.fov < maxFov) {
@@ -157,7 +151,6 @@ export function setupPanoramaNavigation(
       debugCamera = value;
     },
     destroy(): void {
-      pointerEventHandler.destroy();
       document.body.removeEventListener('keydown', altHandler);
       fovChanged.destroy();
       clockListener();
