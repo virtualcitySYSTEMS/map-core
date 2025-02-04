@@ -9,12 +9,10 @@ import {
   PanoramaImage,
 } from '../panorama/panoramaImage.js';
 import { mapClassRegistry } from '../classRegistry.js';
-import { createDebugCameraSphere } from '../panorama/debugCameraSphere.js';
 import {
   createPanoramaImageView,
   PanoramaImageView,
 } from '../panorama/panoramaImageView.js';
-import { setupPanoramaNavigation } from '../panorama/panoramaNavigation.js';
 import { setupCesiumInteractions } from './cesiumMapEvent.js';
 
 export type PanoramaMapOptions = VcsMapOptions;
@@ -53,6 +51,16 @@ export default class PanoramaMap extends VcsMap {
       this._cesiumWidget.scene.screenSpaceCameraController.enableInputs = false;
       this._cesiumWidget.scene.primitives.destroyPrimitives = false;
       this._cesiumWidget.scene.globe.enableLighting = false;
+
+      this._screenSpaceEventHandler = new ScreenSpaceEventHandler(
+        this._cesiumWidget.canvas,
+      );
+
+      this._screenSpaceListener = setupCesiumInteractions(
+        this,
+        this.screenSpaceEventHandler,
+      );
+
       this.initialized = true;
 
       const image = await createPanoramaImage({
@@ -69,30 +77,8 @@ export default class PanoramaMap extends VcsMap {
           roll: 0,
         },
       });
-      this._currentImageView = createPanoramaImageView(
-        this._cesiumWidget.scene,
-        image,
-      );
       this._currentImage = image;
-      this._screenSpaceEventHandler = new ScreenSpaceEventHandler(
-        this._cesiumWidget.canvas,
-      );
-
-      this._screenSpaceListener = setupCesiumInteractions(
-        this,
-        this.screenSpaceEventHandler,
-      );
-
-      const nav = setupPanoramaNavigation(
-        this,
-        this._cesiumWidget,
-        this._currentImageView,
-      );
-
-      nav.debugCamera = createDebugCameraSphere(
-        this._cesiumWidget.scene,
-        image,
-      );
+      this._currentImageView = createPanoramaImageView(this, image);
     }
     await super.initialize();
   }
@@ -112,7 +98,10 @@ export default class PanoramaMap extends VcsMap {
     }
   }
 
-  getCesiumWidget(): CesiumWidget | undefined {
+  getCesiumWidget(): CesiumWidget {
+    if (!this._cesiumWidget) {
+      throw new Error('CesiumWidget not initialized');
+    }
     return this._cesiumWidget;
   }
 

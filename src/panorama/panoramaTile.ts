@@ -269,7 +269,6 @@ export function createPanoramaTile(
     tileCoordinate,
     image,
     tileSize,
-    true,
   );
 
   // IDEA maybe find a better place to do this? or find a better way to wait for the texture to be loaded.

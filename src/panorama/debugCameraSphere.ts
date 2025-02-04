@@ -21,6 +21,8 @@ import {
 } from './panoramaCameraHelpers.js';
 import type { PanoramaImage } from './panoramaImage.js';
 import { getNumberOfTiles, tileSizeInRadians } from './panoramaTile.js';
+import type { PanoramaImageView } from './panoramaImageView.js';
+import type PanoramaMap from '../map/panoramaMap.js';
 
 export type DebugCameraSphereOptions = {
   paused?: boolean;
@@ -475,5 +477,41 @@ export function createDebugCameraSphere(
       fovPrimitives.destroy();
       changeListener();
     },
+  };
+}
+
+export function debugNavigation(
+  map: PanoramaMap,
+  view: PanoramaImageView,
+  debugCamera: DebugCameraSphere,
+): () => void {
+  const widget = map.getCesiumWidget();
+  const { image } = view;
+  const altHandler = (event: KeyboardEvent): void => {
+    if (event.altKey) {
+      widget.scene.screenSpaceCameraController.enableInputs =
+        !widget.scene.screenSpaceCameraController.enableInputs;
+
+      if (!widget.scene.screenSpaceCameraController.enableInputs) {
+        widget.scene.camera.setView({
+          destination: image.position,
+          orientation: {
+            heading: 0,
+            pitch: 0,
+            roll: 0,
+          },
+        });
+        debugCamera.paused = false;
+        view.suspendTileLoading = false;
+      } else {
+        view.suspendTileLoading = true;
+        debugCamera.paused = true;
+      }
+    }
+  };
+  document.addEventListener('keydown', altHandler);
+
+  return (): void => {
+    document.removeEventListener('keydown', altHandler);
   };
 }
