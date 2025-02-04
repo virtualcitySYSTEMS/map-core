@@ -1,19 +1,21 @@
-import { CesiumWidget, ShadowMode } from '@vcmap-cesium/engine';
+import {
+  CesiumWidget,
+  ScreenSpaceEventHandler,
+  ShadowMode,
+} from '@vcmap-cesium/engine';
 import VcsMap, { VcsMapOptions } from './vcsMap.js';
 import {
   createPanoramaImage,
   PanoramaImage,
 } from '../panorama/panoramaImage.js';
 import { mapClassRegistry } from '../classRegistry.js';
-import {
-  createDebugCameraSphere,
-  DebugCameraSphere,
-} from '../panorama/debugCameraSphere.js';
+import { createDebugCameraSphere } from '../panorama/debugCameraSphere.js';
 import {
   createPanoramaImageView,
   PanoramaImageView,
 } from '../panorama/panoramaImageView.js';
 import { setupPanoramaNavigation } from '../panorama/panoramaNavigation.js';
+import { setupCesiumInteractions } from './cesiumMapEvent.js';
 
 export type PanoramaMapOptions = VcsMapOptions;
 
@@ -33,6 +35,10 @@ export default class PanoramaMap extends VcsMap {
   private _currentImageView: PanoramaImageView | undefined;
 
   private _currentImage: PanoramaImage | undefined;
+
+  private _screenSpaceListener: (() => void) | undefined;
+
+  private _screenSpaceEventHandler: ScreenSpaceEventHandler | undefined;
 
   async initialize(): Promise<void> {
     if (!this.initialized) {
@@ -68,10 +74,21 @@ export default class PanoramaMap extends VcsMap {
         image,
       );
       this._currentImage = image;
+      this._screenSpaceEventHandler = new ScreenSpaceEventHandler(
+        this._cesiumWidget.canvas,
+      );
+
+      this._screenSpaceListener = setupCesiumInteractions(
+        this,
+        this.screenSpaceEventHandler,
+      );
+
       const nav = setupPanoramaNavigation(
+        this,
         this._cesiumWidget,
         this._currentImageView,
       );
+
       nav.debugCamera = createDebugCameraSphere(
         this._cesiumWidget.scene,
         image,
@@ -80,12 +97,23 @@ export default class PanoramaMap extends VcsMap {
     await super.initialize();
   }
 
+  get screenSpaceEventHandler(): ScreenSpaceEventHandler {
+    if (!this._screenSpaceEventHandler) {
+      throw new Error('ScreenSpaceEventHandler not initialized');
+    }
+    return this._screenSpaceEventHandler;
+  }
+
   async activate(): Promise<void> {
     await super.activate();
     if (this.active && this._cesiumWidget) {
       this._cesiumWidget.useDefaultRenderLoop = true;
       this._cesiumWidget.resize();
     }
+  }
+
+  getCesiumWidget(): CesiumWidget | undefined {
+    return this._cesiumWidget;
   }
 
   deactivate(): void {
@@ -98,7 +126,11 @@ export default class PanoramaMap extends VcsMap {
   destroy(): void {
     this._currentImage?.destroy();
     this._currentImageView?.destroy();
+    this._screenSpaceListener?.();
+    this._screenSpaceEventHandler?.destroy();
+    this._cesiumWidget?.destroy();
     super.destroy();
   }
 }
+
 mapClassRegistry.registerClass(PanoramaMap.className, PanoramaMap);
