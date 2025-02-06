@@ -20,27 +20,49 @@ import type Layer from '../layer/layer.js';
 import { DisableMapControlOptions } from '../util/mapCollection.js';
 import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
 
-export function ensureLayerInCollection(
+function ensureLayerInCollection(
   layers: OLCollection<OLLayer>,
   layer: OLLayer,
   layerCollection: LayerCollection,
 ): void {
-  let targetIndex = -1;
-  if (layer[vectorClusterGroupName]) {
-    targetIndex = layerCollection.size;
-  } else {
-    targetIndex = layerCollection.indexOfKey(layer[vcsLayerName]) as number;
-  }
+  const sortedVectorClusterGroups = [
+    ...layerCollection.vectorClusterGroups,
+  ].sort((a, b) => a.zIndex - b.zIndex);
 
+  const getIndexOfOlLayer = (olL: OLLayer): number => {
+    let layerIndex;
+    let clusterIndex = 0;
+    if (olL[vectorClusterGroupName]) {
+      const clusterGroup = layerCollection.vectorClusterGroups.getByKey(
+        olL[vectorClusterGroupName],
+      )!;
+      layerIndex = layerCollection.findIndex(
+        (l) => l.zIndex > clusterGroup.zIndex,
+      );
+      clusterIndex = sortedVectorClusterGroups.indexOf(clusterGroup);
+      layerIndex = layerIndex < 0 ? layerCollection.size : layerIndex;
+    } else {
+      layerIndex = layerCollection.indexOfKey(olL[vcsLayerName]) as number;
+      if (sortedVectorClusterGroups.length > 0) {
+        const vcsLayer = layerCollection.getByKey(olL[vcsLayerName])!;
+        clusterIndex = sortedVectorClusterGroups.findIndex(
+          (vc) => vc.zIndex >= vcsLayer.zIndex,
+        );
+        clusterIndex = clusterIndex < 0 ? sortedVectorClusterGroups.length : 0;
+      }
+    }
+
+    layerIndex += clusterIndex;
+    return layerIndex;
+  };
+
+  const targetIndex = getIndexOfOlLayer(layer);
   if (targetIndex > -1) {
     const layerArray = layers.getArray();
 
     if (!layerArray.includes(layer)) {
-      let indexInOlCollection = layerArray.findIndex((l) => {
-        const layerIndex = layerCollection.indexOfKey(
-          l[vcsLayerName],
-        ) as number;
-        return layerIndex > targetIndex;
+      let indexInOlCollection = layerArray.findIndex((olL) => {
+        return getIndexOfOlLayer(olL) > targetIndex;
       });
       if (indexInOlCollection === -1) {
         indexInOlCollection = layerArray.length;

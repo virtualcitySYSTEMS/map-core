@@ -25,6 +25,7 @@ import VectorClusterGroupImpl from './vectorClusterGroupImpl.js';
 import { vectorClusterGroupName } from './vectorClusterSymbols.js';
 import type VectorLayer from '../layer/vectorLayer.js';
 import { vcsLayerName } from '../layer/layerSymbols.js';
+import { hidden } from '../layer/featureVisibility.js';
 
 let scratchCartographic = new Cartographic();
 
@@ -88,6 +89,9 @@ export default class VectorClusterGroupCesiumImpl extends VectorClusterGroupImpl
       true,
     );
     feature.setGeometry(new Point(position));
+    feature.on('change', () => {
+      cluster.billboard.show = !feature[hidden];
+    });
 
     const bbOptions = getBillboardOptions(
       feature,

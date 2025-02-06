@@ -148,6 +148,10 @@ class IndexedCollection<T> extends Collection<T> {
     return this._array.findIndex((e) => e[this.uniqueKey as keyof T] === value);
   }
 
+  findIndex(predicate: (value: T, index: number, obj: T[]) => boolean): number {
+    return this._array.findIndex(predicate);
+  }
+
   destroy(): void {
     super.destroy();
     this.moved.destroy();

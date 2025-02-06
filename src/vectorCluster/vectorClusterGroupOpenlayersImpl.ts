@@ -35,7 +35,6 @@ export default class VectorClusterGroupOpenlayersImpl extends VectorClusterGroup
         visible: false,
         source: this._clusterSource,
         style: this.style,
-        zIndex: Number.MAX_SAFE_INTEGER,
       });
 
       olLayer[vectorClusterGroupName] = this.name;

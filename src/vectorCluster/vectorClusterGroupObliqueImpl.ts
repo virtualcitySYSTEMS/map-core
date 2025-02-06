@@ -46,7 +46,6 @@ export default class VectorClusterGroupObliqueImpl extends VectorClusterGroupImp
         visible: false,
         source: this._clusterSource,
         style: this.style,
-        zIndex: Number.MAX_SAFE_INTEGER,
       });
       olLayer[vectorClusterGroupName] = this.name;
       this._olLayer = olLayer;

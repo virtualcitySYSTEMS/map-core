@@ -27,12 +27,14 @@ import OpenlayersMap from '../map/openlayersMap.js';
 import type VectorClusterGroupImpl from './vectorClusterGroupImpl.js';
 import ObliqueMap from '../map/obliqueMap.js';
 import VectorClusterGroupObliqueImpl from './vectorClusterGroupObliqueImpl.js';
+import { maxZIndex } from '../util/layerCollection.js';
 
 export type VectorClusterGroupOptions = VcsObjectOptions & {
   style?: VectorClusterStyleItemOptions | VectorClusterStyleItem;
   highlightStyle?: VectorClusterStyleItemOptions | VectorClusterStyleItem;
   clusterDistance?: number;
   vectorProperties?: VectorPropertiesOptions;
+  zIndex?: number;
 };
 
 export type VectorClusterGroupImplementationOptions = {
@@ -92,6 +94,7 @@ export default class VectorClusterGroup extends VcsObject {
       style: undefined,
       highlightStyle: undefined,
       clusterDistance: 40,
+      zIndex: Math.floor(maxZIndex / 2),
       vectorProperties: {
         ...VectorProperties.getDefaultOptions(),
         eyeOffset: [0, 0, -100],
@@ -124,6 +127,8 @@ export default class VectorClusterGroup extends VcsObject {
 
   private _globalHider: GlobalHider | undefined;
 
+  private _zIndex = maxZIndex - 1;
+
   vectorProperties: VectorProperties;
 
   clusterDistance: number;
@@ -153,6 +158,8 @@ export default class VectorClusterGroup extends VcsObject {
       options.vectorProperties ?? defaultOptions.vectorProperties!,
     );
 
+    this._zIndex = parseInteger(options.zIndex, defaultOptions.zIndex);
+
     this._styleFunction = this._style.createStyleFunction((layerName) =>
       [...this._layerListeners.keys()].find((l) => l.name === layerName),
     );
@@ -168,6 +175,10 @@ export default class VectorClusterGroup extends VcsObject {
 
   get globalHider(): GlobalHider | undefined {
     return this._globalHider;
+  }
+
+  get zIndex(): number {
+    return this._zIndex;
   }
 
   setStyle(

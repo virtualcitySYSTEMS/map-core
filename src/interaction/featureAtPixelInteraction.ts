@@ -25,6 +25,7 @@ import { originalFeatureSymbol } from '../layer/vectorSymbols.js';
 import type OpenlayersMap from '../map/openlayersMap.js';
 import type ObliqueMap from '../map/obliqueMap.js';
 import type CesiumMap from '../map/cesiumMap.js';
+import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
 
 /**
  * This is the return from cesium scene.pick and scene.drillPick, which returns "any". We cast to this type.
@@ -50,13 +51,23 @@ function getFeatureFromOlMap(
   map.forEachFeatureAtPixel(
     pixel,
     (feat) => {
+      let candidateFeature = feat;
       if (
-        feat &&
-        (feat.get('olcs_allowPicking') == null ||
-          feat.get('olcs_allowPicking') === true)
+        candidateFeature &&
+        (candidateFeature.get('olcs_allowPicking') == null ||
+          candidateFeature.get('olcs_allowPicking') === true)
       ) {
-        feature = (feat as Feature)[originalFeatureSymbol] || (feat as Feature);
+        if ((candidateFeature as Feature)[vectorClusterGroupName]) {
+          const features = candidateFeature.get('features') as Feature[];
+          if (features.length === 1) {
+            candidateFeature = features[0];
+          }
+        }
+        feature =
+          (candidateFeature as Feature)[originalFeatureSymbol] ||
+          (candidateFeature as Feature);
       }
+
       return true;
     },
     { hitTolerance },
