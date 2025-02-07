@@ -43,7 +43,7 @@ function ensureLayerInCollection(
       layerIndex = layerIndex < 0 ? layerCollection.size : layerIndex;
     } else {
       layerIndex = layerCollection.indexOfKey(olL[vcsLayerName]) as number;
-      if (sortedVectorClusterGroups.length > 0) {
+      if (layerIndex > -1 && sortedVectorClusterGroups.length > 0) {
         const vcsLayer = layerCollection.getByKey(olL[vcsLayerName])!;
         clusterIndex = sortedVectorClusterGroups.findIndex(
           (vc) => vc.zIndex >= vcsLayer.zIndex,
@@ -213,6 +213,10 @@ class BaseOLMap extends VcsMap<OLLayer> {
     }
   }
 
+  /**
+   * Internal API for registering representations.
+   * @param olLayer
+   */
   addOLLayer(olLayer: OLLayer): void {
     if (this.validateVisualization(olLayer)) {
       this.addVisualization(olLayer);

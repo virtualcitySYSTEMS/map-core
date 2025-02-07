@@ -276,6 +276,7 @@ describe('BaseOLMap', () => {
       map.removeOLLayer(olLayer5);
       map.removeOLLayer(olLayer6);
       map.removeOLLayer(olLayer7);
+      map.olMap?.getLayers().clear();
     });
 
     after(() => {
@@ -321,6 +322,24 @@ describe('BaseOLMap', () => {
       expect(map.olMap!.getLayers().getArray()).to.have.ordered.members([
         olLayer3,
         olLayer7,
+      ]);
+    });
+
+    it('should treat sneaky custom ol layers directly added to the ol map as having a zIndex of -1', () => {
+      const newLayer = new OLLayer({});
+      map.olMap!.addLayer(newLayer);
+      map.addOLLayer(olLayer1);
+      map.addOLLayer(olLayer5);
+      const otherNewLayer = new OLLayer({});
+      map.olMap!.addLayer(otherNewLayer);
+      map.addOLLayer(olLayer4);
+
+      expect(map.olMap!.getLayers().getArray()).to.have.ordered.members([
+        newLayer,
+        olLayer1,
+        olLayer5,
+        otherNewLayer,
+        olLayer4,
       ]);
     });
 
