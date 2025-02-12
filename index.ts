@@ -276,7 +276,6 @@ export {
   VectorClusterStyleItemOptions,
   VectorClusterTemplateFunction,
   getDefaultClusterStyleItem,
-  getDefaultClusterHighlightStyleItem,
 } from './src/vectorCluster/vectorClusterStyleItem.js';
 export { default as VectorClusterGroupCesiumImpl } from './src/vectorCluster/vectorClusterGroupCesiumImpl.js';
 export { default as VectorClusterGroupOpenlayersImpl } from './src/vectorCluster/vectorClusterGroupOpenlayersImpl.js';

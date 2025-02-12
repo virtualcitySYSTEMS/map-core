@@ -85,88 +85,31 @@ describe('VectorClusterStyleItem', () => {
     });
   });
 
-  describe('fillColor', () => {
-    it('should call style changed, if fillColor change', () => {
+  describe('template context', () => {
+    it('should call style changed, if context change', () => {
       const spy = getVcsEventSpy(clusterStyleItem.styleChanged, sandbox);
 
-      clusterStyleItem.fillColor = '#FF00FF';
+      clusterStyleItem.templateContext = { font: 'Arial' };
       expect(spy).to.have.been.called;
     });
 
-    it('should not call style changed, if fillColor are the same', () => {
-      const spy = getVcsEventSpy(clusterStyleItem.styleChanged, sandbox);
-
-      // eslint-disable-next-line no-self-assign
-      clusterStyleItem.fillColor = clusterStyleItem.fillColor;
-      expect(spy).to.not.have.been.called;
-    });
-  });
-
-  describe('strokeColor', () => {
-    it('should call style changed, if strokeColor change', () => {
-      const spy = getVcsEventSpy(clusterStyleItem.styleChanged, sandbox);
-
-      clusterStyleItem.strokeColor = '#FF00FF';
-      expect(spy).to.have.been.called;
+    it('should create a clone of the object assigned', () => {
+      const context: { font: string; foo?: string } = { font: 'Arial' };
+      clusterStyleItem.templateContext = context;
+      context.foo = 'bar';
+      expect(clusterStyleItem.templateContext)
+        .to.not.equal(context)
+        .and.not.have.property('foo');
     });
 
-    it('should not call style changed, if strokeColor are the same', () => {
-      const spy = getVcsEventSpy(clusterStyleItem.styleChanged, sandbox);
-
-      // eslint-disable-next-line no-self-assign
-      clusterStyleItem.strokeColor = clusterStyleItem.strokeColor;
-      expect(spy).to.not.have.been.called;
-    });
-  });
-
-  describe('strokeWidth', () => {
-    it('should call style changed, if strokeWidth change', () => {
-      const spy = getVcsEventSpy(clusterStyleItem.styleChanged, sandbox);
-
-      clusterStyleItem.strokeWidth = 1;
-      expect(spy).to.have.been.called;
-    });
-
-    it('should not call style changed, if strokeWidth are the same', () => {
-      const spy = getVcsEventSpy(clusterStyleItem.styleChanged, sandbox);
-
-      // eslint-disable-next-line no-self-assign
-      clusterStyleItem.strokeWidth = clusterStyleItem.strokeWidth;
-      expect(spy).to.not.have.been.called;
-    });
-  });
-
-  describe('textColor', () => {
-    it('should call style changed, if textColor change', () => {
-      const spy = getVcsEventSpy(clusterStyleItem.styleChanged, sandbox);
-
-      clusterStyleItem.textColor = '#FF00FF';
-      expect(spy).to.have.been.called;
-    });
-
-    it('should not call style changed, if textColor are the same', () => {
-      const spy = getVcsEventSpy(clusterStyleItem.styleChanged, sandbox);
-
-      // eslint-disable-next-line no-self-assign
-      clusterStyleItem.textColor = clusterStyleItem.textColor;
-      expect(spy).to.not.have.been.called;
-    });
-  });
-
-  describe('font', () => {
-    it('should call style changed, if font change', () => {
-      const spy = getVcsEventSpy(clusterStyleItem.styleChanged, sandbox);
-
-      clusterStyleItem.font = 'Arial';
-      expect(spy).to.have.been.called;
-    });
-
-    it('should not call style changed, if font are the same', () => {
-      const spy = getVcsEventSpy(clusterStyleItem.styleChanged, sandbox);
-
-      // eslint-disable-next-line no-self-assign
-      clusterStyleItem.font = clusterStyleItem.font;
-      expect(spy).to.not.have.been.called;
+    it('should not allow mutating the context', () => {
+      const context: { font: string } = { font: 'Arial' };
+      clusterStyleItem.templateContext = context;
+      clusterStyleItem.templateContext.font = 'Times';
+      expect(clusterStyleItem.templateContext).to.have.property(
+        'font',
+        'Arial',
+      );
     });
   });
 
@@ -444,11 +387,9 @@ describe('VectorClusterStyleItem', () => {
           breaks: [1, 2, 3],
           zeroScaleOffset: 4,
           scaleFactor: 0.2,
-          fillColor: '#FF00FF',
-          strokeColor: '#00FF00',
-          strokeWidth: 2,
-          textColor: '#000000',
-          font: 'Arial',
+          templateContext: {
+            font: 'Arial',
+          },
           template: 'test',
         };
         configureVectorCluster = new VectorClusterStyleItem(inputConfig);
@@ -476,40 +417,18 @@ describe('VectorClusterStyleItem', () => {
           .to.have.property('scaleFactor')
           .and.to.equal(inputConfig.scaleFactor);
       });
-      it('should configure fillColor', () => {
-        expect(outputConfig)
-          .to.have.property('fillColor')
-          .and.to.equal(inputConfig.fillColor);
-      });
-
-      it('should configure strokeColor', () => {
-        expect(outputConfig)
-          .to.have.property('strokeColor')
-          .and.to.equal(inputConfig.strokeColor);
-      });
-
-      it('should configure strokeWidth', () => {
-        expect(outputConfig)
-          .to.have.property('strokeWidth')
-          .and.to.equal(inputConfig.strokeWidth);
-      });
-
-      it('should configure textColor', () => {
-        expect(outputConfig)
-          .to.have.property('textColor')
-          .and.to.equal(inputConfig.textColor);
-      });
-
-      it('should configure font', () => {
-        expect(outputConfig)
-          .to.have.property('font')
-          .and.to.equal(inputConfig.font);
-      });
 
       it('should configure template', () => {
         expect(outputConfig)
           .to.have.property('template')
           .and.to.equal(inputConfig.template);
+      });
+
+      it('should configure templateContext', () => {
+        expect(outputConfig)
+          .to.have.property('templateContext')
+          .and.to.eql(inputConfig.templateContext)
+          .and.to.not.equal(inputConfig.templateContext);
       });
     });
   });

@@ -173,6 +173,10 @@ export default class VectorClusterGroup extends VcsObject {
     return this._style;
   }
 
+  get styleFunction(): StyleFunction {
+    return this._styleFunction;
+  }
+
   get globalHider(): GlobalHider | undefined {
     return this._globalHider;
   }

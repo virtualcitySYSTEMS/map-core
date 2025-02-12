@@ -15,11 +15,7 @@ import { vcsLayerName } from '../layer/layerSymbols.js';
 
 export type VectorClusterStyleItemOptions = VcsObjectOptions & {
   template?: string | VectorClusterTemplateFunction;
-  fillColor?: string;
-  strokeColor?: string;
-  strokeWidth?: number;
-  textColor?: string;
-  font?: string;
+  templateContext?: Record<string, unknown>;
   breaks?: number[];
   zeroScaleOffset?: number;
   scaleFactor?: number;
@@ -27,7 +23,7 @@ export type VectorClusterStyleItemOptions = VcsObjectOptions & {
 
 export type VectorClusterTemplateFunction = (
   styleItem: VectorClusterStyleItem,
-  feature: Feature[],
+  features: Feature[],
   getLayerByName: (layerName: string) => VectorLayer | undefined,
 ) => { template: string; cacheKey: string; context?: Record<string, unknown> };
 
@@ -54,14 +50,14 @@ export default class VectorClusterStyleItem extends VcsObject {
         '<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">',
         ' <defs><style>',
         '  .cls-1 {',
-        '   fill: {{ fillColor }};',
-        '   stroke: {{ strokeColor }};',
+        '   fill: #ffffff;',
+        '   stroke: #2a2a2a;',
         '   stroke-miterlimit: 10;',
-        '   stroke-width: {{ strokeWidth }}px;',
+        '   stroke-width: 4px;',
         ' }',
         ' .text {',
-        '   font: {{ font }};',
-        '   fill: {{ textColor }};',
+        '   font: normal normal 700 32px Calibri-Bold,Calibri;',
+        '   fill: #2a2a2a;',
         '   text-anchor: middle;',
         '   alignment-baseline: middle;',
         '   dominant-baseline: middle;',
@@ -73,11 +69,7 @@ export default class VectorClusterStyleItem extends VcsObject {
         ' </text>',
         '</svg>',
       ].join(''),
-      fillColor: '#ffffff',
-      strokeColor: '#2a2a2a',
-      strokeWidth: 4,
-      textColor: '#2a2a2a',
-      font: 'normal normal 700 32px Calibri-Bold,Calibri',
+      templateContext: {},
       breaks: [2, 3, 4, 5, 10, 15, 20, 25],
       zeroScaleOffset: 3,
       scaleFactor: 0.08,
@@ -93,15 +85,7 @@ export default class VectorClusterStyleItem extends VcsObject {
 
   private _zeroScaleOffset: number;
 
-  private _fillColor: string;
-
-  private _strokeColor: string;
-
-  private _strokeWidth: number;
-
-  private _textColor: string;
-
-  private _font: string;
+  private _templateContext?: Record<string, unknown>;
 
   private _scaleFactor: number;
 
@@ -123,18 +107,15 @@ export default class VectorClusterStyleItem extends VcsObject {
       options.zeroScaleOffset,
       defaultOptions.zeroScaleOffset,
     );
-    this._fillColor = options.fillColor ?? defaultOptions.fillColor;
-    this._strokeColor = options.strokeColor ?? defaultOptions.strokeColor;
-    this._strokeWidth = parseNumber(
-      options.strokeWidth,
-      defaultOptions.strokeWidth,
-    );
-    this._textColor = options.textColor ?? defaultOptions.textColor;
-    this._font = options.font ?? defaultOptions.font;
+
     this._scaleFactor = parseNumber(
       options.scaleFactor,
       defaultOptions.scaleFactor,
     );
+
+    this._templateContext = options.templateContext
+      ? structuredClone(options.templateContext)
+      : undefined;
 
     this.styleChanged.addEventListener(() => {
       this.clearCache();
@@ -180,84 +161,15 @@ export default class VectorClusterStyleItem extends VcsObject {
     }
   }
 
-  /**
-   * The fill color. This must be a css string.
-   */
-  get fillColor(): string {
-    return this._fillColor;
+  get templateContext(): Record<string, unknown> | undefined {
+    return this._templateContext
+      ? structuredClone(this._templateContext)
+      : undefined;
   }
 
-  set fillColor(fillColor: string) {
-    check(fillColor, String);
-
-    if (fillColor !== this._fillColor) {
-      this._fillColor = fillColor;
-      this.styleChanged.raiseEvent();
-    }
-  }
-
-  /**
-   * The stroke color. This must be a css string.
-   */
-  get strokeColor(): string {
-    return this._strokeColor;
-  }
-
-  set strokeColor(strokeColor: string) {
-    check(strokeColor, String);
-
-    if (strokeColor !== this._strokeColor) {
-      this._strokeColor = strokeColor;
-      this.styleChanged.raiseEvent();
-    }
-  }
-
-  /**
-   * The stroke color. This must be a css string.
-   */
-  get strokeWidth(): number {
-    return this._strokeWidth;
-  }
-
-  set strokeWidth(strokeWidth: number) {
-    check(strokeWidth, Number);
-
-    if (strokeWidth !== this._strokeWidth) {
-      this._strokeWidth = strokeWidth;
-      this.styleChanged.raiseEvent();
-    }
-  }
-
-  /**
-   * The text color. This must be a css string.
-   */
-  get textColor(): string {
-    return this._textColor;
-  }
-
-  set textColor(textColor: string) {
-    check(textColor, String);
-
-    if (textColor !== this._textColor) {
-      this._textColor = textColor;
-      this.styleChanged.raiseEvent();
-    }
-  }
-
-  /**
-   * The font to use. Must be css font attribute.
-   */
-  get font(): string {
-    return this._font;
-  }
-
-  set font(font: string) {
-    check(font, String);
-
-    if (font !== this._font) {
-      this._font = font;
-      this.styleChanged.raiseEvent();
-    }
+  set templateContext(context: Record<string, unknown> | undefined) {
+    this._templateContext = context ? structuredClone(context) : undefined;
+    this.styleChanged.raiseEvent();
   }
 
   /**
@@ -361,14 +273,9 @@ export default class VectorClusterStyleItem extends VcsObject {
           try {
             const src = `data:image/svg+xml,${encodeURIComponent(
               renderTemplate(template, {
-                // XXX document what parameters are past to the object
                 text: this.getClusterText(size),
-                fillColor: this._fillColor,
-                strokeColor: this._strokeColor,
-                strokeWidth: this._strokeWidth,
-                textColor: this._textColor,
-                font: this._font,
                 size,
+                ...this._templateContext,
                 ...context,
               }),
             )}`;
@@ -430,21 +337,6 @@ export default class VectorClusterStyleItem extends VcsObject {
     if (this.template !== defaultOptions.template) {
       config.template = this.template;
     }
-    if (this.fillColor !== defaultOptions.fillColor) {
-      config.fillColor = this.fillColor;
-    }
-    if (this.strokeColor !== defaultOptions.strokeColor) {
-      config.strokeColor = this.strokeColor;
-    }
-    if (this.strokeWidth !== defaultOptions.strokeWidth) {
-      config.strokeWidth = this.strokeWidth;
-    }
-    if (this.textColor !== defaultOptions.textColor) {
-      config.textColor = this.textColor;
-    }
-    if (this.font !== defaultOptions.font) {
-      config.font = this.font;
-    }
     const { breaks } = this;
     if (
       breaks.length !== defaultOptions.breaks.length ||
@@ -457,6 +349,9 @@ export default class VectorClusterStyleItem extends VcsObject {
     }
     if (this.scaleFactor !== defaultOptions.scaleFactor) {
       config.scaleFactor = this.scaleFactor;
+    }
+    if (this._templateContext) {
+      config.templateContext = structuredClone(this._templateContext);
     }
 
     return config;
@@ -481,10 +376,4 @@ export default class VectorClusterStyleItem extends VcsObject {
 
 export function getDefaultClusterStyleItem(): VectorClusterStyleItem {
   return new VectorClusterStyleItem({});
-}
-
-export function getDefaultClusterHighlightStyleItem(): VectorClusterStyleItemOptions {
-  return new VectorClusterStyleItem({
-    fillColor: '#409D76',
-  });
 }

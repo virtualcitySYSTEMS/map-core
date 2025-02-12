@@ -37,11 +37,7 @@ using the following options:
 ```ts
 type VectorClusterStyleItemOptions = VcsObjectOptions & {
   template?: string | VectorClusterTemplateFunction;
-  fillColor?: string;
-  strokeColor?: string;
-  strokeWidth?: number;
-  textColor?: string;
-  font?: string;
+  templateContext?: Record<string, unknown>;
   breaks?: number[];
   zeroScaleOffset?: number;
   scaleFactor?: number;
@@ -57,11 +53,9 @@ And may look something like this:
   "clusterDistance": 20,
   "style": {
     "template": "<svg>...</svg>",
-    "fillColor": "#ff0000",
-    "strokeColor": "#0000ff",
-    "strokeWidth": 2,
-    "textColor": "#00ff00",
-    "font": "12px sans-serif",
+    "templateContext": {
+      "myKey": "myValue"
+    },
     "breaks": [1, 2, 3, 4, 5, 10, 20, 50, 100],
     "zeroScaleOffset": 5,
     "scaleFactor": 1.5
@@ -84,14 +78,12 @@ their respective layer.
 
 ### Template
 
-You can provide a [vcsTemplate](./vcsTemplate.md) which will be interpreted as an SVG image. The template is passed the following properties by default:
+You can provide a [vcsTemplate](./vcsTemplate.md) which will be interpreted as an SVG image. The template is passed the following:
 
-- text: text determined by the style
-- fillColor: the css fill color of the style item
-- strokeColor: the css stroke color of the style item
-- strokeWidth: the stroke widht of the style item
-- textColor: the css text color of the style item
-- font: the css font of the style item
+- `text`: The text rendered in the cluster, typically a number or a + and a number.
+- `size`: The number of features in the cluster.
+- all properties of the `templateContext` if any was provided.
+- all properties of the `context` returned by the custom template function.
 
 If you would like to add more or other properties to the cluster template, you can do so by providing a custom template function.
 The function is passed the style item itself, the features to in the cluster and a function to retrieve a clustered layer by name (to resolve the layer of a feature).
