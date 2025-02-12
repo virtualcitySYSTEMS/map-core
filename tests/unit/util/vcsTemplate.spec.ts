@@ -49,6 +49,11 @@ describe('renderTemplate', () => {
       expect(html.trim()).to.be.empty;
     });
 
+    it('should render empty for in-existent nested key', () => {
+      const html = renderTemplate('{{ foo.bar }}', data);
+      expect(html.trim()).to.be.empty;
+    });
+
     it('should access bracket notation', () => {
       const html = renderTemplate('{{ "spaced property" }}', data);
       expect(html.trim()).to.be.empty;
@@ -257,6 +262,20 @@ next word`,
       expect(html.trim()).to.equal('block\n5\nnext word');
     });
 
+    it('should remove white space when if is preceded by whitespace or newline conditionals', () => {
+      const html = renderTemplate(
+        `block
+{{#if number}}
+
+
+next word
+
+{{/if}}`,
+        data,
+      );
+      expect(html).to.equal('block\n\n\nnext word\n\n');
+    });
+
     it('should inline each blocks', () => {
       const html = renderTemplate(
         `this is: {{#each (value, index) in array}}{{#if index}}, {{/if}}{{value}}{{/each}}`,
@@ -271,6 +290,80 @@ next word`,
         data,
       );
       expect(html.trim()).to.equal('1, 2, 3');
+    });
+  });
+
+  describe('translating within a template', () => {
+    let translateFunction: (key: string) => string;
+    let data: Record<string, unknown>;
+
+    before(() => {
+      translateFunction = (key: string): string => {
+        return `${key}-t`;
+      };
+      data = {
+        property: 'foo',
+        nested: {
+          property: 'foo',
+        },
+        array: [1, 2, 3],
+        number: 5,
+      };
+    });
+
+    it('should translate a string', () => {
+      const html = renderTemplate('{{#t foo}}', data, translateFunction);
+      expect(html.trim()).to.equal('foo-t');
+    });
+
+    it('should translate a dot separated string', () => {
+      const html = renderTemplate('{{#t foo.bar}}', data, translateFunction);
+      expect(html.trim()).to.equal('foo.bar-t');
+    });
+
+    it('should translate, based on a property', () => {
+      const html = renderTemplate('{{#t property}}', data, translateFunction);
+      expect(html.trim()).to.equal('foo-t');
+    });
+
+    it('should translate, based on a nested property', () => {
+      const html = renderTemplate(
+        '{{#t nested.property}}',
+        data,
+        translateFunction,
+      );
+      expect(html.trim()).to.equal('foo-t');
+    });
+
+    it('should translate within an expression', () => {
+      const html = renderTemplate(
+        '{{#if number}}{{#t foo}}{{/if}}',
+        data,
+        translateFunction,
+      );
+      expect(html.trim()).to.equal('foo-t');
+    });
+
+    it('should translate an expression result', () => {
+      const html = renderTemplate(
+        '{{#t ["*", ["get", "number"], 5]}}',
+        data,
+        translateFunction,
+      );
+      expect(html.trim()).to.equal('25-t');
+    });
+
+    it('it should translate in a each loop', () => {
+      const html = renderTemplate(
+        `
+{{#each (value, index) in array}}
+{{#t value}}
+{{/each}}
+`,
+        data,
+        translateFunction,
+      );
+      expect(html.trim()).to.equal('1-t\n2-t\n3-t');
     });
   });
 });

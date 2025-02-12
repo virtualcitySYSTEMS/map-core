@@ -46,7 +46,14 @@ function evaluateExpression(
   );
   const evaluationContext = newEvaluationContext();
   evaluationContext.properties = data;
-  return compiledExpression(evaluationContext);
+  try {
+    return compiledExpression(evaluationContext);
+  } catch (_e) {
+    if (evaluationType === BooleanType) {
+      return false;
+    }
+    return '';
+  }
 }
 
 /**
@@ -55,16 +62,19 @@ function evaluateExpression(
 function replaceAttributes(
   template: string,
   data: Record<string, unknown>,
+  translate: (key: string) => string,
 ): string {
   const pattern = /\{\{([^}]+)}}/g;
   return template.replace(pattern, (_p, value) => {
-    return (
-      (evaluateExpression(
-        (value as string).trim(),
-        data,
-        StringType,
-      ) as string) ?? ''
-    );
+    const trimmedValue = (value as string).trim();
+    if (trimmedValue.startsWith('#t ')) {
+      const valueWithoutT = trimmedValue.slice(3).trim();
+      return translate(
+        (evaluateExpression(valueWithoutT, data, StringType) as string) ||
+          valueWithoutT,
+      );
+    }
+    return (evaluateExpression(trimmedValue, data, StringType) as string) ?? '';
   });
 }
 
@@ -216,7 +226,7 @@ function getConditionalBlocks(
 }
 
 function shouldRemoveWhiteSpace(openingTag: string): boolean {
-  return /\n\s*\{/.test(openingTag) && /}\s*\n/.test(openingTag);
+  return /\n[\t ]*\{/.test(openingTag) && /}[\t ]*\n/.test(openingTag);
 }
 
 /**
@@ -229,8 +239,8 @@ function getSubTemplateForBlock(template: string, block: Block): string {
   let startIndex = block.opening.index + block.opening[0].indexOf('}') + 2;
   let endIndex = block.closing.index + block.closing[0].indexOf('{');
   if (removeWhiteSpace) {
-    startIndex += (/}\s*\n/.exec(block.opening[0])?.[0].length ?? 1) - 1;
-    endIndex -= (/\n\s*\{/.exec(block.closing[0])?.[0].length ?? 2) - 2;
+    startIndex += (/}[\t ]*\n/.exec(block.opening[0])?.[0].length ?? 1) - 1;
+    endIndex -= (/\n[\t ]*\{/.exec(block.closing[0])?.[0].length ?? 2) - 2;
   }
 
   return template.substring(startIndex, endIndex);
@@ -251,8 +261,8 @@ function replaceBlock(
   let startIndex = block.opening.index + block.opening[0].indexOf('{');
   let endIndex = block.closing.index + block.closing[0].indexOf('}') + 2;
   if (removeWhiteSpace) {
-    startIndex -= (/\n\s*\{/.exec(block.opening[0])?.[0].length ?? 2) - 2;
-    endIndex += (/}\s*\n/.exec(block.closing[0])?.[0].length ?? 1) - 1;
+    startIndex -= (/\n[\t ]*\{/.exec(block.opening[0])?.[0].length ?? 2) - 2;
+    endIndex += (/}[\t ]*\n/.exec(block.closing[0])?.[0].length ?? 1) - 1;
   }
 
   return `${template.substring(
@@ -267,6 +277,7 @@ function replaceBlock(
 function expandConditionalsAndLoops(
   template: string,
   data: Record<string, unknown>,
+  translate: (key: string) => string,
 ): string {
   let renderedTemplate = template;
   const forEachBlocks = getForEachBlocks(template);
@@ -298,7 +309,11 @@ function expandConditionalsAndLoops(
             closing: partialBlocks[trueStatementIndex + 1],
           });
 
-          renderedBlock = expandConditionalsAndLoops(blockTemplate, data);
+          renderedBlock = expandConditionalsAndLoops(
+            blockTemplate,
+            data,
+            translate,
+          );
         }
 
         renderedTemplate = replaceBlock(renderedTemplate, block, renderedBlock);
@@ -338,8 +353,11 @@ function expandConditionalsAndLoops(
           const currentBlock = expandConditionalsAndLoops(
             blockTemplate,
             forEachData,
+            translate,
           );
-          renderedBlocks.push(replaceAttributes(currentBlock, forEachData));
+          renderedBlocks.push(
+            replaceAttributes(currentBlock, forEachData, translate),
+          );
           index += 1;
         }
       }
@@ -354,6 +372,10 @@ function expandConditionalsAndLoops(
   return renderedTemplate;
 }
 
+function defaultTranslate(key: string): string {
+  return key;
+}
+
 /**
  * Renders a template in these steps. See {@link documentation/vcsTemplate.md} for more information.
  * 1. expand conditional blocks. this will remove any blocks that do not match their expressions and choose from if / elseif / else block which of them to render
@@ -364,10 +386,15 @@ function expandConditionalsAndLoops(
 export function renderTemplate(
   template: string | string[],
   data: Record<string, unknown>,
+  translate: (key: string) => string = defaultTranslate,
 ): string {
   const templateString = Array.isArray(template)
     ? template.join('\n')
     : template;
-  const conditionalTemplate = expandConditionalsAndLoops(templateString, data);
-  return replaceAttributes(conditionalTemplate, data);
+  const conditionalTemplate = expandConditionalsAndLoops(
+    templateString,
+    data,
+    translate,
+  );
+  return replaceAttributes(conditionalTemplate, data, translate);
 }

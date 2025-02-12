@@ -94,3 +94,13 @@ Given an input of `[{ foo: 1 }, { foo: 2, bar: 3 }, { bar: 1}]` the above templa
 - **bar**: 3
 - **bar**: 1
 ```
+
+### Translation
+
+There is a build in translate directive for which you can provide a translation function.
+Use the `{{#t expr}}` block. The given `expr` (ol style expression, context property or string literal)
+will be evaluated and the result passed to the translation function.
+If the `expr` is not an ol style expression and is not found in the data context, it will be passed as a
+string literal to the translation function.
+The translation function should return a string.
+The translation function is passed as a parameter to the render function.
