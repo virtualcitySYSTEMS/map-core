@@ -876,3 +876,45 @@ export {
   rotationMapControlSymbol,
 } from './src/util/rotation.js';
 export { default as renderScreenshot } from './src/util/renderScreenshot.js';
+export {
+  default as Navigation,
+  Movement,
+  getZeroMovement,
+  isNonZeroMovement,
+} from './src/map/navigation/navigation.js';
+export { default as NavigationImpl } from './src/map/navigation/navigationImpl.js';
+export {
+  default as CesiumNavigation,
+  CesiumNavigationOptions,
+} from './src/map/navigation/cesiumNavigation.js';
+export {
+  default as OpenlayersNavigation,
+  OpenlayersNavigationOptions,
+} from './src/map/navigation/openlayersNavigation.js';
+export {
+  default as ObliqueNavigation,
+  ObliqueNavigationOptions,
+} from './src/map/navigation/obliqueNavigation.js';
+export {
+  NavigationEasing,
+  createEasing,
+} from './src/map/navigation/easingHelper.js';
+export {
+  ControllerInput,
+  getZeroInput,
+  clearInput,
+  isNonZeroInput,
+  fromArray,
+  multiplyComponents,
+  multiplyByScalar,
+  add,
+  lerp,
+  lerpRound,
+  inputEquals,
+  checkThreshold,
+} from './src/map/navigation/controller/controllerInput.js';
+export {
+  default as Controller,
+  ControllerOptions,
+} from './src/map/navigation/controller/controller.js';
+export { default as KeyboardController } from './src/map/navigation/controller/keyboardController.js';

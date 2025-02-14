@@ -12,6 +12,8 @@ import type CesiumMap from '../map/cesiumMap.js';
 import type { default as VcsMap, VcsMapRenderEvent } from '../map/vcsMap.js';
 import type Viewpoint from './viewpoint.js';
 import { VisualisationType } from '../map/vcsMap.js';
+import Navigation from '../map/navigation/navigation.js';
+import KeyboardController from '../map/navigation/controller/keyboardController.js';
 
 export type MapCollectionInitializationError = {
   error: Error;
@@ -112,6 +114,11 @@ class MapCollection extends Collection<VcsMap> {
    */
   clippingObjectManager: ClippingObjectManager;
 
+  /**
+   * Allows map navigation using controller, e.g. keyboard, spacemouse, ...
+   */
+  readonly navigation: Navigation;
+
   private _mapPointerListeners: (() => void)[] = [];
 
   private _splitPosition = 0.5;
@@ -142,6 +149,11 @@ class MapCollection extends Collection<VcsMap> {
 
     this.clippingObjectManager = new ClippingObjectManager(
       this._layerCollection,
+    );
+
+    this.navigation = new Navigation();
+    this.navigation.addController(
+      new KeyboardController({ id: 'keyboard', target: this._target }),
     );
   }
 
@@ -284,6 +296,9 @@ class MapCollection extends Collection<VcsMap> {
     });
 
     this._setActiveMapCSSClass();
+    this.navigation.getControllers().forEach((c) => {
+      c.setMapTarget(this._target);
+    });
   }
 
   private _getFallbackMap(map: VcsMap): null | VcsMap {
@@ -403,6 +418,7 @@ class MapCollection extends Collection<VcsMap> {
     previousMap?.disableMovement(false);
 
     this.clippingObjectManager.mapActivated(map);
+    this.navigation.mapActivated(map);
     this._postRenderListener();
     this._postRenderListener = this._activeMap.postRender.addEventListener(
       (event) => {
@@ -483,6 +499,7 @@ class MapCollection extends Collection<VcsMap> {
     this.eventHandler.destroy();
     this.mapActivated.destroy();
     this.clippingObjectManager.destroy();
+    this.navigation.destroy();
     this.splitPositionChanged.destroy();
     this.fallbackMapActivated.destroy();
     this.initializeError.destroy();

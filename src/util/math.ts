@@ -115,6 +115,14 @@ export function cartesian3DDistanceSquared(
 }
 
 /**
+ * numeric decimalRound
+ */
+export function decimalRound(v: number, decimalPlaces = 2): number {
+  const factor = 10 ** decimalPlaces;
+  return Math.round(v * factor) / factor;
+}
+
+/**
  * Avoid JS negative number modulo bug.
  */
 export function modulo(n: number, m: number): number {
