@@ -13,6 +13,8 @@ import {
 import { getFovImageSphericalExtent } from './panoramaCameraHelpers.js';
 import { setupPanoramaNavigation } from './panoramaNavigation.js';
 import PanoramaMap from '../map/panoramaMap.js';
+import { getLogger } from '@vcsuite/logger';
+import { PanoramaTileProvider } from './panoramaTileProvider.js';
 
 export type PanoramaImageView = {
   image: PanoramaImage;
@@ -20,6 +22,7 @@ export type PanoramaImageView = {
    * debugging. suspend tile loading
    */
   suspendTileLoading: boolean;
+  showIntensity: boolean;
   destroy(): void;
   /**
    * force a render of the panorama image
@@ -50,24 +53,43 @@ export function createPanoramaImageView(
   const primitiveCollection = scene.primitives.add(
     new PrimitiveCollection({ destroyPrimitives: false, show: true }),
   ) as PrimitiveCollection;
-  const { tileSize, maxLevel, minLevel } = image;
+  const { tileSize, maxLevel, minLevel, hasIntensity } = image;
   const baseTileCoordinates = createMinLevelTiles(minLevel);
   let currentTileCoordinates: TileCoordinate[] = [...baseTileCoordinates];
   const currentTiles = new Map<string, PanoramaTile>();
-  image.tileProvider.tileLoaded.addEventListener((tile) => {
-    if (!currentTiles.has(tile.tileCoordinate.key)) {
-      currentTiles.set(tile.tileCoordinate.key, tile);
-      if (tile.tileCoordinate.level === minLevel) {
-        tile.primitive.modelMatrix = Matrix4.multiplyByScale(
-          tile.primitive.modelMatrix,
-          new Cartesian3(1.01, 1.01, 1.01),
-          new Matrix4(),
-        );
-      }
-      primitiveCollection.add(tile.primitive);
+  let showIntensity = false;
+  const tileProviders = new Map<PanoramaTileProvider, () => void>();
+  let currentTileProvider: PanoramaTileProvider;
+  const setupTileProvider = (tileProvider: PanoramaTileProvider): void => {
+    if (!tileProviders.has(tileProvider)) {
+      tileProviders.set(
+        tileProvider,
+        tileProvider.tileLoaded.addEventListener((tile) => {
+          if (!currentTiles.has(tile.tileCoordinate.key)) {
+            currentTiles.set(tile.tileCoordinate.key, tile);
+            if (tile.tileCoordinate.level === minLevel) {
+              tile.primitive.modelMatrix = Matrix4.multiplyByScale(
+                tile.primitive.modelMatrix,
+                new Cartesian3(1.01, 1.01, 1.01),
+                new Matrix4(),
+              );
+            }
+            primitiveCollection.add(tile.primitive);
+          }
+        }),
+      );
     }
-  });
-  image.tileProvider.loadTiles(currentTileCoordinates);
+
+    if (tileProvider !== currentTileProvider) {
+      currentTileProvider = tileProvider;
+      currentTiles.forEach((tile) => {
+        primitiveCollection.remove(tile.primitive);
+      });
+      currentTiles.clear();
+    }
+    tileProvider.loadTiles(currentTileCoordinates);
+  };
+  setupTileProvider(image.tileProvider);
 
   const { camera } = scene;
   camera.setView({
@@ -141,7 +163,7 @@ export function createPanoramaImageView(
       }
     });
 
-    image.tileProvider.loadTiles(currentTileCoordinates);
+    currentTileProvider.loadTiles(currentTileCoordinates);
   };
   camera.changed.addEventListener(render);
   render();
@@ -155,6 +177,28 @@ export function createPanoramaImageView(
     },
     set suspendTileLoading(value: boolean) {
       suspendTileLoading = value;
+    },
+    get showIntensity(): boolean {
+      return showIntensity;
+    },
+    set showIntensity(value: boolean) {
+      if (value !== showIntensity) {
+        if (value && hasIntensity) {
+          showIntensity = value;
+          image
+            .getIntensityTileProvider()
+            .then((intensityTileProvider) => {
+              setupTileProvider(intensityTileProvider);
+            })
+            .catch((e) => {
+              console.error(e);
+              getLogger('PanoramaImageView').warning('no intensity available');
+            });
+        } else {
+          showIntensity = value;
+          setupTileProvider(image.tileProvider);
+        }
+      }
     },
     getCurrentTiles(): PanoramaTile[] {
       return [...currentTiles.values()];

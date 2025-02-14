@@ -23,7 +23,15 @@ type PanoramaImageMetadata = {
   tileSize: TileSize;
   minLevel: number;
   maxLevel: number;
+  hasIntensity: boolean;
 };
+
+type VcsGdalMetadata =
+  | {
+      VCS_INTENSITY?: string;
+    }
+  | undefined
+  | null;
 
 export type PanoramaImage = {
   /**
@@ -42,18 +50,21 @@ export type PanoramaImage = {
   readonly modelMatrix: Matrix4;
   readonly up: Cartesian3;
   readonly invModelMatrix: Matrix4;
+  readonly hasIntensity: boolean;
   // the following properties are "tiled" specific
   readonly image: GeoTIFF;
   readonly tileProvider: PanoramaTileProvider;
   readonly tileSize: TileSize;
   readonly minLevel: number;
   readonly maxLevel: number;
+
+  getIntensityTileProvider(): Promise<PanoramaTileProvider>;
   destroy(): void;
 };
 
 async function loadRGBImages(
   rootUrl: string,
-): Promise<{ image: GeoTIFF; rgb: GeoTIFFImage[] } & PanoramaImageMetadata> {
+): Promise<{ image: GeoTIFF; images: GeoTIFFImage[] } & PanoramaImageMetadata> {
   const image = await fromUrl(rootUrl);
   let imageCount = await image.getImageCount();
   const promises = [];
@@ -61,25 +72,39 @@ async function loadRGBImages(
     imageCount -= 1;
     promises.push(image.getImage(imageCount));
   }
-  const rgb = await Promise.all(promises);
-  const minLevelImage = rgb[0];
+  const images = await Promise.all(promises);
+  const minLevelImage = images[0];
   const tileSize: TileSize = [
     minLevelImage.getTileWidth(),
     minLevelImage.getTileHeight(),
   ];
 
   const minLevel = minLevelImage.getHeight() / tileSize[0] - 1;
-  const maxLevel = rgb.length - 1 + minLevel;
-  return { image, rgb, tileSize, minLevel, maxLevel };
+  const maxLevel = images.length - 1 + minLevel;
+  const gdalMetadata = images.at(-1)!.getGDALMetadata() as VcsGdalMetadata;
+
+  return {
+    image,
+    images,
+    tileSize,
+    minLevel,
+    maxLevel,
+    hasIntensity: gdalMetadata?.VCS_INTENSITY === '1',
+  };
 }
 
 export async function createPanoramaImage(
   options: PanoramaImageOptions,
 ): Promise<PanoramaImage> {
   const { rootUrl, name, position, orientation } = options;
-  const { image, rgb, tileSize, minLevel, maxLevel } = await loadRGBImages(
-    `${rootUrl}/${name}/rgb.tif`,
-  );
+  const {
+    image,
+    images: rgb,
+    tileSize,
+    minLevel,
+    maxLevel,
+    hasIntensity,
+  } = await loadRGBImages(`${rootUrl}/${name}/rgb.tif`);
 
   const cartesianPosition = Cartesian3.fromDegrees(
     position.x,
@@ -114,6 +139,32 @@ export async function createPanoramaImage(
     minLevel,
   );
 
+  let intensityTileProvider: PanoramaTileProvider | undefined;
+  const getIntensityTileProvider = async (): Promise<PanoramaTileProvider> => {
+    if (!hasIntensity) {
+      throw new Error('Intensity not available');
+    }
+    if (!intensityTileProvider) {
+      const {
+        images: intensity,
+        minLevel: intensityMinLevel,
+        maxLevel: intensityMaxLevel,
+      } = await loadRGBImages(`${rootUrl}/${name}/intensity.tif`);
+      if (intensityMinLevel !== minLevel || intensityMaxLevel !== maxLevel) {
+        throw new Error('Intensity levels do not match RGB levels');
+      }
+
+      intensityTileProvider = createPanoramaTileProvider(
+        intensity,
+        cartesianPosition,
+        tileSize,
+        minLevel,
+      );
+    }
+
+    return intensityTileProvider;
+  };
+
   return {
     get rootUrl(): string {
       return rootUrl;
@@ -139,6 +190,9 @@ export async function createPanoramaImage(
     get tileProvider(): PanoramaTileProvider {
       return tileProvider;
     },
+    get hasIntensity(): boolean {
+      return hasIntensity;
+    },
     get image(): GeoTIFF {
       return image;
     },
@@ -151,6 +205,7 @@ export async function createPanoramaImage(
     get maxLevel(): number {
       return maxLevel;
     },
+    getIntensityTileProvider,
     destroy(): void {
       tileProvider.destroy();
       image.close();
