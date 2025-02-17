@@ -10,13 +10,6 @@ import {
   PointerEventType,
   PointerKeyType,
 } from '../interaction/interactionType.js';
-import { PanoramaImage } from './panoramaImage.js';
-import VcsEvent from '../vcsEvent.js';
-
-export type PanoramaNavigationControls = {
-  readonly fovChanged: VcsEvent<void>;
-  destroy(): void;
-};
 
 const MAX_PITCH = CesiumMath.toRadians(85);
 const MIN_PITCH = -MAX_PITCH;
@@ -26,14 +19,11 @@ const FOV_STEP = 0.1;
 const INERTIA_DECAY = 0.8;
 const DECAY_FRAMES = 60;
 
-export function setupPanoramaNavigation(
-  map: PanoramaMap,
-  image: PanoramaImage,
-): PanoramaNavigationControls {
+// eslint-disable-next-line import/prefer-default-export
+export function createPanoramaNavigation(map: PanoramaMap): () => void {
   const widget = map.getCesiumWidget();
   const { camera } = widget;
   const frustum = camera.frustum as PerspectiveFrustum;
-  const fovChanged = new VcsEvent<void>();
 
   const pointerInput: {
     startPosition: Cartesian2;
@@ -70,10 +60,10 @@ export function setupPanoramaNavigation(
   map.screenSpaceEventHandler.setInputAction((event: number): void => {
     if (event > 0 && frustum.fov > MIN_FOV) {
       frustum.fov -= FOV_STEP;
-      fovChanged.raiseEvent(); // IDEA since this only changes the FOV, maybe we can optimize this?
+      map.panoramaView.render();
     } else if (event < 0 && frustum.fov < MAX_FOV) {
       frustum.fov += FOV_STEP;
-      fovChanged.raiseEvent(); // IDEA since this only changes the FOV, maybe we can optimize this?
+      map.panoramaView.render();
     }
   }, ScreenSpaceEventType.WHEEL);
 
@@ -89,20 +79,28 @@ export function setupPanoramaNavigation(
     }
   }
 
+  let currentImage = map.currentPanoramaImage;
+  const imageListener = map.currentImageChanged.addEventListener((image) => {
+    currentImage = image;
+  });
+  let animationFrameHandle: number;
   // IDEA maybe not attach to the clock to avoid blocking by renderer.
-  const clockListener = widget.clock.onTick.addEventListener(() => {
-    if (!widget.scene.screenSpaceCameraController.enableInputs) {
+  const loop = (): void => {
+    if (
+      currentImage &&
+      !widget.scene.screenSpaceCameraController.enableInputs
+    ) {
       if (pointerInput.leftDown) {
         const { position, startPosition } = pointerInput;
         const startImagePosition = windowPositionToImageSpherical(
           startPosition,
           camera,
-          image,
+          currentImage,
         );
         const newImagePosition = windowPositionToImageSpherical(
           position,
           camera,
-          image,
+          currentImage,
         );
 
         if (startImagePosition && newImagePosition) {
@@ -113,7 +111,7 @@ export function setupPanoramaNavigation(
             diffX += CesiumMath.TWO_PI;
           }
           const diffY = startImagePosition[1] - newImagePosition[1];
-          widget.camera.look(image.up, diffX);
+          widget.camera.look(currentImage.up, diffX);
           widget.camera.look(camera.right, diffY);
 
           yInertia = diffY;
@@ -126,20 +124,19 @@ export function setupPanoramaNavigation(
       } else if (decay < DECAY_FRAMES) {
         decay += 1;
         xInertia *= INERTIA_DECAY;
-        widget.camera.look(image.up, xInertia);
+        widget.camera.look(currentImage.up, xInertia);
         yInertia *= INERTIA_DECAY;
         widget.camera.look(camera.right, yInertia);
 
         ensurePitch();
       }
     }
-  });
+    animationFrameHandle = requestAnimationFrame(loop);
+  };
+  loop();
 
-  return {
-    fovChanged,
-    destroy(): void {
-      clockListener();
-      fovChanged.destroy();
-    },
+  return (): void => {
+    cancelAnimationFrame(animationFrameHandle);
+    imageListener();
   };
 }

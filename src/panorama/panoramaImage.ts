@@ -13,8 +13,8 @@ import {
 import type { TileSize } from './panoramaTile.js';
 
 export type PanoramaImageOptions = {
-  rootUrl: string;
-  name: string;
+  imageUrl: string;
+  name?: string;
   position: { x: number; y: number; z: number };
   orientation: { heading: number; pitch: number; roll: number };
 };
@@ -34,10 +34,6 @@ type VcsGdalMetadata =
   | null;
 
 export type PanoramaImage = {
-  /**
-   * The root URL, without trailing slash
-   */
-  readonly rootUrl: string;
   readonly name: string;
   /**
    * position ECEF
@@ -63,9 +59,9 @@ export type PanoramaImage = {
 };
 
 async function loadRGBImages(
-  rootUrl: string,
+  imageUrl: string,
 ): Promise<{ image: GeoTIFF; images: GeoTIFFImage[] } & PanoramaImageMetadata> {
-  const image = await fromUrl(rootUrl);
+  const image = await fromUrl(imageUrl);
   let imageCount = await image.getImageCount();
   const promises = [];
   while (imageCount) {
@@ -96,7 +92,8 @@ async function loadRGBImages(
 export async function createPanoramaImage(
   options: PanoramaImageOptions,
 ): Promise<PanoramaImage> {
-  const { rootUrl, name, position, orientation } = options;
+  const { imageUrl, name, position, orientation } = options;
+  const absoluteImageUrl = new URL(imageUrl, window.location.href).href;
   const {
     image,
     images: rgb,
@@ -104,7 +101,7 @@ export async function createPanoramaImage(
     minLevel,
     maxLevel,
     hasIntensity,
-  } = await loadRGBImages(`${rootUrl}/${name}/rgb.tif`);
+  } = await loadRGBImages(absoluteImageUrl);
 
   const cartesianPosition = Cartesian3.fromDegrees(
     position.x,
@@ -149,7 +146,7 @@ export async function createPanoramaImage(
         images: intensity,
         minLevel: intensityMinLevel,
         maxLevel: intensityMaxLevel,
-      } = await loadRGBImages(`${rootUrl}/${name}/intensity.tif`);
+      } = await loadRGBImages(new URL('intensity.tif', absoluteImageUrl).href);
       if (intensityMinLevel !== minLevel || intensityMaxLevel !== maxLevel) {
         throw new Error('Intensity levels do not match RGB levels');
       }
@@ -166,11 +163,8 @@ export async function createPanoramaImage(
   };
 
   return {
-    get rootUrl(): string {
-      return rootUrl;
-    },
     get name(): string {
-      return name;
+      return name ?? '';
     },
     get position(): Cartesian3 {
       return cartesianPosition;

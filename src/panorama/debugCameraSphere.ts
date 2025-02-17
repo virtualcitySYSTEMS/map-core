@@ -21,7 +21,6 @@ import {
 } from './panoramaCameraHelpers.js';
 import type { PanoramaImage } from './panoramaImage.js';
 import { getNumberOfTiles, tileSizeInRadians } from './panoramaTile.js';
-import type { PanoramaImageView } from './panoramaImageView.js';
 import type PanoramaMap from '../map/panoramaMap.js';
 
 export type DebugCameraSphereOptions = {
@@ -482,25 +481,28 @@ export function createDebugCameraSphere(
 
 export function debugNavigation(
   map: PanoramaMap,
-  view: PanoramaImageView,
   debugCamera: DebugCameraSphere,
 ): () => void {
   const widget = map.getCesiumWidget();
-  const { image } = view;
+  const view = map.panoramaView;
   const altHandler = (event: KeyboardEvent): void => {
     if (event.altKey) {
       widget.scene.screenSpaceCameraController.enableInputs =
         !widget.scene.screenSpaceCameraController.enableInputs;
 
       if (!widget.scene.screenSpaceCameraController.enableInputs) {
-        widget.scene.camera.setView({
-          destination: image.position,
-          orientation: {
-            heading: 0,
-            pitch: 0,
-            roll: 0,
-          },
-        });
+        const image = map.currentPanoramaImage;
+        if (image) {
+          widget.scene.camera.setView({
+            destination: image.position,
+            orientation: {
+              heading: 0,
+              pitch: 0,
+              roll: 0,
+            },
+          });
+        }
+
         debugCamera.paused = false;
         view.suspendTileLoading = false;
       } else {
