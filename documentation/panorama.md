@@ -62,8 +62,8 @@ Given / as the root of the data set, the data should be structured as follows fo
 - images/
   - imageName/
     - rgb.tif
-    - depth.tif
     - intensity.tif
+    - depth.tif
 ```
 
 The `images.json` contains the metadata of the image metadata in the data set.
@@ -180,3 +180,7 @@ following:
 
 - We always render a level 0 (or maybe 1, could be configurable) shell around the sphere.
 - Starting at level 3, we stop rendering polar regions directly, in this case, only the shell is rendered at the polar regions.
+
+### IDEAS
+
+- Add a high depth overview to enable "estimated" position cheaply.
