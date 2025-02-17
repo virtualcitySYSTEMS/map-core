@@ -14,6 +14,8 @@ import {
   PanoramaImageView,
 } from '../panorama/panoramaImageView.js';
 import { setupCesiumInteractions } from './cesiumMapEvent.js';
+import VcsEvent from '../vcsEvent.js';
+import { createPanoramaNavigation } from '../panorama/panoramaNavigation.js';
 
 export type PanoramaMapOptions = VcsMapOptions;
 
@@ -30,13 +32,17 @@ export default class PanoramaMap extends VcsMap {
 
   private _cesiumWidget: CesiumWidget | undefined;
 
-  private _currentImageView: PanoramaImageView | undefined;
+  private _imageView: PanoramaImageView | undefined;
 
   private _currentImage: PanoramaImage | undefined;
 
   private _screenSpaceListener: (() => void) | undefined;
 
   private _screenSpaceEventHandler: ScreenSpaceEventHandler | undefined;
+
+  private _destroyNavigation: (() => void) | undefined;
+
+  readonly currentImageChanged = new VcsEvent<PanoramaImage | undefined>();
 
   async initialize(): Promise<void> {
     if (!this.initialized) {
@@ -45,12 +51,15 @@ export default class PanoramaMap extends VcsMap {
         scene3DOnly: true,
         baseLayer: false,
         shadows: false,
+        skyBox: false,
+        skyAtmosphere: false,
+        globe: false,
         terrainShadows: ShadowMode.DISABLED,
+        msaaSamples: 1,
       });
 
       this._cesiumWidget.scene.screenSpaceCameraController.enableInputs = false;
       this._cesiumWidget.scene.primitives.destroyPrimitives = false;
-      this._cesiumWidget.scene.globe.enableLighting = false;
 
       this._screenSpaceEventHandler = new ScreenSpaceEventHandler(
         this._cesiumWidget.canvas,
@@ -60,11 +69,12 @@ export default class PanoramaMap extends VcsMap {
         this,
         this.screenSpaceEventHandler,
       );
-
+      this._imageView = createPanoramaImageView(this);
+      this._destroyNavigation = createPanoramaNavigation(this);
       this.initialized = true;
 
       const image = await createPanoramaImage({
-        rootUrl: 'exampleData/panoramaImages',
+        imageUrl: 'exampleData/panoramaImages/pano_000001_000011/rgb.tif',
         name: 'pano_000001_000011',
         position: {
           x: 52.477762,
@@ -77,8 +87,7 @@ export default class PanoramaMap extends VcsMap {
           roll: 0,
         },
       });
-      this._currentImage = image;
-      this._currentImageView = createPanoramaImageView(this, image);
+      this._setCurrentImage(image);
     }
     await super.initialize();
   }
@@ -90,12 +99,28 @@ export default class PanoramaMap extends VcsMap {
     return this._screenSpaceEventHandler;
   }
 
+  get currentPanoramaImage(): PanoramaImage | undefined {
+    return this._currentImage;
+  }
+
+  get panoramaView(): PanoramaImageView {
+    if (!this._imageView) {
+      throw new Error('PanoramaImageView not initialized');
+    }
+    return this._imageView;
+  }
+
   async activate(): Promise<void> {
     await super.activate();
     if (this.active && this._cesiumWidget) {
       this._cesiumWidget.useDefaultRenderLoop = true;
       this._cesiumWidget.resize();
     }
+  }
+
+  private _setCurrentImage(image?: PanoramaImage): void {
+    this._currentImage = image;
+    this.currentImageChanged.raiseEvent(image);
   }
 
   getCesiumWidget(): CesiumWidget {
@@ -113,8 +138,10 @@ export default class PanoramaMap extends VcsMap {
   }
 
   destroy(): void {
+    this.currentImageChanged.destroy();
     this._currentImage?.destroy();
-    this._currentImageView?.destroy();
+    this._destroyNavigation?.();
+    this._imageView?.destroy();
     this._screenSpaceListener?.();
     this._screenSpaceEventHandler?.destroy();
     this._cesiumWidget?.destroy();

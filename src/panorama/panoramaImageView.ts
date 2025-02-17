@@ -1,5 +1,11 @@
-import { Cartesian3, Matrix4, PrimitiveCollection } from '@vcmap-cesium/engine';
+import {
+  Camera,
+  Cartesian3,
+  Matrix4,
+  PrimitiveCollection,
+} from '@vcmap-cesium/engine';
 import { getWidth } from 'ol/extent.js';
+import { getLogger } from '@vcsuite/logger';
 import type { PanoramaImage } from './panoramaImage.js';
 import {
   createTileCoordinate,
@@ -11,13 +17,10 @@ import {
   tileSizeInRadians,
 } from './panoramaTile.js';
 import { getFovImageSphericalExtent } from './panoramaCameraHelpers.js';
-import { setupPanoramaNavigation } from './panoramaNavigation.js';
 import PanoramaMap from '../map/panoramaMap.js';
-import { getLogger } from '@vcsuite/logger';
 import { PanoramaTileProvider } from './panoramaTileProvider.js';
 
 export type PanoramaImageView = {
-  image: PanoramaImage;
   /**
    * debugging. suspend tile loading
    */
@@ -45,21 +48,27 @@ function getLevelPixelPerRadians(level: number, tileSize: TileSize): number {
   return tileSize[0] / tileSizeInRadians(level);
 }
 
-export function createPanoramaImageView(
-  map: PanoramaMap,
+function setupImageView(
   image: PanoramaImage,
+  primitiveCollection: PrimitiveCollection,
+  camera: Camera,
+  canvas: HTMLCanvasElement,
 ): PanoramaImageView {
-  const { scene } = map.getCesiumWidget();
-  const primitiveCollection = scene.primitives.add(
-    new PrimitiveCollection({ destroyPrimitives: false, show: true }),
-  ) as PrimitiveCollection;
   const { tileSize, maxLevel, minLevel, hasIntensity } = image;
   const baseTileCoordinates = createMinLevelTiles(minLevel);
   let currentTileCoordinates: TileCoordinate[] = [...baseTileCoordinates];
   const currentTiles = new Map<string, PanoramaTile>();
+  const clearCurrentTiles = (): void => {
+    currentTiles.forEach((tile) => {
+      primitiveCollection.remove(tile.primitive);
+    });
+    currentTiles.clear();
+  };
+
   let showIntensity = false;
   const tileProviders = new Map<PanoramaTileProvider, () => void>();
   let currentTileProvider: PanoramaTileProvider;
+
   const setupTileProvider = (tileProvider: PanoramaTileProvider): void => {
     if (!tileProviders.has(tileProvider)) {
       tileProviders.set(
@@ -82,16 +91,12 @@ export function createPanoramaImageView(
 
     if (tileProvider !== currentTileProvider) {
       currentTileProvider = tileProvider;
-      currentTiles.forEach((tile) => {
-        primitiveCollection.remove(tile.primitive);
-      });
-      currentTiles.clear();
+      clearCurrentTiles();
     }
     tileProvider.loadTiles(currentTileCoordinates);
   };
   setupTileProvider(image.tileProvider);
 
-  const { camera } = scene;
   camera.setView({
     destination: image.position,
     orientation: {
@@ -118,7 +123,7 @@ export function createPanoramaImageView(
       (acc, extent) => acc + getWidth(extent),
       0,
     );
-    const currentScenePixelWidth = scene.canvas.width;
+    const currentScenePixelWidth = canvas.width;
     const currentRadiansPerPixel =
       currentScenePixelWidth / currentImageRadiansWidth;
     let currentLevel = minLevel;
@@ -165,13 +170,9 @@ export function createPanoramaImageView(
 
     currentTileProvider.loadTiles(currentTileCoordinates);
   };
-  camera.changed.addEventListener(render);
   render();
 
-  const nav = setupPanoramaNavigation(map, image);
-
   return {
-    image,
     get suspendTileLoading(): boolean {
       return suspendTileLoading;
     },
@@ -205,9 +206,92 @@ export function createPanoramaImageView(
     },
     render,
     destroy(): void {
+      tileProviders.forEach((removeListener) => removeListener());
+      tileProviders.clear();
+      clearCurrentTiles();
+    },
+  };
+}
+
+export function createPanoramaImageView(map: PanoramaMap): PanoramaImageView {
+  const { scene } = map.getCesiumWidget();
+  const primitiveCollection = scene.primitives.add(
+    new PrimitiveCollection({ destroyPrimitives: false, show: true }),
+  ) as PrimitiveCollection;
+
+  const defaultPosition = Cartesian3.fromDegrees(12, 53, 0);
+
+  let currentView: PanoramaImageView | undefined;
+  scene.camera.setView({
+    destination: defaultPosition,
+    orientation: {
+      heading: scene.camera.heading ?? 0,
+      pitch: 0,
+      roll: 0,
+    },
+  });
+
+  let suspendTileLoading = false;
+  let showIntensity = false;
+
+  const setCurrentView = (image?: PanoramaImage): void => {
+    const oldView = currentView;
+    if (image) {
+      currentView = setupImageView(
+        image,
+        primitiveCollection,
+        scene.camera,
+        scene.canvas,
+      );
+      currentView.suspendTileLoading = suspendTileLoading;
+      currentView.showIntensity = showIntensity;
+    } else {
+      currentView = undefined;
+    }
+
+    oldView?.destroy();
+  };
+  setCurrentView(map.currentPanoramaImage);
+  const imageChangedListener =
+    map.currentImageChanged.addEventListener(setCurrentView);
+
+  const render = (): void => {
+    currentView?.render();
+  };
+  scene.camera.changed.addEventListener(render);
+  render();
+
+  return {
+    get suspendTileLoading(): boolean {
+      return suspendTileLoading;
+    },
+    set suspendTileLoading(value: boolean) {
+      suspendTileLoading = value;
+      if (currentView) {
+        currentView.suspendTileLoading = value;
+      }
+    },
+    get showIntensity(): boolean {
+      return currentView?.showIntensity ?? showIntensity;
+    },
+    set showIntensity(value: boolean) {
+      // XXX ugly
+      if (currentView) {
+        currentView.showIntensity = value;
+        showIntensity = currentView.showIntensity;
+      } else {
+        showIntensity = value;
+      }
+    },
+    getCurrentTiles(): PanoramaTile[] {
+      return currentView?.getCurrentTiles() ?? [];
+    },
+    render,
+    destroy(): void {
       scene.primitives.remove(primitiveCollection);
-      currentTiles.clear();
-      nav.destroy();
+      primitiveCollection.destroy();
+      currentView?.destroy();
+      imageChangedListener();
     },
   };
 }
