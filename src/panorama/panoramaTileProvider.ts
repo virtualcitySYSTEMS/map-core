@@ -1,7 +1,7 @@
 import LRUCache from 'ol/structs/LRUCache.js';
 import { Cartesian3 } from '@vcmap-cesium/engine';
 import { getLogger } from '@vcsuite/logger';
-import { GeoTIFFImage, Pool } from 'geotiff';
+import { BaseDecoder, GeoTIFFImage, Pool } from 'geotiff';
 import {
   createPanoramaTile,
   PanoramaTile,
@@ -52,20 +52,6 @@ function addTileToCache(
   cache.expireCache(currentlyVisibleTileKeys);
 }
 
-function getImageDataFromRGBReadRaster(
-  readRaster: Uint8Array,
-  tileSize: TileSize,
-): ImageData {
-  const clampedArray = new Uint8ClampedArray((readRaster.length / 3) * 4);
-  clampedArray.fill(255);
-  for (let i = 0; i < readRaster.length; i += 3) {
-    clampedArray[(i / 3) * 4] = readRaster[i];
-    clampedArray[(i / 3) * 4 + 1] = readRaster[i + 1];
-    clampedArray[(i / 3) * 4 + 2] = readRaster[i + 2];
-  }
-  return new ImageData(clampedArray, tileSize[0], tileSize[1]);
-}
-
 export function createPanoramaTileProvider(
   levelImages: GeoTIFFImage[],
   origin: Cartesian3,
@@ -99,26 +85,25 @@ export function createPanoramaTileProvider(
   ): Promise<PanoramaTile | null | Error> => {
     const levelImage = levelImages[tileCoordinate.level - minLevel];
     if (levelImage) {
-      const windowOrigin = [
-        tileCoordinate.x * tileSize[0],
-        tileCoordinate.y * tileSize[1],
-      ];
-      const tileImage = await levelImage.readRGB({
-        window: [
-          ...windowOrigin,
-          windowOrigin[0] + tileSize[0],
-          windowOrigin[1] + tileSize[1],
-        ],
-        width: tileSize[0],
-        height: tileSize[1],
-        signal: abort,
-        pool,
-      });
-      const image = await createImageBitmap(
-        getImageDataFromRGBReadRaster(tileImage as Uint8Array, tileSize),
+      const tile = await levelImage.getTileOrStrip(
+        tileCoordinate.x,
+        tileCoordinate.y,
+        levelImage.getSamplesPerPixel(),
+        {
+          decode: (_fi, buff) => Promise.resolve(buff),
+        } as BaseDecoder,
+        abort,
       );
 
-      return createPanoramaTile(tileCoordinate, image, origin, tileSize);
+      const bm = await createImageBitmap(
+        new Blob([tile.data]),
+        0,
+        0,
+        tileSize[0],
+        tileSize[1],
+      );
+
+      return createPanoramaTile(tileCoordinate, bm, origin, tileSize);
     }
     return null;
   };
