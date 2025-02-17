@@ -127,7 +127,8 @@ function startCreateFeatureSession<T extends GeometryType>(
     removed: interactionRemoved,
     destroy: destroyInteractionChain,
   } = setupInteractionChain(app.maps.eventHandler);
-  const scratchLayer = setupScratchLayer(app.layers);
+  const { layer: scratchLayer, destroy: destroyScratchLayer } =
+    setupScratchLayer(app.layers, app.maps.eventHandler.featureInteraction);
 
   const featureCreated = new VcsEvent<Feature<GeometryToType<T>>>();
   const creationFinished = new VcsEvent<Feature<GeometryToType<T>> | null>();
@@ -238,10 +239,13 @@ function startCreateFeatureSession<T extends GeometryType>(
           GeometryToType<T>
         >;
         currentFeature[createSync] = true;
+        app.maps.eventHandler.featureInteraction.excludeFromPickPosition(
+          currentFeature,
+        );
         if (featureAltitudeMode) {
           currentFeature.set('olcs_altitudeMode', featureAltitudeMode);
         }
-        currentFeature.set('olcs_allowPicking', false);
+        currentFeature.set('olcs_allowPicking', true);
         const propChangeListener = currentFeature.on(
           'propertychange',
           (event) => {
@@ -270,7 +274,9 @@ function startCreateFeatureSession<T extends GeometryType>(
         }
         if (currentFeature) {
           delete currentFeature[createSync];
-          currentFeature.set('olcs_allowPicking', true);
+          app.maps.eventHandler.featureInteraction.includeInPickPosition(
+            currentFeature,
+          );
           if (
             !geometry ||
             currentFeature.getGeometry() !== geometry ||
@@ -337,8 +343,7 @@ function startCreateFeatureSession<T extends GeometryType>(
 
   const stop = (): void => {
     isStopped = true; // setting stopped true immediately, to prevent the recreation of the interaction chain on finished
-    app.layers.remove(scratchLayer);
-    scratchLayer.destroy();
+    destroyScratchLayer();
 
     if (app.maps.target) {
       app.maps.target.style.cursor = cursorMap.auto;

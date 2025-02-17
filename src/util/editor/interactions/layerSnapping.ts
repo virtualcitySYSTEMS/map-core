@@ -20,10 +20,6 @@ import {
 } from '../snappingHelpers.js';
 
 export default class LayerSnapping extends AbstractInteraction {
-  layers: VectorLayer[];
-
-  private _scratchLayer: VectorLayer;
-
   private _removeFeatures: (() => void) | undefined;
 
   private _filter: (f: Feature) => boolean;
@@ -33,16 +29,14 @@ export default class LayerSnapping extends AbstractInteraction {
   private _snapToEdge = true;
 
   constructor(
-    layers: VectorLayer[],
-    scratchLayer: VectorLayer,
+    public layers: VectorLayer[],
+    private _scratchLayer: VectorLayer,
     filter: (f: Feature) => boolean,
     snapTo: SnapType[] = ['vertex', 'edge'],
     type: EventType = EventType.CLICKMOVE | EventType.DBLCLICK,
   ) {
     super(type, ModificationKeyType.NONE | ModificationKeyType.CTRL);
 
-    this.layers = layers;
-    this._scratchLayer = scratchLayer;
     this._filter = filter;
     this.snapTo = snapTo;
   }

@@ -182,7 +182,8 @@ function startEditFeaturesSession(
     });
   });
 
-  const scratchLayer = setupScratchLayer(app.layers);
+  const { layer: scratchLayer, destroy: destroyScratchLayer } =
+    setupScratchLayer(app.layers, app.maps.eventHandler.featureInteraction);
 
   const {
     interactionChain,
@@ -442,8 +443,7 @@ function startEditFeaturesSession(
       clearCreateSync(feature, originalCreateSyncMap);
     });
     allowPickingMap.clear();
-    app.layers.remove(scratchLayer);
-    scratchLayer.destroy();
+    destroyScratchLayer();
     modeChanged.destroy();
     removeRightClickStart();
     rightClickStart.destroy();

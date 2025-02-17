@@ -144,8 +144,6 @@ function createSegmentGeometry(
 }
 
 export default class SegmentLengthInteraction extends AbstractInteraction {
-  private _scratchLayer: VectorLayer;
-
   private _geometry: Polygon | LineString | Circle | undefined;
 
   private _isCircle = false;
@@ -160,20 +158,25 @@ export default class SegmentLengthInteraction extends AbstractInteraction {
 
   creation: boolean;
 
-  constructor(scratchLayer: VectorLayer, creation: boolean) {
+  constructor(
+    private _scratchLayer: VectorLayer,
+    creation: boolean,
+  ) {
     super(
       creation ? EventType.MOVE : EventType.DRAGEVENTS,
       ModificationKeyType.CTRL | ModificationKeyType.NONE,
     );
 
-    this._scratchLayer = scratchLayer;
     this._is3D =
-      scratchLayer.vectorProperties.altitudeMode === HeightReference.NONE;
+      this._scratchLayer.vectorProperties.altitudeMode === HeightReference.NONE;
     this._vectorPropertiesListener =
-      scratchLayer.vectorProperties.propertyChanged.addEventListener(() => {
-        this._is3D =
-          scratchLayer.vectorProperties.altitudeMode === HeightReference.NONE;
-      });
+      this._scratchLayer.vectorProperties.propertyChanged.addEventListener(
+        () => {
+          this._is3D =
+            this._scratchLayer.vectorProperties.altitudeMode ===
+            HeightReference.NONE;
+        },
+      );
 
     this.creation = creation;
   }

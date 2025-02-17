@@ -47,9 +47,7 @@ class VectorClusterCesiumContext implements CesiumVectorContext {
     if (entityOptions) {
       const instance = this.entities.add(entityOptions);
       if (instance) {
-        if (allowPicking) {
-          setReferenceForPicking(feature, instance);
-        }
+        setReferenceForPicking(feature, instance, allowPicking);
         this._featureItems.set(feature, (): void => {
           this.entities.remove(instance);
         });

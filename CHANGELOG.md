@@ -17,6 +17,8 @@
   - proj4 to 2.15.0
   - uuid 11.0.5
 - Add `Navigation` API to allow navigating through maps using keyboard or other controller.
+- Fixes a bug, where `allowPicking` would have no effect on `CesiumTilesetLayer`.
+- Adds an API to the `FeatureAtPixelInteraction` to allow for features to be excluded from pickPosition.
 
 ### 6.0.7
 

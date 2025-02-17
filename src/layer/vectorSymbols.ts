@@ -39,3 +39,8 @@ export const actuallyIsCircle: unique symbol = Symbol('ActuallyIsCircle');
  * the rendering thread
  */
 export const createSync: unique symbol = Symbol('createSync');
+
+/**
+ * Can be present on ol/Feature to indicate the current primitives / billboards / models / labels associated with this feature
+ */
+export const primitives: unique symbol = Symbol('primitives');

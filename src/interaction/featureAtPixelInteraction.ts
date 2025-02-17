@@ -20,8 +20,8 @@ import {
   ModificationKeyType,
   PointerKeyType,
 } from './interactionType.js';
-import { vcsLayerName } from '../layer/layerSymbols.js';
-import { originalFeatureSymbol } from '../layer/vectorSymbols.js';
+import { allowPicking, vcsLayerName } from '../layer/layerSymbols.js';
+import { originalFeatureSymbol, primitives } from '../layer/vectorSymbols.js';
 import type OpenlayersMap from '../map/openlayersMap.js';
 import type ObliqueMap from '../map/obliqueMap.js';
 import type CesiumMap from '../map/cesiumMap.js';
@@ -86,7 +86,8 @@ function getFeatureFromPickObject(
     object.primitive &&
     object.primitive[vcsLayerName] &&
     (object instanceof Cesium3DTileFeature ||
-      object instanceof Cesium3DTilePointFeature)
+      object instanceof Cesium3DTilePointFeature) &&
+    object.primitive[allowPicking] !== false
   ) {
     // cesium 3d tileset
     feature = object;
@@ -117,15 +118,16 @@ function getFeatureFromScene(
   scene: Scene,
   windowPosition: Cartesian2,
   hitTolerance: number,
-): EventFeature | undefined {
+): { pickObject: unknown; feature?: EventFeature } {
   const pickObject = scene.pick(windowPosition, hitTolerance, hitTolerance) as
     | CesiumPickObject
     | undefined;
 
+  let feature: EventFeature | undefined;
   if (pickObject) {
-    return getFeatureFromPickObject(pickObject);
+    feature = getFeatureFromPickObject(pickObject);
   }
-  return pickObject;
+  return { pickObject, feature };
 }
 
 /**
@@ -153,6 +155,8 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
   hitTolerance = 10;
 
   private _draggingFeature: EventFeature | null = null;
+
+  private _excludeFromPickPosition: Set<Feature> = new Set();
 
   constructor() {
     super(
@@ -200,6 +204,14 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
     super.setActive(active);
   }
 
+  excludeFromPickPosition(feature: Feature): void {
+    this._excludeFromPickPosition.add(feature);
+  }
+
+  includeInPickPosition(feature: Feature): void {
+    this._excludeFromPickPosition.delete(feature);
+  }
+
   private _openlayersHandler(
     event: InteractionEvent,
   ): Promise<InteractionEvent> {
@@ -238,11 +250,15 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
       return Promise.resolve(event);
     }
 
-    const feature = getFeatureFromScene(
+    const { feature, pickObject } = getFeatureFromScene(
       scene,
       event.windowPosition,
       this.hitTolerance,
     );
+
+    if (feature) {
+      event.feature = feature;
+    }
 
     let scratchCartographic = new Cartographic();
     let scratchCartesian = new Cartesian3();
@@ -287,24 +303,37 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
       return Promise.resolve(event);
     };
 
-    if (feature) {
-      event.feature = feature;
-      if (!(event.type & this.pickPosition)) {
-        return Promise.resolve(event);
+    if (!(event.type & this.pickPosition)) {
+      return Promise.resolve(event);
+    }
+
+    if (pickObject && scene.pickPositionSupported) {
+      if (this.pickTranslucent) {
+        scene.pickTranslucentDepth = true;
+        event.exactPosition = true;
       }
 
-      if (scene.pickPositionSupported) {
-        if (this.pickTranslucent) {
-          scene.pickTranslucentDepth = true;
-          event.exactPosition = true;
+      if (
+        feature &&
+        (feature as Feature)[primitives] &&
+        this._excludeFromPickPosition.has(feature as Feature)
+      ) {
+        const primitivesToExclude = [...this._excludeFromPickPosition]
+          .flatMap((f) => f[primitives])
+          .filter((f) => !!f);
+        const intersection = scene.pickFromRay(event.ray!, primitivesToExclude);
+        if (intersection?.position) {
+          scratchCartesian = intersection.position;
         }
+      } else {
         scratchCartesian = scene.pickPosition(
           event.windowPosition,
           scratchCartesian,
         );
-        return handlePick();
       }
+      return handlePick();
     }
+
     return Promise.resolve(event);
   }
 }

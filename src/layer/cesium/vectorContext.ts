@@ -23,12 +23,21 @@ import convert, {
   ConvertedItem,
   PrimitiveType,
 } from '../../util/featureconverter/convert.js';
+import { primitives as primitivesSymbol } from '../vectorSymbols.js';
 
 export function setReferenceForPicking(
   feature: Feature,
   primitive: PrimitiveType | Label | Billboard | Entity,
+  allowPicking: boolean,
 ): void {
-  primitive.olFeature = feature;
+  if (allowPicking) {
+    primitive.olFeature = feature;
+  }
+  const featurePrimitives = feature[primitivesSymbol] ?? [];
+  if (!featurePrimitives.includes(primitive)) {
+    featurePrimitives.push(primitive);
+    feature[primitivesSymbol] = featurePrimitives;
+  }
 }
 
 function getIndexOfPrimitive(
@@ -282,9 +291,7 @@ export default class VectorContext implements CesiumVectorContext {
         }
 
         if (instance) {
-          if (allowPicking) {
-            setReferenceForPicking(feature, instance);
-          }
+          setReferenceForPicking(feature, instance, allowPicking);
 
           if (
             this.splitDirection &&
@@ -298,6 +305,9 @@ export default class VectorContext implements CesiumVectorContext {
       })
       .filter((i) => i != null);
 
+    removeItems.push(() => {
+      feature[primitivesSymbol] = undefined;
+    });
     this._featureItems.set(feature, removeItems);
   }
 

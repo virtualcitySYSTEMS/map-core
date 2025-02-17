@@ -6,7 +6,12 @@ import * as style from 'ol/style.js';
 
 import { Feature } from 'ol/index.js';
 import CanvasImmediateRenderer from 'ol/render/canvas/Immediate.js';
-import { Color } from '@vcmap-cesium/engine';
+import {
+  Billboard,
+  Color,
+  type Entity,
+  type Label,
+} from '@vcmap-cesium/engine';
 import { StyleLike } from 'ol/style/Style.js';
 import VectorStyleItem, {
   vectorStyleSymbol,
@@ -20,6 +25,7 @@ import {
   doNotTransform,
   obliqueGeometry,
   originalFeatureSymbol,
+  primitives,
 } from '../layer/vectorSymbols.js';
 import { vcsLayerName } from '../layer/layerSymbols.js';
 import {
@@ -46,6 +52,7 @@ import {
 } from '../layer/vectorHelpers.js';
 import { validityPlaceholder } from '../util/editor/interactions/createPolygonInteraction.js';
 import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
+import { PrimitiveType } from '../util/featureconverter/convert.js';
 
 declare module 'ol/geom.js' {
   interface Geometry {
@@ -119,6 +126,7 @@ declare module 'ol/index.js' {
     [vertexSymbol]?: boolean;
     [createSync]?: boolean;
     [vectorClusterGroupName]?: string;
+    [primitives]?: (PrimitiveType | Label | Billboard | Entity)[];
   }
 
   class CanvasTileRenderer extends CanvasImmediateRenderer {

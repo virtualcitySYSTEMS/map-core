@@ -7,6 +7,8 @@ import {
   Clock,
   Entity,
   JulianDate,
+  Primitive,
+  Ray,
   Scene,
 } from '@vcmap-cesium/engine';
 import { Coordinate } from 'ol/coordinate.js';
@@ -26,13 +28,15 @@ import {
   setCesiumMap,
 } from '../helpers/cesiumHelpers.js';
 import VcsApp from '../../../src/vcsApp.js';
-import { vcsLayerName } from '../../../src/layer/layerSymbols.js';
+import { allowPicking, vcsLayerName } from '../../../src/layer/layerSymbols.js';
 import {
   CesiumMap,
   FeatureAtPixelInteraction,
   InteractionEvent,
   vectorClusterGroupName,
 } from '../../../index.js';
+import { primitives } from '../../../src/layer/vectorSymbols.js';
+import { arrayCloseTo } from '../helpers/helpers.js';
 
 describe('FeatureAtPixelInteraction', () => {
   let sandbox: SinonSandbox;
@@ -266,6 +270,16 @@ describe('FeatureAtPixelInteraction', () => {
         });
       });
 
+      it('should ignore 3DTileFeatures, aka buildings -> obj.primitive with layerName if the have allowPicking symbol set to false', () => {
+        const dummy = createDummyCesium3DTileFeature(
+          {},
+          { [vcsLayerName]: 'test', [allowPicking]: false },
+        );
+        return setup3DTest(dummy).then((event) => {
+          expect(event).to.have.not.property('feature');
+        });
+      });
+
       it('should detect vector entity features in 3D -> obj.id.olFeature', () => {
         const olFeature = 'test';
         const dummy = {
@@ -373,6 +387,32 @@ describe('FeatureAtPixelInteraction', () => {
         fap.pickTranslucent = true;
         await fap.pipe(event);
         expect(sceneStub).to.have.property('pickTranslucentDepth', true);
+      });
+
+      it('should pick using a ray excluding the feature, if the picked feature is excluded from positions', async () => {
+        const olFeature = new Feature({});
+        const primitive = {};
+        olFeature[primitives] = [primitive as Primitive];
+        const pickFromRay = sandbox.stub();
+        pickFromRay.returns({
+          position: Cartesian3.fromDegrees(12, 12, 0),
+        });
+        sceneStub.pickFromRay = pickFromRay;
+        pick.returns({ primitive: { olFeature } });
+        fap.excludeFromPickPosition(olFeature);
+        fap.pullPickedPosition = EventType.NONE;
+        const event = await fap.pipe({
+          ray: new Ray(),
+          pointer: PointerKeyType.LEFT,
+          pointerEvent: PointerEventType.DOWN,
+          windowPosition: new Cartesian2(0, 0),
+          map: cesiumMap,
+          type: EventType.CLICK,
+          key: ModificationKeyType.NONE,
+        });
+        expect(pickFromRay).to.have.been.calledWith(event.ray, [primitive]);
+        expect(event).to.have.property('position');
+        arrayCloseTo(event.position!, Projection.wgs84ToMercator([12, 12, 0]));
       });
     });
   });

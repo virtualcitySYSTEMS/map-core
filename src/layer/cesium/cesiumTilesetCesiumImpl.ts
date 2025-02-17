@@ -15,7 +15,7 @@ import {
 import { createEmpty, Extent as OLExtent } from 'ol/extent.js';
 import type { Coordinate } from 'ol/coordinate.js';
 import LayerImplementation from '../layerImplementation.js';
-import { vcsLayerName } from '../layerSymbols.js';
+import { allowPicking, vcsLayerName } from '../layerSymbols.js';
 import FeatureVisibility, {
   hideFeature,
   HighlightableFeature,
@@ -105,6 +105,8 @@ class CesiumTilesetCesiumImpl
 
   offset: Coordinate | undefined;
 
+  allowPicking: boolean;
+
   private _initializedPromise: Promise<Cesium3DTileset> | null = null;
 
   private _originalOrigin: Cartesian3 | null = null;
@@ -128,6 +130,7 @@ class CesiumTilesetCesiumImpl
     this.modelMatrix = options.modelMatrix;
     this.offset = options.offset;
     this._customShader = options.customShader;
+    this.allowPicking = options.allowPicking;
   }
 
   get customShader(): CustomShader | undefined {
@@ -176,6 +179,7 @@ class CesiumTilesetCesiumImpl
         });
       }
       this.cesium3DTileset[vcsLayerName] = this.name;
+      this.cesium3DTileset[allowPicking] = this.allowPicking;
       this.cesium3DTileset.tileVisible.addEventListener(
         this.applyStyle.bind(this),
       );

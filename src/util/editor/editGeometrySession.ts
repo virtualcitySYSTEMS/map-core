@@ -87,7 +87,7 @@ function createEditLineStringGeometryInteraction(
       getCoordinatesAndLayoutFromVertices(vertices);
     geometry.setCoordinates(coordinates, layout);
   };
-  const translateVertex = new TranslateVertexInteraction(feature);
+  const translateVertex = new TranslateVertexInteraction();
   translateVertex.vertexChanged.addEventListener(resetGeometry);
 
   const translationSnapping = new TranslationSnapping(
@@ -165,7 +165,7 @@ function createEditCircleGeometryInteraction(
     .map((c, i) => createVertex(c, olcsProps, i));
   scratchLayer.addFeatures(vertices);
 
-  const translateVertex = new TranslateVertexInteraction(feature);
+  const translateVertex = new TranslateVertexInteraction();
   let suspend = false;
   translateVertex.vertexChanged.addEventListener((vertex) => {
     suspend = true;
@@ -229,7 +229,7 @@ function createEditBBoxGeometryInteraction(
 
   scratchLayer.addFeatures(vertices);
   let suspend = false;
-  const translateVertex = new TranslateVertexInteraction(feature);
+  const translateVertex = new TranslateVertexInteraction();
   translateVertex.vertexChanged.addEventListener((vertex) => {
     const index = vertices.indexOf(vertex);
     const originIndex = modulo(index + 2, 4);
@@ -328,7 +328,7 @@ function createEditSimplePolygonInteraction(
     geometry.setCoordinates([coordinates], layout); // update actual geometry, since linear ring is a clone and not a ref
   };
 
-  const translateVertex = new TranslateVertexInteraction(feature);
+  const translateVertex = new TranslateVertexInteraction();
   translateVertex.vertexChanged.addEventListener(resetGeometry);
 
   const translationSnapping = new TranslationSnapping(
@@ -406,7 +406,7 @@ function createEditPointInteraction(
   layer.featureVisibility.hideObjects(featureIdArray);
   vertex[createSync] = true;
   scratchLayer.addFeatures([vertex]);
-  const translateVertex = new TranslateVertexInteraction(feature);
+  const translateVertex = new TranslateVertexInteraction();
   let suspend = false;
   translateVertex.vertexChanged.addEventListener(() => {
     suspend = true;
@@ -457,7 +457,8 @@ function startEditGeometrySession(
     destroy: destroyInteractionChain,
   } = setupInteractionChain(app.maps.eventHandler, interactionId);
 
-  const scratchLayer = setupScratchLayer(app.layers);
+  const { layer: scratchLayer, destroy: destroyScratchLayer } =
+    setupScratchLayer(app.layers, app.maps.eventHandler.featureInteraction);
 
   const mapInteractionController = new MapInteractionController();
   interactionChain.addInteraction(mapInteractionController);
@@ -533,6 +534,7 @@ function startEditGeometrySession(
       });
       currentFeature = feature;
       currentFeature[createSync] = true;
+      app.maps.eventHandler.featureInteraction.excludeFromPickPosition(feature);
       const geometry =
         feature[obliqueGeometry] ?? (feature.getGeometry() as Geometry);
       const geometryType = geometry.getType();
@@ -610,8 +612,12 @@ function startEditGeometrySession(
   setupActiveMap();
 
   const stop = (): void => {
-    app.layers.remove(scratchLayer);
-    scratchLayer.destroy();
+    if (currentFeature) {
+      app.maps.eventHandler.featureInteraction.includeInPickPosition(
+        currentFeature,
+      );
+    }
+    destroyScratchLayer();
     if (featureListener) {
       unByKey(featureListener);
     }

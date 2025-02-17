@@ -324,6 +324,7 @@ class FeatureStoreLayer extends VectorLayer {
     ) {
       impls.push(
         new CesiumTilesetCesiumImpl(map, {
+          allowPicking: this.allowPicking,
           url: this.staticRepresentation.threeDim,
           tilesetOptions: {
             maximumScreenSpaceError: isMobile()

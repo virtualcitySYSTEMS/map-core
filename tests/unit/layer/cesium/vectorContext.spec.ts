@@ -22,6 +22,7 @@ import VectorContext, {
 import { getCesiumMap } from '../../helpers/cesiumHelpers.js';
 import VectorProperties from '../../../../src/layer/vectorProperties.js';
 import { CesiumMap } from '../../../../index.js';
+import { primitives } from '../../../../src/layer/vectorSymbols.js';
 
 describe('VectorContext', () => {
   let map: CesiumMap;
@@ -40,8 +41,24 @@ describe('VectorContext', () => {
     it('should correctly set a primitives olFeature attribute', () => {
       const testFeature = new Feature();
       const testPrimitive = new Primitive();
-      setReferenceForPicking(testFeature, testPrimitive);
+      setReferenceForPicking(testFeature, testPrimitive, true);
       expect(testPrimitive).to.have.property('olFeature', testFeature);
+    });
+
+    it('should not set a reference, if picking is false', () => {
+      const testFeature = new Feature();
+      const testPrimitive = new Primitive();
+      setReferenceForPicking(testFeature, testPrimitive, false);
+      expect(testPrimitive).to.not.have.property('olFeature');
+    });
+
+    it('should set the primitives symbol on the feature', () => {
+      const testFeature = new Feature();
+      const testPrimitive = new Primitive();
+      setReferenceForPicking(testFeature, testPrimitive, true);
+      expect(testFeature)
+        .to.have.property(primitives)
+        .and.to.have.members([testPrimitive]);
     });
   });
 

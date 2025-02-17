@@ -16,6 +16,7 @@ import {
   vertexSymbol,
 } from '../../../../../index.js';
 import { getCesiumMap } from '../../../helpers/cesiumHelpers.js';
+import { timeout } from '../../../helpers/helpers.js';
 
 describe('TranslateVertexInteraction', () => {
   let cesiumMap: CesiumMap;
@@ -47,32 +48,6 @@ describe('TranslateVertexInteraction', () => {
     });
 
     describe('with 3D geometries', () => {
-      describe('starting vertex translation', () => {
-        let vertex: Feature<Point>;
-        let event: EventAfterEventHandler;
-        let feature: Feature;
-
-        before(async () => {
-          vertex = new Feature({ geometry: new Point([0, 0, 0]) });
-          vertex[vertexSymbol] = true;
-          feature = new Feature();
-
-          const interaction = new TranslateVertexInteraction(feature);
-          event = {
-            feature: vertex,
-            type: EventType.DRAGSTART,
-            ...baseEvent,
-          };
-
-          await interaction.pipe(event);
-          interaction.destroy();
-        });
-
-        it('should set the vertex allowPicking to be false', () => {
-          expect(vertex.get('olcs_allowPicking')).to.be.false;
-        });
-      });
-
       describe('dragging the vertex', () => {
         let vertex: Feature<Point>;
         let vertexChangedListener: () => void;
@@ -84,7 +59,7 @@ describe('TranslateVertexInteraction', () => {
           vertexChangedListener = sinon.spy();
           feature = new Feature();
 
-          const interaction = new TranslateVertexInteraction(feature);
+          const interaction = new TranslateVertexInteraction();
           interaction.vertexChanged.addEventListener(vertexChangedListener);
           await interaction.pipe({
             feature: vertex,
@@ -120,10 +95,6 @@ describe('TranslateVertexInteraction', () => {
         it('should set the vertex style to be the empty style', () => {
           expect(vertex.getStyle()).to.equal(emptyStyle);
         });
-
-        it('should not allow picking of the feature', () => {
-          expect(feature.get('olcs_allowPicking')).to.be.false;
-        });
       });
 
       describe('finish dragging the vertex', () => {
@@ -137,7 +108,7 @@ describe('TranslateVertexInteraction', () => {
           vertexChangedListener = sinon.spy();
           feature = new Feature();
 
-          const interaction = new TranslateVertexInteraction(feature);
+          const interaction = new TranslateVertexInteraction();
           interaction.vertexChanged.addEventListener(vertexChangedListener);
           await interaction.pipe({
             feature: vertex,
@@ -176,47 +147,14 @@ describe('TranslateVertexInteraction', () => {
           expect(vertexChangedListener).to.have.been.calledWithExactly(vertex);
         });
 
-        it('should reset the vertex style', () => {
-          expect(vertex.get('olcs_allowPicking')).to.be.undefined;
-        });
-
-        it('should reset the vertex style', () => {
+        it('should reset the vertex style after a short timeout', async () => {
+          await timeout(10);
           expect(vertex.getStyle()).to.be.undefined;
-        });
-
-        it('should unset allow picking of the feature', () => {
-          expect(feature.get('olcs_allowPicking')).to.be.undefined;
         });
       });
     });
 
     describe('with 2D geometries', () => {
-      describe('starting vertex translation', () => {
-        let vertex: Feature<Point>;
-        let event: EventAfterEventHandler;
-        let feature: Feature;
-
-        before(async () => {
-          vertex = new Feature({ geometry: new Point([0, 0]) });
-          vertex[vertexSymbol] = true;
-          feature = new Feature();
-
-          const interaction = new TranslateVertexInteraction(feature);
-          event = {
-            feature: vertex,
-            type: EventType.DRAGSTART,
-            ...baseEvent,
-          };
-
-          await interaction.pipe(event);
-          interaction.destroy();
-        });
-
-        it('should set the vertex allowPicking to be false', () => {
-          expect(vertex.get('olcs_allowPicking')).to.be.false;
-        });
-      });
-
       describe('dragging the vertex', () => {
         let vertex: Feature<Point>;
         let vertexChangedListener: () => void;
@@ -228,7 +166,7 @@ describe('TranslateVertexInteraction', () => {
           vertexChangedListener = sinon.spy();
           feature = new Feature();
 
-          const interaction = new TranslateVertexInteraction(feature);
+          const interaction = new TranslateVertexInteraction();
           interaction.vertexChanged.addEventListener(vertexChangedListener);
           await interaction.pipe({
             feature: vertex,
@@ -264,10 +202,6 @@ describe('TranslateVertexInteraction', () => {
         it('should set the vertex style to be the empty style', () => {
           expect(vertex.getStyle()).to.equal(emptyStyle);
         });
-
-        it('should not allow picking of the feature', () => {
-          expect(feature.get('olcs_allowPicking')).to.be.false;
-        });
       });
 
       describe('finish dragging the vertex', () => {
@@ -281,7 +215,7 @@ describe('TranslateVertexInteraction', () => {
           vertexChangedListener = sinon.spy();
           feature = new Feature();
 
-          const interaction = new TranslateVertexInteraction(feature);
+          const interaction = new TranslateVertexInteraction();
           interaction.vertexChanged.addEventListener(vertexChangedListener);
           await interaction.pipe({
             feature: vertex,
@@ -320,11 +254,8 @@ describe('TranslateVertexInteraction', () => {
           expect(vertexChangedListener).to.have.been.calledWithExactly(vertex);
         });
 
-        it('should reset the vertex style', () => {
-          expect(vertex.get('olcs_allowPicking')).to.be.undefined;
-        });
-
-        it('should reset the vertex style', () => {
+        it('should reset the vertex style after a short timeout', async () => {
+          await timeout(10);
           expect(vertex.getStyle()).to.be.undefined;
         });
 
@@ -351,44 +282,16 @@ describe('TranslateVertexInteraction', () => {
     });
 
     describe('with 3D geometries', () => {
-      describe('starting vertex translation', () => {
-        let vertex: Feature<Point>;
-        let event: EventAfterEventHandler;
-        let feature: Feature;
-
-        before(async () => {
-          vertex = new Feature({ geometry: new Point([0, 0, 0]) });
-          vertex[vertexSymbol] = true;
-          feature = new Feature();
-
-          const interaction = new TranslateVertexInteraction(feature);
-          event = {
-            feature: vertex,
-            type: EventType.DRAGSTART,
-            ...baseEvent,
-          };
-
-          await interaction.pipe(event);
-          interaction.destroy();
-        });
-
-        it('should set the vertex allowPicking to be false', () => {
-          expect(vertex.get('olcs_allowPicking')).to.be.false;
-        });
-      });
-
       describe('dragging the vertex', () => {
         let vertex: Feature<Point>;
         let vertexChangedListener: () => void;
-        let feature: Feature;
 
         before(async () => {
           vertex = new Feature({ geometry: new Point([0, 0, 0]) });
           vertex[vertexSymbol] = true;
           vertexChangedListener = sinon.spy();
-          feature = new Feature();
 
-          const interaction = new TranslateVertexInteraction(feature);
+          const interaction = new TranslateVertexInteraction();
           interaction.vertexChanged.addEventListener(vertexChangedListener);
           await interaction.pipe({
             feature: vertex,
@@ -421,12 +324,9 @@ describe('TranslateVertexInteraction', () => {
           expect(vertexChangedListener).to.have.been.calledWithExactly(vertex);
         });
 
-        it('should set the vertex style to be the empty style', () => {
+        it('should set the vertex style to be the empty style', async () => {
+          await timeout(10);
           expect(vertex.getStyle()).to.equal(emptyStyle);
-        });
-
-        it('should not allow picking of the feature', () => {
-          expect(feature.get('olcs_allowPicking')).to.be.false;
         });
       });
 
@@ -441,7 +341,7 @@ describe('TranslateVertexInteraction', () => {
           vertexChangedListener = sinon.spy();
           feature = new Feature();
 
-          const interaction = new TranslateVertexInteraction(feature);
+          const interaction = new TranslateVertexInteraction();
           interaction.vertexChanged.addEventListener(vertexChangedListener);
           await interaction.pipe({
             feature: vertex,
@@ -480,59 +380,24 @@ describe('TranslateVertexInteraction', () => {
           expect(vertexChangedListener).to.have.been.calledWithExactly(vertex);
         });
 
-        it('should reset the vertex style', () => {
-          expect(vertex.get('olcs_allowPicking')).to.be.undefined;
-        });
-
-        it('should reset the vertex style', () => {
+        it('should reset the vertex style after a short timeout', async () => {
+          await timeout(10);
           expect(vertex.getStyle()).to.be.undefined;
-        });
-
-        it('should unset allow picking of the feature', () => {
-          expect(feature.get('olcs_allowPicking')).to.be.undefined;
         });
       });
     });
 
     describe('with 2D geometries', () => {
-      describe('starting vertex translation', () => {
-        let vertex: Feature<Point>;
-        let event: EventAfterEventHandler;
-        let feature: Feature;
-
-        before(async () => {
-          vertex = new Feature({ geometry: new Point([0, 0]) });
-          vertex[vertexSymbol] = true;
-          feature = new Feature();
-
-          const interaction = new TranslateVertexInteraction(feature);
-          event = {
-            feature: vertex,
-            type: EventType.DRAGSTART,
-            ...baseEvent,
-          };
-
-          await interaction.pipe(event);
-          interaction.destroy();
-        });
-
-        it('should set the vertex allowPicking to be false', () => {
-          expect(vertex.get('olcs_allowPicking')).to.be.false;
-        });
-      });
-
       describe('dragging the vertex', () => {
         let vertex: Feature<Point>;
         let vertexChangedListener: () => void;
-        let feature: Feature;
 
         before(async () => {
           vertex = new Feature({ geometry: new Point([0, 0]) });
           vertex[vertexSymbol] = true;
           vertexChangedListener = sinon.spy();
-          feature = new Feature();
 
-          const interaction = new TranslateVertexInteraction(feature);
+          const interaction = new TranslateVertexInteraction();
           interaction.vertexChanged.addEventListener(vertexChangedListener);
           await interaction.pipe({
             feature: vertex,
@@ -565,27 +430,22 @@ describe('TranslateVertexInteraction', () => {
           expect(vertexChangedListener).to.have.been.calledWithExactly(vertex);
         });
 
-        it('should set the vertex style to be the empty style', () => {
+        it('should set the vertex style to be the empty style after a short while', async () => {
+          await timeout(10);
           expect(vertex.getStyle()).to.equal(emptyStyle);
-        });
-
-        it('should not allow picking of the feature', () => {
-          expect(feature.get('olcs_allowPicking')).to.be.false;
         });
       });
 
       describe('finish dragging the vertex', () => {
         let vertex: Feature<Point>;
         let vertexChangedListener: () => void;
-        let feature: Feature;
 
         before(async () => {
           vertex = new Feature({ geometry: new Point([0, 0]) });
           vertex[vertexSymbol] = true;
           vertexChangedListener = sinon.spy();
-          feature = new Feature();
 
-          const interaction = new TranslateVertexInteraction(feature);
+          const interaction = new TranslateVertexInteraction();
           interaction.vertexChanged.addEventListener(vertexChangedListener);
           await interaction.pipe({
             feature: vertex,
@@ -625,15 +485,7 @@ describe('TranslateVertexInteraction', () => {
         });
 
         it('should reset the vertex style', () => {
-          expect(vertex.get('olcs_allowPicking')).to.be.undefined;
-        });
-
-        it('should reset the vertex style', () => {
           expect(vertex.getStyle()).to.be.undefined;
-        });
-
-        it('should unset allow picking of the feature', () => {
-          expect(feature.get('olcs_allowPicking')).to.be.undefined;
         });
       });
     });

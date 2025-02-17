@@ -50,6 +50,7 @@ export type CesiumTilesetTilesetProperties = {
 
 export type CesiumTilesetImplementationOptions =
   FeatureLayerImplementationOptions & {
+    allowPicking: boolean;
     tilesetOptions?: Record<string, unknown>;
     tilesetProperties?: CesiumTilesetTilesetProperties[];
     modelMatrix?: Matrix4;
@@ -182,6 +183,7 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
   getImplementationOptions(): CesiumTilesetImplementationOptions {
     return {
       ...super.getImplementationOptions(),
+      allowPicking: this.allowPicking,
       tilesetOptions: this.tilesetOptions,
       modelMatrix: this.modelMatrix,
       offset: this.offset,

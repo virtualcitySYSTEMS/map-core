@@ -13,7 +13,7 @@ import {
 import { StyleLike } from 'ol/style/Style.js';
 import VectorStyleItem from '../style/vectorStyleItem.js';
 import { scaleSymbol } from '../layer/cesium/vectorContext.js';
-import { vcsLayerName } from '../layer/layerSymbols.js';
+import { allowPicking, vcsLayerName } from '../layer/layerSymbols.js';
 import {
   globalHidden,
   hidden,
@@ -43,6 +43,11 @@ declare module '@vcmap-cesium/engine' {
       cartographic: Cartographic,
       heightReference: HeightReference,
     ): number | undefined;
+    pickFromRay(
+      ray: Ray,
+      objectToExclude?: any[],
+      width?: number,
+    ): { object: any; position: Cartesian3; exclude?: boolean } | undefined;
   }
 
   interface TileBoundingVolume {
@@ -151,6 +156,7 @@ declare module '@vcmap-cesium/engine' {
     clippingPlanesOriginMatrix: Matrix4;
     [vcsLayerName]: string;
     [isTiledFeature]?: boolean;
+    [allowPicking]?: boolean;
   }
 
   interface CesiumTerrainProvider {
@@ -176,6 +182,7 @@ declare module '@vcmap-cesium/engine' {
     [highlighted]?: VectorStyleItem;
     [originalStyle]?: StyleLike | Color;
     [isTiledFeature]?: boolean;
+    [allowPicking]?: boolean;
   }
 
   interface Cesium3DTilePointFeature {
@@ -188,6 +195,7 @@ declare module '@vcmap-cesium/engine' {
     [hidden]?: boolean;
     [highlighted]?: VectorStyleItem;
     [originalStyle]?: StyleLike | Color;
+    [allowPicking]?: boolean;
   }
 
   interface Cesium3DTileStyle {

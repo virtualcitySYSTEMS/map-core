@@ -1,4 +1,6 @@
 import type { Point, Polygon, Circle, LineString } from 'ol/geom.js';
+import { getLogger } from '@vcsuite/logger';
+import { unByKey } from 'ol/Observable.js';
 import VectorLayer from '../../layer/vectorLayer.js';
 import { mercatorProjection } from '../projection.js';
 import InteractionChain from '../../interaction/interactionChain.js';
@@ -10,6 +12,7 @@ import { PrimitiveOptionsType } from '../../layer/vectorProperties.js';
 import EventHandler from '../../interaction/eventHandler.js';
 import type VcsApp from '../../vcsApp.js';
 import { InteractionEvent } from '../../interaction/abstractInteraction.js';
+import type FeatureAtPixelInteraction from '../../interaction/featureAtPixelInteraction.js';
 
 export const alreadySnapped = Symbol('alreadySnapped');
 
@@ -42,7 +45,8 @@ export type EditorSession<T extends SessionType = SessionType> = {
  */
 export function setupScratchLayer(
   layerCollection: LayerCollection,
-): VectorLayer {
+  featureAtPixelInteraction: FeatureAtPixelInteraction,
+): { layer: VectorLayer; destroy: () => void } {
   // IDEA pass in stopped and cleanup ourselves?
   const layer = new VectorLayer({
     projection: mercatorProjection.toJSON(),
@@ -75,9 +79,30 @@ export function setupScratchLayer(
   });
   markVolatile(layer);
   layerCollection.add(layer);
-  // eslint-disable-next-line no-void
-  void layer.activate();
-  return layer;
+  layer.activate().catch((e) => {
+    getLogger('Editor').error('Failed to activate scratch layer', e);
+  });
+
+  const sourceListeners = [
+    layer.getSource().on('addfeature', (event) => {
+      featureAtPixelInteraction.excludeFromPickPosition(event.feature!);
+    }),
+    layer.getSource().on('removefeature', (event) => {
+      featureAtPixelInteraction.includeInPickPosition(event.feature!);
+    }),
+  ];
+
+  return {
+    layer,
+    destroy(): void {
+      unByKey(sourceListeners);
+      layer.getFeatures().forEach((f) => {
+        featureAtPixelInteraction.includeInPickPosition(f);
+      });
+      layerCollection.remove(layer);
+      layer.destroy();
+    },
+  };
 }
 
 /**

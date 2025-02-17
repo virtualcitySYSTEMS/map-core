@@ -419,7 +419,6 @@ export function setSnappingFeatures(
       } else if (result?.type === 'vertex') {
         feature = new Feature({
           geometry: new Point(result.snapped),
-          olcs_allowPicking: false,
           olcs_primitiveOptions: {
             type: PrimitiveOptionsType.BOX,
             geometryOptions: {
@@ -434,7 +433,6 @@ export function setSnappingFeatures(
       } else if (result?.type === 'edge') {
         feature = new Feature({
           geometry: new Point(result.snapped),
-          olcs_allowPicking: false,
           olcs_primitiveOptions: {
             type: PrimitiveOptionsType.SPHERE,
             geometryOptions: {
@@ -462,6 +460,7 @@ export function setSnappingFeatures(
     });
   }
   layer.addFeatures(features);
+
   return () => {
     layer.removeFeaturesById(features.map((f) => f.getId()!));
   };

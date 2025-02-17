@@ -247,6 +247,15 @@ class VectorTileLayer extends FeatureLayer<
     super.locale = value;
   }
 
+  get allowPicking(): boolean {
+    return super.allowPicking;
+  }
+
+  set allowPicking(allowPicking: boolean) {
+    super.allowPicking = allowPicking;
+    this.vectorProperties.allowPicking = allowPicking;
+  }
+
   async initialize(): Promise<void> {
     if (!this.initialized) {
       this._tileLoadEventListener =
