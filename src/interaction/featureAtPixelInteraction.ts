@@ -154,7 +154,7 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
    */
   hitTolerance = 10;
 
-  private _draggingFeature: EventFeature | null = null;
+  private _draggingFeature: EventFeature | undefined;
 
   private _excludeFromPickPosition: Set<Feature> = new Set();
 
@@ -176,7 +176,7 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
     }
 
     if (event.type & EventType.DRAGEND) {
-      this._draggingFeature = null;
+      this._draggingFeature = undefined;
     }
 
     if (event.map.className === 'OpenlayersMap') {
@@ -335,6 +335,12 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
     }
 
     return Promise.resolve(event);
+  }
+
+  destroy(): void {
+    this._excludeFromPickPosition.clear();
+    this._draggingFeature = undefined;
+    super.destroy();
   }
 }
 
