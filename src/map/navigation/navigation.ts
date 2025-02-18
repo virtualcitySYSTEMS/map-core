@@ -17,8 +17,6 @@ import {
   inputEquals,
 } from './controller/controllerInput.js';
 
-const NAVIGATION_LOOP_FREQUENCY = 60;
-
 export type Movement = {
   time: number;
   duration: number;
@@ -78,7 +76,7 @@ class Navigation {
 
   easingDuration = 1000;
 
-  private _inputIntervalId: number | undefined = undefined;
+  private _animationFrameId: number | undefined = undefined;
 
   private _activeMap: VcsMap | undefined = undefined;
 
@@ -91,8 +89,8 @@ class Navigation {
   }
 
   private _startInputLoop(): void {
-    if (!this._inputIntervalId) {
-      const loop = (): void => {
+    if (!this._animationFrameId) {
+      const loop = (time: number): void => {
         let currentInput = getZeroInput();
         for (const controller of this.getControllers()) {
           const controllerInput = controller.getInputs();
@@ -101,20 +99,18 @@ class Navigation {
             break;
           }
         }
-        this.applyInput(performance.now(), currentInput);
+        this.applyInput(time, currentInput);
         this.updateNavigation();
+        this._animationFrameId = requestAnimationFrame(loop);
       };
-      this._inputIntervalId = window.setInterval(
-        loop,
-        NAVIGATION_LOOP_FREQUENCY,
-      );
+      loop(performance.now());
     }
   }
 
   private _stopInputLoop(): void {
-    if (this._inputIntervalId) {
-      window.clearInterval(this._inputIntervalId);
-      this._inputIntervalId = undefined;
+    if (this._animationFrameId) {
+      cancelAnimationFrame(this._animationFrameId);
+      this._animationFrameId = undefined;
     }
   }
 

@@ -39,27 +39,21 @@ describe('Navigation', () => {
     beforeEach(() => {
       times = 5;
       sandbox
-        .stub(window, 'setInterval')
-        .callsFake((callback: (args: void) => void, interval?: number) => {
-          let count = 0;
-          return setTimeout(function repeat() {
-            if (count < times) {
-              callback();
-              count += 1;
-              repeat();
-            }
-          }, interval);
+        .stub(window, 'requestAnimationFrame')
+        .callsFake((callback: FrameRequestCallback) => {
+          return setTimeout(() => {
+            callback(performance.now());
+            window.requestAnimationFrame(callback);
+          }, 16) as unknown as number;
         });
-      sandbox
-        .stub(window, 'clearInterval')
-        .callsFake((id: string | number | NodeJS.Timeout | undefined): void => {
-          clearTimeout(id as number);
-        });
+      sandbox.stub(window, 'cancelAnimationFrame').callsFake((id: number) => {
+        clearTimeout(id);
+      });
 
       navigation = new Navigation();
       controller = new Controller({ id: 'test' });
-      controllerInputSpy = sandbox.spy(controller, 'getInputs');
       navigation.addController(controller);
+      controllerInputSpy = sandbox.spy(controller, 'getInputs');
       applyInputSpy = sandbox.spy(navigation, 'applyInput');
       updateNavigationSpy = sandbox.spy(navigation, 'updateNavigation');
     });
