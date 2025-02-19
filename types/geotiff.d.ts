@@ -7,7 +7,7 @@ declare module 'geotiff' {
       y: number,
       samplesPerPixel: number,
       decoder: BaseDecoder | Pool,
-      abortSignal: AbortSignal,
+      abortSignal?: AbortSignal,
     ): Promise<{ x: number; y: number; sample: number; data: ArrayBuffer }>;
   }
 }

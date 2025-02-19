@@ -11,6 +11,7 @@ import {
   PanoramaTileProvider,
 } from './panoramaTileProvider.js';
 import type { TileSize } from './panoramaTile.js';
+import { createPanoramaDepth, PanoramaDepth } from './panoramaDepth.js';
 
 export type PanoramaImageOptions = {
   imageUrl: string;
@@ -24,11 +25,13 @@ type PanoramaImageMetadata = {
   minLevel: number;
   maxLevel: number;
   hasIntensity: boolean;
+  hasDepth: boolean;
 };
 
 type VcsGdalMetadata =
   | {
       VCS_INTENSITY?: string;
+      VCS_DEPTH?: string;
     }
   | undefined
   | null;
@@ -55,6 +58,9 @@ export type PanoramaImage = {
   readonly maxLevel: number;
 
   getIntensityTileProvider(): Promise<PanoramaTileProvider>;
+  getPositionAtImageCoordinate(
+    coordinate: [number, number],
+  ): Promise<Cartesian3 | undefined>;
   destroy(): void;
 };
 
@@ -86,6 +92,7 @@ async function loadRGBImages(
     minLevel,
     maxLevel,
     hasIntensity: gdalMetadata?.VCS_INTENSITY === '1',
+    hasDepth: gdalMetadata?.VCS_DEPTH === '1',
   };
 }
 
@@ -101,6 +108,7 @@ export async function createPanoramaImage(
     minLevel,
     maxLevel,
     hasIntensity,
+    hasDepth,
   } = await loadRGBImages(absoluteImageUrl);
 
   const cartesianPosition = Cartesian3.fromDegrees(
@@ -162,6 +170,20 @@ export async function createPanoramaImage(
     return intensityTileProvider;
   };
 
+  let depthTileProvider: PanoramaDepth | undefined;
+  if (hasDepth) {
+    createPanoramaDepth(
+      new URL('depth.tif', absoluteImageUrl).href,
+      cartesianPosition,
+    )
+      .then((depth) => {
+        depthTileProvider = depth; // check destroyed.
+      })
+      .catch((err) => {
+        console.error('Error loading depth', err);
+      });
+  }
+
   return {
     get name(): string {
       return name ?? '';
@@ -200,6 +222,11 @@ export async function createPanoramaImage(
       return maxLevel;
     },
     getIntensityTileProvider,
+    async getPositionAtImageCoordinate(
+      imageCoordinate: [number, number],
+    ): Promise<Cartesian3 | undefined> {
+      return depthTileProvider?.getPositionAtImageCoordinate(imageCoordinate);
+    },
     destroy(): void {
       tileProvider.destroy();
       image.close();
