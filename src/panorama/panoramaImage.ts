@@ -192,6 +192,7 @@ export async function createPanoramaImage(
     createPanoramaDepth(
       new URL('depth.tif', absoluteImageUrl).href,
       cartesianPosition,
+      modelMatrix,
     )
       .then((depth) => {
         depthTileProvider = depth; // check destroyed.
