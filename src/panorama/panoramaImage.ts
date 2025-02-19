@@ -28,13 +28,10 @@ type PanoramaImageMetadata = {
   hasDepth: boolean;
 };
 
-type VcsGdalMetadata =
-  | {
-      VCS_INTENSITY?: string;
-      VCS_DEPTH?: string;
-    }
-  | undefined
-  | null;
+type VcsGdalMetadata = {
+  intensity?: boolean;
+  depth?: boolean;
+};
 
 export type PanoramaImage = {
   readonly name: string;
@@ -60,9 +57,27 @@ export type PanoramaImage = {
   getIntensityTileProvider(): Promise<PanoramaTileProvider>;
   getPositionAtImageCoordinate(
     coordinate: [number, number],
+    result?: Cartesian3,
   ): Promise<Cartesian3 | undefined>;
   destroy(): void;
 };
+
+function parseVcsGdalMetadata(
+  gdalMetadata?: Record<string, string>,
+): VcsGdalMetadata {
+  if (!gdalMetadata?.VCS_METADATA) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(
+      gdalMetadata.VCS_METADATA.replace(/&amp;quot;/g, '"'),
+    ) as VcsGdalMetadata;
+  } catch (e) {
+    console.error('Error parsing VCS_METADATA', e);
+  }
+  return {};
+}
 
 async function loadRGBImages(
   imageUrl: string,
@@ -83,7 +98,9 @@ async function loadRGBImages(
 
   const minLevel = minLevelImage.getHeight() / tileSize[0] - 1;
   const maxLevel = images.length - 1 + minLevel;
-  const gdalMetadata = images.at(-1)!.getGDALMetadata() as VcsGdalMetadata;
+  const gdalMetadata = parseVcsGdalMetadata(
+    images.at(-1)!.getGDALMetadata() as Record<string, string> | undefined,
+  );
 
   return {
     image,
@@ -91,8 +108,8 @@ async function loadRGBImages(
     tileSize,
     minLevel,
     maxLevel,
-    hasIntensity: gdalMetadata?.VCS_INTENSITY === '1',
-    hasDepth: gdalMetadata?.VCS_DEPTH === '1',
+    hasIntensity: !!gdalMetadata?.intensity,
+    hasDepth: !!gdalMetadata?.depth,
   };
 }
 
@@ -224,8 +241,12 @@ export async function createPanoramaImage(
     getIntensityTileProvider,
     async getPositionAtImageCoordinate(
       imageCoordinate: [number, number],
+      result?: Cartesian3,
     ): Promise<Cartesian3 | undefined> {
-      return depthTileProvider?.getPositionAtImageCoordinate(imageCoordinate);
+      return depthTileProvider?.getPositionAtImageCoordinate(
+        imageCoordinate,
+        result,
+      );
     },
     destroy(): void {
       tileProvider.destroy();

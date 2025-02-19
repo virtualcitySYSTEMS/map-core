@@ -57,14 +57,19 @@ export function cartesianToImageSpherical(
 /**
  * Converts spherical coordiantes to cartesian coordinatesin the spheres reference system.
  * @param spherical - The spherical coordinates [phi, theta].
+ * @param [result] - The cartesian coordinate to write to.
  * @returns
  */
-export function sphericalToCartesian(spherical: [number, number]): Cartesian3 {
+export function sphericalToCartesian(
+  spherical: [number, number],
+  result?: Cartesian3,
+): Cartesian3 {
   const [phi, theta] = spherical;
-  const x = Math.sin(theta) * Math.cos(phi);
-  const y = Math.sin(theta) * Math.sin(phi);
-  const z = Math.cos(theta);
-  return new Cartesian3(x, y, z);
+  const cartesian = result || new Cartesian3();
+  cartesian.x = Math.sin(theta) * Math.cos(phi);
+  cartesian.y = Math.sin(theta) * Math.sin(phi);
+  cartesian.z = Math.cos(theta);
+  return cartesian;
 }
 
 const scratchLocal = new Cartesian3();
