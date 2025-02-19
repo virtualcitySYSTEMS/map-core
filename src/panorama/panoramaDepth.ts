@@ -1,6 +1,5 @@
-import { Cartesian3, Math as CesiumMath } from '@vcmap-cesium/engine';
-import { BaseDecoder, fromUrl, GeoTIFFImage, Pool } from 'geotiff';
-import LRUCache from 'ol/structs/LRUCache.js';
+import { Cartesian3, Math as CesiumMath, Matrix4 } from '@vcmap-cesium/engine';
+import { fromUrl, GeoTIFFImage, Pool, ReadRasterResult } from 'geotiff';
 import { sphericalToCartesian } from './sphericalCoordinates.js';
 
 export type PanoramaDepth = {
@@ -11,41 +10,26 @@ export type PanoramaDepth = {
   destroy(): void;
 };
 
-type DepthTile = {
-  x: number;
-  y: number;
-  pixelOffset: number;
-  data: ArrayBuffer;
-};
-
 type PanoramaDepthTileProvider = {
-  getDepthTile(imageCoordinate: [number, number]): Promise<DepthTile>;
+  getDepthTile(imageCoordinate: [number, number]): Promise<ReadRasterResult>;
   destroy(): void;
 };
 
 type GetTileForCoordinate = (imageCoordinate: [number, number]) => {
-  x: number;
-  y: number;
-  pixelOffset: number;
+  pixelX: number;
+  pixelY: number;
 };
 
 function createGetTileForCoordinate(image: GeoTIFFImage): GetTileForCoordinate {
   const width = image.getWidth();
   const radiansPerPixel = CesiumMath.TWO_PI / width;
 
-  const tileWidth = image.getTileWidth();
-  const tileHeight = image.getTileHeight();
-
   return ([phi, theta]) => {
-    const pixelX = phi / radiansPerPixel;
-    const pixelY = theta / radiansPerPixel;
-    const tileX = Math.floor(pixelX / tileWidth);
-    const tileY = Math.floor(pixelY / tileHeight);
-    const pixelOffset = (pixelX % tileWidth) + (pixelY % tileHeight);
+    const pixelX = Math.floor(phi / radiansPerPixel);
+    const pixelY = Math.floor(theta / radiansPerPixel);
     return {
-      x: tileX,
-      y: tileY,
-      pixelOffset,
+      pixelX,
+      pixelY,
     };
   };
 }
@@ -54,38 +38,39 @@ function createDepthTileProvider(
   image: GeoTIFFImage,
 ): PanoramaDepthTileProvider {
   const tileForPixel = createGetTileForCoordinate(image);
-  const cache = new LRUCache<ArrayBuffer>();
   const pool = new Pool();
+  image.tiles = {};
 
   return {
-    async getDepthTile(imageCoordinate: [number, number]): Promise<DepthTile> {
-      const { x, y, pixelOffset } = tileForPixel(imageCoordinate);
-      const cacheKey = `${x}/${y}`;
-      let data;
-      if (cache.containsKey(cacheKey)) {
-        data = cache.get(cacheKey)!;
-      } else {
-        ({ data } = await image.getTileOrStrip(x, y, 0, pool));
-        cache.set(cacheKey, data);
-        cache.expireCache();
-      }
-
-      return { x, y, pixelOffset, data };
+    async getDepthTile(
+      imageCoordinate: [number, number],
+    ): Promise<ReadRasterResult> {
+      const { pixelX, pixelY } = tileForPixel(imageCoordinate);
+      return image.readRasters({
+        window: [pixelX - 3, pixelY - 3, pixelX + 3, pixelY + 3],
+        pool,
+      });
     },
     destroy(): void {
-      cache.clear();
+      image.tiles = null;
     },
   };
 }
 
-function getDepthValue(data: ArrayBuffer, pixelOffset: number): number {
-  const view = new DataView(data);
-  return view.getUint8(pixelOffset);
+function interpolate(
+  value: number,
+  min = 0,
+  max = 50,
+  minValue = 0,
+  maxValue = 255,
+): number {
+  return min + ((value - minValue) / (maxValue - minValue)) * (max - min);
 }
 
 export async function createPanoramaDepth(
   url: string,
   position: Cartesian3,
+  modelMatrix: Matrix4,
 ): Promise<PanoramaDepth> {
   const geotiff = await fromUrl(url, { cache: true });
   const imageCount = await geotiff.getImageCount();
@@ -101,14 +86,20 @@ export async function createPanoramaDepth(
       result?: Cartesian3,
     ): Promise<Cartesian3 | undefined> {
       const tile = await tileProvider.getDepthTile(imageCoordinate);
-      const depthValue = getDepthValue(tile.data, tile.pixelOffset);
+      const data = tile[0] as Uint8Array;
+      const depthValue =
+        data.reduce(
+          (prev: number, curr: number) => prev + interpolate(curr),
+          0,
+        ) / data.length;
       if (depthValue === 0) {
         return undefined;
       }
       const cartesian = sphericalToCartesian(imageCoordinate, result);
       Cartesian3.normalize(cartesian, cartesian);
       Cartesian3.multiplyByScalar(cartesian, depthValue, cartesian);
-      return Cartesian3.add(cartesian, position, cartesian);
+      Matrix4.multiplyByPoint(modelMatrix, cartesian, cartesian);
+      return cartesian;
     },
     destroy(): void {
       tileProvider.destroy();
