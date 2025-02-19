@@ -17,6 +17,39 @@ import {
 import { transformFromImage } from '../oblique/helpers.js';
 import type CesiumMap from '../map/cesiumMap.js';
 import type ObliqueMap from '../map/obliqueMap.js';
+import type PanoramaMap from '../map/panoramaMap.js';
+import { cartesianToMercator } from '../util/math.js';
+import { windowPositionToImageSpherical } from '../panorama/panoramaCameraHelpers.js';
+
+const scratchPanoramaCartesian = new Cartesian3();
+async function getCoordinateFromPanoramap(
+  map: PanoramaMap,
+  event: InteractionEvent,
+): Promise<InteractionEvent> {
+  const image = map.currentPanoramaImage;
+  let position = [0, 0, 0];
+  if (image) {
+    const { camera } = map.getCesiumWidget();
+    const imageCoordinate = windowPositionToImageSpherical(
+      event.windowPosition,
+      camera,
+      image,
+    );
+
+    if (imageCoordinate) {
+      const cartesian = await image.getPositionAtImageCoordinate(
+        imageCoordinate,
+        scratchPanoramaCartesian,
+      );
+      if (cartesian) {
+        position = cartesianToMercator(cartesian);
+      }
+    }
+  }
+
+  event.position = position;
+  return event;
+}
 
 /**
  * @group Interaction
@@ -37,6 +70,8 @@ class CoordinateAtPixel extends AbstractInteraction {
       return this._cesiumHandler(event);
     } else if (event.map.className === 'ObliqueMap') {
       return CoordinateAtPixel.obliqueHandler(event);
+    } else if (event.map.className === 'PanoramaMap') {
+      return getCoordinateFromPanoramap(event.map as PanoramaMap, event);
     }
     return event;
   }

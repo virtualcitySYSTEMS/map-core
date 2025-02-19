@@ -1,11 +1,12 @@
 import { Cartesian3, Math as CesiumMath } from '@vcmap-cesium/engine';
-import { BaseDecoder, fromUrl, GeoTIFFImage } from 'geotiff';
+import { BaseDecoder, fromUrl, GeoTIFFImage, Pool } from 'geotiff';
 import LRUCache from 'ol/structs/LRUCache.js';
 import { sphericalToCartesian } from './sphericalCoordinates.js';
 
 export type PanoramaDepth = {
   getPositionAtImageCoordinate(
     imageCoordinate: [number, number],
+    result?: Cartesian3,
   ): Promise<Cartesian3 | undefined>;
   destroy(): void;
 };
@@ -36,8 +37,8 @@ function createGetTileForCoordinate(image: GeoTIFFImage): GetTileForCoordinate {
   const tileHeight = image.getTileHeight();
 
   return ([phi, theta]) => {
-    const pixelX = phi * radiansPerPixel;
-    const pixelY = theta * radiansPerPixel;
+    const pixelX = phi / radiansPerPixel;
+    const pixelY = theta / radiansPerPixel;
     const tileX = Math.floor(pixelX / tileWidth);
     const tileY = Math.floor(pixelY / tileHeight);
     const pixelOffset = (pixelX % tileWidth) + (pixelY % tileHeight);
@@ -54,6 +55,7 @@ function createDepthTileProvider(
 ): PanoramaDepthTileProvider {
   const tileForPixel = createGetTileForCoordinate(image);
   const cache = new LRUCache<ArrayBuffer>();
+  const pool = new Pool();
 
   return {
     async getDepthTile(imageCoordinate: [number, number]): Promise<DepthTile> {
@@ -63,9 +65,7 @@ function createDepthTileProvider(
       if (cache.containsKey(cacheKey)) {
         data = cache.get(cacheKey)!;
       } else {
-        ({ data } = await image.getTileOrStrip(x, y, 0, {
-          decode: (_f, d) => Promise.resolve(d),
-        } as BaseDecoder));
+        ({ data } = await image.getTileOrStrip(x, y, 0, pool));
         cache.set(cacheKey, data);
         cache.expireCache();
       }
@@ -98,13 +98,14 @@ export async function createPanoramaDepth(
   return {
     async getPositionAtImageCoordinate(
       imageCoordinate: [number, number],
+      result?: Cartesian3,
     ): Promise<Cartesian3 | undefined> {
       const tile = await tileProvider.getDepthTile(imageCoordinate);
       const depthValue = getDepthValue(tile.data, tile.pixelOffset);
       if (depthValue === 0) {
         return undefined;
       }
-      const cartesian = sphericalToCartesian(imageCoordinate);
+      const cartesian = sphericalToCartesian(imageCoordinate, result);
       Cartesian3.normalize(cartesian, cartesian);
       Cartesian3.multiplyByScalar(cartesian, depthValue, cartesian);
       return Cartesian3.add(cartesian, position, cartesian);
