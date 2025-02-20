@@ -16,21 +16,20 @@ import { createPanoramaDepth, PanoramaDepth } from './panoramaDepth.js';
 export type PanoramaImageOptions = {
   imageUrl: string;
   name?: string;
-  position: { x: number; y: number; z: number };
-  orientation: { heading: number; pitch: number; roll: number };
 };
 
 type PanoramaImageMetadata = {
   tileSize: TileSize;
   minLevel: number;
   maxLevel: number;
-  hasIntensity: boolean;
-  hasDepth: boolean;
 };
 
-type VcsGdalMetadata = {
-  intensity?: boolean;
-  depth?: boolean;
+type PanoramaMetadata = {
+  version: string;
+  position: Cartesian3;
+  orientation: HeadingPitchRoll;
+  hasDepth: boolean;
+  hasIntensity: boolean;
 };
 
 export type PanoramaImage = {
@@ -62,26 +61,65 @@ export type PanoramaImage = {
   destroy(): void;
 };
 
+function createDefaultMetadata(): PanoramaMetadata {
+  return {
+    version: '1.0',
+    position: Cartesian3.fromDegrees(0, 0, 0),
+    orientation: HeadingPitchRoll.fromDegrees(0, 0, 0),
+    hasDepth: false,
+    hasIntensity: false,
+  };
+}
+
 function parseVcsGdalMetadata(
   gdalMetadata?: Record<string, string>,
-): VcsGdalMetadata {
-  if (!gdalMetadata?.VCS_METADATA) {
-    return {};
+): PanoramaMetadata {
+  const version = gdalMetadata?.PANORAMA_VERSION ?? '';
+  if (version !== '1.0') {
+    return createDefaultMetadata();
   }
 
-  try {
-    return JSON.parse(
-      gdalMetadata.VCS_METADATA.replace(/&amp;quot;/g, '"'),
-    ) as VcsGdalMetadata;
-  } catch (e) {
-    console.error('Error parsing VCS_METADATA', e);
+  const position = Cartesian3.fromDegrees(0, 0, 0);
+  const orientation = HeadingPitchRoll.fromDegrees(0, 0, 0);
+  if (gdalMetadata?.PANORAMA_POSITION) {
+    const [lat, lon, z] = gdalMetadata.PANORAMA_POSITION.split(',')
+      .map(Number)
+      .filter((n) => !Number.isNaN(n));
+    if (lat != null && lon != null && z != null) {
+      Cartesian3.fromDegrees(lon, lat, z, undefined, position);
+    }
   }
-  return {};
+
+  if (gdalMetadata?.PANORAMA_ORIENTATION) {
+    const [heading, pitch, roll] = gdalMetadata.PANORAMA_ORIENTATION.split(',')
+      .map(Number)
+      .filter((n) => !Number.isNaN(n));
+
+    if (heading != null && pitch != null && roll != null) {
+      orientation.heading = heading;
+      orientation.pitch = pitch;
+      orientation.roll = roll;
+    }
+  }
+
+  const hasDepth = gdalMetadata?.PANORAMA_DEPTH === '1';
+  const hasIntensity = gdalMetadata?.PANORAMA_INTENSITY === '1';
+
+  return {
+    version,
+    position,
+    orientation,
+    hasDepth,
+    hasIntensity,
+  };
 }
 
 async function loadRGBImages(
   imageUrl: string,
-): Promise<{ image: GeoTIFF; images: GeoTIFFImage[] } & PanoramaImageMetadata> {
+): Promise<
+  { image: GeoTIFF; images: GeoTIFFImage[] } & PanoramaImageMetadata &
+    PanoramaMetadata
+> {
   const image = await fromUrl(imageUrl);
   let imageCount = await image.getImageCount();
   const promises = [];
@@ -108,15 +146,14 @@ async function loadRGBImages(
     tileSize,
     minLevel,
     maxLevel,
-    hasIntensity: !!gdalMetadata?.intensity,
-    hasDepth: !!gdalMetadata?.depth,
+    ...gdalMetadata,
   };
 }
 
 export async function createPanoramaImage(
   options: PanoramaImageOptions,
 ): Promise<PanoramaImage> {
-  const { imageUrl, name, position, orientation } = options;
+  const { imageUrl, name } = options;
   const absoluteImageUrl = new URL(imageUrl, window.location.href).href;
   const {
     image,
@@ -124,15 +161,11 @@ export async function createPanoramaImage(
     tileSize,
     minLevel,
     maxLevel,
+    position,
+    orientation,
     hasIntensity,
     hasDepth,
   } = await loadRGBImages(absoluteImageUrl);
-
-  const cartesianPosition = Cartesian3.fromDegrees(
-    position.x,
-    position.y,
-    position.z,
-  );
 
   const headingPitchRoll = HeadingPitchRoll.fromDegrees(
     orientation.heading,
@@ -141,7 +174,7 @@ export async function createPanoramaImage(
   );
 
   const modelMatrix = Transforms.headingPitchRollToFixedFrame(
-    cartesianPosition,
+    position,
     headingPitchRoll,
   );
 
@@ -156,7 +189,7 @@ export async function createPanoramaImage(
 
   const tileProvider = createPanoramaTileProvider(
     rgb,
-    cartesianPosition,
+    position,
     tileSize,
     minLevel,
   );
@@ -178,7 +211,7 @@ export async function createPanoramaImage(
 
       intensityTileProvider = createPanoramaTileProvider(
         intensity,
-        cartesianPosition,
+        position,
         tileSize,
         minLevel,
       );
@@ -191,7 +224,7 @@ export async function createPanoramaImage(
   if (hasDepth) {
     createPanoramaDepth(
       new URL('depth.tif', absoluteImageUrl).href,
-      cartesianPosition,
+      position,
       modelMatrix,
     )
       .then((depth) => {
@@ -207,7 +240,7 @@ export async function createPanoramaImage(
       return name ?? '';
     },
     get position(): Cartesian3 {
-      return cartesianPosition;
+      return position;
     },
     get orientation(): HeadingPitchRoll {
       return headingPitchRoll;
