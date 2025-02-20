@@ -75,17 +75,6 @@ export default class PanoramaMap extends VcsMap {
 
       const image = await createPanoramaImage({
         imageUrl: 'exampleData/panoramaImages/pano_000001_000011/rgb.tif',
-        name: 'pano_000001_000011',
-        position: {
-          x: 52.477762,
-          y: 9.7283938,
-          z: 56.12,
-        },
-        orientation: {
-          heading: 0,
-          pitch: 0,
-          roll: 0,
-        },
       });
       this._setCurrentImage(image);
     }

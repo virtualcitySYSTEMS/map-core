@@ -62,14 +62,14 @@ function interpolate(
   min = 0,
   max = 50,
   minValue = 0,
-  maxValue = 255,
+  maxValue = 65535,
 ): number {
   return min + ((value - minValue) / (maxValue - minValue)) * (max - min);
 }
 
 export async function createPanoramaDepth(
   url: string,
-  position: Cartesian3,
+  _position: Cartesian3,
   modelMatrix: Matrix4,
 ): Promise<PanoramaDepth> {
   const geotiff = await fromUrl(url, { cache: true });
