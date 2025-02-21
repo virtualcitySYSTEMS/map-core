@@ -32,7 +32,8 @@ export type DebugCameraSphereOptions = {
   clickedPosition?: [number, number] | null;
 };
 
-export type DebugCameraSphere = DebugCameraSphereOptions & {
+export type DebugSphere = DebugCameraSphereOptions & {
+  render(): void;
   setClickedPosition(position?: [number, number]): void;
   destroy(): void;
 };
@@ -386,11 +387,18 @@ function createAxisPrimitives(image: PanoramaImage): Primitive[] {
   });
 }
 
-export function createDebugCameraSphere(
-  scene: Scene,
-  image: PanoramaImage,
+type CurrentImageElements = {
+  image: PanoramaImage;
+  primitive: Primitive;
+  fovPrimitives: ReturnType<typeof createFovPrimitives>;
+  axisPrimitives: Primitive[];
+};
+
+export function createDebugSphere(
+  map: PanoramaMap,
   options: DebugCameraSphereOptions = {},
-): DebugCameraSphere {
+): DebugSphere {
+  const { scene } = map.getCesiumWidget();
   const canvas = document.createElement('canvas');
   canvas.width = 360 * PIXEL_PER_DEGREES;
   canvas.height = 180 * PIXEL_PER_DEGREES;
@@ -403,30 +411,58 @@ export function createDebugCameraSphere(
     clickedPosition: null,
     ...options,
   };
-
   const ctx = canvas.getContext('2d')!;
   ctx.translate(360 * PIXEL_PER_DEGREES, 0);
   ctx.scale(-1, 1); // Flip the context horizontally
-  drawView(scene, image, ctx, currentOptions);
-  const primitive = createPrimitive(canvas, image);
-  scene.primitives.add(primitive);
 
-  const fovPrimitives = createFovPrimitives(scene);
-  fovPrimitives.show = currentOptions.fov;
-  const changeListener = scene.camera.changed.addEventListener(() => {
-    if (!currentOptions.paused) {
-      drawView(scene, image, ctx, currentOptions);
-      fovPrimitives.update();
-      primitive.appearance = createMaterial(canvas);
+  let currentImageElements: CurrentImageElements | undefined;
+  const render = (): void => {
+    if (currentImageElements) {
+      drawView(scene, currentImageElements.image, ctx, currentOptions);
+      currentImageElements.primitive.appearance = createMaterial(canvas);
     }
-  });
-  scene.camera.percentageChanged = 0.1;
+  };
 
-  const axisPrimitives = createAxisPrimitives(image);
-  axisPrimitives.forEach((axis) => {
-    axis.show = currentOptions.cameraAxis;
-    scene.primitives.add(axis);
-  });
+  const changeListener = scene.camera.changed.addEventListener(render);
+
+  const clearCurrentImageElements = (): void => {
+    if (currentImageElements) {
+      scene.primitives.remove(currentImageElements.primitive);
+      currentImageElements.fovPrimitives.destroy();
+      currentImageElements.axisPrimitives.forEach((axis) => {
+        scene.primitives.remove(axis);
+      });
+    }
+    currentImageElements = undefined;
+  };
+  const setCurrentImage = (image?: PanoramaImage): void => {
+    clearCurrentImageElements();
+    if (!image) {
+      return;
+    }
+    drawView(scene, image, ctx, currentOptions);
+    const primitive = createPrimitive(canvas, image);
+    scene.primitives.add(primitive);
+
+    const fovPrimitives = createFovPrimitives(scene);
+    fovPrimitives.show = currentOptions.fov;
+    scene.camera.percentageChanged = 0.1;
+
+    const axisPrimitives = createAxisPrimitives(image);
+    axisPrimitives.forEach((axis) => {
+      axis.show = currentOptions.cameraAxis;
+      scene.primitives.add(axis);
+    });
+
+    currentImageElements = {
+      image,
+      primitive,
+      fovPrimitives,
+      axisPrimitives,
+    };
+  };
+  map.currentImageChanged.addEventListener(setCurrentImage);
+  setCurrentImage(map.currentPanoramaImage);
 
   return {
     get paused(): boolean {
@@ -434,46 +470,52 @@ export function createDebugCameraSphere(
     },
     set paused(value: boolean) {
       currentOptions.paused = value;
+      if (!currentOptions.paused) {
+        render();
+      }
     },
     get grid(): boolean {
       return currentOptions.grid;
     },
     set grid(value: boolean) {
       currentOptions.grid = value;
+      render();
     },
     get tileGrid(): number | false {
       return currentOptions.tileGrid;
     },
     set tileGrid(value: number | false) {
       currentOptions.tileGrid = value;
+      render();
     },
     get fov(): boolean {
       return currentOptions.fov;
     },
     set fov(value: boolean) {
       currentOptions.fov = value;
-      fovPrimitives.show = value;
+      if (currentImageElements) {
+        currentImageElements.fovPrimitives.show = value;
+        render();
+      }
     },
     get cameraAxis(): boolean {
       return currentOptions.cameraAxis;
     },
     set cameraAxis(value: boolean) {
       currentOptions.cameraAxis = value;
-      axisPrimitives.forEach((axis) => {
-        axis.show = currentOptions.cameraAxis;
-      });
+      if (currentImageElements) {
+        currentImageElements.axisPrimitives.forEach((axis) => {
+          axis.show = currentOptions.cameraAxis;
+        });
+      }
     },
     setClickedPosition(position?: [number, number]): void {
       currentOptions.clickedPosition = position ?? null;
-      drawView(scene, image, ctx, currentOptions);
-      primitive.appearance = createMaterial(canvas);
+      render();
     },
+    render,
     destroy(): void {
-      scene.primitives.remove(primitive);
-      axisPrimitives.forEach((axis) => {
-        scene.primitives.remove(axis);
-      });
-      fovPrimitives.destroy();
+      clearCurrentImageElements();
       changeListener();
     },
   };
@@ -481,7 +523,7 @@ export function createDebugCameraSphere(
 
 export function debugNavigation(
   map: PanoramaMap,
-  debugCamera: DebugCameraSphere,
+  debugCamera: DebugSphere,
 ): () => void {
   const widget = map.getCesiumWidget();
   const view = map.panoramaView;

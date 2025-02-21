@@ -16,6 +16,11 @@ import {
 import { setupCesiumInteractions } from './cesiumMapEvent.js';
 import VcsEvent from '../vcsEvent.js';
 import { createPanoramaNavigation } from '../panorama/panoramaNavigation.js';
+import {
+  createDebugSphere,
+  DebugSphere,
+  DebugCameraSphereOptions,
+} from '../panorama/debugSphere.js';
 
 export type PanoramaMapOptions = VcsMapOptions;
 
@@ -41,6 +46,8 @@ export default class PanoramaMap extends VcsMap {
   private _screenSpaceEventHandler: ScreenSpaceEventHandler | undefined;
 
   private _destroyNavigation: (() => void) | undefined;
+
+  private _debugSphere: DebugSphere | undefined;
 
   readonly currentImageChanged = new VcsEvent<PanoramaImage | undefined>();
 
@@ -97,6 +104,20 @@ export default class PanoramaMap extends VcsMap {
       throw new Error('PanoramaImageView not initialized');
     }
     return this._imageView;
+  }
+
+  get debugSphere(): DebugSphere | undefined {
+    return this._debugSphere;
+  }
+
+  setDebugSphere(debugSphere?: DebugCameraSphereOptions): void {
+    if (this._debugSphere) {
+      this._debugSphere.destroy();
+    }
+
+    if (debugSphere) {
+      this._debugSphere = createDebugSphere(this, debugSphere);
+    }
   }
 
   async activate(): Promise<void> {
