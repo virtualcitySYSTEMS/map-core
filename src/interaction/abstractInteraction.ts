@@ -28,7 +28,7 @@ export type MapEvent = {
    */
   position?: Coordinate;
   /**
-   * position in web mercator coordinates or image coordinates in ObliqueMap Map Mode
+   * position in web mercator coordinates or image coordinates in oblique or spherical image coordinates in panorama
    */
   positionOrPixel?: Coordinate;
   multipleTouch?: boolean;

@@ -36,6 +36,8 @@ async function getCoordinateFromPanoramap(
       image,
     );
 
+    event.positionOrPixel = imageCoordinate;
+
     if (imageCoordinate) {
       const cartesian = await image.getPositionAtImageCoordinate(
         imageCoordinate,
