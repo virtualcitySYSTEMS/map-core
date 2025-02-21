@@ -46,6 +46,7 @@ export type PanoramaImage = {
   readonly up: Cartesian3;
   readonly invModelMatrix: Matrix4;
   readonly hasIntensity: boolean;
+  readonly hasDepth: boolean;
   // the following properties are "tiled" specific
   readonly image: GeoTIFF;
   readonly tileProvider: PanoramaTileProvider;
@@ -274,6 +275,9 @@ export async function createPanoramaImageFromURL(
     },
     get hasIntensity(): boolean {
       return hasIntensity;
+    },
+    get hasDepth(): boolean {
+      return hasDepth;
     },
     get image(): GeoTIFF {
       return image;
