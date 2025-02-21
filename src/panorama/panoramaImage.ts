@@ -24,7 +24,7 @@ type PanoramaImageMetadata = {
   maxLevel: number;
 };
 
-type PanoramaMetadata = {
+type PanoramaGDALMetadata = {
   version: string;
   position: Cartesian3;
   orientation: HeadingPitchRoll;
@@ -61,7 +61,7 @@ export type PanoramaImage = {
   destroy(): void;
 };
 
-function createDefaultMetadata(): PanoramaMetadata {
+function createDefaultMetadata(): PanoramaGDALMetadata {
   return {
     version: '1.0',
     position: Cartesian3.fromDegrees(0, 0, 0),
@@ -71,9 +71,9 @@ function createDefaultMetadata(): PanoramaMetadata {
   };
 }
 
-function parseVcsGdalMetadata(
+function parsePanoramaGDALMetadata(
   gdalMetadata?: Record<string, string>,
-): PanoramaMetadata {
+): PanoramaGDALMetadata {
   const version = gdalMetadata?.PANORAMA_VERSION ?? '';
   if (version !== '1.0') {
     return createDefaultMetadata();
@@ -118,7 +118,7 @@ async function loadRGBImages(
   imageUrl: string,
 ): Promise<
   { image: GeoTIFF; images: GeoTIFFImage[] } & PanoramaImageMetadata &
-    PanoramaMetadata
+    PanoramaGDALMetadata
 > {
   const image = await fromUrl(imageUrl);
   let imageCount = await image.getImageCount();
@@ -136,7 +136,7 @@ async function loadRGBImages(
 
   const minLevel = minLevelImage.getHeight() / tileSize[0] - 1;
   const maxLevel = images.length - 1 + minLevel;
-  const gdalMetadata = parseVcsGdalMetadata(
+  const gdalMetadata = parsePanoramaGDALMetadata(
     images.at(-1)!.getGDALMetadata() as Record<string, string> | undefined,
   );
 
@@ -150,11 +150,24 @@ async function loadRGBImages(
   };
 }
 
-export async function createPanoramaImage(
-  options: PanoramaImageOptions,
+function parseRgbUrl(imageUrl: string): { name: string; absoluteUrl: string } {
+  const absoluteImageUrl = new URL(imageUrl, window.location.href);
+  const fileName = absoluteImageUrl.pathname.split('/').pop();
+  if (!fileName || !fileName.endsWith('_rgb.tif')) {
+    throw new Error('Invalid image url');
+  }
+  const name = fileName.slice(0, -8);
+
+  return {
+    name,
+    absoluteUrl: absoluteImageUrl.href,
+  };
+}
+
+export async function createPanoramaImageFromURL(
+  imageUrl: string,
 ): Promise<PanoramaImage> {
-  const { imageUrl, name } = options;
-  const absoluteImageUrl = new URL(imageUrl, window.location.href).href;
+  const { name, absoluteUrl } = parseRgbUrl(imageUrl);
   const {
     image,
     images: rgb,
@@ -165,7 +178,7 @@ export async function createPanoramaImage(
     orientation,
     hasIntensity,
     hasDepth,
-  } = await loadRGBImages(absoluteImageUrl);
+  } = await loadRGBImages(absoluteUrl);
 
   const headingPitchRoll = HeadingPitchRoll.fromDegrees(
     orientation.heading,
@@ -204,7 +217,9 @@ export async function createPanoramaImage(
         images: intensity,
         minLevel: intensityMinLevel,
         maxLevel: intensityMaxLevel,
-      } = await loadRGBImages(new URL('intensity.tif', absoluteImageUrl).href);
+      } = await loadRGBImages(
+        new URL(`${name}_intensity.tif`, absoluteUrl).href,
+      );
       if (intensityMinLevel !== minLevel || intensityMaxLevel !== maxLevel) {
         throw new Error('Intensity levels do not match RGB levels');
       }
@@ -223,7 +238,7 @@ export async function createPanoramaImage(
   let depthTileProvider: PanoramaDepth | undefined;
   if (hasDepth) {
     createPanoramaDepth(
-      new URL('depth.tif', absoluteImageUrl).href,
+      new URL(`${name}_depth.tif`, absoluteUrl).href,
       position,
       modelMatrix,
     )

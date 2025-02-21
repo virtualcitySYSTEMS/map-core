@@ -5,7 +5,7 @@ import {
 } from '@vcmap-cesium/engine';
 import VcsMap, { VcsMapOptions } from './vcsMap.js';
 import {
-  createPanoramaImage,
+  createPanoramaImageFromURL,
   PanoramaImage,
 } from '../panorama/panoramaImage.js';
 import { mapClassRegistry } from '../classRegistry.js';
@@ -73,9 +73,9 @@ export default class PanoramaMap extends VcsMap {
       this._destroyNavigation = createPanoramaNavigation(this);
       this.initialized = true;
 
-      const image = await createPanoramaImage({
-        imageUrl: 'exampleData/panoramaImages/pano_000001_000011/rgb.tif',
-      });
+      const image = await createPanoramaImageFromURL(
+        'exampleData/panoramaImages/pano_000001_000011_rgb.tif',
+      );
       this._setCurrentImage(image);
     }
     await super.initialize();
