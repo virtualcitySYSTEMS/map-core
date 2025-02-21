@@ -484,7 +484,8 @@ describe('TranslateVertexInteraction', () => {
           expect(vertexChangedListener).to.have.been.calledWithExactly(vertex);
         });
 
-        it('should reset the vertex style', () => {
+        it('should reset the vertex style', async () => {
+          await timeout(10);
           expect(vertex.getStyle()).to.be.undefined;
         });
       });

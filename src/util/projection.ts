@@ -43,7 +43,10 @@ let defaultProjectionOption: ProjectionOptions = {
   epsg: 'EPSG:4326',
 };
 
-function parseEPSGCode(value?: string | number, prefix = 'EPSG:'): string {
+export function parseEPSGCode(
+  value?: string | number,
+  prefix = 'EPSG:',
+): string {
   if (value) {
     const regex = new RegExp(`^(?:${prefix})?:?(\\d+)`, 'i');
     const matches = `${value}`.match(regex);

@@ -19,6 +19,8 @@
 - Add `Navigation` API to allow navigating through maps using keyboard or other controller.
 - Fixes a bug, where `allowPicking` would have no effect on `CesiumTilesetLayer`.
 - Adds an API to the `FeatureAtPixelInteraction` to allow for features to be excluded from pickPosition.
+- Introduces `FlatGeobuf` support to the VC Map: A `FlatGeobufTileProvider` to load FlatGeobuf files in `VectorTile` layers and
+  for smaller files a `FlatGeobufLayer` to load all features at once.
 
 ### 6.0.7
 

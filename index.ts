@@ -154,6 +154,10 @@ export {
   HighlightedObject,
 } from './src/layer/featureVisibility.js';
 export {
+  default as FlatGeobufLayer,
+  FlatGeobufLayerOptions,
+} from './src/layer/flatGeobufLayer.js';
+export {
   getEPSGCodeFromGeojson,
   updateLegacyFeature,
   parseGeoJSON,
@@ -241,6 +245,10 @@ export {
   TerrainImplementationOptions,
 } from './src/layer/terrainLayer.js';
 export { tiledLayerLoaded, globeLoaded } from './src/layer/tileLoadedHelper.js';
+export {
+  default as FlatGeobufTileProvider,
+  FlatGeobufTileProviderOptions,
+} from './src/layer/tileProvider/flatGeobufTileProvider.js';
 export {
   default as MVTTileProvider,
   MVTTileProviderOptions,
