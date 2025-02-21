@@ -41,7 +41,7 @@ associated with one image:
 ### Color Image
 
 The color image is intended for visualization. It will be rendered on a sphere and MUST have an aspect ratio of 2:1
-(width:height) and be _without_ no data padding. The image SHALL be flipped on the Y axis, since it is viewed from
+(width:height) and be _without_ NoData padding. The image SHALL be flipped on the Y axis, since it is viewed from
 _within_ a sphere. The image MUST be tiled using a geographic tiling scheme with two level 0 base tiles.
 Tile levels are represented by image overviews. Each tile MUST be square (same height as width in pixels).
 Each TIFF overview must fit into the tiling scheme _exactly_ (see [Tiling Scheme](#tiling-scheme-for-visualization)
@@ -77,7 +77,7 @@ must not provide any additional metadata.
 To visualize both the color and intensity images, the images MUST provide tiff overviews which fit into a geographic tiling scheme
 with two square level 0 tiles. All overviews provided MUST be consecutive. The image MAY omit any number of top level overviews.
 Even though TIFF allows for tiled overviews to not fit the image size exactly, this is not permitted in this case.
-A tile may NOT contain no data values. In most cases, this requires you to resize the image so it can fit within the tiling scheme.
+A tile may NOT contain NoData values. In most cases, this requires you to resize the image so it can fit within the tiling scheme.
 This is illustrated by the following example.
 
 Given a tile size of 512x512 pixels, the following table shows the image sizes for each level:
@@ -103,8 +103,9 @@ no longer be consecutive.
 ### Depth Image
 
 The depth image is queried for distance information. It is used to determine the distance of a point in the image to the camera.
-It is not rendered and thus must not comply with the tiling scheme. The depth image SHALL be a two band image with a bit depth of 16 on
-the first band (gray color interpretation) and an alpha channel. The depth image SHALL be compressed using deflate compression.
+It is not rendered and thus must not comply with the tiling scheme. The depth image SHALL be a single band image with
+an integer data type. For a decent relation of file size vs. precision, it is proposed to use UInt16. The
+NoData value of the depth image SHOULD be 0. The depth image SHALL be compressed using deflate compression.
 
 The pixel value is used to interpolate the distance of a point in the image to the camera. To this extent, the following metadata
 SHALL be present within the non-standard TIFFTAG_GDAL_METADATA of the COG, where the following fields MUST be present for
@@ -118,14 +119,14 @@ The following values MAY be present in the GDAL metadata:
 - `PANORAMA_DEPTH_MIN` (float): The minimum distance in meters. If not provided, 0.0 is assumed.
 
 Should no metadata be given, or the metadata not be valid, the depth values will be assumed to be with the range of 0.0
-to 50.0. Assuming u32 data, the formula to calculate the distance is as follows:
+to 50.0. Assuming UInt16 data, the formula to calculate the distance is as follows:
 
 ```ts
 function interpolate(
   value: number,
   min = 0,
   max = 50,
-  minValue = 0,
+  minValue = 1,
   maxValue = 65535,
 ): number {
   return min + ((value - minValue) / (maxValue - minValue)) * (max - min);
@@ -155,7 +156,7 @@ and for the depth image:
 
 ```bash
 # ensure 16 bit grayscale
-convert depth.png -colorspace Gray -depth 16 depth_16.png
+convert depth.png -colorspace Gray -depth 16 -define png:bit-depth=16 depth_16.png
 # flip the image on the Y axis and set the bounds to the whole world.
 # you can also use any other tool to flip the image.
 # you can also set the bounds so the image would be placed where it was captures in GIS tools (as long as the aspect ration remains 2:1)
