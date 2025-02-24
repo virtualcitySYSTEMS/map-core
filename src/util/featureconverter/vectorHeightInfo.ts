@@ -299,7 +299,6 @@ export function getHeightInfo(
 
 /**
  * Returns the geometry height (as used in the cesium geometry options) depending on the height info. 0 for clamped, groundLevelOrMinHeight for absolute & heightAboveGround + groundLevel (if present) for relative
- * If you pass "with extrusion" the height will be returned including the extrusion, otherwise you get the height of the actual geometry
  */
 export function getGeometryHeight(
   geometry: SimpleGeometry,

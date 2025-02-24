@@ -714,6 +714,7 @@ export {
   ExtrusionHeightInfo,
   getHeightInfo,
   getMinHeight,
+  getGeometryHeight,
   getClampOrigin,
   getExtrusionHeightInfo,
   getRelativeEquivalent,
