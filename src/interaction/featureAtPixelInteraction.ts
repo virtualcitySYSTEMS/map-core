@@ -76,7 +76,7 @@ function getFeatureFromOlMap(
   return feature;
 }
 
-function getFeatureFromPickObject(
+export function getFeatureFromPickObject(
   object: CesiumPickObject,
 ): EventFeature | undefined {
   let feature: EventFeature | undefined;

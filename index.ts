@@ -56,7 +56,10 @@ export {
 } from './src/interaction/abstractInteraction.js';
 export { default as CoordinateAtPixel } from './src/interaction/coordinateAtPixel.js';
 export { default as EventHandler } from './src/interaction/eventHandler.js';
-export { default as FeatureAtPixelInteraction } from './src/interaction/featureAtPixelInteraction.js';
+export {
+  default as FeatureAtPixelInteraction,
+  getFeatureFromPickObject,
+} from './src/interaction/featureAtPixelInteraction.js';
 export { default as FeatureProviderInteraction } from './src/interaction/featureProviderInteraction.js';
 export { default as InteractionChain } from './src/interaction/interactionChain.js';
 export * from './src/interaction/interactionType.js';
@@ -342,6 +345,7 @@ export {
   originalFeatureSymbol,
   actuallyIsCircle,
   createSync,
+  primitives,
 } from './src/layer/vectorSymbols.js';
 export {
   default as VectorTileLayer,
