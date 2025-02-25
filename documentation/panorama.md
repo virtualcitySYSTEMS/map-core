@@ -103,7 +103,8 @@ no longer be consecutive.
 ### Depth Image
 
 The depth image is queried for distance information. It is used to determine the distance of a point in the image to the camera.
-It is not rendered and thus must not comply with the tiling scheme. The depth image SHALL be a single band image with
+It is not rendered and thus must not comply with the tiling scheme, but it must be flipped along the Y axis to align with
+the other images. The depth image SHALL be a single band image with
 an integer data type. For a decent relation of file size vs. precision, it is proposed to use UInt16. The
 NoData value of the depth image SHOULD be 0. The depth image SHALL be compressed using deflate compression.
 
