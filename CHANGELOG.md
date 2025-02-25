@@ -21,6 +21,7 @@
 - Adds an API to the `FeatureAtPixelInteraction` to allow for features to be excluded from pickPosition.
 - Introduces `FlatGeobuf` support to the VC Map: A `FlatGeobufTileProvider` to load FlatGeobuf files in `VectorTile` layers and
   for smaller files a `FlatGeobufLayer` to load all features at once.
+- Adds the `outlineColor` option to `CesiumTilesetLayer` to allow for customizing the outline color of the tileset.
 
 ### 6.0.7
 

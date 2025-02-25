@@ -1,9 +1,9 @@
 import {
   type Cesium3DTileset,
+  Color,
   type CustomShader,
   Matrix4,
 } from '@vcmap-cesium/engine';
-
 import { check, maybe } from '@vcsuite/check';
 import { parseInteger } from '@vcsuite/parsers';
 import type { Coordinate } from 'ol/coordinate.js';
@@ -24,6 +24,7 @@ import { layerClassRegistry } from '../classRegistry.js';
 import type { LayerOptions } from './layer.js';
 import FeatureVisibility from './featureVisibility.js';
 import VcsMap from '../map/vcsMap.js';
+import { cesiumColorToColor, getStringColor } from '../style/styleHelpers.js';
 
 export type CesiumTilesetOptions = LayerOptions & {
   /**
@@ -41,6 +42,10 @@ export type CesiumTilesetOptions = LayerOptions & {
    * an offset of x, y, z. x and y in degrees longitude/latitude respectively
    */
   offset?: Coordinate;
+  /**
+   * a css string color to be used as an outline.
+   */
+  outlineColor?: string;
 };
 
 export type CesiumTilesetTilesetProperties = {
@@ -75,6 +80,7 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
       screenSpaceErrorMobile: 32,
       tilesetOptions: {},
       offset: undefined,
+      outlineColor: undefined,
     };
   }
 
@@ -84,7 +90,7 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
 
   screenSpaceErrorMobile: number;
 
-  tilesetOptions: Record<string, unknown>;
+  tilesetOptions: Partial<Cesium3DTileset.ConstructorOptions>;
 
   private _modelMatrix: Matrix4 | undefined;
 
@@ -125,6 +131,9 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
         ? this.screenSpaceErrorMobile
         : this.screenSpaceError,
       ...tilesetOptions,
+      outlineColor: options.outlineColor
+        ? Color.fromCssColorString(options.outlineColor)
+        : undefined,
     };
 
     this._modelMatrix = undefined;
@@ -252,7 +261,13 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
       config.screenSpaceErrorMobile = this.screenSpaceErrorMobile;
     }
 
-    const tilesetOptions: Record<string, unknown> = { ...this.tilesetOptions };
+    const tilesetOptions = { ...this.tilesetOptions };
+    if (tilesetOptions.outlineColor) {
+      config.outlineColor = getStringColor(
+        cesiumColorToColor(tilesetOptions.outlineColor),
+      );
+    }
+    delete tilesetOptions.outlineColor;
 
     const usedScreenSpaceError = isMobile()
       ? this.screenSpaceErrorMobile
