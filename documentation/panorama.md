@@ -9,7 +9,7 @@ a data set of images, and the images themselves.
 
 ## Dataset
 
-A panorama dataset is a collection of images that belong to the same capture campaign. A dataset is represented by a
+A panorama dataset is a collection of images. A dataset is represented by a
 FlatGeobuff file which MUST be named `images.fgb`. This FlatGeobuff MUST consist of Point features only.
 The coordinate reference system of the data within the `images.fgb` MUST be WGS84, as defined by the EPSG code 4326.
 The FlatGeobuf MUST contain the following columns:
