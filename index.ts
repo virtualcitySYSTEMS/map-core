@@ -5,6 +5,7 @@ import './src/cesium/wallpaperMaterial.js';
 import './src/cesium/cesium3DTilePointFeature.js';
 import './src/cesium/cesium3DTileFeature.js';
 import './src/cesium/entity.js';
+import './src/cesium/clippingPolygon.js';
 
 export {
   default as VcsCameraPrimitive,

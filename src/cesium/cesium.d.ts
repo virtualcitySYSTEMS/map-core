@@ -395,4 +395,9 @@ declare module '@vcmap-cesium/engine' {
   export namespace Math {
     function fog(distanceToCamera: number, density: number): number;
   }
+
+  interface ClippingPolygon {
+    _cachedPackedCartesians: number[];
+    _cachedRectangle: Rectangle;
+  }
 }
