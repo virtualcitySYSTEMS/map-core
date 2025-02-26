@@ -531,6 +531,7 @@ describe('MapCollection', () => {
       });
     });
   });
+
   describe('requestExclusiveMapControls', () => {
     /** @type {import("@vcmap/core").MapCollection} */
     let mapCollection;
@@ -609,6 +610,17 @@ describe('MapCollection', () => {
       reset1();
       expect(cesiumMap.movementApiCallsDisabled).to.be.true;
     });
+
+    it('should raise the exclusiveMapControlsChanged event, when setting', () => {
+      const spy = sinon.spy();
+      mapCollection.exclusiveMapControlsChanged.addEventListener(spy);
+      mapCollection.requestExclusiveMapControls(
+        disableMovementOptions,
+        () => {},
+      );
+      expect(spy).to.have.been.calledOnce;
+    });
+
     it('should reset exclusive map controls', () => {
       mapCollection.requestExclusiveMapControls(
         disableMovementOptions,
@@ -618,6 +630,31 @@ describe('MapCollection', () => {
       mapCollection.resetExclusiveMapControls();
 
       expect(cesiumMap.movementApiCallsDisabled).to.be.false;
+    });
+
+    it('should call removed callback, when resetting to default navigation', () => {
+      const spy = sinon.spy();
+      mapCollection.requestExclusiveMapControls(disableMovementOptions, spy);
+      mapCollection.resetExclusiveMapControls();
+      expect(spy).to.have.been.called;
+    });
+
+    it('should raise the exclusiveMapControlsChanged event, when resetting', () => {
+      const spy = sinon.spy();
+      mapCollection.requestExclusiveMapControls(
+        disableMovementOptions,
+        () => {},
+      );
+      mapCollection.exclusiveMapControlsChanged.addEventListener(spy);
+      mapCollection.resetExclusiveMapControls();
+      expect(spy).to.have.been.calledOnce;
+    });
+
+    it('should not call exclusiveMapControlsChanged event, when resetting to default navigation without an exclusive map control set', () => {
+      const spy = sinon.spy();
+      mapCollection.exclusiveMapControlsChanged.addEventListener(spy);
+      mapCollection.resetExclusiveMapControls();
+      expect(spy).to.not.have.been.called;
     });
   });
 });

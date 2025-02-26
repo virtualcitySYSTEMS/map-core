@@ -75,10 +75,13 @@ describe('Navigation', () => {
     });
 
     it('should request controllers', (done) => {
-      setTimeout(() => {
-        expect(controllerInputSpy.callCount).to.be.equal(times);
-        done();
-      }, times * 16);
+      setTimeout(
+        () => {
+          expect(controllerInputSpy.callCount).to.be.equal(times);
+          done();
+        },
+        times * 16 + 8,
+      );
     });
   });
 

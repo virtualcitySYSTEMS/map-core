@@ -133,16 +133,17 @@ class MapCollection extends Collection<VcsMap> {
   // eslint-disable-next-line class-methods-use-this
   private _postRenderListener: () => void = () => {};
 
-  /** Callback function that is passed when calling requestExclusiveMapControls and called when exclusive map controls are forcefully removed. */
-  // eslint-disable-next-line class-methods-use-this
-  private _exclusiveMapControlsRemoved: () => void = () => {};
+  private _exclusiveMapControls:
+    | {
+        id: string | symbol;
+        removed: () => void;
+      }
+    | undefined;
 
   private _exclusiveMapControlsChanged = new VcsEvent<{
     options: DisableMapControlOptions;
     id?: string | symbol;
   }>();
-
-  private _exclusiveMapControlsId: string | symbol | undefined;
 
   constructor() {
     super();
@@ -236,7 +237,7 @@ class MapCollection extends Collection<VcsMap> {
    * The id of the current exclusive map controls owner.
    */
   get exclusiveMapControlsId(): string | symbol | undefined {
-    return this._exclusiveMapControlsId;
+    return this._exclusiveMapControls?.id;
   }
 
   /**
@@ -437,7 +438,8 @@ class MapCollection extends Collection<VcsMap> {
   }
 
   /**
-   * Manages the disabling of map navigation controls. By calling this function the map navigation controls passed in the options are disabled. The remove function passed by the previous caller is executed.
+   * Manages the disabling of map navigation controls. By calling this function the map navigation controls passed in the options are disabled.
+   * The remove function passed by the previous caller is executed.
    * @param options - which of the movement controls should be disabled.
    * @param removed - the callback for when the interaction is forcefully removed.
    * @param id - an optional id to identify the owner of the exclusive map controls.
@@ -448,34 +450,29 @@ class MapCollection extends Collection<VcsMap> {
     removed: () => void,
     id?: string | symbol,
   ): () => void {
-    this._exclusiveMapControlsRemoved();
+    this._exclusiveMapControls?.removed();
     if (this._activeMap) {
       this._activeMap.disableMovement(options);
     }
 
-    if (options.pointerEvents || options.keyEvents || options.apiCalls) {
-      this._exclusiveMapControlsId = id || uuidv4();
-      this._exclusiveMapControlsRemoved = removed;
-    } else {
-      this._exclusiveMapControlsRemoved = (): void => {};
-      this._exclusiveMapControlsId = undefined;
-    }
+    const usedId = id || uuidv4();
+    this._exclusiveMapControls = {
+      id: usedId,
+      removed,
+    };
 
     this._exclusiveMapControlsChanged.raiseEvent({
       options,
-      id: this._exclusiveMapControlsId,
+      id: usedId,
     });
 
     return () => {
       // only reset if this function is called by the current exclusiveMapControls owner.
-      if (removed === this._exclusiveMapControlsRemoved) {
+      if (this._exclusiveMapControls?.id === usedId) {
         if (this._activeMap) {
           this._activeMap.disableMovement(false);
         }
-
-        this._exclusiveMapControlsRemoved = (): void => {};
-        this._exclusiveMapControlsId = undefined;
-
+        this._exclusiveMapControls = undefined;
         this._exclusiveMapControlsChanged.raiseEvent({
           options: { apiCalls: false, keyEvents: false, pointerEvents: false },
         });
@@ -484,10 +481,17 @@ class MapCollection extends Collection<VcsMap> {
   }
 
   resetExclusiveMapControls(): void {
-    this.requestExclusiveMapControls(
-      { keyEvents: false, apiCalls: false, pointerEvents: false },
-      () => {},
-    );
+    if (this._exclusiveMapControls) {
+      this._exclusiveMapControls.removed();
+      if (this._activeMap) {
+        this._activeMap.disableMovement(false);
+      }
+      this._exclusiveMapControls = undefined;
+
+      this._exclusiveMapControlsChanged.raiseEvent({
+        options: { apiCalls: false, keyEvents: false, pointerEvents: false },
+      });
+    }
   }
 
   destroy(): void {

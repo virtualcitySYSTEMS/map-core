@@ -96,33 +96,18 @@ export function calculateRotation(
  * @param app - The VCS application instance.
  * @param [viewpoint] - The optional viewpoint to start the rotation from, if no viewpoint is provided the current Viewpoint is used.
  * @param [timePerRotation=60] - The duration of a single full rotation in seconds.
- * @returns A function to stop the rotation.
+ * @returns A function to stop the rotation or null, if the rotation could not be started due to missing position.
  */
 export async function startRotation(
   app: VcsApp,
   viewpoint?: Viewpoint,
   timePerRotation = 60,
-): Promise<() => void> {
+): Promise<(() => void) | null> {
   const { activeMap } = app.maps;
-
-  let localViewpoint: Viewpoint | undefined;
-
-  let rotationListener: (() => void) | undefined;
-  let resetMapControls: (() => void) | undefined;
-
-  const stopRotation: () => void = () => {
-    if (rotationListener) {
-      rotationListener();
-      rotationListener = undefined;
-    }
-    if (resetMapControls) {
-      resetMapControls();
-    }
-  };
-
   if (activeMap instanceof CesiumMap) {
     const scene = activeMap.getScene();
     if (scene) {
+      let localViewpoint: Viewpoint | undefined;
       if (!(viewpoint instanceof Viewpoint)) {
         localViewpoint = activeMap.getViewpointSync() || undefined;
       } else {
@@ -134,8 +119,11 @@ export async function startRotation(
 
           localViewpoint.duration = 0.00000001;
         }
+        app.maps.resetExclusiveMapControls();
         await activeMap.gotoViewpoint(localViewpoint);
-
+        if (app.maps.exclusiveMapControlsId) {
+          return null;
+        }
         const newCenter = scene.pickPosition(
           new Cartesian2(scene.canvas.width / 2, scene.canvas.height / 2),
         );
@@ -151,7 +139,8 @@ export async function startRotation(
             scene.camera.position,
           );
         } else {
-          throw new Error('new ground position could not be determined');
+          // we checked out the sky.
+          return null;
         }
 
         const { distance } = localViewpoint;
@@ -182,6 +171,18 @@ export async function startRotation(
         };
 
         let timeLastTick: JulianDate | undefined;
+        let rotationListener: (() => void) | undefined;
+        let resetMapControls: (() => void) | undefined;
+
+        const stopRotation: () => void = () => {
+          if (rotationListener) {
+            rotationListener();
+            rotationListener = undefined;
+          }
+          if (resetMapControls) {
+            resetMapControls();
+          }
+        };
 
         resetMapControls = app.maps.requestExclusiveMapControls(
           { apiCalls: true, keyEvents: true, pointerEvents: true },
@@ -205,11 +206,10 @@ export async function startRotation(
 
             timeLastTick = activeMap.getCesiumWidget()!.clock.currentTime;
           });
+
+        return stopRotation;
       }
     }
   }
-
-  return (): void => {
-    stopRotation();
-  };
+  return null;
 }

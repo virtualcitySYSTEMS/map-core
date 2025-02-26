@@ -42,7 +42,13 @@ describe('rotation', () => {
     it('should return a function', async () => {
       const stopRotation = await startRotation(app, viewpoint);
       expect(stopRotation).to.be.a('function');
-      stopRotation();
+      stopRotation?.();
+    });
+
+    it('should return null, if pick position returns undefined', async () => {
+      mockPickPosition.returns(undefined);
+      const stopRotation = await startRotation(app);
+      expect(stopRotation).to.be.null;
     });
 
     it('should calculate the correct rotation', () => {
@@ -69,7 +75,7 @@ describe('rotation', () => {
 
       await startRotation(app, viewpoint);
 
-      expect(spy.calledOnce).to.be.true;
+      expect(spy).to.have.been.calledOnce;
       expect(spy.firstCall.args[0]).to.deep.equal({
         options: {
           apiCalls: true,
@@ -88,9 +94,9 @@ describe('rotation', () => {
       const stopRotationFn = await startRotation(app, viewpoint);
       expect(stopRotationFn).to.be.a('function');
 
-      stopRotationFn();
+      stopRotationFn?.();
 
-      expect(spy.calledTwice).to.be.true;
+      expect(spy).to.have.been.calledTwice;
       expect(spy.secondCall.args[0]).to.deep.equal({
         options: {
           apiCalls: false,
