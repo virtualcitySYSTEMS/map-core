@@ -1,26 +1,31 @@
 ### 6.1.0
 
+#### Highlights
+
+- Adds `VectorClusterGroup` concept to the `VcsApp`. For more details see [the documentation](documentation/vectorClusterGroup.md).
+- Introduces `FlatGeobuf` support to the VC Map: A `FlatGeobufTileProvider` to load FlatGeobuf files in `VectorTile` layers and
+  for smaller files a `FlatGeobufLayer` to load all features at once.
+- Adds a rotation api that provides `startRotation` which returns a stop function. It rotates around a given or current viewpoint.
+- Adds new `ClippingPolygonObject` and a `ClippingPolygonObjectCollection` to the `VcsApp`, which allows configured clipping regions. For more details see [the documentation](documentation/clipping.md).
+- Add `Navigation` API to allow navigating through maps using keyboard or other controller.
+- Adds a `renderScreenshot` function to the core that returns a canvas.
+- Adds new string templating capabilities (moved here from @vcmap/ui). `renderTemplate` can handle string templates with `{{}}` placeholders and ol style expressions. see [the documentation](documentation/vcsTemplate.md).
+
+#### Changes
+
 - Adds a new `sourceVectorContextSync` to synchronize a vector source with a cesium `VectorContext`.
 - `VectorContext` now implements the `hasFeature` interface, returning a boolean if the feature is currently managed by the context.
 - Adds the `SourceObliqueSync` to sync a vector source with an oblique source.
-- Adds new string templating capabilities. `renderTemplate` can handle string templates with `{{}}` placeholders and ol style expressions. see [the documentation](documentation/vcsTemplate.md).
-- Adds a rotation api that provides `startRotation` which returns a stop function. It rotates around a given or current viewpoint.
 - In mapCollection the `requestExclusiveMapControls` has been extended by an ID to identify the current map control holder. There is additionally an event `exclusiveMapControlsChanged` which is emitted when the exclusiveMapControls are changed.
-- Adds `VectorClusterGroup` concept to the `VcsApp`. For more details see [the documentation](documentation/vectorClusterGroup.md).
 - The `FeatureProviderInteraction` will now return a cluster feature, if more than one feature is provided at the position. Adds new symbol `isProvidedClusterFeature`, which is added to cluster features by FeatureProviders
 - Adds a `resetExclusiveMapControls` in the mapCollection to reset the exclusiveMapControls.
-- Adds a `renderScreenshot` function to the core that returns a canvas.
-- Adds new `ClippingPolygonObject` and a `ClippingPolygonObjectCollection` to the `VcsApp`, which allows configured clipping regions. For more details see [the documentation](documentation/clipping.md).
 - Adds new events `visualizationAdded` and `visualizationRemoved` to `VcsMap`, which allows tracking of layer implementations being added or removed.
 - Update Dependencies
   - openlayers to 10.4.0
   - proj4 to 2.15.0
-  - uuid 11.0.5
-- Add `Navigation` API to allow navigating through maps using keyboard or other controller.
+  - uuid 11.1.0
 - Fixes a bug, where `allowPicking` would have no effect on `CesiumTilesetLayer`.
 - Adds an API to the `FeatureAtPixelInteraction` to allow for features to be excluded from pickPosition.
-- Introduces `FlatGeobuf` support to the VC Map: A `FlatGeobufTileProvider` to load FlatGeobuf files in `VectorTile` layers and
-  for smaller files a `FlatGeobufLayer` to load all features at once.
 - Adds the `outlineColor` option to `CesiumTilesetLayer` to allow for customizing the outline color of the tileset.
 
 ### 6.0.7
