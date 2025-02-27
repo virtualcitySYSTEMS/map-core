@@ -41,36 +41,36 @@ associated with one image:
 ### Color Image
 
 The color image is intended for visualization. It will be rendered on a sphere and MUST have an aspect ratio of 2:1
-(width:height) and be _without_ NoData padding. The image SHALL be flipped on the Y axis, since it is viewed from
-_within_ a sphere. The image MUST be tiled using a geographic tiling scheme with two level 0 base tiles.
+(width:height) and be _without_ NoData padding. The image MUST be flipped on the Y axis, since it is viewed from
+_within_ a sphere (more on [projection](#projection-into-3d-space). The image MUST be tiled using a geographic tiling scheme with two level 0 base tiles.
 Tile levels are represented by image overviews. Each tile MUST be square (same height as width in pixels).
-Each TIFF overview must fit into the tiling scheme _exactly_ (see [Tiling Scheme](#tiling-scheme-for-visualization)
-for more details). The color image MUST have three bands (RGB) and SHALL be compressed using WEBP compression.
+Each TIFF overview MUST fit into the tiling scheme _exactly_ (see [Tiling Scheme](#tiling-scheme-for-visualization)
+for more details). The color image MUST have three bands (RGB) and SHOULD be compressed using WEBP compression.
 
-The color image is the entry point for the application to access the data. It SHALL provide information on its position,
-orientation and the availability of the intensity and depth images. This information SHALL be provided within
-the non-standard TIFFTAG_GDAL_METADATA of the COG (see
-[gdal documentation](https://gdal.org/en/stable/drivers/raster/gtiff.html#metadata) for more details on metadata).
+The color image is the entry point for the application to access the data. It SHOULD provide information on its position,
+orientation and the availability of the intensity and depth images. If present, this information MUST be provided within
+the non-standard TIFFTAG_GDAL_METADATA of the COG (see [gdal documentation](https://gdal.org/en/stable/drivers/raster/gtiff.html#metadata) for more details on metadata).
 The following `Item`s MUST be present in the GDAL metadata for the metadata to be considered valid:
 
 - `PANORAMA_VERSION` (string): The version of the panorama data structure. Format is `MAJOR.MINOR`. This version is `1.0`.
 - `PANORAMA_POSITION` (string): The position of the image in WGS84 as defined by EPSG 4326. Format is `lat,lon,height`.
 - `PANORAMA_ORIENTATION` (string): The orientation of the image in radians, given as heading, pitch and roll. Format is `heading,pitch,roll`.
 
-The following `Item`s MAY be present in the GDAL metadata:
+The following `Item`s CAN be present in the GDAL metadata:
 
 - `PANORAMA_INTENSITY` (0|1): Whether an intensity image is available. 1 if available, 0 (or missing) if not.
 - `PANORAMA_DEPTH` (0|1): Whether a depth image is available. 1 if available, 0 (or missing) if not.
 
-Should no metadata be given, or the metadata not be valid, the position will be assumed to be 0, 0, 0 and the orientation 0, 0, 0 as well.
+If no metadata is given, or the metadata given is not valid, the position will be assumed to be 0, 0, 0 and the
+orientation 0, 0, 0 as well.
 
 ### Intensity Image
 
 The intensity image represents the intensity of the depth image. It is solely used for visualization.
 An intensity image MUST abide to the same requirements as the color image as regards to aspect ratio, tiling,
 compression and flipping. Even though the intensity could be described by a single band,
-it SHALL be provided as a four band image (RGBA) compressed with WEBP. The intensity image
-must not provide any additional metadata.
+it MUST be provided as a four band image (RGBA) and it SHOULD be compressed with WEBP. The intensity image
+is not required to provide any additional metadata.
 
 #### Tiling Scheme (for visualization)
 
@@ -104,22 +104,22 @@ no longer be consecutive.
 
 The depth image is queried for distance information. It is used to determine the distance of a point in the image to the camera.
 It is not rendered and thus must not comply with the tiling scheme, but it must be flipped along the Y axis to align with
-the other images. The depth image SHALL be a single band image with
+the other images. The depth image MUST be a single band image with
 an integer data type. For a decent relation of file size vs. precision, it is proposed to use UInt16. The
-NoData value of the depth image SHOULD be 0. The depth image SHALL be compressed using deflate compression.
+NoData value of the depth image SHOULD be 0. The depth image SHOULD be compressed using deflate compression.
 
 The pixel value is used to interpolate the distance of a point in the image to the camera. To this extent, the following metadata
-SHALL be present within the non-standard TIFFTAG_GDAL_METADATA of the COG, where the following fields MUST be present for
+SHOULD be present. If provided, it MUST be within the non-standard TIFFTAG_GDAL_METADATA of the COG. The following fields MUST be present for
 the metadata to be considered valid:
 
 - `PANORAMA_DEPTH_VERSION` (string): The version of the depth metadata. Format is `MAJOR.MINOR`. This version is `1.0`.
 - `PANORAMA_DEPTH_MAX` (float): The maximum distance in meters.
 
-The following values MAY be present in the GDAL metadata:
+The following values CAN be present in the GDAL metadata:
 
 - `PANORAMA_DEPTH_MIN` (float): The minimum distance in meters. If not provided, 0.0 is assumed.
 
-Should no metadata be given, or the metadata not be valid, the depth values will be assumed to be with the range of 0.0
+If no metadata is given, or the metadata given is not valid, the depth values will be assumed to be within the range of 0.0
 to 50.0. Assuming UInt16 data, the formula to calculate the distance is as follows:
 
 ```ts
@@ -133,6 +133,14 @@ function interpolate(
   return min + ((value - minValue) / (maxValue - minValue)) * (max - min);
 }
 ```
+
+#### Projection Into 3D Space
+
+The panorama image is projected into a sphere. The sphere is positioned in 3D space using the information
+provided in the metadata of the color image. The other associated images are projected into the same sphere,
+at the same location with the same orientation. To place the image correctly in 3D space, the orientation
+given in the metadata is used to rotate the sphere. The center of the image MUST be heading 0 and pitch 0 in image space.
+The image MUST be flipped for the view to reflect the actual image.
 
 ### Creating valid Panorama Image COGs using GDAL
 
