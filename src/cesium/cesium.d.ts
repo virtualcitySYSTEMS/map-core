@@ -400,4 +400,9 @@ declare module '@vcmap-cesium/engine' {
     _cachedPackedCartesians: number[];
     _cachedRectangle: Rectangle;
   }
+
+  interface ClippingPolygonCollection {
+    _totalPositions: number;
+    setDirty(): void;
+  }
 }

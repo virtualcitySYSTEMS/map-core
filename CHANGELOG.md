@@ -1,3 +1,7 @@
+### 6.1.1
+
+- Add prototype function `setDirty` to Cesiums `ClippintPolygonCollection`, which allows to enforce an update of all ClippingPolygons
+
 ### 6.1.0
 
 #### Highlights
