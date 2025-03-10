@@ -130,6 +130,9 @@ export default class VectorClusterGroupCesiumImpl extends VectorClusterGroupImpl
       this._context = new VectorClusterCesiumContext(this._rootCollection);
       this._rootCollection[vectorClusterGroupName] = this.name;
       await this.map.addClusterDataSource(this._rootCollection);
+      if (this.isDestroyed) {
+        return;
+      }
       this._sourceVectorContextSync = createSourceVectorContextSync(
         this._source,
         this._context,

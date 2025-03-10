@@ -1,3 +1,7 @@
+### 6.1.2
+
+- Fix issue on remove of `VectorClusterGroup`s, where forceRedraw interfered `VectorClusterGroupCesiumImpl` initialization
+
 ### 6.1.1
 
 - Add prototype function `setDirty` to Cesiums `ClippintPolygonCollection`, which allows to enforce an update of all ClippingPolygons
