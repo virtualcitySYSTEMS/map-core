@@ -1,3 +1,8 @@
+### 6.1.3
+
+- Fixes an issue where activating the globe transparency would lead to false
+  position values, should features be excluded from the pick.
+
 ### 6.1.2
 
 - Fix issue on remove of `VectorClusterGroup`s, where forceRedraw interfered `VectorClusterGroupCesiumImpl` initialization

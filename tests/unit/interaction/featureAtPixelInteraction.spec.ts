@@ -414,6 +414,110 @@ describe('FeatureAtPixelInteraction', () => {
         expect(event).to.have.property('position');
         arrayCloseTo(event.position!, Projection.wgs84ToMercator([12, 12, 0]));
       });
+
+      it('should not update the position if the pickFromRay returns Cartesian.ZERO', async () => {
+        const olFeature = new Feature({});
+        const primitive = {};
+        olFeature[primitives] = [primitive as Primitive];
+        const pickFromRay = sandbox.stub();
+        pickFromRay.returns({
+          position: Cartesian3.ZERO,
+        });
+        sceneStub.pickFromRay = pickFromRay;
+        pick.returns({ primitive: { olFeature } });
+        fap.excludeFromPickPosition(olFeature);
+        fap.pullPickedPosition = EventType.NONE;
+        const event = await fap.pipe({
+          ray: new Ray(),
+          pointer: PointerKeyType.LEFT,
+          pointerEvent: PointerEventType.DOWN,
+          windowPosition: new Cartesian2(0, 0),
+          map: cesiumMap,
+          type: EventType.CLICK,
+          key: ModificationKeyType.NONE,
+          position: [12, 12, 0],
+          positionOrPixel: [12, 12, 0],
+        });
+        expect(pickFromRay).to.have.been.calledWith(event.ray, [primitive]);
+        expect(event).to.have.property('position');
+        arrayCloseTo(event.position!, [12, 12, 0]);
+      });
+
+      describe('with globe transparency', () => {
+        beforeEach(() => {
+          sceneStub.globe.translucency.enabled = true;
+        });
+
+        afterEach(() => {
+          sceneStub.globe.translucency.enabled = false;
+        });
+
+        it('should pick underground features, if they arent too far away', async () => {
+          const olFeature = new Feature({});
+          const primitive = {};
+          olFeature[primitives] = [primitive as Primitive];
+
+          const pickFromRay = sandbox.stub();
+          pickFromRay.returns({
+            position: Cartesian3.fromDegrees(12, 12, -10),
+          });
+          const globePick = sandbox.stub();
+          globePick.returns(Cartesian3.fromDegrees(12, 12, 0));
+
+          sceneStub.pickFromRay = pickFromRay;
+          sceneStub.globe.pick = globePick;
+          pick.returns({ primitive: { olFeature } });
+          fap.excludeFromPickPosition(olFeature);
+          fap.pullPickedPosition = EventType.NONE;
+          const event = await fap.pipe({
+            ray: new Ray(),
+            pointer: PointerKeyType.LEFT,
+            pointerEvent: PointerEventType.DOWN,
+            windowPosition: new Cartesian2(0, 0),
+            map: cesiumMap,
+            type: EventType.CLICK,
+            key: ModificationKeyType.NONE,
+          });
+          expect(pickFromRay).to.have.been.calledWith(event.ray, [primitive]);
+          expect(event).to.have.property('position');
+          arrayCloseTo(
+            event.position!,
+            Projection.wgs84ToMercator([12, 12, -10]),
+          );
+        });
+
+        it('should not pick underground features, if they aren too far away', async () => {
+          const olFeature = new Feature({});
+          const primitive = {};
+          olFeature[primitives] = [primitive as Primitive];
+          const pickFromRay = sandbox.stub();
+          pickFromRay.returns({
+            position: Cartesian3.fromDegrees(12, 12, -20000),
+          });
+          const globePick = sandbox.stub();
+          globePick.returns(Cartesian3.fromDegrees(12, 12, 0));
+          sceneStub.pickFromRay = pickFromRay;
+          sceneStub.globe.pick = globePick;
+          pick.returns({ primitive: { olFeature } });
+          fap.excludeFromPickPosition(olFeature);
+          fap.pullPickedPosition = EventType.NONE;
+          const event = await fap.pipe({
+            ray: new Ray(),
+            pointer: PointerKeyType.LEFT,
+            pointerEvent: PointerEventType.DOWN,
+            windowPosition: new Cartesian2(0, 0),
+            map: cesiumMap,
+            type: EventType.CLICK,
+            key: ModificationKeyType.NONE,
+          });
+          expect(pickFromRay).to.have.been.calledWith(event.ray, [primitive]);
+          expect(event).to.have.property('position');
+          arrayCloseTo(
+            event.position!,
+            Projection.wgs84ToMercator([12, 12, 0]),
+          );
+        });
+      });
     });
   });
 });
