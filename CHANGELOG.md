@@ -1,3 +1,7 @@
+### 6.1.4
+
+- Fixes issue on serialization of `VectorClusterStyleItem`, where default templateContext was returned
+
 ### 6.1.3
 
 - Fixes an issue where activating the globe transparency would lead to false
