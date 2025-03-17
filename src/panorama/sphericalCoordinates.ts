@@ -66,8 +66,8 @@ export function sphericalToCartesian(
 ): Cartesian3 {
   const [phi, theta] = spherical;
   const cartesian = result || new Cartesian3();
-  cartesian.x = Math.sin(theta) * Math.cos(phi);
-  cartesian.y = Math.sin(theta) * Math.sin(phi);
+  cartesian.x = Math.sin(theta) * Math.cos(-phi);
+  cartesian.y = Math.sin(theta) * Math.sin(-phi);
   cartesian.z = Math.cos(theta);
   return cartesian;
 }

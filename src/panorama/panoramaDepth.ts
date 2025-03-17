@@ -86,7 +86,7 @@ export async function createPanoramaDepth(
       result?: Cartesian3,
     ): Promise<Cartesian3 | undefined> {
       const tile = await tileProvider.getDepthTile(imageCoordinate);
-      const data = tile[0] as Uint8Array;
+      const data = (tile[0] as Uint8Array).filter((i) => !!i);
       const depthValue =
         data.reduce(
           (prev: number, curr: number) => prev + interpolate(curr),
