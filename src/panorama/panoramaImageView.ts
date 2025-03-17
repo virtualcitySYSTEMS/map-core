@@ -26,6 +26,7 @@ export type PanoramaImageView = {
    */
   suspendTileLoading: boolean;
   showIntensity: boolean;
+  opacity: number;
   destroy(): void;
   /**
    * force a render of the panorama image
@@ -57,6 +58,7 @@ function setupImageView(
   const { tileSize, maxLevel, minLevel, hasIntensity } = image;
   const baseTileCoordinates = createMinLevelTiles(minLevel);
   let currentTileCoordinates: TileCoordinate[] = [...baseTileCoordinates];
+  let opacity = 1;
   const currentTiles = new Map<string, PanoramaTile>();
   const clearCurrentTiles = (): void => {
     currentTiles.forEach((tile) => {
@@ -74,6 +76,7 @@ function setupImageView(
       tileProviders.set(
         tileProvider,
         tileProvider.tileLoaded.addEventListener((tile) => {
+          tile.opacity = opacity;
           if (!currentTiles.has(tile.tileCoordinate.key)) {
             currentTiles.set(tile.tileCoordinate.key, tile);
             if (tile.tileCoordinate.level === minLevel) {
@@ -99,11 +102,7 @@ function setupImageView(
 
   camera.setView({
     destination: image.position,
-    orientation: {
-      heading: 0,
-      pitch: 0,
-      roll: 0,
-    },
+    orientation: image.orientation,
   });
 
   const levelPixelPerRadians = new Array<number>(maxLevel); // XXX can be cached or pre calculated?
@@ -201,6 +200,15 @@ function setupImageView(
         }
       }
     },
+    get opacity(): number {
+      return opacity;
+    },
+    set opacity(value: number) {
+      opacity = value;
+      currentTiles.forEach((tile) => {
+        tile.opacity = value;
+      });
+    },
     getCurrentTiles(): PanoramaTile[] {
       return [...currentTiles.values()];
     },
@@ -278,9 +286,17 @@ export function createPanoramaImageView(map: PanoramaMap): PanoramaImageView {
       // XXX ugly
       if (currentView) {
         currentView.showIntensity = value;
-        showIntensity = currentView.showIntensity;
+        ({ showIntensity } = currentView);
       } else {
         showIntensity = value;
+      }
+    },
+    get opacity(): number {
+      return currentView?.opacity ?? 1;
+    },
+    set opacity(value: number) {
+      if (currentView) {
+        currentView.opacity = value;
       }
     },
     getCurrentTiles(): PanoramaTile[] {

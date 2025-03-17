@@ -34,6 +34,7 @@ export type PanoramaTile = {
   readonly position: Cartesian3;
   readonly primitive: Primitive;
   readonly tileCoordinate: TileCoordinate;
+  opacity: number;
   destroy(): void;
 };
 
@@ -271,6 +272,9 @@ export function createPanoramaTile(
     tileSize,
   );
 
+  let opacity = 1;
+  let textureLoaded = false;
+
   // IDEA maybe find a better place to do this? or find a better way to wait for the texture to be loaded.
   let textureWaiting = 0;
   const interval = setInterval(() => {
@@ -284,7 +288,10 @@ export function createPanoramaTile(
         }
       )._textures.image
     ) {
-      (primitive.appearance.material.uniforms as { alpha: number }).alpha = 1.0;
+      (primitive.appearance.material.uniforms as { alpha: number }).alpha =
+        opacity;
+
+      textureLoaded = true;
       clearInterval(interval);
     } else if (textureWaiting > MAX_TEXTURE_LOAD_MS) {
       clearInterval(interval);
@@ -300,6 +307,16 @@ export function createPanoramaTile(
     },
     get tileCoordinate(): TileCoordinate {
       return tileCoordinate;
+    },
+    get opacity(): number {
+      return opacity;
+    },
+    set opacity(value: number) {
+      opacity = value;
+      if (textureLoaded) {
+        (primitive.appearance.material.uniforms as { alpha: number }).alpha =
+          opacity;
+      }
     },
     destroy(): void {
       primitive.destroy();
