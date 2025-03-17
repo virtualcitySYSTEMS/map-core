@@ -13,7 +13,10 @@ import {
   createPanoramaImageView,
   PanoramaImageView,
 } from '../panorama/panoramaImageView.js';
-import { setupCesiumInteractions } from './cesiumMapEvent.js';
+import {
+  getViewpointFromScene,
+  setupCesiumInteractions,
+} from './cesiumMapHelpers.js';
 import VcsEvent from '../vcsEvent.js';
 import { createPanoramaNavigation } from '../panorama/panoramaNavigation.js';
 import {
@@ -21,6 +24,7 @@ import {
   DebugSphere,
   DebugCameraSphereOptions,
 } from '../panorama/debugSphere.js';
+import Viewpoint from '../util/viewpoint.js';
 
 export type PanoramaMapOptions = VcsMapOptions;
 
@@ -128,6 +132,13 @@ export default class PanoramaMap extends VcsMap {
     }
   }
 
+  deactivate(): void {
+    super.deactivate();
+    if (this._cesiumWidget) {
+      this._cesiumWidget.useDefaultRenderLoop = false;
+    }
+  }
+
   private _setCurrentImage(image?: PanoramaImage): void {
     this._currentImage = image;
     this.currentImageChanged.raiseEvent(image);
@@ -140,11 +151,15 @@ export default class PanoramaMap extends VcsMap {
     return this._cesiumWidget;
   }
 
-  deactivate(): void {
-    super.deactivate();
-    if (this._cesiumWidget) {
-      this._cesiumWidget.useDefaultRenderLoop = false;
+  getViewpoint(): Promise<null | Viewpoint> {
+    return Promise.resolve(this.getViewpointSync());
+  }
+
+  getViewpointSync(): Viewpoint | null {
+    if (!this._cesiumWidget || !this._cesiumWidget.scene || !this.target) {
+      return null;
     }
+    return getViewpointFromScene(this._cesiumWidget.scene);
   }
 
   destroy(): void {

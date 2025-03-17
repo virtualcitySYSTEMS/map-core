@@ -8,10 +8,8 @@ import {
   DataSourceDisplay,
   DataSourceCollection,
   RequestScheduler,
-  Ellipsoid,
   ScreenSpaceEventHandler,
   Cartesian3,
-  Ray,
   Math as CesiumMath,
   Camera,
   BillboardVisualizer,
@@ -53,7 +51,10 @@ import type Layer from '../layer/layer.js';
 import VcsEvent from '../vcsEvent.js';
 import { DisableMapControlOptions } from '../util/mapCollection.js';
 import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
-import { setupCesiumInteractions } from './cesiumMapEvent.js';
+import {
+  getViewpointFromScene,
+  setupCesiumInteractions,
+} from './cesiumMapHelpers.js';
 
 export type CesiumMapOptions = VcsMapOptions & {
   /**
@@ -666,43 +667,7 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
     if (!this._cesiumWidget || !this._cesiumWidget.scene || !this.target) {
       return null;
     }
-    const cam = this._cesiumWidget.scene.camera;
-    const cameraPositionCartesian = cam.position;
-    let groundPosition;
-    let distance;
-    const ray = new Ray(cam.position, cam.direction);
-    const groundPositionCartesian = this._cesiumWidget.scene.globe.pick(
-      ray,
-      this._cesiumWidget.scene,
-    );
-    if (groundPositionCartesian) {
-      distance = Cartesian3.distance(
-        groundPositionCartesian,
-        cameraPositionCartesian,
-      );
-      const groundPositionCartographic =
-        Ellipsoid.WGS84.cartesianToCartographic(groundPositionCartesian);
-      groundPosition = [
-        CesiumMath.toDegrees(groundPositionCartographic.longitude),
-        CesiumMath.toDegrees(groundPositionCartographic.latitude),
-        groundPositionCartographic.height,
-      ];
-    }
-
-    const cameraPositionCartographic = cam.positionCartographic;
-    const cameraPosition = [
-      CesiumMath.toDegrees(cameraPositionCartographic.longitude),
-      CesiumMath.toDegrees(cameraPositionCartographic.latitude),
-      cameraPositionCartographic.height,
-    ];
-    return new Viewpoint({
-      groundPosition,
-      cameraPosition,
-      distance,
-      heading: CesiumMath.toDegrees(cam.heading),
-      pitch: CesiumMath.toDegrees(cam.pitch),
-      roll: CesiumMath.toDegrees(cam.roll),
-    });
+    return getViewpointFromScene(this._cesiumWidget.scene);
   }
 
   async gotoViewpoint(

@@ -1,5 +1,10 @@
 import {
+  Cartesian3,
+  Ellipsoid,
   KeyboardEventModifier,
+  Math as CesiumMath,
+  Ray,
+  Scene,
   ScreenSpaceEventHandler,
   ScreenSpaceEventType,
 } from '@vcmap-cesium/engine';
@@ -10,6 +15,7 @@ import {
   PointerKeyType,
 } from '../interaction/interactionType.js';
 import type CesiumMap from './cesiumMap.js';
+import Viewpoint from '../util/viewpoint.js';
 
 function raisePointerInteraction(
   map: PanoramaMap | CesiumMap,
@@ -146,4 +152,47 @@ export function setupCesiumInteractions(
   return (): void => {
     screenSpaceListeners.forEach((removeListener) => removeListener());
   };
+}
+
+export function getViewpointFromScene(scene: Scene): Viewpoint {
+  const cam = scene.camera;
+  const cameraPositionCartesian = cam.position;
+  let groundPosition;
+  let distance;
+
+  const groundPositionCartesian = scene.globe?.pick(
+    new Ray(cam.position, cam.direction),
+    scene,
+  );
+
+  if (groundPositionCartesian) {
+    distance = Cartesian3.distance(
+      groundPositionCartesian,
+      cameraPositionCartesian,
+    );
+    const groundPositionCartographic = Ellipsoid.WGS84.cartesianToCartographic(
+      groundPositionCartesian,
+    );
+    groundPosition = [
+      CesiumMath.toDegrees(groundPositionCartographic.longitude),
+      CesiumMath.toDegrees(groundPositionCartographic.latitude),
+      groundPositionCartographic.height,
+    ];
+  }
+
+  const cameraPositionCartographic = cam.positionCartographic;
+  const cameraPosition = [
+    CesiumMath.toDegrees(cameraPositionCartographic.longitude),
+    CesiumMath.toDegrees(cameraPositionCartographic.latitude),
+    cameraPositionCartographic.height,
+  ];
+
+  return new Viewpoint({
+    groundPosition,
+    cameraPosition,
+    distance,
+    heading: CesiumMath.toDegrees(cam.heading),
+    pitch: CesiumMath.toDegrees(cam.pitch),
+    roll: CesiumMath.toDegrees(cam.roll),
+  });
 }
