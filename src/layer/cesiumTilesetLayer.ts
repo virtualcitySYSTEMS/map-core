@@ -25,6 +25,7 @@ import type { LayerOptions } from './layer.js';
 import FeatureVisibility from './featureVisibility.js';
 import VcsMap from '../map/vcsMap.js';
 import { cesiumColorToColor, getStringColor } from '../style/styleHelpers.js';
+import PanoramaMap from '../map/panoramaMap.js';
 
 export type CesiumTilesetOptions = LayerOptions & {
   /**
@@ -46,6 +47,8 @@ export type CesiumTilesetOptions = LayerOptions & {
    * a css string color to be used as an outline.
    */
   outlineColor?: string;
+
+  renderInPanorama?: boolean;
 };
 
 export type CesiumTilesetTilesetProperties = {
@@ -81,6 +84,7 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
       tilesetOptions: {},
       offset: undefined,
       outlineColor: undefined,
+      renderInPanorama: false,
     };
   }
 
@@ -103,6 +107,9 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
   constructor(options: CesiumTilesetOptions) {
     super(options);
     this._supportedMaps = [CesiumMap.className];
+    if (options.renderInPanorama) {
+      this._supportedMaps.push(PanoramaMap.className);
+    }
     const defaultOptions = CesiumTilesetLayer.getDefaultOptions();
 
     this.highlightStyle = null;
@@ -206,6 +213,16 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
         new CesiumTilesetCesiumImpl(map, this.getImplementationOptions()),
       ];
     }
+
+    if (
+      map instanceof PanoramaMap &&
+      this._supportedMaps.includes(PanoramaMap.className)
+    ) {
+      return [
+        new CesiumTilesetCesiumImpl(map, this.getImplementationOptions()),
+      ];
+    }
+
     return [];
   }
 
@@ -282,6 +299,10 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
 
     if (Array.isArray(this.offset)) {
       config.offset = this.offset.slice();
+    }
+
+    if (this._supportedMaps.includes(PanoramaMap.className)) {
+      config.renderInPanorama = true;
     }
 
     return config;

@@ -34,6 +34,7 @@ import type { FeatureLayerImplementation } from '../featureLayer.js';
 import type StyleItem from '../../style/styleItem.js';
 import GlobalHider from '../globalHider.js';
 import { getResourceOrUrl } from './resourceHelper.js';
+import type PanoramaMap from '../../map/panoramaMap.js';
 
 export const cesiumTilesetLastUpdated: unique symbol = Symbol(
   'cesiumTilesetLastUpdated',
@@ -80,7 +81,7 @@ export function getExtentFromTileset(
  * represents the cesium implementation for a {@link CesiumTilesetLayer} layer.
  */
 class CesiumTilesetCesiumImpl
-  extends LayerImplementation<CesiumMap>
+  extends LayerImplementation<CesiumMap | PanoramaMap>
   implements FeatureLayerImplementation
 {
   static get className(): string {
@@ -117,7 +118,10 @@ class CesiumTilesetCesiumImpl
 
   private _customShader: CustomShader | undefined;
 
-  constructor(map: CesiumMap, options: CesiumTilesetImplementationOptions) {
+  constructor(
+    map: CesiumMap | PanoramaMap,
+    options: CesiumTilesetImplementationOptions,
+  ) {
     super(map, options);
 
     this.cesium3DTileset = null;

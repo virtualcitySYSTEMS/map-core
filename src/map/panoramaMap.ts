@@ -1,5 +1,7 @@
 import {
+  type Cesium3DTileset,
   CesiumWidget,
+  PrimitiveCollection,
   ScreenSpaceEventHandler,
   ShadowMode,
 } from '@vcmap-cesium/engine';
@@ -25,6 +27,7 @@ import {
   DebugCameraSphereOptions,
 } from '../panorama/debugSphere.js';
 import Viewpoint from '../util/viewpoint.js';
+import { ensureInCollection } from './cesiumMap.js';
 
 export type PanoramaMapOptions = VcsMapOptions;
 
@@ -54,6 +57,38 @@ export default class PanoramaMap extends VcsMap {
   private _debugSphere: DebugSphere | undefined;
 
   readonly currentImageChanged = new VcsEvent<PanoramaImage | undefined>();
+
+  get screenSpaceEventHandler(): ScreenSpaceEventHandler {
+    if (!this._screenSpaceEventHandler) {
+      throw new Error('ScreenSpaceEventHandler not initialized');
+    }
+    return this._screenSpaceEventHandler;
+  }
+
+  get currentPanoramaImage(): PanoramaImage | undefined {
+    return this._currentImage;
+  }
+
+  get panoramaView(): PanoramaImageView {
+    if (!this._imageView) {
+      throw new Error('PanoramaImageView not initialized');
+    }
+    return this._imageView;
+  }
+
+  get debugSphere(): DebugSphere | undefined {
+    return this._debugSphere;
+  }
+
+  setDebugSphere(debugSphere?: DebugCameraSphereOptions): void {
+    if (this._debugSphere) {
+      this._debugSphere.destroy();
+    }
+
+    if (debugSphere) {
+      this._debugSphere = createDebugSphere(this, debugSphere);
+    }
+  }
 
   async initialize(): Promise<void> {
     if (!this.initialized) {
@@ -92,38 +127,6 @@ export default class PanoramaMap extends VcsMap {
     await super.initialize();
   }
 
-  get screenSpaceEventHandler(): ScreenSpaceEventHandler {
-    if (!this._screenSpaceEventHandler) {
-      throw new Error('ScreenSpaceEventHandler not initialized');
-    }
-    return this._screenSpaceEventHandler;
-  }
-
-  get currentPanoramaImage(): PanoramaImage | undefined {
-    return this._currentImage;
-  }
-
-  get panoramaView(): PanoramaImageView {
-    if (!this._imageView) {
-      throw new Error('PanoramaImageView not initialized');
-    }
-    return this._imageView;
-  }
-
-  get debugSphere(): DebugSphere | undefined {
-    return this._debugSphere;
-  }
-
-  setDebugSphere(debugSphere?: DebugCameraSphereOptions): void {
-    if (this._debugSphere) {
-      this._debugSphere.destroy();
-    }
-
-    if (debugSphere) {
-      this._debugSphere = createDebugSphere(this, debugSphere);
-    }
-  }
-
   async activate(): Promise<void> {
     await super.activate();
     if (this.active && this._cesiumWidget) {
@@ -139,6 +142,17 @@ export default class PanoramaMap extends VcsMap {
     }
   }
 
+  getViewpoint(): Promise<null | Viewpoint> {
+    return Promise.resolve(this.getViewpointSync());
+  }
+
+  getViewpointSync(): Viewpoint | null {
+    if (!this._cesiumWidget || !this._cesiumWidget.scene || !this.target) {
+      return null;
+    }
+    return getViewpointFromScene(this._cesiumWidget.scene);
+  }
+
   private _setCurrentImage(image?: PanoramaImage): void {
     this._currentImage = image;
     this.currentImageChanged.raiseEvent(image);
@@ -151,15 +165,35 @@ export default class PanoramaMap extends VcsMap {
     return this._cesiumWidget;
   }
 
-  getViewpoint(): Promise<null | Viewpoint> {
-    return Promise.resolve(this.getViewpointSync());
+  /**
+   * Internal API used to register visualizations from layer implementations
+   * @param  primitiveCollection
+   */
+  addPrimitiveCollection(
+    primitiveCollection: PrimitiveCollection | Cesium3DTileset,
+  ): void {
+    if (!this._cesiumWidget) {
+      throw new Error('Cannot add primitive to uninitialized map');
+    }
+    if (this.validateVisualization(primitiveCollection)) {
+      this.addVisualization(primitiveCollection);
+      ensureInCollection(
+        this._cesiumWidget.scene.primitives,
+        primitiveCollection,
+        this.layerCollection,
+      );
+    }
   }
 
-  getViewpointSync(): Viewpoint | null {
-    if (!this._cesiumWidget || !this._cesiumWidget.scene || !this.target) {
-      return null;
-    }
-    return getViewpointFromScene(this._cesiumWidget.scene);
+  /**
+   * Internal API to unregister the visualization for a layers implementation
+   * @param  primitiveCollection
+   */
+  removePrimitiveCollection(
+    primitiveCollection: PrimitiveCollection | Cesium3DTileset,
+  ): void {
+    this.removeVisualization(primitiveCollection);
+    this._cesiumWidget?.scene.primitives.remove(primitiveCollection);
   }
 
   destroy(): void {
