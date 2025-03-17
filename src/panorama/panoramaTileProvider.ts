@@ -1,5 +1,5 @@
 import LRUCache from 'ol/structs/LRUCache.js';
-import { Cartesian3 } from '@vcmap-cesium/engine';
+import { Matrix4 } from '@vcmap-cesium/engine';
 import { getLogger } from '@vcsuite/logger';
 import { BaseDecoder, GeoTIFFImage, Pool } from 'geotiff';
 import {
@@ -54,7 +54,7 @@ function addTileToCache(
 
 export function createPanoramaTileProvider(
   levelImages: GeoTIFFImage[],
-  origin: Cartesian3,
+  modelMatrix: Matrix4,
   tileSize: TileSize,
   minLevel: number,
   maxCacheSize?: number,
@@ -103,7 +103,7 @@ export function createPanoramaTileProvider(
         tileSize[1],
       );
 
-      return createPanoramaTile(tileCoordinate, bm, origin, tileSize);
+      return createPanoramaTile(tileCoordinate, bm, modelMatrix, tileSize);
     }
     return null;
   };

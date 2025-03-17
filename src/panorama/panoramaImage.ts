@@ -81,7 +81,7 @@ function parsePanoramaGDALMetadata(
   }
 
   const position = Cartesian3.fromDegrees(0, 0, 0);
-  const orientation = HeadingPitchRoll.fromDegrees(0, 0, 0);
+  const orientation = new HeadingPitchRoll(0, 0, 0);
   if (gdalMetadata?.PANORAMA_POSITION) {
     const [lat, lon, z] = gdalMetadata.PANORAMA_POSITION.split(',')
       .map(Number)
@@ -181,15 +181,13 @@ export async function createPanoramaImageFromURL(
     hasDepth,
   } = await loadRGBImages(absoluteUrl);
 
-  const headingPitchRoll = HeadingPitchRoll.fromDegrees(
-    orientation.heading,
-    orientation.pitch,
-    orientation.roll,
-  );
-
   const modelMatrix = Transforms.headingPitchRollToFixedFrame(
     position,
-    headingPitchRoll,
+    new HeadingPitchRoll(
+      orientation.heading + Math.PI / 2, // spheres are oriented down the X axis, twist it to align.
+      orientation.pitch,
+      orientation.roll,
+    ),
   );
 
   const upCart4 = Matrix4.getColumn(modelMatrix, 2, new Cartesian4());
@@ -203,7 +201,7 @@ export async function createPanoramaImageFromURL(
 
   const tileProvider = createPanoramaTileProvider(
     rgb,
-    position,
+    modelMatrix,
     tileSize,
     minLevel,
   );
@@ -227,7 +225,7 @@ export async function createPanoramaImageFromURL(
 
       intensityTileProvider = createPanoramaTileProvider(
         intensity,
-        position,
+        modelMatrix,
         tileSize,
         minLevel,
       );
@@ -259,7 +257,7 @@ export async function createPanoramaImageFromURL(
       return position;
     },
     get orientation(): HeadingPitchRoll {
-      return headingPitchRoll;
+      return orientation;
     },
     get modelMatrix(): Matrix4 {
       return modelMatrix;

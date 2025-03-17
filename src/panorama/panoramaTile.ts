@@ -4,12 +4,11 @@ import {
   Color,
   EllipsoidGeometry,
   GeometryInstance,
-  HeadingPitchRoll,
   Material,
   MaterialAppearance,
   Math as CesiumMath,
+  Matrix4,
   Primitive,
-  Transforms,
   VertexFormat,
 } from '@vcmap-cesium/engine';
 import { Extent } from 'ol/extent.js';
@@ -31,7 +30,6 @@ export type TileCoordinate = {
 export type TileSize = [number, number];
 
 export type PanoramaTile = {
-  readonly position: Cartesian3;
   readonly primitive: Primitive;
   readonly tileCoordinate: TileCoordinate;
   opacity: number;
@@ -229,7 +227,7 @@ function getImageTileAppearance(
 
 function createPrimitive(
   { x, y, level }: TileCoordinate,
-  position: Cartesian3,
+  modelMatrix: Matrix4,
 ): Primitive {
   const sizeR = tileSizeInRadians(level);
   const heading = x * sizeR;
@@ -252,20 +250,17 @@ function createPrimitive(
     ],
     appearance: getEmptyTileAppearance(),
     asynchronous: true,
-    modelMatrix: Transforms.headingPitchRollToFixedFrame(
-      position,
-      new HeadingPitchRoll(0, 0, 0),
-    ),
+    modelMatrix,
   });
 }
 
 export function createPanoramaTile(
   tileCoordinate: TileCoordinate,
   image: ImageBitmap,
-  origin: Cartesian3,
+  modelMatrix: Matrix4,
   tileSize: TileSize,
 ): PanoramaTile {
-  const primitive = createPrimitive(tileCoordinate, origin);
+  const primitive = createPrimitive(tileCoordinate, modelMatrix);
   primitive.appearance = getImageTileAppearance(
     tileCoordinate,
     image,
@@ -299,9 +294,6 @@ export function createPanoramaTile(
   }, TEXTURE_WAIT_INTERVAL_MS);
 
   return {
-    get position(): Cartesian3 {
-      return origin;
-    },
     get primitive(): Primitive {
       return primitive;
     },
