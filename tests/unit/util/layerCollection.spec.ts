@@ -1,19 +1,36 @@
+import { expect } from 'chai';
 import { Entity, SplitDirection } from '@vcmap-cesium/engine';
-import Layer from '../../../src/layer/layer.js';
+import sinon from 'sinon';
+import Layer, { LayerOptions } from '../../../src/layer/layer.js';
 import LayerCollection from '../../../src/util/layerCollection.js';
 import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
 import OpenStreetMapLayer from '../../../src/layer/openStreetMapLayer.js';
 import { setOpenlayersMap } from '../helpers/openlayersHelpers.js';
 import VcsApp from '../../../src/vcsApp.js';
-import { getLayerIndex, makeOverrideCollection } from '../../../index.js';
+import {
+  deserializeLayer,
+  getLayerIndex,
+  serializeLayer,
+} from '../../../src/vcsModuleHelpers.js';
+import makeOverrideCollection, {
+  OverrideCollection,
+} from '../../../src/util/overrideCollection.js';
 import GlobalHider from '../../../src/layer/globalHider.js';
 
+function getLocalZIndex(layerCollection: LayerCollection, l?: Layer): number {
+  if (l) {
+    // @ts-expect-error: z index is undefined
+    return l[layerCollection.zIndexSymbol] as number;
+  }
+  return 0;
+}
+
 describe('LayerCollection', () => {
-  let layer1;
-  let layer2;
-  let layer3;
-  let layer4;
-  let sandbox;
+  let layer1: Layer;
+  let layer2: Layer;
+  let layer3: Layer;
+  let layer4: Layer;
+  let sandbox: sinon.SinonSandbox;
 
   before(() => {
     layer1 = new Layer({
@@ -32,7 +49,7 @@ describe('LayerCollection', () => {
     });
     sandbox = sinon.createSandbox();
     sandbox.stub(Layer.prototype, 'isSupported').returns(true);
-    sandbox.stub(Layer.prototype, 'initialize').resolves(true);
+    sandbox.stub(Layer.prototype, 'initialize').resolves();
   });
 
   after(() => {
@@ -64,14 +81,14 @@ describe('LayerCollection', () => {
       const entity = new Entity();
       newGlobalHider.addFeature('test', entity);
       layerCollection.globalHider = newGlobalHider;
-      expect(layer1.globalHider.hasFeature('test', entity)).to.be.true;
+      expect(layer1.globalHider!.hasFeature('test', entity)).to.be.true;
     });
   });
 
   describe('adding layers', () => {
-    let layerCollection;
-    let layer5;
-    let layer6;
+    let layerCollection: LayerCollection;
+    let layer5: Layer;
+    let layer6: Layer;
 
     before(() => {
       layer5 = new Layer({
@@ -104,11 +121,13 @@ describe('LayerCollection', () => {
 
     it('should raise the added event', () => {
       const spy = sandbox.spy();
-      const listener = layerCollection.added.addEventListener((layer) => {
-        expect(layer).to.equal(layer2);
-        spy();
-        listener();
-      });
+      const listener = layerCollection.added.addEventListener(
+        (layer: Layer) => {
+          expect(layer).to.equal(layer2);
+          spy();
+          listener();
+        },
+      );
       layerCollection.add(layer2);
       expect(spy).to.have.been.calledOnce;
     });
@@ -133,7 +152,7 @@ describe('LayerCollection', () => {
       layerCollection.add(layer1);
       const spy = sandbox.spy();
       const listener = layerCollection.stateChanged.addEventListener(
-        (layer) => {
+        (layer: Layer) => {
           expect(layer).to.equal(layer1);
           spy();
         },
@@ -175,7 +194,7 @@ describe('LayerCollection', () => {
   });
 
   describe('removing layers', () => {
-    let layerCollection;
+    let layerCollection: LayerCollection;
 
     beforeEach(() => {
       layerCollection = LayerCollection.from([layer1, layer2, layer3, layer4]);
@@ -213,10 +232,10 @@ describe('LayerCollection', () => {
   });
 
   describe('handling of exclusive layers', () => {
-    let app;
-    let layerCollection;
-    let layer5;
-    let layer6;
+    let app: VcsApp;
+    let layerCollection: LayerCollection;
+    let layer5: OpenStreetMapLayer;
+    let layer6: OpenStreetMapLayer;
 
     before(async () => {
       app = new VcsApp();
@@ -286,11 +305,58 @@ describe('LayerCollection', () => {
     });
   });
 
+  describe('changing render order by moving items', () => {
+    let layerCollection: LayerCollection;
+
+    beforeEach(() => {
+      layerCollection = LayerCollection.from([layer1, layer2, layer3, layer4]);
+    });
+
+    afterEach(() => {
+      layerCollection.destroy();
+    });
+
+    it('should update the local zIndex according to new order moving forward', () => {
+      layerCollection.moveTo(layer1, 2);
+
+      expect([...layerCollection].indexOf(layer1)).to.equal(2);
+      expect(getLocalZIndex(layerCollection, layer1)).to.be.greaterThanOrEqual(
+        getLocalZIndex(layerCollection, [...layerCollection].at(-2)),
+      );
+    });
+
+    it('should update the local zIndex when moving backward', () => {
+      layerCollection.moveTo(layer2, 1);
+
+      expect([...layerCollection].indexOf(layer2)).to.equal(1);
+      expect(getLocalZIndex(layerCollection, layer2)).to.be.greaterThanOrEqual(
+        getLocalZIndex(layerCollection, [...layerCollection].at(0)),
+      );
+    });
+
+    it('should update the local zIndex when moving to the front', () => {
+      layerCollection.moveTo(layer2, 0);
+
+      expect([...layerCollection].indexOf(layer2)).to.equal(0);
+      expect(getLocalZIndex(layerCollection, layer2)).to.be.lessThanOrEqual(
+        getLocalZIndex(layerCollection, [...layerCollection].at(1)),
+      );
+    });
+
+    it('should update the local zIndex when moving to the back', () => {
+      layerCollection.moveTo(layer4, 3);
+
+      expect([...layerCollection].indexOf(layer4)).to.equal(3);
+      expect(getLocalZIndex(layerCollection, layer4)).to.be.greaterThanOrEqual(
+        getLocalZIndex(layerCollection, [...layerCollection].at(-2)),
+      );
+    });
+  });
+
   describe('handling changes to zIndex', () => {
-    /** @type {import("@vcmap/core").LayerCollection} */
-    let layerCollection;
-    let layer5;
-    let layer6;
+    let layerCollection: LayerCollection;
+    let layer5: Layer;
+    let layer6: Layer;
 
     beforeEach(() => {
       layer5 = new Layer({
@@ -350,12 +416,9 @@ describe('LayerCollection', () => {
   });
 
   describe('overrideLayerCollection', () => {
-    /** @type {OverrideLayerCollection} */
-    let layerCollection;
-    /** @type {Layer} */
-    let originalLayer;
-    /** @type {Layer} */
-    let overrideLayer;
+    let layerCollection: OverrideCollection<Layer, LayerCollection>;
+    let originalLayer: Layer;
+    let overrideLayer: Layer;
 
     beforeEach(() => {
       originalLayer = new Layer({
@@ -368,14 +431,13 @@ describe('LayerCollection', () => {
         exclusiveGroups: ['test'],
       });
 
-      layerCollection = LayerCollection.from([originalLayer]);
-      makeOverrideCollection(
-        layerCollection,
+      layerCollection = makeOverrideCollection<Layer, LayerCollection>(
+        LayerCollection.from([originalLayer]),
         () => {
           return 'uuid';
         },
-        null,
-        null,
+        (l: Layer) => l.toJSON(),
+        (o: LayerOptions) => new Layer(o),
         Layer,
         getLayerIndex,
       );
@@ -392,7 +454,7 @@ describe('LayerCollection', () => {
         layerCollection.override(overrideLayer);
         expect(
           layerCollection.exclusiveManager.layers
-            .get('test')
+            .get('test')!
             .has(originalLayer),
         ).to.be.false;
       });
@@ -400,7 +462,7 @@ describe('LayerCollection', () => {
   });
 
   describe('locale handling', () => {
-    let layerCollection;
+    let layerCollection: LayerCollection;
 
     beforeEach(() => {
       layerCollection = new LayerCollection();

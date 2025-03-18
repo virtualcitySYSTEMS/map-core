@@ -1,6 +1,7 @@
 ### 6.1.4
 
 - Fixes issue on serialization of `VectorClusterStyleItem`, where default templateContext was returned
+- Fixes local zIndex handling within `LayerCollection` on `moveTo` index
 
 ### 6.1.3
 
