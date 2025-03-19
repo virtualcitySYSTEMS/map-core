@@ -1,3 +1,8 @@
+### 6.1.5
+
+- Fixes an issue in the vectorClusterGroup, where the toJSON function would not handle the vectorProperties corrrectly
+- Changed the default `distance` of the vectorClusterGroup to 100
+
 ### 6.1.4
 
 - Fixes issue on serialization of `VectorClusterStyleItem`, where default templateContext was returned

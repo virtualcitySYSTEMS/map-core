@@ -395,6 +395,40 @@ describe('VectorClusterGroup', () => {
       });
     });
 
+    describe('vectorProperties', () => {
+      it('should not include the default vectorProperties', () => {
+        const defaultOptions = VectorClusterGroup.getDefaultOptions();
+        const config = new VectorClusterGroup({
+          vectorProperties: defaultOptions.vectorProperties,
+        }).toJSON();
+        expect(config).to.not.have.property('vectorProperties');
+      });
+
+      it('should not vectorProperties, if not given', () => {
+        const defaultOptions = VectorClusterGroup.getDefaultOptions();
+        const config = new VectorClusterGroup({}).toJSON();
+        expect(config).to.not.have.property('vectorProperties');
+      });
+
+      it('should not change given vectorProperties values', () => {
+        const config = new VectorClusterGroup({
+          vectorProperties: { heightAboveGround: 10 },
+        }).toJSON();
+        expect(config.vectorProperties).to.have.all.keys(['heightAboveGround']);
+        expect(config.vectorProperties).to.have.property(
+          'heightAboveGround',
+          10,
+        );
+      });
+
+      it('should not changed an empty vectorProperties', () => {
+        const config = new VectorClusterGroup({
+          vectorProperties: {},
+        }).toJSON();
+        expect(config.vectorProperties).to.deep.equal({});
+      });
+    });
+
     describe('of a configured vector cluster group', () => {
       let inputConfig: VectorClusterGroupOptions;
       let outputConfig: VectorClusterGroupOptions;
