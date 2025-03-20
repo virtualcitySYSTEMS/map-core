@@ -13,6 +13,7 @@ import type {
 import type { TileProviderOptions } from './layer/tileProvider/tileProvider.js';
 import type { AbstractFeatureProviderOptions } from './featureProvider/abstractFeatureProvider.js';
 import type VcsApp from './vcsApp.js';
+import PanoramaMap from './map/panoramaMap.js';
 
 function getLogger(): Logger {
   return getLoggerByName('init');
@@ -32,6 +33,10 @@ export function deserializeMap(
   const map = getObjectFromClassRegistry(vcsApp.mapClassRegistry, mapConfig);
   if (map) {
     map.layerCollection = vcsApp.layers;
+  }
+
+  if (map instanceof PanoramaMap) {
+    map.panoramaDatasets = vcsApp.panoramaDatasets;
   }
   return map;
 }

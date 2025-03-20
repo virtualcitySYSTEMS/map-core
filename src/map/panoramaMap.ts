@@ -28,6 +28,8 @@ import {
 } from '../panorama/debugSphere.js';
 import Viewpoint from '../util/viewpoint.js';
 import { ensureInCollection } from './cesiumMap.js';
+import PanoramaDatasetCollection from '../panorama/panoramaDatasetCollection.js';
+import Projection from '../util/projection.js';
 
 export type PanoramaMapOptions = VcsMapOptions;
 
@@ -57,6 +59,10 @@ export default class PanoramaMap extends VcsMap {
   private _debugSphere: DebugSphere | undefined;
 
   readonly currentImageChanged = new VcsEvent<PanoramaImage | undefined>();
+
+  private _panoramaDatasets = new PanoramaDatasetCollection();
+
+  private _destroyCollection = true;
 
   get screenSpaceEventHandler(): ScreenSpaceEventHandler {
     if (!this._screenSpaceEventHandler) {
@@ -90,6 +96,18 @@ export default class PanoramaMap extends VcsMap {
     }
   }
 
+  get panoramaDatasets(): PanoramaDatasetCollection {
+    return this._panoramaDatasets;
+  }
+
+  set panoramaDatasets(collection: PanoramaDatasetCollection) {
+    if (this._destroyCollection) {
+      this._panoramaDatasets.destroy();
+    }
+    this._panoramaDatasets = collection;
+    this._destroyCollection = false;
+  }
+
   async initialize(): Promise<void> {
     if (!this.initialized) {
       this._cesiumWidget = new CesiumWidget(this.mapElement, {
@@ -118,11 +136,6 @@ export default class PanoramaMap extends VcsMap {
       this._imageView = createPanoramaImageView(this);
       this._destroyNavigation = createPanoramaNavigation(this);
       this.initialized = true;
-
-      const image = await createPanoramaImageFromURL(
-        'exampleData/panoramaImages/pano_000001_000011_rgb.tif',
-      );
-      this._setCurrentImage(image);
     }
     await super.initialize();
   }
@@ -142,18 +155,41 @@ export default class PanoramaMap extends VcsMap {
     }
   }
 
-  getViewpoint(): Promise<null | Viewpoint> {
+  override getViewpoint(): Promise<null | Viewpoint> {
     return Promise.resolve(this.getViewpointSync());
   }
 
-  getViewpointSync(): Viewpoint | null {
+  override getViewpointSync(): Viewpoint | null {
     if (!this._cesiumWidget || !this._cesiumWidget.scene || !this.target) {
       return null;
     }
     return getViewpointFromScene(this._cesiumWidget.scene);
   }
 
-  private _setCurrentImage(image?: PanoramaImage): void {
+  override async gotoViewpoint(viewpoint: Viewpoint): Promise<void> {
+    if (
+      this.movementApiCallsDisabled ||
+      !viewpoint.isValid() ||
+      !this._cesiumWidget
+    ) {
+      return;
+    }
+
+    const position = viewpoint.groundPosition ?? viewpoint.cameraPosition;
+    if (!position) {
+      return;
+    }
+
+    const closestImage = await this.panoramaDatasets.getClosestImage(
+      Projection.wgs84ToMercator(position),
+    );
+
+    if (closestImage) {
+      this.setCurrentImage(closestImage);
+    }
+  }
+
+  setCurrentImage(image?: PanoramaImage): void {
     this._currentImage = image;
     this.currentImageChanged.raiseEvent(image);
   }
@@ -204,6 +240,10 @@ export default class PanoramaMap extends VcsMap {
     this._screenSpaceListener?.();
     this._screenSpaceEventHandler?.destroy();
     this._cesiumWidget?.destroy();
+
+    if (this._destroyCollection) {
+      this._panoramaDatasets.destroy();
+    }
     super.destroy();
   }
 }

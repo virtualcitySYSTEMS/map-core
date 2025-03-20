@@ -53,6 +53,10 @@ import {
 import { validityPlaceholder } from '../util/editor/interactions/createPolygonInteraction.js';
 import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
 import { PrimitiveType } from '../util/featureconverter/convert.js';
+import {
+  PanoramaDatasetFeatureProperties,
+  panoramaFeature,
+} from '../panorama/panoramaDataset.js';
 
 declare module 'ol/geom.js' {
   interface Geometry {
@@ -127,6 +131,7 @@ declare module 'ol/index.js' {
     [createSync]?: boolean;
     [vectorClusterGroupName]?: string;
     [primitives]?: (PrimitiveType | Label | Billboard | Entity)[];
+    [panoramaFeature]?: PanoramaDatasetFeatureProperties;
   }
 
   class CanvasTileRenderer extends CanvasImmediateRenderer {

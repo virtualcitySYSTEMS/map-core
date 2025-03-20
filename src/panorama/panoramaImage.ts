@@ -12,6 +12,7 @@ import {
 } from './panoramaTileProvider.js';
 import type { TileSize } from './panoramaTile.js';
 import { createPanoramaDepth, PanoramaDepth } from './panoramaDepth.js';
+import PanoramaDataset from './panoramaDataset.js';
 
 export type PanoramaImageOptions = {
   imageUrl: string;
@@ -53,6 +54,8 @@ export type PanoramaImage = {
   readonly tileSize: TileSize;
   readonly minLevel: number;
   readonly maxLevel: number;
+  readonly maxDepth?: number;
+  readonly dataset?: PanoramaDataset;
 
   getIntensityTileProvider(): Promise<PanoramaTileProvider>;
   getPositionAtImageCoordinate(
@@ -167,6 +170,7 @@ function parseRgbUrl(imageUrl: string): { name: string; absoluteUrl: string } {
 
 export async function createPanoramaImageFromURL(
   imageUrl: string,
+  dataset?: PanoramaDataset,
 ): Promise<PanoramaImage> {
   const { name, absoluteUrl } = parseRgbUrl(imageUrl);
   const {
@@ -288,6 +292,12 @@ export async function createPanoramaImageFromURL(
     },
     get maxLevel(): number {
       return maxLevel;
+    },
+    get maxDepth(): number | undefined {
+      return depthTileProvider?.maxDepth;
+    },
+    get dataset(): PanoramaDataset | undefined {
+      return dataset;
     },
     getIntensityTileProvider,
     async getPositionAtImageCoordinate(
