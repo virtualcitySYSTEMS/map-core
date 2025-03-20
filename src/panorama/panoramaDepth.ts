@@ -3,6 +3,7 @@ import { fromUrl, GeoTIFFImage, Pool, ReadRasterResult } from 'geotiff';
 import { sphericalToCartesian } from './sphericalCoordinates.js';
 
 export type PanoramaDepth = {
+  readonly maxDepth: number;
   getPositionAtImageCoordinate(
     imageCoordinate: [number, number],
     result?: Cartesian3,
@@ -19,6 +20,48 @@ type GetTileForCoordinate = (imageCoordinate: [number, number]) => {
   pixelX: number;
   pixelY: number;
 };
+
+type DepthGDALMetadata = {
+  version: string;
+  min: number;
+  max: number;
+};
+
+function createDefaultMetadata(): DepthGDALMetadata {
+  return {
+    version: '1.0',
+    min: 0,
+    max: 50,
+  };
+}
+
+function parsePanoramaGDALMetadata(
+  gdalMetadata?: Record<string, string>,
+): DepthGDALMetadata {
+  const version = gdalMetadata?.PANORAMA_DEPTH_VERSION ?? '';
+  const metadata = createDefaultMetadata();
+  if (version !== '1.0') {
+    return metadata;
+  }
+
+  const max = gdalMetadata?.PANORAMA_DEPTH_MAX ?? '';
+  if (max) {
+    const maxNumber = Number(max);
+    if (Number.isFinite(maxNumber)) {
+      metadata.max = maxNumber;
+    }
+  }
+
+  const min = gdalMetadata?.PANORAMA_DEPTH_MIN ?? '';
+  if (min) {
+    const minNumber = Number(min);
+    if (Number.isFinite(minNumber)) {
+      metadata.min = minNumber;
+    }
+  }
+
+  return metadata;
+}
 
 function createGetTileForCoordinate(image: GeoTIFFImage): GetTileForCoordinate {
   const width = image.getWidth();
@@ -59,8 +102,8 @@ function createDepthTileProvider(
 
 function interpolate(
   value: number,
-  min = 0,
-  max = 50,
+  min: number,
+  max: number,
   minValue = 0,
   maxValue = 65535,
 ): number {
@@ -78,18 +121,27 @@ export async function createPanoramaDepth(
     throw new Error('Depth image must have exactly one image');
   }
   const highResImage = await geotiff.getImage(0);
+  const { min, max } = parsePanoramaGDALMetadata(
+    highResImage.getGDALMetadata() as Record<string, string>,
+  );
   const tileProvider = createDepthTileProvider(highResImage);
 
   return {
+    get maxDepth(): number {
+      return max;
+    },
     async getPositionAtImageCoordinate(
       imageCoordinate: [number, number],
       result?: Cartesian3,
     ): Promise<Cartesian3 | undefined> {
       const tile = await tileProvider.getDepthTile(imageCoordinate);
       const data = (tile[0] as Uint8Array).filter((i) => !!i);
+      if (data.length === 0) {
+        return undefined;
+      }
       const depthValue =
         data.reduce(
-          (prev: number, curr: number) => prev + interpolate(curr),
+          (prev: number, curr: number) => prev + interpolate(curr, min, max),
           0,
         ) / data.length;
       if (depthValue === 0) {
