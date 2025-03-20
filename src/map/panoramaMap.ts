@@ -6,10 +6,7 @@ import {
   ShadowMode,
 } from '@vcmap-cesium/engine';
 import VcsMap, { VcsMapOptions } from './vcsMap.js';
-import {
-  createPanoramaImageFromURL,
-  PanoramaImage,
-} from '../panorama/panoramaImage.js';
+import { PanoramaImage } from '../panorama/panoramaImage.js';
 import { mapClassRegistry } from '../classRegistry.js';
 import {
   createPanoramaImageView,

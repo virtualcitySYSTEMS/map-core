@@ -26,6 +26,7 @@ import type OpenlayersMap from '../map/openlayersMap.js';
 import type ObliqueMap from '../map/obliqueMap.js';
 import type CesiumMap from '../map/cesiumMap.js';
 import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
+import type PanoramaMap from '../map/panoramaMap.js';
 
 /**
  * This is the return from cesium scene.pick and scene.drillPick, which returns "any". We cast to this type.
@@ -183,7 +184,10 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
       await this._openlayersHandler(event);
     } else if (event.map.className === 'ObliqueMap') {
       await this._obliqueHandler(event);
-    } else if (event.map.className === 'CesiumMap') {
+    } else if (
+      event.map.className === 'CesiumMap' ||
+      event.map.className === 'PanoramaMap'
+    ) {
       await this._cesiumHandler(event);
     }
     if (event.type & EventType.DRAGSTART && event.feature) {
@@ -243,8 +247,8 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
   }
 
   private _cesiumHandler(event: InteractionEvent): Promise<InteractionEvent> {
-    const cesiumMap = event.map as CesiumMap;
-    const scene = cesiumMap.getScene();
+    const cesiumMap = event.map as CesiumMap | PanoramaMap;
+    const { scene } = cesiumMap.getCesiumWidget()!;
 
     if (!scene) {
       return Promise.resolve(event);
@@ -286,7 +290,7 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
       }
       scratchCartographic = Cartographic.fromCartesian(
         scratchCartesian,
-        scene.globe.ellipsoid,
+        scene.globe?.ellipsoid,
         scratchCartographic,
       );
 

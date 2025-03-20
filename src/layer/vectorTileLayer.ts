@@ -49,6 +49,8 @@ import Extent from '../util/extent.js';
 import VcsMap from '../map/vcsMap.js';
 import StyleItem from '../style/styleItem.js';
 import VectorTileCesiumImpl from './cesium/vectorTileCesiumImpl.js';
+import VectorTilePanoramaImpl from './panorama/vectorTilePanoramaImpl.js';
+import PanoramaMap from '../map/panoramaMap.js';
 
 /**
  * synchronizes featureVisibility Symbols on the feature;
@@ -132,7 +134,10 @@ export interface VectorTileImplementation extends FeatureLayerImplementation {
  * @group Layer
  */
 class VectorTileLayer extends FeatureLayer<
-  VectorTileOpenlayersImpl | VectorRasterTileCesiumImpl | VectorTileCesiumImpl
+  | VectorTileOpenlayersImpl
+  | VectorRasterTileCesiumImpl
+  | VectorTileCesiumImpl
+  | VectorTilePanoramaImpl
 > {
   static get className(): string {
     return 'VectorTileLayer';
@@ -194,7 +199,11 @@ class VectorTileLayer extends FeatureLayer<
   constructor(options: VectorTileOptions) {
     super(options);
 
-    this._supportedMaps = [CesiumMap.className, OpenlayersMap.className];
+    this._supportedMaps = [
+      CesiumMap.className,
+      OpenlayersMap.className,
+      PanoramaMap.className,
+    ];
 
     const defaultOptions = VectorTileLayer.getDefaultOptions();
 
@@ -455,6 +464,7 @@ class VectorTileLayer extends FeatureLayer<
     | VectorTileCesiumImpl
     | VectorRasterTileCesiumImpl
     | VectorTileOpenlayersImpl
+    | VectorTilePanoramaImpl
   )[] {
     if (map instanceof CesiumMap) {
       return [
@@ -468,6 +478,10 @@ class VectorTileLayer extends FeatureLayer<
       return [
         new VectorTileOpenlayersImpl(map, this.getImplementationOptions()),
       ];
+    }
+
+    if (map instanceof PanoramaMap) {
+      return [new VectorTilePanoramaImpl(map, this.getImplementationOptions())];
     }
 
     return [];

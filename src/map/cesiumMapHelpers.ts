@@ -1,5 +1,7 @@
 import {
+  Camera,
   Cartesian3,
+  Cartographic,
   Ellipsoid,
   KeyboardEventModifier,
   Math as CesiumMath,
@@ -195,4 +197,26 @@ export function getViewpointFromScene(scene: Scene): Viewpoint {
     pitch: CesiumMath.toDegrees(cam.pitch),
     roll: CesiumMath.toDegrees(cam.roll),
   });
+}
+
+export function getResolution(
+  cartesian: Cartesian3,
+  camera: Camera,
+  mapElement: HTMLElement,
+  latitude?: number,
+): number {
+  const distance = Cartesian3.distance(cartesian, camera.position);
+  const usedLatitude =
+    latitude ?? Cartographic.fromCartesian(cartesian).latitude;
+
+  const fov = Math.PI / 3.0;
+  const width = mapElement.offsetWidth;
+  const height = mapElement.offsetHeight;
+  const aspectRatio = width / height;
+  const fovy = Math.atan(Math.tan(fov * 0.5) / aspectRatio) * 2.0;
+  const visibleMeters = 2 * distance * Math.tan(fovy / 2);
+  const relativeCircumference = Math.cos(Math.abs(usedLatitude));
+  const visibleMapUnits = visibleMeters / relativeCircumference;
+
+  return visibleMapUnits / height;
 }

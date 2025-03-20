@@ -20,7 +20,6 @@ import {
   Intersect,
   ImageryLayer,
   PrimitiveCollection,
-  Cartographic,
   type Scene,
   type ImageryLayerCollection,
   type Cesium3DTileset,
@@ -52,6 +51,7 @@ import VcsEvent from '../vcsEvent.js';
 import { DisableMapControlOptions } from '../util/mapCollection.js';
 import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
 import {
+  getResolution,
   getViewpointFromScene,
   setupCesiumInteractions,
 } from './cesiumMapHelpers.js';
@@ -768,24 +768,18 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
 
   private _getCurrentResolutionFromCartesianLatitude(
     cartesian: Cartesian3,
-    latitude: number,
+    latitude?: number,
   ): number {
     if (!this._cesiumWidget) {
       return 1;
     }
-    const cam = this._cesiumWidget.scene.camera;
-    const distance = Cartesian3.distance(cartesian, cam.position);
 
-    const fov = Math.PI / 3.0;
-    const width = this.mapElement.offsetWidth;
-    const height = this.mapElement.offsetHeight;
-    const aspectRatio = width / height;
-    const fovy = Math.atan(Math.tan(fov * 0.5) / aspectRatio) * 2.0;
-    const visibleMeters = 2 * distance * Math.tan(fovy / 2);
-    const relativeCircumference = Math.cos(Math.abs(latitude));
-    const visibleMapUnits = visibleMeters / relativeCircumference;
-
-    return visibleMapUnits / height;
+    return getResolution(
+      cartesian,
+      this._cesiumWidget.camera,
+      this.mapElement,
+      latitude,
+    );
   }
 
   getCurrentResolution(coordinate: Coordinate): number {
@@ -802,10 +796,7 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
   }
 
   getCurrentResolutionFromCartesian(cartesian: Cartesian3): number {
-    return this._getCurrentResolutionFromCartesianLatitude(
-      cartesian,
-      Cartographic.fromCartesian(cartesian).latitude,
-    );
+    return this._getCurrentResolutionFromCartesianLatitude(cartesian);
   }
 
   disableMovement(prevent: boolean | DisableMapControlOptions): void {
