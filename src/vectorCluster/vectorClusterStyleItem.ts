@@ -41,7 +41,10 @@ export default class VectorClusterStyleItem extends VcsObject {
     return 'VectorClusterStyleItem';
   }
 
-  static getDefaultOptions(): Required<VectorClusterStyleItemOptions> {
+  static getDefaultOptions(): Required<
+    Omit<VectorClusterStyleItemOptions, 'templateContext'>
+  > &
+    Pick<VectorClusterStyleItemOptions, 'templateContext'> {
     return {
       type: 'VectorClusterStyleItem',
       name: '',
@@ -69,7 +72,7 @@ export default class VectorClusterStyleItem extends VcsObject {
         ' </text>',
         '</svg>',
       ].join(''),
-      templateContext: {},
+      templateContext: undefined,
       breaks: [2, 3, 4, 5, 10, 15, 20, 25],
       zeroScaleOffset: 3,
       scaleFactor: 0.08,
@@ -342,7 +345,7 @@ export default class VectorClusterStyleItem extends VcsObject {
       breaks.length !== defaultOptions.breaks.length ||
       breaks.some((b) => !defaultOptions.breaks.includes(b))
     ) {
-      config.breaks = breaks;
+      config.breaks = [...breaks];
     }
     if (this.zeroScaleOffset !== defaultOptions.zeroScaleOffset) {
       config.zeroScaleOffset = this.zeroScaleOffset;

@@ -334,6 +334,18 @@ class LayerCollection extends IndexedCollection<Layer> {
     return super._remove(layer);
   }
 
+  protected _move(
+    layer: Layer,
+    itemIndex: number,
+    targetIndex: number,
+  ): number {
+    const target = super._move(layer, itemIndex, targetIndex);
+    if (itemIndex !== target) {
+      this._ensureLocalZIndex(layer);
+    }
+    return target;
+  }
+
   clear(): void {
     Object.values(this._layerEventListeners)
       .flat()

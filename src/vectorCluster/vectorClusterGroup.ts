@@ -4,6 +4,7 @@ import { Point } from 'ol/geom.js';
 import { StyleFunction, StyleLike } from 'ol/style/Style.js';
 import { parseInteger } from '@vcsuite/parsers';
 import { check, maybe } from '@vcsuite/check';
+import deepEqual from 'fast-deep-equal';
 import VcsObject, { VcsObjectOptions } from '../vcsObject.js';
 import VectorLayer from '../layer/vectorLayer.js';
 import ClusterEnhancedVectorSource from '../ol/source/ClusterEnhancedVectorSource.js';
@@ -18,7 +19,7 @@ import VectorClusterStyleItem, {
 import type VcsMap from '../map/vcsMap.js';
 import GlobalHider from '../layer/globalHider.js';
 import VectorProperties, {
-  VectorPropertiesOptions,
+  type VectorPropertiesOptions,
 } from '../layer/vectorProperties.js';
 import CesiumMap from '../map/cesiumMap.js';
 import VectorClusterGroupCesiumImpl from './vectorClusterGroupCesiumImpl.js';
@@ -93,7 +94,7 @@ export default class VectorClusterGroup extends VcsObject {
       name: '',
       style: undefined,
       highlightStyle: undefined,
-      clusterDistance: 40,
+      clusterDistance: 100,
       zIndex: Math.floor(maxZIndex / 2),
       vectorProperties: {
         ...VectorProperties.getDefaultOptions(),
@@ -456,11 +457,12 @@ export default class VectorClusterGroup extends VcsObject {
       config.clusterDistance = this.clusterDistance;
     }
 
-    const vectorProperties = this.vectorProperties.getVcsMeta(
-      defaultOptions.vectorProperties,
-    );
+    const vectorProperties = this.vectorProperties.getVcsMeta();
+    const defaultVectorPropertiesToCompare = new VectorProperties(
+      defaultOptions.vectorProperties!,
+    ).getVcsMeta();
 
-    if (Object.keys(vectorProperties).length > 0) {
+    if (!deepEqual(defaultVectorPropertiesToCompare, vectorProperties)) {
       config.vectorProperties = vectorProperties;
     }
 

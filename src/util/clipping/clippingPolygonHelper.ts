@@ -29,6 +29,7 @@ export function addClippingPolygon(
       clippee.clippingPolygons = new ClippingPolygonCollection();
     }
     if (!clippee.clippingPolygons.contains(polygon)) {
+      clippee.clippingPolygons.setDirty();
       clippee.clippingPolygons.add(polygon);
     }
   }

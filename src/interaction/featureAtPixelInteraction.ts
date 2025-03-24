@@ -1,12 +1,13 @@
 import {
-  Cartographic,
   Cartesian3,
-  Math as CesiumMath,
   Cesium3DTileFeature,
   Cesium3DTilePointFeature,
   Entity,
   Scene,
   Cartesian2,
+  Ray,
+  type Label,
+  Billboard,
 } from '@vcmap-cesium/engine';
 import OLMap from 'ol/Map.js';
 import type { Feature } from 'ol/index.js';
@@ -14,7 +15,6 @@ import AbstractInteraction, {
   type EventFeature,
   type InteractionEvent,
 } from './abstractInteraction.js';
-import Projection from '../util/projection.js';
 import {
   EventType,
   ModificationKeyType,
@@ -26,6 +26,8 @@ import type OpenlayersMap from '../map/openlayersMap.js';
 import type ObliqueMap from '../map/obliqueMap.js';
 import type CesiumMap from '../map/cesiumMap.js';
 import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
+import { cartesianToMercator } from '../util/math.js';
+import { PrimitiveType } from '../util/featureconverter/convert.js';
 
 /**
  * This is the return from cesium scene.pick and scene.drillPick, which returns "any". We cast to this type.
@@ -128,6 +130,33 @@ function getFeatureFromScene(
     feature = getFeatureFromPickObject(pickObject);
   }
   return { pickObject, feature };
+}
+
+const MAX_UNDERGROUND_FEATURE_DEPTH_SQRD = 1000 ** 2;
+function getPositionFromScene(
+  scene: Scene,
+  windowPosition: Cartesian2,
+  ray: Ray,
+  primitivesToExclude?: (PrimitiveType | Label | Billboard | Entity)[],
+): Cartesian3 | undefined {
+  if (primitivesToExclude) {
+    const intersection = scene.pickFromRay(ray, primitivesToExclude);
+    if (intersection?.position) {
+      if (scene.globe.translucency.enabled) {
+        const globeIntersection = scene.globe.pick(ray, scene);
+        if (
+          globeIntersection &&
+          Cartesian3.distanceSquared(globeIntersection, intersection.position) >
+            MAX_UNDERGROUND_FEATURE_DEPTH_SQRD
+        ) {
+          return globeIntersection;
+        }
+      }
+
+      return intersection.position;
+    }
+  }
+  return scene.pickPosition(windowPosition);
 }
 
 /**
@@ -260,49 +289,7 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
       event.feature = feature;
     }
 
-    let scratchCartographic = new Cartographic();
-    let scratchCartesian = new Cartesian3();
-    let scratchPullCartesian = new Cartesian3();
     const { pickTranslucentDepth } = scene;
-
-    const handlePick = (): Promise<InteractionEvent> => {
-      if (!scratchCartesian) {
-        scratchCartesian = new Cartesian3();
-        return Promise.resolve(event);
-      }
-
-      if (this.pullPickedPosition && event.ray) {
-        scratchPullCartesian = Cartesian3.multiplyByScalar(
-          event.ray.direction,
-          this.pullPickedPosition,
-          scratchPullCartesian,
-        );
-
-        scratchCartesian = Cartesian3.subtract(
-          scratchCartesian,
-          scratchPullCartesian,
-          scratchCartesian,
-        );
-      }
-      scratchCartographic = Cartographic.fromCartesian(
-        scratchCartesian,
-        scene.globe.ellipsoid,
-        scratchCartographic,
-      );
-
-      event.position = Projection.wgs84ToMercator(
-        [
-          CesiumMath.toDegrees(scratchCartographic.longitude),
-          CesiumMath.toDegrees(scratchCartographic.latitude),
-          scratchCartographic.height,
-        ],
-        true,
-      );
-      event.positionOrPixel = event.position;
-      scene.pickTranslucentDepth = pickTranslucentDepth;
-      return Promise.resolve(event);
-    };
-
     if (!(event.type & this.pickPosition)) {
       return Promise.resolve(event);
     }
@@ -313,25 +300,49 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
         event.exactPosition = true;
       }
 
+      let primitivesToExclude;
       if (
         feature &&
         (feature as Feature)[primitives] &&
         this._excludeFromPickPosition.has(feature as Feature)
       ) {
-        const primitivesToExclude = [...this._excludeFromPickPosition]
+        primitivesToExclude = [...this._excludeFromPickPosition]
           .flatMap((f) => f[primitives])
           .filter((f) => !!f);
-        const intersection = scene.pickFromRay(event.ray!, primitivesToExclude);
-        if (intersection?.position) {
-          scratchCartesian = intersection.position;
-        }
-      } else {
-        scratchCartesian = scene.pickPosition(
-          event.windowPosition,
-          scratchCartesian,
+      }
+
+      const cartesianPosition = getPositionFromScene(
+        scene,
+        event.windowPosition,
+        event.ray!,
+        primitivesToExclude,
+      );
+
+      if (
+        !cartesianPosition ||
+        Cartesian3.equals(cartesianPosition, Cartesian3.ZERO)
+      ) {
+        return Promise.resolve(event);
+      }
+
+      if (this.pullPickedPosition && event.ray) {
+        const pulledCartesian = Cartesian3.multiplyByScalar(
+          event.ray.direction,
+          this.pullPickedPosition,
+          new Cartesian3(),
+        );
+
+        Cartesian3.subtract(
+          cartesianPosition,
+          pulledCartesian,
+          cartesianPosition,
         );
       }
-      return handlePick();
+
+      event.position = cartesianToMercator(cartesianPosition);
+      event.positionOrPixel = event.position.slice();
+      scene.pickTranslucentDepth = pickTranslucentDepth;
+      return Promise.resolve(event);
     }
 
     return Promise.resolve(event);
