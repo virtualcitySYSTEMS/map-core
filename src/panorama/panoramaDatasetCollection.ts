@@ -74,10 +74,8 @@ export default class PanoramaDatasetCollection extends Collection<PanoramaDatase
       .filter((dataset) => dataset.active)
       .map(async (dataset) => dataset.getClosestImage(coordinate, maxDistance));
 
-    await Promise.all(loadPromises);
-
-    // XXX acutally determine closest one
-    return loadPromises[0];
+    const images = await Promise.all(loadPromises);
+    return images[0]?.image;
   }
 
   destroy(): void {

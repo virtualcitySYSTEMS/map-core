@@ -1,22 +1,24 @@
 import { parseBoolean, parseNumber } from '@vcsuite/parsers';
-import {
-  generateLevelBounds,
-  NODE_ITEM_BYTE_LEN,
-} from 'flatgeobuf/lib/mjs/packedrtree.js';
+import RTree from 'rbush';
 import knn from 'rbush-knn';
-import { Extent } from 'ol/extent.js';
 import { Coordinate } from 'ol/coordinate.js';
+import { Point } from 'ol/geom.js';
 import VcsObject, { VcsObjectOptions } from '../vcsObject.js';
 import VcsEvent from '../vcsEvent.js';
 import FlatGeobufTileProvider from '../layer/tileProvider/flatGeobufTileProvider.js';
-import { createTileCoordinate } from './panoramaTile.js';
-import { mercatorToCartographic } from '../util/math.js';
 import VectorTileLayer from '../layer/vectorTileLayer.js';
 import { markVolatile } from '../vcsModule.js';
 import LayerState from '../layer/layerState.js';
 import { PrimitiveOptionsType } from '../layer/vectorProperties.js';
 import { createPanoramaImageFromURL, PanoramaImage } from './panoramaImage.js';
-import { wgs84Projection } from '../util/projection.js';
+import { mercatorProjection, wgs84Projection } from '../util/projection.js';
+import {
+  getSearchExtent,
+  loadTreeLeaves,
+  PanoramaRTreeNode,
+} from './packedTree.js';
+import Extent from '../util/extent.js';
+import { cartesian2DDistanceSquared } from '../util/math.js';
 
 export type PanoramaDatasetOptions = VcsObjectOptions & {
   url: string;
@@ -53,7 +55,7 @@ export default class PanoramaDataset extends VcsObject {
 
   cameraOffset = -2;
 
-  private _dataExtent: Extent | undefined;
+  private _treeLeaves: RTree<PanoramaRTreeNode> | undefined;
 
   readonly tileProvider: FlatGeobufTileProvider;
 
@@ -144,73 +146,58 @@ export default class PanoramaDataset extends VcsObject {
     return createPanoramaImageFromURL(`${this.baseUrl}/${name}_rgb.tif`, this);
   }
 
+  // there can be optimizations done here, like using the tree and sort based on closest nodes before searching
   async getClosestImage(
     coordinate: Coordinate,
     maxDistance?: number,
-  ): Promise<PanoramaImage | undefined> {
+  ): Promise<{ image: PanoramaImage; distance: number } | undefined> {
     const reader =
       await this.tileProvider.getReaderAndProjection(DATASET_TILE_LEVEL);
 
-    if (!this._dataExtent) {
-      // TODO read in the lowest level of the hilbert tree, so we can determine the closest bottom leaf.
-      const { header } = reader;
-      const rootNodeRanges = generateLevelBounds(
-        header.featuresCount,
-        header.indexNodeSize,
-      ).pop();
-
-      if (rootNodeRanges) {
-        const lengthBeforeTree = reader.lengthBeforeTree();
-
-        // @ts-expect-error: not actually private
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
-        const buffer = (await reader.headerClient.getRange(
-          lengthBeforeTree,
-          NODE_ITEM_BYTE_LEN,
-          0,
-          'index',
-        )) as ArrayBuffer;
-        const dataView = new DataView(buffer);
-        const minX = dataView.getFloat64(0, true); // maxX < nodeMinX
-        const minY = dataView.getFloat64(8, true); // maxY < nodeMinY
-        const maxX = dataView.getFloat64(16, true); // minX > nodeMaxX
-        const maxY = dataView.getFloat64(24, true); // minY > nodeMaxY
-
-        this._dataExtent = [minX, minY, maxX, maxY];
-        console.log(this._dataExtent);
-      }
+    if (!this._treeLeaves) {
+      const nodes = await loadTreeLeaves(reader);
+      this._treeLeaves = new RTree();
+      this._treeLeaves.load(nodes);
     }
 
-    const tile = this.tileProvider.tilingScheme.positionToTileXY(
-      mercatorToCartographic(coordinate),
+    const closesNode = knn(
+      this._treeLeaves,
+      coordinate[0],
+      coordinate[1],
+      1,
+      undefined,
+      maxDistance,
+    );
+    if (closesNode.length === 0) {
+      return undefined;
+    }
+
+    const searchExtent = getSearchExtent(coordinate, closesNode[0]);
+    const features = await this.tileProvider.getFeaturesForExtent(
+      new Extent({
+        coordinates: searchExtent,
+        projection: mercatorProjection.toJSON(),
+      }),
       DATASET_TILE_LEVEL,
     );
-
-    const tileCoordinate = createTileCoordinate(
-      tile.x,
-      tile.y,
-      DATASET_TILE_LEVEL,
-    );
-
-    await this.tileProvider.getFeaturesForTile(
-      tile.x,
-      tile.y,
-      DATASET_TILE_LEVEL,
-    );
-
-    const rtree = this.tileProvider.rtreeCache.get(tileCoordinate.key);
-    if (rtree) {
-      const closest = knn(
-        rtree,
-        coordinate[0],
-        coordinate[1],
-        1,
-        undefined,
-        maxDistance,
+    let minDistanceSqrd = Infinity;
+    let closestImageName: string | undefined;
+    features.forEach((feature) => {
+      const imagePosition = (feature.getGeometry() as Point).getCoordinates();
+      const distanceSqrd = cartesian2DDistanceSquared(
+        imagePosition,
+        coordinate,
       );
-      if (closest.length) {
-        return this.createPanoramaImage(closest[0].value.get('name') as string);
+
+      if (distanceSqrd < minDistanceSqrd) {
+        minDistanceSqrd = distanceSqrd;
+        closestImageName = feature.get('name') as string;
       }
+    });
+
+    if (closestImageName) {
+      const image = await this.createPanoramaImage(closestImageName);
+      return { image, distance: Math.sqrt(minDistanceSqrd) };
     }
 
     return undefined;
