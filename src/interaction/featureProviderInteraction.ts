@@ -42,6 +42,7 @@ class FeatureProviderInteraction extends AbstractInteraction {
       const resolution = event.map.getCurrentResolution(
         event.position as Coordinate,
       );
+      // TODO make sure the layers are rendered, check min/max RenderingResolution
       const features = (
         await Promise.all(
           layersWithProvider.map(

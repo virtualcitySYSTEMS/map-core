@@ -1,3 +1,9 @@
+### 6.1.6
+
+- Changes the tileProvider `getFeatureAtCoordinate` function to take the real geometry into account and not just the extent.
+  - Polygons/Multipolygons will only be returned if the coordinate is within the geometry.
+  - Points and Lines will be returned if the coordinate is within a buffer of 10 pixels.
+
 ### 6.1.5
 
 - Fixes an issue in the vectorClusterGroup, where the toJSON function would not handle the vectorProperties corrrectly
