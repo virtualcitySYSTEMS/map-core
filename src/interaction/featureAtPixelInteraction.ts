@@ -186,7 +186,7 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
       await this._obliqueHandler(event);
     } else if (
       event.map.className === 'CesiumMap' ||
-      event.map.className === 'PanoramaMap'
+      event.map.className === 'PanoramaMap' // XXX write dedicated panorama handler
     ) {
       await this._cesiumHandler(event);
     }
@@ -311,7 +311,11 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
       return Promise.resolve(event);
     }
 
-    if (pickObject && scene.pickPositionSupported) {
+    if (
+      pickObject &&
+      scene.pickPositionSupported &&
+      event.map.className === 'CesiumMap'
+    ) {
       if (this.pickTranslucent) {
         scene.pickTranslucentDepth = true;
         event.exactPosition = true;

@@ -54,7 +54,7 @@ export type PanoramaImage = {
   readonly tileSize: TileSize;
   readonly minLevel: number;
   readonly maxLevel: number;
-  readonly maxDepth?: number;
+  readonly maxDepth: number;
   readonly dataset?: PanoramaDataset;
 
   getIntensityTileProvider(): Promise<PanoramaTileProvider>;
@@ -193,6 +193,7 @@ export async function createPanoramaImageFromURL(
       orientation.roll,
     ),
   );
+  Matrix4.multiplyByScale(modelMatrix, new Cartesian3(50, 50, 50), modelMatrix);
 
   const upCart4 = Matrix4.getColumn(modelMatrix, 2, new Cartesian4());
   Cartesian4.normalize(upCart4, upCart4);
@@ -247,6 +248,16 @@ export async function createPanoramaImageFromURL(
     )
       .then((depth) => {
         depthTileProvider = depth; // check destroyed.
+        Matrix4.multiplyByScale(
+          modelMatrix,
+          new Cartesian3(
+            depthTileProvider.maxDepth,
+            depthTileProvider.maxDepth,
+            depthTileProvider.maxDepth,
+          ),
+          modelMatrix,
+        );
+        Matrix4.inverseTransformation(modelMatrix, invModelMatrix);
       })
       .catch((err) => {
         console.error('Error loading depth', err);
@@ -293,8 +304,8 @@ export async function createPanoramaImageFromURL(
     get maxLevel(): number {
       return maxLevel;
     },
-    get maxDepth(): number | undefined {
-      return depthTileProvider?.maxDepth;
+    get maxDepth(): number {
+      return depthTileProvider?.maxDepth ?? 50;
     },
     get dataset(): PanoramaDataset | undefined {
       return dataset;

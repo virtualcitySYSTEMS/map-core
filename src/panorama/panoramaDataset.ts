@@ -45,7 +45,7 @@ export default class PanoramaDataset extends VcsObject {
     return {
       url: '',
       activeOnStartup: false,
-      cameraOffset: -2,
+      cameraOffset: -2.8,
     };
   }
 
@@ -53,7 +53,7 @@ export default class PanoramaDataset extends VcsObject {
 
   activeOnStartup = false;
 
-  cameraOffset = -2;
+  cameraOffset = -2.8;
 
   private _treeLeaves: RTree<PanoramaRTreeNode> | undefined;
 
