@@ -3,10 +3,12 @@ import { Feature } from 'ol';
 import { Point } from 'ol/geom.js';
 import sinon from 'sinon';
 import { Cartesian2 } from '@vcmap-cesium/engine';
-import {
+import type {
   CesiumMap,
-  emptyStyle,
   EventAfterEventHandler,
+} from '../../../../../index.js';
+import {
+  emptyStyle,
   EventType,
   ModificationKeyType,
   OpenlayersMap,
@@ -51,13 +53,11 @@ describe('TranslateVertexInteraction', () => {
       describe('dragging the vertex', () => {
         let vertex: Feature<Point>;
         let vertexChangedListener: () => void;
-        let feature: Feature;
 
         before(async () => {
           vertex = new Feature({ geometry: new Point([0, 0, 0]) });
           vertex[vertexSymbol] = true;
           vertexChangedListener = sinon.spy();
-          feature = new Feature();
 
           const interaction = new TranslateVertexInteraction();
           interaction.vertexChanged.addEventListener(vertexChangedListener);
@@ -100,13 +100,11 @@ describe('TranslateVertexInteraction', () => {
       describe('finish dragging the vertex', () => {
         let vertex: Feature<Point>;
         let vertexChangedListener: () => void;
-        let feature: Feature;
 
         before(async () => {
           vertex = new Feature({ geometry: new Point([0, 0, 0]) });
           vertex[vertexSymbol] = true;
           vertexChangedListener = sinon.spy();
-          feature = new Feature();
 
           const interaction = new TranslateVertexInteraction();
           interaction.vertexChanged.addEventListener(vertexChangedListener);
@@ -158,13 +156,11 @@ describe('TranslateVertexInteraction', () => {
       describe('dragging the vertex', () => {
         let vertex: Feature<Point>;
         let vertexChangedListener: () => void;
-        let feature: Feature;
 
         before(async () => {
           vertex = new Feature({ geometry: new Point([0, 0]) });
           vertex[vertexSymbol] = true;
           vertexChangedListener = sinon.spy();
-          feature = new Feature();
 
           const interaction = new TranslateVertexInteraction();
           interaction.vertexChanged.addEventListener(vertexChangedListener);
@@ -207,13 +203,11 @@ describe('TranslateVertexInteraction', () => {
       describe('finish dragging the vertex', () => {
         let vertex: Feature<Point>;
         let vertexChangedListener: () => void;
-        let feature: Feature;
 
         before(async () => {
           vertex = new Feature({ geometry: new Point([0, 0]) });
           vertex[vertexSymbol] = true;
           vertexChangedListener = sinon.spy();
-          feature = new Feature();
 
           const interaction = new TranslateVertexInteraction();
           interaction.vertexChanged.addEventListener(vertexChangedListener);
@@ -257,10 +251,6 @@ describe('TranslateVertexInteraction', () => {
         it('should reset the vertex style after a short timeout', async () => {
           await timeout(10);
           expect(vertex.getStyle()).to.be.undefined;
-        });
-
-        it('should unset allow picking of the feature', () => {
-          expect(feature.get('olcs_allowPicking')).to.be.undefined;
         });
       });
     });
@@ -333,13 +323,11 @@ describe('TranslateVertexInteraction', () => {
       describe('finish dragging the vertex', () => {
         let vertex: Feature<Point>;
         let vertexChangedListener: () => void;
-        let feature: Feature;
 
         before(async () => {
           vertex = new Feature({ geometry: new Point([0, 0, 0]) });
           vertex[vertexSymbol] = true;
           vertexChangedListener = sinon.spy();
-          feature = new Feature();
 
           const interaction = new TranslateVertexInteraction();
           interaction.vertexChanged.addEventListener(vertexChangedListener);

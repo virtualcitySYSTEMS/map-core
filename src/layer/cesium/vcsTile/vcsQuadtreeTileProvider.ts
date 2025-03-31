@@ -1,28 +1,30 @@
-import {
-  Cartesian3,
-  Event as CesiumEvent,
+import type {
   FrameState,
-  Intersect,
-  Math as CesiumMath,
   PrimitiveCollection,
   QuadtreePrimitive,
   QuadtreeTile,
-  QuadtreeTileLoadState,
-  QuadtreeTileProvider,
   QuadtreeTileProviderInterface,
   SplitDirection,
   TilingScheme,
+} from '@vcmap-cesium/engine';
+import {
+  Cartesian3,
+  Event as CesiumEvent,
+  Intersect,
+  Math as CesiumMath,
+  QuadtreeTileLoadState,
+  QuadtreeTileProvider,
   Visibility,
 } from '@vcmap-cesium/engine';
-import { intersects, Extent as OLExtent } from 'ol/extent.js';
+import type { Extent as OLExtent } from 'ol/extent.js';
+import { intersects } from 'ol/extent.js';
 import { parseBoolean } from '@vcsuite/parsers';
 import { wgs84Projection } from '../../../util/projection.js';
+import type { VcsTile, VcsTileOptions } from './vcsTileHelpers.js';
 import {
   getDataTiles,
   getTileHash,
   getTileWgs84Extent,
-  VcsTile,
-  VcsTileOptions,
   VcsTileState,
   VcsTileType,
 } from './vcsTileHelpers.js';
@@ -30,9 +32,9 @@ import VcsVectorTile from './vcsVectorTile.js';
 import VcsNoDataTile from './vcsNoDataTile.js';
 import VcsDebugTile from './vcsDebugTile.js';
 import VcsChildTile from './vcsChildTile.js';
-import { VectorTileImplementationOptions } from '../../vectorTileLayer.js';
-import CesiumMap from '../../../map/cesiumMap.js';
-import StyleItem from '../../../style/styleItem.js';
+import type { VectorTileImplementationOptions } from '../../vectorTileLayer.js';
+import type CesiumMap from '../../../map/cesiumMap.js';
+import type StyleItem from '../../../style/styleItem.js';
 
 const tileDirectionScratch = new Cartesian3();
 
@@ -150,6 +152,7 @@ export default class VcsQuadtreeTileProvider
     this.quadtree?.endFrame(frameState);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   endUpdate(_frameState: FrameState): void {
     this.quadtree?.forEachLoadedTile((t: QuadtreeTile<VcsTile>) => {
       if (t.data) {
@@ -240,7 +243,6 @@ export default class VcsQuadtreeTileProvider
     return visibility;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   showTileThisFrame(tile: QuadtreeTile<VcsTile>): void {
     let tileToShow: QuadtreeTile<VcsTile> | undefined = tile;
     while (tileToShow?.data?.type === VcsTileType.CHILD) {
@@ -274,13 +276,13 @@ export default class VcsQuadtreeTileProvider
   // eslint-disable-next-line class-methods-use-this
   cancelReprojections(): void {}
 
-  // eslint-disable-next-line class-methods-use-this
+  // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-unused-vars
   initialize(_f: FrameState): void {}
 
-  // eslint-disable-next-line class-methods-use-this
+  // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-unused-vars
   beginUpdate(_frameState: FrameState): void {}
 
-  // eslint-disable-next-line class-methods-use-this
+  // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-unused-vars
   updateForPick(_frameState: FrameState): void {}
 
   destroy(): void {

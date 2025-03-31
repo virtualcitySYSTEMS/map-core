@@ -1,12 +1,14 @@
-import Style, { StyleFunction } from 'ol/style/Style.js';
+import type { StyleFunction } from 'ol/style/Style.js';
+import Style from 'ol/style/Style.js';
 import Icon from 'ol/style/Icon.js';
-import Feature from 'ol/Feature.js';
+import type Feature from 'ol/Feature.js';
 import { check, is, oneOf } from '@vcsuite/check';
 import { parseInteger, parseNumber } from '@vcsuite/parsers';
 import deepEqual from 'fast-deep-equal';
 import { originalFeatureSymbol } from '../layer/vectorSymbols.js';
 import { highlighted } from '../layer/featureVisibility.js';
-import VcsObject, { VcsObjectOptions } from '../vcsObject.js';
+import type { VcsObjectOptions } from '../vcsObject.js';
+import VcsObject from '../vcsObject.js';
 import VcsEvent from '../vcsEvent.js';
 import type VectorLayer from '../layer/vectorLayer.js';
 import { renderTemplate } from '../util/vcsTemplate.js';

@@ -1,8 +1,9 @@
 import { check } from '@vcsuite/check';
-import RasterLayer, {
+import type {
   RasterLayerImplementationOptions,
   RasterLayerOptions,
 } from './rasterLayer.js';
+import RasterLayer from './rasterLayer.js';
 import SingleImageCesiumImpl from './cesium/singleImageCesiumImpl.js';
 import SingleImageOpenlayersImpl from './openlayers/singleImageOpenlayersImpl.js';
 import CesiumMap from '../map/cesiumMap.js';
@@ -10,7 +11,7 @@ import OpenlayersMap from '../map/openlayersMap.js';
 import Extent from '../util/extent.js';
 import { layerClassRegistry } from '../classRegistry.js';
 import { wgs84Projection } from '../util/projection.js';
-import VcsMap from '../map/vcsMap.js';
+import type VcsMap from '../map/vcsMap.js';
 
 export type SingleImageOptions = RasterLayerOptions & {
   credit?: string;

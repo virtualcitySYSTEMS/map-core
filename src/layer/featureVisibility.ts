@@ -6,7 +6,8 @@ import {
 } from '@vcmap-cesium/engine';
 import { is } from '@vcsuite/check';
 import Feature from 'ol/Feature.js';
-import Style, { StyleFunction } from 'ol/style/Style.js';
+import type { StyleFunction } from 'ol/style/Style.js';
+import Style from 'ol/style/Style.js';
 
 import VectorStyleItem, { fromCesiumColor } from '../style/vectorStyleItem.js';
 import VcsEvent from '../vcsEvent.js';
@@ -231,7 +232,7 @@ class FeatureVisibility {
    * An event raised when the hidden or highlighted ids change. Is called with
    * {@link FeatureVisibilityEvent} as its only argument
    */
-  changed: VcsEvent<FeatureVisibilityEvent> = new VcsEvent();
+  changed = new VcsEvent<FeatureVisibilityEvent>();
 
   /**
    * highlights a number of features by ID (import("@vcmap-cesium/engine").Cesium3DTileFeature|ol/Feature) with the given color.

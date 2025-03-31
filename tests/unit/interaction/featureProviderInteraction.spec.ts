@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { Feature } from 'ol';
 import type { Coordinate } from 'ol/coordinate.js';
-import { Geometry } from 'ol/geom.js';
+import type { Geometry } from 'ol/geom.js';
 import OpenlayersMap from '../../../src/map/openlayersMap.js';
 import AbstractFeatureProvider from '../../../src/featureProvider/abstractFeatureProvider.js';
 import FeatureProviderInteraction from '../../../src/interaction/featureProviderInteraction.js';

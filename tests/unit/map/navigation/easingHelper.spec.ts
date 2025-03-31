@@ -1,11 +1,9 @@
 import { expect } from 'chai';
 import { Math as CesiumMath } from '@vcmap-cesium/engine';
+import type { NavigationEasing } from '../../../../src/map/navigation/easingHelper.js';
+import { createEasing } from '../../../../src/map/navigation/easingHelper.js';
+import type { ControllerInput } from '../../../../src/map/navigation/controller/controllerInput.js';
 import {
-  createEasing,
-  NavigationEasing,
-} from '../../../../src/map/navigation/easingHelper.js';
-import {
-  ControllerInput,
   getZeroInput,
   fromArray,
   isNonZeroInput,

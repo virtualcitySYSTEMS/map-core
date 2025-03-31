@@ -1,9 +1,8 @@
 import { expect, use } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import Feature from 'ol/Feature.js';
-import fs from 'fs';
-import nock, { ReplyFnContext, ReplyFnResult, Scope } from 'nock';
-import { HttpReader } from 'flatgeobuf/lib/mjs/http-reader.js';
+import type { Scope } from 'nock';
+import type { HttpReader } from 'flatgeobuf/lib/mjs/http-reader.js';
 import {
   getOlFeatures,
   getValidReader,
@@ -15,23 +14,13 @@ import Projection, {
 import Extent from '../../../src/util/extent.js';
 import { alreadyTransformedToMercator } from '../../../src/layer/vectorSymbols.js';
 import { arrayCloseTo } from '../helpers/helpers.js';
+import { setupFgbNock } from '../helpers/flatGeobufHelpers.js';
 
 use(chaiAsPromised);
 
-// eslint-disable-next-line import/prefer-default-export
-export function setupFgbNock(buffer?: Buffer): Scope {
-  const bytes = buffer ?? fs.readFileSync('tests/data/wgs84Points.fgb');
-  function cb(this: ReplyFnContext): ReplyFnResult {
-    const header = this.req.headers;
-    const range = header.range.split('=')?.[1].split('-').map(Number);
-    range[1] = Math.min(range[1], bytes.length - 1);
-    return [200, bytes.subarray(range[0], range[1] + 1)];
-  }
-  return nock('http://localhost').persist().get('/wgs84Points.fgb').reply(cb);
-}
-
 describe('flatGeobufHelpers', () => {
   let scope: Scope;
+
   before(() => {
     scope = setupFgbNock();
   });

@@ -1,7 +1,8 @@
-import { Coordinate } from 'ol/coordinate.js';
+import type { Coordinate } from 'ol/coordinate.js';
 import { Fill, Icon, Stroke, Style } from 'ol/style.js';
 import { Feature } from 'ol';
-import { Geometry, Point } from 'ol/geom.js';
+import type { Geometry } from 'ol/geom.js';
+import { Point } from 'ol/geom.js';
 import RegularShape from 'ol/style/RegularShape.js';
 import {
   Cartesian2,
@@ -17,7 +18,7 @@ import {
   getMidPoint,
 } from '../math.js';
 import { getClosestPointOn2DLine } from './editorHelpers.js';
-import VectorLayer from '../../layer/vectorLayer.js';
+import type VectorLayer from '../../layer/vectorLayer.js';
 import {
   alreadyTransformedToImage,
   alreadyTransformedToMercator,
@@ -41,23 +42,23 @@ export type SnapResult<T extends SnapType = SnapType> = T extends 'orthogonal'
       otherVertexIndex: number;
     }
   : T extends 'parallel'
-  ? {
-      type: T;
-      parallelIndex: number;
-      snapped: Coordinate;
-      otherVertexIndex: number;
-    }
-  : T extends 'vertex'
-  ? {
-      type: T;
-      snapped: Coordinate;
-    }
-  : T extends 'edge'
-  ? {
-      type: T;
-      snapped: Coordinate;
-    }
-  : never;
+    ? {
+        type: T;
+        parallelIndex: number;
+        snapped: Coordinate;
+        otherVertexIndex: number;
+      }
+    : T extends 'vertex'
+      ? {
+          type: T;
+          snapped: Coordinate;
+        }
+      : T extends 'edge'
+        ? {
+            type: T;
+            snapped: Coordinate;
+          }
+        : never;
 
 let scratchCartesian21 = new Cartesian2();
 let scratchCartesian22 = new Cartesian2();

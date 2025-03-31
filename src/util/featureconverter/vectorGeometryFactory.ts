@@ -1,7 +1,7 @@
 import type { Feature } from 'ol';
 import type { Fill, Style } from 'ol/style.js';
 import { getBottomLeft } from 'ol/extent.js';
-import { Circle, LineString, Polygon } from 'ol/geom.js';
+import type { Circle, LineString, Polygon } from 'ol/geom.js';
 import {
   Cartesian3,
   type CircleGeometry,
@@ -33,13 +33,15 @@ import type VectorProperties from '../../layer/vectorProperties.js';
 import type { ConvertedItem } from './convert.js';
 import { getCesiumColor } from '../../style/styleHelpers.js';
 import { createSync } from '../../layer/vectorSymbols.js';
-import {
-  getGeometryHeight,
-  isClampedHeightReference,
+import type {
   RelativeHeightReference,
   VectorHeightInfo,
 } from './vectorHeightInfo.js';
-import { ColorType } from '../../style/vectorStyleItem.js';
+import {
+  getGeometryHeight,
+  isClampedHeightReference,
+} from './vectorHeightInfo.js';
+import type { ColorType } from '../../style/vectorStyleItem.js';
 import { getStoreyOptions } from './storeyHelpers.js';
 
 export type PolygonGeometryOptions = ConstructorParameters<
@@ -60,19 +62,19 @@ type GeometryOptionsForFactoryType<T extends GeometryFactoryType> =
   T extends 'polygon'
     ? PolygonGeometryOptions
     : T extends 'lineString' | 'arc'
-    ? PolylineGeometryOptions
-    : T extends 'circle'
-    ? CircleGeometryOptions
-    : never;
+      ? PolylineGeometryOptions
+      : T extends 'circle'
+        ? CircleGeometryOptions
+        : never;
 
 export type GeometryForFactoryType<T extends GeometryFactoryType> =
   T extends 'polygon'
     ? Polygon
     : T extends 'lineString' | 'arc'
-    ? LineString
-    : T extends 'circle'
-    ? Circle
-    : never;
+      ? LineString
+      : T extends 'circle'
+        ? Circle
+        : never;
 
 export type VectorGeometryFactory<
   T extends GeometryFactoryType = GeometryFactoryType,
@@ -131,33 +133,33 @@ export type CesiumGeometryOption<
       heightInfo: VectorHeightInfo;
     }
   : T extends 'fill'
-  ? {
-      type: T;
-      geometry: PolygonGeometry | CircleGeometry;
-      heightInfo: VectorHeightInfo;
-    }
-  : T extends 'outline'
-  ? {
-      type: T;
-      geometry:
-        | PolygonOutlineGeometry
-        | WallOutlineGeometry
-        | CircleOutlineGeometry;
-      heightInfo: VectorHeightInfo;
-    }
-  : T extends 'line'
-  ? {
-      type: T;
-      geometry: PolylineGeometry;
-      heightInfo: VectorHeightInfo;
-    }
-  : T extends 'groundLine'
-  ? {
-      type: T;
-      geometry: GroundPolylineGeometry;
-      heightInfo: VectorHeightInfo;
-    }
-  : never;
+    ? {
+        type: T;
+        geometry: PolygonGeometry | CircleGeometry;
+        heightInfo: VectorHeightInfo;
+      }
+    : T extends 'outline'
+      ? {
+          type: T;
+          geometry:
+            | PolygonOutlineGeometry
+            | WallOutlineGeometry
+            | CircleOutlineGeometry;
+          heightInfo: VectorHeightInfo;
+        }
+      : T extends 'line'
+        ? {
+            type: T;
+            geometry: PolylineGeometry;
+            heightInfo: VectorHeightInfo;
+          }
+        : T extends 'groundLine'
+          ? {
+              type: T;
+              geometry: GroundPolylineGeometry;
+              heightInfo: VectorHeightInfo;
+            }
+          : never;
 
 export function getMaterialAppearance(
   scene: Scene,

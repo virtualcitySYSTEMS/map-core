@@ -1,5 +1,6 @@
 import { expect } from 'chai';
-import VcsModule, { VcsModuleConfig } from '../../src/vcsModule.js';
+import type { VcsModuleConfig } from '../../src/vcsModule.js';
+import VcsModule from '../../src/vcsModule.js';
 import VcsApp from '../../src/vcsApp.js';
 import VectorLayer from '../../src/layer/vectorLayer.js';
 import Viewpoint from '../../src/util/viewpoint.js';
@@ -23,7 +24,7 @@ describe('Module', () => {
       distance: 200,
     });
 
-    module = new VcsModule({
+    const config: TestVcsModuleConfig = {
       name: 'module',
       description: 'description',
       thirdpartyEntry: 'test',
@@ -38,7 +39,8 @@ describe('Module', () => {
       projection: {
         epsg: 4326,
       },
-    } as TestVcsModuleConfig);
+    };
+    module = new VcsModule(config);
     await app.addModule(module);
   });
 
@@ -56,15 +58,19 @@ describe('Module', () => {
     it('should add the name', () => {
       expect(config).to.have.property('name', 'module');
     });
+
     it('should add the description', () => {
       expect(config).to.have.property('description', 'description');
     });
+
     it('should add the startingViewpointName', () => {
       expect(config).to.have.property('startingViewpointName', 'foo');
     });
+
     it('should add the startingMapName', () => {
       expect(config).to.have.property('startingMapName', 'foo');
     });
+
     it('should add the projection', () => {
       expect(config).to.have.property('projection');
       expect(config.projection).to.have.property('epsg', 'EPSG:4326');

@@ -12,7 +12,8 @@ import {
 } from './parseImageJson.js';
 import VcsEvent from '../vcsEvent.js';
 import { getTerrainProviderForUrl } from '../layer/terrainHelpers.js';
-import Projection, { ProjectionOptions } from '../util/projection.js';
+import type { ProjectionOptions } from '../util/projection.js';
+import Projection from '../util/projection.js';
 import { getInitForUrl, requestJson } from '../util/fetch.js';
 import type ObliqueImage from './obliqueImage.js';
 import type {
@@ -72,9 +73,9 @@ class ObliqueDataSet {
    */
   imagesLoaded = new VcsEvent<ObliqueDataSetImagesLoaded>();
 
-  private _tiles: Map<string, DataState> = new Map();
+  private _tiles = new Map<string, DataState>();
 
-  private _loadingPromises: Map<string, Promise<void>> = new Map();
+  private _loadingPromises = new Map<string, Promise<void>>();
 
   private _state = DataState.PENDING;
 
@@ -142,8 +143,8 @@ class ObliqueDataSet {
         .then((data) => {
           return this._initialize(data);
         })
-        .catch((err) => {
-          return Promise.reject(err);
+        .catch((err: unknown) => {
+          return Promise.reject(err as Error);
         });
     }
     return this._loadingPromise;
@@ -328,7 +329,7 @@ class ObliqueDataSet {
           });
         }
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
         // eslint-disable-next-line no-console
         console.error(err);
       })

@@ -1,20 +1,16 @@
 import { expect } from 'chai';
 import { Entity, SplitDirection } from '@vcmap-cesium/engine';
 import sinon from 'sinon';
-import Layer, { LayerOptions } from '../../../src/layer/layer.js';
+import type { LayerOptions } from '../../../src/layer/layer.js';
+import Layer from '../../../src/layer/layer.js';
 import LayerCollection from '../../../src/util/layerCollection.js';
 import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
 import OpenStreetMapLayer from '../../../src/layer/openStreetMapLayer.js';
 import { setOpenlayersMap } from '../helpers/openlayersHelpers.js';
 import VcsApp from '../../../src/vcsApp.js';
-import {
-  deserializeLayer,
-  getLayerIndex,
-  serializeLayer,
-} from '../../../src/vcsModuleHelpers.js';
-import makeOverrideCollection, {
-  OverrideCollection,
-} from '../../../src/util/overrideCollection.js';
+import { getLayerIndex } from '../../../src/vcsModuleHelpers.js';
+import type { OverrideCollection } from '../../../src/util/overrideCollection.js';
+import makeOverrideCollection from '../../../src/util/overrideCollection.js';
 import GlobalHider from '../../../src/layer/globalHider.js';
 
 function getLocalZIndex(layerCollection: LayerCollection, l?: Layer): number {
@@ -468,6 +464,7 @@ describe('LayerCollection', () => {
       layerCollection = new LayerCollection();
       layerCollection.locale = 'fr';
     });
+
     afterEach(() => {
       layerCollection.destroy();
     });

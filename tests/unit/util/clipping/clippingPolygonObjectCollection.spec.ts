@@ -1,4 +1,5 @@
-import sinon, { SinonSandbox } from 'sinon';
+import type { SinonSandbox } from 'sinon';
+import sinon from 'sinon';
 import { expect } from 'chai';
 import type { Cesium3DTileset, Globe } from '@vcmap-cesium/engine';
 import {
@@ -7,9 +8,9 @@ import {
   createInitializedTilesetLayer,
 } from '../../helpers/cesiumHelpers.js';
 import VcsApp from '../../../../src/vcsApp.js';
-import CesiumMap from '../../../../src/map/cesiumMap.js';
+import type CesiumMap from '../../../../src/map/cesiumMap.js';
 import ClippingPolygonObject from '../../../../src/util/clipping/clippingPolygonObject.js';
-import { CesiumTilesetLayer } from '../../../../index.js';
+import type { CesiumTilesetLayer } from '../../../../index.js';
 import { timeout } from '../../helpers/helpers.js';
 
 function getTilesetVisualization(

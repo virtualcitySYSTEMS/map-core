@@ -1,12 +1,14 @@
+import type {
+  HeightReference,
+  Model,
+  Primitive,
+  Scene,
+} from '@vcmap-cesium/engine';
 import {
   Cartesian3,
   Cartographic,
   ClassificationPrimitive,
-  HeightReference,
   Matrix4,
-  Model,
-  Primitive,
-  Scene,
 } from '@vcmap-cesium/engine';
 import { mercatorToCartographic } from '../math.js';
 
@@ -76,7 +78,6 @@ function getUpdateClassificationHeightCallback(
   };
 }
 
-// eslint-disable-next-line import/prefer-default-export
 export function setupClampedPrimitive(
   scene: Scene,
   primitive: Primitive | Model | ClassificationPrimitive,

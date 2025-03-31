@@ -46,7 +46,7 @@ class VectorOpenlayersImpl
     this.globalHider = options.globalHider as GlobalHider;
   }
 
-  // eslint-disable-next-line no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   updateStyle(style: StyleItem, _silent?: boolean): void {
     this.style = style;
     if (this.initialized) {

@@ -1,6 +1,7 @@
-import OpenlayersMap from '../openlayersMap.js';
-import NavigationImpl, { NavigationImplOptions } from './navigationImpl.js';
-import { Movement } from './navigation.js';
+import type OpenlayersMap from '../openlayersMap.js';
+import type { NavigationImplOptions } from './navigationImpl.js';
+import NavigationImpl from './navigationImpl.js';
+import type { Movement } from './navigation.js';
 import { moveView } from './viewHelper.js';
 
 export type OpenlayersNavigationOptions = NavigationImplOptions;

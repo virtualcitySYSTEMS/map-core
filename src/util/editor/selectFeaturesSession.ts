@@ -2,11 +2,8 @@ import { check, ofEnum } from '@vcsuite/check';
 import { Circle, Style, Stroke } from 'ol/style.js';
 import type { Feature } from 'ol/index.js';
 import { createSync } from '../../layer/vectorSymbols.js';
-import {
-  EditorSession,
-  SessionType,
-  setupInteractionChain,
-} from './editorSessionHelpers.js';
+import type { EditorSession } from './editorSessionHelpers.js';
+import { SessionType, setupInteractionChain } from './editorSessionHelpers.js';
 import SelectSingleFeatureInteraction from './interactions/selectSingleFeatureInteraction.js';
 import SelectMultiFeatureInteraction from './interactions/selectMultiFeatureInteraction.js';
 import SelectFeatureMouseOverInteraction, {
@@ -40,7 +37,7 @@ function createHighlightManager(
   layer: VectorLayer,
   highlightStyle: HighlightStyleType,
 ): SelectionHighlightManager {
-  const currentFeaturesMap: Map<string | number, Feature> = new Map();
+  const currentFeaturesMap = new Map<string | number, Feature>();
 
   /**
    * Sets the new features to be highlighted. All currently highlighted features that are not part of the new features are unhighlighted.

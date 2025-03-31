@@ -1,8 +1,7 @@
 import type { Feature } from 'ol/index.js';
 import type { Scene } from '@vcmap-cesium/engine';
-import AbstractInteraction, {
-  EventAfterEventHandler,
-} from '../../../interaction/abstractInteraction.js';
+import type { EventAfterEventHandler } from '../../../interaction/abstractInteraction.js';
+import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import { EventType } from '../../../interaction/interactionType.js';
 import { handlerSymbol } from '../editorSymbols.js';
 import CesiumMap from '../../../map/cesiumMap.js';

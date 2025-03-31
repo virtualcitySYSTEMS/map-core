@@ -4,11 +4,13 @@ import Feature from 'ol/Feature.js';
 import LineString from 'ol/geom/LineString.js';
 import Point from 'ol/geom/Point.js';
 import Style from 'ol/style/Style.js';
+import type {
+  OpenlayersMap,
+  VectorClusterGroupOptions,
+} from '../../../index.js';
 import {
   GlobalHider,
-  OpenlayersMap,
   VectorClusterGroup,
-  VectorClusterGroupOptions,
   VectorClusterStyleItem,
   VectorLayer,
 } from '../../../index.js';
@@ -405,7 +407,6 @@ describe('VectorClusterGroup', () => {
       });
 
       it('should not vectorProperties, if not given', () => {
-        const defaultOptions = VectorClusterGroup.getDefaultOptions();
         const config = new VectorClusterGroup({}).toJSON();
         expect(config).to.not.have.property('vectorProperties');
       });

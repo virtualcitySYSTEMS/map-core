@@ -2,13 +2,13 @@ import { check, oneOf } from '@vcsuite/check';
 import { parseBoolean } from '@vcsuite/parsers';
 import type { Size } from 'ol/size.js';
 
-import RasterLayer, {
+import type {
   RasterLayerImplementationOptions,
   RasterLayerOptions,
 } from './rasterLayer.js';
-import WMSFeatureProvider, {
-  WMSFeatureProviderOptions,
-} from '../featureProvider/wmsFeatureProvider.js';
+import RasterLayer from './rasterLayer.js';
+import type { WMSFeatureProviderOptions } from '../featureProvider/wmsFeatureProvider.js';
+import WMSFeatureProvider from '../featureProvider/wmsFeatureProvider.js';
 import CesiumMap from '../map/cesiumMap.js';
 import WmsCesiumImpl from './cesium/wmsCesiumImpl.js';
 import OpenlayersMap from '../map/openlayersMap.js';
@@ -20,7 +20,7 @@ import type VcsMap from '../map/vcsMap.js';
 export type WMSImplementationOptions = RasterLayerImplementationOptions & {
   parameters: Record<string, string>;
   highResolution: boolean;
-  tileSize: import('ol/size.js').Size;
+  tileSize: Size;
   version: string;
   singleImage2d: boolean;
 };

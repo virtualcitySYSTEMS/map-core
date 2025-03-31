@@ -1,7 +1,10 @@
-import { getLogger as getLoggerByName, Logger } from '@vcsuite/logger';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { Logger } from '@vcsuite/logger';
+import { getLogger as getLoggerByName } from '@vcsuite/logger';
 import { v4 as uuidv4 } from 'uuid';
 import { check } from '@vcsuite/check';
-import VcsModule, { VcsModuleConfig } from './vcsModule.js';
+import type { VcsModuleConfig } from './vcsModule.js';
+import VcsModule from './vcsModule.js';
 import {
   destroyCollection,
   deserializeViewpoint,
@@ -10,9 +13,8 @@ import {
   serializeLayer,
   deserializeLayer,
 } from './vcsModuleHelpers.js';
-import makeOverrideCollection, {
-  OverrideCollection,
-} from './util/overrideCollection.js';
+import type { OverrideCollection } from './util/overrideCollection.js';
+import makeOverrideCollection from './util/overrideCollection.js';
 import CategoryCollection from './category/categoryCollection.js';
 import MapCollection from './util/mapCollection.js';
 import VcsMap from './map/vcsMap.js';
@@ -20,16 +22,16 @@ import Layer from './layer/layer.js';
 import Collection from './util/collection.js';
 import ObliqueCollection from './oblique/obliqueCollection.js';
 import Viewpoint from './util/viewpoint.js';
-import StyleItem, { StyleItemOptions } from './style/styleItem.js';
+import type { StyleItemOptions } from './style/styleItem.js';
+import StyleItem from './style/styleItem.js';
 import IndexedCollection from './util/indexedCollection.js';
 import VcsEvent from './vcsEvent.js';
 import { setDefaultProjectionOptions } from './util/projection.js';
 import ObliqueMap from './map/obliqueMap.js';
 import OverrideClassRegistry from './overrideClassRegistry.js';
+import type { AbstractCtor, CtorType } from './classRegistry.js';
 import ClassRegistry, {
-  AbstractCtor,
   categoryClassRegistry,
-  Ctor,
   featureProviderClassRegistry,
   getObjectFromClassRegistry,
   layerClassRegistry,
@@ -43,20 +45,16 @@ import type LayerCollection from './util/layerCollection.js';
 import type Category from './category/category.js';
 import type TileProvider from './layer/tileProvider/tileProvider.js';
 import type AbstractFeatureProvider from './featureProvider/abstractFeatureProvider.js';
-import {
-  createHiddenObjectsCollection,
-  HiddenObject,
-} from './util/hiddenObjects.js';
-import FlightInstance, {
-  FlightInstanceOptions,
-} from './util/flight/flightInstance.js';
+import type { HiddenObject } from './util/hiddenObjects.js';
+import { createHiddenObjectsCollection } from './util/hiddenObjects.js';
+import type { FlightInstanceOptions } from './util/flight/flightInstance.js';
+import FlightInstance from './util/flight/flightInstance.js';
 import FlightCollection from './util/flight/flightCollection.js';
 import DisplayQuality from './util/displayQuality/displayQuality.js';
 import VectorClusterGroup from './vectorCluster/vectorClusterGroup.js';
-import VectorClusterGroupCollection from './vectorCluster/vectorClusterGroupCollection.js';
-import ClippingPolygonObject, {
-  ClippingPolygonObjectOptions,
-} from './util/clipping/clippingPolygonObject.js';
+import type VectorClusterGroupCollection from './vectorCluster/vectorClusterGroupCollection.js';
+import type { ClippingPolygonObjectOptions } from './util/clipping/clippingPolygonObject.js';
+import ClippingPolygonObject from './util/clipping/clippingPolygonObject.js';
 import ClippingPolygonObjectCollection from './util/clipping/clippingPolygonObjectCollection.js';
 
 function getLogger(): Logger {
@@ -70,7 +68,7 @@ export type VcsAppOptions = {
   properties?: Record<string, unknown>;
 };
 
-const vcsApps: Map<string, VcsApp> = new Map();
+const vcsApps = new Map<string, VcsApp>();
 
 export const defaultDynamicModuleId = '_defaultDynamicModule';
 
@@ -151,7 +149,7 @@ class VcsApp {
     }>;
   };
 
-  private _categoryItemClassRegistry: OverrideClassRegistry<Ctor<any>>;
+  private _categoryItemClassRegistry: OverrideClassRegistry<CtorType<any>>;
 
   private _tileProviderClassRegistry: OverrideClassRegistry<
     typeof TileProvider
@@ -457,7 +455,7 @@ class VcsApp {
       .filter((l) => l[moduleIdSymbol] === module._id)
       .forEach((l) => {
         if (l.activeOnStartup) {
-          l.activate().catch((err) => {
+          l.activate().catch((err: unknown) => {
             getLogger().error(
               `Failed to activate active on startup layer ${l.name}`,
             );
@@ -539,7 +537,7 @@ class VcsApp {
     });
   }
 
-  _startModuleMutationChain(): void {
+  private _startModuleMutationChain(): void {
     if (!this._moduleMutationChain.running) {
       const item = this._moduleMutationChain.items.shift();
       if (item) {
@@ -547,8 +545,12 @@ class VcsApp {
           this._moduleMutationChain.running = true;
           item
             .mutation()
-            .then(() => item.resolve())
-            .catch((err) => item.reject(err))
+            .then(() => {
+              item.resolve();
+            })
+            .catch((err: unknown) => {
+              item.reject(err);
+            })
             .finally(() => {
               this._moduleMutationChain.running = false;
               this._startModuleMutationChain();
@@ -616,17 +618,16 @@ class VcsApp {
   }
 
   protected async _removeModule(moduleId: string): Promise<void> {
-    await Promise.all([
-      this._maps.removeModule(moduleId),
-      this._layers.removeModule(moduleId),
-      this._viewpoints.removeModule(moduleId),
-      this._styles.removeModule(moduleId),
-      this._obliqueCollections.removeModule(moduleId),
-      this._hiddenObjects.removeModule(moduleId),
-      this._clippingPolygons.removeModule(moduleId),
-      this._flights.removeModule(moduleId),
-      this._vectorClusterGroups.removeModule(moduleId),
-    ]);
+    this._maps.removeModule(moduleId);
+    this._layers.removeModule(moduleId);
+    this._viewpoints.removeModule(moduleId);
+    this._styles.removeModule(moduleId);
+    this._obliqueCollections.removeModule(moduleId);
+    this._hiddenObjects.removeModule(moduleId);
+    this._clippingPolygons.removeModule(moduleId);
+    this._flights.removeModule(moduleId);
+    this._vectorClusterGroups.removeModule(moduleId);
+    return Promise.resolve();
   }
 
   async removeModule(moduleId: string): Promise<void> {

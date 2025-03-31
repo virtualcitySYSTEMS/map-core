@@ -1,14 +1,16 @@
+import type {
+  HeightReference,
+  Billboard,
+  Scene,
+  Label,
+} from '@vcmap-cesium/engine';
 import {
   Cartesian3,
   Color,
-  HeightReference,
   VerticalOrigin,
   Cartesian2,
   LabelStyle,
   HorizontalOrigin,
-  type Scene,
-  Billboard,
-  Label,
 } from '@vcmap-cesium/engine';
 import { Icon, type Style } from 'ol/style.js';
 import type { Coordinate } from 'ol/coordinate.js';
@@ -20,16 +22,18 @@ import { parseNumber } from '@vcsuite/parsers';
 import { createLineGeometries } from './lineStringToCesium.js';
 import { getCesiumColor } from '../../style/styleHelpers.js';
 import { getModelOrPointPrimitiveOptions } from './pointHelpers.js';
-import VectorProperties from '../../layer/vectorProperties.js';
+import type VectorProperties from '../../layer/vectorProperties.js';
 import type { ColorType } from '../../style/vectorStyleItem.js';
-import { ConvertedItem } from './convert.js';
-import {
-  isClampedHeightReference,
-  mercatorToWgs84TransformerForHeightInfo,
+import type { ConvertedItem } from './convert.js';
+import type {
   RelativeHeightReference,
   VectorHeightInfo,
 } from './vectorHeightInfo.js';
-import { CesiumGeometryOption } from './vectorGeometryFactory.js';
+import {
+  isClampedHeightReference,
+  mercatorToWgs84TransformerForHeightInfo,
+} from './vectorHeightInfo.js';
+import type { CesiumGeometryOption } from './vectorGeometryFactory.js';
 
 export type BillboardOptions = Billboard.ConstructorOptions;
 
@@ -57,7 +61,7 @@ export function getBillboardOptions(
               resolve(imageStyle.getImage(1));
               imageStyle.unlistenImageChange(imageChangeListener);
             } else if (imageStyle.getImageState() === ImageState.ERROR) {
-              reject();
+              reject(new Error('Image could not be loaded'));
               imageStyle.unlistenImageChange(imageChangeListener);
             }
           };

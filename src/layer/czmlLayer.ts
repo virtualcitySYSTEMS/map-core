@@ -38,7 +38,7 @@ class CzmlLayer extends DataSourceLayer {
   /**
    * A Promise resolving with the DataSourceLayer on load
    */
-  loaded: Promise<void> = new Promise((resolve, reject) => {
+  loaded = new Promise<void>((resolve, reject) => {
     this._loadedResolve = resolve;
     this._loadedReject = reject;
   });
@@ -74,7 +74,7 @@ class CzmlLayer extends DataSourceLayer {
         .then(() => {
           this._loadedResolve();
         })
-        .catch((err) => {
+        .catch((err: unknown) => {
           this._loadedReject(err as Error);
         });
     }

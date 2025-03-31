@@ -3,12 +3,14 @@ import Style, { type StyleFunction } from 'ol/style/Style.js';
 import { check, oneOf } from '@vcsuite/check';
 import { parseInteger } from '@vcsuite/parsers';
 import { SplitDirection } from '@vcmap-cesium/engine';
-import Layer, {
+import type {
   LayerImplementationOptions,
   LayerOptions,
   SplitLayer,
 } from './layer.js';
-import StyleItem, { StyleItemOptions } from '../style/styleItem.js';
+import Layer from './layer.js';
+import type { StyleItemOptions } from '../style/styleItem.js';
+import StyleItem from '../style/styleItem.js';
 import VectorStyleItem, {
   type VectorStyleItemOptions,
 } from '../style/vectorStyleItem.js';
@@ -70,7 +72,7 @@ class FeatureLayer<
   /**
    * An event, called when the style of the layer changes. Is passed the new style item as its value.
    */
-  readonly styleChanged: VcsEvent<StyleItem> = new VcsEvent();
+  readonly styleChanged = new VcsEvent<StyleItem>();
 
   /**
    * a height offset for rendering of a balloon for a feature of this layer.
@@ -82,7 +84,7 @@ class FeatureLayer<
   /**
    * raised if the split direction changes, is passed the split direction as its only argument
    */
-  readonly splitDirectionChanged: VcsEvent<SplitDirection> = new VcsEvent();
+  readonly splitDirectionChanged = new VcsEvent<SplitDirection>();
 
   /**
    * FeatureVisibility tracks the highlighting and hiding of features on this layer

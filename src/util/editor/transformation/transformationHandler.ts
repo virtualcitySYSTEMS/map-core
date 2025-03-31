@@ -14,12 +14,12 @@ import create3DHandlers from './create3DHandlers.js';
 import create2DHandlers from './create2DHandlers.js';
 import { obliqueGeometry } from '../../../layer/vectorSymbols.js';
 import type VectorLayer from '../../../layer/vectorLayer.js';
-import {
+import type {
   AxisAndPlanes,
   Handlers,
   TransformationHandler,
-  TransformationMode,
 } from './transformationTypes.js';
+import { TransformationMode } from './transformationTypes.js';
 import type VcsMap from '../../../map/vcsMap.js';
 import {
   isAbsoluteHeightReference,
@@ -30,7 +30,7 @@ import { mercatorToCartographic } from '../../math.js';
 import { is2DLayout } from '../../geometryHelpers.js';
 
 type FeatureCenterInfo = {
-  center: import('ol/coordinate.js').Coordinate;
+  center: Coordinate;
   greyOutZ: boolean;
   calculateHeight: boolean;
   offsetHeight: boolean;

@@ -16,10 +16,10 @@ import type {
 import type { State } from 'ol/render.js';
 import { parseEnumValue, parseNumber } from '@vcsuite/parsers';
 import { getCartesianBearing } from '../util/math.js';
+import type { VectorPropertiesPrimitiveOptions } from '../layer/vectorProperties.js';
 import {
   PrimitiveOptionsType,
   vectorPropertiesOfType,
-  VectorPropertiesPrimitiveOptions,
 } from '../layer/vectorProperties.js';
 import { getStringColor, parseColor } from './styleHelpers.js';
 import type { ColorType } from './vectorStyleItem.js';

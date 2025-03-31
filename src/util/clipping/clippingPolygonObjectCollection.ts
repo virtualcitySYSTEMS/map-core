@@ -19,11 +19,11 @@ class ClippingPolygonObjectCollection extends Collection<ClippingPolygonObject> 
 
   private _listener: Array<() => void>;
 
-  private _mapListener: Map<string, () => void> = new Map();
+  private _mapListener = new Map<string, () => void>();
 
-  private _itemListener: Map<string, () => void> = new Map();
+  private _itemListener = new Map<string, () => void>();
 
-  stateChanged: VcsEvent<ClippingPolygonObject> = new VcsEvent();
+  stateChanged = new VcsEvent<ClippingPolygonObject>();
 
   constructor(app: VcsApp) {
     super();
@@ -94,13 +94,13 @@ class ClippingPolygonObjectCollection extends Collection<ClippingPolygonObject> 
     ];
   }
 
-  _getActiveCesiumMaps(): CesiumMap[] {
+  private _getActiveCesiumMaps(): CesiumMap[] {
     return this._app.maps
       .getByType(CesiumMap.className)
       .filter((map) => map.active) as CesiumMap[];
   }
 
-  _setMapListener(map: CesiumMap): () => void {
+  private _setMapListener(map: CesiumMap): () => void {
     const listener = [
       map.stateChanged.addEventListener((state) => {
         if (state === MapState.INACTIVE) {
@@ -154,52 +154,56 @@ class ClippingPolygonObjectCollection extends Collection<ClippingPolygonObject> 
       }),
     ];
 
-    return () => listener.forEach((cb) => cb());
+    return () => {
+      listener.forEach((cb) => {
+        cb();
+      });
+    };
   }
 
-  _setItemListener(item: ClippingPolygonObject): () => void {
+  private _setItemListener(item: ClippingPolygonObject): () => void {
     const listener = [
       item.stateChanged.addEventListener(() => {
         const maps = this._getActiveCesiumMaps();
         if (item.active) {
-          maps.forEach((map) =>
+          maps.forEach((map) => {
             addClippingPolygonObjectToMap(
               map,
               item.clippingPolygon,
               item.terrain,
               item.layerNames,
-            ),
-          );
+            );
+          });
         } else {
-          maps.forEach((map) =>
+          maps.forEach((map) => {
             removeClippingPolygonFromMap(
               map,
               item.clippingPolygon,
               item.terrain,
               item.layerNames,
-            ),
-          );
+            );
+          });
         }
       }),
       item.clippingPolygonChanged.addEventListener(({ oldValue, newValue }) => {
         if (item.active) {
           const maps = this._getActiveCesiumMaps();
-          maps.forEach((map) =>
+          maps.forEach((map) => {
             removeClippingPolygonFromMap(
               map,
               oldValue,
               item.terrain,
               item.layerNames,
-            ),
-          );
-          maps.forEach((map) =>
+            );
+          });
+          maps.forEach((map) => {
             addClippingPolygonObjectToMap(
               map,
               newValue,
               item.terrain,
               item.layerNames,
-            ),
-          );
+            );
+          });
         }
       }),
       item.terrainChanged.addEventListener(() => {
@@ -208,11 +212,13 @@ class ClippingPolygonObjectCollection extends Collection<ClippingPolygonObject> 
             .map((map) => map.getScene()?.globe)
             .filter((g) => !!g);
           if (item.terrain) {
-            globes.forEach((g) => addClippingPolygon(g, item.clippingPolygon));
+            globes.forEach((g) => {
+              addClippingPolygon(g, item.clippingPolygon);
+            });
           } else {
-            globes.forEach((g) =>
-              removeClippingPolygon(g, item.clippingPolygon),
-            );
+            globes.forEach((g) => {
+              removeClippingPolygon(g, item.clippingPolygon);
+            });
           }
         }
       }),
@@ -235,13 +241,23 @@ class ClippingPolygonObjectCollection extends Collection<ClippingPolygonObject> 
       }),
     ];
 
-    return () => listener.forEach((cb) => cb());
+    return () => {
+      listener.forEach((cb) => {
+        cb();
+      });
+    };
   }
 
   destroy(): void {
-    this._listener.forEach((cb) => cb());
-    this._mapListener.forEach((cb) => cb());
-    this._itemListener.forEach((cb) => cb());
+    this._listener.forEach((cb) => {
+      cb();
+    });
+    this._mapListener.forEach((cb) => {
+      cb();
+    });
+    this._itemListener.forEach((cb) => {
+      cb();
+    });
     super.destroy();
   }
 }

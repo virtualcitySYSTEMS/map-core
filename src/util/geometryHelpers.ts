@@ -1,12 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { Scene } from '@vcmap-cesium/engine';
 import {
   HeightReference,
   sampleTerrainMostDetailed,
-  Scene,
 } from '@vcmap-cesium/engine';
 import { offset as offsetSphere } from 'ol/sphere.js';
 import type { Coordinate } from 'ol/coordinate.js';
 import { fromCircle } from 'ol/geom/Polygon.js';
-import { GeometryLayout } from 'ol/geom/Geometry.js';
+import type { GeometryLayout } from 'ol/geom/Geometry.js';
 import {
   Circle,
   type Geometry,
@@ -19,16 +20,18 @@ import {
   Polygon,
   SimpleGeometry,
 } from 'ol/geom.js';
-import { Feature } from 'ol';
+import type { Feature } from 'ol';
 import Projection from './projection.js';
 import { mercatorToCartographic } from './math.js';
-import VectorProperties from '../layer/vectorProperties.js';
+import type VectorProperties from '../layer/vectorProperties.js';
+import type {
+  RelativeHeightReference,
+  VectorHeightInfo,
+} from './featureconverter/vectorHeightInfo.js';
 import {
   getHeightInfo,
   isClampedHeightReference,
   isRelativeHeightReference,
-  RelativeHeightReference,
-  VectorHeightInfo,
 } from './featureconverter/vectorHeightInfo.js';
 import { getSingleGeometriesFromGeometry } from './featureconverter/convert.js';
 

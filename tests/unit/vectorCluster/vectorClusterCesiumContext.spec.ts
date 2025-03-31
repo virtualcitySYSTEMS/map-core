@@ -1,4 +1,5 @@
-import { CustomDataSource, Scene } from '@vcmap-cesium/engine';
+import type { Scene } from '@vcmap-cesium/engine';
+import { CustomDataSource } from '@vcmap-cesium/engine';
 import Feature from 'ol/Feature.js';
 import { expect } from 'chai';
 import { LineString, Point } from 'ol/geom.js';
@@ -6,7 +7,7 @@ import { Fill, RegularShape, Style } from 'ol/style.js';
 import OlText from 'ol/style/Text.js';
 import Stroke from 'ol/style/Stroke.js';
 import VectorProperties from '../../../src/layer/vectorProperties.js';
-import { CesiumMap } from '../../../index.js';
+import type { CesiumMap } from '../../../index.js';
 import { getCesiumMap } from '../helpers/cesiumHelpers.js';
 import VectorClusterCesiumContext from '../../../src/vectorCluster/vectorClusterCesiumContext.js';
 

@@ -1,17 +1,15 @@
 import { expect } from 'chai';
-import sinon, { SinonSandbox, SinonSpy, SinonStub } from 'sinon';
+import type { SinonSandbox, SinonStub } from 'sinon';
+import sinon from 'sinon';
+import type { Primitive, Scene } from '@vcmap-cesium/engine';
 import {
   Cartesian2,
   Cartesian3,
-  CesiumWidget,
   Clock,
   Entity,
-  JulianDate,
-  Primitive,
   Ray,
-  Scene,
 } from '@vcmap-cesium/engine';
-import { Coordinate } from 'ol/coordinate.js';
+import type { Coordinate } from 'ol/coordinate.js';
 import Feature from 'ol/Feature.js';
 import FeatureAtPixel from '../../../src/interaction/featureAtPixelInteraction.js';
 import OpenlayersMap from '../../../src/map/openlayersMap.js';
@@ -22,19 +20,18 @@ import {
   PointerKeyType,
 } from '../../../src/interaction/interactionType.js';
 import Projection from '../../../src/util/projection.js';
-import VectorLayer from '../../../src/layer/vectorLayer.js';
 import {
   createDummyCesium3DTileFeature,
   setCesiumMap,
 } from '../helpers/cesiumHelpers.js';
 import VcsApp from '../../../src/vcsApp.js';
 import { allowPicking, vcsLayerName } from '../../../src/layer/layerSymbols.js';
-import {
+import type {
   CesiumMap,
   FeatureAtPixelInteraction,
   InteractionEvent,
-  vectorClusterGroupName,
 } from '../../../index.js';
+import { vectorClusterGroupName } from '../../../index.js';
 import { primitives } from '../../../src/layer/vectorSymbols.js';
 import { arrayCloseTo } from '../helpers/helpers.js';
 
@@ -350,9 +347,10 @@ describe('FeatureAtPixelInteraction', () => {
           key: ModificationKeyType.NONE,
         };
 
+        // @ts-expect-error: stub
         sandbox.stub(cesiumMap, 'getCesiumWidget').returns({
           clock: new Clock({}),
-        } as CesiumWidget);
+        });
         fap.pickTranslucent = false;
 
         return fap
@@ -380,9 +378,10 @@ describe('FeatureAtPixelInteraction', () => {
           key: ModificationKeyType.NONE,
         };
 
+        // @ts-expect-error: stub
         sandbox.stub(cesiumMap, 'getCesiumWidget').returns({
           clock: new Clock({}),
-        } as CesiumWidget);
+        });
         sceneStub.pickTranslucentDepth = true;
         fap.pickTranslucent = true;
         await fap.pipe(event);

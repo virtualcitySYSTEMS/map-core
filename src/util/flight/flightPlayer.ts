@@ -1,11 +1,11 @@
-import {
+import type {
   Cartesian3,
   CatmullRomSpline,
-  HeadingPitchRoll,
   LinearSpline,
   QuaternionSpline,
   Scene,
 } from '@vcmap-cesium/engine';
+import { HeadingPitchRoll } from '@vcmap-cesium/engine';
 import { getLogger } from '@vcsuite/logger';
 import { check } from '@vcsuite/check';
 import CesiumMap from '../../map/cesiumMap.js';

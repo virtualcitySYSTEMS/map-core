@@ -2,7 +2,7 @@ import { LinearSpline } from '@vcmap-cesium/engine';
 import { expect } from 'chai';
 import getDummyFlight from './getDummyFlightInstance.js';
 import { getSplineAndTimesForInstance } from '../../../../src/util/flight/flightHelpers.js';
-import { FlightInstance } from '../../../../index.js';
+import type { FlightInstance } from '../../../../index.js';
 
 describe('getSplineAndTimesForInstance', () => {
   let flight: FlightInstance;

@@ -1,12 +1,13 @@
 import deepEqual from 'fast-deep-equal';
-import { Coordinate } from 'ol/coordinate.js';
-import { Feature } from 'ol';
+import type { Coordinate } from 'ol/coordinate.js';
+import type { Feature } from 'ol';
 import { Polygon } from 'ol/geom.js';
 import { check, oneOf } from '@vcsuite/check';
 import { parseBoolean } from '@vcsuite/parsers';
 import { getLogger } from '@vcsuite/logger';
 import { Cartesian3, ClippingPolygon } from '@vcmap-cesium/engine';
-import VcsObject, { VcsObjectOptions } from '../../vcsObject.js';
+import type { VcsObjectOptions } from '../../vcsObject.js';
+import VcsObject from '../../vcsObject.js';
 import VcsEvent from '../../vcsEvent.js';
 
 export enum ClippingPolygonObjectState {

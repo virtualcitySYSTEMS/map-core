@@ -19,7 +19,7 @@ import {
   validateLineString,
 } from '../../../../src/util/featureconverter/lineStringToCesium.js';
 import Projection from '../../../../src/util/projection.js';
-import {
+import type {
   PolylineGeometryOptions,
   VectorGeometryFactory,
   VectorHeightInfo,
@@ -156,6 +156,7 @@ describe('lineStringToCesium', () => {
 
   describe('createGroundLineGeometries', () => {
     let style: Style;
+
     before(() => {
       style = new Style({
         stroke: new Stroke({
@@ -191,6 +192,7 @@ describe('lineStringToCesium', () => {
 
   describe('createLineGeometries', () => {
     let style: Style;
+
     before(() => {
       style = new Style({
         stroke: new Stroke({

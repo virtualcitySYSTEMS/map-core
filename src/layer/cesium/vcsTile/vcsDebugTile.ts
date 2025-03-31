@@ -1,24 +1,19 @@
-import {
-  PrimitiveCollection,
-  QuadtreeTile,
-  SplitDirection,
-  TileBoundingRegion,
-} from '@vcmap-cesium/engine';
+import type { QuadtreeTile, TileBoundingRegion } from '@vcmap-cesium/engine';
+import { PrimitiveCollection, SplitDirection } from '@vcmap-cesium/engine';
 import { getLogger } from '@vcsuite/logger';
 import { Feature } from 'ol';
 import { Point } from 'ol/geom.js';
 import { getCenter } from 'ol/extent.js';
 import { fromExtent } from 'ol/geom/Polygon.js';
 import { Style, Text as OLText } from 'ol/style.js';
-import { StyleLike } from 'ol/style/Style.js';
+import type { StyleLike } from 'ol/style/Style.js';
 import VectorContext from '../vectorContext.js';
 import { vcsLayerName } from '../../layerSymbols.js';
+import type { VcsTile, VcsTileOptions } from './vcsTileHelpers.js';
 import {
   getTileBoundingRegion,
   getTileHash,
   getTileWgs84Extent,
-  VcsTile,
-  VcsTileOptions,
   VcsTileState,
   VcsTileType,
 } from './vcsTileHelpers.js';
@@ -28,7 +23,7 @@ import Projection, {
 } from '../../../util/projection.js';
 import { createSync } from '../../vectorSymbols.js';
 import VectorProperties from '../../vectorProperties.js';
-import CesiumMap from '../../../map/cesiumMap.js';
+import type CesiumMap from '../../../map/cesiumMap.js';
 import type TileProvider from '../../tileProvider/tileProvider.js';
 
 let vectorProperties: VectorProperties | undefined;

@@ -1,21 +1,18 @@
 import { check, maybe, oneOf } from '@vcsuite/check';
 // eslint-disable-next-line import/no-named-default
 import type { default as OLStyle, StyleFunction } from 'ol/style/Style.js';
-import CesiumTilesetLayer, {
-  CesiumTilesetOptions,
-} from './cesiumTilesetLayer.js';
-import DeclarativeStyleItem, {
-  DeclarativeStyleItemOptions,
-  defaultDeclarativeStyle,
-} from '../style/declarativeStyleItem.js';
-import VectorStyleItem, {
-  VectorStyleItemOptions,
-} from '../style/vectorStyleItem.js';
+import type { CesiumTilesetOptions } from './cesiumTilesetLayer.js';
+import CesiumTilesetLayer from './cesiumTilesetLayer.js';
+import type { DeclarativeStyleItemOptions } from '../style/declarativeStyleItem.js';
+import type DeclarativeStyleItem from '../style/declarativeStyleItem.js';
+import { defaultDeclarativeStyle } from '../style/declarativeStyleItem.js';
+import type { VectorStyleItemOptions } from '../style/vectorStyleItem.js';
+import VectorStyleItem from '../style/vectorStyleItem.js';
 import CesiumMap from '../map/cesiumMap.js';
 import CesiumTilesetCesiumImpl from './cesium/cesiumTilesetCesiumImpl.js';
 import { layerClassRegistry } from '../classRegistry.js';
-import StyleItem from '../style/styleItem.js';
-import VcsMap from '../map/vcsMap.js';
+import type StyleItem from '../style/styleItem.js';
+import type VcsMap from '../map/vcsMap.js';
 
 export type PointCloudOptions = CesiumTilesetOptions & {
   pointSize?: number | string;

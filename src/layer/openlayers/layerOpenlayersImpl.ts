@@ -2,11 +2,11 @@ import { SplitDirection } from '@vcmap-cesium/engine';
 import { unByKey } from 'ol/Observable.js';
 import type { EventsKey } from 'ol/events.js';
 import type OLLayer from 'ol/layer/Layer.js';
-import RenderEvent from 'ol/render/Event.js';
+import type RenderEvent from 'ol/render/Event.js';
 import { vcsLayerName } from '../layerSymbols.js';
 import LayerImplementation from '../layerImplementation.js';
 import type OpenlayersMap from '../../map/openlayersMap.js';
-import { LayerImplementationOptions } from '../layer.js';
+import type { LayerImplementationOptions } from '../layer.js';
 
 export type LayerOpenlayersImplementationOptions =
   LayerImplementationOptions & {
@@ -98,7 +98,6 @@ class LayerOpenlayersImpl extends LayerImplementation<OpenlayersMap> {
   }
 
   private _splitPreRender(event: RenderEvent): void {
-    // eslint-disable-next-line prefer-destructuring
     const context = event.context as CanvasRenderingContext2D;
     const width = context.canvas.width * this.map.splitPosition;
     context.save();

@@ -21,7 +21,7 @@ export function arrayCloseTo<T extends number[]>(
     expect(c).to.be.closeTo(
       expectedNumbers[index],
       epsilon,
-      `Array at index ${index}${message}`,
+      `Array at index ${String(index)}${message}`,
     );
   });
 }

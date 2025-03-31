@@ -10,8 +10,7 @@ import {
   mouseOverSymbol,
 } from '../../../../../index.js';
 
-describe('EditGeometryMouseOverInteraction', () => {
-  let interaction;
+describe('SelectFeatureMouseOverInteraction', () => {
   let layer;
   let feature;
   let cursorStyle;
@@ -23,23 +22,32 @@ describe('EditGeometryMouseOverInteraction', () => {
     layer.addFeatures([feature]);
     cursorStyle = { cursor: '' };
   });
+
   afterEach(() => {
     cursorStyle.cursor = '';
   });
 
   describe('single selection mode', () => {
+    let interaction;
+
     before(() => {
       selectFeaturesInteraction = new SelectSingleFeatureInteraction(layer);
       interaction = new SelectFeatureMouseOverInteraction(
         layer.name,
         selectFeaturesInteraction,
       );
-      interaction.cursorStyle = cursorStyle;
+      interaction._cursorStyle = cursorStyle;
     });
+
+    after(() => {
+      interaction.destroy();
+    });
+
     it('should change the cursor style, to select, if hovering over a feature', async () => {
       await interaction.pipe({ feature });
       expect(cursorStyle.cursor).to.equal(cursorMap.select);
     });
+
     it('should change the cursor style, to select, if leaving a feature', async () => {
       await interaction.pipe({ feature });
       await interaction.pipe({});
@@ -48,23 +56,32 @@ describe('EditGeometryMouseOverInteraction', () => {
   });
 
   describe('multi selection mode', () => {
+    let interaction;
+
     before(() => {
       selectFeaturesInteraction = new SelectMultiFeatureInteraction(layer);
       interaction = new SelectFeatureMouseOverInteraction(
         layer.name,
         selectFeaturesInteraction,
       );
-      interaction.cursorStyle = cursorStyle;
+      interaction._cursorStyle = cursorStyle;
     });
+
+    after(() => {
+      interaction.destroy();
+    });
+
     it('should change the cursor style, to select, if hovering over a feature', async () => {
       await interaction.pipe({ feature });
       expect(cursorStyle.cursor).to.equal(cursorMap.select);
     });
+
     it('should change the cursor style, to select, if leaving a feature', async () => {
       await interaction.pipe({ feature });
       await interaction.pipe({});
       expect(cursorStyle.cursor).to.equal(cursorMap.auto);
     });
+
     it('should change the cursor style to add to selection, if hovering over a feature with CTRL', async () => {
       await interaction.pipe({ feature, key: ModificationKeyType.CTRL });
       expect(cursorStyle.cursor).to.equal(cursorMap.addToSelection);
@@ -87,21 +104,21 @@ describe('EditGeometryMouseOverInteraction', () => {
         expect(cursorStyle.cursor).to.equal(cursorMap.removeFromSelection);
       });
 
-      it('should change the cursor style, if modification key changes to ctrl', () => {
+      it('should change the cursor style, if modification key changes to ctrl and the set is empty', () => {
         selectFeaturesInteraction.clear();
         interaction.modifierChanged(ModificationKeyType.CTRL);
         expect(cursorStyle.cursor).to.equal(cursorMap.addToSelection);
       });
     });
-  });
 
-  describe('interaction with features on different layers', () => {
-    it('should not reset cursor style when style was changed by different interaction', async () => {
-      cursorStyle.cursor = cursorMap.scaleNESW;
-      cursorStyle[mouseOverSymbol] = 'other_id';
-      const featureOnOtherLayer = new Feature();
-      await interaction.pipe({ feature: featureOnOtherLayer });
-      expect(cursorStyle.cursor).to.equal(cursorMap.scaleNESW);
+    describe('interaction with features on different layers', () => {
+      it('should not reset cursor style when style was changed by different interaction', async () => {
+        cursorStyle.cursor = cursorMap.scaleNESW;
+        cursorStyle[mouseOverSymbol] = 'other_id';
+        const featureOnOtherLayer = new Feature();
+        await interaction.pipe({ feature: featureOnOtherLayer });
+        expect(cursorStyle.cursor).to.equal(cursorMap.scaleNESW);
+      });
     });
   });
 });

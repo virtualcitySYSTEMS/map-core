@@ -2,10 +2,10 @@ import { getLogger } from '@vcsuite/logger';
 import VectorSource from 'ol/source/Vector.js';
 import { unByKey } from 'ol/Observable.js';
 import { Feature } from 'ol';
-import { Extent as OLExtent } from 'ol/extent.js';
+import type { Extent as OLExtent } from 'ol/extent.js';
 import type { Geometry } from 'ol/geom.js';
 import type { EventsKey } from 'ol/events.js';
-import ObliqueMap from '../../map/obliqueMap.js';
+import type ObliqueMap from '../../map/obliqueMap.js';
 import {
   actuallyIsCircle,
   alreadyTransformedToImage,
@@ -196,7 +196,7 @@ export function createSourceObliqueSync(
     }
     if (originalFeature.getGeometry()?.[alreadyTransformedToImage]) {
       convertToOblique(originalFeature, obliqueFeature)
-        .catch((_e) => {
+        .catch(() => {
           getLogger('SourceObliqueSync').warning(
             `Failed to convert feature with id ${id} to oblique`,
           );
@@ -207,7 +207,7 @@ export function createSourceObliqueSync(
     } else {
       updatingOblique[id] = setTimeout(() => {
         convertToOblique(originalFeature, obliqueFeature)
-          .catch((_e) => {
+          .catch(() => {
             getLogger('SourceObliqueSync').warning(
               `Failed to convert feature with id ${id} to oblique`,
             );
@@ -243,7 +243,7 @@ export function createSourceObliqueSync(
         originalGeometry,
         map.collection!.getImageByName(imageName as string) as ObliqueImage,
       )
-        .catch((_e) => {
+        .catch(() => {
           getLogger('SourceObliqueSync').warning(
             `Failed to update feature with id ${id} mercator geometry`,
           );
@@ -315,7 +315,7 @@ export function createSourceObliqueSync(
       source.on('addfeature', (event) => {
         const f = event.feature as Feature;
         if (featureInExtent(f, currentExtent)) {
-          addFeature(f).catch((_e) => {
+          addFeature(f).catch(() => {
             getLogger('SourceObliqueSync').warning(
               `Failed to add feature with id ${f.getId()!} to oblique source`,
             );
@@ -332,7 +332,7 @@ export function createSourceObliqueSync(
           !featureListeners.has(newFeatureId) &&
           featureInExtent(f, currentExtent)
         ) {
-          addFeature(f).catch((_e) => {
+          addFeature(f).catch(() => {
             getLogger('SourceObliqueSync').warning(
               `Failed to add feature with id ${newFeatureId} to oblique source`,
             );
@@ -355,7 +355,7 @@ export function createSourceObliqueSync(
         .getExtentOfCurrentImage()
         .getCoordinatesInProjection(mercatorProjection);
       source.forEachFeatureInExtent(currentExtent, (feature) => {
-        addFeature(feature).catch((_e) => {
+        addFeature(feature).catch(() => {
           getLogger('SourceObliqueSync').warning(
             `Failed to add feature with id ${feature.getId()!} to oblique source`,
           );
@@ -363,7 +363,7 @@ export function createSourceObliqueSync(
       });
       source.forEachFeature((feature) => {
         if (feature.getGeometry()?.[alreadyTransformedToImage]) {
-          addFeature(feature).catch((_e) => {
+          addFeature(feature).catch(() => {
             getLogger('SourceObliqueSync').warning(
               `Failed to add feature with id ${feature.getId()!} to oblique source`,
             );

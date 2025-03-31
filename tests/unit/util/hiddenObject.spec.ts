@@ -1,12 +1,14 @@
 import { expect } from 'chai';
-import {
+import type {
   Collection,
-  GlobalHider,
   HiddenObject,
   OverrideCollection,
+  OverrideCollectionItem,
+} from '../../../index.js';
+import {
+  GlobalHider,
   createHiddenObjectsCollection,
   moduleIdSymbol,
-  OverrideCollectionItem,
 } from '../../../index.js';
 
 describe('Hidden Object', () => {

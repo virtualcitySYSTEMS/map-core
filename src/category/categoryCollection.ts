@@ -1,9 +1,10 @@
 import { getLogger as getLoggerByName, type Logger } from '@vcsuite/logger';
-import Category, { CategoryOptions } from './category.js';
+import type { CategoryOptions } from './category.js';
+import Category from './category.js';
 import IndexedCollection from '../util/indexedCollection.js';
 import { getObjectFromClassRegistry } from '../classRegistry.js';
 import type VcsApp from '../vcsApp.js';
-import VcsObject from '../vcsObject.js';
+import type VcsObject from '../vcsObject.js';
 
 function getLogger(): Logger {
   return getLoggerByName('CategoryCollection');
@@ -18,7 +19,7 @@ class CategoryCollection extends IndexedCollection<Category> {
   /**
    * Map of category names, where the value is a map of moduleId and items.
    */
-  private _cache: Map<string, Map<string, object[]>> = new Map();
+  private _cache = new Map<string, Map<string, object[]>>();
 
   private _moduleRemovedListener: () => void;
 

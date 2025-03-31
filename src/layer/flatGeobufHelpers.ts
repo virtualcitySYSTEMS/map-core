@@ -1,11 +1,9 @@
-import Feature from 'ol/Feature.js';
+import type Feature from 'ol/Feature.js';
 import { fromFeature } from 'flatgeobuf/lib/mjs/ol/feature.js';
 import { HttpReader } from 'flatgeobuf/lib/mjs/http-reader.js';
-import Projection, {
-  mercatorProjection,
-  parseEPSGCode,
-} from '../util/projection.js';
-import Extent from '../util/extent.js';
+import type Projection from '../util/projection.js';
+import { mercatorProjection, parseEPSGCode } from '../util/projection.js';
+import type Extent from '../util/extent.js';
 import { alreadyTransformedToMercator } from './vectorSymbols.js';
 
 export async function getValidReader(

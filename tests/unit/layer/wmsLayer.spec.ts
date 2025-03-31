@@ -1,7 +1,8 @@
 import { expect } from 'chai';
 import sinon, { type SinonSandbox } from 'sinon';
 import { type Size } from 'ol/size.js';
-import WMSLayer, { WMSOptions } from '../../../src/layer/wmsLayer.js';
+import type { WMSOptions } from '../../../src/layer/wmsLayer.js';
+import WMSLayer from '../../../src/layer/wmsLayer.js';
 
 describe('WMSLayer', () => {
   let sandbox: SinonSandbox;
@@ -25,6 +26,7 @@ describe('WMSLayer', () => {
 
     describe('setting of layers', () => {
       let layer: WMSLayer;
+
       beforeEach(() => {
         layer = new WMSLayer({});
       });

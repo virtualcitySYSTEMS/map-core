@@ -11,10 +11,8 @@ import type StyleItem from '../../style/styleItem.js';
 import type FeatureVisibility from '../featureVisibility.js';
 import type GlobalHider from '../globalHider.js';
 import VectorContext from './vectorContext.js';
-import {
-  createSourceVectorContextSync,
-  SourceVectorContextSync,
-} from './sourceVectorContextSync.js';
+import type { SourceVectorContextSync } from './sourceVectorContextSync.js';
+import { createSourceVectorContextSync } from './sourceVectorContextSync.js';
 
 /**
  * represents a specific vector layer for cesium.
@@ -124,7 +122,9 @@ class VectorCesiumImpl
       this.source
         .getFeatures()
         .filter((f) => !f.getStyle())
-        .forEach((f) => f.changed());
+        .forEach((f) => {
+          f.changed();
+        });
     }
   }
 

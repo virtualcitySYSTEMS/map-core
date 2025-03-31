@@ -52,6 +52,7 @@ describe('StaticGeoJSONTileProvider', () => {
       expect(loaded).to.have.lengthOf(2);
       expect(loaded[0]).to.be.instanceOf(Feature);
     });
+
     it('should send headers', async () => {
       await tileProvider.loader(1, 2, 3, { myheader: 't2' });
       expect(requestHeaders).to.have.property('myheader', 't2');

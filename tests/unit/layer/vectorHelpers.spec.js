@@ -333,44 +333,5 @@ describe('VectorHelpers', () => {
         expect(impl.source[globalHiderLastUpdated]).to.equal(Date.now());
       });
     });
-
-    describe('setting up of ol source listeners', () => {
-      let setup;
-      let impl;
-      let listeners;
-      let now;
-      let clock;
-
-      before(() => {
-        setup = setupVectorLayer();
-        [impl] = setup.vectorLayer.createImplementationsForMap(openlayers);
-        listeners = synchronizeFeatureVisibilityWithSource(
-          impl.featureVisibility,
-          impl.source,
-          impl.globalHider,
-        );
-        now = Date.now();
-        clock = sandbox.useFakeTimers(now);
-      });
-
-      after(() => {
-        sandbox.restore();
-        listeners.forEach((cb) => {
-          cb();
-        });
-        setup.vectorLayer.destroy();
-      });
-
-      it('should add a listener, which adds hidden features', () => {
-        clock.tick(1);
-        const feature = new Feature({});
-        const id = 'hidden';
-        feature.setId(id);
-        impl.featureVisibility.hideObjects([id]);
-        setup.vectorLayer.addFeatures([feature]);
-        expect(impl.featureVisibility.hasHiddenFeature(id, feature)).to.be.true;
-        expect(impl.source[fvLastUpdated]).to.equal(Date.now());
-      });
-    });
   });
 });

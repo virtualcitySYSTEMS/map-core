@@ -1,17 +1,17 @@
 import { getLogger } from '@vcsuite/logger';
-import VcsMap from '../vcsMap.js';
+import type VcsMap from '../vcsMap.js';
 import CesiumMap from '../cesiumMap.js';
 import OpenlayersMap from '../openlayersMap.js';
 import ObliqueMap from '../obliqueMap.js';
 import VcsEvent from '../../vcsEvent.js';
-import NavigationImpl from './navigationImpl.js';
-import Controller from './controller/controller.js';
+import type NavigationImpl from './navigationImpl.js';
+import type Controller from './controller/controller.js';
 import CesiumNavigation from './cesiumNavigation.js';
 import OpenlayersNavigation from './openlayersNavigation.js';
 import ObliqueNavigation from './obliqueNavigation.js';
 import { createEasing, type NavigationEasing } from './easingHelper.js';
+import type { ControllerInput } from './controller/controllerInput.js';
 import {
-  ControllerInput,
   getZeroInput,
   isNonZeroInput,
   inputEquals,
@@ -52,23 +52,23 @@ function getDefaultNavigationImplForMap(
  * Manages the active navigation and the controllers.
  */
 class Navigation {
-  private _defaultNavigationImpls: Map<
+  private _defaultNavigationImpls = new Map<
     VcsMap,
     NavigationImpl<VcsMap> | undefined
-  > = new Map();
+  >();
 
-  private _customNavigationImpls: Map<
+  private _customNavigationImpls = new Map<
     VcsMap,
     { impl: NavigationImpl<VcsMap>; cb: () => void }
-  > = new Map();
+  >();
 
   private _currentNavigation: NavigationImpl<VcsMap> | undefined = undefined;
 
-  public currentNavigationChanged: VcsEvent<
+  public currentNavigationChanged = new VcsEvent<
     NavigationImpl<VcsMap> | undefined
-  > = new VcsEvent();
+  >();
 
-  private _controller: Map<string, Controller> = new Map();
+  private _controller = new Map<string, Controller>();
 
   private _movement: Movement = getZeroMovement();
 
@@ -161,7 +161,7 @@ class Navigation {
    * Removes custom implementations and resets the original default NavigationImpl for the map
    * @param map
    */
-  resetNavigationImplForMap<M extends VcsMap>(map: M): void {
+  resetNavigationImplForMap(map: VcsMap): void {
     if (this._customNavigationImpls.has(map)) {
       const { cb } = this._customNavigationImpls.get(map)!;
       cb();
@@ -257,9 +257,13 @@ class Navigation {
 
   destroy(): void {
     this._stopInputLoop();
-    this._controller.forEach((c) => c.destroy());
+    this._controller.forEach((c) => {
+      c.destroy();
+    });
     this._controller.clear();
-    this._customNavigationImpls.forEach(({ cb }) => cb());
+    this._customNavigationImpls.forEach(({ cb }) => {
+      cb();
+    });
     this._customNavigationImpls.clear();
     this._defaultNavigationImpls.clear();
     this._currentNavigation = undefined;

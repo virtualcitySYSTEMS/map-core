@@ -1,8 +1,8 @@
+import type { FlightAnchor } from '../../../../index.js';
 import {
   Viewpoint,
   FlightInstance,
   anchorFromViewpoint,
-  FlightAnchor,
 } from '../../../../index.js';
 
 export default function getDummyFlight(numberOfVPs = 5): FlightInstance {

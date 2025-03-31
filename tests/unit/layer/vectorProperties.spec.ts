@@ -8,12 +8,12 @@ import {
   NearFarScalar,
   Cartesian3,
 } from '@vcmap-cesium/engine';
+import type { VectorPropertiesPrimitiveOptions } from '../../../src/layer/vectorProperties.js';
 import VectorProperties, {
   parseCartesian3,
   parseNearFarScalar,
   parseStoreyHeights,
   getClassificationTypeOptions,
-  VectorPropertiesPrimitiveOptions,
 } from '../../../src/layer/vectorProperties.js';
 import { PrimitiveOptionsType } from '../../../index.js';
 
@@ -138,7 +138,7 @@ describe('VectorProperties', () => {
   describe('VectorProperties', () => {
     let vectorProperties: VectorProperties;
     let sandbox: SinonSandbox;
-    let eventListener: (event: any) => void;
+    let eventListener: (event: unknown) => void;
 
     before(() => {
       sandbox = sinon.createSandbox();
@@ -991,6 +991,7 @@ describe('VectorProperties', () => {
         expect(primitiveOptions).to.be.null;
       });
     });
+
     describe('getting values from features', () => {
       let features: Feature[];
 

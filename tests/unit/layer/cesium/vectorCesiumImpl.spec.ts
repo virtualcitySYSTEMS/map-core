@@ -1,5 +1,6 @@
 import { expect } from 'chai';
-import sinon, { SinonSandbox } from 'sinon';
+import type { SinonSandbox } from 'sinon';
+import sinon from 'sinon';
 import LineString from 'ol/geom/LineString.js';
 import Point from 'ol/geom/Point.js';
 import Style from 'ol/style/Style.js';
@@ -12,19 +13,13 @@ import { SplitDirection } from '@vcmap-cesium/engine';
 import VcsApp from '../../../../src/vcsApp.js';
 import VectorLayer from '../../../../src/layer/vectorLayer.js';
 import { setCesiumMap } from '../../helpers/cesiumHelpers.js';
-import { setOpenlayersMap } from '../../helpers/openlayersHelpers.js';
 import { timeout } from '../../helpers/helpers.js';
-import {
-  CesiumMap,
-  OpenlayersMap,
-  VectorCesiumImpl,
-} from '../../../../index.js';
+import type { CesiumMap, VectorCesiumImpl } from '../../../../index.js';
 
 describe('VectorCesiumImpl', () => {
   let sandbox: SinonSandbox;
   let app: VcsApp;
   let cesiumMap: CesiumMap;
-  let openlayers: OpenlayersMap;
   /** @type {import("@vcmap/core").VectorLayer} */
   let commonLayer: VectorLayer;
   /** @type {import("@vcmap/core").VectorCesiumImpl} */
@@ -60,7 +55,6 @@ describe('VectorCesiumImpl', () => {
 
   beforeEach(async () => {
     app = new VcsApp();
-    openlayers = await setOpenlayersMap(app);
     cesiumMap = await setCesiumMap(app);
     cesiumMap.setTarget('mapContainer');
     commonLayer = new VectorLayer({});

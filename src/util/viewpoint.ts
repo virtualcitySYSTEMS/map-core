@@ -1,9 +1,11 @@
 import type { Coordinate } from 'ol/coordinate.js';
+import type { Extent as OLExtent } from 'ol/extent.js';
 import { containsCoordinate } from 'ol/extent.js';
 import { EasingFunction } from '@vcmap-cesium/engine';
 import { parseBoolean, parseNumber } from '@vcsuite/parsers';
 import Projection, { wgs84Projection } from './projection.js';
-import VcsObject, { VcsObjectOptions } from '../vcsObject.js';
+import type { VcsObjectOptions } from '../vcsObject.js';
+import VcsObject from '../vcsObject.js';
 import Extent from './extent.js';
 
 /**
@@ -263,7 +265,7 @@ class Viewpoint extends VcsObject {
    * @param  extent
    */
   static createViewpointFromExtent(
-    extent: import('ol/extent.js').Extent | Extent,
+    extent: OLExtent | Extent,
   ): Viewpoint | null {
     const extentCoordinates =
       extent instanceof Extent

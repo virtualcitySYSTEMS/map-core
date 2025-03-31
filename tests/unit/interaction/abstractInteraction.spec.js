@@ -7,9 +7,11 @@ import AbstractInteraction from '../../../src/interaction/abstractInteraction.js
 
 describe('AbstractInteraction', () => {
   let AI;
+
   beforeEach(() => {
     AI = new AbstractInteraction();
   });
+
   describe('#setModification', () => {
     it('should set the modification', () => {
       AI.setModification(ModificationKeyType.CTRL);

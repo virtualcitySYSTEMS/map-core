@@ -1,5 +1,6 @@
 import { expect } from 'chai';
-import Style, { StyleFunction } from 'ol/style/Style.js';
+import type { StyleFunction } from 'ol/style/Style.js';
+import Style from 'ol/style/Style.js';
 import VectorClusterGroupImpl from '../../../src/vectorCluster/vectorClusterGroupImpl.js';
 import ClusterEnhancedVectorSource from '../../../src/ol/source/ClusterEnhancedVectorSource.js';
 import FeatureVisibility from '../../../src/layer/featureVisibility.js';
@@ -37,7 +38,7 @@ describe('VectorClusterGroupImpl', () => {
       featureVisibility,
       globalHider,
       clusterDistance: 40,
-      getLayerByName: (_layerName: string): undefined => undefined,
+      getLayerByName: (): undefined => undefined,
     });
     await vectorClusterGroupImpl.activate();
   });

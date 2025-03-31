@@ -1,20 +1,21 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
+import type {
+  Primitive,
+  PrimitiveCollection,
+  GeometryInstance,
+} from '@vcmap-cesium/engine';
 import {
   Matrix4,
   Cartesian3,
   CylinderGeometry,
   Math as CesiumMath,
   PolylineGeometry,
-  Primitive,
-  PrimitiveCollection,
-  GeometryInstance,
 } from '@vcmap-cesium/engine';
+import type { CesiumMap, Handlers } from '../../../../../index.js';
 import {
   AxisAndPlanes,
-  CesiumMap,
   create3DHandlers,
-  Handlers,
   handlerSymbol,
   TransformationMode,
 } from '../../../../../index.js';

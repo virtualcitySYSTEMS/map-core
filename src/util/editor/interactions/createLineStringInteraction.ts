@@ -1,8 +1,7 @@
 import LineString from 'ol/geom/LineString.js';
 import type { Coordinate } from 'ol/coordinate.js';
-import AbstractInteraction, {
-  EventAfterEventHandler,
-} from '../../../interaction/abstractInteraction.js';
+import type { EventAfterEventHandler } from '../../../interaction/abstractInteraction.js';
+import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import {
   EventType,
   ModificationKeyType,
@@ -13,7 +12,7 @@ import {
   alreadyTransformedToMercator,
 } from '../../../layer/vectorSymbols.js';
 import ObliqueMap from '../../../map/obliqueMap.js';
-import { CreateInteraction } from '../createFeatureSession.js';
+import type { CreateInteraction } from '../createFeatureSession.js';
 
 /**
  * @extends {AbstractInteraction}

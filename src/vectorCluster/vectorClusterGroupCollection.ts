@@ -1,5 +1,5 @@
 import { check } from '@vcsuite/check';
-import VectorClusterGroup from './vectorClusterGroup.js';
+import type VectorClusterGroup from './vectorClusterGroup.js';
 import Collection from '../util/collection.js';
 import GlobalHider from '../layer/globalHider.js';
 

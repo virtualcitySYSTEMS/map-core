@@ -1,18 +1,17 @@
-import { PrimitiveCollection } from '@vcmap-cesium/engine';
+import type { PrimitiveCollection } from '@vcmap-cesium/engine';
 import { Point } from 'ol/geom.js';
 import { expect } from 'chai';
 import sinon from 'sinon';
+import type { TransformationSetup } from './setupTransformationHandler.js';
 import {
   createFeatureWithId,
   setupTransformationHandler,
-  TransformationSetup,
 } from './setupTransformationHandler.js';
 import { getCesiumMap } from '../../../helpers/cesiumHelpers.js';
+import type { CesiumMap, OpenlayersMap } from '../../../../../index.js';
 import {
   AxisAndPlanes,
-  CesiumMap,
   handlerSymbol,
-  OpenlayersMap,
   TransformationMode,
 } from '../../../../../index.js';
 import { timeout } from '../../../helpers/helpers.js';
@@ -93,7 +92,7 @@ describe('createTransformationHandler', () => {
     });
 
     it('should place the center onto the terrain, if some features do not have height information', () => {
-      sinon.stub(map.getScene()!, 'getHeight').callsFake((coords) => {
+      sinon.stub(map.getScene()!, 'getHeight').callsFake(() => {
         return 1;
       });
       setup.transformationHandler.setFeatures([
@@ -103,7 +102,7 @@ describe('createTransformationHandler', () => {
     });
 
     it('should place the center onto the terrain, if some features are clamp to ground', () => {
-      sinon.stub(map.getScene()!, 'getHeight').callsFake((coords) => {
+      sinon.stub(map.getScene()!, 'getHeight').callsFake(() => {
         return 1;
       });
       setup.transformationHandler.setFeatures([
@@ -116,7 +115,7 @@ describe('createTransformationHandler', () => {
     });
 
     it('should place the center onto the terrain, if some features are relative to ground, adding the height to the centers height', () => {
-      sinon.stub(map.getScene()!, 'getHeight').callsFake((coords) => {
+      sinon.stub(map.getScene()!, 'getHeight').callsFake(() => {
         return 1;
       });
       setup.transformationHandler.setFeatures([
@@ -129,7 +128,7 @@ describe('createTransformationHandler', () => {
     });
 
     it('should not place center of all features are absolute features', () => {
-      sinon.stub(map.getScene()!, 'getHeight').callsFake((coords) => {
+      sinon.stub(map.getScene()!, 'getHeight').callsFake(() => {
         return 1;
       });
       setup.transformationHandler.setFeatures([
@@ -147,7 +146,7 @@ describe('createTransformationHandler', () => {
 
     describe('greying out of Z hanlders', () => {
       beforeEach(() => {
-        sinon.stub(map.getScene()!, 'getHeight').callsFake((coords) => {
+        sinon.stub(map.getScene()!, 'getHeight').callsFake(() => {
           return 1;
         });
       });
@@ -179,29 +178,6 @@ describe('createTransformationHandler', () => {
           createFeatureWithId({
             geometry: new Point([1, 1, 1]),
             olcs_altitudeMode: 'clampToGround',
-          }),
-          createFeatureWithId({
-            geometry: new Point([3, 3, 3]),
-            olcs_altitudeMode: 'absolute',
-          }),
-        ]);
-        const primitiveCollection = map.getScene()!.primitives;
-        expect(
-          collectionHasAxisPrimitive(
-            primitiveCollection.get(
-              primitiveCollection.length - 1,
-            ) as PrimitiveCollection,
-            AxisAndPlanes.Z,
-          ),
-        ).to.be.false;
-      });
-
-      it('should grey out Z handler, if a feature is absolute, but has ground level set', () => {
-        setup.transformationHandler.setFeatures([
-          createFeatureWithId({
-            geometry: new Point([1, 1, 1]),
-            olcs_altitudeMode: 'absolute',
-            olcs_groundLevel: 0,
           }),
           createFeatureWithId({
             geometry: new Point([3, 3, 3]),

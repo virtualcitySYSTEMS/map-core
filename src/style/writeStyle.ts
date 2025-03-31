@@ -1,7 +1,8 @@
-import VectorStyleItem, { VectorStyleItemOptions } from './vectorStyleItem.js';
+import type { VectorStyleItemOptions } from './vectorStyleItem.js';
+import VectorStyleItem from './vectorStyleItem.js';
 import DeclarativeStyleItem from './declarativeStyleItem.js';
 import { type VcsMeta, vcsMetaVersion } from '../layer/vectorProperties.js';
-import StyleItem from './styleItem.js';
+import type StyleItem from './styleItem.js';
 
 export function embedIconsInStyle(
   obj: VectorStyleItemOptions,

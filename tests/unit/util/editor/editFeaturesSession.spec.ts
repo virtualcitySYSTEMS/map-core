@@ -1,22 +1,17 @@
 import { expect } from 'chai';
-import sinon, { SinonStub } from 'sinon';
+import type { SinonStub } from 'sinon';
+import sinon from 'sinon';
 
-import {
-  Cartesian2,
-  Cartesian3,
-  Math as CesiumMath,
-  Ray,
-} from '@vcmap-cesium/engine';
+import { Cartesian2, Math as CesiumMath } from '@vcmap-cesium/engine';
 import { Point } from 'ol/geom.js';
 import Feature from 'ol/Feature.js';
 import { unByKey } from 'ol/Observable.js';
-import { Coordinate } from 'ol/coordinate.js';
+import type { Coordinate } from 'ol/coordinate.js';
 
+import type { CesiumMap, EditFeaturesSession } from '../../../../index.js';
 import {
   AxisAndPlanes,
-  CesiumMap,
   createSync,
-  EditFeaturesSession,
   EventType,
   mercatorToCartesian,
   ModificationKeyType,

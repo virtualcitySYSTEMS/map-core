@@ -89,6 +89,7 @@ function makeOverrideCollection<
   getDynamicModuleId: () => string,
   serializeItem?: (item: T) => S & { [moduleIdSymbol]?: string },
   deserializeItem?: (item: S) => T | Promise<T> | null,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ctor?: new (...args: any[]) => T,
   determineShadowIndex?: (
     item: T,

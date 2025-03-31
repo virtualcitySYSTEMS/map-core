@@ -1,5 +1,5 @@
-import { HeightReference } from '@vcmap-cesium/engine';
-import {
+import type { HeightReference } from '@vcmap-cesium/engine';
+import type {
   RelativeHeightReference,
   VectorHeightInfo,
 } from './vectorHeightInfo.js';

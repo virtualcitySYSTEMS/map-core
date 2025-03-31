@@ -1,8 +1,7 @@
-import BaseOLMap from '../baseOLMap.js';
+import type BaseOLMap from '../baseOLMap.js';
 import { getScaleFromDistance } from './cameraHelper.js';
-import { ControllerInput } from './controller/controllerInput.js';
+import type { ControllerInput } from './controller/controllerInput.js';
 
-// eslint-disable-next-line import/prefer-default-export
 export function moveView(
   map: BaseOLMap,
   input: ControllerInput,

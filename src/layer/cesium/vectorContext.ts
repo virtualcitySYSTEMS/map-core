@@ -1,28 +1,31 @@
+import type {
+  Primitive,
+  Scene,
+  SplitDirection,
+  Entity,
+  Label,
+} from '@vcmap-cesium/engine';
 import {
   Billboard,
   BillboardCollection,
   Cartesian3,
-  type Entity,
-  type Label,
   LabelCollection,
   Math as CesiumMath,
   Matrix4,
   Model,
-  Primitive,
   PrimitiveCollection,
-  Scene,
-  SplitDirection,
 } from '@vcmap-cesium/engine';
-import { StyleLike } from 'ol/style/Style.js';
+import type { StyleLike } from 'ol/style/Style.js';
 import type { Feature } from 'ol/index.js';
 
 import Viewpoint from '../../util/viewpoint.js';
 import type CesiumMap from '../../map/cesiumMap.js';
-import VectorProperties from '../vectorProperties.js';
-import convert, {
+import type VectorProperties from '../vectorProperties.js';
+import type {
   ConvertedItem,
   PrimitiveType,
 } from '../../util/featureconverter/convert.js';
+import convert from '../../util/featureconverter/convert.js';
 import { primitives as primitivesSymbol } from '../vectorSymbols.js';
 
 export function setReferenceForPicking(
@@ -73,9 +76,10 @@ function addPrimitiveAtIndex(
 /**
  * Sets splitDirection on primitives. Currently only Model primitives support splitting.
  */
-export function setSplitDirectionOnPrimitives<
-  T extends PrimitiveCollection | BillboardCollection,
->(splitDirection: SplitDirection, primitives: T): void {
+export function setSplitDirectionOnPrimitives(
+  splitDirection: SplitDirection,
+  primitives: PrimitiveCollection | BillboardCollection,
+): void {
   for (let i = 0; i < primitives.length; i++) {
     const p = primitives.get(i) as Primitive | Model | Billboard;
     if (p instanceof Model || p instanceof Billboard) {
@@ -170,11 +174,10 @@ export default class VectorContext implements CesiumVectorContext {
 
   private _featureItems = new Map<
     Feature,
-    (() => ConvertedItemIndex | void)[]
+    ((() => ConvertedItemIndex) | (() => void))[]
   >();
 
-  private _convertingFeatures: Map<Feature, (replace: boolean) => void> =
-    new Map();
+  private _convertingFeatures = new Map<Feature, (replace: boolean) => void>();
 
   splitDirection: SplitDirection;
 
@@ -219,7 +222,7 @@ export default class VectorContext implements CesiumVectorContext {
     const removeItems = items
       .map((item) => {
         let instance: PrimitiveType | Label | Billboard | undefined;
-        let removeItem: (() => ConvertedItemIndex | void) | undefined;
+        let removeItem: (() => ConvertedItemIndex) | (() => void) | undefined;
         if (item.type === 'primitive') {
           if (item.autoScale) {
             instance = addPrimitiveAtIndex(
@@ -349,7 +352,7 @@ export default class VectorContext implements CesiumVectorContext {
         .get(feature)
         ?.map((removeItem) => removeItem())
         ?.filter((i) => i != null)
-        ?.reduce((items, current) => {
+        ?.reduce<ConvertedIndices>((items, current) => {
           const minIndex = items[current.type];
           if (minIndex != null) {
             items[current.type] =
@@ -360,7 +363,7 @@ export default class VectorContext implements CesiumVectorContext {
             items[current.type] = current.index;
           }
           return items;
-        }, {} as ConvertedIndices) ?? {};
+        }, {}) ?? {};
     this._featureItems.delete(feature);
 
     if (deleted) {

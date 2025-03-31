@@ -1,15 +1,17 @@
+import type {
+  Scene,
+  Cartesian2,
+  Ray,
+  Billboard,
+  Label,
+} from '@vcmap-cesium/engine';
 import {
   Cartesian3,
   Cesium3DTileFeature,
   Cesium3DTilePointFeature,
   Entity,
-  Scene,
-  Cartesian2,
-  Ray,
-  type Label,
-  Billboard,
 } from '@vcmap-cesium/engine';
-import OLMap from 'ol/Map.js';
+import type OLMap from 'ol/Map.js';
 import type { Feature } from 'ol/index.js';
 import AbstractInteraction, {
   type EventFeature,
@@ -27,7 +29,7 @@ import type ObliqueMap from '../map/obliqueMap.js';
 import type CesiumMap from '../map/cesiumMap.js';
 import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
 import { cartesianToMercator } from '../util/math.js';
-import { PrimitiveType } from '../util/featureconverter/convert.js';
+import type { PrimitiveType } from '../util/featureconverter/convert.js';
 
 /**
  * This is the return from cesium scene.pick and scene.drillPick, which returns "any". We cast to this type.
@@ -185,7 +187,7 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
 
   private _draggingFeature: EventFeature | undefined;
 
-  private _excludeFromPickPosition: Set<Feature> = new Set();
+  private _excludeFromPickPosition = new Set<Feature>();
 
   constructor() {
     super(

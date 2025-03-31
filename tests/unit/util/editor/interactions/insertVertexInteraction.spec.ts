@@ -1,13 +1,13 @@
 import { expect } from 'chai';
-import sinon, { SinonSpy } from 'sinon';
+import type { SinonSpy } from 'sinon';
+import sinon from 'sinon';
 import { Cartesian2 } from '@vcmap-cesium/engine';
 import { Feature } from 'ol';
-import { LineString, LinearRing, Polygon } from 'ol/geom.js';
-import InsertVertexInteraction, {
-  VertexInsertedEvent,
-} from '../../../../../src/util/editor/interactions/insertVertexInteraction.js';
+import { LineString, Polygon } from 'ol/geom.js';
+import type { VertexInsertedEvent } from '../../../../../src/util/editor/interactions/insertVertexInteraction.js';
+import InsertVertexInteraction from '../../../../../src/util/editor/interactions/insertVertexInteraction.js';
+import type { CesiumMap } from '../../../../../index.js';
 import {
-  CesiumMap,
   EventType,
   ModificationKeyType,
   OpenlayersMap,
@@ -39,7 +39,7 @@ describe('InsertVertexInteraction', () => {
     };
     openlayersMap = new OpenlayersMap({});
     cesiumMap = getCesiumMap({});
-    cesiumMap.getCurrentResolution = (_c): number => 1;
+    cesiumMap.getCurrentResolution = (): number => 1;
     vectorProperties = new VectorProperties({});
   });
 

@@ -1,27 +1,24 @@
 import { LineString, Polygon } from 'ol/geom.js';
-import { Coordinate } from 'ol/coordinate.js';
+import type { Coordinate } from 'ol/coordinate.js';
 import { unByKey } from 'ol/Observable.js';
 import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import {
   EventType,
   ModificationKeyType,
 } from '../../../interaction/interactionType.js';
+import type { SnapResult, SnapType } from '../snappingHelpers.js';
 import {
   getSnappedCoordinateForResults,
   getAngleSnapResult,
   setSnappingFeatures,
-  SnapResult,
   getGeometrySnapResult,
-  SnapType,
   snapTypes,
 } from '../snappingHelpers.js';
 import { getCartesianBearing } from '../../math.js';
 import type VectorLayer from '../../../layer/vectorLayer.js';
 import { validityPlaceholder } from './createPolygonInteraction.js';
-import {
-  alreadySnapped,
-  SnappingInteractionEvent,
-} from '../editorSessionHelpers.js';
+import type { SnappingInteractionEvent } from '../editorSessionHelpers.js';
+import { alreadySnapped } from '../editorSessionHelpers.js';
 
 function getBearings(coordinates: Coordinate[]): number[] {
   // we dont want to take into account the last bearing, since that would be our own

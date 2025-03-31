@@ -1,5 +1,6 @@
 import { ClassificationType, HeightReference } from '@vcmap-cesium/engine';
-import sinon, { SinonSandbox } from 'sinon';
+import type { SinonSandbox } from 'sinon';
+import sinon from 'sinon';
 import { expect } from 'chai';
 import Feature from 'ol/Feature.js';
 import { fromExtent } from 'ol/geom/Polygon.js';
@@ -19,7 +20,7 @@ import {
 } from '../../../src/layer/vectorProperties.js';
 import { setOpenlayersMap } from '../helpers/openlayersHelpers.js';
 import Extent from '../../../src/util/extent.js';
-import { OpenlayersMap } from '../../../index.js';
+import type { OpenlayersMap } from '../../../index.js';
 
 describe('VectorLayer', () => {
   let VL: VectorLayer;

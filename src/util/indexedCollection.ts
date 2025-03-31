@@ -9,7 +9,7 @@ class IndexedCollection<T> extends Collection<T> {
     iterable: Iterable<F>,
     uniqueKey?: keyof F | false,
   ): IndexedCollection<F> {
-    const collection: IndexedCollection<F> = new IndexedCollection(uniqueKey);
+    const collection = new IndexedCollection<F>(uniqueKey);
 
     if (iterable) {
       for (const i of iterable) {

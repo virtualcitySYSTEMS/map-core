@@ -1,5 +1,5 @@
 import VectorSource from 'ol/source/Vector.js';
-import Feature from 'ol/Feature.js';
+import type Feature from 'ol/Feature.js';
 
 /**
  * @class

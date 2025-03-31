@@ -1,7 +1,6 @@
 import Point from 'ol/geom/Point.js';
-import AbstractInteraction, {
-  EventAfterEventHandler,
-} from '../../../interaction/abstractInteraction.js';
+import type { EventAfterEventHandler } from '../../../interaction/abstractInteraction.js';
+import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import VcsEvent from '../../../vcsEvent.js';
 import { EventType } from '../../../interaction/interactionType.js';
 import {
@@ -9,7 +8,7 @@ import {
   alreadyTransformedToMercator,
 } from '../../../layer/vectorSymbols.js';
 import ObliqueMap from '../../../map/obliqueMap.js';
-import { CreateInteraction } from '../createFeatureSession.js';
+import type { CreateInteraction } from '../createFeatureSession.js';
 
 /**
  * @extends {AbstractInteraction}

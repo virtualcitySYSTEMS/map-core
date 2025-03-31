@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
-import VectorClusterGroupOpenlayersImpl from '../../../src/vectorCluster/vectorClusterGroupOpenlayersImpl.js';
-import OpenlayersMap from '../../../src/map/openlayersMap.js';
+import type VectorClusterGroupOpenlayersImpl from '../../../src/vectorCluster/vectorClusterGroupOpenlayersImpl.js';
+import type OpenlayersMap from '../../../src/map/openlayersMap.js';
 import { getOpenlayersMap } from '../helpers/openlayersHelpers.js';
 import { VectorClusterGroup } from '../../../index.js';
 
@@ -23,6 +23,7 @@ describe('VectorClusterOpenlayersImpl', () => {
 
   describe('initialize', () => {
     let openlayersImpl: VectorClusterGroupOpenlayersImpl;
+
     before(async () => {
       openlayersImpl = vectorClusterGroup.getImplementationForMap(
         map,

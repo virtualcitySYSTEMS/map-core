@@ -2,7 +2,8 @@ import type { GeoJSONObject } from 'ol/format/GeoJSON.js';
 import { Math as CesiumMath, Rectangle } from '@vcmap-cesium/engine';
 import type { Feature } from 'ol/index.js';
 import { parseGeoJSON } from '../geojsonHelpers.js';
-import TileProvider, { TileProviderOptions } from './tileProvider.js';
+import type { TileProviderOptions } from './tileProvider.js';
+import TileProvider from './tileProvider.js';
 import { getInitForUrl, requestJson } from '../../util/fetch.js';
 import { tileProviderClassRegistry } from '../../classRegistry.js';
 

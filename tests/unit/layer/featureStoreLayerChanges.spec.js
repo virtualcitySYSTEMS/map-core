@@ -443,6 +443,7 @@ describe('FeatureStoreLayer.FeatureStoreLayerChanges', () => {
 
   describe('reset', () => {
     let features;
+
     beforeEach(() => {
       features = createDummyOlFeature(4);
       FSC._addedFeatures.add(features[0]);

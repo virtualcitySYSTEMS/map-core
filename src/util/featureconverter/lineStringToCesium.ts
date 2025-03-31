@@ -1,11 +1,10 @@
+import type { HeightReference, Scene } from '@vcmap-cesium/engine';
 import {
   WallGeometry,
   WallOutlineGeometry,
   GroundPolylineGeometry,
   PolylineGeometry,
   Math as CesiumMath,
-  HeightReference,
-  type Scene,
   Cartesian3,
 } from '@vcmap-cesium/engine';
 import { Feature } from 'ol';
@@ -14,19 +13,20 @@ import type { Coordinate } from 'ol/coordinate.js';
 import type { Style } from 'ol/style.js';
 
 import { parseNumber } from '@vcsuite/parsers';
-import ArrowStyle, { ArrowEnd } from '../../style/arrowStyle.js';
+import type ArrowStyle from '../../style/arrowStyle.js';
+import { ArrowEnd } from '../../style/arrowStyle.js';
 import { getCartesianBearing, getCartesianPitch } from '../math.js';
 import { getPrimitiveOptions } from './pointHelpers.js';
 import type VectorProperties from '../../layer/vectorProperties.js';
 import { getWgs84CoordinatesForPoint } from './pointToCesium.js';
-import { ConvertedItem } from './convert.js';
+import type { ConvertedItem } from './convert.js';
+import type { VectorHeightInfo } from './vectorHeightInfo.js';
 import {
   getHeightInfo,
-  VectorHeightInfo,
   mercatorToCartesianTransformerForHeightInfo,
   isAbsoluteHeightReference,
 } from './vectorHeightInfo.js';
-import {
+import type {
   CesiumGeometryOption,
   PolylineGeometryOptions,
   VectorGeometryFactory,

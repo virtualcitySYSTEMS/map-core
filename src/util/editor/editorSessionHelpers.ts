@@ -6,12 +6,13 @@ import { mercatorProjection } from '../projection.js';
 import InteractionChain from '../../interaction/interactionChain.js';
 import VcsEvent from '../../vcsEvent.js';
 import { EventType } from '../../interaction/interactionType.js';
-import LayerCollection, { maxZIndex } from '../layerCollection.js';
+import type LayerCollection from '../layerCollection.js';
+import { maxZIndex } from '../layerCollection.js';
 import { markVolatile } from '../../vcsModule.js';
 import { PrimitiveOptionsType } from '../../layer/vectorProperties.js';
-import EventHandler from '../../interaction/eventHandler.js';
+import type EventHandler from '../../interaction/eventHandler.js';
 import type VcsApp from '../../vcsApp.js';
-import { InteractionEvent } from '../../interaction/abstractInteraction.js';
+import type { InteractionEvent } from '../../interaction/abstractInteraction.js';
 import type FeatureAtPixelInteraction from '../../interaction/featureAtPixelInteraction.js';
 
 export const alreadySnapped = Symbol('alreadySnapped');
@@ -79,7 +80,7 @@ export function setupScratchLayer(
   });
   markVolatile(layer);
   layerCollection.add(layer);
-  layer.activate().catch((e) => {
+  layer.activate().catch((e: unknown) => {
     getLogger('Editor').error('Failed to activate scratch layer', e);
   });
 
@@ -160,14 +161,14 @@ export type GeometryToType<T extends GeometryType> =
   T extends GeometryType.Point
     ? Point
     : T extends GeometryType.Polygon
-    ? Polygon
-    : T extends GeometryType.BBox
-    ? Polygon
-    : T extends GeometryType.LineString
-    ? LineString
-    : T extends GeometryType.Circle
-    ? Circle
-    : never;
+      ? Polygon
+      : T extends GeometryType.BBox
+        ? Polygon
+        : T extends GeometryType.LineString
+          ? LineString
+          : T extends GeometryType.Circle
+            ? Circle
+            : never;
 
 export function setupPickingBehavior(app: VcsApp): () => void {
   const initialPickPosition =

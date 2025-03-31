@@ -1,12 +1,14 @@
 import { check } from '@vcsuite/check';
+import type {
+  HighlightableFeature,
+  FeatureVisibilityEvent,
+} from './featureVisibility.js';
 import {
   globalHidden,
   hideFeature,
   cacheOriginalStyle,
   showFeature,
   FeatureVisibilityAction,
-  HighlightableFeature,
-  FeatureVisibilityEvent,
 } from './featureVisibility.js';
 import VcsEvent from '../vcsEvent.js';
 
@@ -28,7 +30,7 @@ class GlobalHider {
    * An event raised when the hidden ids change. Is called with
    * {@link FeatureVisibilityEvent} as its only argument
    */
-  changed: VcsEvent<FeatureVisibilityEvent> = new VcsEvent();
+  changed = new VcsEvent<FeatureVisibilityEvent>();
 
   /**
    * Add a tick to the hide count, hidding the features if they are not already hidden

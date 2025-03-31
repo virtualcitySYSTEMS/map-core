@@ -1,4 +1,3 @@
-/* eslint-disable */
 import {
   Color,
   ConditionsExpression,
@@ -81,8 +80,8 @@ function addCustomProperty(
   } else {
     expression = new Expression(options[key] as string, options.defines);
   }
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
+
+  // @ts-expect-error key of issues
   style[key] = expression;
 }
 
@@ -97,8 +96,9 @@ class DeclarativeStyleItem extends StyleItem {
 
   private _styleOptions: DeclarativeStyleOptions;
 
-  private _circleCache: Map<string, Circle> = new Map();
-  private _iconCache: Map<string, Icon> = new Map();
+  private _circleCache = new Map<string, Circle>();
+
+  private _iconCache = new Map<string, Icon>();
 
   /**
    * @param  options
@@ -158,7 +158,7 @@ class DeclarativeStyleItem extends StyleItem {
     return new DeclarativeStyleItem(config);
   }
 
-  assign(styleItem: DeclarativeStyleItem): DeclarativeStyleItem {
+  assign(styleItem: DeclarativeStyleItem): this {
     super.assign(styleItem);
     this._styleOptions = styleItem.cesiumStyle.style as DeclarativeStyleOptions;
 
@@ -306,7 +306,7 @@ class DeclarativeStyleItem extends StyleItem {
         } else if (!isSameOrigin(src)) {
           iconOptions.crossOrigin = 'anonymous';
         }
-        const iconCacheKey = `${src}${iconOptions.crossOrigin}`;
+        const iconCacheKey = `${src}${String(iconOptions.crossOrigin)}`;
         if (!this._iconCache.has(iconCacheKey)) {
           this._iconCache.set(iconCacheKey, new Icon(iconOptions));
         }
@@ -336,7 +336,7 @@ class DeclarativeStyleItem extends StyleItem {
         radius += width / 2;
       }
 
-      const circleCacheKey = `${radius}${String(color)}${String(width)}${String(
+      const circleCacheKey = `${String(radius)}${String(color)}${String(width)}${String(
         pointOutlineColor,
       )}`;
       if (!this._circleCache.has(circleCacheKey)) {
@@ -396,7 +396,7 @@ class DeclarativeStyleItem extends StyleItem {
     show: DeclarativeStyleItemConditions | string | boolean | undefined,
   ) {
     this._styleOptions.show = show;
-    // @ts-ignore setter != getter
+    // @ts-expect-error setter != getter
     this.cesiumStyle.show = show;
     this._styleChanged();
   }
@@ -407,7 +407,7 @@ class DeclarativeStyleItem extends StyleItem {
 
   set color(color: DeclarativeStyleItemConditions | string | undefined) {
     this._styleOptions.color = color;
-    // @ts-ignore setter != getter
+    // @ts-expect-error setter != getter
     this.cesiumStyle.color = color;
     this._styleChanged();
   }
@@ -418,7 +418,7 @@ class DeclarativeStyleItem extends StyleItem {
 
   set strokeColor(color: DeclarativeStyleItemConditions | string | undefined) {
     this._styleOptions.strokeColor = color;
-    // @ts-ignore setter != getter
+    // @ts-expect-error setter != getter
     this.cesiumStyle.strokeColor = color;
     this._styleChanged();
   }
@@ -429,7 +429,7 @@ class DeclarativeStyleItem extends StyleItem {
 
   set strokeWidth(width: DeclarativeStyleItemConditions | string | undefined) {
     this._styleOptions.strokeWidth = width;
-    // @ts-ignore setter != getter
+    // @ts-expect-error setter != getter
     this.cesiumStyle.strokeWidth = width;
     this._styleChanged();
   }
@@ -440,7 +440,7 @@ class DeclarativeStyleItem extends StyleItem {
 
   set image(src: DeclarativeStyleItemConditions | string | undefined) {
     this._styleOptions.image = src;
-    // @ts-ignore setter != getter
+    // @ts-expect-error setter != getter
     this.cesiumStyle.image = src;
     this._styleChanged();
   }
@@ -451,7 +451,7 @@ class DeclarativeStyleItem extends StyleItem {
 
   set labelText(text: DeclarativeStyleItemConditions | string | undefined) {
     this._styleOptions.labelText = text;
-    // @ts-ignore setter != getter
+    // @ts-expect-error setter != getter
     this.cesiumStyle.labelText = text;
     this._styleChanged();
   }
@@ -462,7 +462,7 @@ class DeclarativeStyleItem extends StyleItem {
 
   set labelColor(color: DeclarativeStyleItemConditions | string | undefined) {
     this._styleOptions.labelColor = color;
-    // @ts-ignore setter != getter
+    // @ts-expect-error setter != getter
     this.cesiumStyle.labelColor = color;
     this._styleChanged();
   }
@@ -473,7 +473,7 @@ class DeclarativeStyleItem extends StyleItem {
 
   set font(font: DeclarativeStyleItemConditions | string | undefined) {
     this._styleOptions.font = font;
-    // @ts-ignore setter != getter
+    // @ts-expect-error setter != getter
     this.cesiumStyle.font = font;
     this._styleChanged();
   }
@@ -486,7 +486,7 @@ class DeclarativeStyleItem extends StyleItem {
     pointSize: DeclarativeStyleItemConditions | string | undefined,
   ) {
     this._styleOptions.pointSize = pointSize;
-    // @ts-ignore setter != getter
+    // @ts-expect-error setter != getter
     this.cesiumStyle.pointSize = pointSize;
     this._styleChanged();
   }

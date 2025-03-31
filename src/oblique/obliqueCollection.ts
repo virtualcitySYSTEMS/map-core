@@ -23,7 +23,8 @@ import ObliqueDataSet, {
 } from './obliqueDataSet.js';
 import { ObliqueViewDirection } from './obliqueViewDirection.js';
 import { mercatorProjection } from '../util/projection.js';
-import VcsObject, { VcsObjectOptions } from '../vcsObject.js';
+import type { VcsObjectOptions } from '../vcsObject.js';
+import VcsObject from '../vcsObject.js';
 import type { TerrainProviderOptions } from '../layer/terrainHelpers.js';
 import type ObliqueImage from './obliqueImage.js';
 import type { ObliqueViewOptions } from './obliqueView.js';
@@ -140,15 +141,15 @@ class ObliqueCollection extends VcsObject {
   /**
    * Maps each direction to an RTree
    */
-  private _directionTrees: Map<
+  private _directionTrees = new Map<
     ObliqueViewDirection,
     RBush<ObliqueImageRbushItem>
-  > = new Map();
+  >();
 
   /**
    * Maps image name to image
    */
-  private _images: Map<string, ObliqueImage> = new Map();
+  private _images = new Map<string, ObliqueImage>();
 
   /**
    * Maps urls to general infos & cameras
@@ -162,7 +163,7 @@ class ObliqueCollection extends VcsObject {
   /**
    * Event raised when images are loaded. Is passed an Array of ObliqueImages as its only argument.
    */
-  imagesLoaded: VcsEvent<Array<ObliqueImage>> = new VcsEvent();
+  imagesLoaded = new VcsEvent<Array<ObliqueImage>>();
 
   private _tileFeatureSource: VectorSource | null = null;
 
@@ -327,8 +328,7 @@ class ObliqueCollection extends VcsObject {
       }
     }
 
-    const directions: Map<ObliqueViewDirection, ObliqueImageRbushItem[]> =
-      new Map();
+    const directions = new Map<ObliqueViewDirection, ObliqueImageRbushItem[]>();
     images.forEach((image) => {
       this._images.set(image.name, image);
       if (!directions.has(image.viewDirection)) {

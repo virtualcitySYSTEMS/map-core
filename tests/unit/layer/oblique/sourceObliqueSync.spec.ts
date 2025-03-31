@@ -14,12 +14,11 @@ import {
   obliqueGeometry,
   originalFeatureSymbol,
 } from '../../../../src/layer/vectorSymbols.js';
-import { ObliqueMap, VcsApp } from '../../../../index.js';
+import type { ObliqueMap } from '../../../../index.js';
+import { VcsApp } from '../../../../index.js';
 import { setObliqueMap } from '../../helpers/obliqueHelpers.js';
-import {
-  createSourceObliqueSync,
-  SourceObliqueSync,
-} from '../../../../src/layer/oblique/sourceObliqueSync.js';
+import type { SourceObliqueSync } from '../../../../src/layer/oblique/sourceObliqueSync.js';
+import { createSourceObliqueSync } from '../../../../src/layer/oblique/sourceObliqueSync.js';
 
 function createFeature(): Feature {
   const f = new Feature({

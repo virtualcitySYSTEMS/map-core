@@ -367,7 +367,7 @@ describe('vcsApp', () => {
         try {
           await app.addModule(module);
         } catch (err) {
-          console.error(err);
+          expect(err).to.exist;
         }
         expect(app.maps.hasKey('foo')).to.be.false;
       });
@@ -379,7 +379,7 @@ describe('vcsApp', () => {
           void app.addModule(new VcsModule(module.config));
           await app.addModule(secondModule);
         } catch (err) {
-          console.error(err);
+          expect(err).to.exist;
         }
         expect(app.getModuleById(secondModule._id)).to.equal(secondModule);
       });

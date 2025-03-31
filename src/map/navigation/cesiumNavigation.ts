@@ -1,11 +1,11 @@
 import { parseNumber } from '@vcsuite/parsers';
+import type { Scene } from '@vcmap-cesium/engine';
 import {
   Cartesian3,
   HeadingPitchRoll,
   Math as CesiumMath,
-  Scene,
 } from '@vcmap-cesium/engine';
-import CesiumMap from '../cesiumMap.js';
+import type CesiumMap from '../cesiumMap.js';
 import {
   lookTwoDof,
   moveFiveDOF,
@@ -13,8 +13,9 @@ import {
   getScaledTranslation,
   getEnuVector,
 } from './cameraHelper.js';
-import NavigationImpl, { NavigationImplOptions } from './navigationImpl.js';
-import { Movement } from './navigation.js';
+import type { NavigationImplOptions } from './navigationImpl.js';
+import NavigationImpl from './navigationImpl.js';
+import type { Movement } from './navigation.js';
 
 const translationScratch = new Cartesian3();
 const rotationScratch = new HeadingPitchRoll();

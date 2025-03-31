@@ -9,6 +9,8 @@ import { parseEnumValue } from '@vcsuite/parsers';
 import VcsObject, { type VcsObjectOptions } from '../vcsObject.js';
 import VcsEvent from '../vcsEvent.js';
 import { styleClassRegistry } from '../classRegistry.js';
+import type DeclarativeStyleItem from './declarativeStyleItem.js';
+import type VectorStyleItem from './vectorStyleItem.js';
 
 export type StyleItemOptions = VcsObjectOptions & {
   colorBlendMode?: number;
@@ -33,7 +35,7 @@ class StyleItem extends VcsObject {
   /**
    * Fired on style updates
    */
-  styleChanged: VcsEvent<void> = new VcsEvent();
+  styleChanged = new VcsEvent<void>();
 
   colorBlendMode: Cesium3DTileColorBlendMode;
 
@@ -89,14 +91,17 @@ class StyleItem extends VcsObject {
    * @param {StyleItem=} _result
    * @returns {StyleItem}
    */
-  clone(_result?: StyleItem): StyleItem {
+  clone(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _result?: StyleItem | DeclarativeStyleItem | VectorStyleItem,
+  ): this | DeclarativeStyleItem | VectorStyleItem {
     return this;
   }
 
   /**
    * @param  styleItem
    */
-  assign(styleItem: StyleItem): StyleItem {
+  assign(styleItem: StyleItem): this {
     this.properties = JSON.parse(
       JSON.stringify(styleItem.properties),
     ) as Record<string, unknown>;

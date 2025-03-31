@@ -7,10 +7,10 @@ import Stroke from 'ol/style/Stroke.js';
 import Icon from 'ol/style/Icon.js';
 import { Point } from 'ol/geom.js';
 import {
+  type GeometryInstance,
   Cartesian3,
   Cartographic,
   Color,
-  GeometryInstance,
   Math as CesiumMath,
   Matrix4,
   Model,
@@ -29,8 +29,7 @@ import {
 } from '../../../../src/util/featureconverter/pointHelpers.js';
 import { getMockScene } from '../../helpers/cesiumHelpers.js';
 import { getHeightInfo, ModelFill } from '../../../../index.js';
-import { ConvertedItem } from '../../../../src/util/featureconverter/convert.js';
-import { getTerrainProvider } from '../../helpers/terrain/terrainData.js';
+import type { ConvertedItem } from '../../../../src/util/featureconverter/convert.js';
 
 describe('point helpers', () => {
   after(() => {
@@ -48,6 +47,7 @@ describe('point helpers', () => {
       const scope = nock('http://localhost');
       scope
         .get('/test.glb')
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         .reply(200, {}, { 'Content-Type': 'application/json' });
       feature = new Feature({
         olcs_modelUrl: 'http://localhost/test.glb',
@@ -105,6 +105,7 @@ describe('point helpers', () => {
       const scope = nock('http://localhost');
       scope
         .get('/test.glb')
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         .reply(200, {}, { 'Content-Type': 'application/json' });
       scene2.getHeight = (): number => {
         return 33;
@@ -432,7 +433,6 @@ describe('point helpers', () => {
 
     describe('of an only outlined primitive', () => {
       let feature: Feature;
-      let positions: Cartesian3[];
       let vectorProperties: VectorProperties;
       let scene: Scene;
       let outline: Primitive;
@@ -738,7 +738,6 @@ describe('point helpers', () => {
 
     describe('of an offset auto scale primitive', () => {
       let feature: Feature;
-      let positions: Cartesian3[];
       let vectorProperties: VectorProperties;
       let primitive: Primitive;
       let scene: Scene;
@@ -831,7 +830,6 @@ describe('point helpers', () => {
 
     describe('of a scaled auto scale primitive', () => {
       let feature: Feature;
-      let positions: Cartesian3[];
       let vectorProperties: VectorProperties;
       let primitive: Primitive;
       let scene: Scene;
@@ -924,7 +922,6 @@ describe('point helpers', () => {
 
     describe('of an offset & scaled auto scale primitive', () => {
       let feature: Feature;
-      let positions: Cartesian3[];
       let vectorProperties: VectorProperties;
       let primitive: Primitive;
       let scene: Scene;

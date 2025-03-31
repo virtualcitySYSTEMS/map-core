@@ -1,4 +1,5 @@
-import { getLogger as getLoggerByName, Logger } from '@vcsuite/logger';
+import type { Logger } from '@vcsuite/logger';
+import { getLogger as getLoggerByName } from '@vcsuite/logger';
 import { parseBoolean } from '@vcsuite/parsers';
 import { v4 as uuidv4 } from 'uuid';
 import type { MapEvent as OLMapEvent } from 'ol';
@@ -6,14 +7,14 @@ import type { Layer as OLLayer } from 'ol/layer.js';
 import type { Coordinate } from 'ol/coordinate.js';
 
 import { check, is, maybe, oneOf } from '@vcsuite/check';
-import VcsObject, { VcsObjectOptions } from '../vcsObject.js';
+import type { VcsObjectOptions } from '../vcsObject.js';
+import VcsObject from '../vcsObject.js';
 import LayerCollection from '../util/layerCollection.js';
 import MapState from './mapState.js';
 import { vcsLayerName } from '../layer/layerSymbols.js';
 import VcsEvent from '../vcsEvent.js';
 import { mapClassRegistry } from '../classRegistry.js';
-import type { CesiumMapEvent } from './cesiumMap.js';
-import { CesiumVisualisationType } from './cesiumMap.js';
+import type { CesiumMapEvent, CesiumVisualisationType } from './cesiumMap.js';
 import type Viewpoint from '../util/viewpoint.js';
 import type Layer from '../layer/layer.js';
 import type { MapEvent } from '../interaction/abstractInteraction.js';
@@ -275,12 +276,12 @@ class VcsMap<
 
     if (this.active) {
       [...this._layerCollection].forEach((l) => {
-        l.mapActivated(this).catch((_e) => {
+        l.mapActivated(this).catch(() => {
           this.getLogger().error(`Failed to activate map on layer: ${l.name}`);
         });
       });
       [...this._layerCollection.vectorClusterGroups].forEach((g) => {
-        g.mapActivated(this).catch((_e) => {
+        g.mapActivated(this).catch(() => {
           this.getLogger().error(
             `Failed to activate map on vector cluster group: ${g.name}`,
           );
@@ -321,7 +322,7 @@ class VcsMap<
 
     const added = (i: Layer | VectorClusterGroup): void => {
       if (this.active) {
-        i.mapActivated(this).catch((_e) => {
+        i.mapActivated(this).catch(() => {
           this.getLogger().error(`Failed to activate map on layer: ${i.name}`);
         });
       }
@@ -347,7 +348,7 @@ class VcsMap<
   /**
    * Determines whether this map can show this viewpoint. Returns true in any other map then {@link ObliqueMap}
    */
-  // eslint-disable-next-line class-methods-use-this
+  // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-unused-vars
   canShowViewpoint(_viewpoint: Viewpoint): Promise<boolean> {
     return Promise.resolve(true);
   }
@@ -369,7 +370,7 @@ class VcsMap<
     }
   }
 
-  // eslint-disable-next-line class-methods-use-this,no-empty-function
+  // eslint-disable-next-line class-methods-use-this
   async initialize(): Promise<void> {
     return Promise.resolve();
   }
@@ -377,7 +378,7 @@ class VcsMap<
   /**
    * is called if a layer changes its position in the layerCollection.
    */
-  // eslint-disable-next-line no-unused-vars,class-methods-use-this
+  // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-unused-vars
   indexChanged(_layer: Layer): void {}
 
   /**
@@ -518,9 +519,9 @@ class VcsMap<
       [...this.layerCollection].forEach((layer) => {
         layer.mapDeactivated(this);
       });
-      [...this.layerCollection.vectorClusterGroups].forEach((clusterGroup) =>
-        clusterGroup.mapDeactivated(this),
-      );
+      [...this.layerCollection.vectorClusterGroups].forEach((clusterGroup) => {
+        clusterGroup.mapDeactivated(this);
+      });
       this.stateChanged.raiseEvent(this._state);
     }
   }
@@ -550,9 +551,11 @@ class VcsMap<
    * @param _optMaximumHeight during animation (can be used to get rid of the bunny hop)
    * gotoViewpoint
    */
-  // eslint-disable-next-line no-unused-vars,class-methods-use-this
+  // eslint-disable-next-line class-methods-use-this
   gotoViewpoint(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _viewpoint: Viewpoint,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _optMaximumHeight?: number,
   ): Promise<void> {
     return Promise.resolve();
@@ -578,12 +581,12 @@ class VcsMap<
    * Resolution in meters per pixe
    * @param _coordinate - coordinate in mercator for which to determine resolution. only required in 3D
    */
-  // eslint-disable-next-line class-methods-use-this,no-unused-vars
+  // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-unused-vars
   getCurrentResolution(_coordinate: Coordinate): number {
     return 1;
   }
 
-  // eslint-disable-next-line no-unused-vars,class-methods-use-this
+  // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-unused-vars
   pointIsVisible(_coords: Coordinate): boolean {
     return false;
   }

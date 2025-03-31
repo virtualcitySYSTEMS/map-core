@@ -1,9 +1,9 @@
+import type { Scene } from '@vcmap-cesium/engine';
 import {
   PrimitiveCollection,
   Camera,
   Cartesian3,
   HeadingPitchRoll,
-  Scene,
 } from '@vcmap-cesium/engine';
 import { createEmpty, isEmpty } from 'ol/extent.js';
 import Feature from 'ol/Feature.js';
@@ -18,7 +18,7 @@ import VcsCameraPrimitive from '../../cesium/cesiumVcsCameraPrimitive.js';
 import FlightInstance from './flightInstance.js';
 import type VcsApp from '../../vcsApp.js';
 import { getFlightPathCoordinatesFromInstance } from './flightHelpers.js';
-import LayerState from '../../layer/layerState.js';
+import type LayerState from '../../layer/layerState.js';
 import VcsEvent from '../../vcsEvent.js';
 import DeclarativeStyleItem from '../../style/declarativeStyleItem.js';
 import { markVolatile } from '../../vcsModule.js';

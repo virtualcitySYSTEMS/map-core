@@ -3,7 +3,7 @@ import VectorTileSource from 'ol/source/VectorTile.js';
 import TileState from 'ol/TileState.js';
 import type { Size } from 'ol/size.js';
 import type VectorTile from 'ol/VectorTile.js';
-import { Feature } from 'ol';
+import type { Feature } from 'ol';
 import LayerOpenlayersImpl from './layerOpenlayersImpl.js';
 import { mercatorProjection } from '../../util/projection.js';
 import type {
@@ -72,7 +72,7 @@ class VectorTileOpenlayersImpl
               tile.setState(TileState.EMPTY);
             }
           })
-          .catch((err) => {
+          .catch((err: unknown) => {
             this.getLogger().error((err as Error).message);
           });
       },
@@ -108,7 +108,7 @@ class VectorTileOpenlayersImpl
     }
   }
 
-  // eslint-disable-next-line no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   updateStyle(_style: StyleItem, _silent?: boolean): void {
     if (this.initialized) {
       this.olLayer?.changed();

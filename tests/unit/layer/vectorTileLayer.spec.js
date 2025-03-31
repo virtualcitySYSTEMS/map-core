@@ -239,6 +239,7 @@ describe('VectorTileLayer', () => {
         expect(styles).to.be.empty;
       });
     });
+
     describe('on disabled tileProvider featureTracking', () => {
       before(async () => {
         hiddenFeature = new Feature({ geometry: new Point([1, 1, 0]) });

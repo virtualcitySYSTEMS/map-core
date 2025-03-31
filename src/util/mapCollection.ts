@@ -8,10 +8,13 @@ import LayerCollection from './layerCollection.js';
 import ClippingObjectManager from './clipping/clippingObjectManager.js';
 import type OpenlayersMap from '../map/openlayersMap.js';
 import type CesiumMap from '../map/cesiumMap.js';
-// eslint-disable-next-line import/no-named-default
-import type { default as VcsMap, VcsMapRenderEvent } from '../map/vcsMap.js';
+import type {
+  // eslint-disable-next-line import/no-named-default
+  default as VcsMap,
+  VcsMapRenderEvent,
+  VisualisationType,
+} from '../map/vcsMap.js';
 import type Viewpoint from './viewpoint.js';
-import { VisualisationType } from '../map/vcsMap.js';
 import Navigation from '../map/navigation/navigation.js';
 import KeyboardController from '../map/navigation/controller/keyboardController.js';
 
@@ -65,7 +68,6 @@ class MapCollection extends Collection<VcsMap> {
     const collection = new MapCollection();
 
     if (iterable) {
-      // eslint-disable-next-line no-restricted-syntax
       for (const map of iterable) {
         collection.add(map);
       }
@@ -96,18 +98,18 @@ class MapCollection extends Collection<VcsMap> {
   /**
    * Called, if a map fails to initialize. The map causing the error will be removed from the collection.
    */
-  initializeError: VcsEvent<MapCollectionInitializationError> = new VcsEvent();
+  initializeError = new VcsEvent<MapCollectionInitializationError>();
 
   /**
    * Called, when a map (typically an oblique map) cannot show the current viewpoint. Is passed
    * the map which cannot show the current viewpoint.
    */
-  fallbackMapActivated: VcsEvent<VcsMap> = new VcsEvent();
+  fallbackMapActivated = new VcsEvent<VcsMap>();
 
   /**
    * Called, when a map is activated. Is passed the activated map.
    */
-  mapActivated: VcsEvent<VcsMap> = new VcsEvent();
+  mapActivated = new VcsEvent<VcsMap>();
 
   /**
    * Manages the clipping object for the maps in this collection.
@@ -126,7 +128,7 @@ class MapCollection extends Collection<VcsMap> {
   /**
    * Event raised when the maps split position changes. It passed the position as its only argument.
    */
-  splitPositionChanged: VcsEvent<number> = new VcsEvent();
+  splitPositionChanged = new VcsEvent<number>();
 
   private _postRender = new VcsEvent<VcsMapRenderEvent<VisualisationType>>();
 

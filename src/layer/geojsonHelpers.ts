@@ -19,16 +19,17 @@ import Projection, {
   mercatorProjection,
   wgs84Projection,
 } from '../util/projection.js';
+import type { VectorStyleItemOptions } from '../style/vectorStyleItem.js';
 import VectorStyleItem, {
   defaultVectorStyle,
-  VectorStyleItemOptions,
   vectorStyleSymbol,
 } from '../style/vectorStyleItem.js';
 import { parseColor } from '../style/styleHelpers.js';
 import { featureStoreStateSymbol } from './featureStoreLayerState.js';
 import { embedIconsInStyle } from '../style/writeStyle.js';
 import DeclarativeStyleItem from '../style/declarativeStyleItem.js';
-import { VcsMeta, vcsMetaVersion } from './vectorProperties.js';
+import type { VcsMeta } from './vectorProperties.js';
+import { vcsMetaVersion } from './vectorProperties.js';
 import Extent3D from '../util/featureconverter/extent3D.js';
 import {
   circleFromCenterRadius,
@@ -159,6 +160,8 @@ function readGeometry(
   options: GeoJSONinternalReadOptions,
 ): Feature {
   const geometry = getFormat().readGeometry(geometryObj, options.formatOptions);
+  // fairly ugly code, but legacy
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string
   if (String(options.formatOptions?.featureProjection) === 'EPSG:3857') {
     geometry[alreadyTransformedToMercator] = true;
   }
@@ -254,11 +257,12 @@ function readFeature(
     const coordinates = geometry.getCoordinates();
     geometry = circleFromCenterRadius(coordinates, radius);
   }
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string
   if (String(options.formatOptions?.featureProjection) === 'EPSG:3857') {
     geometry[alreadyTransformedToMercator] = true;
   }
 
-  featureObj.vcsMeta = featureObj.vcsMeta || ({} as VcsMeta);
+  featureObj.vcsMeta = featureObj.vcsMeta || { version: vcsMetaVersion };
   const { properties } = featureObj;
   if (
     properties &&
@@ -339,11 +343,10 @@ export function parseGeoJSON(
   }
 
   if (geoJSON.type === 'FeatureCollection') {
-    geoJSON.vcsMeta =
-      geoJSON.vcsMeta ||
-      ({
-        embeddedIcons: geoJSON.vcsEmbeddedIcons,
-      } as VcsMeta);
+    geoJSON.vcsMeta = geoJSON.vcsMeta || {
+      version: vcsMetaVersion,
+      embeddedIcons: geoJSON.vcsEmbeddedIcons,
+    };
 
     let style;
     if (geoJSON.vcsMeta.embeddedIcons) {

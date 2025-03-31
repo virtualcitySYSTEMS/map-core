@@ -1,7 +1,8 @@
 import Collection from '../collection.js';
-import { createFlightPlayer, FlightPlayer } from './flightPlayer.js';
+import type { FlightPlayer } from './flightPlayer.js';
+import { createFlightPlayer } from './flightPlayer.js';
 import VcsEvent from '../../vcsEvent.js';
-import FlightInstance from './flightInstance.js';
+import type FlightInstance from './flightInstance.js';
 import type VcsApp from '../../vcsApp.js';
 
 /**

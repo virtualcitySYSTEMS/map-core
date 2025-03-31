@@ -102,6 +102,7 @@ describe('DeclarativeStyleItem', () => {
     function polygonTests(description, getFeature) {
       describe(description, () => {
         let feature;
+
         beforeEach(() => {
           feature = getFeature();
         });
@@ -163,6 +164,7 @@ describe('DeclarativeStyleItem', () => {
     function lineTests(description, getFeature) {
       describe(description, () => {
         let feature;
+
         beforeEach(() => {
           feature = getFeature();
         });
@@ -216,6 +218,7 @@ describe('DeclarativeStyleItem', () => {
     function pointTestShape(description, getFeature) {
       describe(description, () => {
         let feature;
+
         beforeEach(() => {
           feature = getFeature();
         });
@@ -327,6 +330,7 @@ describe('DeclarativeStyleItem', () => {
     function pointTestImage(description, getFeature) {
       describe(description, () => {
         let feature;
+
         beforeEach(async () => {
           feature = getFeature();
           DSI = new DeclarativeStyleItem({
@@ -369,6 +373,7 @@ describe('DeclarativeStyleItem', () => {
 
     describe('ObliqueMap Polygon Feature', () => {
       let feature;
+
       beforeEach(() => {
         const actualFeature = new Feature({
           geometry: new Polygon([

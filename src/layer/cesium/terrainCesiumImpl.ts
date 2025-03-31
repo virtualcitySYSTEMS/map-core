@@ -2,7 +2,7 @@ import type { CesiumTerrainProvider } from '@vcmap-cesium/engine';
 import LayerImplementation from '../layerImplementation.js';
 import { vcsLayerName } from '../layerSymbols.js';
 import { getTerrainProviderForUrl } from '../terrainHelpers.js';
-import CesiumMap from '../../map/cesiumMap.js';
+import type CesiumMap from '../../map/cesiumMap.js';
 import type { TerrainImplementationOptions } from '../terrainLayer.js';
 
 /**

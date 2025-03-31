@@ -1,9 +1,9 @@
+import type { LiteralValue } from 'ol/expr/expression.js';
 import {
   BooleanType,
   newParsingContext,
   StringType,
   NoneType,
-  LiteralValue,
 } from 'ol/expr/expression.js';
 import { buildExpression, newEvaluationContext } from 'ol/expr/cpu.js';
 import { is } from '@vcsuite/check';
@@ -30,7 +30,8 @@ function evaluateExpression(
   evaluationType: number,
 ): LiteralValue {
   const parsed = expressionString.startsWith('[')
-    ? (JSON.parse(expressionString) as any[])
+    ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (JSON.parse(expressionString) as any[])
     : [
         'get',
         ...expressionString
@@ -81,7 +82,7 @@ function replaceAttributes(
 function regexHits(regexp: RegExp, string: string): RegExpExecArray[] {
   const hits = [];
   let hit;
-  // eslint-disable-next-line no-cond-assign
+
   while ((hit = regexp.exec(string))) {
     hits.push(hit);
   }
@@ -340,7 +341,7 @@ function expandConditionalsAndLoops(
           .slice(0, 3);
 
         const blockTemplate = getSubTemplateForBlock(renderedTemplate, block);
-        // eslint-disable-next-line no-restricted-syntax
+
         for (const args of keyValuePairs) {
           const forEachData = structuredClone(data);
           forEachData[valueName] = args[1];
@@ -382,7 +383,7 @@ function defaultTranslate(key: string): string {
  * 2. expand iterations. this will create new templates for each iteration and re-run the rendering for those blocks
  * 3. render attributes. this will add the attributes to all the blocks not within each blocks
  */
-// eslint-disable-next-line import/prefer-default-export
+
 export function renderTemplate(
   template: string | string[],
   data: Record<string, unknown>,

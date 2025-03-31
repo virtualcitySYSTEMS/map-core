@@ -1,17 +1,11 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { LineString, Polygon } from 'ol/geom.js';
+import { Cartesian2, HeightReference } from '@vcmap-cesium/engine';
+import type { CesiumMap, OpenlayersMap } from '../../../../../index.js';
 import {
-  Math as CesiumMath,
-  Cartesian2,
-  HeightReference,
-} from '@vcmap-cesium/engine';
-import {
-  CesiumMap,
-  createVertex,
   EventType,
   ModificationKeyType,
-  OpenlayersMap,
   PointerEventType,
   PointerKeyType,
   validityPlaceholder,

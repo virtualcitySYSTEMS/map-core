@@ -1,10 +1,7 @@
 import { Math as CesiumMath } from '@vcmap-cesium/engine';
 import { v4 as uuidv4 } from 'uuid';
-import {
-  ControllerInput,
-  checkThreshold,
-  multiplyComponents,
-} from './controllerInput.js';
+import type { ControllerInput } from './controllerInput.js';
+import { checkThreshold, multiplyComponents } from './controllerInput.js';
 
 export type ControllerOptions = {
   id: string;
@@ -40,7 +37,7 @@ class Controller {
       options.inputThreshold || defaultOptions.inputThreshold!;
   }
 
-  // eslint-disable-next-line class-methods-use-this
+  // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-unused-vars
   setMapTarget(_target: HTMLElement | null): void {}
 
   // eslint-disable-next-line class-methods-use-this

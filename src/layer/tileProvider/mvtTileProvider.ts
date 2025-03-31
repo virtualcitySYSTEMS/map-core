@@ -2,10 +2,8 @@ import MVT from 'ol/format/MVT.js';
 import Feature from 'ol/Feature.js';
 import { getCenter } from 'ol/extent.js';
 import type { Geometry } from 'ol/geom.js';
-import TileProvider, {
-  rectangleToExtent,
-  TileProviderOptions,
-} from './tileProvider.js';
+import type { TileProviderOptions } from './tileProvider.js';
+import TileProvider, { rectangleToExtent } from './tileProvider.js';
 import { getURL } from './urlTemplateTileProvider.js';
 import { getInitForUrl, requestArrayBuffer } from '../../util/fetch.js';
 import { tileProviderClassRegistry } from '../../classRegistry.js';
@@ -34,7 +32,7 @@ class MVTTileProvider extends TileProvider {
 
   url: string;
 
-  private _MVTFormat = new MVT<Feature>({ featureClass: Feature });
+  private _mvtFormat = new MVT<Feature>({ featureClass: Feature });
 
   constructor(options: MVTTileProviderOptions) {
     const defaultOptions = MVTTileProvider.getDefaultOptions();
@@ -72,7 +70,7 @@ class MVTTileProvider extends TileProvider {
     const center = getCenter(extent);
     const init = getInitForUrl(this.url, headers);
     const data = await requestArrayBuffer(url, init);
-    const features = this._MVTFormat.readFeatures(data);
+    const features = this._mvtFormat.readFeatures(data);
     const sx = (extent[2] - extent[0]) / 4096;
     const sy = -((extent[3] - extent[1]) / 4096);
     features.forEach((feature) => {

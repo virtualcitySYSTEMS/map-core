@@ -1,9 +1,8 @@
 import { unByKey } from 'ol/Observable.js';
 import type VectorSource from 'ol/source/Vector.js';
-import FeatureVisibility, {
-  FeatureVisibilityAction,
-} from './featureVisibility.js';
-import GlobalHider from './globalHider.js';
+import type FeatureVisibility from './featureVisibility.js';
+import { FeatureVisibilityAction } from './featureVisibility.js';
+import type GlobalHider from './globalHider.js';
 
 /**
  * Added to ol.source.Vector to determine, when the source has last had an update to its features visibility.

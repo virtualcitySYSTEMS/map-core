@@ -1,11 +1,10 @@
 import { expect } from 'chai';
-import { Scope } from 'nock';
+import type { Scope } from 'nock';
 import Feature from 'ol/Feature.js';
-import FlatGeobufTileProvider, {
-  FlatGeobufTileProviderOptions,
-} from '../../../../src/layer/tileProvider/flatGeobufTileProvider.js';
-import { setupFgbNock } from '../flatGeobufHelpers.spec.js';
+import type { FlatGeobufTileProviderOptions } from '../../../../src/layer/tileProvider/flatGeobufTileProvider.js';
+import FlatGeobufTileProvider from '../../../../src/layer/tileProvider/flatGeobufTileProvider.js';
 import { wgs84Projection } from '../../../../src/util/projection.js';
+import { setupFgbNock } from '../../helpers/flatGeobufHelpers.js';
 
 describe('FlatGeobufTileProvider', () => {
   let tileProvider: FlatGeobufTileProvider;

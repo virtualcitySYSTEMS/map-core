@@ -1,10 +1,13 @@
 import { expect } from 'chai';
-import sinon, { SinonSandbox } from 'sinon';
+import type { SinonSandbox } from 'sinon';
+import sinon from 'sinon';
 import { GeographicTilingScheme, SplitDirection } from '@vcmap-cesium/engine';
-import RasterLayer, {
-  calculateMinLevel,
+import type {
   RasterLayerImplementation,
   RasterLayerOptions,
+} from '../../../src/layer/rasterLayer.js';
+import RasterLayer, {
+  calculateMinLevel,
   TilingScheme,
 } from '../../../src/layer/rasterLayer.js';
 import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
@@ -12,48 +15,12 @@ import Extent from '../../../src/util/extent.js';
 import { getOpenlayersMap } from '../helpers/openlayersHelpers.js';
 import AbstractRasterLayerOL from '../../../src/layer/openlayers/rasterLayerOpenlayersImpl.js';
 import { wgs84Projection } from '../../../src/util/projection.js';
-import LayerImplementation from '../../../src/layer/layerImplementation.js';
-import VcsMap, { VisualisationType } from '../../../src/map/vcsMap.js';
-
-describe('RasterLayer.calculateMinLevel', () => {
-  describe('calculating min level', () => {
-    describe('with an invalid extent', () => {
-      it('should not alter min level', () => {
-        const minLevel = calculateMinLevel(
-          new Extent({
-            coordinates: [],
-            projection: wgs84Projection.toJSON(),
-          }),
-          new GeographicTilingScheme(),
-          18,
-          0,
-        );
-        expect(minLevel).to.equal(0);
-      });
-    });
-
-    describe('with a valid extent', () => {
-      it('should reduce the min level to a reasonable size', () => {
-        const minLevel = calculateMinLevel(
-          new Extent({
-            coordinates: [12, 51, 13, 53],
-            projection: wgs84Projection.toJSON(),
-          }),
-          new GeographicTilingScheme(),
-          18,
-          0,
-        );
-        expect(minLevel).to.equal(7);
-      });
-    });
-  });
-});
+import type LayerImplementation from '../../../src/layer/layerImplementation.js';
+import type VcsMap from '../../../src/map/vcsMap.js';
 
 describe('RasterLayer', () => {
   let sandbox: SinonSandbox;
-  let ARL: RasterLayer<
-    LayerImplementation<VcsMap<VisualisationType>> & RasterLayerImplementation
-  >;
+  let ARL: RasterLayer<LayerImplementation<VcsMap> & RasterLayerImplementation>;
 
   before(() => {
     sandbox = sinon.createSandbox();
@@ -66,6 +33,40 @@ describe('RasterLayer', () => {
   afterEach(() => {
     ARL.destroy();
     sandbox.restore();
+  });
+
+  describe('RasterLayer.calculateMinLevel', () => {
+    describe('calculating min level', () => {
+      describe('with an invalid extent', () => {
+        it('should not alter min level', () => {
+          const minLevel = calculateMinLevel(
+            new Extent({
+              coordinates: [],
+              projection: wgs84Projection.toJSON(),
+            }),
+            new GeographicTilingScheme(),
+            18,
+            0,
+          );
+          expect(minLevel).to.equal(0);
+        });
+      });
+
+      describe('with a valid extent', () => {
+        it('should reduce the min level to a reasonable size', () => {
+          const minLevel = calculateMinLevel(
+            new Extent({
+              coordinates: [12, 51, 13, 53],
+              projection: wgs84Projection.toJSON(),
+            }),
+            new GeographicTilingScheme(),
+            18,
+            0,
+          );
+          expect(minLevel).to.equal(7);
+        });
+      });
+    });
   });
 
   describe('splitDirection', () => {
@@ -114,8 +115,7 @@ describe('RasterLayer', () => {
       let inputConfig: RasterLayerOptions;
       let outputConfig: RasterLayerOptions;
       let configuredLayer: RasterLayer<
-        LayerImplementation<VcsMap<VisualisationType>> &
-          RasterLayerImplementation
+        LayerImplementation<VcsMap> & RasterLayerImplementation
       >;
 
       before(() => {

@@ -22,7 +22,8 @@ import {
   wgs84Projection,
   wgs84ToMercatorTransformer,
 } from '../../util/projection.js';
-import VcsObject, { VcsObjectOptions } from '../../vcsObject.js';
+import type { VcsObjectOptions } from '../../vcsObject.js';
+import VcsObject from '../../vcsObject.js';
 import VcsEvent from '../../vcsEvent.js';
 import { tileProviderClassRegistry } from '../../classRegistry.js';
 import type Extent from '../../util/extent.js';
@@ -40,8 +41,8 @@ export type TileProviderRtree = RBush<TileProviderRTreeEntry>;
 /**
  * resolutions to levels
  */
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-export const mercatorResolutionsToLevel: Array<number> = new Array(25);
+
+export const mercatorResolutionsToLevel = new Array<number>(25);
 for (let i = 0; i < mercatorResolutionsToLevel.length; i++) {
   mercatorResolutionsToLevel[i] = (20037508.3427892 * 2) / 256 / 2 ** (i + 1);
 }
@@ -134,12 +135,12 @@ class TileProvider extends VcsObject {
   /**
    * cache of tiles for each baseLevel
    */
-  cache: Map<number, LRUCache<Promise<TileProviderRtree>>> = new Map();
+  cache = new Map<number, LRUCache<Promise<TileProviderRtree>>>();
 
   /**
    * Caches the loaded rTrees for quick Access to all features.
    */
-  rtreeCache: Map<string, TileProviderRtree> = new Map();
+  rtreeCache = new Map<string, TileProviderRtree>();
 
   readonly trackFeaturesToTiles: boolean;
 
@@ -148,9 +149,9 @@ class TileProvider extends VcsObject {
   /**
    * set of currently loaded featureIds with the corresponding tileIds
    */
-  readonly featureIdToTileIds: Map<string, Set<string>> = new Map();
+  readonly featureIdToTileIds = new Map<string, Set<string>>();
 
-  readonly tileLoadedEvent: VcsEvent<TileLoadedEvent> = new VcsEvent();
+  readonly tileLoadedEvent = new VcsEvent<TileLoadedEvent>();
 
   private _locale = 'en';
 
@@ -609,11 +610,15 @@ class TileProvider extends VcsObject {
    *     return features;
    *   });
    */
-  // eslint-disable-next-line class-methods-use-this,no-unused-vars
+  // eslint-disable-next-line class-methods-use-this
   loader(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _x: number,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _y: number,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _z: number,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _headers?: Record<string, string>,
   ): Promise<Feature[]> {
     return Promise.resolve([]);
@@ -630,8 +635,8 @@ class TileProvider extends VcsObject {
     if (
       !(
         this.baseLevels.length === defaultOptions.baseLevels?.length &&
-        this.baseLevels.every(
-          (level) => defaultOptions.baseLevels?.includes(level),
+        this.baseLevels.every((level) =>
+          defaultOptions.baseLevels?.includes(level),
         )
       )
     ) {

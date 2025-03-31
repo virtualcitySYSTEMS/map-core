@@ -1,9 +1,7 @@
-import {
-  DataSourceClock,
-  Entity,
-  EntityCollection,
-} from '@vcmap-cesium/engine';
-import Layer, { LayerImplementationOptions } from './layer.js';
+import type { DataSourceClock, Entity } from '@vcmap-cesium/engine';
+import { EntityCollection } from '@vcmap-cesium/engine';
+import type { LayerImplementationOptions } from './layer.js';
+import Layer from './layer.js';
 import CesiumMap from '../map/cesiumMap.js';
 import DataSourceCesiumImpl from './cesium/dataSourceCesiumImpl.js';
 import { vcsLayerName } from './layerSymbols.js';

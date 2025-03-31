@@ -1,4 +1,3 @@
-// @ts-nocheck
 import CanvasImmediateRenderer from 'ol/render/canvas/Immediate.js';
 import { intersects } from 'ol/extent.js';
 import { transformGeom2D } from 'ol/geom/SimpleGeometry.js';

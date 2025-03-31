@@ -594,6 +594,7 @@ describe('ObliqueMap', () => {
       after(() => {
         map.destroy();
       });
+
       it('should set the closest image at the given coordinate and direction', () => {
         expect(map.currentImage.name).to.equal('033_067_111004896');
       });

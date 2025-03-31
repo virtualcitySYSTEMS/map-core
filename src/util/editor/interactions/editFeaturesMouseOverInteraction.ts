@@ -1,8 +1,7 @@
 import type { Feature } from 'ol/index.js';
 import { handlerSymbol, mouseOverSymbol } from '../editorSymbols.js';
-import AbstractInteraction, {
-  EventAfterEventHandler,
-} from '../../../interaction/abstractInteraction.js';
+import type { EventAfterEventHandler } from '../../../interaction/abstractInteraction.js';
+import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import {
   ModificationKeyType,
   EventType,

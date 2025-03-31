@@ -11,9 +11,11 @@ describe('renderTemplate', () => {
         nested: {
           property: 'foo',
           array: [{ property: 'foo' }],
+          // eslint-disable-next-line @typescript-eslint/naming-convention
           'spaced property': 'foo',
         },
         array: [['foo'], 'foo'],
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         'spaced property': 'foo',
         number: 5.1,
       };
@@ -262,7 +264,7 @@ next word`,
       expect(html.trim()).to.equal('block\n5\nnext word');
     });
 
-    it('should remove white space when if is preceded by whitespace or newline conditionals', () => {
+    it('should remove white space when if is preceded by whitespace or more then one newline conditionals', () => {
       const html = renderTemplate(
         `block
 {{#if number}}

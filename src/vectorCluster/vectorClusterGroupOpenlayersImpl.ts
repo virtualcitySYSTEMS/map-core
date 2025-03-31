@@ -1,6 +1,6 @@
 import OLVectorLayer from 'ol/layer/Vector.js';
-import { VectorClusterGroupImplementationOptions } from './vectorClusterGroup.js';
-import OpenlayersMap from '../map/openlayersMap.js';
+import type { VectorClusterGroupImplementationOptions } from './vectorClusterGroup.js';
+import type OpenlayersMap from '../map/openlayersMap.js';
 import VcsCluster from '../ol/source/VcsCluster.js';
 import VectorClusterGroupImpl from './vectorClusterGroupImpl.js';
 import { vectorClusterGroupName } from './vectorClusterSymbols.js';

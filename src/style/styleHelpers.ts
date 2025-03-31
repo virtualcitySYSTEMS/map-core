@@ -6,7 +6,7 @@ import Style from 'ol/style/Style.js';
 import { Color, TrustedServers } from '@vcmap-cesium/engine';
 import type { Color as OLColor } from 'ol/color.js';
 import type { Size } from 'ol/size.js';
-import ImageStyle from 'ol/style/Image.js';
+import type ImageStyle from 'ol/style/Image.js';
 import Circle from 'ol/style/Circle.js';
 import Icon, { type Options as IconOptions } from 'ol/style/Icon.js';
 import RegularShape from 'ol/style/RegularShape.js';
@@ -87,7 +87,7 @@ export function olColorToCesiumColor(olColor: OLColor, result?: Color): Color {
  * @param  defaultColor
  */
 export function parseColor(
-  color?: ColorType | number[] | null | undefined,
+  color?: ColorType | number[] | null,
   defaultColor?: OLColor,
 ): OLColor {
   if (Array.isArray(color)) {
@@ -121,7 +121,7 @@ export function parseColor(
   if (defaultColor) {
     return defaultColor;
   }
-  throw new Error(`Cannot parse color ${String(color)}`);
+  throw new Error(`Cannot parse color ${String(color as unknown)}`);
 }
 
 export function getCesiumColor(
@@ -174,27 +174,27 @@ export function createPattern(
   }
 
   switch (options.pattern.type) {
-    case 1:
+    case PatternType.NWSE:
       drawLineOnCanvas([size / 2, size], [size, size / 2]);
       drawLineOnCanvas([0, size / 2], [size / 2, 0]);
       break;
-    case 2:
+    case PatternType.SWNE:
       drawLineOnCanvas([size / 2, size], [0, size / 2]);
       drawLineOnCanvas([size, size / 2], [size / 2, 0]);
       break;
-    case 3:
+    case PatternType.DIAGONALCROSS:
       drawLineOnCanvas([size / 2, size], [size, size / 2]);
       drawLineOnCanvas([0, size / 2], [size / 2, 0]);
       drawLineOnCanvas([size / 2, size], [0, size / 2]);
       drawLineOnCanvas([size, size / 2], [size / 2, 0]);
       break;
-    case 4:
+    case PatternType.NS:
       drawLineOnCanvas([size / 2, 0], [size / 2, size]);
       break;
-    case 5:
+    case PatternType.WE:
       drawLineOnCanvas([0, size / 2], [size, size / 2]);
       break;
-    case 6:
+    case PatternType.CROSS:
       drawLineOnCanvas([size / 2, 0], [size / 2, size]);
       drawLineOnCanvas([0, size / 2], [size, size / 2]);
       break;

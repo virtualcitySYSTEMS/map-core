@@ -1,9 +1,8 @@
 import type GlobalHider from '../layer/globalHider.js';
-import makeOverrideCollection, {
-  OverrideCollection,
-} from './overrideCollection.js';
+import type { OverrideCollection } from './overrideCollection.js';
+import makeOverrideCollection from './overrideCollection.js';
 import Collection from './collection.js';
-import { moduleIdSymbol } from '../moduleIdSymbol.js';
+import type { moduleIdSymbol } from '../moduleIdSymbol.js';
 
 export type HiddenObject = {
   id: string;

@@ -9,7 +9,6 @@ import {
   VcsApp,
   vcsMetaVersion,
 } from '../../../index.js';
-import { timeout } from '../helpers/helpers.js';
 
 describe('FeatureStoreFeatureVisibility', () => {
   describe('tracking', () => {

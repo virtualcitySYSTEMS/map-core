@@ -4,9 +4,9 @@ import LRUCache from 'ol/structs/LRUCache.js';
 import { Math as CesiumMath } from '@vcmap-cesium/engine';
 import Point from 'ol/geom/Point.js';
 import Feature from 'ol/Feature.js';
+import type { TileProviderOptions } from '../../../../src/layer/tileProvider/tileProvider.js';
 import TileProvider, {
   mercatorResolutionsToLevel,
-  TileProviderOptions,
 } from '../../../../src/layer/tileProvider/tileProvider.js';
 import Extent from '../../../../src/util/extent.js';
 import Projection, {
@@ -34,6 +34,7 @@ describe('TileProvider', () => {
     it('should set the TileCacheSize', () => {
       expect(tileProvider.tileCacheSize).to.be.equal(1);
     });
+
     it('should remove duplicates and sort baseLevels', () => {
       expect(tileProvider.baseLevels).to.have.ordered.members([17, 14, 10]);
     });
@@ -91,10 +92,12 @@ describe('TileProvider', () => {
       expect(tileProvider.getBaseLevel(14)).to.be.equal(14);
       expect(tileProvider.getBaseLevel(10)).to.be.equal(10);
     });
+
     it('should return the nearest parent if no corresponding baseLevel exist', () => {
       expect(tileProvider.getBaseLevel(18)).to.be.equal(17);
       expect(tileProvider.getBaseLevel(13)).to.be.equal(10);
     });
+
     it('should return undefined if no baselevel or parent baseLevel can be found', () => {
       expect(tileProvider.getBaseLevel(9)).to.be.undefined;
       expect(tileProvider.getBaseLevel(0)).to.be.undefined;
@@ -140,6 +143,7 @@ describe('TileProvider', () => {
         ),
       ).to.be.equal(17);
     });
+
     it('should do a correction for the mercator latitude scale Factor ', () => {
       expect(
         tileProvider.getBaseLevelForResolution(
@@ -331,8 +335,8 @@ describe('TileProvider', () => {
       f4.setId('id2');
       featuresTile1 = [f1, f2];
       featuresTile2 = [f3, f4];
-      // eslint-disable-next-line no-unused-vars
-      sandbox.stub(tileProvider, 'loader').callsFake((x, y, level) => {
+
+      sandbox.stub(tileProvider, 'loader').callsFake((x) => {
         if (x === 1) {
           return Promise.resolve(featuresTile1);
         } else {
@@ -423,7 +427,7 @@ describe('TileProvider', () => {
           tileCacheSize: 10,
           baseLevels: [10, 17, 17, 14],
         });
-        // eslint-disable-next-line no-unused-vars
+
         sandbox.stub(tileProviderLargeCache, 'loader').callsFake((x) => {
           if (x === 1) {
             return Promise.resolve(featuresTile1);
@@ -466,7 +470,7 @@ describe('TileProvider', () => {
           baseLevels: [10, 17, 17, 14],
           trackFeaturesToTiles: false,
         });
-        // eslint-disable-next-line no-unused-vars
+
         sandbox.stub(tileProviderWithoutTracking, 'loader').callsFake((x) => {
           if (x === 1) {
             return Promise.resolve(featuresTile1);
@@ -502,7 +506,7 @@ describe('TileProvider', () => {
           baseLevels: [10, 17, 17, 14],
           idProperty: 'idProp',
         });
-        // eslint-disable-next-line no-unused-vars
+
         sandbox.stub(tileProviderIdProperty, 'loader').callsFake((x) => {
           if (x === 1) {
             return Promise.resolve(featuresTile1);

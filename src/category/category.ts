@@ -2,21 +2,24 @@ import { check } from '@vcsuite/check';
 import { Feature } from 'ol';
 import type { GeoJSONFeature } from 'ol/format/GeoJSON.js';
 import { destroyCollection } from '../vcsModuleHelpers.js';
-import makeOverrideCollection, {
-  isOverrideCollection,
+import type {
   OverrideCollection,
   ReplacedEvent,
 } from '../util/overrideCollection.js';
-import VcsObject, { VcsObjectOptions } from '../vcsObject.js';
+import makeOverrideCollection, {
+  isOverrideCollection,
+} from '../util/overrideCollection.js';
+import type { VcsObjectOptions } from '../vcsObject.js';
+import VcsObject from '../vcsObject.js';
 import VectorLayer, { type VectorOptions } from '../layer/vectorLayer.js';
 import IndexedCollection from '../util/indexedCollection.js';
 import { parseGeoJSON, writeGeoJSONFeature } from '../layer/geojsonHelpers.js';
 import Collection from '../util/collection.js';
 import { getStyleOrDefaultStyle } from '../style/styleFactory.js';
+import type { TypedConstructorOptions } from '../classRegistry.js';
 import {
   categoryClassRegistry,
   getObjectFromClassRegistry,
-  TypedConstructorOptions,
 } from '../classRegistry.js';
 import OverrideClassRegistry from '../overrideClassRegistry.js';
 import VcsEvent from '../vcsEvent.js';
@@ -205,10 +208,10 @@ class Category<
     }
   }
 
-  // eslint-disable-next-line class-methods-use-this,no-unused-vars
+  // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-unused-vars
   protected _itemReplaced(_item: ReplacedEvent<T>): void {}
 
-  // eslint-disable-next-line class-methods-use-this,no-unused-vars
+  // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-unused-vars
   protected _itemMoved(_item: T): void {}
 
   private _getDynamicModuleId(): string {

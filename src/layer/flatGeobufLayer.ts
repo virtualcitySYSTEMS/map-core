@@ -1,4 +1,5 @@
-import VectorLayer, { VectorOptions } from './vectorLayer.js';
+import type { VectorOptions } from './vectorLayer.js';
+import VectorLayer from './vectorLayer.js';
 import { wgs84Projection } from '../util/projection.js';
 import { layerClassRegistry } from '../classRegistry.js';
 import Extent from '../util/extent.js';

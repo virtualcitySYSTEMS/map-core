@@ -2,8 +2,9 @@ import { expect, use } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import sinon from 'sinon';
 import { GroundPolylinePrimitive, GroundPrimitive } from '@vcmap-cesium/engine';
-import VectorClusterGroupCesiumImpl from '../../../src/vectorCluster/vectorClusterGroupCesiumImpl.js';
-import { CesiumMap, VectorClusterGroup } from '../../../index.js';
+import type VectorClusterGroupCesiumImpl from '../../../src/vectorCluster/vectorClusterGroupCesiumImpl.js';
+import type { CesiumMap } from '../../../index.js';
+import { VectorClusterGroup } from '../../../index.js';
 import { getCesiumMap } from '../helpers/cesiumHelpers.js';
 
 use(chaiAsPromised);
@@ -31,6 +32,7 @@ describe('VectorClusterGroupCesiumImpl', () => {
 
   describe('initialize', () => {
     let cesiumImpl: VectorClusterGroupCesiumImpl;
+
     before(async () => {
       cesiumImpl = vectorClusterGroup.getImplementationForMap(
         map,

@@ -10,6 +10,7 @@ describe('VCSObject', () => {
       });
       expect(vcsObject.className).to.equal('VcsObject');
     });
+
     it('should parse name option', () => {
       const myName = 'name';
       const vcsObject = new VcsObject({
@@ -17,6 +18,7 @@ describe('VCSObject', () => {
       });
       expect(vcsObject.name).to.equal(myName);
     });
+
     it('should create uuid as a fallback if no name is given name option', () => {
       const vcsObject = new VcsObject({});
       expect(vcsObject.name).to.be.a('string');

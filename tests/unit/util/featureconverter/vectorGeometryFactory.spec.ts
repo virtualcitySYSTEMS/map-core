@@ -1,3 +1,4 @@
+import type { Scene } from '@vcmap-cesium/engine';
 import {
   Cartesian3,
   CircleGeometry,
@@ -11,7 +12,6 @@ import {
   PolylineGeometry,
   PolylineMaterialAppearance,
   Primitive,
-  Scene,
 } from '@vcmap-cesium/engine';
 import { expect } from 'chai';
 import Fill from 'ol/style/Fill.js';
@@ -20,6 +20,7 @@ import Stroke from 'ol/style/Stroke.js';
 import Style from 'ol/style/Style.js';
 import { Circle, LineString, Polygon } from 'ol/geom.js';
 import { getMockScene } from '../../helpers/cesiumHelpers.js';
+import type { VectorGeometryFactory } from '../../../../src/util/featureconverter/vectorGeometryFactory.js';
 import {
   createClassificationPrimitiveItem,
   createGroundLinePrimitiveItem,
@@ -29,11 +30,10 @@ import {
   createSolidPrimitiveItem,
   getCesiumGeometriesOptions,
   getMaterialAppearance,
-  VectorGeometryFactory,
 } from '../../../../src/util/featureconverter/vectorGeometryFactory.js';
 import VectorProperties from '../../../../src/layer/vectorProperties.js';
-import { ConvertedItem } from '../../../../src/util/featureconverter/convert.js';
-import {
+import type { ConvertedItem } from '../../../../src/util/featureconverter/convert.js';
+import type {
   ClampedHeightReference,
   VectorHeightInfo,
 } from '../../../../src/util/featureconverter/vectorHeightInfo.js';

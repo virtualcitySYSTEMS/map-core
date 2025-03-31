@@ -7,15 +7,15 @@ import type {
 } from 'ol/geom.js';
 import type { Extent } from 'ol/extent.js';
 import type { Coordinate } from 'ol/coordinate.js';
-import { HeightReference } from '@vcmap-cesium/engine';
+import type { HeightReference } from '@vcmap-cesium/engine';
 
-import { VectorHeightInfo } from './vectorHeightInfo.js';
+import type { VectorHeightInfo } from './vectorHeightInfo.js';
 
 class Extent3D {
   static fromArray(
     array: [number, number, number, number, number, number],
   ): Extent3D {
-    check(array as [number, number, number, number, number, number], [Number]);
+    check(array, [Number]);
     check(array.length, 6);
     return new Extent3D(
       array[0],

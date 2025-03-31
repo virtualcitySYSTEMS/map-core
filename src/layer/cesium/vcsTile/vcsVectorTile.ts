@@ -1,25 +1,21 @@
-import {
-  PrimitiveCollection,
-  QuadtreeTile,
-  TileBoundingRegion,
-} from '@vcmap-cesium/engine';
+import type { QuadtreeTile, TileBoundingRegion } from '@vcmap-cesium/engine';
+import { PrimitiveCollection } from '@vcmap-cesium/engine';
 import { getLogger } from '@vcsuite/logger';
-import { EventsKey } from 'ol/events.js';
+import type { EventsKey } from 'ol/events.js';
 import { unByKey } from 'ol/Observable.js';
 import { containsCoordinate, getCenter } from 'ol/extent.js';
-import { StyleLike } from 'ol/style/Style.js';
+import type { StyleLike } from 'ol/style/Style.js';
 import VectorContext from '../vectorContext.js';
 import { vcsLayerName } from '../../layerSymbols.js';
+import type { VcsTile, VcsTileOptions } from './vcsTileHelpers.js';
 import {
   getTileBoundingRegion,
   getTileWebMercatorExtent,
-  VcsTile,
-  VcsTileOptions,
   VcsTileState,
   VcsTileType,
 } from './vcsTileHelpers.js';
-import CesiumMap from '../../../map/cesiumMap.js';
-import VectorProperties from '../../vectorProperties.js';
+import type CesiumMap from '../../../map/cesiumMap.js';
+import type VectorProperties from '../../vectorProperties.js';
 import type TileProvider from '../../tileProvider/tileProvider.js';
 
 export default class VcsVectorTile implements VcsTile {

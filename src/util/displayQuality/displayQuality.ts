@@ -1,5 +1,5 @@
 import { check, oneOf } from '@vcsuite/check';
-import VcsApp from '../../vcsApp.js';
+import type VcsApp from '../../vcsApp.js';
 import FeatureStoreLayer from '../../layer/featureStoreLayer.js';
 import CesiumMap from '../../map/cesiumMap.js';
 import { isMobile } from '../isMobile.js';
@@ -146,9 +146,8 @@ class DisplayQuality {
 
   /**
    * The current quality view model
-   * @private
    */
-  get _viewModel(): DisplayQualityViewModelOptions | undefined {
+  private get _viewModel(): DisplayQualityViewModelOptions | undefined {
     if (this._currentQualityLevel) {
       return this._viewModelSettings[this._currentQualityLevel]!;
     }
@@ -167,10 +166,11 @@ class DisplayQuality {
       Object.entries(options as Record<string, unknown>)
         .filter(([, value]) => value != null)
         .map(([key, value]) => {
+          const enumKey = key as DisplayQualityLevel;
           if (
-            key === DisplayQualityLevel.LOW ||
-            key === DisplayQualityLevel.MEDIUM ||
-            key === DisplayQualityLevel.HIGH
+            enumKey === DisplayQualityLevel.LOW ||
+            enumKey === DisplayQualityLevel.MEDIUM ||
+            enumKey === DisplayQualityLevel.HIGH
           ) {
             return [
               key,
@@ -267,9 +267,8 @@ class DisplayQuality {
   /**
    * Set layer quality
    * @param layerName
-   * @private
    */
-  _setLayerQuality(layerName: string | undefined): void {
+  private _setLayerQuality(layerName: string | undefined): void {
     check(layerName, String);
 
     const layer = this._app.layers.getByKey(layerName);

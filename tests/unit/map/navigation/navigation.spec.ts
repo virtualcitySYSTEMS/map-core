@@ -1,18 +1,19 @@
-import sinon, { SinonFakeTimers, type SinonSandbox } from 'sinon';
+import type { SinonFakeTimers, SinonSandbox } from 'sinon';
+import sinon from 'sinon';
 import { expect } from 'chai';
 import { Math as CesiumMath } from '@vcmap-cesium/engine';
 import Navigation, {
   getZeroMovement,
 } from '../../../../src/map/navigation/navigation.js';
 import Controller from '../../../../src/map/navigation/controller/controller.js';
+import type { ControllerInput } from '../../../../src/map/navigation/controller/controllerInput.js';
 import {
-  ControllerInput,
   fromArray,
   getZeroInput,
   inputEquals,
   multiplyByScalar,
 } from '../../../../src/map/navigation/controller/controllerInput.js';
-import { CesiumMap } from '../../../../index.js';
+import type { CesiumMap } from '../../../../index.js';
 import { getCesiumMap, getVcsEventSpy } from '../../helpers/cesiumHelpers.js';
 
 const zeroMovement = getZeroMovement();
@@ -78,7 +79,7 @@ describe('Navigation', () => {
     });
 
     // Todo fix this test, with fakeTimers, at the moment it has too many erratic failures
-    // eslint-disable-next-line mocha/no-skipped-tests
+
     it('should request controllers', () => {
       expect(controllerInputSpy.callCount).to.be.equal(times);
     });

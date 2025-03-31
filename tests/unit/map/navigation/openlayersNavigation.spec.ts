@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import OpenlayersMap from '../../../../src/map/openlayersMap.js';
+import type OpenlayersMap from '../../../../src/map/openlayersMap.js';
 import OpenlayersNavigation from '../../../../src/map/navigation/openlayersNavigation.js';
 import { getOpenlayersMap } from '../../helpers/openlayersHelpers.js';
 

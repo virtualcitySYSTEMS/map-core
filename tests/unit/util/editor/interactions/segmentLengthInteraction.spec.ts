@@ -1,14 +1,14 @@
 import { expect } from 'chai';
 import { Cartesian2, HeightReference } from '@vcmap-cesium/engine';
 import { Circle, LineString, Polygon } from 'ol/geom.js';
-import Style from 'ol/style/Style.js';
+import type Style from 'ol/style/Style.js';
 import SegmentLengthInteraction from '../../../../../src/util/editor/interactions/segmentLengthInteraction.js';
+import type { OpenlayersMap } from '../../../../../index.js';
 import {
   createVertex,
   EventType,
   mercatorProjection,
   ModificationKeyType,
-  OpenlayersMap,
   PointerEventType,
   PointerKeyType,
   validityPlaceholder,

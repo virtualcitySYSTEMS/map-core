@@ -1,14 +1,13 @@
+import type { JulianDate, HeadingPitchRollValues } from '@vcmap-cesium/engine';
 import {
   Camera,
   Cartesian2,
   Cartesian3,
   Cartographic,
   Math as CesiumMath,
-  JulianDate,
-  HeadingPitchRollValues,
 } from '@vcmap-cesium/engine';
 import Viewpoint from './viewpoint.js';
-import VcsApp from '../vcsApp.js';
+import type VcsApp from '../vcsApp.js';
 import { CesiumMap } from '../../index.js';
 import Projection from './projection.js';
 

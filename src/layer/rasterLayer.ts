@@ -1,9 +1,9 @@
+import type { ImageryLayer } from '@vcmap-cesium/engine';
 import {
   SplitDirection,
   WebMercatorTilingScheme,
   GeographicTilingScheme,
   Cartographic,
-  ImageryLayer,
 } from '@vcmap-cesium/engine';
 import {
   getBottomLeft,
@@ -18,16 +18,17 @@ import {
   parseEnumValue,
 } from '@vcsuite/parsers';
 import { wgs84Projection } from '../util/projection.js';
-import Layer, {
+import type {
   LayerImplementationOptions,
   LayerOptions,
   SplitLayer,
 } from './layer.js';
+import Layer from './layer.js';
 import VcsEvent from '../vcsEvent.js';
 import Extent from '../util/extent.js';
 import { layerClassRegistry } from '../classRegistry.js';
-import LayerImplementation from './layerImplementation.js';
-import VcsMap from '../map/vcsMap.js';
+import type LayerImplementation from './layerImplementation.js';
+import type VcsMap from '../map/vcsMap.js';
 
 export type RasterLayerOptions = LayerOptions & {
   /**
@@ -244,7 +245,7 @@ class RasterLayer<
   /**
    * raised if the split direction changes, is passed the split direction as its only argument
    */
-  splitDirectionChanged: VcsEvent<SplitDirection> = new VcsEvent();
+  splitDirectionChanged = new VcsEvent<SplitDirection>();
 
   /**
    * @param  options

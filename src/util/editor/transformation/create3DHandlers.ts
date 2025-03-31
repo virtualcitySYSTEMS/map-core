@@ -1,5 +1,6 @@
 import { Feature } from 'ol';
 import type { Coordinate } from 'ol/coordinate.js';
+import type { Scene } from '@vcmap-cesium/engine';
 import {
   ArcType,
   BoxGeometry,
@@ -20,14 +21,13 @@ import {
   PolylineMaterialAppearance,
   Primitive,
   PrimitiveCollection,
-  Scene,
   Transforms,
 } from '@vcmap-cesium/engine';
 import { handlerSymbol } from '../editorSymbols.js';
+import type { Handlers } from './transformationTypes.js';
 import {
   AxisAndPlanes,
   greyedOutColor,
-  Handlers,
   is1DAxis,
   is2DAxis,
   is3DAxis,
@@ -35,7 +35,7 @@ import {
 } from './transformationTypes.js';
 import Projection from '../../projection.js';
 import { mercatorToCartesian } from '../../math.js';
-import CesiumMap from '../../../map/cesiumMap.js';
+import type CesiumMap from '../../../map/cesiumMap.js';
 
 function setFeatureOnPrimitive(primitive: Primitive): void {
   if (primitive[handlerSymbol]) {

@@ -18,7 +18,7 @@ import {
   getCircleGeometryFactory,
 } from '../../../../src/util/featureconverter/circleToCesium.js';
 import Projection from '../../../../src/util/projection.js';
-import {
+import type {
   CesiumGeometryOption,
   CircleGeometryOptions,
   VectorGeometryFactory,
@@ -106,6 +106,7 @@ describe('circleToCesium', () => {
 
   describe('createGroundLineGeometries', () => {
     let style: Style;
+
     before(() => {
       style = new Style({
         stroke: new Stroke({
@@ -125,17 +126,6 @@ describe('circleToCesium', () => {
       expect(polylineGeometrys[0].geometry).to.be.instanceOf(
         GroundPolylineGeometry,
       );
-    });
-  });
-
-  describe('createLineGeometries', () => {
-    let style = null;
-    before(() => {
-      style = new Style({
-        stroke: new Stroke({
-          width: 2.5,
-        }),
-      });
     });
   });
 

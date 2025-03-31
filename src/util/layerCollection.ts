@@ -34,11 +34,10 @@ class LayerCollection extends IndexedCollection<Layer> {
    * Creates a LayerCollection from an iterable of layers, such as an Array.
    * @param  iterable
    */
-  static from(iterable: Iterable<Layer>): LayerCollection {
+  static from(iterable?: Iterable<Layer>): LayerCollection {
     const collection = new LayerCollection();
 
     if (iterable) {
-      // eslint-disable-next-line no-restricted-syntax
       for (const layer of iterable) {
         collection.add(layer);
       }

@@ -6,7 +6,8 @@ import {
 } from '@vcmap-cesium/engine';
 import type { Coordinate } from 'ol/coordinate.js';
 import { getTransform } from 'ol/proj.js';
-import Projection, { wgs84Projection } from '../util/projection.js';
+import type Projection from '../util/projection.js';
+import { wgs84Projection } from '../util/projection.js';
 import { getResourceOrUrl } from './cesium/resourceHelper.js';
 
 export type TerrainProviderOptions = {

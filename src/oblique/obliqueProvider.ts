@@ -13,9 +13,9 @@ import { mercatorProjection } from '../util/projection.js';
 import VcsEvent from '../vcsEvent.js';
 import type ObliqueImage from './obliqueImage.js';
 import { isDefaultImageSymbol } from './obliqueImage.js';
-import { ObliqueViewDirection } from './obliqueViewDirection.js';
+import type { ObliqueViewDirection } from './obliqueViewDirection.js';
 import type ObliqueCollection from './obliqueCollection.js';
-import ObliqueImageMeta from './obliqueImageMeta.js';
+import type ObliqueImageMeta from './obliqueImageMeta.js';
 
 export type ObliqueViewpoint = {
   /**
@@ -46,7 +46,7 @@ class ObliqueProvider {
 
   private _olMap: olMap;
 
-  private _viewCache: Map<ObliqueImageMeta, ObliqueView> = new Map();
+  private _viewCache = new Map<ObliqueImageMeta, ObliqueView>();
 
   private _currentImage: ObliqueImage | null = null;
 

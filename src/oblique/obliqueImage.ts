@@ -2,7 +2,7 @@ import type { Coordinate } from 'ol/coordinate.js';
 import { Cartesian3, Cartesian4, Matrix3, Matrix4 } from '@vcmap-cesium/engine';
 import { transformCWIFC } from './helpers.js';
 import { getHeightFromTerrainProvider } from '../layer/terrainHelpers.js';
-import { ObliqueViewDirection } from './obliqueViewDirection.js';
+import type { ObliqueViewDirection } from './obliqueViewDirection.js';
 import type ObliqueImageMeta from './obliqueImageMeta.js';
 
 export const isDefaultImageSymbol = Symbol('isDefaultImage');

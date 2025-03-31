@@ -8,13 +8,11 @@ import {
   MultiLineString,
   MultiPolygon,
 } from 'ol/geom.js';
+import type { Model, Primitive, Scene } from '@vcmap-cesium/engine';
 import {
   ClassificationPrimitive,
   GroundPolylinePrimitive,
   GroundPrimitive,
-  Model,
-  Primitive,
-  Scene,
 } from '@vcmap-cesium/engine';
 import Style, { type StyleLike } from 'ol/style/Style.js';
 import type { Feature } from 'ol/index.js';
@@ -25,25 +23,26 @@ import {
   getArrowHeadPrimitives,
   getLineStringGeometryFactory,
 } from './lineStringToCesium.js';
-import {
-  BillboardOptions,
-  getPointPrimitives,
-  LabelOptions,
-  validatePoint,
-} from './pointToCesium.js';
+import type { BillboardOptions, LabelOptions } from './pointToCesium.js';
+import { getPointPrimitives, validatePoint } from './pointToCesium.js';
 import { getArcGeometryFactory } from './arcToCesium.js';
 import { featureArcStruct } from '../../style/arcStyle.js';
-import VectorProperties from '../../layer/vectorProperties.js';
+import type VectorProperties from '../../layer/vectorProperties.js';
 import { setupClampedPrimitive } from './clampedPrimitive.js';
-import {
-  getHeightInfo,
-  isClampedHeightReference,
-  isRelativeHeightReference,
+import type {
   RelativeHeightReference,
   VectorHeightInfo,
 } from './vectorHeightInfo.js';
 import {
+  getHeightInfo,
+  isClampedHeightReference,
+  isRelativeHeightReference,
+} from './vectorHeightInfo.js';
+import type {
   CesiumGeometryOption,
+  VectorGeometryFactory,
+} from './vectorGeometryFactory.js';
+import {
   createClassificationPrimitiveItem,
   createGroundLinePrimitiveItem,
   createGroundPrimitiveItem,
@@ -51,7 +50,6 @@ import {
   createOutlinePrimitiveItem,
   createSolidPrimitiveItem,
   getCesiumGeometriesOptions,
-  VectorGeometryFactory,
 } from './vectorGeometryFactory.js';
 import ArrowStyle from '../../style/arrowStyle.js';
 
@@ -72,16 +70,16 @@ export type ConvertedItem<T extends ConvertedItemType = ConvertedItemType> =
         autoScale?: boolean;
       }
     : T extends 'billboard'
-    ? {
-        type: T;
-        item: BillboardOptions;
-      }
-    : T extends 'label'
-    ? {
-        type: T;
-        item: LabelOptions;
-      }
-    : never;
+      ? {
+          type: T;
+          item: BillboardOptions;
+        }
+      : T extends 'label'
+        ? {
+            type: T;
+            item: LabelOptions;
+          }
+        : never;
 
 type SingleGeometry = Point | Polygon | LineString | Circle;
 

@@ -1,17 +1,18 @@
-import { Cesium3DTileFeature, Color } from '@vcmap-cesium/engine';
+import type { Cesium3DTileFeature } from '@vcmap-cesium/engine';
+import { Color } from '@vcmap-cesium/engine';
 import Fill from 'ol/style/Fill.js';
-import Style, { StyleFunction, StyleLike } from 'ol/style/Style.js';
+import type { StyleFunction } from 'ol/style/Style.js';
+import Style from 'ol/style/Style.js';
 import OpenlayersText from 'ol/style/Text.js';
 import Feature from 'ol/Feature.js';
 import { expect } from 'chai';
-import sinon, { SinonFakeTimers, type SinonSandbox } from 'sinon';
+import sinon, { type SinonFakeTimers, type SinonSandbox } from 'sinon';
+import type { HighlightableFeature } from '../../../src/layer/featureVisibility.js';
 import FeatureVisibility, {
   FeatureVisibilityAction,
   globalHidden,
   hidden,
-  HighlightableFeature,
   highlighted,
-  HighlightStyleType,
   originalStyle,
   synchronizeFeatureVisibility,
 } from '../../../src/layer/featureVisibility.js';
@@ -362,6 +363,7 @@ describe('FeatureVisibility', () => {
   describe('highlighting of features', () => {
     describe('adding of ol.Features to highlighting', () => {
       let feature: Feature;
+
       beforeEach(() => {
         feature = new Feature({});
         featureVisibility.highlight({ test: highlightStyle });
@@ -410,6 +412,7 @@ describe('FeatureVisibility', () => {
 
     describe('adding of CesiumTilesetFeature to highlighting', () => {
       let feature: Cesium3DTileFeature;
+
       beforeEach(() => {
         feature = createDummyCesium3DTileFeature();
         featureVisibility.highlight({ test: highlightStyle });
@@ -620,6 +623,7 @@ describe('FeatureVisibility', () => {
   describe('hiding of features', () => {
     describe('adding of ol.Features to hiding', () => {
       let feature: Feature;
+
       beforeEach(() => {
         feature = new Feature({});
         featureVisibility.hideObjects(['test']);
@@ -667,6 +671,7 @@ describe('FeatureVisibility', () => {
 
     describe('adding of CesiumTilesetFeature to highlighting', () => {
       let feature: Cesium3DTileFeature;
+
       beforeEach(() => {
         feature = createDummyCesium3DTileFeature();
         featureVisibility.hideObjects(['test']);

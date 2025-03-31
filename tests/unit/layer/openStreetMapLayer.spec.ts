@@ -3,9 +3,8 @@ import { expect } from 'chai';
 import { SplitDirection } from '@vcmap-cesium/engine';
 import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
 import { setOpenlayersMap } from '../helpers/openlayersHelpers.js';
-import OpenStreetMapLayer, {
-  OpenStreetMapOptions,
-} from '../../../src/layer/openStreetMapLayer.js';
+import type { OpenStreetMapOptions } from '../../../src/layer/openStreetMapLayer.js';
+import OpenStreetMapLayer from '../../../src/layer/openStreetMapLayer.js';
 import VcsApp from '../../../src/vcsApp.js';
 import type OpenlayersMap from '../../../src/map/openlayersMap.js';
 

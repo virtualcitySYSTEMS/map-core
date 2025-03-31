@@ -1,19 +1,21 @@
+import type {
+  DataSourceClock,
+  Scene,
+  DataSourceDisplay,
+  EntityCollection,
+} from '@vcmap-cesium/engine';
 import {
   CustomDataSource,
   BoundingSphereState,
   BoundingSphere,
   HeadingPitchRange,
   Math as CesiumMath,
-  type EntityCollection,
-  DataSourceClock,
-  Scene,
-  DataSourceDisplay,
 } from '@vcmap-cesium/engine';
 import LayerImplementation from '../layerImplementation.js';
 import { vcsLayerName } from '../layerSymbols.js';
-import CesiumMap from '../../map/cesiumMap.js';
+import type CesiumMap from '../../map/cesiumMap.js';
 import type { DataSourceImplementationOptions } from '../dataSourceLayer.js';
-import Viewpoint from '../../util/viewpoint.js';
+import type Viewpoint from '../../util/viewpoint.js';
 
 function synchronizeEntityCollections(
   source: EntityCollection,

@@ -7,12 +7,10 @@ import {
 import { check, maybe } from '@vcsuite/check';
 import { parseInteger } from '@vcsuite/parsers';
 import type { Coordinate } from 'ol/coordinate.js';
-import VectorStyleItem, {
-  VectorStyleItemOptions,
-} from '../style/vectorStyleItem.js';
-import FeatureLayer, {
-  FeatureLayerImplementationOptions,
-} from './featureLayer.js';
+import type { VectorStyleItemOptions } from '../style/vectorStyleItem.js';
+import VectorStyleItem from '../style/vectorStyleItem.js';
+import type { FeatureLayerImplementationOptions } from './featureLayer.js';
+import FeatureLayer from './featureLayer.js';
 import CesiumTilesetCesiumImpl, {
   getExtentFromTileset,
 } from './cesium/cesiumTilesetCesiumImpl.js';
@@ -22,8 +20,8 @@ import { mercatorProjection } from '../util/projection.js';
 import { isMobile } from '../util/isMobile.js';
 import { layerClassRegistry } from '../classRegistry.js';
 import type { LayerOptions } from './layer.js';
-import FeatureVisibility from './featureVisibility.js';
-import VcsMap from '../map/vcsMap.js';
+import type FeatureVisibility from './featureVisibility.js';
+import type VcsMap from '../map/vcsMap.js';
 import { cesiumColorToColor, getStringColor } from '../style/styleHelpers.js';
 
 export type CesiumTilesetOptions = LayerOptions & {

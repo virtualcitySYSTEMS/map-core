@@ -349,6 +349,7 @@ describe('EventHandler', () => {
 
   describe('startChain/endChain', () => {
     let chainPipe;
+
     beforeEach(() => {
       chainPipe = sinonBox.stub(InteractionChain.prototype, 'pipe');
       chainPipe.returns(Promise.resolve());
@@ -360,6 +361,7 @@ describe('EventHandler', () => {
       EH._mouseUp({ windowPosition });
       expect(startChain).to.have.been.calledOnce;
     });
+
     it('check if events are queued and processed', async () => {
       const startChain = sinonBox.spy(EH, '_startChain');
       EH._mouseDown({ windowPosition });
@@ -377,6 +379,7 @@ describe('EventHandler', () => {
       await timeout(1);
       expect(EH._eventQueue).to.be.empty;
     });
+
     it('mousemove events are discarded if an event is running', async () => {
       const startChain = sinonBox.spy(EH, '_startChain');
       EH._mouseDown({ windowPosition });
@@ -561,6 +564,7 @@ describe('EventHandler', () => {
       );
     });
   });
+
   describe('event chainEnded Event', () => {
     it('interaction event should have a chainEnded Event', async () => {
       const chainPipe = sinonBox.stub(EH, '_startChain');

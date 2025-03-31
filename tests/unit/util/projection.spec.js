@@ -13,20 +13,24 @@ describe('Projection', () => {
   afterEach(() => {
     sandbox.restore();
   });
+
   describe('constructor', () => {
     describe('should parse EPSG Code', () => {
       it('should handle epsg numbers', () => {
         const projection = new Projection({ epsg: 3857 });
         expect(projection.epsg).to.equal('EPSG:3857');
       });
+
       it('should handle epsg strings', () => {
         const projection = new Projection({ epsg: '3857' });
         expect(projection.epsg).to.equal('EPSG:3857');
       });
+
       it('should handle epsg strings with starting epsg:', () => {
         const projection = new Projection({ epsg: 'epsg:3857' });
         expect(projection.epsg).to.equal('EPSG:3857');
       });
+
       it('should handle epsg strings with starting EPSG:', () => {
         const projection = new Projection({ epsg: 'EPSG:3857' });
         expect(projection.epsg).to.equal('EPSG:3857');
@@ -50,11 +54,12 @@ describe('Projection', () => {
 
       it('should add the projection to proj4js', () => {
         const spy = sandbox.spy(proj4, 'defs');
-        // eslint-disable-next-line no-unused-vars
-        const projection = new Projection({ epsg, proj4: proj4Option });
+        // eslint-disable-next-line no-new
+        new Projection({ epsg, proj4: proj4Option });
         expect(spy).to.have.been.calledWith('EPSG:25832');
       });
     });
+
     describe('should parse aliases', () => {
       let epsg;
       let proj4Option;
@@ -68,12 +73,14 @@ describe('Projection', () => {
 
       it('should add aliase to proj definitions', () => {
         const spy = sandbox.spy(proj4, 'defs');
-        // eslint-disable-next-line no-unused-vars
-        const projection = new Projection({ epsg, proj4: proj4Option, alias });
+
+        // eslint-disable-next-line no-new
+        new Projection({ epsg, proj4: proj4Option, alias });
         expect(spy).to.have.been.calledWith('testAlias');
         expect(spy).to.have.been.calledWith('test2Alias');
       });
     });
+
     describe('handling of custom prefixes', () => {
       it('should handle prefix without colon', () => {
         const projection = new Projection({
@@ -83,6 +90,7 @@ describe('Projection', () => {
         });
         expect(projection).to.have.property('epsg', 'EPSG:25833');
       });
+
       it('should allow custom prefixes', () => {
         const projection = new Projection({
           epsg: 'FOO:25833',
@@ -91,6 +99,7 @@ describe('Projection', () => {
         });
         expect(projection).to.have.property('epsg', 'FOO:25833');
       });
+
       it('should handle nullish prefix', () => {
         const projection = new Projection({
           epsg: '25833',
@@ -100,6 +109,7 @@ describe('Projection', () => {
         expect(projection).to.have.property('epsg', '25833');
       });
     });
+
     describe('should use project Default Projection on invalid options', () => {
       it('should return default projection', () => {
         setDefaultProjectionOptions({ epsg: 3857 });
@@ -108,6 +118,7 @@ describe('Projection', () => {
       });
     });
   });
+
   describe('validateOptions', () => {
     it('should return true on known projections 4326', () => {
       const validate = Projection.validateOptions({
@@ -115,24 +126,28 @@ describe('Projection', () => {
       });
       expect(validate).to.be.true;
     });
+
     it('should return true on known projections EPSG:4326', () => {
       const validate = Projection.validateOptions({
         epsg: 'EPSG:4326',
       });
       expect(validate).to.be.true;
     });
+
     it('should return true on known projections 3857', () => {
       const validate = Projection.validateOptions({
         epsg: 3857,
       });
       expect(validate).to.be.true;
     });
+
     it('should return false on unknown projections', () => {
       const validate = Projection.validateOptions({
         epsg: 43857,
       });
       expect(validate).to.be.false;
     });
+
     it('should return true on unknown projections which proj4 definitions', () => {
       const validate = Projection.validateOptions({
         epsg: 43857,
@@ -141,6 +156,7 @@ describe('Projection', () => {
       });
       expect(validate).to.be.true;
     });
+
     it('should return false on invalid proj4 definitions', () => {
       const validate = Projection.validateOptions({
         epsg: 4326,
@@ -148,12 +164,14 @@ describe('Projection', () => {
       });
       expect(validate).to.be.false;
     });
+
     it('should return false on an empty epsg code', () => {
       const validate = Projection.validateOptions({
         epsg: '',
       });
       expect(validate).to.be.false;
     });
+
     it('should return false on invalid epsg code with valid definitions', () => {
       const validate = Projection.validateOptions({
         epsg: 'EPSG25832',
@@ -163,6 +181,7 @@ describe('Projection', () => {
       expect(validate).to.be.false;
     });
   });
+
   describe('parseEPSGCode', () => {
     it('should handle valid epsg codes and return `EPSG:4326`', () => {
       expect(Projection.parseEPSGCode('4326')).to.equal('EPSG:4326');
@@ -170,12 +189,14 @@ describe('Projection', () => {
       expect(Projection.parseEPSGCode('epsg:4326')).to.equal('EPSG:4326');
       expect(Projection.parseEPSGCode('EPSG:4326')).to.equal('EPSG:4326');
     });
+
     it('should handle  invalid epsg codes and return empty string', () => {
       expect(Projection.parseEPSGCode('asd4326')).to.equal('');
       expect(Projection.parseEPSGCode(null)).to.equal('');
       expect(Projection.parseEPSGCode(undefined)).to.equal('');
       expect(Projection.parseEPSGCode('EPSGasd:4326')).to.equal('');
     });
+
     it('should handle custom prefixes, adding a prefix to a numeric', () => {
       expect(Projection.parseEPSGCode('4326', 'FOO:')).to.equal('FOO:4326');
       expect(Projection.parseEPSGCode(4326, 'FOO:')).to.equal('FOO:4326');
@@ -188,6 +209,7 @@ describe('Projection', () => {
       expect(Projection.parseEPSGCode('EPSG:4326', '')).to.equal('');
     });
   });
+
   describe('serialization', () => {
     describe('of an empty collection', () => {
       it('should return an object with type and name for default layers', () => {

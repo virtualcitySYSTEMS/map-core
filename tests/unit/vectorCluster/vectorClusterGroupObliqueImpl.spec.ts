@@ -1,7 +1,8 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
-import VectorClusterGroupObliqueImpl from '../../../src/vectorCluster/vectorClusterGroupObliqueImpl.js';
-import { ObliqueMap, VectorClusterGroup } from '../../../index.js';
+import type VectorClusterGroupObliqueImpl from '../../../src/vectorCluster/vectorClusterGroupObliqueImpl.js';
+import type { ObliqueMap } from '../../../index.js';
+import { VectorClusterGroup } from '../../../index.js';
 import { getObliqueMap } from '../helpers/obliqueHelpers.js';
 
 describe('VectorClusterObliqueImpl', () => {
@@ -22,6 +23,7 @@ describe('VectorClusterObliqueImpl', () => {
 
   describe('initialize', () => {
     let obliqueImpl: VectorClusterGroupObliqueImpl;
+
     before(async () => {
       obliqueImpl = vectorClusterGroup.getImplementationForMap(
         map,

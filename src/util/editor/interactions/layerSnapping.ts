@@ -1,22 +1,20 @@
-import { Feature } from 'ol';
-import VectorSource from 'ol/source/Vector.js';
+import type { Feature } from 'ol';
+import type VectorSource from 'ol/source/Vector.js';
 import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import {
   EventType,
   ModificationKeyType,
 } from '../../../interaction/interactionType.js';
-import VectorLayer from '../../../layer/vectorLayer.js';
+import type VectorLayer from '../../../layer/vectorLayer.js';
 import { originalFeatureSymbol } from '../../../layer/vectorSymbols.js';
 import ObliqueMap from '../../../map/obliqueMap.js';
 import type VectorObliqueImpl from '../../../layer/oblique/vectorObliqueImpl.js';
-import {
-  alreadySnapped,
-  SnappingInteractionEvent,
-} from '../editorSessionHelpers.js';
+import type { SnappingInteractionEvent } from '../editorSessionHelpers.js';
+import { alreadySnapped } from '../editorSessionHelpers.js';
+import type { SnapType } from '../snappingHelpers.js';
 import {
   setSnappingFeatures,
   getGeometrySnapResult,
-  SnapType,
 } from '../snappingHelpers.js';
 
 export default class LayerSnapping extends AbstractInteraction {

@@ -1,12 +1,12 @@
 import { mouseOverSymbol } from '../editorSymbols.js';
-import AbstractInteraction, {
-  EventAfterEventHandler,
-} from '../../../interaction/abstractInteraction.js';
+import type { EventAfterEventHandler } from '../../../interaction/abstractInteraction.js';
+import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import {
   ModificationKeyType,
   EventType,
 } from '../../../interaction/interactionType.js';
-import { isVertex, Vertex } from '../editorHelpers.js';
+import type { Vertex } from '../editorHelpers.js';
+import { isVertex } from '../editorHelpers.js';
 
 const pointerSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 19 19">
   <g id="pen">

@@ -1,15 +1,14 @@
+import type { Camera, Scene } from '@vcmap-cesium/engine';
 import {
-  Camera,
   Cartesian3,
   HeadingPitchRoll,
   Math as CesiumMath,
   Matrix3,
   Matrix4,
   PerspectiveFrustum,
-  Scene,
   Transforms,
 } from '@vcmap-cesium/engine';
-import { ControllerInput } from './controller/controllerInput.js';
+import type { ControllerInput } from './controller/controllerInput.js';
 
 const EPSILON3_SQURD = CesiumMath.EPSILON3 * CesiumMath.EPSILON3;
 

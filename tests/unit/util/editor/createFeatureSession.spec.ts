@@ -2,11 +2,10 @@ import { Feature } from 'ol';
 import type { LineString } from 'ol/geom.js';
 import { expect } from 'chai';
 import sinon from 'sinon';
-import { Cartesian2, HeightReference } from '@vcmap-cesium/engine';
+import { Cartesian2 } from '@vcmap-cesium/engine';
 
-import startCreateFeatureSession, {
-  CreateFeatureSession,
-} from '../../../../src/util/editor/createFeatureSession.js';
+import type { CreateFeatureSession } from '../../../../src/util/editor/createFeatureSession.js';
+import startCreateFeatureSession from '../../../../src/util/editor/createFeatureSession.js';
 import { GeometryType } from '../../../../src/util/editor/editorSessionHelpers.js';
 import VcsApp from '../../../../src/vcsApp.js';
 import VectorLayer from '../../../../src/layer/vectorLayer.js';
@@ -18,7 +17,8 @@ import {
   PointerKeyType,
 } from '../../../../src/interaction/interactionType.js';
 import { createSync } from '../../../../src/layer/vectorSymbols.js';
-import { MapEvent, ObliqueMap, OpenlayersMap } from '../../../../index.js';
+import type { MapEvent } from '../../../../index.js';
+import { ObliqueMap, OpenlayersMap } from '../../../../index.js';
 
 describe('create feature session', () => {
   let app: VcsApp;
@@ -412,7 +412,9 @@ describe('create feature session', () => {
     it('should not recreate the creation interaction', async () => {
       const interactionChain = app.maps.eventHandler
         .interactions[3] as InteractionChain;
-      session.creationFinished.addEventListener(() => session.stop());
+      session.creationFinished.addEventListener(() => {
+        session.stop();
+      });
 
       await interactionChain.pipe({
         type: EventType.CLICK,
@@ -429,7 +431,9 @@ describe('create feature session', () => {
     it('should not call finished twice', async () => {
       const spy = sinon.spy();
       session.creationFinished.addEventListener(spy);
-      session.creationFinished.addEventListener(() => session.stop());
+      session.creationFinished.addEventListener(() => {
+        session.stop();
+      });
 
       await app.maps.eventHandler.interactions[3].pipe({
         type: EventType.CLICK,

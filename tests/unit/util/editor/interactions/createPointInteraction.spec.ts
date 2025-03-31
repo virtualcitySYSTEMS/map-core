@@ -1,4 +1,5 @@
-import sinon, { SinonSpy } from 'sinon';
+import type { SinonSpy } from 'sinon';
+import sinon from 'sinon';
 import { expect } from 'chai';
 import { Point } from 'ol/geom.js';
 import { Cartesian2 } from '@vcmap-cesium/engine';
@@ -6,9 +7,9 @@ import CreatePointInteraction from '../../../../../src/util/editor/interactions/
 import { alreadyTransformedToImage } from '../../../../../src/layer/vectorSymbols.js';
 import OpenlayersMap from '../../../../../src/map/openlayersMap.js';
 import ObliqueMap from '../../../../../src/map/obliqueMap.js';
+import type { CesiumMap } from '../../../../../index.js';
 import {
   alreadyTransformedToMercator,
-  CesiumMap,
   EventType,
   ModificationKeyType,
   PointerEventType,

@@ -1,24 +1,23 @@
-import {
+import type {
   CustomDataSource,
   EntityCollection,
   Entity,
   Scene,
 } from '@vcmap-cesium/engine';
-import { StyleLike } from 'ol/style/Style.js';
+import type { StyleLike } from 'ol/style/Style.js';
 import type { Feature } from 'ol/index.js';
-import {
-  CesiumVectorContext,
-  setReferenceForPicking,
-} from '../layer/cesium/vectorContext.js';
-import VectorProperties from '../layer/vectorProperties.js';
-import convert, { ConvertedItem } from '../util/featureconverter/convert.js';
+import type { CesiumVectorContext } from '../layer/cesium/vectorContext.js';
+import { setReferenceForPicking } from '../layer/cesium/vectorContext.js';
+import type VectorProperties from '../layer/vectorProperties.js';
+import type { ConvertedItem } from '../util/featureconverter/convert.js';
+import convert from '../util/featureconverter/convert.js';
 
 class VectorClusterCesiumContext implements CesiumVectorContext {
   entities: EntityCollection;
 
   private _featureItems = new Map<Feature, () => void>();
 
-  private _convertingFeatures: Map<Feature, () => void> = new Map();
+  private _convertingFeatures = new Map<Feature, () => void>();
 
   constructor(dataSource: CustomDataSource) {
     this.entities = dataSource.entities;

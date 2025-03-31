@@ -2,11 +2,11 @@ import { getLogger } from '@vcsuite/logger';
 import { unByKey } from 'ol/Observable.js';
 import type VectorSource from 'ol/source/Vector.js';
 import type { Feature } from 'ol';
-import { StyleLike } from 'ol/style/Style.js';
+import type { StyleLike } from 'ol/style/Style.js';
 import type { Scene } from '@vcmap-cesium/engine';
 import type VectorContext from './vectorContext.js';
 import type VectorClusterCesiumContext from '../../vectorCluster/vectorClusterCesiumContext.js';
-import VectorProperties from '../vectorProperties.js';
+import type VectorProperties from '../vectorProperties.js';
 
 export type SourceVectorContextSync = {
   readonly active: boolean;
@@ -73,7 +73,7 @@ export function createSourceVectorContextSync(
   const addFeatures = (features: Feature[]): void => {
     // TODO we should make this non-blocking to better handle larger data sets check in RIWA Impl
     features.forEach((f) => {
-      addFeature(f).catch((err) => {
+      addFeature(f).catch((err: unknown) => {
         getLogger('SourceVectorContextSync').error(
           'failed to convert feature',
           f,
@@ -103,7 +103,7 @@ export function createSourceVectorContextSync(
       removeFeature(event.feature as Feature);
     }),
     source.on('changefeature', (event) => {
-      featureChanged(event.feature as Feature).catch((_e) => {
+      featureChanged(event.feature as Feature).catch(() => {
         getLogger().error('failed to convert feature');
       });
     }),
