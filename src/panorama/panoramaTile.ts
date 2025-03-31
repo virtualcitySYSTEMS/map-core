@@ -42,7 +42,6 @@ export function createTileCoordinate(
   level: number,
 ): TileCoordinate {
   return {
-    // XXX Object.freeze to prevent mutability?
     x,
     y,
     level,
@@ -63,7 +62,6 @@ function getEmptyTileAppearance(): MaterialAppearance {
 }
 
 // TODO create a default material that can be cached.
-// FIXME find a way to wait for the texture before rendering. using "WHITE" does not work, since burned texture is also white.
 const source = `
 czm_material czm_getMaterial(czm_materialInput materialInput)
 {

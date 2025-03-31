@@ -6,13 +6,18 @@ import type { PanoramaImage } from './panoramaImage.js';
  * The north pole is [0, 0],
  * The south pole is [0, PI],
  * And the valid range for phi is 0 to 2 * PI.
+ * There are two cartesian and two spherical coordinate systems in use:
+ * - The spheres spherical reference system.
+ * - The image spherical reference system, where x is inverted from the spheres reference system.
+ * - The spheres cartesian reference system, where the cartesian is transformed by the inverse model matrix of the image.
+ * - the global cartesian reference system.
  */
 
 /**
  * Wraps longitude around the globe (0 to 2 * PI) in image spherical coordinates.
  * @param angle
  */
-export function convertImageLongitudeAngle(angle: number): number {
+function convertImageLongitudeAngle(angle: number): number {
   const twoPI = CesiumMath.TWO_PI;
 
   const simplified = angle - Math.floor(angle / twoPI) * twoPI;
@@ -55,7 +60,7 @@ export function cartesianToImageSpherical(
 }
 
 /**
- * Converts spherical coordiantes to cartesian coordinatesin the spheres reference system.
+ * Converts spherical coordinates to cartesian coordinates the spheres reference system.
  * @param spherical - The spherical coordinates [phi, theta].
  * @param [result] - The cartesian coordinate to write to.
  * @returns
