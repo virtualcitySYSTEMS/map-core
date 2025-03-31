@@ -176,23 +176,39 @@ gdal_edit.py -mo "PANORAMA_DEPTH_VERSION=1.0" -mo "PANORAMA_DEPTH_MAX=72.12" dep
 gdal_translate depth_tiff.tif panorama_depth.tif -of GTiff -co TILED=YES -co BLOCKXSIZE=512 -co BLOCKYSIZE=512 -co COMPRESS=DEFLATE
 ```
 
-## Runtime Objects
+# Runtime Objects
 
 The following objects are used at runtime to represent the panorama data.
 
-### PanoramaImageDataSet
+## [PanoramaDatasetCollection](../src/panorama/panoramaDatasetCollection.ts)
 
-Points to a remote [Data Set](#data-set). These resources contains tiled image information. Very similar to the way oblique image data sets are handled.
+The dataset collection holds all the configured datasets and is attached to the `VcsApp` as well
+as the [PanoramaMap](#PanoramaMap).
 
-The following behavior is unclear and depends on whether we can load multiple data sets at once:
+- Allows the loading of the _closest_ image from all active datasets.
 
-- Provides 2D points of all the loaded images.
-- Provides 2D extents of available tile.
-- Provides means to get all the images in a certain extent
-- Maintains a KNN index of all the images loaded (serialized metadata only).
+Relations:
+
+- The dataset collection is attached to the `VcsApp`.
+- The dataset collection is attached to a [PanoramaMap](#PanoramaMap).
+- Contains multiple [PanoramaDatasets](#PanoramaDataset).
+
+## [PanoramaDataset](../src/panorama/panoramaDataset.ts)
+
+Points to a remote [Data Set](#data-set) and wraps a [FlatGeobufTileProvider](../src/layer/tileProvider/flatGeobufTileProvider.ts)
+and a [VectorTileLayer](../src/layer/vectorTileLayer.ts) to display the image positions on the map.
+
+- Datasets are stateful and can be loaded and unloaded. Only active datasets are considered when querying images.
+- Provides means to get all the images in a certain extent.
 - Maintains an LRU cache of the instantiated [PanoramaImage](#PanoramaImage) objects.
+- This is the main source for [PanoramaImage](#PanoramaImage) objects.
 
-### PanoramaImage
+Relations:
+
+- The dataset is contained within a [PanoramaDatasetCollection](#PanoramaDatasetCollection).
+- The dataset creates [PanoramaImage](#PanoramaImage) objects.
+
+## [PanoramaImage](../src/panorama/panoramaImage.ts)
 
 Holds all the metadata required to render the image. This loads the COG headers and attaches them to the image
 
@@ -206,37 +222,72 @@ Behavior:
 - It provides the transformation matrix to render the sphere by and an inverse to transform world to sphere coordinates.
 - It provides a [PanoramaTileProvider](#PanoramaTileProvider) to load the image data.
 
-### PanoramaImageTile
+Relations:
+
+- Most images will have a reference to the [PanoramaDataset](#PanoramaDataset) they belong to.
+- Has one or more [PanoramaTileProvider](#PanoramaTileProvider) objects. For RGB & Intensity.
+- Has an optional [PanoramaDepth](#PanoramaDepth) object.
+
+## [PanoramaTile](../src/panorama/panoramaTile.ts)
 
 Represents the tile of an image.
 
 - Renders as a wedge with its image data as texture.
-- Provide a primitive to the [PanoramaImageView](#PanoramaImageView).
 - Caches the primitive.
 
-### PanoramaTileProvider
+Relations:
+
+- The tile is attached to a [PanoramaTileProvider](#PanoramaTileProvider).
+- The tile is rendered by the [PanoramaImageView](#PanoramaImageView).
+
+## [PanoramaTileProvider](../src/panorama/panoramaTileProvider.ts)
 
 A construct that is able to load image data with a certain strategy (static or COG come to mind) and provide it to the tile.
 
 - The tile provider is valid for one image.
-- Provides [PanoramaImageTiles](#PanoramaImageTile) based on tile coordinates and caches them on the image.
+- Provides [PanoramaTiles](#PanoramaTile) based on tile coordinates and caches them on the image.
 - Provides a method to perform „getDepth“ at a spherical coordinate and „getDepthMostDetailed“ at a spherical coordinate.
-- Maintains a cache of its loaded [PanoramaImageTiles](#PanoramaImageTile). (LRU?)
+- Maintains a cache of its loaded [PanoramaTiles](#PanoramaTile). (LRU?)
 - Maintains a cache of its loaded depth data. (LRU?)
 
-### PanoramaImageView
+Relations:
+
+- The tile provider is attached to a [PanoramaImage](#PanoramaImage).
+- Caches multiple loaded [PanoramaTiles](#PanoramaTile).
+
+### [PanoramaDepth](../src/panorama/panoramaDepth.ts)
+
+Is a specialized [PanoramaTileProvider](#PanoramaTileProvider) that loads depth data.
+The data is not intended for rendering, and this tile provider has no [PanoramaTile](#PanoramaTile) objects.
+Instead, it provides access to the depth data and allows for querying the depth at a certain spherical coordinate
+to procure world cartesian positions for a given image location.
+
+- Provides a method to get the depth at a spherical coordinate.
+- Loads depth data based on the same strategy as the [PanoramaTileProvider](#PanoramaTileProvider), but
+  only for the lowest level
+- Maintains a cache of its loaded depth data.
+
+Relations:
+
+- The depth provider is attached to a [PanoramaImage](#PanoramaImage).
+
+## [PanoramaImageView](../src/panorama/panoramaImageView.ts)
 
 This construct is similar to the ol.View and describes a scene based on an image.
 
 - Renders an image into the cesium scene.
-- Requests [PanoramaImageTiles](#PanoramaImageTile) from the current images [PanoramaTileProvider](#PanoramaTileProvider).
+- Requests [PanoramaTiles](#PanoramaTile) from the current images [PanoramaTileProvider](#PanoramaTileProvider).
 - Renders the primitives as provided by the tiles loaded.
 - Ensures a base level „shell“ is always rendered.
 - Determines which tiles to render.
 - Fires map interaction events.
-- Can load/unload images? This would mean, the View is kept stable on the [PanoramaMap](#PanoramaMap).
 
-### PanoramaMap
+Relations:
+
+- Is attached to a [PanoramaMap](#PanoramaMap).
+- Renders multiple [PanoramaTiles](#PanoramaTile) from the current [PanoramaImage](#PanoramaImage) on the map.
+
+## [PanoramaMap](../src/map/panoramaMap.ts)
 
 This is the `VCMap` interface which allows us to treat the panorama data as a map.
 
@@ -245,6 +296,42 @@ This is the `VCMap` interface which allows us to treat the panorama data as a ma
 - Can determine, if a viewpoint is visible (by using min / max depth)
 - Can load / unload data sets. (More than one at a time?).
   - Maintains an index of all currently available images if more than one datasource can be loaded.
+
+Relations:
+
+- Has a [PanoramaDatasetCollection](#PanoramaDatasetCollection) attached.
+- Has a [PanoramaImageView](#PanoramaImageView) attached.
+- Keeps track of the current [PanoramaImage](#PanoramaImage).
+
+## Concept: Relationship Diagram of Runtime Objects
+
+```mermaid
+erDiagram
+    PanoramaMap ||..o| PanoramaDatasets : uses
+    PanoramaMap |o..o{ PanoramaImage : displays
+    PanoramaMap ||..|| PanoramaView: has
+
+    PanoramaMap {}
+
+    PanoramaDatasets ||..o{ PanoramaDataset : contains
+    PanoramaDatasets {}
+
+    PanoramaDataset ||..o{ PanoramaImage: creates
+    PanoramaDataset {}
+
+    PanoramaImage ||..|{ PanoramaTileProvider: has
+    PanoramaImage {}
+
+    PanoramaTile ||..o{ PanoramaView : provides
+    PanoramaTile {}
+
+    PanoramaTileProvider ||..o{ PanoramaTile: creates
+    PanoramaTileProvider {}
+
+    PanoramaView }o..o{ PanoramaImage: renders
+    PanoramaView }o..o{ PanoramaTileProvider: requests
+    PanoramaView {}
+```
 
 ## Concepts: Coordinate Systems
 
