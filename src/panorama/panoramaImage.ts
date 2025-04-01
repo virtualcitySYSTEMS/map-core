@@ -193,7 +193,12 @@ export async function createPanoramaImageFromURL(
       orientation.roll,
     ),
   );
-  Matrix4.multiplyByScale(modelMatrix, new Cartesian3(50, 50, 50), modelMatrix);
+  const scaledModelMatrix = Matrix4.clone(modelMatrix);
+  Matrix4.multiplyByScale(
+    modelMatrix,
+    new Cartesian3(50, 50, 50),
+    scaledModelMatrix,
+  );
 
   const upCart4 = Matrix4.getColumn(modelMatrix, 2, new Cartesian4());
   Cartesian4.normalize(upCart4, upCart4);
@@ -206,7 +211,7 @@ export async function createPanoramaImageFromURL(
 
   const tileProvider = createPanoramaTileProvider(
     rgb,
-    modelMatrix,
+    scaledModelMatrix,
     tileSize,
     minLevel,
   );
@@ -230,7 +235,7 @@ export async function createPanoramaImageFromURL(
 
       intensityTileProvider = createPanoramaTileProvider(
         intensity,
-        modelMatrix,
+        scaledModelMatrix,
         tileSize,
         minLevel,
       );
@@ -249,15 +254,14 @@ export async function createPanoramaImageFromURL(
       .then((depth) => {
         depthTileProvider = depth; // check destroyed.
         Matrix4.multiplyByScale(
-          modelMatrix,
+          scaledModelMatrix,
           new Cartesian3(
             depthTileProvider.maxDepth,
             depthTileProvider.maxDepth,
             depthTileProvider.maxDepth,
           ),
-          modelMatrix,
+          scaledModelMatrix,
         );
-        Matrix4.inverseTransformation(modelMatrix, invModelMatrix);
       })
       .catch((err) => {
         console.error('Error loading depth', err);
