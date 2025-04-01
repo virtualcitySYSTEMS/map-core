@@ -194,11 +194,7 @@ export async function createPanoramaImageFromURL(
     ),
   );
   const scaledModelMatrix = Matrix4.clone(modelMatrix);
-  Matrix4.multiplyByScale(
-    modelMatrix,
-    new Cartesian3(50, 50, 50),
-    scaledModelMatrix,
-  );
+  Matrix4.setScale(modelMatrix, new Cartesian3(50, 50, 50), scaledModelMatrix);
 
   const upCart4 = Matrix4.getColumn(modelMatrix, 2, new Cartesian4());
   Cartesian4.normalize(upCart4, upCart4);
@@ -253,7 +249,7 @@ export async function createPanoramaImageFromURL(
     )
       .then((depth) => {
         depthTileProvider = depth; // check destroyed.
-        Matrix4.multiplyByScale(
+        Matrix4.setScale(
           scaledModelMatrix,
           new Cartesian3(
             depthTileProvider.maxDepth,
