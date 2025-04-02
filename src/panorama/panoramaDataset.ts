@@ -1,8 +1,7 @@
 import { parseBoolean, parseNumber } from '@vcsuite/parsers';
-import RTree from 'rbush';
-import knn from 'rbush-knn';
 import { Coordinate } from 'ol/coordinate.js';
 import { Point } from 'ol/geom.js';
+import { createOrUpdateFromCoordinate, buffer } from 'ol/extent.js';
 import VcsObject, { VcsObjectOptions } from '../vcsObject.js';
 import VcsEvent from '../vcsEvent.js';
 import FlatGeobufTileProvider from '../layer/tileProvider/flatGeobufTileProvider.js';
@@ -12,11 +11,6 @@ import LayerState from '../layer/layerState.js';
 import { PrimitiveOptionsType } from '../layer/vectorProperties.js';
 import { createPanoramaImageFromURL, PanoramaImage } from './panoramaImage.js';
 import { mercatorProjection, wgs84Projection } from '../util/projection.js';
-import {
-  getSearchExtent,
-  loadTreeLeaves,
-  PanoramaRTreeNode,
-} from './packedTree.js';
 import Extent from '../util/extent.js';
 import { cartesian2DDistanceSquared } from '../util/math.js';
 
@@ -54,8 +48,6 @@ export default class PanoramaDataset extends VcsObject {
   activeOnStartup = false;
 
   cameraOffset = -2.8;
-
-  private _treeLeaves: RTree<PanoramaRTreeNode> | undefined;
 
   readonly tileProvider: FlatGeobufTileProvider;
 
@@ -149,33 +141,13 @@ export default class PanoramaDataset extends VcsObject {
   // there can be optimizations done here, like using the tree and sort based on closest nodes before searching
   async getClosestImage(
     coordinate: Coordinate,
-    maxDistance?: number,
-  ): Promise<{ image: PanoramaImage; distance: number } | undefined> {
-    const reader =
-      await this.tileProvider.getReaderAndProjection(DATASET_TILE_LEVEL);
-
-    if (!this._treeLeaves) {
-      const nodes = await loadTreeLeaves(reader);
-      this._treeLeaves = new RTree();
-      this._treeLeaves.load(nodes);
-    }
-
-    const closesNode = knn(
-      this._treeLeaves,
-      coordinate[0],
-      coordinate[1],
-      1,
-      undefined,
-      maxDistance,
-    );
-    if (closesNode.length === 0) {
-      return undefined;
-    }
-
-    const searchExtent = getSearchExtent(coordinate, closesNode[0]);
+    maxDistance = 200,
+  ): Promise<{ imageName: string; distanceSqrd: number } | undefined> {
+    const extent = createOrUpdateFromCoordinate(coordinate);
+    buffer(extent, maxDistance, extent);
     const features = await this.tileProvider.getFeaturesForExtent(
       new Extent({
-        coordinates: searchExtent,
+        coordinates: extent,
         projection: mercatorProjection.toJSON(),
       }),
       DATASET_TILE_LEVEL,
@@ -196,8 +168,10 @@ export default class PanoramaDataset extends VcsObject {
     });
 
     if (closestImageName) {
-      const image = await this.createPanoramaImage(closestImageName);
-      return { image, distance: Math.sqrt(minDistanceSqrd) };
+      return {
+        imageName: closestImageName,
+        distanceSqrd: minDistanceSqrd,
+      };
     }
 
     return undefined;

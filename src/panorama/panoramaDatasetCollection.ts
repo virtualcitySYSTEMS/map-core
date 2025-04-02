@@ -68,14 +68,43 @@ export default class PanoramaDatasetCollection extends Collection<PanoramaDatase
 
   async getClosestImage(
     coordinate: Coordinate,
-    maxDistance?: number,
+    maxDistance = 200,
   ): Promise<PanoramaImage | undefined> {
     const loadPromises = this._array
       .filter((dataset) => dataset.active)
-      .map(async (dataset) => dataset.getClosestImage(coordinate, maxDistance));
+      .map(async (dataset) => {
+        const closesImage = await dataset.getClosestImage(
+          coordinate,
+          maxDistance,
+        );
+        if (closesImage) {
+          return {
+            ...closesImage,
+            dataset,
+          };
+        }
+
+        return undefined;
+      });
 
     const images = await Promise.all(loadPromises);
-    return images[0]?.image;
+
+    let minDistanceSqrd = Infinity;
+    let closestIndex = -1;
+
+    images.forEach((image, index) => {
+      if (image && image.distanceSqrd < minDistanceSqrd) {
+        minDistanceSqrd = image.distanceSqrd;
+        closestIndex = index;
+      }
+    });
+
+    if (closestIndex !== -1) {
+      const { imageName, dataset } = images[closestIndex]!;
+      return dataset.createPanoramaImage(imageName);
+    }
+
+    return undefined;
   }
 
   destroy(): void {
