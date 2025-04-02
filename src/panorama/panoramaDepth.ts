@@ -1,6 +1,7 @@
 import { Cartesian3, Math as CesiumMath, Matrix4 } from '@vcmap-cesium/engine';
 import { fromUrl, GeoTIFFImage, Pool, ReadRasterResult } from 'geotiff';
 import { sphericalToCartesian } from './sphericalCoordinates.js';
+import { getLogger } from '@vcsuite/logger';
 
 export type PanoramaDepth = {
   readonly maxDepth: number;
@@ -118,7 +119,9 @@ export async function createPanoramaDepth(
   const geotiff = await fromUrl(url, { cache: true });
   const imageCount = await geotiff.getImageCount();
   if (imageCount !== 1) {
-    throw new Error('Depth image must have exactly one image');
+    getLogger('PanoramaDepth').warning(
+      'PanoramaDepth only supports single image GeoTIFFs, assuming first image is the largest',
+    );
   }
   const highResImage = await geotiff.getImage(0);
   const { min, max } = parsePanoramaGDALMetadata(

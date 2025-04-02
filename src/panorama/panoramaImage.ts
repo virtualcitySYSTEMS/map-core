@@ -13,6 +13,7 @@ import {
 import type { TileSize } from './panoramaTile.js';
 import { createPanoramaDepth, PanoramaDepth } from './panoramaDepth.js';
 import PanoramaDataset from './panoramaDataset.js';
+import { getLogger } from '@vcsuite/logger';
 
 export type PanoramaImageOptions = {
   imageUrl: string;
@@ -132,13 +133,20 @@ async function loadRGBImages(
     promises.push(image.getImage(imageCount));
   }
   const images = await Promise.all(promises);
-  const minLevelImage = images[0];
   const tileSize: TileSize = [
-    minLevelImage.getTileWidth(),
-    minLevelImage.getTileHeight(),
+    images[0].getTileWidth(),
+    images[0].getTileHeight(),
   ];
 
-  const minLevel = minLevelImage.getHeight() / tileSize[0] - 1;
+  let minLevelImage = images[0];
+  let minLevel = minLevelImage.getHeight() / tileSize[0] - 1;
+  while (minLevel < 0) {
+    getLogger('PanoramaImage').warning('Lowest level is not a full tile');
+    // lowest image is not a full tile, we skip it
+    images.shift();
+    minLevelImage = images[0];
+    minLevel = minLevelImage.getHeight() / tileSize[0] - 1;
+  }
   const maxLevel = images.length - 1 + minLevel;
   const gdalMetadata = parsePanoramaGDALMetadata(
     images.at(-1)!.getGDALMetadata() as Record<string, string> | undefined,
