@@ -1,13 +1,10 @@
 import LRUCache from 'ol/structs/LRUCache.js';
 import { Matrix4 } from '@vcmap-cesium/engine';
 import { getLogger } from '@vcsuite/logger';
-import { BaseDecoder, GeoTIFFImage, Pool } from 'geotiff';
-import {
-  createPanoramaTile,
-  PanoramaTile,
-  TileCoordinate,
-  TileSize,
-} from './panoramaTile.js';
+import type { GeoTIFFImage } from 'geotiff';
+import { Pool } from 'geotiff';
+import type { PanoramaTile, TileCoordinate, TileSize } from './panoramaTile.js';
+import { createPanoramaTile } from './panoramaTile.js';
 import VcsEvent from '../vcsEvent.js';
 
 export type PanoramaTileProvider = {
@@ -52,16 +49,29 @@ function addTileToCache(
   cache.expireCache(currentlyVisibleTileKeys);
 }
 
+/**
+ * Creates a panorama tile provider for the given images.
+ * @param levelImages - the images ordered by level. lowest level (smallest overview) first. that level is given by minLevel. all other levels must be consecutive.
+ * @param modelMatrix - the model matrix of the image
+ * @param tileSize - the size of the tile in pixels
+ * @param minLevel - the minimum level of the images
+ * @param maxCacheSize - the cache size for the number of tiles to cache. (LRU cache in use)
+ * @param concurrency - the number of concurrent web requests to load tiles with
+ */
 export function createPanoramaTileProvider(
   levelImages: GeoTIFFImage[],
   modelMatrix: Matrix4,
   tileSize: TileSize,
   minLevel: number,
   maxCacheSize?: number,
-  concurrency = 1,
+  concurrency = 6,
 ): PanoramaTileProvider {
   const cache = new PanoramaTileCache(maxCacheSize);
-  const pool = new Pool();
+  const pool = new Pool(undefined, () => {
+    return new Worker(new URL('../workers/webp.js', import.meta.url), {
+      type: 'module',
+    });
+  });
 
   let currentlyVisibleTiles: Record<string, boolean> = {};
   let abortController: AbortController | null = null;
@@ -89,21 +99,20 @@ export function createPanoramaTileProvider(
         tileCoordinate.x,
         tileCoordinate.y,
         levelImage.getSamplesPerPixel(),
-        {
-          decode: (_fi, buff) => Promise.resolve(buff),
-        } as BaseDecoder,
+        pool,
+        // {
+        //   decode: (_fi, buff) =>
+        //     Promise.resolve(createImageBitmap(new Blob([buff]))),
+        // },
         abort,
       );
 
-      const bm = await createImageBitmap(
-        new Blob([tile.data]),
-        0,
-        0,
-        tileSize[0],
-        tileSize[1],
+      return createPanoramaTile(
+        tileCoordinate,
+        tile.data as unknown as ImageBitmap,
+        modelMatrix,
+        tileSize,
       );
-
-      return createPanoramaTile(tileCoordinate, bm, modelMatrix, tileSize);
     }
     return null;
   };
