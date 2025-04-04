@@ -1,3 +1,7 @@
+### 6.1.7
+
+- Fixes a bug, where the feature provider interaction would provide features, even if there was already a feature on the event.
+
 ### 6.1.6
 
 - Changes the tileProvider `getFeatureAtCoordinate` function to take the real geometry into account and not just the extent.
