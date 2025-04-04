@@ -9,6 +9,7 @@ declare global {
       apps: Map<string, VcsApp>;
       createModuleFromConfig: (config: VcsModuleConfig) => VcsModule;
       getFirstApp: () => VcsApp | undefined;
+      workerBase?: string;
     };
     opera?: string;
   }

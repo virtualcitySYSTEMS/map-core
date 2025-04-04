@@ -49,6 +49,36 @@ function addTileToCache(
   cache.expireCache(currentlyVisibleTileKeys);
 }
 
+export type ImageBitmapDecoder = {
+  decode(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    fileDirectory: any,
+    buffer: ArrayBuffer,
+  ): Promise<ImageBitmap>;
+};
+
+let defaultPool: Pool | undefined;
+function getDefaultPool(): Pool {
+  if (!defaultPool) {
+    let workerUrl: URL | string;
+    if (window.vcs.workerBase) {
+      workerUrl = new URL(
+        `${window.vcs.workerBase}/webp.js`,
+        window.location.href,
+      );
+    } else {
+      workerUrl = new URL('../workers/webp.js', import.meta.url);
+    }
+
+    defaultPool = new Pool(undefined, () => {
+      return new Worker(workerUrl, {
+        type: 'module',
+      });
+    });
+  }
+  return defaultPool;
+}
+
 /**
  * Creates a panorama tile provider for the given images.
  * @param levelImages - the images ordered by level. lowest level (smallest overview) first. that level is given by minLevel. all other levels must be consecutive.
@@ -57,6 +87,7 @@ function addTileToCache(
  * @param minLevel - the minimum level of the images
  * @param maxCacheSize - the cache size for the number of tiles to cache. (LRU cache in use)
  * @param concurrency - the number of concurrent web requests to load tiles with
+ * @param poolOrDecoder - an optional pool to decode directly to image bitmaps. most scenarios will use the default, mainly used for headless testing
  */
 export function createPanoramaTileProvider(
   levelImages: GeoTIFFImage[],
@@ -65,14 +96,9 @@ export function createPanoramaTileProvider(
   minLevel: number,
   maxCacheSize?: number,
   concurrency = 6,
+  poolOrDecoder: Pool | ImageBitmapDecoder = getDefaultPool(),
 ): PanoramaTileProvider {
   const cache = new PanoramaTileCache(maxCacheSize);
-  const pool = new Pool(undefined, () => {
-    return new Worker(new URL('../workers/webp.js', import.meta.url), {
-      type: 'module',
-    });
-  });
-
   let currentlyVisibleTiles: Record<string, boolean> = {};
   let abortController: AbortController | null = null;
   let loading = false;
@@ -86,7 +112,6 @@ export function createPanoramaTileProvider(
 
   const destroy = (): void => {
     cache.clear();
-    pool.destroy();
   };
 
   const loadTile = async (
@@ -99,10 +124,12 @@ export function createPanoramaTileProvider(
         tileCoordinate.x,
         tileCoordinate.y,
         levelImage.getSamplesPerPixel(),
-        pool,
+        poolOrDecoder,
         // {
-        //   decode: (_fi, buff) =>
-        //     Promise.resolve(createImageBitmap(new Blob([buff]))),
+        //   // @ts-ignore
+        //   decode: (_fi, buff): Promise<ArrayBuffer> =>
+        //     // @ts-ignore
+        //     createImageBitmap(new Blob([buff]), 0, 0, tileSize[0], tileSize[1]),
         // },
         abort,
       );
