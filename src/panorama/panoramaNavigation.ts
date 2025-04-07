@@ -10,6 +10,7 @@ import {
   PointerEventType,
   PointerKeyType,
 } from '../interaction/interactionType.js';
+import { PanoramaImageView } from './panoramaImageView.js';
 
 const MAX_PITCH = CesiumMath.toRadians(85);
 const MIN_PITCH = -MAX_PITCH;
@@ -18,6 +19,20 @@ const MIN_FOV = CesiumMath.toRadians(10);
 const FOV_STEP = 0.1;
 const INERTIA_DECAY = 0.8;
 const DECAY_FRAMES = 60;
+
+export function panoZoom(
+  event: number,
+  frustum: PerspectiveFrustum,
+  panoramaView: PanoramaImageView,
+): void {
+  if (event > 0 && frustum.fov > MIN_FOV) {
+    frustum.fov -= FOV_STEP;
+    panoramaView.render();
+  } else if (event < 0 && frustum.fov < MAX_FOV) {
+    frustum.fov += FOV_STEP;
+    panoramaView.render();
+  }
+}
 
 // eslint-disable-next-line import/prefer-default-export
 export function createPanoramaNavigation(map: PanoramaMap): () => void {
@@ -58,13 +73,7 @@ export function createPanoramaNavigation(map: PanoramaMap): () => void {
   });
 
   map.screenSpaceEventHandler.setInputAction((event: number): void => {
-    if (event > 0 && frustum.fov > MIN_FOV) {
-      frustum.fov -= FOV_STEP;
-      map.panoramaView.render();
-    } else if (event < 0 && frustum.fov < MAX_FOV) {
-      frustum.fov += FOV_STEP;
-      map.panoramaView.render();
-    }
+    panoZoom(event, frustum, map.panoramaView);
   }, ScreenSpaceEventType.WHEEL);
 
   let yInertia = 0;
