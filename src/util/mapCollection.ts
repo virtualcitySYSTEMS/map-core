@@ -14,6 +14,7 @@ import type Viewpoint from './viewpoint.js';
 import { VisualisationType } from '../map/vcsMap.js';
 import Navigation from '../map/navigation/navigation.js';
 import KeyboardController from '../map/navigation/controller/keyboardController.js';
+import PanoramaImageSelection from '../interaction/panoramaImageSelection.js';
 
 export type MapCollectionInitializationError = {
   error: Error;
@@ -93,6 +94,8 @@ class MapCollection extends Collection<VcsMap> {
    */
   private _layerCollection = new LayerCollection();
 
+  private _panoramaImageSelection = new PanoramaImageSelection(this);
+
   /**
    * Called, if a map fails to initialize. The map causing the error will be removed from the collection.
    */
@@ -156,6 +159,7 @@ class MapCollection extends Collection<VcsMap> {
     this.navigation.addController(
       new KeyboardController({ id: 'keyboard', target: this._target }),
     );
+    this.eventHandler.addPersistentInteraction(this._panoramaImageSelection);
   }
 
   /**
@@ -500,6 +504,7 @@ class MapCollection extends Collection<VcsMap> {
       l.destroy();
     });
     this._layerCollection.destroy();
+    this._panoramaImageSelection.destroy();
     this.eventHandler.destroy();
     this.mapActivated.destroy();
     this.clippingObjectManager.destroy();
