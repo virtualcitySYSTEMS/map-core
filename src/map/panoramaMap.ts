@@ -1,7 +1,9 @@
 import {
   type Cesium3DTileset,
   CesiumWidget,
+  JulianDate,
   PrimitiveCollection,
+  type Scene,
   ScreenSpaceEventHandler,
   ShadowMode,
 } from '@vcmap-cesium/engine';
@@ -60,6 +62,8 @@ export default class PanoramaMap extends VcsMap {
   private _panoramaDatasets = new PanoramaDatasetCollection();
 
   private _destroyCollection = true;
+
+  private _listeners: (() => void)[] = [];
 
   get screenSpaceEventHandler(): ScreenSpaceEventHandler {
     if (!this._screenSpaceEventHandler) {
@@ -133,6 +137,17 @@ export default class PanoramaMap extends VcsMap {
       this._imageView = createPanoramaImageView(this);
       this._destroyNavigation = createPanoramaNavigation(this);
       this.initialized = true;
+
+      this._listeners.push(
+        this._cesiumWidget.scene.postRender.addEventListener(
+          (eventScene: Scene, time: JulianDate) => {
+            this.postRender.raiseEvent({
+              map: this,
+              originalEvent: { scene: eventScene, time },
+            });
+          },
+        ),
+      );
     }
     await super.initialize();
   }
@@ -241,6 +256,11 @@ export default class PanoramaMap extends VcsMap {
     if (this._destroyCollection) {
       this._panoramaDatasets.destroy();
     }
+
+    this._listeners.forEach((cb) => {
+      cb();
+    });
+
     super.destroy();
   }
 }
