@@ -102,7 +102,7 @@ function setupImageView(
 
   camera.setView({
     destination: image.position,
-    orientation: image.orientation,
+    orientation: { ...image.orientation, heading: camera.heading },
   });
 
   const levelPixelPerRadians = new Array<number>(maxLevel); // XXX can be cached or pre calculated?

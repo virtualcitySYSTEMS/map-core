@@ -6,6 +6,7 @@ import {
   type Scene,
   ScreenSpaceEventHandler,
   ShadowMode,
+  Math as CesiumMath,
 } from '@vcmap-cesium/engine';
 import VcsMap, { VcsMapOptions } from './vcsMap.js';
 import { PanoramaImage } from '../panorama/panoramaImage.js';
@@ -197,6 +198,14 @@ export default class PanoramaMap extends VcsMap {
     );
 
     if (closestImage) {
+      if (viewpoint.heading != null) {
+        this._cesiumWidget.camera.setView({
+          orientation: {
+            heading: CesiumMath.toRadians(viewpoint.heading),
+          },
+        });
+      }
+
       this.setCurrentImage(closestImage);
     }
   }
