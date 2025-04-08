@@ -202,11 +202,11 @@ export function createPanoramaTileProvider(
           currentQueue.find((c) => tc.key === c.key),
       );
 
-      if (newTileCoordinates.length > 0) {
-        currentlyVisibleTiles = Object.fromEntries(
-          tileCoordinates.map((tile) => [tile.key, true]),
-        );
+      currentlyVisibleTiles = Object.fromEntries(
+        tileCoordinates.map((tile) => [tile.key, true]),
+      );
 
+      if (newTileCoordinates.length > 0) {
         if (currentQueue?.length) {
           currentQueue.splice(0, currentQueue.length, ...newTileCoordinates);
         } else {
