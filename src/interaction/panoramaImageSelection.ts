@@ -3,9 +3,9 @@ import AbstractInteraction, {
   InteractionEvent,
 } from './abstractInteraction.js';
 import { EventType } from './interactionType.js';
-import { panoramaFeature } from '../panorama/panoramaDataset.js';
 import PanoramaMap from '../map/panoramaMap.js';
 import type MapCollection from '../util/mapCollection.js';
+import { panoramaFeature } from '../layer/vectorSymbols.js';
 
 export default class PanoramaImageSelection extends AbstractInteraction {
   constructor(private _mapCollection: MapCollection) {

@@ -1,18 +1,18 @@
 import { parseBoolean, parseNumber } from '@vcsuite/parsers';
 import { Coordinate } from 'ol/coordinate.js';
 import { Point } from 'ol/geom.js';
-import { createOrUpdateFromCoordinate, buffer } from 'ol/extent.js';
+import { buffer, createOrUpdateFromCoordinate } from 'ol/extent.js';
 import VcsObject, { VcsObjectOptions } from '../vcsObject.js';
 import VcsEvent from '../vcsEvent.js';
 import FlatGeobufTileProvider from '../layer/tileProvider/flatGeobufTileProvider.js';
-import VectorTileLayer from '../layer/vectorTileLayer.js';
 import { markVolatile } from '../vcsModule.js';
 import LayerState from '../layer/layerState.js';
-import { PrimitiveOptionsType } from '../layer/vectorProperties.js';
 import { createPanoramaImageFromURL, PanoramaImage } from './panoramaImage.js';
 import { mercatorProjection, wgs84Projection } from '../util/projection.js';
 import Extent from '../util/extent.js';
 import { cartesian2DDistanceSquared } from '../util/math.js';
+import PanoramaDatasetLayer from '../layer/panoramaDatasetLayer.js';
+import { panoramaFeature } from '../layer/vectorSymbols.js';
 
 export type PanoramaDatasetOptions = VcsObjectOptions & {
   url: string;
@@ -27,8 +27,6 @@ export type PanoramaDatasetFeatureProperties = {
   time: string;
   dataset: PanoramaDataset;
 };
-
-export const panoramaFeature = Symbol('panoramaFeature');
 
 export default class PanoramaDataset extends VcsObject {
   static get className(): string {
@@ -51,7 +49,7 @@ export default class PanoramaDataset extends VcsObject {
 
   readonly tileProvider: FlatGeobufTileProvider;
 
-  readonly vectorTileLayer: VectorTileLayer;
+  readonly layer: PanoramaDatasetLayer;
 
   readonly stateChanged: VcsEvent<LayerState>;
 
@@ -81,24 +79,9 @@ export default class PanoramaDataset extends VcsObject {
       });
     });
 
-    this.vectorTileLayer = new VectorTileLayer({
-      tileProvider: this.tileProvider,
-      vectorProperties: {
-        altitudeMode: 'absolute',
-        primitiveOptions: {
-          type: PrimitiveOptionsType.CYLINDER,
-          geometryOptions: {
-            topRadius: 1,
-            bottomRadius: 1,
-            length: 0.01,
-          },
-          offset: [0, 0, this.cameraOffset],
-          depthFailColor: 'rgba(244,0,130,0.91)',
-        },
-      },
-    });
-    markVolatile(this.vectorTileLayer);
-    this.stateChanged = this.vectorTileLayer.stateChanged;
+    this.layer = new PanoramaDatasetLayer(this);
+    markVolatile(this.layer);
+    this.stateChanged = this.layer.stateChanged;
 
     this.activeOnStartup = parseBoolean(
       options.activeOnStartup,
@@ -118,19 +101,19 @@ export default class PanoramaDataset extends VcsObject {
   }
 
   get state(): LayerState {
-    return this.vectorTileLayer.state;
+    return this.layer.state;
   }
 
   get active(): boolean {
-    return this.vectorTileLayer.active;
+    return this.layer.active;
   }
 
   activate(): Promise<void> {
-    return this.vectorTileLayer.activate();
+    return this.layer.activate();
   }
 
   deactivate(): void {
-    this.vectorTileLayer.deactivate();
+    this.layer.deactivate();
   }
 
   createPanoramaImage(name: string): Promise<PanoramaImage> {

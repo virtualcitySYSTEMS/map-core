@@ -2,7 +2,7 @@ import { PrimitiveCollection, SplitDirection } from '@vcmap-cesium/engine';
 import VectorSource from 'ol/source/Vector.js';
 import StyleItem from '../../style/styleItem.js';
 import LayerImplementation from '../layerImplementation.js';
-import {
+import type {
   VectorTileImplementation,
   VectorTileImplementationOptions,
 } from '../vectorTileLayer.js';
@@ -19,7 +19,6 @@ import VectorProperties from '../vectorProperties.js';
 import { cartesianToMercator } from '../../util/math.js';
 import { mercatorProjection } from '../../util/projection.js';
 import Extent from '../../util/extent.js';
-import { panoramaFeature } from '../../panorama/panoramaDataset.js';
 
 export default class VectorTilePanoramaImpl
   extends LayerImplementation<PanoramaMap>
@@ -29,7 +28,7 @@ export default class VectorTilePanoramaImpl
     return 'VectorTilePanoramaImpl';
   }
 
-  private _primitiveCollection = new PrimitiveCollection();
+  protected _primitiveCollection = new PrimitiveCollection();
 
   private _imageChangedLister: () => void;
 
@@ -45,7 +44,7 @@ export default class VectorTilePanoramaImpl
 
   private _context: VectorContext | null = null;
 
-  private _currentImage: PanoramaImage | undefined;
+  protected _currentImage: PanoramaImage | undefined;
 
   constructor(map: PanoramaMap, options: VectorTileImplementationOptions) {
     super(map, options);
@@ -89,16 +88,7 @@ export default class VectorTilePanoramaImpl
           )
           .then((features) => {
             if (this._currentImage === image) {
-              const excludeCurrentImage = features.filter((f) => {
-                const panoramaProps = f[panoramaFeature];
-                if (
-                  panoramaProps?.dataset.tileProvider === this._tileProvider
-                ) {
-                  return panoramaProps?.name !== image.name;
-                }
-                return true;
-              });
-              this.source.addFeatures(excludeCurrentImage);
+              this.source.addFeatures(features);
             }
           })
           .catch(() => {
@@ -134,9 +124,9 @@ export default class VectorTilePanoramaImpl
   }
 
   async activate(): Promise<void> {
+    await super.activate();
     this._primitiveCollection.show = true;
     this._sourceVectorContextSync?.activate();
-    await super.activate();
     this._setImage(this.map.currentPanoramaImage);
   }
 

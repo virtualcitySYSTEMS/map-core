@@ -51,6 +51,7 @@ import StyleItem from '../style/styleItem.js';
 import VectorTileCesiumImpl from './cesium/vectorTileCesiumImpl.js';
 import VectorTilePanoramaImpl from './panorama/vectorTilePanoramaImpl.js';
 import PanoramaMap from '../map/panoramaMap.js';
+import type LayerImplementation from './layerImplementation.js';
 
 /**
  * synchronizes featureVisibility Symbols on the feature;
@@ -129,16 +130,21 @@ export interface VectorTileImplementation extends FeatureLayerImplementation {
   updateTiles(tiles: string[], featureVisibilityChange: boolean): void;
 }
 
+export type VectorTileImpls =
+  | VectorTileOpenlayersImpl
+  | VectorRasterTileCesiumImpl
+  | VectorTileCesiumImpl
+  | VectorTilePanoramaImpl;
+
 /**
  * VectorTileLayer Layer for tiled vector Data. Can be connected to data with a TileProvider
  * @group Layer
  */
-class VectorTileLayer extends FeatureLayer<
-  | VectorTileOpenlayersImpl
-  | VectorRasterTileCesiumImpl
-  | VectorTileCesiumImpl
-  | VectorTilePanoramaImpl
-> {
+class VectorTileLayer<
+  I extends LayerImplementation<VcsMap> &
+    FeatureLayerImplementation &
+    VectorTileImplementation = VectorTileImpls,
+> extends FeatureLayer<I | VectorTileImpls> {
   static get className(): string {
     return 'VectorTileLayer';
   }
@@ -458,14 +464,7 @@ class VectorTileLayer extends FeatureLayer<
     };
   }
 
-  createImplementationsForMap(
-    map: VcsMap,
-  ): (
-    | VectorTileCesiumImpl
-    | VectorRasterTileCesiumImpl
-    | VectorTileOpenlayersImpl
-    | VectorTilePanoramaImpl
-  )[] {
+  createImplementationsForMap(map: VcsMap): (I | VectorTileImpls)[] {
     if (map instanceof CesiumMap) {
       return [
         this._renderer === 'image'

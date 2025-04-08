@@ -25,6 +25,7 @@ import {
   doNotTransform,
   obliqueGeometry,
   originalFeatureSymbol,
+  panoramaFeature,
   primitives,
 } from '../layer/vectorSymbols.js';
 import { vcsLayerName } from '../layer/layerSymbols.js';
@@ -53,10 +54,7 @@ import {
 import { validityPlaceholder } from '../util/editor/interactions/createPolygonInteraction.js';
 import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
 import { PrimitiveType } from '../util/featureconverter/convert.js';
-import {
-  PanoramaDatasetFeatureProperties,
-  panoramaFeature,
-} from '../panorama/panoramaDataset.js';
+import { PanoramaDatasetFeatureProperties } from '../panorama/panoramaDataset.js';
 
 declare module 'ol/geom.js' {
   interface Geometry {

@@ -44,3 +44,8 @@ export const createSync: unique symbol = Symbol('createSync');
  * Can be present on ol/Feature to indicate the current primitives / billboards / models / labels associated with this feature
  */
 export const primitives: unique symbol = Symbol('primitives');
+
+/**
+ * Attached to all panorama features with the properties required to create a panorama image
+ */
+export const panoramaFeature = Symbol('panoramaFeature');

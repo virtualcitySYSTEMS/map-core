@@ -269,10 +269,10 @@ class VcsApp {
       PanoramaDataset,
     );
     this._panoramaDatasets.added.addEventListener((dataset) => {
-      this._layers.add(dataset.vectorTileLayer);
+      this._layers.add(dataset.layer);
     });
     this._panoramaDatasets.removed.addEventListener((dataset) => {
-      this._layers.remove(dataset.vectorTileLayer);
+      this._layers.remove(dataset.layer);
     });
 
     this._categoryClassRegistry = new OverrideClassRegistry(
