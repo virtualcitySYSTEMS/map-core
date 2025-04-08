@@ -17,7 +17,10 @@ export type PanoramaTileProvider = {
   readonly loading: boolean;
   tileLoaded: VcsEvent<PanoramaTile>;
   tileError: VcsEvent<{ tileCoordinate: TileCoordinate; error: Error }>;
-  allTilesLoaded: VcsEvent<void>;
+  /**
+   * Raised with true, if we start loading new data. raised with false, if all tiles are loaded.
+   */
+  loadingState: VcsEvent<boolean>;
 };
 
 class PanoramaTileCache extends LRUCache<PanoramaTile> {
@@ -100,7 +103,6 @@ export function createPanoramaTileProvider(
 ): PanoramaTileProvider {
   const cache = new PanoramaTileCache(maxCacheSize);
   let currentlyVisibleTiles: Record<string, boolean> = {};
-  let abortController: AbortController | null = null;
   let loading = false;
 
   const tileLoaded = new VcsEvent<PanoramaTile>();
@@ -108,7 +110,7 @@ export function createPanoramaTileProvider(
     tileCoordinate: TileCoordinate;
     error: Error;
   }>();
-  const allTilesLoaded = new VcsEvent<void>();
+  const loadingState = new VcsEvent<boolean>();
 
   const destroy = (): void => {
     cache.clear();
@@ -116,7 +118,6 @@ export function createPanoramaTileProvider(
 
   const loadTile = async (
     tileCoordinate: TileCoordinate,
-    abort: AbortSignal,
   ): Promise<PanoramaTile | null | Error> => {
     const levelImage = levelImages[tileCoordinate.level - minLevel];
     if (levelImage) {
@@ -131,7 +132,6 @@ export function createPanoramaTileProvider(
         //     // @ts-ignore
         //     createImageBitmap(new Blob([buff]), 0, 0, tileSize[0], tileSize[1]),
         // },
-        abort,
       );
 
       return createPanoramaTile(
@@ -144,20 +144,17 @@ export function createPanoramaTileProvider(
     return null;
   };
 
-  const loadTilesQueue = (
-    tileCoordinates: TileCoordinate[],
-    abortSignal: AbortSignal,
-  ): void => {
-    let currentTileIndex = tileCoordinates.length - 1;
+  let currentQueue: TileCoordinate[] = [];
+  const loadTilesQueue = (tileCoordinates: TileCoordinate[]): void => {
+    currentQueue = tileCoordinates.slice();
     async function* loadNextTileGenerator(): AsyncGenerator<void> {
-      while (currentTileIndex >= 0 && !abortSignal.aborted) {
-        const tileCoordinate = tileCoordinates[currentTileIndex];
-        currentTileIndex -= 1;
+      while (currentQueue?.length) {
+        const tileCoordinate = currentQueue.pop()!;
         if (cache.containsKey(tileCoordinate.key)) {
           tileLoaded.raiseEvent(cache.get(tileCoordinate.key));
         } else {
           // eslint-disable-next-line no-await-in-loop
-          const result = await loadTile(tileCoordinate, abortSignal);
+          const result = await loadTile(tileCoordinate);
           if (cache.containsKey(tileCoordinate.key)) {
             // cached in a previous iteration but got aborted too late.
             tileLoaded.raiseEvent(cache.get(tileCoordinate.key));
@@ -187,35 +184,43 @@ export function createPanoramaTileProvider(
 
     Promise.all(promises)
       .then(() => {
-        if (!abortSignal.aborted) {
-          allTilesLoaded.raiseEvent();
-          loading = false;
-        }
+        loadingState.raiseEvent(false);
+        loading = false;
       })
       .catch((e) => {
-        if ((e as Error).name !== 'AbortError') {
-          getLogger('PanoramaTileProvider').warning('Error loading tiles');
-          getLogger('PanoramaTileProvider').warning(String(e));
-        }
+        getLogger('PanoramaTileProvider').warning('Error loading tiles');
+        getLogger('PanoramaTileProvider').warning(String(e));
       });
   };
 
   return {
     loadTiles(tileCoordinates: TileCoordinate[]): void {
       loading = true;
-      currentlyVisibleTiles = Object.fromEntries(
-        tileCoordinates.map((tile) => [tile.key, true]),
+      const newTileCoordinates = tileCoordinates.filter(
+        (tc) =>
+          !currentlyVisibleTiles[tc.key] ||
+          currentQueue.find((c) => tc.key === c.key),
       );
-      abortController?.abort();
-      abortController = new AbortController();
-      loadTilesQueue(tileCoordinates, abortController.signal);
+
+      if (newTileCoordinates.length > 0) {
+        currentlyVisibleTiles = Object.fromEntries(
+          tileCoordinates.map((tile) => [tile.key, true]),
+        );
+
+        if (currentQueue?.length) {
+          currentQueue.splice(0, currentQueue.length, ...newTileCoordinates);
+        } else {
+          loadingState.raiseEvent(true);
+          loadTilesQueue(newTileCoordinates);
+        }
+      }
     },
     get loading(): boolean {
       return loading;
     },
     tileLoaded,
     tileError,
-    allTilesLoaded,
+    loadingState,
     destroy,
   };
 }
