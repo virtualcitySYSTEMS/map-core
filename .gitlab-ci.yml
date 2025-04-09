@@ -45,6 +45,14 @@ type-check:
   script:
     - npm run type-check
 
+circular-check:
+  <<: *after_build_definition
+  stage: test
+  only:
+    - /^(feature-.*|hotfix-.*|main|release-.*)$/
+  script:
+    - npm run circular-check
+
 audit:
   <<: *after_build_definition
   stage: test

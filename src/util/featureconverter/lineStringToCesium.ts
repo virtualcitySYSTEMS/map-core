@@ -18,10 +18,10 @@ import { ArrowEnd } from '../../style/arrowStyle.js';
 import { getCartesianBearing, getCartesianPitch } from '../math.js';
 import { getPrimitiveOptions } from './pointHelpers.js';
 import type VectorProperties from '../../layer/vectorProperties.js';
-import { getWgs84CoordinatesForPoint } from './pointToCesium.js';
 import type { ConvertedItem } from './convert.js';
 import type { VectorHeightInfo } from './vectorHeightInfo.js';
 import {
+  getWgs84CoordinatesForPoint,
   getHeightInfo,
   mercatorToCartesianTransformerForHeightInfo,
   isAbsoluteHeightReference,

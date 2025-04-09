@@ -1,16 +1,16 @@
 import type {
-  HeightReference,
   Billboard,
-  Scene,
+  HeightReference,
   Label,
+  Scene,
 } from '@vcmap-cesium/engine';
 import {
+  Cartesian2,
   Cartesian3,
   Color,
-  VerticalOrigin,
-  Cartesian2,
-  LabelStyle,
   HorizontalOrigin,
+  LabelStyle,
+  VerticalOrigin,
 } from '@vcmap-cesium/engine';
 import { Icon, type Style } from 'ol/style.js';
 import type { Coordinate } from 'ol/coordinate.js';
@@ -30,8 +30,8 @@ import type {
   VectorHeightInfo,
 } from './vectorHeightInfo.js';
 import {
+  getWgs84CoordinatesForPoint,
   isClampedHeightReference,
-  mercatorToWgs84TransformerForHeightInfo,
 } from './vectorHeightInfo.js';
 import type { CesiumGeometryOption } from './vectorGeometryFactory.js';
 
@@ -233,36 +233,6 @@ export function getLineGeometries(
   );
   const linePositions = [position, secondPoint];
   return createLineGeometries({ positions: linePositions }, heightInfo, style);
-}
-
-/**
- * Sets the correct height on the wgs84Coords depending on the height info
- * @param geometry
- * @param heightInfo
- */
-export function getWgs84CoordinatesForPoint(
-  geometry: Point,
-  heightInfo: VectorHeightInfo,
-): Coordinate {
-  const transformer = mercatorToWgs84TransformerForHeightInfo(heightInfo);
-  const wgs84Coords = transformer(geometry.getCoordinates());
-  if (!isClampedHeightReference(heightInfo.heightReference)) {
-    // points get rendered at the top of the extrusion. we must add this to the Z value
-    const extrusionHeight = (
-      heightInfo as VectorHeightInfo<
-        RelativeHeightReference | HeightReference.NONE
-      >
-    ).storeyHeightsAboveGround.reduce(
-      (sum, currentValue) => sum + currentValue,
-      0,
-    );
-
-    if (extrusionHeight) {
-      wgs84Coords[2] += extrusionHeight;
-    }
-  }
-
-  return wgs84Coords;
 }
 
 export async function getPointPrimitives(

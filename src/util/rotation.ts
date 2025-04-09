@@ -8,8 +8,8 @@ import {
 } from '@vcmap-cesium/engine';
 import Viewpoint from './viewpoint.js';
 import type VcsApp from '../vcsApp.js';
-import { CesiumMap } from '../../index.js';
 import Projection from './projection.js';
+import CesiumMap from '../map/cesiumMap.js';
 
 /**
  * Unique symbol for rotation.

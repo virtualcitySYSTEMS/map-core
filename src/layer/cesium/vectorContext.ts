@@ -1,9 +1,9 @@
 import type {
+  Entity,
+  Label,
   Primitive,
   Scene,
   SplitDirection,
-  Entity,
-  Label,
 } from '@vcmap-cesium/engine';
 import {
   Billboard,
@@ -26,7 +26,10 @@ import type {
   PrimitiveType,
 } from '../../util/featureconverter/convert.js';
 import convert from '../../util/featureconverter/convert.js';
-import { primitives as primitivesSymbol } from '../vectorSymbols.js';
+import {
+  primitives as primitivesSymbol,
+  scaleSymbol,
+} from '../vectorSymbols.js';
 
 export function setReferenceForPicking(
   feature: Feature,
@@ -87,8 +90,6 @@ export function setSplitDirectionOnPrimitives(
     }
   }
 }
-
-export const scaleSymbol: unique symbol = Symbol('Scale');
 
 /**
  * self scaling scratch

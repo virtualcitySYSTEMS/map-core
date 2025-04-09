@@ -15,7 +15,6 @@ import { Feature } from 'ol';
 import {
   circleFromCenterRadius,
   convertGeometryToPolygon,
-  createAbsoluteFeature,
   from2Dto3DLayout,
   from3Dto2DLayout,
   getFlatCoordinateReferences,
@@ -31,6 +30,7 @@ import {
   wgs84Projection,
 } from '../../../index.js';
 import { arrayCloseTo } from '../helpers/helpers.js';
+import { createAbsoluteFeature } from '../../../src/util/createAbsoluteFeature.js';
 
 describe('util.geometryHelpers', () => {
   describe('convertGeometryToPolygon', () => {

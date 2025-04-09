@@ -27,7 +27,7 @@ import type { Feature } from 'ol/index.js';
 import { RegularShape, type Style } from 'ol/style.js';
 import { asColorLike } from 'ol/colorlike.js';
 import type { Coordinate } from 'ol/coordinate.js';
-import { createSync } from '../../layer/vectorSymbols.js';
+import { createSync, scaleSymbol } from '../../layer/vectorSymbols.js';
 import type { VectorPropertiesPrimitiveOptions } from '../../layer/vectorProperties.js';
 import type VectorProperties from '../../layer/vectorProperties.js';
 import {
@@ -44,7 +44,6 @@ import type {
   VectorHeightInfo,
 } from './vectorHeightInfo.js';
 import { isRelativeHeightReference } from './vectorHeightInfo.js';
-import { scaleSymbol } from '../../layer/cesium/vectorContext.js';
 
 function makeOffsetAutoScalePrimitive(
   primitive: Primitive | Model,

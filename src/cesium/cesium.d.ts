@@ -5,7 +5,6 @@
 // eslint-disable-next-line max-classes-per-file
 import type { StyleLike } from 'ol/style/Style.js';
 import type VectorStyleItem from '../style/vectorStyleItem.js';
-import type { scaleSymbol } from '../layer/cesium/vectorContext.js';
 import type { allowPicking, vcsLayerName } from '../layer/layerSymbols.js';
 import type {
   globalHidden,
@@ -21,6 +20,7 @@ import type {
 } from '../layer/cesium/cesiumTilesetCesiumImpl.js';
 import type { isTiledFeature } from '../layer/featureStoreLayer.js';
 import type { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
+import { scaleSymbol } from '../layer/vectorSymbols.js';
 
 declare module '@vcmap-cesium/engine' {
   interface Scene {

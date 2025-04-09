@@ -1,3 +1,10 @@
+### 6.2.0
+
+#### Changes
+
+- Updated eslint to eslint 9 & vcs eslint config 4.
+- Uses `madge` to detect circular dependencies in the code base.
+
 ### 6.1.5
 
 - Fixes an issue in the vectorClusterGroup, where the toJSON function would not handle the vectorProperties corrrectly

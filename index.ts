@@ -686,7 +686,6 @@ export {
   getBillboardOptions,
   getLabelOptions,
   validatePoint,
-  getWgs84CoordinatesForPoint,
   getPointPrimitives,
 } from './src/util/featureconverter/pointToCesium.js';
 export {
@@ -711,6 +710,7 @@ export {
   isAbsoluteHeightReference,
   mercatorToWgs84TransformerForHeightInfo,
   mercatorToCartesianTransformerForHeightInfo,
+  getWgs84CoordinatesForPoint,
 } from './src/util/featureconverter/vectorHeightInfo.js';
 export type {
   PolygonGeometryOptions,
@@ -755,7 +755,6 @@ export {
   from3Dto2DLayout,
   drapeGeometryOnSurface,
   placeGeometryOnSurface,
-  createAbsoluteFeature,
 } from './src/util/geometryHelpers.js';
 export { default as IndexedCollection } from './src/util/indexedCollection.js';
 export { isMobile } from './src/util/isMobile.js';
@@ -912,3 +911,4 @@ export {
 export type { ControllerOptions } from './src/map/navigation/controller/controller.js';
 export { default as Controller } from './src/map/navigation/controller/controller.js';
 export { default as KeyboardController } from './src/map/navigation/controller/keyboardController.js';
+export { createAbsoluteFeature } from './src/util/createAbsoluteFeature.js';

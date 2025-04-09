@@ -1,4 +1,4 @@
-import type { Geometry, SimpleGeometry } from 'ol/geom.js';
+import type { Geometry, Point, SimpleGeometry } from 'ol/geom.js';
 import type { Coordinate } from 'ol/coordinate.js';
 import { Cartesian3, HeightReference } from '@vcmap-cesium/engine';
 import type { GeometryLayout } from 'ol/geom/Geometry.js';
@@ -388,4 +388,34 @@ export function mercatorToCartesianTransformerForHeightInfo(
       wgs84Coords[2],
     );
   };
+}
+
+/**
+ * Sets the correct height on the wgs84Coords depending on the height info
+ * @param geometry
+ * @param heightInfo
+ */
+export function getWgs84CoordinatesForPoint(
+  geometry: Point,
+  heightInfo: VectorHeightInfo,
+): Coordinate {
+  const transformer = mercatorToWgs84TransformerForHeightInfo(heightInfo);
+  const wgs84Coords = transformer(geometry.getCoordinates());
+  if (!isClampedHeightReference(heightInfo.heightReference)) {
+    // points get rendered at the top of the extrusion. we must add this to the Z value
+    const extrusionHeight = (
+      heightInfo as VectorHeightInfo<
+        RelativeHeightReference | HeightReference.NONE
+      >
+    ).storeyHeightsAboveGround.reduce(
+      (sum, currentValue) => sum + currentValue,
+      0,
+    );
+
+    if (extrusionHeight) {
+      wgs84Coords[2] += extrusionHeight;
+    }
+  }
+
+  return wgs84Coords;
 }

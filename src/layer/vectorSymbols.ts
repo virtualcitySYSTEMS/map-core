@@ -44,3 +44,8 @@ export const createSync: unique symbol = Symbol('createSync');
  * Can be present on ol/Feature to indicate the current primitives / billboards / models / labels associated with this feature
  */
 export const primitives: unique symbol = Symbol('primitives');
+
+/**
+ * An INTERNAL symbol used to keep track of the scale of scaled feature primitives.
+ */
+export const scaleSymbol: unique symbol = Symbol('Scale');
