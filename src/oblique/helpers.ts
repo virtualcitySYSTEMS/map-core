@@ -17,10 +17,8 @@ import {
   cartesian2DDistance,
   cartesian2DDistanceSquared,
 } from '../util/math.js';
-import Projection, {
-  mercatorProjection,
-  wgs84Projection,
-} from '../util/projection.js';
+import type Projection from '../util/projection.js';
+import { mercatorProjection, wgs84Projection } from '../util/projection.js';
 import type ObliqueImage from './obliqueImage.js';
 import { isSameOrigin } from '../util/urlHelpers.js';
 

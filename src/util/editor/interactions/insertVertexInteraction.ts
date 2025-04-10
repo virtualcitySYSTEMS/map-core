@@ -1,8 +1,7 @@
 import { LinearRing, type LineString, type Polygon } from 'ol/geom.js';
 import type { Feature } from 'ol/index.js';
-import AbstractInteraction, {
-  EventAfterEventHandler,
-} from '../../../interaction/abstractInteraction.js';
+import type { EventAfterEventHandler } from '../../../interaction/abstractInteraction.js';
+import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import {
   EventType,
   ModificationKeyType,
@@ -18,7 +17,7 @@ import {
 import VcsEvent from '../../../vcsEvent.js';
 import { is2DLayout } from '../../geometryHelpers.js';
 import { isClampedHeightReference } from '../../featureconverter/vectorHeightInfo.js';
-import VectorProperties from '../../../layer/vectorProperties.js';
+import type VectorProperties from '../../../layer/vectorProperties.js';
 
 export type VertexInsertedEvent = {
   vertex: Vertex;

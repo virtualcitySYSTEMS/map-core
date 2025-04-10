@@ -283,11 +283,13 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
       copyClippingPlanesToCollection(source, result);
       expect(result.unionClippingRegions).to.be.true;
     });
+
     it('should assign the same edgeWidth property', () => {
       source.edgeWidth = 2.0;
       copyClippingPlanesToCollection(source, result);
       expect(result.edgeWidth).to.equal(2.0);
     });
+
     it('should clone the edgeColor Property', () => {
       source.edgeColor = Color.RED;
       copyClippingPlanesToCollection(source, result);
@@ -642,6 +644,7 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
 
   describe('getClippingOptions', () => {
     let feature;
+
     describe('polygon', () => {
       beforeEach(() => {
         feature = new Feature({ geometry: new Polygon([[]]) });

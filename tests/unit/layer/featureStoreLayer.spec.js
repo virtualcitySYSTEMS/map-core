@@ -161,6 +161,7 @@ describe('FeatureStoreLayer', () => {
     describe('layer cancelled', () => {
       let promise;
       let resolve;
+
       beforeEach(() => {
         promise = new Promise((res) => {
           resolve = res;
@@ -385,6 +386,7 @@ describe('FeatureStoreLayer', () => {
 
   describe('switchStaticFeatureToDynamic', () => {
     let feature;
+
     beforeEach(() => {
       feature = {
         state: 'static',

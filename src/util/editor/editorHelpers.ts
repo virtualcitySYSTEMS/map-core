@@ -2,8 +2,9 @@ import Point from 'ol/geom/Point.js';
 import Feature from 'ol/Feature.js';
 import type { Coordinate } from 'ol/coordinate.js';
 import type { Geometry } from 'ol/geom.js';
-import { GeometryLayout } from 'ol/geom/Geometry.js';
+import type { GeometryLayout } from 'ol/geom/Geometry.js';
 
+import type { Cesium3DTileFeature, Scene, Camera } from '@vcmap-cesium/engine';
 import {
   Cartesian2,
   Cartesian3,
@@ -12,9 +13,6 @@ import {
   Ray,
   IntersectionTests,
   Cartographic,
-  Cesium3DTileFeature,
-  type Scene,
-  type Camera,
 } from '@vcmap-cesium/engine';
 
 import { getLogger } from '@vcsuite/logger';
@@ -28,10 +26,9 @@ import {
   doNotTransform,
 } from '../../layer/vectorSymbols.js';
 import type VcsMap from '../../map/vcsMap.js';
-import VectorProperties, {
-  PropertyChangedKey,
-} from '../../layer/vectorProperties.js';
-import VectorLayer from '../../layer/vectorLayer.js';
+import type { PropertyChangedKey } from '../../layer/vectorProperties.js';
+import type VectorProperties from '../../layer/vectorProperties.js';
+import type VectorLayer from '../../layer/vectorLayer.js';
 
 export type Vertex = Feature<Point> & { [vertexIndexSymbol]: number };
 
@@ -56,10 +53,11 @@ export const vectorPropertyChangeKeys: PropertyChangedKey[] = [
   'heightAboveGround',
 ];
 
-function assignVectorProperty<
-  K extends PropertyChangedKey,
-  V extends VectorProperties[K],
->(props: VectorProperties, key: K, value: V): void {
+function assignVectorProperty<K extends PropertyChangedKey>(
+  props: VectorProperties,
+  key: K,
+  value: VectorProperties[K],
+): void {
   props[key] = value;
 }
 
@@ -373,6 +371,8 @@ export async function drapeGeometryOnTerrain(
     'drapeGeometryOnTerrain is deprecated and will be removed in 6.1. Use drapeGeometryOnSurface instead.',
   );
   if (map instanceof CesiumMap) {
+    // oll type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const coordinates = geometry.getCoordinates() as any[];
     const flats = getFlatCoordinateReferences(geometry, coordinates);
     await map.getHeightFromTerrain(flats);
@@ -394,6 +394,8 @@ export async function placeGeometryOnTerrain(
     'place geometry on terrain is deprecated and will be removed in 6.1. Use placeGeometryOnSurface instead.',
   );
   if (map instanceof CesiumMap) {
+    // ol type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const coordinates = geometry.getCoordinates() as any[];
     const flats = getFlatCoordinateReferences(geometry, coordinates);
     await map.getHeightFromTerrain(flats);

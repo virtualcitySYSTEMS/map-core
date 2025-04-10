@@ -1,9 +1,7 @@
-import Controller, { ControllerOptions } from './controller.js';
-import {
-  ControllerInput,
-  getZeroInput,
-  clearInput,
-} from './controllerInput.js';
+import type { ControllerOptions } from './controller.js';
+import Controller from './controller.js';
+import type { ControllerInput } from './controllerInput.js';
+import { getZeroInput, clearInput } from './controllerInput.js';
 
 export enum DIRECTIONS {
   FORWARD = 0,
@@ -102,7 +100,9 @@ class KeyboardController extends Controller {
       }
 
       const clicked = (): void => this._target?.focus();
-      const focusin = (): void => this._setupKeyListener();
+      const focusin = (): void => {
+        this._setupKeyListener();
+      };
       const focusout = (): void => {
         this._removeKeyListeners();
         this._removeKeyListeners = (): void => {};

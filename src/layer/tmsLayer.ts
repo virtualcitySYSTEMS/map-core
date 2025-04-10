@@ -1,15 +1,15 @@
 import type { Size } from 'ol/size.js';
-import RasterLayer, {
+import type {
   RasterLayerImplementationOptions,
   RasterLayerOptions,
-  TilingScheme,
 } from './rasterLayer.js';
+import RasterLayer, { TilingScheme } from './rasterLayer.js';
 import OpenlayersMap from '../map/openlayersMap.js';
 import CesiumMap from '../map/cesiumMap.js';
 import TmsOpenlayersImpl from './openlayers/tmsOpenlayersImpl.js';
 import TmsCesiumImpl from './cesium/tmsCesiumImpl.js';
 import { layerClassRegistry } from '../classRegistry.js';
-import VcsMap from '../map/vcsMap.js';
+import type VcsMap from '../map/vcsMap.js';
 
 export type TMSOptions = RasterLayerOptions & {
   format?: string;

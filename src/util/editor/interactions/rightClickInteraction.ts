@@ -1,6 +1,5 @@
-import AbstractInteraction, {
-  InteractionEvent,
-} from '../../../interaction/abstractInteraction.js';
+import type { InteractionEvent } from '../../../interaction/abstractInteraction.js';
+import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import {
   EventType,
   ModificationKeyType,

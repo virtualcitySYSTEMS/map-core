@@ -1,12 +1,14 @@
-import Style, { StyleFunction } from 'ol/style/Style.js';
+import type { StyleFunction } from 'ol/style/Style.js';
+import Style from 'ol/style/Style.js';
 import Icon from 'ol/style/Icon.js';
-import Feature from 'ol/Feature.js';
+import type Feature from 'ol/Feature.js';
 import { check, is, oneOf } from '@vcsuite/check';
 import { parseInteger, parseNumber } from '@vcsuite/parsers';
 import deepEqual from 'fast-deep-equal';
 import { originalFeatureSymbol } from '../layer/vectorSymbols.js';
 import { highlighted } from '../layer/featureVisibility.js';
-import VcsObject, { VcsObjectOptions } from '../vcsObject.js';
+import type { VcsObjectOptions } from '../vcsObject.js';
+import VcsObject from '../vcsObject.js';
 import VcsEvent from '../vcsEvent.js';
 import type VectorLayer from '../layer/vectorLayer.js';
 import { renderTemplate } from '../util/vcsTemplate.js';
@@ -41,7 +43,10 @@ export default class VectorClusterStyleItem extends VcsObject {
     return 'VectorClusterStyleItem';
   }
 
-  static getDefaultOptions(): Required<VectorClusterStyleItemOptions> {
+  static getDefaultOptions(): Required<
+    Omit<VectorClusterStyleItemOptions, 'templateContext'>
+  > &
+    Pick<VectorClusterStyleItemOptions, 'templateContext'> {
     return {
       type: 'VectorClusterStyleItem',
       name: '',
@@ -69,7 +74,7 @@ export default class VectorClusterStyleItem extends VcsObject {
         ' </text>',
         '</svg>',
       ].join(''),
-      templateContext: {},
+      templateContext: undefined,
       breaks: [2, 3, 4, 5, 10, 15, 20, 25],
       zeroScaleOffset: 3,
       scaleFactor: 0.08,
@@ -342,7 +347,7 @@ export default class VectorClusterStyleItem extends VcsObject {
       breaks.length !== defaultOptions.breaks.length ||
       breaks.some((b) => !defaultOptions.breaks.includes(b))
     ) {
-      config.breaks = breaks;
+      config.breaks = [...breaks];
     }
     if (this.zeroScaleOffset !== defaultOptions.zeroScaleOffset) {
       config.zeroScaleOffset = this.zeroScaleOffset;

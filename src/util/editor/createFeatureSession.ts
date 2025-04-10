@@ -3,10 +3,9 @@ import { Feature } from 'ol';
 import type { Geometry, LineString, Polygon } from 'ol/geom.js';
 import { unByKey } from 'ol/Observable.js';
 import VcsEvent from '../../vcsEvent.js';
+import type { EditorSession, GeometryToType } from './editorSessionHelpers.js';
 import {
   setupPickingBehavior,
-  EditorSession,
-  GeometryToType,
   GeometryType,
   SessionType,
   setupInteractionChain,
@@ -23,11 +22,12 @@ import { createSync } from '../../layer/vectorSymbols.js';
 import geometryIsValid from './validateGeoemetry.js';
 import ObliqueMap from '../../map/obliqueMap.js';
 import { cursorMap } from './interactions/editGeometryMouseOverInteraction.js';
-import { AltitudeModeType } from '../../layer/vectorProperties.js';
+import type { AltitudeModeType } from '../../layer/vectorProperties.js';
 import CreationSnapping from './interactions/creationSnapping.js';
 import { syncScratchLayerVectorProperties } from './editorHelpers.js';
 import LayerSnapping from './interactions/layerSnapping.js';
-import { SnapType, snapTypes } from './snappingHelpers.js';
+import type { SnapType } from './snappingHelpers.js';
+import { snapTypes } from './snappingHelpers.js';
 import SegmentLengthInteraction from './interactions/segmentLengthInteraction.js';
 
 export type CreateFeatureSession<T extends GeometryType> =
@@ -45,14 +45,14 @@ type InteractionOfGeometryType<T extends GeometryType> =
   T extends GeometryType.Point
     ? CreatePointInteraction
     : T extends GeometryType.Polygon
-    ? CreatePolygonInteraction
-    : T extends GeometryType.LineString
-    ? CreateLineStringInteraction
-    : T extends GeometryType.BBox
-    ? CreateBBoxInteraction
-    : T extends GeometryType.Circle
-    ? CreateCircleInteraction
-    : never;
+      ? CreatePolygonInteraction
+      : T extends GeometryType.LineString
+        ? CreateLineStringInteraction
+        : T extends GeometryType.BBox
+          ? CreateBBoxInteraction
+          : T extends GeometryType.Circle
+            ? CreateCircleInteraction
+            : never;
 
 function createInteractionForGeometryType<T extends GeometryType>(
   geometryType: T,

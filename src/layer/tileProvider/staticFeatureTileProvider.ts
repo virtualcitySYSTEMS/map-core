@@ -1,5 +1,6 @@
-import { Feature } from 'ol';
-import TileProvider, { TileProviderOptions } from './tileProvider.js';
+import type { Feature } from 'ol';
+import type { TileProviderOptions } from './tileProvider.js';
+import TileProvider from './tileProvider.js';
 
 export type StaticFeatureTileProviderOptions = Omit<
   TileProviderOptions,
@@ -28,7 +29,6 @@ export default class StaticFeatureTileProvider extends TileProvider {
     this._features = options.features || defaultOptions.features;
   }
 
-  // eslint-disable-next-line no-unused-vars
   loader(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _x: number,

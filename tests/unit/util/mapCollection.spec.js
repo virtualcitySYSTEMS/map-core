@@ -119,6 +119,7 @@ describe('MapCollection', () => {
     describe('which was the active map', () => {
       let mapCollection;
       let map;
+
       before(async () => {
         mapCollection = new MapCollection();
         map = await getOpenlayersMap();

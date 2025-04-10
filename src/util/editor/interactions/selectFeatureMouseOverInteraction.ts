@@ -1,7 +1,8 @@
-import AbstractInteraction, {
+import type {
   EventAfterEventHandler,
   EventFeature,
 } from '../../../interaction/abstractInteraction.js';
+import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import {
   EventType,
   ModificationKeyType,
@@ -40,7 +41,7 @@ class SelectFeatureMouseOverInteraction extends AbstractInteraction {
    */
   layerName: string;
 
-  private cursorStyle: CSSStyleDeclaration | undefined;
+  private _cursorStyle: CSSStyleDeclaration | undefined;
 
   constructor(
     layerName: string,
@@ -74,8 +75,8 @@ class SelectFeatureMouseOverInteraction extends AbstractInteraction {
     } else {
       this._currentFeature = null;
     }
-    if (!this.cursorStyle && event.map?.target) {
-      this.cursorStyle = event.map.target.style;
+    if (!this._cursorStyle && event.map?.target) {
+      this._cursorStyle = event.map.target.style;
     }
     this._evaluate(event.key);
     return Promise.resolve(event);
@@ -91,14 +92,14 @@ class SelectFeatureMouseOverInteraction extends AbstractInteraction {
   }
 
   reset(): void {
-    if (this.cursorStyle && this.cursorStyle.cursor) {
-      this.cursorStyle.cursor = cursorMap.auto;
-      this.cursorStyle = undefined;
+    if (this._cursorStyle && this._cursorStyle.cursor) {
+      this._cursorStyle.cursor = cursorMap.auto;
+      this._cursorStyle = undefined;
     }
   }
 
   private _evaluate(modifier: ModificationKeyType): void {
-    if (!this.cursorStyle) {
+    if (!this._cursorStyle) {
       return;
     }
     if (this._currentFeature) {
@@ -110,16 +111,16 @@ class SelectFeatureMouseOverInteraction extends AbstractInteraction {
       );
 
       if (isCtrlPressed) {
-        this.cursorStyle.cursor = isSelected
+        this._cursorStyle.cursor = isSelected
           ? cursorMap.removeFromSelection
           : cursorMap.addToSelection;
       } else {
-        this.cursorStyle.cursor = cursorMap.select;
+        this._cursorStyle.cursor = cursorMap.select;
       }
-      this.cursorStyle[mouseOverSymbol] = this.id;
-    } else if (this.cursorStyle?.[mouseOverSymbol] === this.id) {
-      this.cursorStyle.cursor = cursorMap.auto;
-      delete this.cursorStyle[mouseOverSymbol];
+      this._cursorStyle[mouseOverSymbol] = this.id;
+    } else if (this._cursorStyle?.[mouseOverSymbol] === this.id) {
+      this._cursorStyle.cursor = cursorMap.auto;
+      delete this._cursorStyle[mouseOverSymbol];
     }
   }
 

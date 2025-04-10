@@ -1,3 +1,33 @@
+### 6.2.0
+
+#### Changes
+
+- Updated eslint to eslint 9 & vcs eslint config 4.
+- Uses `madge` to detect circular dependencies in the code base.
+
+### 6.1.5
+
+- Fixes an issue in the vectorClusterGroup, where the toJSON function would not handle the vectorProperties corrrectly
+- Changed the default `distance` of the vectorClusterGroup to 100
+
+### 6.1.4
+
+- Fixes issue on serialization of `VectorClusterStyleItem`, where default templateContext was returned
+- Fixes local zIndex handling within `LayerCollection` on `moveTo` index
+
+### 6.1.3
+
+- Fixes an issue where activating the globe transparency would lead to false
+  position values, should features be excluded from the pick.
+
+### 6.1.2
+
+- Fix issue on remove of `VectorClusterGroup`s, where forceRedraw interfered `VectorClusterGroupCesiumImpl` initialization
+
+### 6.1.1
+
+- Add prototype function `setDirty` to Cesiums `ClippintPolygonCollection`, which allows to enforce an update of all ClippingPolygons
+
 ### 6.1.0
 
 #### Highlights

@@ -1,25 +1,26 @@
 import { unByKey } from 'ol/Observable.js';
-import Feature from 'ol/Feature.js';
-import { Point } from 'ol/geom.js';
-import { StyleFunction, StyleLike } from 'ol/style/Style.js';
+import type Feature from 'ol/Feature.js';
+import type { Point } from 'ol/geom.js';
+import type { StyleFunction, StyleLike } from 'ol/style/Style.js';
 import { parseInteger } from '@vcsuite/parsers';
 import { check, maybe } from '@vcsuite/check';
-import VcsObject, { VcsObjectOptions } from '../vcsObject.js';
+import deepEqual from 'fast-deep-equal';
+import type { VcsObjectOptions } from '../vcsObject.js';
+import VcsObject from '../vcsObject.js';
 import VectorLayer from '../layer/vectorLayer.js';
 import ClusterEnhancedVectorSource from '../ol/source/ClusterEnhancedVectorSource.js';
 import FeatureVisibility, {
   synchronizeFeatureVisibility,
 } from '../layer/featureVisibility.js';
 import LayerState from '../layer/layerState.js';
+import type { VectorClusterStyleItemOptions } from './vectorClusterStyleItem.js';
 import VectorClusterStyleItem, {
-  VectorClusterStyleItemOptions,
   getDefaultClusterStyleItem,
 } from './vectorClusterStyleItem.js';
 import type VcsMap from '../map/vcsMap.js';
 import GlobalHider from '../layer/globalHider.js';
-import VectorProperties, {
-  VectorPropertiesOptions,
-} from '../layer/vectorProperties.js';
+import type { VectorPropertiesOptions } from '../layer/vectorProperties.js';
+import VectorProperties from '../layer/vectorProperties.js';
 import CesiumMap from '../map/cesiumMap.js';
 import VectorClusterGroupCesiumImpl from './vectorClusterGroupCesiumImpl.js';
 import VectorClusterGroupOpenlayersImpl from './vectorClusterGroupOpenlayersImpl.js';
@@ -93,7 +94,7 @@ export default class VectorClusterGroup extends VcsObject {
       name: '',
       style: undefined,
       highlightStyle: undefined,
-      clusterDistance: 40,
+      clusterDistance: 100,
       zIndex: Math.floor(maxZIndex / 2),
       vectorProperties: {
         ...VectorProperties.getDefaultOptions(),
@@ -201,9 +202,13 @@ export default class VectorClusterGroup extends VcsObject {
     this._source
       .getFeatures()
       .filter((f) => !f.getStyle())
-      .forEach((f) => f.changed());
+      .forEach((f) => {
+        f.changed();
+      });
   }
 
+  // we require void do to falsely type ol
+  // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
   getHighlightStyleForFeature(feature: Feature): StyleLike | void {
     if (this.highlightStyle) {
       return this.highlightStyle.createStyleFunction((layerName) =>
@@ -237,7 +242,9 @@ export default class VectorClusterGroup extends VcsObject {
 
   removeLayer(layer: VectorLayer): void {
     this._handleDeactivation(layer);
-    this._layerListeners.get(layer)?.forEach((cb) => cb());
+    this._layerListeners.get(layer)?.forEach((cb) => {
+      cb();
+    });
     this._layerListeners.delete(layer);
   }
 
@@ -265,7 +272,7 @@ export default class VectorClusterGroup extends VcsObject {
   setGlobalHider(globalHider?: GlobalHider): void {
     check(globalHider, maybe(GlobalHider));
     this._globalHider = globalHider;
-    this.forceRedraw().catch((_e) => {
+    this.forceRedraw().catch(() => {
       this.getLogger().error('Failed to redraw after setting global hider');
     });
   }
@@ -290,7 +297,9 @@ export default class VectorClusterGroup extends VcsObject {
             this._source.removeFeature(feature!);
           }),
         ];
-        this._activeSourceListeners.set(layer, () => unByKey(listeners));
+        this._activeSourceListeners.set(layer, () => {
+          unByKey(listeners);
+        });
       } else {
         source.once('change', this._handleActivation.bind(this, layer));
       }
@@ -383,7 +392,7 @@ export default class VectorClusterGroup extends VcsObject {
   /**
    * Returns all implementation of this vector cluster group for all maps
    */
-  getImplementations(): VectorClusterGroupImpl<any>[] {
+  getImplementations(): VectorClusterGroupImpl<VcsMap>[] {
     return [...this._implementations.values()].flat().filter((i) => !!i);
   }
 
@@ -456,11 +465,12 @@ export default class VectorClusterGroup extends VcsObject {
       config.clusterDistance = this.clusterDistance;
     }
 
-    const vectorProperties = this.vectorProperties.getVcsMeta(
-      defaultOptions.vectorProperties,
-    );
+    const vectorProperties = this.vectorProperties.getVcsMeta();
+    const defaultVectorPropertiesToCompare = new VectorProperties(
+      defaultOptions.vectorProperties!,
+    ).getVcsMeta();
 
-    if (Object.keys(vectorProperties).length > 0) {
+    if (!deepEqual(defaultVectorPropertiesToCompare, vectorProperties)) {
       config.vectorProperties = vectorProperties;
     }
 
@@ -469,9 +479,11 @@ export default class VectorClusterGroup extends VcsObject {
 
   destroy(): void {
     this._featureVisibility.destroy();
-    [...this._layerListeners.values()].forEach((arr) =>
-      arr.forEach((cb) => cb()),
-    );
+    [...this._layerListeners.values()].forEach((arr) => {
+      arr.forEach((cb) => {
+        cb();
+      });
+    });
     this._layerListeners.clear();
     super.destroy();
   }

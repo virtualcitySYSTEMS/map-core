@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/prefer-default-export
 export function isSameOrigin(source: string): boolean {
   const { location } = window;
   const url = new URL(

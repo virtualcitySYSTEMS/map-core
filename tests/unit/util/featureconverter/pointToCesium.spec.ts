@@ -6,7 +6,8 @@ import Style from 'ol/style/Style.js';
 import RegularShape from 'ol/style/RegularShape.js';
 import TextStyle from 'ol/style/Text.js';
 import Icon from 'ol/style/Icon.js';
-import { Coordinate } from 'ol/coordinate.js';
+import type { Coordinate } from 'ol/coordinate.js';
+import type { Scene } from '@vcmap-cesium/engine';
 import {
   HeightReference,
   VerticalOrigin,
@@ -16,7 +17,6 @@ import {
   HorizontalOrigin,
   LabelStyle,
   PolylineGeometry,
-  Scene,
 } from '@vcmap-cesium/engine';
 import Fill from 'ol/style/Fill.js';
 import Stroke from 'ol/style/Stroke.js';
@@ -24,24 +24,24 @@ import nock from 'nock';
 import VectorProperties, {
   PrimitiveOptionsType,
 } from '../../../../src/layer/vectorProperties.js';
+import type {
+  BillboardOptions,
+  LabelOptions,
+} from '../../../../src/util/featureconverter/pointToCesium.js';
 import {
   validatePoint,
   getBillboardOptions,
   getLabelOptions,
   getLineGeometries,
-  BillboardOptions,
-  LabelOptions,
   getPointPrimitives,
 } from '../../../../src/util/featureconverter/pointToCesium.js';
 import { blackPixelURI } from '../../helpers/imageHelpers.js';
 import { getCesiumColor } from '../../../../src/style/styleHelpers.js';
 import { getCesiumMap } from '../../helpers/cesiumHelpers.js';
-import {
-  getHeightInfo,
-  VectorHeightInfo,
-} from '../../../../src/util/featureconverter/vectorHeightInfo.js';
-import { CesiumGeometryOption } from '../../../../src/util/featureconverter/vectorGeometryFactory.js';
-import { CesiumMap } from '../../../../index.js';
+import type { VectorHeightInfo } from '../../../../src/util/featureconverter/vectorHeightInfo.js';
+import { getHeightInfo } from '../../../../src/util/featureconverter/vectorHeightInfo.js';
+import type { CesiumGeometryOption } from '../../../../src/util/featureconverter/vectorGeometryFactory.js';
+import type { CesiumMap } from '../../../../index.js';
 
 describe('pointToCesium', () => {
   describe('validatePoint', () => {
@@ -552,7 +552,7 @@ describe('pointToCesium', () => {
     });
 
     it('should use the given position and calculate the second point of the line based on the heightInfo', () => {
-      lineGeometries.forEach((lineGeometry, index) => {
+      lineGeometries.forEach((lineGeometry) => {
         // height corrected by skirt, and sum storeyHeightsBelowGround & storeyHeightsAboveGround
         const correctedCartesian = Cartesian3.fromDegrees(
           wgs84Position[0],
@@ -564,9 +564,10 @@ describe('pointToCesium', () => {
           .to.have.property('_positions')
           .and.to.be.an('array');
 
-        const positions = (
-          lineGeometry.geometry as unknown as { _positions: Cartesian3[] }
-        )._positions;
+        const positions =
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          (lineGeometry.geometry as unknown as { _positions: Cartesian3[] })
+            ._positions;
         expect(positions[0]).to.equal(position);
         expect(Cartesian3.equals(positions[1], correctedCartesian)).to.be.true;
       });
@@ -587,6 +588,7 @@ describe('pointToCesium', () => {
       scope
         .persist()
         .get('/test.glb')
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         .reply(200, {}, { 'Content-Type': 'application/json' });
       feature = new Feature({ id: 'myId' });
       fillStyle = new Fill({

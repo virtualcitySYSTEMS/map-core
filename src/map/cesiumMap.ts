@@ -43,12 +43,18 @@ import Viewpoint from '../util/viewpoint.js';
 import Projection, { mercatorProjection } from '../util/projection.js';
 import { getHeightFromTerrainProvider } from '../layer/terrainHelpers.js';
 import { vcsLayerName } from '../layer/layerSymbols.js';
-import CameraLimiter, { CameraLimiterOptions } from './cameraLimiter.js';
+import {
+  ModificationKeyType,
+  PointerEventType,
+  PointerKeyType,
+} from '../interaction/interactionType.js';
+import type { CameraLimiterOptions } from './cameraLimiter.js';
+import CameraLimiter from './cameraLimiter.js';
 import { mapClassRegistry } from '../classRegistry.js';
 import type LayerCollection from '../util/layerCollection.js';
 import type Layer from '../layer/layer.js';
 import VcsEvent from '../vcsEvent.js';
-import { DisableMapControlOptions } from '../util/mapCollection.js';
+import type { DisableMapControlOptions } from '../util/mapCollection.js';
 import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
 import {
   getResolution,
@@ -500,13 +506,9 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
   initialize(): Promise<void> {
     if (!this.initialized) {
       if (!this.useOriginalCesiumShader) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         globalThis.useVcsCustomShading = true;
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
       } else if (globalThis.useVcsCustomShading) {
-        console.error(
+        this.getLogger().error(
           'Cannot activate Original Cesium Shader, flag to use VCS Shader is already set by another Cesium Map or VCMap Instance',
         );
       }

@@ -220,6 +220,7 @@ describe('maps.VcmMap', () => {
 
     describe('using the API', () => {
       let map;
+
       beforeEach(() => {
         map = new VcsMap({});
       });

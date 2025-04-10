@@ -1,27 +1,30 @@
 import { expect } from 'chai';
-import sinon, { SinonSandbox, SinonSpy } from 'sinon';
+import type { SinonSandbox, SinonSpy } from 'sinon';
+import sinon from 'sinon';
 import { Cartesian2 } from '@vcmap-cesium/engine';
 import { Feature } from 'ol';
 import { Point } from 'ol/geom.js';
 import { getCesiumMap } from '../../../helpers/cesiumHelpers.js';
+import type { TransformationSetup } from './setupTransformationHandler.js';
 import {
   createHandlerFeature,
   patchPickRay,
   setupTransformationHandler,
-  TransformationSetup,
 } from './setupTransformationHandler.js';
+import type {
+  CesiumMap,
+  ScaleEvent,
+  OpenlayersMap,
+} from '../../../../../index.js';
 import {
   AxisAndPlanes,
   TransformationMode,
   EventType,
   ScaleInteraction,
   mercatorToCartesian,
-  CesiumMap,
   ModificationKeyType,
   PointerKeyType,
   PointerEventType,
-  ScaleEvent,
-  OpenlayersMap,
 } from '../../../../../index.js';
 import { getOpenlayersMap } from '../../../helpers/openlayersHelpers.js';
 

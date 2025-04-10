@@ -1,19 +1,22 @@
 import sinon from 'sinon';
 import { expect } from 'chai';
-import Icon from 'ol/style/Icon.js';
-import Style, { StyleFunction } from 'ol/style/Style.js';
+import type Icon from 'ol/style/Icon.js';
+import type { StyleFunction } from 'ol/style/Style.js';
+import Style from 'ol/style/Style.js';
 import Feature from 'ol/Feature.js';
 import Point from 'ol/geom/Point.js';
+import type {
+  VectorClusterTemplateFunction,
+  VectorClusterStyleItemOptions,
+} from '../../../index.js';
 import {
   VectorStyleItem,
   VectorLayer,
   originalFeatureSymbol,
   highlighted,
   VectorClusterStyleItem,
-  VectorClusterTemplateFunction,
   vectorClusterGroupName,
   vcsLayerName,
-  VectorClusterStyleItemOptions,
 } from '../../../index.js';
 import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
 
@@ -361,9 +364,8 @@ describe('VectorClusterStyleItem', () => {
         const styleFunction = clusterStyleItem.createStyleFunction(
           () => undefined,
         );
-        let style;
         expect(() => {
-          style = styleFunction(feature, 1);
+          styleFunction(feature, 1);
         }).to.not.throw(Error);
       });
     });

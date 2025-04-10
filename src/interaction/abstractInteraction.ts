@@ -8,14 +8,14 @@ import type {
 } from '@vcmap-cesium/engine';
 import type { Coordinate } from 'ol/coordinate.js';
 import type { Feature } from 'ol';
+import type { PointerEventType } from './interactionType.js';
 import {
   EventType,
   ModificationKeyType,
-  PointerEventType,
   PointerKeyType,
 } from './interactionType.js';
 import type VcsMap from '../map/vcsMap.js';
-import VcsEvent from '../vcsEvent.js';
+import type VcsEvent from '../vcsEvent.js';
 
 export type MapEvent = {
   pointerEvent: PointerEventType;
@@ -39,7 +39,7 @@ export type ObliqueParameters = {
   /**
    * the image pixel clicked
    */
-  pixel: import('ol/coordinate.js').Coordinate;
+  pixel: Coordinate;
   /**
    * true if the terrain could not be taken into account
    */
@@ -97,7 +97,7 @@ class AbstractInteraction {
   /**
    * The current active bitmask for {@link EventType}
    */
-  active: number;
+  active: EventType;
 
   private _defaultModificationKey: ModificationKeyType;
 
@@ -143,7 +143,7 @@ class AbstractInteraction {
   /**
    * Called when the modifier keys have changed.
    */
-  // eslint-disable-next-line class-methods-use-this,no-unused-vars
+  // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-unused-vars
   modifierChanged(_modifier: ModificationKeyType): void {}
 
   /**

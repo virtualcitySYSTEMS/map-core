@@ -26,12 +26,12 @@ describe('storey helpers', () => {
       expect(storeyHeights).to.have.members([2, 2]);
     });
 
-    it('should fill up Storeyheights with latest value', () => {
+    it('should fill up Storeyheights with last value', () => {
       storeyHeights = getStoreyHeights(4, [2], 0);
       expect(storeyHeights).to.have.members([2, 2]);
     });
 
-    it('should fill up Storeyheights with latest value', () => {
+    it('should fill up Storeyheights with last value, if there is more then one', () => {
       storeyHeights = getStoreyHeights(7, [1, 2], 0);
       expect(storeyHeights).to.have.members([1, 2, 2, 2]);
     });

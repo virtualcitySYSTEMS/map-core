@@ -1,8 +1,7 @@
 import sinon from 'sinon';
 import { expect } from 'chai';
-import ClippingPolygonObject, {
-  ClippingPolygonObjectOptions,
-} from '../../../../src/util/clipping/clippingPolygonObject.js';
+import type { ClippingPolygonObjectOptions } from '../../../../src/util/clipping/clippingPolygonObject.js';
+import ClippingPolygonObject from '../../../../src/util/clipping/clippingPolygonObject.js';
 
 const coordinates = [
   [13, 52],
@@ -181,7 +180,9 @@ describe('clippingPolygonObject', () => {
     });
 
     it('should throw, if providing no valid coordinates array', () => {
-      expect(() => clippingPolygonObject.setCoordinates([[], [], []])).to.throw;
+      expect(() => {
+        clippingPolygonObject.setCoordinates([[], [], []]);
+      }).to.throw;
     });
 
     it('should return, if providing less than 3 coordinates', () => {
@@ -214,20 +215,6 @@ describe('clippingPolygonObject', () => {
       ];
       clippingPolygonObject.setCoordinates(newCoordinates);
       expect(clippingPolygonObject.coordinates).to.deep.equal(newCoordinates);
-    });
-
-    it('should raise a clippingPolygonChanged event', () => {
-      const clippingPolygonChangedSpy = sinon.spy();
-      clippingPolygonObject.clippingPolygonChanged.addEventListener(
-        clippingPolygonChangedSpy,
-      );
-      clippingPolygonObject.setCoordinates([
-        [11, 48],
-        [12, 49],
-        [11, 50],
-        [10, 49],
-      ]);
-      expect(clippingPolygonChangedSpy).to.have.been.calledOnce;
     });
 
     it('should raise a clippingPolygonChanged event', () => {

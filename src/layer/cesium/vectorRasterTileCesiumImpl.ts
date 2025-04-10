@@ -14,7 +14,7 @@ import {
   TilingScheme,
 } from '../rasterLayer.js';
 import type TileProvider from '../tileProvider/tileProvider.js';
-import StyleItem from '../../style/styleItem.js';
+import type StyleItem from '../../style/styleItem.js';
 
 /**
  * represents a rasterized tiled vector layer implementation for cesium.
@@ -101,7 +101,7 @@ class VectorRasterTileCesiumImpl extends RasterLayerCesiumImpl {
     }
   }
 
-  // eslint-disable-next-line no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   updateStyle(_style: StyleItem, _silent?: boolean): void {
     this._reloadTiles();
   }

@@ -459,6 +459,7 @@ describe('CesiumTilesetCesiumImpl', () => {
   describe('applyStyle', () => {
     let header;
     let styleContent;
+
     before(() => {
       header = {
         boundingVolume: { sphere: new BoundingSphere() },

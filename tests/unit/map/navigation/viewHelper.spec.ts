@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import OpenlayersMap from '../../../../src/map/openlayersMap.js';
+import type OpenlayersMap from '../../../../src/map/openlayersMap.js';
 import OpenlayersNavigation from '../../../../src/map/navigation/openlayersNavigation.js';
 import { getOpenlayersMap } from '../../helpers/openlayersHelpers.js';
 import { moveView } from '../../../../src/map/navigation/viewHelper.js';
@@ -9,11 +9,11 @@ const inputScratch = getZeroInput();
 
 describe('viewHelper moveView', () => {
   let map: OpenlayersMap;
-  let openlayersNavigation: OpenlayersNavigation;
 
   before(async () => {
     map = await getOpenlayersMap();
-    openlayersNavigation = new OpenlayersNavigation(map);
+    // eslint-disable-next-line no-new
+    new OpenlayersNavigation(map);
   });
 
   after(() => {
@@ -47,7 +47,6 @@ describe('viewHelper moveView', () => {
     const initialZoom = view.getZoom()!;
     inputScratch.up = 1;
     moveView(map, inputScratch, 1);
-    const newCenter = view.getCenter()!;
     expect(view.getZoom()!).to.be.lessThan(initialZoom);
     inputScratch.up = 0;
   });

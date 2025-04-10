@@ -1,9 +1,9 @@
-import { Size } from 'ol/size.js';
+import type { Size } from 'ol/size.js';
 import { getLogger } from '@vcsuite/logger';
 import CesiumMap from '../map/cesiumMap.js';
 import OpenlayersMap from '../map/openlayersMap.js';
 import ObliqueMap from '../map/obliqueMap.js';
-import VcsApp from '../vcsApp.js';
+import type VcsApp from '../vcsApp.js';
 /**
  * Prepares the cesium map for the screenshot
  * @param map - The cesium map

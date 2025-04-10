@@ -61,7 +61,7 @@ class ClippingObject {
    * Key is a semantic identifier, eg. layerName or layerName-entitiyId, depending on the target. Targets
    * represent Cesium Object which support the clippingPlanes API
    */
-  targets: Map<string | symbol, ClippingTarget> = new Map();
+  targets = new Map<string | symbol, ClippingTarget>();
 
   /**
    * The current entities and their respective layerNames. Use add/removeEntity to manipulate
@@ -84,8 +84,7 @@ class ClippingObject {
    */
   clippingPlaneUpdated = new VcsEvent<void>();
 
-  private _cachedLayers: Set<FeatureStoreLayer | CesiumTilesetLayer> =
-    new Set();
+  private _cachedLayers = new Set<FeatureStoreLayer | CesiumTilesetLayer>();
 
   private _activeMap: VcsMap | null = null;
 

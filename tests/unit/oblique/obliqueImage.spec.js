@@ -75,6 +75,7 @@ describe('ObliqueImage', () => {
         ),
       });
     });
+
     it('should transform imagecoordinates to Realworld', () => {
       let realworldCoords = image.transformImage2RealWorld([1000, 1000], 0);
       expect(realworldCoords.map((x) => Math.round(x * 1000) / 1000)).to.eql(
@@ -101,6 +102,7 @@ describe('ObliqueImage', () => {
         ),
       );
     });
+
     it('should transform imagecoordinates to Realworld with height', () => {
       let realworldCoords = image.transformImage2RealWorld([1000, 1000], 100);
       expect(realworldCoords.map((x) => Math.round(x * 1000) / 1000)).to.eql(
@@ -127,6 +129,7 @@ describe('ObliqueImage', () => {
         ),
       );
     });
+
     it('should transform realworld coords to image coords', () => {
       let imageCoords = image.transformRealWorld2Image(
         [3456452.5030210735, 5547336.783437387],
@@ -149,6 +152,7 @@ describe('ObliqueImage', () => {
       );
       expect(imageCoords.map((x) => Math.round(x))).to.eql([11000, 1000]);
     });
+
     it('should transform realworld coords to image coords with height information', () => {
       let imageCoords = image.transformRealWorld2Image(
         [3456481.317458385, 5547273.420397421, 100],
@@ -172,6 +176,7 @@ describe('ObliqueImage', () => {
       expect(imageCoords.map((x) => Math.round(x))).to.eql([11000, 1000]);
     });
   });
+
   describe('transformation North Direction without Camera information', () => {
     before(() => {
       meta = new ObliqueImageMeta({
@@ -191,6 +196,7 @@ describe('ObliqueImage', () => {
         centerPointOnGround: [3457007.25, 5547834.75],
       });
     });
+
     it('should transform imagecoordinates to Realworld', () => {
       let realworldCoords = image.transformImage2RealWorld([1000, 1000], 100);
       expect(realworldCoords.map((x) => Math.round(x * 1000) / 1000)).to.eql(
@@ -217,6 +223,7 @@ describe('ObliqueImage', () => {
         ),
       );
     });
+
     it('should transform realworld coords to image coords', () => {
       let imageCoords = image.transformRealWorld2Image(
         [3456481.317458385, 5547273.420397421, 100],
@@ -240,6 +247,7 @@ describe('ObliqueImage', () => {
       expect(imageCoords.map((x) => Math.round(x))).to.eql([11162, 1394]);
     });
   });
+
   describe('transformation East Direction', () => {
     before(() => {
       meta = new ObliqueImageMeta({
@@ -299,6 +307,7 @@ describe('ObliqueImage', () => {
         ),
       });
     });
+
     it('should transform imagecoordinates to Realworld', () => {
       let realworldCoords = image.transformImage2RealWorld([1000, 1000], 0);
       expect(realworldCoords.map((x) => Math.round(x * 1000) / 1000)).to.eql(
@@ -325,6 +334,7 @@ describe('ObliqueImage', () => {
         ),
       );
     });
+
     it('should transform imagecoordinates to Realworld with height', () => {
       let realworldCoords = image.transformImage2RealWorld([1000, 1000], 100);
       expect(realworldCoords.map((x) => Math.round(x * 1000) / 1000)).to.eql(
@@ -351,6 +361,7 @@ describe('ObliqueImage', () => {
         ),
       );
     });
+
     it('should transform realworld coords to image coords', () => {
       let imageCoords = image.transformRealWorld2Image(
         [3457428.732493062, 5548420.276549364],
@@ -373,6 +384,7 @@ describe('ObliqueImage', () => {
       );
       expect(imageCoords.map((x) => Math.round(x))).to.eql([11000, 1000]);
     });
+
     it('should transform realworld coords to image coords with height information', () => {
       let imageCoords = image.transformRealWorld2Image(
         [3457365.413240065, 5548390.979584003, 100],
@@ -396,6 +408,7 @@ describe('ObliqueImage', () => {
       expect(imageCoords.map((x) => Math.round(x))).to.eql([11000, 1000]);
     });
   });
+
   describe('transformation East Direction without Camera information', () => {
     before(() => {
       meta = new ObliqueImageMeta({
@@ -415,6 +428,7 @@ describe('ObliqueImage', () => {
         centerPointOnGround: [3457937.25, 5547852],
       });
     });
+
     it('should transform imagecoordinates to Realworld', () => {
       let realworldCoords = image.transformImage2RealWorld([1000, 1000], 100);
       expect(realworldCoords.map((x) => Math.round(x * 1000) / 1000)).to.eql(
@@ -441,6 +455,7 @@ describe('ObliqueImage', () => {
         ),
       );
     });
+
     it('should transform realworld coords to image coords', () => {
       let imageCoords = image.transformRealWorld2Image(
         [3457297.963856677, 5548355.434831743, 0],
@@ -464,6 +479,7 @@ describe('ObliqueImage', () => {
       expect(imageCoords.map((x) => Math.round(x))).to.eql([11000, 1000]);
     });
   });
+
   describe('transformation South Direction', () => {
     before(() => {
       meta = new ObliqueImageMeta({
@@ -523,6 +539,7 @@ describe('ObliqueImage', () => {
         ),
       });
     });
+
     it('should transform imagecoordinates to Realworld', () => {
       let realworldCoords = image.transformImage2RealWorld([1000, 1000], 0);
       expect(realworldCoords.map((x) => Math.round(x * 1000) / 1000)).to.eql(
@@ -549,6 +566,7 @@ describe('ObliqueImage', () => {
         ),
       );
     });
+
     it('should transform imagecoordinates to Realworld with height', () => {
       let realworldCoords = image.transformImage2RealWorld([1000, 1000], 100);
       expect(realworldCoords.map((x) => Math.round(x * 1000) / 1000)).to.eql(
@@ -575,6 +593,7 @@ describe('ObliqueImage', () => {
         ),
       );
     });
+
     it('should transform realworld coords to image coords', () => {
       let imageCoords = image.transformRealWorld2Image(
         [3457172.0626017735, 5546638.996725733, 0],
@@ -597,6 +616,7 @@ describe('ObliqueImage', () => {
       );
       expect(imageCoords.map((x) => Math.round(x))).to.eql([11000, 1000]);
     });
+
     it('should transform realworld coords to image coords with height information', () => {
       let imageCoords = image.transformRealWorld2Image(
         [3457142.875199674, 5546702.188918456, 100],
@@ -620,6 +640,7 @@ describe('ObliqueImage', () => {
       expect(imageCoords.map((x) => Math.round(x))).to.eql([11000, 1000]);
     });
   });
+
   describe('transformation South Direction without Camera information', () => {
     before(() => {
       meta = new ObliqueImageMeta({
@@ -639,6 +660,7 @@ describe('ObliqueImage', () => {
         centerPointOnGround: [3456609, 5546096.25],
       });
     });
+
     it('should transform imagecoordinates to Realworld', () => {
       let realworldCoords = image.transformImage2RealWorld([1000, 1000], 100);
       expect(realworldCoords.map((x) => Math.round(x * 1000) / 1000)).to.eql(
@@ -665,6 +687,7 @@ describe('ObliqueImage', () => {
         ),
       );
     });
+
     it('should transform realworld coords to image coords', () => {
       let imageCoords = image.transformRealWorld2Image(
         [3457120.0295212436, 5546744.667517173, 0],
@@ -688,6 +711,7 @@ describe('ObliqueImage', () => {
       expect(imageCoords.map((x) => Math.round(x))).to.eql([11000, 1000]);
     });
   });
+
   describe('transformation West Direction', () => {
     before(() => {
       meta = new ObliqueImageMeta({
@@ -747,6 +771,7 @@ describe('ObliqueImage', () => {
         ),
       });
     });
+
     it('should transform imagecoordinates to Realworld', () => {
       let realworldCoords = image.transformImage2RealWorld([1000, 1000], 0);
       expect(realworldCoords.map((x) => Math.round(x * 1000) / 1000)).to.eql(
@@ -773,6 +798,7 @@ describe('ObliqueImage', () => {
         ),
       );
     });
+
     it('should transform imagecoordinates to Realworld with height', () => {
       let realworldCoords = image.transformImage2RealWorld([1000, 1000], 100);
       expect(realworldCoords.map((x) => Math.round(x * 1000) / 1000)).to.eql(
@@ -799,6 +825,7 @@ describe('ObliqueImage', () => {
         ),
       );
     });
+
     it('should transform realworld coords to image coords', () => {
       let imageCoords = image.transformRealWorld2Image(
         [3457385.402965681, 5545547.982978649, 0],
@@ -821,6 +848,7 @@ describe('ObliqueImage', () => {
       );
       expect(imageCoords.map((x) => Math.round(x))).to.eql([11000, 1000]);
     });
+
     it('should transform realworld coords to image coords with height information', () => {
       let imageCoords = image.transformRealWorld2Image(
         [3457448.582629307, 5545577.309015635, 100],
@@ -844,6 +872,7 @@ describe('ObliqueImage', () => {
       expect(imageCoords.map((x) => Math.round(x))).to.eql([11000, 1000]);
     });
   });
+
   describe('transformation West Direction without Camera information', () => {
     before(() => {
       meta = new ObliqueImageMeta({
@@ -863,6 +892,7 @@ describe('ObliqueImage', () => {
         centerPointOnGround: [3456844.75, 5546107.25],
       });
     });
+
     it('should transform imagecoordinates to Realworld', () => {
       let realworldCoords = image.transformImage2RealWorld([1000, 1000], 100);
       expect(realworldCoords.map((x) => Math.round(x * 1000) / 1000)).to.eql(
@@ -889,6 +919,7 @@ describe('ObliqueImage', () => {
         ),
       );
     });
+
     it('should transform realworld coords to image coords', () => {
       let imageCoords = image.transformRealWorld2Image(
         [3457476.300938633, 5545594.848874346, 0],

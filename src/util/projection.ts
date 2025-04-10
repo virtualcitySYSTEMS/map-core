@@ -1,9 +1,5 @@
-import {
-  getTransform,
-  get as getProjection,
-  equivalent,
-  Projection as OLProjection,
-} from 'ol/proj.js';
+import type { Projection as OLProjection } from 'ol/proj.js';
+import { getTransform, get as getProjection, equivalent } from 'ol/proj.js';
 import { register } from 'ol/proj/proj4.js';
 import type { Coordinate } from 'ol/coordinate.js';
 import proj4 from 'proj4';
@@ -49,7 +45,7 @@ export function parseEPSGCode(
 ): string {
   if (value) {
     const regex = new RegExp(`^(?:${prefix})?:?(\\d+)`, 'i');
-    const matches = `${value}`.match(regex);
+    const matches = String(value).match(regex);
     if (matches && matches[1]) {
       if (prefix) {
         if (prefix.endsWith(':')) {

@@ -1,17 +1,15 @@
 import type { Feature } from 'ol/index.js';
-import { Cesium3DTileFeature } from '@vcmap-cesium/engine';
-import AbstractInteraction, {
-  EventAfterEventHandler,
-} from '../../../interaction/abstractInteraction.js';
+import type { Cesium3DTileFeature } from '@vcmap-cesium/engine';
+import type { EventAfterEventHandler } from '../../../interaction/abstractInteraction.js';
+import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import {
   EventType,
   ModificationKeyType,
 } from '../../../interaction/interactionType.js';
 import VcsEvent from '../../../vcsEvent.js';
 import { vcsLayerName } from '../../../layer/layerSymbols.js';
-import FeatureStoreLayer, {
-  isTiledFeature,
-} from '../../../layer/featureStoreLayer.js';
+import type FeatureStoreLayer from '../../../layer/featureStoreLayer.js';
+import { isTiledFeature } from '../../../layer/featureStoreLayer.js';
 import type {
   SelectableFeatureType,
   SelectFeatureInteraction,

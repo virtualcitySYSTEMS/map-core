@@ -1,13 +1,12 @@
 import { is, oneOf } from '@vcsuite/check';
-import StyleItem, { StyleItemOptions } from './styleItem.js';
-import {
-  DeclarativeStyleItemOptions,
-  defaultDeclarativeStyle,
-} from './declarativeStyleItem.js';
+import type { StyleItemOptions } from './styleItem.js';
+import StyleItem from './styleItem.js';
+import type { DeclarativeStyleItemOptions } from './declarativeStyleItem.js';
+import { defaultDeclarativeStyle } from './declarativeStyleItem.js';
 import { styleClassRegistry } from '../classRegistry.js';
-import VectorStyleItem, { VectorStyleItemOptions } from './vectorStyleItem.js';
+import type { VectorStyleItemOptions } from './vectorStyleItem.js';
+import VectorStyleItem from './vectorStyleItem.js';
 
-// eslint-disable-next-line import/prefer-default-export
 export function getStyleOrDefaultStyle(
   styleOptions?:
     | DeclarativeStyleItemOptions

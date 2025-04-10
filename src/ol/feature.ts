@@ -62,6 +62,7 @@ Feature.prototype.getAttributes = function getAttributes(
 Feature.prototype.getPropertyInherited = function getPropertyInherited(
   this: Feature,
   property,
+  // eslint-disable-next-line
 ): any {
   return this.getProperty(property);
 };

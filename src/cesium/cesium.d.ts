@@ -1,33 +1,26 @@
+/* eslint-disable @typescript-eslint/no-explicit-any,@typescript-eslint/consistent-type-imports,@typescript-eslint/naming-convention */
 /**
  * Type overrides for types extended by the @vcmap/core API
  */
 // eslint-disable-next-line max-classes-per-file
-import {
-  Cartesian2,
-  Cartesian3,
-  Cartesian4,
-  Color,
-  Cartographic,
-  HeightReference,
-} from '@vcmap-cesium/engine';
-import { StyleLike } from 'ol/style/Style.js';
-import VectorStyleItem from '../style/vectorStyleItem.js';
-import { scaleSymbol } from '../layer/cesium/vectorContext.js';
-import { allowPicking, vcsLayerName } from '../layer/layerSymbols.js';
-import {
+import type { StyleLike } from 'ol/style/Style.js';
+import type VectorStyleItem from '../style/vectorStyleItem.js';
+import type { allowPicking, vcsLayerName } from '../layer/layerSymbols.js';
+import type {
   globalHidden,
   hidden,
   highlighted,
   originalStyle,
 } from '../layer/featureVisibility.js';
-import { handlerSymbol } from '../util/editor/editorSymbols.js';
-import { AxisAndPlanes } from '../util/editor/transformation/transformationTypes.js';
-import {
+import type { handlerSymbol } from '../util/editor/editorSymbols.js';
+import type { AxisAndPlanes } from '../util/editor/transformation/transformationTypes.js';
+import type {
   cesiumTilesetLastUpdated,
   updateFeatureOverride,
 } from '../layer/cesium/cesiumTilesetCesiumImpl.js';
-import { isTiledFeature } from '../layer/featureStoreLayer.js';
-import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
+import type { isTiledFeature } from '../layer/featureStoreLayer.js';
+import type { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
+import { scaleSymbol } from '../layer/vectorSymbols.js';
 
 declare module '@vcmap-cesium/engine' {
   interface Scene {
@@ -206,6 +199,7 @@ declare module '@vcmap-cesium/engine' {
 
   interface StyleExpression {
     evaluate<
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
       T extends
         | boolean
         | number
@@ -399,5 +393,10 @@ declare module '@vcmap-cesium/engine' {
   interface ClippingPolygon {
     _cachedPackedCartesians: number[];
     _cachedRectangle: Rectangle;
+  }
+
+  interface ClippingPolygonCollection {
+    _totalPositions: number;
+    setDirty(): void;
   }
 }

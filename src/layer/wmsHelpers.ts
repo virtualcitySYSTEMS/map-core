@@ -33,7 +33,7 @@ export function getProjectionFromWMSSourceOptions(
   tilingSchema: TilingScheme,
   version: string,
 ): string {
-  if (tilingSchema === 'geographic') {
+  if (tilingSchema === TilingScheme.GEOGRAPHIC) {
     if (version === '1.3.0') {
       return 'CRS:84';
     } else {
@@ -45,7 +45,7 @@ export function getProjectionFromWMSSourceOptions(
 
 export function getWMSSource(options: WMSSourceOptions): TileWMS {
   const projection =
-    options.tilingSchema === 'geographic'
+    options.tilingSchema === TilingScheme.GEOGRAPHIC
       ? wgs84Projection
       : mercatorProjection;
 

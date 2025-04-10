@@ -252,7 +252,7 @@ describe('startSelectFeaturesSession', () => {
       expect(session.currentFeatures).to.be.empty;
     });
 
-    describe('image changed listener', async () => {
+    describe('image changed listener', () => {
       beforeEach(async () => {
         await app.maps.setActiveMap(obliqueMap.name);
       });
@@ -383,7 +383,7 @@ describe('startSelectFeaturesSession', () => {
     });
   });
 
-  describe('stopping a session', () => {
+  describe('stopping a single session', () => {
     let session;
 
     beforeEach(() => {
@@ -428,7 +428,7 @@ describe('startSelectFeaturesSession', () => {
     });
   });
 
-  describe('changing the active map to an oblique map', () => {
+  describe('changing the active map to an oblique map on a single session', () => {
     let session;
 
     beforeEach(() => {
@@ -451,7 +451,7 @@ describe('startSelectFeaturesSession', () => {
       expect(session.firstFeature).to.be.null;
     });
 
-    describe('image changed listener', async () => {
+    describe('image changed listener', () => {
       beforeEach(async () => {
         await app.maps.setActiveMap(obliqueMap.name);
       });
@@ -464,7 +464,7 @@ describe('startSelectFeaturesSession', () => {
     });
   });
 
-  describe('changing the active map from an oblique map', () => {
+  describe('changing the active map from an oblique map on a single session', () => {
     let session;
 
     before(async () => {

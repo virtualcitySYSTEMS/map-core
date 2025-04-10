@@ -493,6 +493,7 @@ describe('CesiumMap', () => {
 
   describe('setting a viewpoint', () => {
     let map;
+
     before(() => {
       map = getCesiumMap();
     });
@@ -789,6 +790,7 @@ describe('CesiumMap', () => {
           dataSourceClock2,
         ]);
       });
+
       it('should synchronize active dataSourceClock and dataSourceDisplayClock', () => {
         const {
           clockRange,
@@ -807,6 +809,7 @@ describe('CesiumMap', () => {
           currentTime,
         });
       });
+
       it('should NOT synchronize currentTime, startTime & endTime, if start and end time are equal', () => {
         const dataSourceClock3 = dataSourceClock2.clone();
         JulianDate.addHours(
@@ -848,6 +851,7 @@ describe('CesiumMap', () => {
           dataSourceClock1,
         ]);
       });
+
       it('should synchronize the last active clock', () => {
         expect(map.dataSourceDisplayClock).to.have.property(
           'currentTime',
@@ -879,6 +883,7 @@ describe('CesiumMap', () => {
           dataSourceClock2,
         ]);
       });
+
       it('should NOT resynchronize clocks', () => {
         expect(map.dataSourceDisplayClock).to.have.property(
           'currentTime',
@@ -1085,6 +1090,7 @@ describe('CesiumMap', () => {
       });
     });
   });
+
   describe('setting a shadowMap', () => {
     let map;
     let newShadowMap;
@@ -1105,23 +1111,27 @@ describe('CesiumMap', () => {
       map.setShadowMap(newShadowMap);
       expect(map.getScene().shadowMap).to.equal(newShadowMap);
     });
+
     it('should raise the shadowMapChanged event', () => {
       const changed = sandbox.spy();
       map.shadowMapChanged.addEventListener(changed);
       map.setShadowMap(newShadowMap);
       expect(changed).to.have.been.calledWithExactly(newShadowMap);
     });
+
     it('should only raise the shadowMapChanged event, if the shadow map actually changes', () => {
       const changed = sandbox.spy();
       map.shadowMapChanged.addEventListener(changed);
       map.setShadowMap(map._defaultShadowMap);
       expect(changed).to.not.have.been.called;
     });
+
     it('should set default shadow map', () => {
       map.setShadowMap(newShadowMap);
       map.setDefaultShadowMap();
       expect(map.getScene().shadowMap).to.equal(map._defaultShadowMap);
     });
+
     it('should set initialShadowMap', () => {
       const newMap = new CesiumMap({});
       newMap.setShadowMap(newShadowMap);

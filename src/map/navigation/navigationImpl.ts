@@ -1,5 +1,5 @@
-import VcsMap from '../vcsMap.js';
-import { Movement } from './navigation.js';
+import type VcsMap from '../vcsMap.js';
+import type { Movement } from './navigation.js';
 
 export type NavigationImplOptions = {
   /**

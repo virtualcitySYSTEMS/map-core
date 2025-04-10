@@ -21,7 +21,7 @@ import type {
   FlightInstanceOptions,
 } from './flightInstance.js';
 import { vcsMetaVersion } from '../../layer/vectorProperties.js';
-import { FlightAnchorGeojsonFeature } from './flightAnchor.js';
+import type { FlightAnchorGeojsonFeature } from './flightAnchor.js';
 
 /**
  * exports a flight as GeoJson FeatureCollection

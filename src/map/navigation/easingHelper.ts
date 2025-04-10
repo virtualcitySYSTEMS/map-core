@@ -1,9 +1,6 @@
 import { type Movement } from './navigation.js';
-import {
-  ControllerInput,
-  getZeroInput,
-  lerpRound,
-} from './controller/controllerInput.js';
+import type { ControllerInput } from './controller/controllerInput.js';
+import { getZeroInput, lerpRound } from './controller/controllerInput.js';
 
 const inputScratch = getZeroInput();
 

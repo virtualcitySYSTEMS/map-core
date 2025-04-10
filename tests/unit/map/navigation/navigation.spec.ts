@@ -1,27 +1,36 @@
-import sinon, { type SinonSandbox } from 'sinon';
+import type { SinonFakeTimers, SinonSandbox } from 'sinon';
+import sinon from 'sinon';
 import { expect } from 'chai';
 import { Math as CesiumMath } from '@vcmap-cesium/engine';
 import Navigation, {
   getZeroMovement,
 } from '../../../../src/map/navigation/navigation.js';
 import Controller from '../../../../src/map/navigation/controller/controller.js';
+import type { ControllerInput } from '../../../../src/map/navigation/controller/controllerInput.js';
 import {
-  ControllerInput,
   fromArray,
   getZeroInput,
   inputEquals,
   multiplyByScalar,
 } from '../../../../src/map/navigation/controller/controllerInput.js';
-import { CesiumMap } from '../../../../index.js';
+import type { CesiumMap } from '../../../../index.js';
 import { getCesiumMap, getVcsEventSpy } from '../../helpers/cesiumHelpers.js';
 
 const zeroMovement = getZeroMovement();
 
+const tick = 16;
+const times = 5;
+
 describe('Navigation', () => {
   let sandbox: SinonSandbox;
+  let clock: SinonFakeTimers;
 
   before(() => {
     sandbox = sinon.createSandbox();
+  });
+
+  beforeEach(() => {
+    clock = sandbox.useFakeTimers(performance.now());
   });
 
   afterEach(() => {
@@ -34,19 +43,16 @@ describe('Navigation', () => {
     let controllerInputSpy: sinon.SinonSpy;
     let applyInputSpy: sinon.SinonSpy;
     let updateNavigationSpy: sinon.SinonSpy;
-    let times: number;
 
     beforeEach(() => {
-      times = 5;
       sandbox
-        .stub(window, 'requestAnimationFrame')
+        .stub(global, 'requestAnimationFrame')
         .callsFake((callback: FrameRequestCallback) => {
           return setTimeout(() => {
             callback(performance.now());
-            window.requestAnimationFrame(callback);
-          }, 16) as unknown as number;
+          }, tick) as unknown as number;
         });
-      sandbox.stub(window, 'cancelAnimationFrame').callsFake((id: number) => {
+      sandbox.stub(global, 'cancelAnimationFrame').callsFake((id: number) => {
         clearTimeout(id);
       });
 
@@ -56,6 +62,7 @@ describe('Navigation', () => {
       controllerInputSpy = sandbox.spy(controller, 'getInputs');
       applyInputSpy = sandbox.spy(navigation, 'applyInput');
       updateNavigationSpy = sandbox.spy(navigation, 'updateNavigation');
+      clock.tick(tick * times);
     });
 
     afterEach(() => {
@@ -66,22 +73,15 @@ describe('Navigation', () => {
       expect(navigation.getControllers()).to.have.members([controller]);
     });
 
-    it('should start input loop', (done) => {
-      setTimeout(() => {
-        expect(applyInputSpy.callCount).to.be.equal(times);
-        expect(updateNavigationSpy.callCount).to.be.equal(times);
-        done();
-      }, times * 16);
+    it('should start input loop', () => {
+      expect(applyInputSpy.callCount).to.be.equal(times);
+      expect(updateNavigationSpy.callCount).to.be.equal(times);
     });
 
-    it('should request controllers', (done) => {
-      setTimeout(
-        () => {
-          expect(controllerInputSpy.callCount).to.be.equal(times);
-          done();
-        },
-        times * 16 + 8,
-      );
+    // Todo fix this test, with fakeTimers, at the moment it has too many erratic failures
+
+    it('should request controllers', () => {
+      expect(controllerInputSpy.callCount).to.be.equal(times);
     });
   });
 
@@ -100,6 +100,7 @@ describe('Navigation', () => {
       controllerInputSpy = sandbox.spy(controller, 'getInputs');
       applyInputSpy = sandbox.spy(navigation, 'applyInput');
       updateNavigationSpy = sandbox.spy(navigation, 'updateNavigation');
+      clock.tick(tick * times);
     });
 
     afterEach(() => {
@@ -125,6 +126,7 @@ describe('Navigation', () => {
 
     beforeEach(() => {
       navigation = new Navigation();
+      clock.tick(tick * times);
     });
 
     afterEach(() => {
@@ -232,6 +234,7 @@ describe('Navigation', () => {
     beforeEach(() => {
       navigation = new Navigation();
       navigation.mapActivated(map);
+      clock.tick(tick * times);
     });
 
     afterEach(() => {

@@ -1,7 +1,8 @@
 import type { GeoJSONObject } from 'ol/format/GeoJSON.js';
 import type { Feature } from 'ol/index.js';
 import { parseGeoJSON } from '../geojsonHelpers.js';
-import TileProvider, { TileProviderOptions } from './tileProvider.js';
+import type { TileProviderOptions } from './tileProvider.js';
+import TileProvider from './tileProvider.js';
 import { getInitForUrl, requestJson } from '../../util/fetch.js';
 import { tileProviderClassRegistry } from '../../classRegistry.js';
 
@@ -34,7 +35,6 @@ class StaticGeoJSONTileProvider extends TileProvider {
     this.url = options.url || defaultOptions.url;
   }
 
-  // eslint-disable-next-line no-unused-vars
   async loader(
     _x: number,
     _y: number,

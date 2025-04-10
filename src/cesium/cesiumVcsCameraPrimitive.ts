@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import {
   Cartesian3,
   Matrix3,
@@ -164,16 +165,16 @@ class VcsCameraPrimitive {
   destroy(): void {
     const { length } = this._planesPrimitives;
     for (let i = 0; i < length; ++i) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
+      // @ts-expect-error cs code
       this._outlinePrimitives[i] =
+        // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
         this._outlinePrimitives[i] && this._outlinePrimitives[i].destroy();
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
+      // @ts-expect-error cs code
       this._planesPrimitives[i] =
+        // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
         this._planesPrimitives[i] && this._planesPrimitives[i].destroy();
     }
-    return destroyObject(this);
+    destroyObject(this);
   }
 }
 

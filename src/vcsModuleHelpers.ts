@@ -45,7 +45,7 @@ export function deserializeViewpoint(
   viewpointObject: ViewpointOptions,
 ): null | Viewpoint {
   const viewpoint = new Viewpoint(viewpointObject);
-  if (viewpoint && viewpoint.isValid()) {
+  if (viewpoint.isValid()) {
     return viewpoint;
   }
   getLogger().warning(`Viewpoint ${String(viewpointObject.name)} is not valid`);
@@ -113,13 +113,13 @@ export function serializeLayer(
   // @ts-ignore
   serializedLayer.zIndex = layer[vcsApp.layers.zIndexSymbol] as number;
   if (
-    (serializedLayer?.style as StyleItemOptions)?.name &&
+    (serializedLayer.style as StyleItemOptions | undefined)?.name &&
     vcsApp.styles.hasKey((serializedLayer.style as StyleItemOptions).name)
   ) {
     serializedLayer.style = (serializedLayer.style as StyleItemOptions).name;
   }
   if (
-    (serializedLayer?.highlightStyle as StyleItemOptions)?.name &&
+    (serializedLayer.highlightStyle as StyleItemOptions | undefined)?.name &&
     vcsApp.styles.hasKey(
       (serializedLayer.highlightStyle as StyleItemOptions).name,
     )

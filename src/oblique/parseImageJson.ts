@@ -6,12 +6,12 @@ import {
   Matrix4,
   type CesiumTerrainProvider,
 } from '@vcmap-cesium/engine';
-import ObliqueImage, { ObliqueImageOptions } from './obliqueImage.js';
-import {
-  ObliqueViewDirection,
-  obliqueViewDirectionNames,
-} from './obliqueViewDirection.js';
-import ImageMeta, { ObliqueImageMetaOptions } from './obliqueImageMeta.js';
+import type { ObliqueImageOptions } from './obliqueImage.js';
+import ObliqueImage from './obliqueImage.js';
+import type { ObliqueViewDirection } from './obliqueViewDirection.js';
+import { obliqueViewDirectionNames } from './obliqueViewDirection.js';
+import type { ObliqueImageMetaOptions } from './obliqueImageMeta.js';
+import ImageMeta from './obliqueImageMeta.js';
 import Projection from '../util/projection.js';
 import type {
   ObliqueCameraOptions,
@@ -83,7 +83,7 @@ export function parseImageMeta(
     size,
     tileResolution,
     tileSize,
-    projection: imageProjection,
+    projection: imageProjection!,
     url,
     terrainProvider,
     headers,
@@ -96,7 +96,7 @@ export function parseImageMeta(
           new ImageMeta({
             ...defaultOptions,
             ...cameraOption,
-          } as ObliqueImageMetaOptions),
+          } satisfies ObliqueImageMetaOptions),
         );
       });
     } else if (typeof json.generalImageInfo.cameraParameter === 'object') {
@@ -107,7 +107,7 @@ export function parseImageMeta(
               name,
               ...defaultOptions,
               ...cameraOption,
-            } as ObliqueImageMetaOptions),
+            } satisfies ObliqueImageMetaOptions),
           );
         },
       );
@@ -119,7 +119,7 @@ export function parseImageMeta(
       new ImageMeta({
         name: 'default',
         ...defaultOptions,
-      } as ObliqueImageMetaOptions),
+      } satisfies ObliqueImageMetaOptions),
     );
   }
   return imageMetas;
@@ -233,8 +233,7 @@ export function parseLegacyImageData(
 ): ObliqueImage[] {
   const { cameraParameter } = json.generalImageInfo;
   const { version, buildNumber } = getVersionFromImageJson(json);
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
+  // @ts-expect-error: legacy images not properly typed
   return (json.images as LegacyImageJson[]).map((img) => {
     const viewDirection = obliqueViewDirectionNames[img['view-direction']];
     const viewDirectionAngle =

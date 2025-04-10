@@ -1,6 +1,6 @@
 import Cluster, { type Options } from 'ol/source/Cluster.js';
-import Feature from 'ol/Feature.js';
-import { Point } from 'ol/geom.js';
+import type Feature from 'ol/Feature.js';
+import type { Point } from 'ol/geom.js';
 import { vectorClusterGroupName } from '../../vectorCluster/vectorClusterSymbols.js';
 import { hidden } from '../../layer/featureVisibility.js';
 
@@ -9,11 +9,11 @@ import { hidden } from '../../layer/featureVisibility.js';
  * @extends {import("ol/source/Cluster").default}
  * @memberOf ol
  */
-class VcsCluster extends Cluster<Feature> {
+class VcsCluster extends Cluster {
   private _paused = false;
 
   constructor(
-    props: Options<Feature>,
+    props: Options,
     private _name: string,
   ) {
     props.geometryFunction =

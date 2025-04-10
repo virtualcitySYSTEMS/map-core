@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-deprecated */
 import { v4 as uuidv4 } from 'uuid';
 import { TrustedServers } from '@vcmap-cesium/engine';
 import type { ImageTile } from 'ol';

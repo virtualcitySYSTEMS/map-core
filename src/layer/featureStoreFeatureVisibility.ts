@@ -1,4 +1,5 @@
-import FeatureVisibility, { HighlightStyleType } from './featureVisibility.js';
+import type { HighlightStyleType } from './featureVisibility.js';
+import FeatureVisibility from './featureVisibility.js';
 import type FeatureStoreLayerChanges from './featureStoreLayerChanges.js';
 
 export default class FeatureStoreFeatureVisibility extends FeatureVisibility {

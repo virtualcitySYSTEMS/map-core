@@ -44,13 +44,12 @@ class FeatureProviderInteraction extends AbstractInteraction {
       );
       const features = (
         await Promise.all(
-          layersWithProvider.map(
-            (l) =>
-              l.featureProvider?.getFeaturesByCoordinate?.(
-                event.position as Coordinate,
-                resolution,
-                l.headers,
-              ),
+          layersWithProvider.map((l) =>
+            l.featureProvider?.getFeaturesByCoordinate?.(
+              event.position as Coordinate,
+              resolution,
+              l.headers,
+            ),
           ),
         )
       )

@@ -1,10 +1,10 @@
 import { check } from '@vcsuite/check';
 import { getLogger, type Logger } from '@vcsuite/logger';
 import VcsEvent from './vcsEvent.js';
-import {
+import type {
   // eslint-disable-next-line import/no-named-default
   default as ClassRegistry,
-  Ctor,
+  CtorType,
   AbstractCtor,
 } from './classRegistry.js';
 
@@ -12,24 +12,27 @@ function logger(): Logger {
   return getLogger('OverrideClassRegistry');
 }
 
-type ModuleEntry<T extends AbstractCtor> = { moduleId: string; ctor: Ctor<T> };
+type ModuleEntry<T extends AbstractCtor> = {
+  moduleId: string;
+  ctor: CtorType<T>;
+};
 
 class OverrideClassRegistry<T extends AbstractCtor> {
   private _coreClassRegistry: ClassRegistry<T>;
 
-  private _classMap: Map<string, ModuleEntry<T>> = new Map();
+  private _classMap = new Map<string, ModuleEntry<T>>();
 
-  private _classShadows: Map<string, ModuleEntry<T>[]> = new Map();
+  private _classShadows = new Map<string, ModuleEntry<T>[]>();
 
   /**
    * Called if a class was replaced. Is passed the className
    */
-  replaced: VcsEvent<string> = new VcsEvent();
+  replaced = new VcsEvent<string>();
 
   /**
    * Called if a class was removed. Is passed the className
    */
-  removed: VcsEvent<string> = new VcsEvent();
+  removed = new VcsEvent<string>();
 
   constructor(coreClassRegistry: ClassRegistry<T>) {
     this._coreClassRegistry = coreClassRegistry;
@@ -47,7 +50,7 @@ class OverrideClassRegistry<T extends AbstractCtor> {
   /**
    * Register a class for a given module by name. If the class already exists, it will be replaced and replaced called with the classeName.
    */
-  registerClass(moduleId: string, className: string, ctor: Ctor<T>): void {
+  registerClass(moduleId: string, className: string, ctor: CtorType<T>): void {
     check(moduleId, String);
     check(className, String);
     check(ctor, Function);
@@ -122,7 +125,7 @@ class OverrideClassRegistry<T extends AbstractCtor> {
   /**
    * Gets the constructor for a registered class or undefined, if no such class was registerd
    */
-  getClass(className: string): Ctor<T> | undefined {
+  getClass(className: string): CtorType<T> | undefined {
     check(className, String);
 
     if (this._classMap.has(className)) {
@@ -146,6 +149,7 @@ class OverrideClassRegistry<T extends AbstractCtor> {
   create(className: string, ...args: unknown[]): InstanceType<T> | undefined {
     check(className, String);
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const Constructor = this.getClass(className);
     if (!Constructor) {
       logger().error(`could not find constructor ${className}`);
@@ -167,7 +171,7 @@ class OverrideClassRegistry<T extends AbstractCtor> {
     check(options, { type: String });
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return this.create(options.type as string, options, ...args);
+    return this.create(options.type, options, ...args);
   }
 
   /**

@@ -2,6 +2,7 @@
 import OverrideClassRegistry from '../../src/overrideClassRegistry.js';
 import ClassRegistry from '../../src/classRegistry.js';
 
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 class Class {
   static get className() {
     return 'Class';
@@ -12,6 +13,7 @@ class Class {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 class Override {
   static get className() {
     return 'Class';

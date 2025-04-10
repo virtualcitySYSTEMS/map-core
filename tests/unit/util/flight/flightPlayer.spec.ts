@@ -1,14 +1,13 @@
 import sinon from 'sinon';
 import { expect } from 'chai';
-import { Scene } from '@vcmap-cesium/engine';
+import type { Scene } from '@vcmap-cesium/engine';
 import getDummyFlight from './getDummyFlightInstance.js';
 import { getVcsEventSpy, setCesiumMap } from '../../helpers/cesiumHelpers.js';
+import type { FlightPlayer, CesiumMap } from '../../../../index.js';
 import {
   FlightInstance,
   VcsApp,
   createFlightPlayer,
-  FlightPlayer,
-  CesiumMap,
 } from '../../../../index.js';
 
 function raisePostRender(cesiumMap: CesiumMap): void {

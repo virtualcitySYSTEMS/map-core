@@ -1,3 +1,4 @@
+import type { HeightReference, Scene } from '@vcmap-cesium/engine';
 import {
   BoxGeometry,
   BoxOutlineGeometry,
@@ -11,7 +12,6 @@ import {
   EllipsoidOutlineGeometry,
   GeometryInstance,
   HeadingPitchRoll,
-  HeightReference,
   Material,
   MaterialAppearance,
   Matrix4,
@@ -19,7 +19,6 @@ import {
   ModelAnimationLoop,
   PerInstanceColorAppearance,
   Primitive,
-  type Scene,
   SphereGeometry,
   SphereOutlineGeometry,
   Transforms,
@@ -27,24 +26,24 @@ import {
 import type { Feature } from 'ol/index.js';
 import { RegularShape, type Style } from 'ol/style.js';
 import { asColorLike } from 'ol/colorlike.js';
-import { Coordinate } from 'ol/coordinate.js';
-import { createSync } from '../../layer/vectorSymbols.js';
-import VectorProperties, {
+import type { Coordinate } from 'ol/coordinate.js';
+import { createSync, scaleSymbol } from '../../layer/vectorSymbols.js';
+import type { VectorPropertiesPrimitiveOptions } from '../../layer/vectorProperties.js';
+import type VectorProperties from '../../layer/vectorProperties.js';
+import {
   PrimitiveOptionsType,
   vectorPropertiesOfType,
-  VectorPropertiesPrimitiveOptions,
 } from '../../layer/vectorProperties.js';
 import { getCesiumColor } from '../../style/styleHelpers.js';
 import ModelFill from '../../style/modelFill.js';
-import { ColorType } from '../../style/vectorStyleItem.js';
+import type { ColorType } from '../../style/vectorStyleItem.js';
 import { wgs84ToCartographic } from '../math.js';
-import { ConvertedItem } from './convert.js';
-import {
-  isRelativeHeightReference,
+import type { ConvertedItem } from './convert.js';
+import type {
   RelativeHeightReference,
   VectorHeightInfo,
 } from './vectorHeightInfo.js';
-import { scaleSymbol } from '../../layer/cesium/vectorContext.js';
+import { isRelativeHeightReference } from './vectorHeightInfo.js';
 
 function makeOffsetAutoScalePrimitive(
   primitive: Primitive | Model,

@@ -2,10 +2,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { Cartesian2 } from '@vcmap-cesium/engine';
 import { check, maybe } from '@vcsuite/check';
 import { getLogger as getLoggerByName, type Logger } from '@vcsuite/logger';
-import AbstractInteraction, {
-  InteractionEvent,
-  MapEvent,
-} from './abstractInteraction.js';
+import type { InteractionEvent, MapEvent } from './abstractInteraction.js';
+import AbstractInteraction from './abstractInteraction.js';
 import InteractionChain from './interactionChain.js';
 import CoordinateAtPixel from './coordinateAtPixel.js';
 import FeatureAtPixelInteraction from './featureAtPixelInteraction.js';
@@ -417,7 +415,7 @@ class EventHandler {
       this._running = true;
       this._interactionChain
         .pipe(event)
-        .catch((error) => {
+        .catch((error: unknown) => {
           getLogger().error((error as Error).message);
         })
         .finally(() => {

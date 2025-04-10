@@ -1,5 +1,6 @@
 /* eslint-disable no-template-curly-in-string,@typescript-eslint/ban-ts-comment */
-import Stroke, { Options as StrokeOptions } from 'ol/style/Stroke.js';
+import type { Options as StrokeOptions } from 'ol/style/Stroke.js';
+import Stroke from 'ol/style/Stroke.js';
 import { Color, TrustedServers, VerticalOrigin } from '@vcmap-cesium/engine';
 import Icon, { type Options as IconOptions } from 'ol/style/Icon.js';
 import Style, { type StyleFunction } from 'ol/style/Style.js';
@@ -9,12 +10,13 @@ import type { Size } from 'ol/size.js';
 import Fill, { type Options as FillOptions } from 'ol/style/Fill.js';
 import Circle from 'ol/style/Circle.js';
 import RegularShape from 'ol/style/RegularShape.js';
-import { Color as OLColor } from 'ol/color.js';
-import { ColorLike as OLColorLike } from 'ol/colorlike.js';
+import type { Color as OLColor } from 'ol/color.js';
+import type { ColorLike as OLColorLike } from 'ol/colorlike.js';
 import type { Feature } from 'ol/index.js';
 
 import { check, maybe, oneOf, strict } from '@vcsuite/check';
-import StyleItem, { StyleItemOptions } from './styleItem.js';
+import type { StyleItemOptions } from './styleItem.js';
+import StyleItem from './styleItem.js';
 import {
   parseColor,
   PatternType,
@@ -212,14 +214,9 @@ class VectorStyleItem extends StyleItem {
       checkColor(options.fill);
       if (options.fill.pattern) {
         checkStroke(options.fill.pattern);
-        if (
-          !(
-            options.fill.pattern.type &&
-            Object.values(PatternType).includes(options.fill.pattern.type)
-          )
-        ) {
+        if (!Object.values(PatternType).includes(options.fill.pattern.type)) {
           this.getLogger().error(
-            `Cannot find pattern ${options.fill.pattern.type}`,
+            `Cannot find pattern ${String(options.fill.pattern.type)}`,
           );
           options.fill.pattern.type = PatternType.NWSE;
         }
@@ -260,10 +257,10 @@ class VectorStyleItem extends StyleItem {
           this.getLogger().error('radius must be a number');
           options.image.radius = 5;
         }
-        if ((options.image.fill as FillOptions)?.color) {
+        if ((options.image.fill as FillOptions | undefined)?.color) {
           checkColor(options.image.fill as { color: ColorType }); // XXX PatternDescriptor
         }
-        if ((options.image.stroke as StrokeOptions)?.color) {
+        if ((options.image.stroke as StrokeOptions | undefined)?.color) {
           checkStroke(options.image.stroke as StrokeOptions);
         }
       }
@@ -284,7 +281,7 @@ class VectorStyleItem extends StyleItem {
       if (!color) {
         this._fillOptions = null;
         this._fill = undefined;
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
         // @ts-ignore // bug in ol def. you can set fill undefined
         this._style.setFill(this._fill);
         this.updateCesiumStyleColor(true);
@@ -350,7 +347,7 @@ class VectorStyleItem extends StyleItem {
     this.exclude.stroke = false;
     if (this._style instanceof Style) {
       check(stroke, maybe(Stroke));
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
       // @ts-ignore // bug in ol
       this._style.setStroke(stroke);
       this._stroke = stroke;
@@ -384,8 +381,8 @@ class VectorStyleItem extends StyleItem {
     if (this._style instanceof Style) {
       check(text, maybe(OLText));
       this._text = text;
-      this._text?.setText?.(this._label);
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      this._text?.setText(this._label);
+
       // @ts-ignore // bug in ol
       this._style.setText(this._text);
     } else {
@@ -402,7 +399,7 @@ class VectorStyleItem extends StyleItem {
     if (this._style instanceof Style) {
       check(image, maybe(OLImage));
       this._image = image;
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
       // @ts-ignore // bug in ol
       this._style.setImage(this._image);
       this.updateCesiumStyle();
@@ -478,20 +475,20 @@ class VectorStyleItem extends StyleItem {
     const colorConditions = getDefaultCondition('olcs_color', true);
     if (this.stroke && this.stroke.getColor()) {
       colorConditions.splice(1, 0, [
-        `\${olcs_geometryType}===${OlcsGeometryType.POLYLINE}`,
+        `\${olcs_geometryType}===${String(OlcsGeometryType.POLYLINE)}`,
         getStringColor(this.stroke.getColor()),
       ]);
     }
     if (this._image instanceof Circle && this._image.getFill()) {
       colorConditions.splice(1, 0, [
-        `\${olcs_geometryType}===${OlcsGeometryType.POINT}`,
+        `\${olcs_geometryType}===${String(OlcsGeometryType.POINT)}`,
         getStringColor(this._image.getFill()!.getColor() as OLColor),
       ]);
     }
     if (this.fillColor) {
       colorConditions.splice(-1, 1, ['true', getStringColor(this.fillColor)]);
     }
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
     // @ts-ignore
     this.cesiumStyle.color = { conditions: colorConditions };
 
@@ -529,10 +526,7 @@ class VectorStyleItem extends StyleItem {
     */
     if (this._image) {
       if (this._image.getScale() != null) {
-        scaleConditions.splice(1, 1, [
-          'true',
-          `${String(this._image.getScale())}`,
-        ]);
+        scaleConditions.splice(1, 1, ['true', String(this._image.getScale())]);
       }
       if (this._image instanceof Circle) {
         const stroke = this._image.getStroke();
@@ -545,10 +539,10 @@ class VectorStyleItem extends StyleItem {
             ]);
           }
           const width = this._image.getStroke()!.getWidth() as number;
-          pointOutlineWidthConditions.splice(1, 1, ['true', `${width}`]);
+          pointOutlineWidthConditions.splice(1, 1, ['true', String(width)]);
           size -= width;
         }
-        pointSizeConditions.splice(1, 1, ['true', `${size}`]);
+        pointSizeConditions.splice(1, 1, ['true', String(size)]);
       } else if (this._image instanceof RegularShape) {
         const dataUrl = this._image.getImage(1).toDataURL();
         imageConditions.splice(1, 1, ['true', `"${dataUrl}"`]);
@@ -634,7 +628,7 @@ class VectorStyleItem extends StyleItem {
         ]);
         labelOutlineWidthConditions.splice(1, 1, [
           'true',
-          `${this._text.getStroke()!.getWidth() || 1.25}`,
+          String(this._text.getStroke()!.getWidth() || 1.25),
         ]);
       }
     }
@@ -713,7 +707,7 @@ class VectorStyleItem extends StyleItem {
     return new VectorStyleItem(config);
   }
 
-  assign(result: VectorStyleItem): VectorStyleItem {
+  assign(result: VectorStyleItem): this {
     super.assign(result);
     if (result.fillColor) {
       this.fillColor = result.fillColor.slice();
@@ -793,7 +787,7 @@ class VectorStyleItem extends StyleItem {
   getOptionsForFeature(feature: Feature): VectorStyleItemOptions {
     const type = feature.getGeometry()?.getType();
     const extrusion = !!feature.get('olcs_extrudedHeight');
-    const sections: Set<keyof VectorStyleItemOptions> = new Set();
+    const sections = new Set<keyof VectorStyleItemOptions>();
 
     if (type === 'Point' || type === 'MultiPoint') {
       if (feature[vectorStyleSymbol]?.label != null) {

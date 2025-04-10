@@ -1,7 +1,7 @@
 type Listener<T> = (event: T) => Promise<void> | void;
 
 class VcsEvent<T> {
-  private _listeners: Set<Listener<T>> = new Set();
+  private _listeners = new Set<Listener<T>>();
 
   /**
    * The number of listeners

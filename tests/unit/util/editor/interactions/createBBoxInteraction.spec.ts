@@ -1,6 +1,7 @@
 import { Polygon } from 'ol/geom.js';
 import { expect } from 'chai';
-import sinon, { SinonSpy } from 'sinon';
+import type { SinonSpy } from 'sinon';
+import sinon from 'sinon';
 import { Cartesian2 } from '@vcmap-cesium/engine';
 import CreateBBoxInteraction from '../../../../../src/util/editor/interactions/createBBoxInteraction.js';
 import { GeometryType } from '../../../../../src/util/editor/editorSessionHelpers.js';
@@ -13,10 +14,8 @@ import {
 } from '../../../../../src/interaction/interactionType.js';
 import OpenlayersMap from '../../../../../src/map/openlayersMap.js';
 import ObliqueMap from '../../../../../src/map/obliqueMap.js';
-import {
-  alreadyTransformedToMercator,
-  CesiumMap,
-} from '../../../../../index.js';
+import type { CesiumMap } from '../../../../../index.js';
+import { alreadyTransformedToMercator } from '../../../../../index.js';
 import { getCesiumMap } from '../../../helpers/cesiumHelpers.js';
 
 describe('CreateBBoxInteraction', () => {

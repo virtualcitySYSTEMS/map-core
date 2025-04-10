@@ -1,26 +1,26 @@
-import {
+import type {
   Billboard,
-  Cartographic,
-  CustomDataSource,
   Entity,
   HeightReference,
   Label,
-  Math as CesiumMath,
   PointPrimitive,
   VerticalOrigin,
+} from '@vcmap-cesium/engine';
+import {
+  Cartographic,
+  CustomDataSource,
+  Math as CesiumMath,
 } from '@vcmap-cesium/engine';
 import Feature from 'ol/Feature.js';
 import Point from 'ol/geom/Point.js';
 import { getStylesArray } from '../util/featureconverter/convert.js';
 import { getBillboardOptions } from '../util/featureconverter/pointToCesium.js';
 import Projection from '../util/projection.js';
-import CesiumMap from '../map/cesiumMap.js';
-import { VectorClusterGroupImplementationOptions } from './vectorClusterGroup.js';
+import type CesiumMap from '../map/cesiumMap.js';
+import type { VectorClusterGroupImplementationOptions } from './vectorClusterGroup.js';
 import VectorClusterCesiumContext from './vectorClusterCesiumContext.js';
-import {
-  createSourceVectorContextSync,
-  SourceVectorContextSync,
-} from '../layer/cesium/sourceVectorContextSync.js';
+import type { SourceVectorContextSync } from '../layer/cesium/sourceVectorContextSync.js';
+import { createSourceVectorContextSync } from '../layer/cesium/sourceVectorContextSync.js';
 import VectorClusterGroupImpl from './vectorClusterGroupImpl.js';
 import { vectorClusterGroupName } from './vectorClusterSymbols.js';
 import type VectorLayer from '../layer/vectorLayer.js';
@@ -130,6 +130,9 @@ export default class VectorClusterGroupCesiumImpl extends VectorClusterGroupImpl
       this._context = new VectorClusterCesiumContext(this._rootCollection);
       this._rootCollection[vectorClusterGroupName] = this.name;
       await this.map.addClusterDataSource(this._rootCollection);
+      if (this.isDestroyed) {
+        return;
+      }
       this._sourceVectorContextSync = createSourceVectorContextSync(
         this._source,
         this._context,

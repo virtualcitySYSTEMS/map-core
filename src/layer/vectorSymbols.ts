@@ -46,6 +46,11 @@ export const createSync: unique symbol = Symbol('createSync');
 export const primitives: unique symbol = Symbol('primitives');
 
 /**
+ * An INTERNAL symbol used to keep track of the scale of scaled feature primitives.
+ */
+export const scaleSymbol: unique symbol = Symbol('Scale');
+
+/**
  * Attached to all panorama features with the properties required to create a panorama image
  */
 export const panoramaFeature = Symbol('panoramaFeature');

@@ -3,13 +3,15 @@ import type { Feature as GeojsonFeature, FeatureCollection } from 'geojson';
 import { SplitDirection } from '@vcmap-cesium/engine';
 import VectorSource from 'ol/source/Vector.js';
 import { createEmpty, extend as extendExtent } from 'ol/extent.js';
-import Style, { StyleFunction } from 'ol/style/Style.js';
+import type { StyleFunction } from 'ol/style/Style.js';
+import type Style from 'ol/style/Style.js';
 import type { GeoJSONObject } from 'ol/format/GeoJSON.js';
 
-import VectorLayer, {
+import type {
   VectorImplementationOptions,
   VectorOptions,
 } from './vectorLayer.js';
+import VectorLayer from './vectorLayer.js';
 import { featureStoreStateSymbol } from './featureStoreLayerState.js';
 import { parseGeoJSON } from './geojsonHelpers.js';
 import { mercatorProjection } from '../util/projection.js';
@@ -30,10 +32,8 @@ import CesiumTilesetCesiumImpl, {
 import CesiumMap from '../map/cesiumMap.js';
 import OpenlayersMap from '../map/openlayersMap.js';
 import ObliqueMap from '../map/obliqueMap.js';
-import VectorProperties, {
-  VcsMeta,
-  vcsMetaVersion,
-} from './vectorProperties.js';
+import type { VcsMeta } from './vectorProperties.js';
+import VectorProperties, { vcsMetaVersion } from './vectorProperties.js';
 import VectorOpenlayersImpl from './openlayers/vectorOpenlayersImpl.js';
 import DeclarativeStyleItem from '../style/declarativeStyleItem.js';
 import VectorObliqueImpl from './oblique/vectorObliqueImpl.js';
@@ -42,9 +42,9 @@ import { isMobile } from '../util/isMobile.js';
 import { layerClassRegistry } from '../classRegistry.js';
 import { requestJson } from '../util/fetch.js';
 import { vcsLayerName } from './layerSymbols.js';
-import StyleItem from '../style/styleItem.js';
-import VcsMap from '../map/vcsMap.js';
-import VectorCesiumImpl from './cesium/vectorCesiumImpl.js';
+import type StyleItem from '../style/styleItem.js';
+import type VcsMap from '../map/vcsMap.js';
+import type VectorCesiumImpl from './cesium/vectorCesiumImpl.js';
 import FeatureStoreFeatureVisibility from './featureStoreFeatureVisibility.js';
 import VectorPanoramaImpl from './panorama/vectorPanoramaImpl.js';
 
@@ -462,7 +462,7 @@ class FeatureStoreLayer extends VectorLayer {
               }
             });
           })
-          .catch((err) => {
+          .catch((err: unknown) => {
             this.getLogger().error(
               `failed to set two dims editing: ${String(err)}`,
             );
@@ -482,9 +482,13 @@ class FeatureStoreLayer extends VectorLayer {
       ? extent.getCoordinatesInProjection(mercatorProjection)
       : createEmpty();
     if (this.staticRepresentation.threeDim) {
-      const threeDImpl = this.getImplementations().find((impl) => {
-        return impl instanceof CesiumTilesetCesiumImpl && impl.cesium3DTileset;
-      }) as CesiumTilesetCesiumImpl;
+      const threeDImpl = this.getImplementations().find(
+        (impl): impl is CesiumTilesetCesiumImpl => {
+          return !!(
+            impl instanceof CesiumTilesetCesiumImpl && impl.cesium3DTileset
+          );
+        },
+      );
 
       if (threeDImpl?.cesium3DTileset) {
         const threeDimExtent = getExtentFromTileset(threeDImpl.cesium3DTileset);
@@ -551,7 +555,7 @@ class FeatureStoreLayer extends VectorLayer {
           this.addFeatures(features);
           return features[0];
         })
-        .catch((err) => {
+        .catch((err: unknown) => {
           this.getLogger().error((err as Error).message);
         }) as Promise<Feature>;
     }

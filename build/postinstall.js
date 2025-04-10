@@ -3,7 +3,7 @@ import fs from 'fs';
 
 async function* getFilesInDirectory(filePath) {
   const entries = await fs.promises.readdir(filePath, { withFileTypes: true });
-  // eslint-disable-next-line no-restricted-syntax
+
   for (const file of entries) {
     if (file.isDirectory()) {
       yield* getFilesInDirectory(path.join(filePath, file.name));

@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import {
   BoundingSphere,
   Entity,
@@ -17,6 +18,7 @@ import {
   ContextLimits,
   Fog,
 } from '@vcmap-cesium/engine';
+import sinon from 'sinon';
 import CesiumTilesetLayer from '../../../src/layer/cesiumTilesetLayer.js';
 import DataSourceLayer from '../../../src/layer/dataSourceLayer.js';
 import CesiumMap from '../../../src/map/cesiumMap.js';

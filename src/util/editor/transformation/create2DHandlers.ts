@@ -7,10 +7,10 @@ import { Fill, Icon, Stroke, Style } from 'ol/style.js';
 import { Color } from '@vcmap-cesium/engine';
 import { unByKey } from 'ol/Observable.js';
 import { handlerSymbol } from '../editorSymbols.js';
+import type { Handlers } from './transformationTypes.js';
 import {
   AxisAndPlanes,
   greyedOutColor,
-  Handlers,
   is1DAxis,
   is2DAxis,
   TransformationMode,

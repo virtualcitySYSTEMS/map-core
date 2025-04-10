@@ -1,6 +1,6 @@
 import deepEqual from 'fast-deep-equal';
+import type { Camera } from '@vcmap-cesium/engine';
 import {
-  Camera,
   Cartographic,
   Ellipsoid,
   Math as CesiumMath,

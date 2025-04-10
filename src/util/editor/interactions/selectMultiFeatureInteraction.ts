@@ -1,20 +1,20 @@
 import type { Feature } from 'ol/index.js';
 import type { Cesium3DTileFeature } from '@vcmap-cesium/engine';
-import AbstractInteraction, {
-  EventAfterEventHandler,
-} from '../../../interaction/abstractInteraction.js';
+import type { EventAfterEventHandler } from '../../../interaction/abstractInteraction.js';
+import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import {
   EventType,
   ModificationKeyType,
 } from '../../../interaction/interactionType.js';
 import VcsEvent from '../../../vcsEvent.js';
 import { vcsLayerName } from '../../../layer/layerSymbols.js';
-import FeatureStoreLayer, {
-  isTiledFeature,
-} from '../../../layer/featureStoreLayer.js';
-import type { SelectFeatureInteraction } from '../editorHelpers.js';
+import type FeatureStoreLayer from '../../../layer/featureStoreLayer.js';
+import { isTiledFeature } from '../../../layer/featureStoreLayer.js';
+import type {
+  SelectFeatureInteraction,
+  SelectableFeatureType,
+} from '../editorHelpers.js';
 import type VectorLayer from '../../../layer/vectorLayer.js';
-import { SelectableFeatureType } from '../editorHelpers.js';
 
 /**
  * Interaction to create a selection set from the given layer.
@@ -29,7 +29,7 @@ class SelectMultiFeatureInteraction
 {
   private _layer: VectorLayer;
 
-  private _selectedFeatures: Map<string | number, Feature> = new Map();
+  private _selectedFeatures = new Map<string | number, Feature>();
 
   /**
    * Event raised when the feature selection changes. Will be called with an array of features or an empty array, when no feature is selected

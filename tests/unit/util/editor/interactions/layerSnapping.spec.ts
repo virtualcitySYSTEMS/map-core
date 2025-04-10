@@ -1,15 +1,17 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { Cartesian2 } from '@vcmap-cesium/engine';
-import { LineString, Point, Polygon } from 'ol/geom.js';
+import { LineString, Point } from 'ol/geom.js';
 import { Feature } from 'ol';
-import {
+import type {
   CesiumMap,
+  ObliqueMap,
+  OpenlayersMap,
+} from '../../../../../index.js';
+import {
   EventType,
   LayerSnapping,
   ModificationKeyType,
-  ObliqueMap,
-  OpenlayersMap,
   PointerEventType,
   PointerKeyType,
   VectorLayer,
@@ -153,7 +155,7 @@ describe('Layer Snapping', () => {
       });
 
       it('should set the edge feature to the snapped edge', async () => {
-        const modifiedEvent = await layerSnapping.pipe({
+        await layerSnapping.pipe({
           ...eventBase,
           type: EventType.MOVE,
           position: [0.6, 0.05],

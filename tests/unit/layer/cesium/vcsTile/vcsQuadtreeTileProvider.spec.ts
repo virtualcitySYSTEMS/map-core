@@ -1,17 +1,16 @@
 import { expect } from 'chai';
+import type { FrameState, QuadtreeTile } from '@vcmap-cesium/engine';
 import {
   CreditDisplay,
   CullingVolume,
   Fog,
-  FrameState,
   PrimitiveCollection,
-  QuadtreeTile,
   QuadtreeTileLoadState,
   Rectangle,
   SplitDirection,
 } from '@vcmap-cesium/engine';
+import type { CesiumMap } from '../../../../../index.js';
 import {
-  CesiumMap,
   FeatureVisibility,
   TileProvider,
   VcsTileType,
@@ -20,7 +19,7 @@ import {
 } from '../../../../../index.js';
 import VcsQuadtreeTileProvider from '../../../../../src/layer/cesium/vcsTile/vcsQuadtreeTileProvider.js';
 import { getCesiumMap } from '../../../helpers/cesiumHelpers.js';
-import { VcsTile } from '../../../../../src/layer/cesium/vcsTile/vcsTileHelpers.js';
+import type { VcsTile } from '../../../../../src/layer/cesium/vcsTile/vcsTileHelpers.js';
 import { timeout } from '../../../helpers/helpers.js';
 
 describe('VcsQuadtreeProvider', () => {
@@ -55,7 +54,9 @@ describe('VcsQuadtreeProvider', () => {
       },
     );
     quadtreeTileProvider.quadtree = {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       beginFrame(_f: FrameState): void {},
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       endFrame(_f: FrameState): void {},
       forEachLoadedTile(cb: (tile: QuadtreeTile) => void): void {
         cb(tile);
@@ -64,6 +65,7 @@ describe('VcsQuadtreeProvider', () => {
         cb(tile);
       },
       invalidateAllTiles(): void {},
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       render(_f: FrameState): void {},
     };
     frameState = {

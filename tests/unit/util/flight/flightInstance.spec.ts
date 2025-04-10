@@ -1,10 +1,9 @@
 import { expect } from 'chai';
 import nock from 'nock';
+import type { FlightAnchor, FlightInstanceOptions } from '../../../../index.js';
 import {
   anchorFromViewpoint,
-  FlightAnchor,
   FlightInstance,
-  FlightInstanceOptions,
   Viewpoint,
 } from '../../../../index.js';
 import { getVcsEventSpy } from '../../helpers/cesiumHelpers.js';

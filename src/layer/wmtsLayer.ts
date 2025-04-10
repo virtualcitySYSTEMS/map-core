@@ -3,11 +3,11 @@ import { getLogger } from '@vcsuite/logger';
 import type { Size } from 'ol/size.js';
 import type { Options as OLWMTSOptions } from 'ol/source/WMTS.js';
 
-import RasterLayer, {
+import type {
   RasterLayerImplementationOptions,
   RasterLayerOptions,
-  TilingScheme,
 } from './rasterLayer.js';
+import RasterLayer, { TilingScheme } from './rasterLayer.js';
 import OpenlayersMap from '../map/openlayersMap.js';
 import CesiumMap from '../map/cesiumMap.js';
 import WmtsOpenlayersImpl from './openlayers/wmtsOpenlayersImpl.js';
@@ -33,7 +33,7 @@ export type WMTSImplementationOptions = RasterLayerImplementationOptions & {
   style: string;
   format: string;
   tileMatrixSetID: string;
-  tileSize: import('ol/size.js').Size;
+  tileSize: Size;
   numberOfLevelZeroTilesX: number;
   numberOfLevelZeroTilesY: number;
   matrixIds: string[];

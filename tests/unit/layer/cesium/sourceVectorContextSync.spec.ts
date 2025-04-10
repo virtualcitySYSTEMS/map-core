@@ -1,25 +1,20 @@
 import { expect } from 'chai';
 import Feature from 'ol/Feature.js';
 import VectorSource from 'ol/source/Vector.js';
-import { StyleLike } from 'ol/style/Style.js';
+import type { StyleLike } from 'ol/style/Style.js';
 import { LineString, Point } from 'ol/geom.js';
-import {
-  Primitive,
-  PrimitiveCollection,
-  SplitDirection,
-} from '@vcmap-cesium/engine';
+import type { Primitive } from '@vcmap-cesium/engine';
+import { PrimitiveCollection, SplitDirection } from '@vcmap-cesium/engine';
 import { timeout } from '../../helpers/helpers.js';
+import type { CesiumMap } from '../../../../index.js';
 import {
-  CesiumMap,
   defaultVectorStyle,
   VectorContext,
   VectorProperties,
 } from '../../../../index.js';
 import { getCesiumMap } from '../../helpers/cesiumHelpers.js';
-import {
-  createSourceVectorContextSync,
-  SourceVectorContextSync,
-} from '../../../../src/layer/cesium/sourceVectorContextSync.js';
+import type { SourceVectorContextSync } from '../../../../src/layer/cesium/sourceVectorContextSync.js';
+import { createSourceVectorContextSync } from '../../../../src/layer/cesium/sourceVectorContextSync.js';
 
 function createFeature(): Feature {
   return new Feature({

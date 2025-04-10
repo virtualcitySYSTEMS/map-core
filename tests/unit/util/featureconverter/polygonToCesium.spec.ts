@@ -13,14 +13,14 @@ import {
 } from '@vcmap-cesium/engine';
 import Style from 'ol/style/Style.js';
 import Stroke from 'ol/style/Stroke.js';
-import { Coordinate } from 'ol/coordinate.js';
+import type { Coordinate } from 'ol/coordinate.js';
 import { expect } from 'chai';
 import {
   getPolygonGeometryFactory,
   validatePolygon,
 } from '../../../../src/util/featureconverter/polygonToCesium.js';
 import Projection from '../../../../src/util/projection.js';
-import {
+import type {
   CesiumGeometryOption,
   PolygonGeometryOptions,
   VectorGeometryFactory,
@@ -124,6 +124,7 @@ describe('polygonToCesium', () => {
       expect(
         (
           polylineGeometrys[0].geometry as unknown as {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             _positions: Cartesian3[];
           }
         )._positions,
@@ -131,6 +132,7 @@ describe('polygonToCesium', () => {
       expect(
         (
           polylineGeometrys[1].geometry as unknown as {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             _positions: Cartesian3[];
           }
         )._positions,
@@ -140,6 +142,7 @@ describe('polygonToCesium', () => {
 
   describe('createGroundLineGeometries', () => {
     let style: Style;
+
     before(() => {
       style = new Style({
         stroke: new Stroke({
@@ -162,17 +165,6 @@ describe('polygonToCesium', () => {
       expect(polylineGeometrys[1].geometry).to.be.instanceOf(
         GroundPolylineGeometry,
       );
-    });
-  });
-
-  describe('createLineGeometries', () => {
-    let style = null;
-    before(() => {
-      style = new Style({
-        stroke: new Stroke({
-          width: 2.5,
-        }),
-      });
     });
   });
 

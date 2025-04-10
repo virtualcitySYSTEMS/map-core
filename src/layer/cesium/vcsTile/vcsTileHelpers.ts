@@ -1,19 +1,21 @@
+import type {
+  PrimitiveCollection,
+  QuadtreeTile,
+  SplitDirection,
+  TilingScheme,
+} from '@vcmap-cesium/engine';
 import {
   HeightReference,
   Math as CesiumMath,
-  PrimitiveCollection,
-  QuadtreeTile,
   Rectangle,
-  SplitDirection,
   TileBoundingRegion,
-  TilingScheme,
 } from '@vcmap-cesium/engine';
-import { StyleLike } from 'ol/style/Style.js';
-import { Extent as OLExtent } from 'ol/extent.js';
+import type { StyleLike } from 'ol/style/Style.js';
+import type { Extent as OLExtent } from 'ol/extent.js';
 import type CesiumMap from '../../../map/cesiumMap.js';
 import Projection from '../../../util/projection.js';
-import TileProvider from '../../tileProvider/tileProvider.js';
-import VectorProperties from '../../vectorProperties.js';
+import type TileProvider from '../../tileProvider/tileProvider.js';
+import type VectorProperties from '../../vectorProperties.js';
 
 export enum VcsTileState {
   LOADING,

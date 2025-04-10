@@ -1,18 +1,17 @@
-import { ImageryLayer, SplitDirection } from '@vcmap-cesium/engine';
+import type { ImageryLayer } from '@vcmap-cesium/engine';
+import { SplitDirection } from '@vcmap-cesium/engine';
 
 import { parseInteger, parseNumberRange } from '@vcsuite/parsers';
-import Layer, { type LayerOptions, SplitLayer } from './layer.js';
+import Layer, { type SplitLayer, type LayerOptions } from './layer.js';
 import OpenlayersMap from '../map/openlayersMap.js';
 import CesiumMap from '../map/cesiumMap.js';
 import OpenStreetMapOpenlayersImpl from './openlayers/openStreetMapOpenlayersImpl.js';
 import OpenStreetMapCesiumImpl from './cesium/openStreetMapCesiumImpl.js';
 import VcsEvent from '../vcsEvent.js';
 import { layerClassRegistry } from '../classRegistry.js';
-import {
-  RasterLayerImplementationOptions,
-  TilingScheme,
-} from './rasterLayer.js';
-import VcsMap from '../map/vcsMap.js';
+import type { RasterLayerImplementationOptions } from './rasterLayer.js';
+import { TilingScheme } from './rasterLayer.js';
+import type VcsMap from '../map/vcsMap.js';
 
 export type OpenStreetMapOptions = LayerOptions & {
   /**
@@ -76,7 +75,7 @@ class OpenStreetMapLayer
   /**
    * raised if the split direction changes, is passed the split direction as its only argument
    */
-  splitDirectionChanged: VcsEvent<SplitDirection> = new VcsEvent();
+  splitDirectionChanged = new VcsEvent<SplitDirection>();
 
   /**
    * The maximum level to load.

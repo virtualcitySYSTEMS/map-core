@@ -10,11 +10,9 @@ import {
   validateLineString,
   getGeometryOptions as getLineStringGeometryOptions,
 } from './lineStringToCesium.js';
-import {
-  mercatorToCartesianTransformerForHeightInfo,
-  VectorHeightInfo,
-} from './vectorHeightInfo.js';
-import {
+import type { VectorHeightInfo } from './vectorHeightInfo.js';
+import { mercatorToCartesianTransformerForHeightInfo } from './vectorHeightInfo.js';
+import type {
   PolylineGeometryOptions,
   VectorGeometryFactory,
 } from './vectorGeometryFactory.js';
@@ -37,7 +35,7 @@ function getGeometryOptions(
  * @param arcCoords - the coordinates of the arc to use instead of the geometries coordinates if height mode is absolute
  * @param altitudeMode
  */
-// eslint-disable-next-line import/prefer-default-export
+
 export function getArcGeometryFactory(
   arcCoords: Coordinate[],
   altitudeMode: HeightReference,

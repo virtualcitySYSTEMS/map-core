@@ -1,8 +1,7 @@
+import type { ClippingPolygon, Globe } from '@vcmap-cesium/engine';
 import {
   Cesium3DTileset,
-  ClippingPolygon,
   ClippingPolygonCollection,
-  Globe,
 } from '@vcmap-cesium/engine';
 import type CesiumMap from '../../map/cesiumMap.js';
 import { vcsLayerName } from '../../layer/layerSymbols.js';
@@ -29,6 +28,7 @@ export function addClippingPolygon(
       clippee.clippingPolygons = new ClippingPolygonCollection();
     }
     if (!clippee.clippingPolygons.contains(polygon)) {
+      clippee.clippingPolygons.setDirty();
       clippee.clippingPolygons.add(polygon);
     }
   }

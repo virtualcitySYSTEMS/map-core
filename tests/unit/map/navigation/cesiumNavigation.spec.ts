@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { Cartesian3 } from '@vcmap-cesium/engine';
-import CesiumMap from '../../../../src/map/cesiumMap.js';
+import type CesiumMap from '../../../../src/map/cesiumMap.js';
 import CesiumNavigation from '../../../../src/map/navigation/cesiumNavigation.js';
 import { getCesiumMap } from '../../helpers/cesiumHelpers.js';
 
@@ -34,6 +34,7 @@ describe('CesiumNavigation', () => {
     });
     expect(camera?.position.y).to.be.greaterThan(startPosition.y);
   });
+
   it('should not update camera, if movement is below moveThreshold', () => {
     const { camera } = map.getScene()!;
     const startPosition = camera.position.clone(new Cartesian3());

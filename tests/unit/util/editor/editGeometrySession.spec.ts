@@ -3,11 +3,10 @@ import { Feature } from 'ol';
 import sinon from 'sinon';
 import { Circle, LineString, MultiPoint, Point, Polygon } from 'ol/geom.js';
 import { Cartesian2, HeightReference } from '@vcmap-cesium/engine';
+import type { EditGeometrySession, MapEvent } from '../../../../index.js';
 import {
   createSync,
-  EditGeometrySession,
   EventType,
-  MapEvent,
   ModificationKeyType,
   ObliqueMap,
   OpenlayersMap,

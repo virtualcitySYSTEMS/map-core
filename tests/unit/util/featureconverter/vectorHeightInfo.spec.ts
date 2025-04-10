@@ -1,17 +1,19 @@
 import Feature from 'ol/Feature.js';
 import { LineString, Point } from 'ol/geom.js';
-import { Coordinate } from 'ol/coordinate.js';
+import type { Coordinate } from 'ol/coordinate.js';
 import { expect } from 'chai';
 import { HeightReference } from '@vcmap-cesium/engine';
 import VectorProperties, {
   PrimitiveOptionsType,
 } from '../../../../src/layer/vectorProperties.js';
+import type {
+  RelativeHeightReference,
+  VectorHeightInfo,
+} from '../../../../src/util/featureconverter/vectorHeightInfo.js';
 import {
   getGeometryHeight,
   getHeightInfo,
   mercatorToWgs84TransformerForHeightInfo,
-  RelativeHeightReference,
-  VectorHeightInfo,
 } from '../../../../src/util/featureconverter/vectorHeightInfo.js';
 import Projection from '../../../../src/util/projection.js';
 import { arrayCloseTo } from '../../helpers/helpers.js';
@@ -568,6 +570,7 @@ describe('VectorHeightInfo', () => {
         expect(heightInfo.clampOrigin).to.have.members([0.5, 0.5]);
       });
     });
+
     describe('determining per position height', () => {
       describe('of an absolute height reference', () => {
         let geometry: Point;

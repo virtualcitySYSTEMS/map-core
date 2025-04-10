@@ -96,6 +96,7 @@ export async function mercatorGeometryToImageGeometry(
     inputSourceGeometry instanceof Circle
       ? fromCircle(inputSourceGeometry)
       : inputSourceGeometry;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const coordinates = sourceGeometry.getCoordinates() as any[];
   const flattenCoordinates = getFlatCoordinateReferences(
     sourceGeometry,
@@ -150,6 +151,7 @@ export function imageGeometryToMercatorGeometry(
   destinationGeometry: Geometry,
   image: ObliqueImage,
 ): Promise<Geometry> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const coordinates = sourceGeometry.getCoordinates() as any[];
   const flattenCoordinates = getFlatCoordinateReferences(
     sourceGeometry,

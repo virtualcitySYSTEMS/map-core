@@ -69,6 +69,7 @@ describe('rotation', () => {
       );
     });
   });
+
   describe('startRotation and stopRotation request exclusiveMapControl', () => {
     it('should raise exclusiveMapControlsChanged event with id "rotation" on startRotation', async () => {
       const spy = sinon.spy(app.maps.exclusiveMapControlsChanged, 'raiseEvent');

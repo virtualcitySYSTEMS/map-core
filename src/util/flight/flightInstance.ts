@@ -1,15 +1,18 @@
 import type { FeatureCollection, Point as GeojsonPoint } from 'geojson';
 import { parseBoolean, parseNumber } from '@vcsuite/parsers';
 import { check, oneOf } from '@vcsuite/check';
-import VcsObject, { VcsObjectOptions } from '../../vcsObject.js';
+import type { VcsObjectOptions } from '../../vcsObject.js';
+import VcsObject from '../../vcsObject.js';
 import VcsEvent from '../../vcsEvent.js';
 import { parseFlightOptionsFromGeoJson } from './flightHelpers.js';
 import { requestJson } from '../fetch.js';
-import {
+import type {
   FlightAnchor,
+  FlightAnchorGeojsonFeature,
+} from './flightAnchor.js';
+import {
   anchorFromGeojsonFeature,
   anchorToGeojsonFeature,
-  FlightAnchorGeojsonFeature,
 } from './flightAnchor.js';
 import IndexedCollection from '../indexedCollection.js';
 import { destroyCollection } from '../../vcsModuleHelpers.js';
@@ -54,7 +57,7 @@ class FlightInstance extends VcsObject {
 
   private _readyPromise: Promise<void> | null = null;
 
-  private _anchorListeners: Map<string, () => void> = new Map();
+  private _anchorListeners = new Map<string, () => void>();
 
   static getDefaultOptions(): FlightInstanceOptions {
     return {

@@ -7,19 +7,14 @@ import MultiPolygon from 'ol/geom/MultiPolygon.js';
 import LineString from 'ol/geom/LineString.js';
 import MultiLineString from 'ol/geom/MultiLineString.js';
 import GeometryCollection from 'ol/geom/GeometryCollection.js';
-import { Coordinate } from 'ol/coordinate.js';
-import {
-  Cartographic,
-  HeightReference,
-  Math as CesiumMath,
-  Scene,
-} from '@vcmap-cesium/engine';
-import { Geometry } from 'ol/geom.js';
+import type { Coordinate } from 'ol/coordinate.js';
+import type { Cartographic, Scene } from '@vcmap-cesium/engine';
+import { HeightReference, Math as CesiumMath } from '@vcmap-cesium/engine';
+import type { Geometry } from 'ol/geom.js';
 import { Feature } from 'ol';
 import {
   circleFromCenterRadius,
   convertGeometryToPolygon,
-  createAbsoluteFeature,
   from2Dto3DLayout,
   from3Dto2DLayout,
   getFlatCoordinateReferences,
@@ -35,6 +30,7 @@ import {
   wgs84Projection,
 } from '../../../index.js';
 import { arrayCloseTo } from '../helpers/helpers.js';
+import { createAbsoluteFeature } from '../../../src/util/createAbsoluteFeature.js';
 
 describe('util.geometryHelpers', () => {
   describe('convertGeometryToPolygon', () => {
@@ -199,29 +195,30 @@ describe('util.geometryHelpers', () => {
 
   describe('getFlatCoordinatesFromGeometry', () => {
     let geometries: {
-      Point: Point;
-      LineString: LineString;
-      MultiPoint: MultiPoint;
-      Polygon: Polygon;
-      MultiLineString: MultiLineString;
-      Circle: Circle;
-      MultiPolygon: MultiPolygon;
-      GeometryCollection: GeometryCollection;
+      point: Point;
+      lineString: LineString;
+      multiPoint: MultiPoint;
+      polygon: Polygon;
+      multiLineString: MultiLineString;
+      circle: Circle;
+      multiPolygon: MultiPolygon;
+      geometryCollection: GeometryCollection;
     };
     let keys: (keyof typeof geometries)[];
-    let flatCoordinates: Record<string, Coordinate[]>;
+    let flatCoordinates: Record<keyof typeof geometries, Coordinate[]>;
+
     before(() => {
       geometries = {
-        Point: new Point([1, 1, 1]),
-        LineString: new LineString([
+        point: new Point([1, 1, 1]),
+        lineString: new LineString([
           [1, 1, 1],
           [2, 2, 2],
         ]),
-        MultiPoint: new MultiPoint([
+        multiPoint: new MultiPoint([
           [1, 1, 1],
           [2, 2, 2],
         ]),
-        Polygon: new Polygon([
+        polygon: new Polygon([
           [
             [0, 0, 0],
             [10, 0, 0],
@@ -235,7 +232,7 @@ describe('util.geometryHelpers', () => {
             [8, 0, 0],
           ],
         ]),
-        MultiLineString: new MultiLineString([
+        multiLineString: new MultiLineString([
           [
             [1, 1, 1],
             [2, 2, 2],
@@ -245,8 +242,8 @@ describe('util.geometryHelpers', () => {
             [3, 3, 3],
           ],
         ]),
-        Circle: new Circle([0, 0, 0], 1, 'XYZ'),
-        MultiPolygon: new MultiPolygon([
+        circle: new Circle([0, 0, 0], 1, 'XYZ'),
+        multiPolygon: new MultiPolygon([
           [
             [
               [0, 0, 0],
@@ -267,27 +264,27 @@ describe('util.geometryHelpers', () => {
             ],
           ],
         ]),
-        GeometryCollection: new GeometryCollection([]),
+        geometryCollection: new GeometryCollection([]),
       };
-      geometries.GeometryCollection = new GeometryCollection([
-        geometries.Point.clone(),
-        geometries.LineString.clone(),
-        geometries.Polygon.clone(),
-        geometries.MultiLineString.clone(),
-        geometries.Circle.clone(),
+      geometries.geometryCollection = new GeometryCollection([
+        geometries.point.clone(),
+        geometries.lineString.clone(),
+        geometries.polygon.clone(),
+        geometries.multiLineString.clone(),
+        geometries.circle.clone(),
       ]);
       keys = Object.keys(geometries) as (keyof typeof geometries)[];
       flatCoordinates = {
-        Point: [[1, 1, 1]],
-        LineString: [
+        point: [[1, 1, 1]],
+        lineString: [
           [1, 1, 1],
           [2, 2, 2],
         ],
-        MultiPoint: [
+        multiPoint: [
           [1, 1, 1],
           [2, 2, 2],
         ],
-        Polygon: [
+        polygon: [
           [0, 0, 0],
           [10, 0, 0],
           [10, 10, 0],
@@ -297,17 +294,17 @@ describe('util.geometryHelpers', () => {
           [8, 8, 0],
           [8, 0, 0],
         ],
-        MultiLineString: [
+        multiLineString: [
           [1, 1, 1],
           [2, 2, 2],
           [1, 1, 1],
           [3, 3, 3],
         ],
-        Circle: [
+        circle: [
           [0, 0, 0],
           [1, 0, 0],
         ],
-        MultiPolygon: [
+        multiPolygon: [
           [0, 0, 0],
           [1, 0, 0],
           [0, 1, 0],
@@ -318,13 +315,14 @@ describe('util.geometryHelpers', () => {
           [0, 4, 0],
           [1, 4, 0],
         ],
+        geometryCollection: [],
       };
-      flatCoordinates.GeometryCollection = [
-        flatCoordinates.Point,
-        flatCoordinates.LineString,
-        flatCoordinates.Polygon,
-        flatCoordinates.MultiLineString,
-        flatCoordinates.Circle,
+      flatCoordinates.geometryCollection = [
+        flatCoordinates.point,
+        flatCoordinates.lineString,
+        flatCoordinates.polygon,
+        flatCoordinates.multiLineString,
+        flatCoordinates.circle,
       ].flat();
     });
 
@@ -338,7 +336,7 @@ describe('util.geometryHelpers', () => {
     it('should get the flat coordinates with a reference to the original', () => {
       keys.forEach((key) => {
         const coords =
-          key === 'Circle'
+          key === 'circle'
             ? [
                 geometries[key].getFirstCoordinate(),
                 geometries[key].getLastCoordinate(),
@@ -1870,29 +1868,29 @@ describe('util.geometryHelpers', () => {
 
     describe('of 3D features', () => {
       let geometries: {
-        Point: Point;
-        LineString: LineString;
-        MultiPoint: MultiPoint;
-        Polygon: Polygon;
-        MultiLineString: MultiLineString;
-        Circle: Circle;
-        MultiPolygon: MultiPolygon;
-        GeometryCollection: GeometryCollection;
+        point: Point;
+        lineString: LineString;
+        multiPoint: MultiPoint;
+        polygon: Polygon;
+        multiLineString: MultiLineString;
+        circle: Circle;
+        multiPolygon: MultiPolygon;
+        geometryCollection: GeometryCollection;
       };
       let inputFeatures: Feature[];
 
       before(() => {
         geometries = {
-          Point: new Point([1, 1, 1]),
-          LineString: new LineString([
+          point: new Point([1, 1, 1]),
+          lineString: new LineString([
             [1, 1, 1],
             [2, 2, 2],
           ]),
-          MultiPoint: new MultiPoint([
+          multiPoint: new MultiPoint([
             [1, 1, 1],
             [2, 2, 2],
           ]),
-          Polygon: new Polygon([
+          polygon: new Polygon([
             [
               [0, 0, 0],
               [10, 0, 0],
@@ -1906,7 +1904,7 @@ describe('util.geometryHelpers', () => {
               [8, 0, 0],
             ],
           ]),
-          MultiLineString: new MultiLineString([
+          multiLineString: new MultiLineString([
             [
               [1, 1, 1],
               [2, 2, 2],
@@ -1916,8 +1914,8 @@ describe('util.geometryHelpers', () => {
               [3, 3, 3],
             ],
           ]),
-          Circle: new Circle([1, 0, 0], 1, 'XYZ'),
-          MultiPolygon: new MultiPolygon([
+          circle: new Circle([1, 0, 0], 1, 'XYZ'),
+          multiPolygon: new MultiPolygon([
             [
               [
                 [0, 0, 0],
@@ -1938,13 +1936,13 @@ describe('util.geometryHelpers', () => {
               ],
             ],
           ]),
-          GeometryCollection: new GeometryCollection([]),
+          geometryCollection: new GeometryCollection([]),
         };
-        geometries.GeometryCollection = new GeometryCollection([
-          geometries.Point.clone(),
-          geometries.LineString.clone(),
-          geometries.Polygon.clone(),
-          geometries.MultiLineString.clone(),
+        geometries.geometryCollection = new GeometryCollection([
+          geometries.point.clone(),
+          geometries.lineString.clone(),
+          geometries.polygon.clone(),
+          geometries.multiLineString.clone(),
         ]);
         inputFeatures = Object.values(geometries).map((geometry) => {
           geometry.transform(wgs84Projection.proj, mercatorProjection.proj);
@@ -2260,29 +2258,29 @@ describe('util.geometryHelpers', () => {
 
     describe('of 2D features', () => {
       let geometries: {
-        Point: Point;
-        LineString: LineString;
-        MultiPoint: MultiPoint;
-        Polygon: Polygon;
-        MultiLineString: MultiLineString;
-        Circle: Circle;
-        MultiPolygon: MultiPolygon;
-        GeometryCollection: GeometryCollection;
+        point: Point;
+        lineString: LineString;
+        multiPoint: MultiPoint;
+        polygon: Polygon;
+        multiLineString: MultiLineString;
+        circle: Circle;
+        multiPolygon: MultiPolygon;
+        geometryCollection: GeometryCollection;
       };
       let inputFeatures: Feature[];
 
       before(() => {
         geometries = {
-          Point: new Point([1, 1]),
-          LineString: new LineString([
+          point: new Point([1, 1]),
+          lineString: new LineString([
             [1, 1],
             [2, 2],
           ]),
-          MultiPoint: new MultiPoint([
+          multiPoint: new MultiPoint([
             [1, 1],
             [2, 2],
           ]),
-          Polygon: new Polygon([
+          polygon: new Polygon([
             [
               [0, 0],
               [10, 0],
@@ -2296,7 +2294,7 @@ describe('util.geometryHelpers', () => {
               [8, 0],
             ],
           ]),
-          MultiLineString: new MultiLineString([
+          multiLineString: new MultiLineString([
             [
               [1, 1],
               [2, 2],
@@ -2306,8 +2304,8 @@ describe('util.geometryHelpers', () => {
               [3, 3],
             ],
           ]),
-          Circle: new Circle([1, 0], 1, 'XY'),
-          MultiPolygon: new MultiPolygon([
+          circle: new Circle([1, 0], 1, 'XY'),
+          multiPolygon: new MultiPolygon([
             [
               [
                 [0, 0],
@@ -2328,13 +2326,13 @@ describe('util.geometryHelpers', () => {
               ],
             ],
           ]),
-          GeometryCollection: new GeometryCollection([]),
+          geometryCollection: new GeometryCollection([]),
         };
-        geometries.GeometryCollection = new GeometryCollection([
-          geometries.Point.clone(),
-          geometries.LineString.clone(),
-          geometries.Polygon.clone(),
-          geometries.MultiLineString.clone(),
+        geometries.geometryCollection = new GeometryCollection([
+          geometries.point.clone(),
+          geometries.lineString.clone(),
+          geometries.polygon.clone(),
+          geometries.multiLineString.clone(),
         ]);
         inputFeatures = Object.values(geometries).map((geometry) => {
           geometry.transform(wgs84Projection.proj, mercatorProjection.proj);

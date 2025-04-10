@@ -1,8 +1,8 @@
 import {
   ImageryLayer as CesiumImageryLayer,
   Rectangle,
-  WebMercatorTilingScheme,
   WebMapServiceImageryProvider,
+  WebMercatorTilingScheme,
 } from '@vcmap-cesium/engine';
 import type { Size } from 'ol/size.js';
 
@@ -11,6 +11,7 @@ import { wgs84Projection } from '../../util/projection.js';
 import type { WMSImplementationOptions } from '../wmsLayer.js';
 import type CesiumMap from '../../map/cesiumMap.js';
 import { getResourceOrUrl } from './resourceHelper.js';
+import { TilingScheme } from '../rasterLayer.js';
 
 /**
  * represents a specific Cesium WmsCesiumImpl Layer class.
@@ -60,7 +61,7 @@ class WmsCesiumImpl extends RasterLayerCesiumImpl {
         );
       }
     }
-    if (this.tilingSchema === 'mercator') {
+    if (this.tilingSchema === TilingScheme.MERCATOR) {
       options.tilingScheme = new WebMercatorTilingScheme();
     }
 

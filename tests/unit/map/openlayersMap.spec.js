@@ -63,6 +63,7 @@ describe('OpenlayersMap', () => {
   describe('setting a viewpoint', () => {
     describe('with a fixed north oriented map', () => {
       let map;
+
       before(async () => {
         map = new OpenlayersMap({});
         await map.initialize();
@@ -104,7 +105,7 @@ describe('OpenlayersMap', () => {
         });
       });
 
-      describe('with a regular viewpoint', () => {
+      describe('viewpoint integrity', () => {
         it('should not manipulate the provided viewpoint', async () => {
           const viewpoint = new Viewpoint({
             groundPosition: [0, 0, 0],

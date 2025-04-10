@@ -1,10 +1,12 @@
 import Feature from 'ol/Feature.js';
-import Style, { StyleFunction, StyleLike } from 'ol/style/Style.js';
+import type { StyleFunction, StyleLike } from 'ol/style/Style.js';
+import Style from 'ol/style/Style.js';
 import Fill from 'ol/style/Fill.js';
 import Stroke from 'ol/style/Stroke.js';
 import RegularShape from 'ol/style/RegularShape.js';
 import { expect } from 'chai';
 import { Polygon, MultiPolygon, LineString } from 'ol/geom.js';
+import type { Primitive, Scene } from '@vcmap-cesium/engine';
 import {
   Cartesian3,
   ClassificationPrimitive,
@@ -12,18 +14,17 @@ import {
   GroundPrimitive,
   Math as CesiumMath,
   Matrix4,
-  Primitive,
-  Scene,
   Transforms,
 } from '@vcmap-cesium/engine';
-import sinon, { SinonSandbox } from 'sinon';
+import type { SinonSandbox } from 'sinon';
+import sinon from 'sinon';
 import convert, {
   getStylesArray,
 } from '../../../../src/util/featureconverter/convert.js';
+import type { CesiumMap } from '../../../../index.js';
 import {
   ArrowEnd,
   ArrowStyle,
-  CesiumMap,
   mercatorToCartesian,
   PrimitiveOptionsType,
   VectorProperties,

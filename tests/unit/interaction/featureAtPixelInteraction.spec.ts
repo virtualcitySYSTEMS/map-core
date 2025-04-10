@@ -1,17 +1,15 @@
 import { expect } from 'chai';
-import sinon, { SinonSandbox, SinonSpy, SinonStub } from 'sinon';
+import type { SinonSandbox, SinonStub } from 'sinon';
+import sinon from 'sinon';
+import type { Primitive, Scene } from '@vcmap-cesium/engine';
 import {
   Cartesian2,
   Cartesian3,
-  CesiumWidget,
   Clock,
   Entity,
-  JulianDate,
-  Primitive,
   Ray,
-  Scene,
 } from '@vcmap-cesium/engine';
-import { Coordinate } from 'ol/coordinate.js';
+import type { Coordinate } from 'ol/coordinate.js';
 import Feature from 'ol/Feature.js';
 import FeatureAtPixel from '../../../src/interaction/featureAtPixelInteraction.js';
 import OpenlayersMap from '../../../src/map/openlayersMap.js';
@@ -22,19 +20,18 @@ import {
   PointerKeyType,
 } from '../../../src/interaction/interactionType.js';
 import Projection from '../../../src/util/projection.js';
-import VectorLayer from '../../../src/layer/vectorLayer.js';
 import {
   createDummyCesium3DTileFeature,
   setCesiumMap,
 } from '../helpers/cesiumHelpers.js';
 import VcsApp from '../../../src/vcsApp.js';
 import { allowPicking, vcsLayerName } from '../../../src/layer/layerSymbols.js';
-import {
+import type {
   CesiumMap,
   FeatureAtPixelInteraction,
   InteractionEvent,
-  vectorClusterGroupName,
 } from '../../../index.js';
+import { vectorClusterGroupName } from '../../../index.js';
 import { primitives } from '../../../src/layer/vectorSymbols.js';
 import { arrayCloseTo } from '../helpers/helpers.js';
 
@@ -350,9 +347,10 @@ describe('FeatureAtPixelInteraction', () => {
           key: ModificationKeyType.NONE,
         };
 
+        // @ts-expect-error: stub
         sandbox.stub(cesiumMap, 'getCesiumWidget').returns({
           clock: new Clock({}),
-        } as CesiumWidget);
+        });
         fap.pickTranslucent = false;
 
         return fap
@@ -380,9 +378,10 @@ describe('FeatureAtPixelInteraction', () => {
           key: ModificationKeyType.NONE,
         };
 
+        // @ts-expect-error: stub
         sandbox.stub(cesiumMap, 'getCesiumWidget').returns({
           clock: new Clock({}),
-        } as CesiumWidget);
+        });
         sceneStub.pickTranslucentDepth = true;
         fap.pickTranslucent = true;
         await fap.pipe(event);
@@ -413,6 +412,110 @@ describe('FeatureAtPixelInteraction', () => {
         expect(pickFromRay).to.have.been.calledWith(event.ray, [primitive]);
         expect(event).to.have.property('position');
         arrayCloseTo(event.position!, Projection.wgs84ToMercator([12, 12, 0]));
+      });
+
+      it('should not update the position if the pickFromRay returns Cartesian.ZERO', async () => {
+        const olFeature = new Feature({});
+        const primitive = {};
+        olFeature[primitives] = [primitive as Primitive];
+        const pickFromRay = sandbox.stub();
+        pickFromRay.returns({
+          position: Cartesian3.ZERO,
+        });
+        sceneStub.pickFromRay = pickFromRay;
+        pick.returns({ primitive: { olFeature } });
+        fap.excludeFromPickPosition(olFeature);
+        fap.pullPickedPosition = EventType.NONE;
+        const event = await fap.pipe({
+          ray: new Ray(),
+          pointer: PointerKeyType.LEFT,
+          pointerEvent: PointerEventType.DOWN,
+          windowPosition: new Cartesian2(0, 0),
+          map: cesiumMap,
+          type: EventType.CLICK,
+          key: ModificationKeyType.NONE,
+          position: [12, 12, 0],
+          positionOrPixel: [12, 12, 0],
+        });
+        expect(pickFromRay).to.have.been.calledWith(event.ray, [primitive]);
+        expect(event).to.have.property('position');
+        arrayCloseTo(event.position!, [12, 12, 0]);
+      });
+
+      describe('with globe transparency', () => {
+        beforeEach(() => {
+          sceneStub.globe.translucency.enabled = true;
+        });
+
+        afterEach(() => {
+          sceneStub.globe.translucency.enabled = false;
+        });
+
+        it('should pick underground features, if they arent too far away', async () => {
+          const olFeature = new Feature({});
+          const primitive = {};
+          olFeature[primitives] = [primitive as Primitive];
+
+          const pickFromRay = sandbox.stub();
+          pickFromRay.returns({
+            position: Cartesian3.fromDegrees(12, 12, -10),
+          });
+          const globePick = sandbox.stub();
+          globePick.returns(Cartesian3.fromDegrees(12, 12, 0));
+
+          sceneStub.pickFromRay = pickFromRay;
+          sceneStub.globe.pick = globePick;
+          pick.returns({ primitive: { olFeature } });
+          fap.excludeFromPickPosition(olFeature);
+          fap.pullPickedPosition = EventType.NONE;
+          const event = await fap.pipe({
+            ray: new Ray(),
+            pointer: PointerKeyType.LEFT,
+            pointerEvent: PointerEventType.DOWN,
+            windowPosition: new Cartesian2(0, 0),
+            map: cesiumMap,
+            type: EventType.CLICK,
+            key: ModificationKeyType.NONE,
+          });
+          expect(pickFromRay).to.have.been.calledWith(event.ray, [primitive]);
+          expect(event).to.have.property('position');
+          arrayCloseTo(
+            event.position!,
+            Projection.wgs84ToMercator([12, 12, -10]),
+          );
+        });
+
+        it('should not pick underground features, if they aren too far away', async () => {
+          const olFeature = new Feature({});
+          const primitive = {};
+          olFeature[primitives] = [primitive as Primitive];
+          const pickFromRay = sandbox.stub();
+          pickFromRay.returns({
+            position: Cartesian3.fromDegrees(12, 12, -20000),
+          });
+          const globePick = sandbox.stub();
+          globePick.returns(Cartesian3.fromDegrees(12, 12, 0));
+          sceneStub.pickFromRay = pickFromRay;
+          sceneStub.globe.pick = globePick;
+          pick.returns({ primitive: { olFeature } });
+          fap.excludeFromPickPosition(olFeature);
+          fap.pullPickedPosition = EventType.NONE;
+          const event = await fap.pipe({
+            ray: new Ray(),
+            pointer: PointerKeyType.LEFT,
+            pointerEvent: PointerEventType.DOWN,
+            windowPosition: new Cartesian2(0, 0),
+            map: cesiumMap,
+            type: EventType.CLICK,
+            key: ModificationKeyType.NONE,
+          });
+          expect(pickFromRay).to.have.been.calledWith(event.ray, [primitive]);
+          expect(event).to.have.property('position');
+          arrayCloseTo(
+            event.position!,
+            Projection.wgs84ToMercator([12, 12, 0]),
+          );
+        });
       });
     });
   });

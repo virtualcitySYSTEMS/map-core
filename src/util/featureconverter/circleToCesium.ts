@@ -11,11 +11,9 @@ import {
   PolylineGeometry,
 } from '@vcmap-cesium/engine';
 import { parseNumber } from '@vcsuite/parsers';
-import {
-  mercatorToCartesianTransformerForHeightInfo,
-  VectorHeightInfo,
-} from './vectorHeightInfo.js';
-import {
+import type { VectorHeightInfo } from './vectorHeightInfo.js';
+import { mercatorToCartesianTransformerForHeightInfo } from './vectorHeightInfo.js';
+import type {
   CesiumGeometryOption,
   CircleGeometryOptions,
   VectorGeometryFactory,

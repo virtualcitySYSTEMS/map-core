@@ -1,16 +1,15 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { LineString, Polygon } from 'ol/geom.js';
-import { Extent as OLExtent } from 'ol/extent.js';
-import Feature from 'ol/Feature.js';
+import type { Extent as OLExtent } from 'ol/extent.js';
+import type Feature from 'ol/Feature.js';
 import { getOpenlayersMap } from '../../../helpers/openlayersHelpers.js';
+import type { Handlers, OpenlayersMap } from '../../../../../index.js';
 import {
   AxisAndPlanes,
   create2DHandlers,
-  Handlers,
   handlerSymbol,
   mercatorProjection,
-  OpenlayersMap,
   TransformationMode,
   VectorLayer,
 } from '../../../../../index.js';

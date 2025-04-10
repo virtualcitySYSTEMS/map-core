@@ -16,9 +16,8 @@ import type { Size } from 'ol/size.js';
 import type { Feature } from 'ol/index.js';
 // eslint-disable-next-line import/no-named-default
 import type { default as Style, StyleFunction } from 'ol/style/Style.js';
-import TileProvider, {
-  rectangleToExtent,
-} from '../tileProvider/tileProvider.js';
+import type TileProvider from '../tileProvider/tileProvider.js';
+import { rectangleToExtent } from '../tileProvider/tileProvider.js';
 import { wgs84ToMercatorTransformer } from '../../util/projection.js';
 import CanvasTileRenderer from '../../ol/render/canvas/canvasTileRenderer.js';
 
@@ -119,6 +118,7 @@ class VectorTileImageryProvider {
 
   maxLevel = 26;
 
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   _reload: undefined | (() => void) = undefined;
 
   constructor(options: VectorTileImageryProviderOptions) {
@@ -133,7 +133,7 @@ class VectorTileImageryProvider {
     this.headers = options.headers;
   }
 
-  // eslint-disable-next-line class-methods-use-this
+  // eslint-disable-next-line class-methods-use-this,@typescript-eslint/naming-convention
   get _ready(): boolean {
     return true;
   }

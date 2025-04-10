@@ -1,20 +1,18 @@
 import { expect } from 'chai';
+import type { QuadtreeTile } from '@vcmap-cesium/engine';
 import {
   GroundPrimitive,
-  Primitive,
   PrimitiveCollection,
-  QuadtreeTile,
   QuadtreeTileLoadState,
   Rectangle,
   SplitDirection,
 } from '@vcmap-cesium/engine';
 import { Feature } from 'ol';
 import { Polygon } from 'ol/geom.js';
+import type { CesiumMap, VcsTile } from '../../../../../index.js';
 import {
-  CesiumMap,
   Projection,
   StaticFeatureTileProvider,
-  VcsTile,
   VcsTileState,
   VcsVectorTile,
   VectorStyleItem,

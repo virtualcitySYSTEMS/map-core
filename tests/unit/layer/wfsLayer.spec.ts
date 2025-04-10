@@ -1,5 +1,6 @@
 import { expect } from 'chai';
-import WFSLayer, { WFSOptions } from '../../../src/layer/wfsLayer.js';
+import type { WFSOptions } from '../../../src/layer/wfsLayer.js';
+import WFSLayer from '../../../src/layer/wfsLayer.js';
 
 describe('WFSLayer', () => {
   describe('getting config objects', () => {
@@ -19,9 +20,7 @@ describe('WFSLayer', () => {
           featurePrefix: 'fPrefix',
         };
         configuredLayer = new WFSLayer(inputConfig);
-        console.log(configuredLayer);
         outputConfig = configuredLayer.toJSON();
-        console.log(outputConfig);
       });
 
       after(() => {

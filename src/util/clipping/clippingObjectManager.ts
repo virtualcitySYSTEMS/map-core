@@ -23,13 +23,13 @@ class ClippingObjectManager {
     return 'ClippingObjectManager';
   }
 
-  private _defaultClippingObjects: Set<ClippingObject> = new Set();
+  private _defaultClippingObjects = new Set<ClippingObject>();
 
   private _exclusiveClippingObjects: ClippingObject[] | null = null;
 
-  private _targetsMap: Map<ClippingTarget, ClippingObject> = new Map();
+  private _targetsMap = new Map<ClippingTarget, ClippingObject>();
 
-  private _listenersMap: Map<ClippingObject, (() => void)[]> = new Map();
+  private _listenersMap = new Map<ClippingObject, (() => void)[]>();
 
   private _exclusiveRemovedCb: (() => void) | null = null;
 

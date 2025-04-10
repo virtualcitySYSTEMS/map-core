@@ -1,12 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { Scene } from '@vcmap-cesium/engine';
 import {
   HeightReference,
   sampleTerrainMostDetailed,
-  Scene,
 } from '@vcmap-cesium/engine';
 import { offset as offsetSphere } from 'ol/sphere.js';
 import type { Coordinate } from 'ol/coordinate.js';
 import { fromCircle } from 'ol/geom/Polygon.js';
-import { GeometryLayout } from 'ol/geom/Geometry.js';
+import type { GeometryLayout } from 'ol/geom/Geometry.js';
 import {
   Circle,
   type Geometry,
@@ -19,18 +20,8 @@ import {
   Polygon,
   SimpleGeometry,
 } from 'ol/geom.js';
-import { Feature } from 'ol';
 import Projection from './projection.js';
 import { mercatorToCartographic } from './math.js';
-import VectorProperties from '../layer/vectorProperties.js';
-import {
-  getHeightInfo,
-  isClampedHeightReference,
-  isRelativeHeightReference,
-  RelativeHeightReference,
-  VectorHeightInfo,
-} from './featureconverter/vectorHeightInfo.js';
-import { getSingleGeometriesFromGeometry } from './featureconverter/convert.js';
 
 export function getFlatCoordinatesFromSimpleGeometry(
   geometry: SimpleGeometry,
@@ -329,127 +320,4 @@ export async function from2Dto3DLayout(
   if (is2DLayout(geometry.getLayout())) {
     await drapeGeometryOnSurface(geometry, scene, heightReference);
   }
-}
-
-function setZCoordinate(geometry: Geometry, z: number): void {
-  const layout = geometry.getLayout();
-  const coordinates = geometry.getCoordinates() as any[];
-  const flatCoordinates = getFlatCoordinateReferences(geometry, coordinates);
-
-  flatCoordinates.forEach((c) => {
-    if (layout === 'XYM') {
-      c[3] = c[2];
-      c[2] = z;
-    } else {
-      c[2] = z;
-    }
-  });
-
-  geometry.setCoordinates(
-    coordinates,
-    layout === 'XYM' || layout === 'XYZM' ? 'XYZM' : 'XYZ',
-  );
-}
-
-export async function createAbsoluteFeature(
-  feature: Feature,
-  vectorProperties: VectorProperties,
-  scene: Scene,
-): Promise<Feature | null> {
-  const clone = feature.clone();
-  const geometry = clone.getGeometry();
-  if (!geometry) {
-    return null;
-  }
-
-  const altitudeMode = vectorProperties.getAltitudeMode(clone);
-  let groundLevel = vectorProperties.getGroundLevel(clone);
-
-  if (altitudeMode === HeightReference.NONE) {
-    if (groundLevel != null) {
-      setZCoordinate(geometry, groundLevel);
-    } else if (is2DLayout(geometry.getLayout())) {
-      await from2Dto3DLayout(geometry, scene, HeightReference.CLAMP_TO_GROUND);
-    }
-  } else if (isClampedHeightReference(altitudeMode)) {
-    if (groundLevel != null) {
-      setZCoordinate(geometry, groundLevel);
-    } else {
-      await drapeGeometryOnSurface(
-        geometry,
-        scene,
-        altitudeMode !== HeightReference.CLAMP_TO_TERRAIN
-          ? HeightReference.CLAMP_TO_GROUND
-          : HeightReference.CLAMP_TO_TERRAIN,
-      );
-    }
-  } else if (isRelativeHeightReference(altitudeMode)) {
-    const singleGeometries = getSingleGeometriesFromGeometry(geometry);
-    await Promise.all(
-      singleGeometries.map(async (singleGeometry) => {
-        const heightInfo = getHeightInfo(
-          clone,
-          singleGeometry,
-          vectorProperties,
-        ) as VectorHeightInfo<RelativeHeightReference>;
-
-        ({ groundLevel } = heightInfo);
-        if (heightInfo.clampOrigin) {
-          const cartographics = [
-            mercatorToCartographic(heightInfo.clampOrigin),
-          ];
-          if (
-            heightInfo.heightReference === HeightReference.RELATIVE_TO_TERRAIN
-          ) {
-            await sampleTerrainMostDetailed(
-              scene.terrainProvider,
-              cartographics,
-            );
-          } else {
-            await scene.sampleHeightMostDetailed(cartographics);
-          }
-          groundLevel = cartographics[0].height;
-        }
-
-        const coordinates = singleGeometry.getCoordinates() as any[];
-        const flatCoordinates = getFlatCoordinateReferences(
-          singleGeometry,
-          coordinates,
-        );
-        const { heightAboveGround } = heightInfo;
-        const setCoordinate =
-          heightAboveGround == null
-            ? (c: Coordinate): void => {
-                c[2] += groundLevel as number;
-              }
-            : (c: Coordinate): void => {
-                c[2] = (groundLevel as number) + heightAboveGround;
-              };
-        flatCoordinates.forEach(setCoordinate);
-        singleGeometry.setCoordinates(coordinates, 'XYZ');
-      }),
-    );
-
-    if (geometry instanceof MultiPoint) {
-      geometry.setCoordinates(
-        singleGeometries.map((g) => g.getCoordinates() as Coordinate),
-      );
-    } else if (geometry instanceof MultiPolygon) {
-      geometry.setCoordinates(
-        singleGeometries.map((g) => g.getCoordinates() as Coordinate[][]),
-      );
-    } else if (geometry instanceof MultiLineString) {
-      geometry.setCoordinates(
-        singleGeometries.map((g) => g.getCoordinates() as Coordinate[]),
-      );
-    } else if (geometry instanceof GeometryCollection) {
-      geometry.setGeometries(singleGeometries);
-    }
-  }
-
-  clone.set('olcs_altitudeMode', 'absolute');
-  clone.unset('olcs_groundLevel');
-  clone.unset('olcs_heightAboveGround');
-
-  return clone;
 }

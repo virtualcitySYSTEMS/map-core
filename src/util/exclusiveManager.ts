@@ -5,7 +5,7 @@ import type { default as Layer, SplitLayer } from '../layer/layer.js';
  * Tracks layer exclusivity, added to every {@link LayerCollection}.
  */
 class ExclusiveManager {
-  layers: Map<string | symbol, Set<Layer>> = new Map();
+  layers = new Map<string | symbol, Set<Layer>>();
 
   /**
    * registers a Layer as Exclusive, the activation of a layer triggers the deactivation of all other exclusive Layers.

@@ -1,5 +1,6 @@
 import WFSFormat from 'ol/format/WFS.js';
-import VectorLayer, { VectorOptions } from './vectorLayer.js';
+import type { VectorOptions } from './vectorLayer.js';
+import VectorLayer from './vectorLayer.js';
 import Projection from '../util/projection.js';
 import { layerClassRegistry } from '../classRegistry.js';
 import { getInitForUrl, requestUrl } from '../util/fetch.js';
@@ -128,19 +129,21 @@ class WFSLayer extends VectorLayer {
       init.method = 'POST';
       init.body = postData;
       init.headers = {
+        // eslint-disable-next-line @typescript-eslint/no-misused-spread
         ...init.headers,
-        ...{
-          'Content-Type': 'application/text+xml',
-        },
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        'Content-Type': 'application/text+xml',
       };
       this._dataFetchedPromise = requestUrl(this.url, init)
         .then((response) => response.text())
-        .then((data) => this._parseWFSData(data))
-        .catch((err) => {
+        .then((data) => {
+          this._parseWFSData(data);
+        })
+        .catch((err: unknown) => {
           this.getLogger().info(
             `Could not send request for loading layer content (${String(err)})`,
           );
-          return Promise.reject(err);
+          return Promise.reject(err as Error);
         });
 
       return this._dataFetchedPromise;

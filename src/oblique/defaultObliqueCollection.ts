@@ -26,6 +26,7 @@ class DefaultObliqueCollection extends ObliqueCollection {
 
   getImageForCoordinate(
     mercatorCoordinate: Coordinate,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _viewDirection: ObliqueViewDirection,
   ): ObliqueImage {
     const groundCoordinates = [

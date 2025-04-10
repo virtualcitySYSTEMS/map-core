@@ -19,6 +19,7 @@ describe('Extent', () => {
     -20037508.342789244, -238107693.26496765, 20037508.342789244,
     238107693.26496765,
   ];
+
   describe('constructor', () => {
     it('should create an extent based on an epsg code and coordiantes', () => {
       const EX = new Extent({
@@ -129,6 +130,7 @@ describe('Extent', () => {
       };
       expect(Extent.validateOptions(options)).to.be.false;
     });
+
     it('should return true on valid coordinates parameters', () => {
       const options = {
         projection: {
@@ -138,6 +140,7 @@ describe('Extent', () => {
       };
       expect(Extent.validateOptions(options)).to.be.true;
     });
+
     it('should return false on invalid projection parameters', () => {
       const options = {
         projection: {
@@ -148,6 +151,7 @@ describe('Extent', () => {
       };
       expect(Extent.validateOptions(options)).to.be.false;
     });
+
     it('should return true on valid projection parameters', () => {
       const options = {
         projection: {

@@ -1,6 +1,7 @@
 import { parseBoolean } from '@vcsuite/parsers';
 import type { Coordinate } from 'ol/coordinate.js';
-import Layer, { LayerImplementationOptions, LayerOptions } from './layer.js';
+import type { LayerImplementationOptions, LayerOptions } from './layer.js';
+import Layer from './layer.js';
 import {
   getHeightFromTerrainProvider,
   getTerrainProviderForUrl,
@@ -8,7 +9,7 @@ import {
 import CesiumMap from '../map/cesiumMap.js';
 import TerrainCesiumImpl from './cesium/terrainCesiumImpl.js';
 import { layerClassRegistry } from '../classRegistry.js';
-import VcsMap from '../map/vcsMap.js';
+import type VcsMap from '../map/vcsMap.js';
 
 export type TerrainOptions = LayerOptions & {
   requestVertexNormals?: boolean;

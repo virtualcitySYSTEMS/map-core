@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { is, check, oneOf } from '@vcsuite/check';
 import { getLogger, type Logger } from '@vcsuite/logger';
 import OverrideClassRegistry from './overrideClassRegistry.js';
@@ -14,7 +15,7 @@ function logger(): Logger {
 
 export type AbstractCtor = new (...args: any) => any;
 
-export type Ctor<T extends AbstractCtor> = new (
+export type CtorType<T extends AbstractCtor> = new (
   ...params: any
 ) => InstanceType<T>;
 
@@ -24,7 +25,7 @@ export type TypedConstructorOptions = { type?: string } & Record<
 >;
 
 class ClassRegistry<T extends AbstractCtor> {
-  private _classMap: Map<string, Ctor<T>>;
+  private _classMap: Map<string, CtorType<T>>;
 
   constructor() {
     this._classMap = new Map();
@@ -39,7 +40,7 @@ class ClassRegistry<T extends AbstractCtor> {
    * @param  className
    * @param  ctor
    */
-  registerClass(className: string, ctor: Ctor<T>): void {
+  registerClass(className: string, ctor: CtorType<T>): void {
     check(className, String);
     check(ctor, Function);
 
@@ -55,7 +56,7 @@ class ClassRegistry<T extends AbstractCtor> {
   /**
    * Gets the constructor for a registered class or undefined, if no such class was registerd
    */
-  getClass(className: string): Ctor<T> | undefined {
+  getClass(className: string): CtorType<T> | undefined {
     check(className, String);
 
     if (this._classMap.has(className)) {
@@ -73,6 +74,7 @@ class ClassRegistry<T extends AbstractCtor> {
   create(className: string, ...args: unknown[]): InstanceType<T> | undefined {
     check(className, String);
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const Ctor = this.getClass(className);
     if (!Ctor) {
       logger().error(`could not find constructor ${className}`);
@@ -88,35 +90,34 @@ class ClassRegistry<T extends AbstractCtor> {
   ): InstanceType<T> | undefined {
     check(options, { type: String });
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return this.create(options.type as string, options, ...args);
+    return this.create(options.type, options, ...args);
   }
 }
 
 export default ClassRegistry;
 
-export const layerClassRegistry: ClassRegistry<typeof Layer> =
-  new ClassRegistry();
+export const layerClassRegistry = new ClassRegistry<typeof Layer>();
 
-export const tileProviderClassRegistry: ClassRegistry<typeof TileProvider> =
-  new ClassRegistry();
+export const tileProviderClassRegistry = new ClassRegistry<
+  typeof TileProvider
+>();
 
-export const featureProviderClassRegistry: ClassRegistry<
+export const featureProviderClassRegistry = new ClassRegistry<
   typeof AbstractFeatureProvider
-> = new ClassRegistry();
+>();
 
-export const mapClassRegistry: ClassRegistry<typeof VcsMap> =
-  new ClassRegistry();
+export const mapClassRegistry = new ClassRegistry<typeof VcsMap>();
 
-export const styleClassRegistry: ClassRegistry<typeof StyleItem> =
-  new ClassRegistry();
+export const styleClassRegistry = new ClassRegistry<typeof StyleItem>();
 
-export const categoryClassRegistry: ClassRegistry<typeof Category<any, any>> =
-  new ClassRegistry();
+export const categoryClassRegistry = new ClassRegistry<
+  typeof Category<any, any>
+>();
 
 /**
  * Returns an object based on a class registry or override class registry and a typed options object. as opposed to ClassRegistry.createFromTypedOptions, this function never throws.
  */
-export function getObjectFromClassRegistry<T extends Ctor<T>>(
+export function getObjectFromClassRegistry<T extends CtorType<T>>(
   classRegistry: OverrideClassRegistry<T> | ClassRegistry<T>,
   options: TypedConstructorOptions,
   ...args: unknown[]

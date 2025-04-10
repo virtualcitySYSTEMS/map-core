@@ -1,13 +1,11 @@
-import Feature from 'ol/Feature.js';
-import { HttpReader } from 'flatgeobuf/lib/mjs/http-reader.js';
-import TileProvider, {
-  rectangleToExtent,
-  TileProviderOptions,
-} from './tileProvider.js';
+import type Feature from 'ol/Feature.js';
+import type { HttpReader } from 'flatgeobuf/lib/mjs/http-reader.js';
+import type { TileProviderOptions } from './tileProvider.js';
+import TileProvider, { rectangleToExtent } from './tileProvider.js';
+import type { ProjectionOptions } from '../../util/projection.js';
 import Projection, {
   getDefaultProjection,
   mercatorProjection,
-  ProjectionOptions,
 } from '../../util/projection.js';
 import Extent from '../../util/extent.js';
 import { tileProviderClassRegistry } from '../../classRegistry.js';
@@ -79,13 +77,13 @@ export default class FlatGeobufTileProvider extends TileProvider {
   }
 
   toJSON(): FlatGeobufTileProviderOptions {
-    const config = {
+    const config: FlatGeobufTileProviderOptions & { baseLevels?: number[] } = {
       levels: Array.from(this._levels.entries()).map(([level, { url }]) => ({
         level,
         url,
       })),
       ...super.toJSON(),
-    } as FlatGeobufTileProviderOptions & { baseLevels?: number[] };
+    };
     delete config.baseLevels;
     if (this._projection.epsg !== getDefaultProjection().epsg) {
       config.projection = this._projection.toJSON();

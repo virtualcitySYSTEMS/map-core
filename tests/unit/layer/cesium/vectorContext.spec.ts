@@ -1,18 +1,17 @@
-import nock from 'nock';
 import Feature from 'ol/Feature.js';
 import { LineString, Point } from 'ol/geom.js';
 import { Fill, RegularShape, Style } from 'ol/style.js';
+import type { Scene } from '@vcmap-cesium/engine';
 import {
   Primitive,
   PrimitiveCollection,
   Cartesian3,
   Matrix4,
-  Model,
   SplitDirection,
-  Scene,
 } from '@vcmap-cesium/engine';
 import { expect } from 'chai';
-import sinon, { SinonStub } from 'sinon';
+import type { SinonStub } from 'sinon';
+import sinon from 'sinon';
 import Stroke from 'ol/style/Stroke.js';
 import OlText from 'ol/style/Text.js';
 import VectorContext, {
@@ -21,7 +20,7 @@ import VectorContext, {
 } from '../../../../src/layer/cesium/vectorContext.js';
 import { getCesiumMap } from '../../helpers/cesiumHelpers.js';
 import VectorProperties from '../../../../src/layer/vectorProperties.js';
-import { CesiumMap } from '../../../../index.js';
+import type { CesiumMap } from '../../../../index.js';
 import { primitives } from '../../../../src/layer/vectorSymbols.js';
 
 describe('VectorContext', () => {
@@ -641,7 +640,6 @@ describe('VectorContext', () => {
     it('should scale a primitive post render, if the viewpoint changes', async () => {
       const primitive = addPrimitive();
       scene.postRender.raiseEvent();
-      const { modelMatrix } = primitive;
       const vp = map.getViewpointSync()!;
       vp.cameraPosition = [0, 0, 1];
       await map.gotoViewpoint(vp);
@@ -677,7 +675,6 @@ describe('VectorContext', () => {
     it('should scale a primitive post render, if the viewpoint doesnt change, but the collection is dirty', () => {
       const primitive = addPrimitive();
       scene.postRender.raiseEvent();
-      const { modelMatrix } = primitive;
       dirtyRef.value = true;
       getCurrentResolutionFromCartesian.returns(3);
       scene.postRender.raiseEvent();

@@ -1,5 +1,5 @@
 declare module 'rbush-knn' {
-  import RTree from 'rbush';
+  import type RTree from 'rbush';
 
   export default function knn<T>(
     tree: RTree<T>,

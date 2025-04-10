@@ -1,15 +1,17 @@
+import type { SplitDirection } from '@vcmap-cesium/engine';
 import deepEqual from 'fast-deep-equal';
 import { check, maybe, oneOf, optional, recordOf } from '@vcsuite/check';
 import { parseBoolean, parseInteger } from '@vcsuite/parsers';
-import VcsObject, { VcsObjectOptions } from '../vcsObject.js';
+import type { VcsObjectOptions } from '../vcsObject.js';
+import VcsObject from '../vcsObject.js';
 import Extent, { type ExtentOptions } from '../util/extent.js';
 import LayerState from './layerState.js';
 import VcsEvent from '../vcsEvent.js';
 import { layerClassRegistry } from '../classRegistry.js';
 import GlobalHider from './globalHider.js';
-import VcsMap from '../map/vcsMap.js';
-import LayerImplementation from './layerImplementation.js';
-import AbstractFeatureProvider from '../featureProvider/abstractFeatureProvider.js';
+import type VcsMap from '../map/vcsMap.js';
+import type LayerImplementation from './layerImplementation.js';
+import type AbstractFeatureProvider from '../featureProvider/abstractFeatureProvider.js';
 
 export type CopyrightOptions = {
   provider?: string;
@@ -277,7 +279,7 @@ class Layer<
     if (this._url !== url) {
       const currentValue = this._url;
       this._url = url;
-      this.reload().catch((err) => {
+      this.reload().catch((err: unknown) => {
         this.getLogger().error('failed to reload after URL setting');
         this.getLogger().error(String(err));
         this._url = currentValue;
@@ -390,7 +392,7 @@ class Layer<
         typeof this._url === 'object' &&
         this._url[this._locale]
       ) {
-        this.reload().catch((err) => {
+        this.reload().catch((err: unknown) => {
           this.getLogger().error('failed to reload after setting locale');
           this.getLogger().error(String(err));
         });
@@ -403,7 +405,7 @@ class Layer<
    * @param  _map Map
    * @returns return the specific implementation
    */
-  // eslint-disable-next-line class-methods-use-this,no-unused-vars
+  // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-unused-vars
   createImplementationsForMap(_map: VcsMap): I[] {
     return [];
   }
@@ -413,7 +415,7 @@ class Layer<
    * @param  map initialized Map
    * @returns  return the specific implementation
    */
-  getImplementationsForMap<T extends VcsMap>(map: T): I[] {
+  getImplementationsForMap(map: VcsMap): I[] {
     if (!this._implementations.has(map)) {
       if (this.isSupported(map)) {
         this._implementations.set(map, this.createImplementationsForMap(map));
@@ -611,9 +613,9 @@ class Layer<
     }
 
     if (this._state === LayerState.INACTIVE) {
-      this._loadingPromise = this._activate().catch((err) => {
+      this._loadingPromise = this._activate().catch((err: unknown) => {
         this._state = LayerState.INACTIVE;
-        return Promise.reject(err);
+        return Promise.reject(err as Error);
       });
       return this._loadingPromise;
     }
@@ -725,10 +727,8 @@ class Layer<
 }
 
 export interface SplitLayer {
-  splitDirection: import('@vcmap-cesium/engine').SplitDirection;
-  splitDirectionChanged: VcsEvent<
-    import('@vcmap-cesium/engine').SplitDirection
-  >;
+  splitDirection: SplitDirection;
+  splitDirectionChanged: VcsEvent<SplitDirection>;
 }
 
 layerClassRegistry.registerClass(Layer.className, Layer);

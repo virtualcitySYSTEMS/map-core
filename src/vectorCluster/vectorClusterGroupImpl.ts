@@ -1,13 +1,13 @@
-import { StyleFunction } from 'ol/style/Style.js';
+import type { StyleFunction } from 'ol/style/Style.js';
 import type { VectorClusterGroupImplementationOptions } from './vectorClusterGroup.js';
 import VcsObject from '../vcsObject.js';
 import LayerState from '../layer/layerState.js';
-import VectorProperties from '../layer/vectorProperties.js';
-import ClusterEnhancedVectorSource from '../ol/source/ClusterEnhancedVectorSource.js';
+import type VectorProperties from '../layer/vectorProperties.js';
+import type ClusterEnhancedVectorSource from '../ol/source/ClusterEnhancedVectorSource.js';
 import { synchronizeFeatureVisibilityWithSource } from '../layer/vectorHelpers.js';
 import type GlobalHider from '../layer/globalHider.js';
-import FeatureVisibility from '../layer/featureVisibility.js';
-import VcsMap from '../map/vcsMap.js';
+import type FeatureVisibility from '../layer/featureVisibility.js';
+import type VcsMap from '../map/vcsMap.js';
 
 /**
  * Clusters for vector layers containing point features only

@@ -1,6 +1,6 @@
 import { unByKey } from 'ol/Observable.js';
 import Feature from 'ol/Feature.js';
-import { EventsKey } from 'ol/events.js';
+import type { EventsKey } from 'ol/events.js';
 import type { VectorSourceEvent } from 'ol/source/Vector.js';
 import type {
   Feature as GeojsonFeature,
@@ -120,13 +120,13 @@ class FeatureStoreLayerChanges extends VcsObject {
     removefeature: null,
   };
 
-  private _addedFeatures: Set<Feature> = new Set();
+  private _addedFeatures = new Set<Feature>();
 
-  private _editedFeatures: Set<Feature> = new Set();
+  private _editedFeatures = new Set<Feature>();
 
-  private _removedFeatures: Set<Feature> = new Set();
+  private _removedFeatures = new Set<Feature>();
 
-  private _convertedFeatures: Set<Feature> = new Set();
+  private _convertedFeatures = new Set<Feature>();
 
   changed = new VcsEvent<void>();
 
@@ -265,7 +265,7 @@ class FeatureStoreLayerChanges extends VcsObject {
       .then(() => {
         this._resetValues();
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
         this.getLogger().error(String(err));
         this._resetValues();
       });
@@ -291,7 +291,7 @@ class FeatureStoreLayerChanges extends VcsObject {
         this.layer.removeFeaturesById(idArray);
         this.layer.addFeatures(features);
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
         this.getLogger().error(
           'failed to reset feature, giving up',
           String(err),

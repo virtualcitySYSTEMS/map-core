@@ -17,7 +17,7 @@ import {
 import { mapClassRegistry } from '../classRegistry.js';
 import type LayerCollection from '../util/layerCollection.js';
 import type Layer from '../layer/layer.js';
-import { DisableMapControlOptions } from '../util/mapCollection.js';
+import type { DisableMapControlOptions } from '../util/mapCollection.js';
 import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
 
 function ensureLayerInCollection(
@@ -71,6 +71,21 @@ function ensureLayerInCollection(
     }
   }
 }
+function getPointerKeyType(button?: number): PointerKeyType {
+  if (button === 0) {
+    return PointerKeyType.LEFT;
+  }
+  if (button === 2) {
+    return PointerKeyType.RIGHT;
+  }
+  if (button === 1) {
+    return PointerKeyType.MIDDLE;
+  }
+  if (button === -1) {
+    return PointerKeyType.ALL;
+  }
+  return PointerKeyType.LEFT;
+}
 
 /**
  * @group Map
@@ -101,12 +116,6 @@ class BaseOLMap extends VcsMap<OLLayer> {
     olEvent: MapBrowserEvent<PointerEvent>,
     pointerEvent: PointerEventType,
   ): void {
-    const pointerMap: Record<number, PointerKeyType> = {
-      '-1': PointerKeyType.ALL,
-      0: PointerKeyType.LEFT,
-      1: PointerKeyType.MIDDLE,
-      2: PointerKeyType.RIGHT,
-    };
     let key = olEvent.originalEvent.shiftKey
       ? ModificationKeyType.SHIFT
       : ModificationKeyType.NONE;
@@ -123,7 +132,7 @@ class BaseOLMap extends VcsMap<OLLayer> {
       positionOrPixel: position,
       windowPosition: Cartesian2.fromArray(olEvent.pixel, 0, new Cartesian2()),
       key,
-      pointer: pointerMap[olEvent.originalEvent.button || 0],
+      pointer: getPointerKeyType(olEvent.originalEvent.button),
       pointerEvent,
     });
   }
@@ -247,7 +256,7 @@ class BaseOLMap extends VcsMap<OLLayer> {
     }
   }
 
-  // eslint-disable-next-line no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getCurrentResolution(_coordinate: Coordinate): number {
     const view = this.olMap ? this.olMap.getView() : null;
     if (view) {

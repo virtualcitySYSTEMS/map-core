@@ -1,6 +1,6 @@
-import { GeoJsonProperties, Geometry } from 'geojson';
+import type { GeoJsonProperties, Geometry } from 'geojson';
 import type { VcsMeta } from '../layer/vectorProperties.js';
-import { FeatureStoreLayerState } from '../layer/featureStoreLayerState.js';
+import type { FeatureStoreLayerState } from '../layer/featureStoreLayerState.js';
 
 declare module 'geojson' {
   interface Point {
@@ -9,6 +9,7 @@ declare module 'geojson' {
 
   interface Feature<
     G extends Geometry | null = Geometry,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     P = GeoJsonProperties,
   > {
     _id?: string;

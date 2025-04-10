@@ -1,13 +1,14 @@
-import sinon, { SinonStub } from 'sinon';
+import type { SinonStub } from 'sinon';
+import sinon from 'sinon';
 import { expect } from 'chai';
 import { LineString } from 'ol/geom.js';
-import { Coordinate } from 'ol/coordinate.js';
+import type { Coordinate } from 'ol/coordinate.js';
 import { getCesiumMap } from '../../helpers/cesiumHelpers.js';
 import {
   drapeGeometryOnTerrain,
   placeGeometryOnTerrain,
 } from '../../../../src/util/editor/editorHelpers.js';
-import { CesiumMap } from '../../../../index.js';
+import type { CesiumMap } from '../../../../index.js';
 
 describe('editorHelpers', () => {
   describe('drapeGeometryOnTerrain', () => {

@@ -2,9 +2,8 @@ import type { Cartesian2, Scene } from '@vcmap-cesium/engine';
 import type { Feature } from 'ol/index.js';
 import type { Coordinate } from 'ol/coordinate.js';
 
-import AbstractInteraction, {
-  EventAfterEventHandler,
-} from '../../../interaction/abstractInteraction.js';
+import type { EventAfterEventHandler } from '../../../interaction/abstractInteraction.js';
+import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import { EventType } from '../../../interaction/interactionType.js';
 import { handlerSymbol } from '../editorSymbols.js';
 import {
@@ -12,7 +11,8 @@ import {
   getCartographicFromPlane,
 } from '../editorHelpers.js';
 import VcsEvent from '../../../vcsEvent.js';
-import { AxisAndPlanes, TransformationHandler } from './transformationTypes.js';
+import type { TransformationHandler } from './transformationTypes.js';
+import { AxisAndPlanes } from './transformationTypes.js';
 import type CesiumMap from '../../../map/cesiumMap.js';
 
 /**
@@ -48,7 +48,7 @@ class ExtrudeInteraction extends AbstractInteraction {
       }
     } else if (
       event.type === EventType.DRAGSTART &&
-      (event?.feature as Feature)?.[handlerSymbol]
+      (event.feature as Feature | undefined)?.[handlerSymbol]
     ) {
       const axis = (event.feature as Feature)[handlerSymbol];
       if (axis === AxisAndPlanes.Z) {

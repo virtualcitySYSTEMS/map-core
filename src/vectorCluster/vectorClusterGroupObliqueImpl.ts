@@ -1,12 +1,10 @@
 import OLVectorLayer from 'ol/layer/Vector.js';
 import VectorClusterGroupImpl from './vectorClusterGroupImpl.js';
-import ObliqueMap from '../map/obliqueMap.js';
+import type ObliqueMap from '../map/obliqueMap.js';
 import VcsCluster from '../ol/source/VcsCluster.js';
-import { VectorClusterGroupImplementationOptions } from './vectorClusterGroup.js';
-import {
-  createSourceObliqueSync,
-  SourceObliqueSync,
-} from '../layer/oblique/sourceObliqueSync.js';
+import type { VectorClusterGroupImplementationOptions } from './vectorClusterGroup.js';
+import type { SourceObliqueSync } from '../layer/oblique/sourceObliqueSync.js';
+import { createSourceObliqueSync } from '../layer/oblique/sourceObliqueSync.js';
 import { vectorClusterGroupName } from './vectorClusterSymbols.js';
 
 export default class VectorClusterGroupObliqueImpl extends VectorClusterGroupImpl<ObliqueMap> {

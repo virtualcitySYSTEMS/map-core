@@ -9,10 +9,10 @@ import type {
   Point,
   Polygon,
 } from 'ol/geom.js';
-import { EventsKey } from 'ol/events.js';
+import type { EventsKey } from 'ol/events.js';
+import type { EditorSession } from './editorSessionHelpers.js';
 import {
   setupPickingBehavior,
-  EditorSession,
   GeometryType,
   SessionType,
   setupInteractionChain,
@@ -44,7 +44,8 @@ import TranslationSnapping from './interactions/translationSnapping.js';
 import { vertexIndexSymbol } from './editorSymbols.js';
 import LayerSnapping from './interactions/layerSnapping.js';
 import { EventType } from '../../interaction/interactionType.js';
-import { SnapType, snapTypes } from './snappingHelpers.js';
+import type { SnapType } from './snappingHelpers.js';
+import { snapTypes } from './snappingHelpers.js';
 import SegmentLengthInteraction from './interactions/segmentLengthInteraction.js';
 
 export type EditGeometrySession = EditorSession<SessionType.EDIT_GEOMETRY> & {

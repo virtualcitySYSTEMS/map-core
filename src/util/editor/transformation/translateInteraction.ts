@@ -1,10 +1,10 @@
-import { Cartesian2, Plane, Scene, Transforms } from '@vcmap-cesium/engine';
+import type { Cartesian2, Scene } from '@vcmap-cesium/engine';
+import { Plane, Transforms } from '@vcmap-cesium/engine';
 import type { Coordinate } from 'ol/coordinate.js';
 import type { Feature } from 'ol/index.js';
 
-import AbstractInteraction, {
-  EventAfterEventHandler,
-} from '../../../interaction/abstractInteraction.js';
+import type { EventAfterEventHandler } from '../../../interaction/abstractInteraction.js';
+import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import { EventType } from '../../../interaction/interactionType.js';
 import { handlerSymbol } from '../editorSymbols.js';
 import {
@@ -15,12 +15,8 @@ import {
 import VcsEvent from '../../../vcsEvent.js';
 import Projection, { mercatorProjection } from '../../projection.js';
 import { cartographicToWgs84, mercatorToCartesian } from '../../math.js';
-import {
-  AxisAndPlanes,
-  is1DAxis,
-  is2DAxis,
-  TransformationHandler,
-} from './transformationTypes.js';
+import type { TransformationHandler } from './transformationTypes.js';
+import { AxisAndPlanes, is1DAxis, is2DAxis } from './transformationTypes.js';
 import CesiumMap from '../../../map/cesiumMap.js';
 
 /**
@@ -65,7 +61,7 @@ class TranslateInteraction extends AbstractInteraction {
       }
     } else if (
       event.type === EventType.DRAGSTART &&
-      (event?.feature as Feature)?.[handlerSymbol]
+      (event.feature as Feature | undefined)?.[handlerSymbol]
     ) {
       const axis = (event.feature as Feature)[handlerSymbol] as AxisAndPlanes;
       if (axis !== AxisAndPlanes.NONE) {

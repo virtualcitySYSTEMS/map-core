@@ -2,7 +2,7 @@ import Point from 'ol/geom/Point.js';
 import Circle from 'ol/geom/Circle.js';
 import Feature from 'ol/Feature.js';
 import Polygon from 'ol/geom/Polygon.js';
-import {
+import type {
   Feature as GeoJSONFeature,
   FeatureCollection,
   Geometry as GeoJSONGeometry,
@@ -159,24 +159,16 @@ describe('GeoJSONLayer', () => {
         type: 'FeatureCollection',
         features: [structuredClone(testGeoJSON.feature)],
       };
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
+      // @ts-expect-error provoke error
       options.features.push(structuredClone(withoutGeometry));
       const feats = parseGeoJSON(options).features;
       expect(feats).to.have.length(1);
       expect(feats[0].get('foo')).to.equal(1);
 
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
+      // @ts-expect-error provoke error
       const feat = parseGeoJSON(withoutGeometry).features;
       expect(feat).to.be.an('array').and.to.be.empty;
     });
-
-    it('should read the style, adding it to the feature');
-    it('should extend the feature style, if using dynamics');
-    it('should set custom icons');
-    it('should read the layers style');
-    it('should read legacy styles');
   });
 
   describe('writeGeoJsonFeature', () => {
@@ -197,6 +189,7 @@ describe('GeoJSONLayer', () => {
         .to.have.property('properties')
         .and.to.not.have.property('geometry');
     });
+
     it('should write ID to feature if writeOptions.writeId is set', () => {
       const feat = features[0];
       feat.setId('myId');
@@ -268,10 +261,6 @@ describe('GeoJSONLayer', () => {
         .and.to.have.property('coordinates')
         .and.to.have.deep.members(polygon!.coordinates);
     });
-
-    it('should write feature styles');
-    it('should write layer styles');
-    it('should embed custom icons');
   });
 
   describe('~write/parseGeoJSON', () => {
@@ -322,6 +311,7 @@ describe('GeoJSONLayer', () => {
       };
       expect(getEPSGCodeFromGeojson(geojson)).to.equal('EPSG:25832');
     });
+
     it('should parse crs from old 0.8 geojson if only epsg code is set', () => {
       const geojson: FeatureCollection = {
         type: 'FeatureCollection',
@@ -335,6 +325,7 @@ describe('GeoJSONLayer', () => {
       };
       expect(getEPSGCodeFromGeojson(geojson)).to.equal('EPSG:25832');
     });
+
     it('should return null, if no valid crs definition is found', () => {
       const geojson = {
         crs: {

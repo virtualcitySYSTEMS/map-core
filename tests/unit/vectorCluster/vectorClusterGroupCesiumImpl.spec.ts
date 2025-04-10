@@ -1,9 +1,13 @@
-import { expect } from 'chai';
+import { expect, use } from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 import sinon from 'sinon';
 import { GroundPolylinePrimitive, GroundPrimitive } from '@vcmap-cesium/engine';
-import VectorClusterGroupCesiumImpl from '../../../src/vectorCluster/vectorClusterGroupCesiumImpl.js';
-import { CesiumMap, VectorClusterGroup } from '../../../index.js';
+import type VectorClusterGroupCesiumImpl from '../../../src/vectorCluster/vectorClusterGroupCesiumImpl.js';
+import type { CesiumMap } from '../../../index.js';
+import { VectorClusterGroup } from '../../../index.js';
 import { getCesiumMap } from '../helpers/cesiumHelpers.js';
+
+use(chaiAsPromised);
 
 describe('VectorClusterGroupCesiumImpl', () => {
   let map: CesiumMap;
@@ -28,6 +32,7 @@ describe('VectorClusterGroupCesiumImpl', () => {
 
   describe('initialize', () => {
     let cesiumImpl: VectorClusterGroupCesiumImpl;
+
     before(async () => {
       cesiumImpl = vectorClusterGroup.getImplementationForMap(
         map,
@@ -51,6 +56,14 @@ describe('VectorClusterGroupCesiumImpl', () => {
       await cesiumImpl.initialize();
       expect(map.getClusterDatasources().length).to.equal(1);
     });
+
+    it('should not throw, if impl is destroyed during initialization', async () => {
+      const promise = cesiumImpl.initialize();
+      cesiumImpl.destroy();
+      expect(cesiumImpl.isDestroyed).to.be.true;
+      await expect(promise).to.not.be.rejected;
+      expect(cesiumImpl.initialized).to.be.false;
+    });
   });
 
   describe('activation', () => {
@@ -65,6 +78,10 @@ describe('VectorClusterGroupCesiumImpl', () => {
 
     after(() => {
       vectorClusterGroup.removedFromMap(map);
+    });
+
+    it('should activate correctly', () => {
+      expect(cesiumImpl.active).to.be.true;
     });
   });
 

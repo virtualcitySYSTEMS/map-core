@@ -1,4 +1,4 @@
-import { check, is, maybe, PatternFor } from '@vcsuite/check';
+import { check, is, maybe, ofType } from '@vcsuite/check';
 import { v4 as uuidv4 } from 'uuid';
 import type { Feature as GeojsonFeature, Point as GeojsonPoint } from 'geojson';
 import { type Coordinate, equals as coordinateEquals } from 'ol/coordinate.js';
@@ -27,7 +27,7 @@ export type FlightAnchor = FlightAnchorFeatureProperties & {
 
 type FlightAnchorOptions = Omit<FlightAnchor, 'changed' | 'destroy'>;
 
-const flightAnchorOptionsPattern: PatternFor<FlightAnchorOptions> = {
+const flightAnchorOptionsPattern = ofType<FlightAnchorOptions>({
   name: String,
   coordinate: [Number],
   heading: Number,
@@ -35,7 +35,7 @@ const flightAnchorOptionsPattern: PatternFor<FlightAnchorOptions> = {
   roll: Number,
   duration: Number,
   title: maybe(String),
-};
+});
 
 function isOptions(options: unknown): options is FlightAnchorOptions {
   return (
@@ -135,6 +135,7 @@ export function anchorFromViewpoint(
   }
 
   return fromOptions({
+    // eslint-disable-next-line @typescript-eslint/no-misused-spread
     ...viewpoint,
     coordinate: viewpoint.cameraPosition,
     duration: viewpoint.duration ?? 1,

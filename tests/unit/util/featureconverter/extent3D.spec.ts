@@ -5,10 +5,10 @@ import Polygon from 'ol/geom/Polygon.js';
 import Circle from 'ol/geom/Circle.js';
 import MultiPolygon from 'ol/geom/MultiPolygon.js';
 import GeometryCollection from 'ol/geom/GeometryCollection.js';
-import { Coordinate } from 'ol/coordinate.js';
+import type { Coordinate } from 'ol/coordinate.js';
 import { HeightReference } from '@vcmap-cesium/engine';
 import Extent3D from '../../../../src/util/featureconverter/extent3D.js';
-import { VectorHeightInfo } from '../../../../src/util/featureconverter/vectorHeightInfo.js';
+import type { VectorHeightInfo } from '../../../../src/util/featureconverter/vectorHeightInfo.js';
 
 describe('Extent3D', () => {
   describe('createEmpty', () => {
@@ -36,6 +36,7 @@ describe('Extent3D', () => {
       extent.extendXYZ(10, 10, 10);
       expect(extent.toArray()).to.have.members([1, 2, 3, 10, 10, 10]);
     });
+
     it('should extent the min values of the extent', () => {
       const extent = Extent3D.fromArray([1, 2, 3, 4, 5, 6]);
       extent.extendXYZ(0, 0, 0);
@@ -165,6 +166,7 @@ describe('Extent3D', () => {
         storeyHeightsBelowGround: [2, 3, 5],
       };
     });
+
     it('should extent z value with calculated storeyHeight ', () => {
       const extent = Extent3D.fromArray([1, 2, 3, 4, 5, 6]);
       extent.extendWithHeightInfo(heightInfo);

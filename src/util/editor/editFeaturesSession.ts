@@ -11,16 +11,16 @@ import { getLogger } from '@vcsuite/logger';
 import { Math as CesiumMath } from '@vcmap-cesium/engine';
 
 import VcsEvent from '../../vcsEvent.js';
+import type { EditorSession } from './editorSessionHelpers.js';
 import {
   setupInteractionChain,
   SessionType,
   setupScratchLayer,
-  EditorSession,
 } from './editorSessionHelpers.js';
 import createTransformationHandler from './transformation/transformationHandler.js';
+import type { TransformationHandler } from './transformation/transformationTypes.js';
 import {
   AxisAndPlanes,
-  TransformationHandler,
   TransformationMode,
 } from './transformation/transformationTypes.js';
 import MapInteractionController from './interactions/mapInteractionController.js';
@@ -154,7 +154,7 @@ function startEditFeaturesSession(
   const currentFeatures: Feature[] = [];
 
   // The allow picking prop needs to be set false for the selected features to make sure that the transformation handler can always be selected.
-  const allowPickingMap: Map<string | number, boolean | undefined> = new Map();
+  const allowPickingMap = new Map<string | number, boolean | undefined>();
   let modificationKey: ModificationKeyType;
   /** Callback to remove the modifier changed listener. */
   const modifierChangedListener =
@@ -194,7 +194,9 @@ function startEditFeaturesSession(
   const { exclusiveInteractionId } = app.maps.eventHandler;
   const removeRightClickStart = app.maps.eventHandler.addExclusiveInteraction(
     rightClickStart,
-    () => interactionRemoved.raiseEvent(),
+    () => {
+      interactionRemoved.raiseEvent();
+    },
     0,
     exclusiveInteractionId,
   );

@@ -14,7 +14,7 @@ class Collection<T> {
     iterable: Iterable<F>,
     uniqueKey?: keyof F | false,
   ): Collection<F> {
-    const collection: Collection<F> = new Collection(uniqueKey);
+    const collection = new Collection<F>(uniqueKey);
     if (iterable) {
       for (const i of iterable) {
         collection.add(i);

@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 /**
  * returns the default browserLocale, if not possible 'en'
  */

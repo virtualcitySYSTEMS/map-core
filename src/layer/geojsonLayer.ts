@@ -1,6 +1,7 @@
 import type { GeoJSONFeature } from 'ol/format/GeoJSON.js';
-import { FeatureCollection } from 'geojson';
-import VectorLayer, { VectorOptions } from './vectorLayer.js';
+import type { FeatureCollection } from 'geojson';
+import type { VectorOptions } from './vectorLayer.js';
+import VectorLayer from './vectorLayer.js';
 import { parseGeoJSON, writeGeoJSONFeature } from './geojsonHelpers.js';
 import Projection, { wgs84Projection } from '../util/projection.js';
 import { layerClassRegistry } from '../classRegistry.js';
@@ -88,12 +89,14 @@ class GeoJSONLayer extends VectorLayer {
     if (this.url) {
       const init = getInitForUrl(this.url, this.headers);
       this._dataFetchedPromise = requestJson(this.url, init)
-        .then((data) => this._parseGeojsonData(data as FeatureCollection))
-        .catch((err) => {
+        .then((data) => {
+          this._parseGeojsonData(data as FeatureCollection);
+        })
+        .catch((err: unknown) => {
           this.getLogger().warning(
             `Could not send request for loading layer content (${String(err)})`,
           );
-          return Promise.reject(err);
+          return Promise.reject(err as Error);
         });
     } else {
       this._dataFetchedPromise = Promise.resolve();

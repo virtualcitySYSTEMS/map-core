@@ -3,7 +3,6 @@ import type { ImageTile } from 'ol';
 import TileState from 'ol/TileState.js';
 import { getInitForUrl, requestObjectUrl } from '../../util/fetch.js';
 
-// eslint-disable-next-line import/prefer-default-export
 export function getTileLoadFunction(
   headers: Record<string, string>,
 ): LoadFunction {

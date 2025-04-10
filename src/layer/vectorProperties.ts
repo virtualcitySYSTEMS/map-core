@@ -22,8 +22,8 @@ import {
 } from '@vcsuite/parsers';
 import { getLogger as getLoggerByName, type Logger } from '@vcsuite/logger';
 import VcsEvent from '../vcsEvent.js';
-import { DeclarativeStyleItemOptions } from '../style/declarativeStyleItem.js';
-import { VectorStyleItemOptions } from '../style/vectorStyleItem.js';
+import type { DeclarativeStyleItemOptions } from '../style/declarativeStyleItem.js';
+import type { VectorStyleItemOptions } from '../style/vectorStyleItem.js';
 import type { FlightInstanceMeta } from '../util/flight/flightInstance.js';
 
 function getLogger(): Logger {
@@ -41,12 +41,12 @@ export type VectorPropertiesGeometryOptions<T extends PrimitiveOptionsType> =
   T extends PrimitiveOptionsType.CYLINDER
     ? ConstructorParameters<typeof CylinderGeometry>[0]
     : T extends PrimitiveOptionsType.SPHERE
-    ? ConstructorParameters<typeof SphereGeometry>[0]
-    : T extends PrimitiveOptionsType.ELLIPSOID
-    ? ConstructorParameters<typeof EllipsoidGeometry>[0]
-    : T extends PrimitiveOptionsType.BOX
-    ? ConstructorParameters<typeof BoxGeometry>[0]
-    : never;
+      ? ConstructorParameters<typeof SphereGeometry>[0]
+      : T extends PrimitiveOptionsType.ELLIPSOID
+        ? ConstructorParameters<typeof EllipsoidGeometry>[0]
+        : T extends PrimitiveOptionsType.BOX
+          ? ConstructorParameters<typeof BoxGeometry>[0]
+          : never;
 
 export type VectorPropertiesPrimitiveOptions<
   T extends PrimitiveOptionsType = PrimitiveOptionsType,
@@ -199,6 +199,8 @@ export type VectorPropertiesPrimitive = VectorPropertiesBaseOptions & {
  */
 export const vcsMetaVersion = '2.1';
 
+// legacy
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const AltitudeModeCesium: Record<AltitudeModeType, HeightReference> = {
   clampToGround: HeightReference.CLAMP_TO_GROUND,
   clampTo3DTiles: HeightReference.CLAMP_TO_3D_TILE,
@@ -209,6 +211,8 @@ export const AltitudeModeCesium: Record<AltitudeModeType, HeightReference> = {
   relativeToTerrain: HeightReference.RELATIVE_TO_TERRAIN,
 };
 
+// legacy
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const ClassificationTypeCesium: Record<
   ClassificationTypeType,
   ClassificationType
@@ -600,11 +604,11 @@ class VectorProperties {
   }
 
   getEyeOffset(feature: Feature): Cartesian3 | undefined {
-    const featureValue = feature.get('olcs_eyeOffset') as unknown | undefined;
+    const featureValue = feature.get('olcs_eyeOffset') as unknown;
     if (!featureValue) {
-      const zCoordinateEyeOffset = feature.get('olcs_zCoordinateEyeOffset') as
-        | unknown
-        | undefined;
+      const zCoordinateEyeOffset = feature.get(
+        'olcs_zCoordinateEyeOffset',
+      ) as unknown;
       if (zCoordinateEyeOffset) {
         getLogger().deprecate(
           'zCoordinateEyeOffset',
@@ -628,7 +632,7 @@ class VectorProperties {
     }
   }
 
-  getHeightAboveGround(feature: Feature): number {
+  getHeightAboveGround(feature: Feature): number | undefined {
     return parseNumber(
       feature.get('olcs_heightAboveGround'),
       this.heightAboveGround,
@@ -1385,9 +1389,16 @@ class VectorProperties {
      * @param propertyValues An array of values for a specific property from different features.
      * @returns Whether all values are equal.
      */
-    function isAllEqual<
-      T extends string | number | boolean | number[] | Record<string, unknown>,
-    >(propertyValues: (T | undefined)[]): boolean {
+    function isAllEqual(
+      propertyValues: (
+        | string
+        | number
+        | boolean
+        | number[]
+        | Record<string, unknown>
+        | undefined
+      )[],
+    ): boolean {
       return propertyValues.every((curr, index, array) => {
         if (index === 0) {
           return true;

@@ -213,6 +213,7 @@ describe('styleHelpers', () => {
           width: 3,
         });
       });
+
       it('should serialize a RegularShape with undefined properties', () => {
         const regularShape = new RegularShape({
           scale: 2,
@@ -220,6 +221,7 @@ describe('styleHelpers', () => {
         const imageStyleOptions = getImageStyleOptions(regularShape);
         expect(imageStyleOptions).to.be.deep.equal({ scale: 2 });
       });
+
       it('should deserialize a RegularShape', () => {
         const regularShapeOptions = {
           scale: 2,
@@ -239,6 +241,7 @@ describe('styleHelpers', () => {
         expect(regularShape.getRadius()).to.be.equal(4);
       });
     });
+
     describe('Circle', () => {
       it('should serialize a Circle', () => {
         const circleStyle = new Circle({
@@ -258,6 +261,7 @@ describe('styleHelpers', () => {
           width: 3,
         });
       });
+
       it('should serialize a Circle with undefined properties', () => {
         const circleStyle = new Circle({
           scale: 2,
@@ -265,6 +269,7 @@ describe('styleHelpers', () => {
         const imageStyleOptions = getImageStyleOptions(circleStyle);
         expect(imageStyleOptions).to.be.deep.equal({ scale: 2 });
       });
+
       it('should deserialize a Circle', () => {
         const circleOptions = {
           scale: 2,
@@ -282,6 +287,7 @@ describe('styleHelpers', () => {
         expect(circleStyle.getRadius()).to.be.equal(4);
       });
     });
+
     describe('Icon', () => {
       it('should serialize a Icon', () => {
         const iconStyle = new Icon({
@@ -299,6 +305,7 @@ describe('styleHelpers', () => {
         // we do not check anchor, anchor returns undefined if the icon has not
         // been loaded and the internal size is still null
       });
+
       it('should serialize a Icon with undefined properties', () => {
         const iconStyle = new Icon({
           scale: 2,
@@ -311,6 +318,7 @@ describe('styleHelpers', () => {
           opacity: 1,
         });
       });
+
       it('should deserialize a Icon', () => {
         const iconOptions = {
           scale: 2,

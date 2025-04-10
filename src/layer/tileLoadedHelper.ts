@@ -1,7 +1,7 @@
 import type { Globe } from '@vcmap-cesium/engine';
 import CesiumTilesetCesiumImpl from './cesium/cesiumTilesetCesiumImpl.js';
-import CesiumTilesetLayer from './cesiumTilesetLayer.js';
-import FeatureStoreLayer from './featureStoreLayer.js';
+import type CesiumTilesetLayer from './cesiumTilesetLayer.js';
+import type FeatureStoreLayer from './featureStoreLayer.js';
 
 function waitForImplTilesLoaded(
   impl: CesiumTilesetCesiumImpl,

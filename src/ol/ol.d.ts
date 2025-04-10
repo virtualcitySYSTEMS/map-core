@@ -1,23 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any,@typescript-eslint/consistent-type-imports */
 /**
  * Type overrides for types extended by the @vcmap/core API
  */
-import * as geom from 'ol/geom.js';
-import * as style from 'ol/style.js';
-
-import { Feature } from 'ol/index.js';
-import CanvasImmediateRenderer from 'ol/render/canvas/Immediate.js';
-import {
-  Billboard,
-  Color,
-  type Entity,
-  type Label,
-} from '@vcmap-cesium/engine';
-import { StyleLike } from 'ol/style/Style.js';
-import VectorStyleItem, {
-  vectorStyleSymbol,
-} from '../style/vectorStyleItem.js';
-import { ArcStruct, featureArcStruct } from '../style/arcStyle.js';
-import {
+import type CanvasImmediateRenderer from 'ol/render/canvas/Immediate.js';
+import type { Billboard, Color, Entity, Label } from '@vcmap-cesium/engine';
+import type { StyleLike } from 'ol/style/Style.js';
+import type { vectorStyleSymbol } from '../style/vectorStyleItem.js';
+import type VectorStyleItem from '../style/vectorStyleItem.js';
+import type { ArcStruct, featureArcStruct } from '../style/arcStyle.js';
+import type {
   actuallyIsCircle,
   alreadyTransformedToImage,
   alreadyTransformedToMercator,
@@ -28,32 +19,35 @@ import {
   panoramaFeature,
   primitives,
 } from '../layer/vectorSymbols.js';
-import { vcsLayerName } from '../layer/layerSymbols.js';
-import {
+import type { vcsLayerName } from '../layer/layerSymbols.js';
+import type {
   isProvidedFeature,
   isProvidedClusterFeature,
 } from '../featureProvider/featureProviderSymbols.js';
-import {
+import type {
   globalHidden,
   hidden,
   highlighted,
   originalStyle,
 } from '../layer/featureVisibility.js';
-import {
+import type {
   FeatureStoreLayerState,
   featureStoreStateSymbol,
 } from '../layer/featureStoreLayerState.js';
-import { isTiledFeature } from '../layer/featureStoreLayer.js';
-import { featureFromOptions } from '../layer/geojsonLayer.js';
-import { handlerSymbol, vertexSymbol } from '../util/editor/editorSymbols.js';
-import { AxisAndPlanes } from '../util/editor/transformation/transformationTypes.js';
-import {
+import type { isTiledFeature } from '../layer/featureStoreLayer.js';
+import type { featureFromOptions } from '../layer/geojsonLayer.js';
+import type {
+  handlerSymbol,
+  vertexSymbol,
+} from '../util/editor/editorSymbols.js';
+import type { AxisAndPlanes } from '../util/editor/transformation/transformationTypes.js';
+import type {
   fvLastUpdated,
   globalHiderLastUpdated,
 } from '../layer/vectorHelpers.js';
-import { validityPlaceholder } from '../util/editor/interactions/createPolygonInteraction.js';
-import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
-import { PrimitiveType } from '../util/featureconverter/convert.js';
+import type { validityPlaceholder } from '../util/editor/interactions/createPolygonInteraction.js';
+import type { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
+import type { PrimitiveType } from '../util/featureconverter/convert.js';
 import { PanoramaDatasetFeatureProperties } from '../panorama/panoramaDataset.js';
 
 declare module 'ol/geom.js' {

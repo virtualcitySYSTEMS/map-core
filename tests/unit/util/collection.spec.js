@@ -3,6 +3,7 @@ import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
 
 describe('Collection', () => {
   let sandbox;
+
   before(() => {
     sandbox = sinon.createSandbox();
   });
@@ -146,6 +147,7 @@ describe('Collection', () => {
 
     describe('unique', () => {
       let collection;
+
       beforeEach(() => {
         collection = new Collection();
       });
@@ -188,6 +190,7 @@ describe('Collection', () => {
 
     describe('non-unique', () => {
       let collection;
+
       beforeEach(() => {
         collection = new Collection(false);
       });

@@ -10,11 +10,9 @@ import {
 import type { Style } from 'ol/style.js';
 import type { Polygon } from 'ol/geom.js';
 import { parseNumber } from '@vcsuite/parsers';
-import {
-  mercatorToCartesianTransformerForHeightInfo,
-  VectorHeightInfo,
-} from './vectorHeightInfo.js';
-import {
+import type { VectorHeightInfo } from './vectorHeightInfo.js';
+import { mercatorToCartesianTransformerForHeightInfo } from './vectorHeightInfo.js';
+import type {
   CesiumGeometryOption,
   PolygonGeometryOptions,
   PolylineGeometryOptions,

@@ -1,8 +1,9 @@
 import { getLogger } from '@vcsuite/logger';
 import { parseNumber } from '@vcsuite/parsers';
-import ObliqueMap from '../obliqueMap.js';
-import { Movement } from './navigation.js';
-import NavigationImpl, { NavigationImplOptions } from './navigationImpl.js';
+import type ObliqueMap from '../obliqueMap.js';
+import type { Movement } from './navigation.js';
+import type { NavigationImplOptions } from './navigationImpl.js';
+import NavigationImpl from './navigationImpl.js';
 import { moveView } from './viewHelper.js';
 
 export type ObliqueNavigationOptions = NavigationImplOptions & {
@@ -57,9 +58,9 @@ class ObliqueNavigation extends NavigationImpl<ObliqueMap> {
   update(movement: Movement): void {
     moveView(this._map, movement.input, this.baseTranSpeed);
     if (Math.abs(movement.input.turnRight) > this.rotatingThreshold) {
-      this._rotate(Math.sign(movement.input.turnRight)).catch((e) =>
-        getLogger('ObliqueNavigation').error(String(e)),
-      );
+      this._rotate(Math.sign(movement.input.turnRight)).catch((e: unknown) => {
+        getLogger('ObliqueNavigation').error(String(e));
+      });
     }
   }
 

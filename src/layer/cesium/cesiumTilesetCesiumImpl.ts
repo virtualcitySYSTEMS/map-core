@@ -1,3 +1,9 @@
+import type {
+  Cesium3DTile,
+  Cesium3DTileContent,
+  SplitDirection,
+  CustomShader,
+} from '@vcmap-cesium/engine';
 import {
   Composite3DTileContent,
   Cesium3DTileset,
@@ -7,18 +13,16 @@ import {
   Cartographic,
   Rectangle,
   Math as CesiumMath,
-  type SplitDirection,
-  Cesium3DTile,
-  Cesium3DTileContent,
-  type CustomShader,
 } from '@vcmap-cesium/engine';
-import { createEmpty, Extent as OLExtent } from 'ol/extent.js';
+import type { Extent as OLExtent } from 'ol/extent.js';
+import { createEmpty } from 'ol/extent.js';
 import type { Coordinate } from 'ol/coordinate.js';
 import LayerImplementation from '../layerImplementation.js';
 import { allowPicking, vcsLayerName } from '../layerSymbols.js';
-import FeatureVisibility, {
+import type { HighlightableFeature } from '../featureVisibility.js';
+import type FeatureVisibility from '../featureVisibility.js';
+import {
   hideFeature,
-  HighlightableFeature,
   highlightFeature,
   originalStyle,
   updateOriginalStyle,
@@ -32,7 +36,7 @@ import type {
 import type CesiumMap from '../../map/cesiumMap.js';
 import type { FeatureLayerImplementation } from '../featureLayer.js';
 import type StyleItem from '../../style/styleItem.js';
-import GlobalHider from '../globalHider.js';
+import type GlobalHider from '../globalHider.js';
 import { getResourceOrUrl } from './resourceHelper.js';
 import type PanoramaMap from '../../map/panoramaMap.js';
 
@@ -275,7 +279,7 @@ class CesiumTilesetCesiumImpl
     }
   }
 
-  updateStyle(style: StyleItem, _silent?: boolean): void {
+  updateStyle(style: StyleItem): void {
     this.style = style;
     if (this.initialized && this.cesium3DTileset) {
       this.cesium3DTileset.style = this.style.cesiumStyle;
@@ -350,7 +354,7 @@ class CesiumTilesetCesiumImpl
         if (feature) {
           let id = feature.getProperty('id') as string | undefined;
           if (!id) {
-            id = `${content.url}${batchId}`;
+            id = `${content.url}${String(batchId)}`;
           }
 
           let shouldUpdateOriginalStyle = true;

@@ -10,22 +10,22 @@ import CesiumMap from '../map/cesiumMap.js';
 import VectorRasterTileCesiumImpl from './cesium/vectorRasterTileCesiumImpl.js';
 import OpenlayersMap from '../map/openlayersMap.js';
 import VectorTileOpenlayersImpl from './openlayers/vectorTileOpenlayersImpl.js';
-import FeatureLayer, {
+import type {
   FeatureLayerImplementation,
   FeatureLayerImplementationOptions,
   FeatureLayerOptions,
 } from './featureLayer.js';
+import FeatureLayer from './featureLayer.js';
+import type { VectorStyleItemOptions } from '../style/vectorStyleItem.js';
 import VectorStyleItem, {
   defaultVectorStyle,
-  VectorStyleItemOptions,
 } from '../style/vectorStyleItem.js';
-import VectorProperties, {
-  VectorPropertiesOptions,
-} from './vectorProperties.js';
-import DeclarativeStyleItem, {
-  DeclarativeStyleItemOptions,
-} from '../style/declarativeStyleItem.js';
-import FeatureVisibility, {
+import type { VectorPropertiesOptions } from './vectorProperties.js';
+import VectorProperties from './vectorProperties.js';
+import type { DeclarativeStyleItemOptions } from '../style/declarativeStyleItem.js';
+import DeclarativeStyleItem from '../style/declarativeStyleItem.js';
+import type FeatureVisibility from './featureVisibility.js';
+import {
   FeatureVisibilityAction,
   globalHidden,
   hidden,
@@ -39,15 +39,16 @@ import {
   layerClassRegistry,
   tileProviderClassRegistry,
 } from '../classRegistry.js';
-import TileProvider, {
+import type {
   TileLoadedEvent,
-  type TileProviderOptions,
   TileProviderRtree,
+  TileProviderOptions,
 } from './tileProvider/tileProvider.js';
-import GlobalHider from './globalHider.js';
+import TileProvider from './tileProvider/tileProvider.js';
+import type GlobalHider from './globalHider.js';
 import Extent from '../util/extent.js';
-import VcsMap from '../map/vcsMap.js';
-import StyleItem from '../style/styleItem.js';
+import type VcsMap from '../map/vcsMap.js';
+import type StyleItem from '../style/styleItem.js';
 import VectorTileCesiumImpl from './cesium/vectorTileCesiumImpl.js';
 import VectorTilePanoramaImpl from './panorama/vectorTilePanoramaImpl.js';
 import PanoramaMap from '../map/panoramaMap.js';
@@ -274,9 +275,9 @@ class VectorTileLayer<
   async initialize(): Promise<void> {
     if (!this.initialized) {
       this._tileLoadEventListener =
-        this.tileProvider.tileLoadedEvent.addEventListener((event) =>
-          this._handleTileLoaded(event),
-        );
+        this.tileProvider.tileLoadedEvent.addEventListener((event) => {
+          this._handleTileLoaded(event);
+        });
       this._vectorPropertiesChangedListener =
         this.vectorProperties.propertyChanged.addEventListener(() => {
           // eslint-disable-next-line no-void
@@ -342,7 +343,7 @@ class VectorTileLayer<
 
     this._featureVisibilityListeners = [
       this.featureVisibility.changed.addEventListener(({ action, ids }) => {
-        const tileIdsChanged: Set<string> = new Set();
+        const tileIdsChanged = new Set<string>();
         ids.forEach((id) => {
           const tileIds = this.tileProvider.featureIdToTileIds.get(
             id as string,
@@ -380,7 +381,7 @@ class VectorTileLayer<
     if (this.globalHider) {
       this._featureVisibilityListeners.push(
         this.globalHider.changed.addEventListener(({ action, ids }) => {
-          const tileIdsChanged: Set<string> = new Set();
+          const tileIdsChanged = new Set<string>();
           ids.forEach((id) => {
             const tileIds = this.tileProvider.featureIdToTileIds.get(
               id as string,

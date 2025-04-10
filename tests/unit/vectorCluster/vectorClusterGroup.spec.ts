@@ -4,11 +4,13 @@ import Feature from 'ol/Feature.js';
 import LineString from 'ol/geom/LineString.js';
 import Point from 'ol/geom/Point.js';
 import Style from 'ol/style/Style.js';
+import type {
+  OpenlayersMap,
+  VectorClusterGroupOptions,
+} from '../../../index.js';
 import {
   GlobalHider,
-  OpenlayersMap,
   VectorClusterGroup,
-  VectorClusterGroupOptions,
   VectorClusterStyleItem,
   VectorLayer,
 } from '../../../index.js';
@@ -392,6 +394,39 @@ describe('VectorClusterGroup', () => {
       it('should return an object with type and name for default vector cluster group', () => {
         const config = new VectorClusterGroup({}).toJSON();
         expect(config).to.have.all.keys('name', 'type');
+      });
+    });
+
+    describe('vectorProperties', () => {
+      it('should not include the default vectorProperties', () => {
+        const defaultOptions = VectorClusterGroup.getDefaultOptions();
+        const config = new VectorClusterGroup({
+          vectorProperties: defaultOptions.vectorProperties,
+        }).toJSON();
+        expect(config).to.not.have.property('vectorProperties');
+      });
+
+      it('should not vectorProperties, if not given', () => {
+        const config = new VectorClusterGroup({}).toJSON();
+        expect(config).to.not.have.property('vectorProperties');
+      });
+
+      it('should not change given vectorProperties values', () => {
+        const config = new VectorClusterGroup({
+          vectorProperties: { heightAboveGround: 10 },
+        }).toJSON();
+        expect(config.vectorProperties).to.have.all.keys(['heightAboveGround']);
+        expect(config.vectorProperties).to.have.property(
+          'heightAboveGround',
+          10,
+        );
+      });
+
+      it('should not changed an empty vectorProperties', () => {
+        const config = new VectorClusterGroup({
+          vectorProperties: {},
+        }).toJSON();
+        expect(config.vectorProperties).to.deep.equal({});
       });
     });
 

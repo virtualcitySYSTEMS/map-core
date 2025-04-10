@@ -1,12 +1,9 @@
-import {
-  PrimitiveCollection,
-  QuadtreePrimitive,
-  SplitDirection,
-} from '@vcmap-cesium/engine';
-import StyleItem from '../../style/styleItem.js';
+import type { SplitDirection } from '@vcmap-cesium/engine';
+import { PrimitiveCollection, QuadtreePrimitive } from '@vcmap-cesium/engine';
+import type StyleItem from '../../style/styleItem.js';
 import LayerImplementation from '../layerImplementation.js';
 import type CesiumMap from '../../map/cesiumMap.js';
-import {
+import type {
   VectorTileImplementation,
   VectorTileImplementationOptions,
 } from '../vectorTileLayer.js';
@@ -65,6 +62,7 @@ export default class VectorTileCesiumImpl
     super.deactivate();
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   updateStyle(style: StyleItem, _silent?: boolean): void {
     this._quadtreeProvider.updateStyle(style);
     this._quadtreePrimitive.invalidateAllTiles();

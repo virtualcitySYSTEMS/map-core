@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Type definitions for rbush 3.0
 // Project: https://github.com/mourner/rbush
 // Definitions by: Dan Vanderkam <https://github.com/danvk>

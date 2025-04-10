@@ -11,7 +11,8 @@ import VectorProperties, {
   type VectorPropertiesOptions,
 } from '../layer/vectorProperties.js';
 import { isProvidedFeature } from './featureProviderSymbols.js';
-import StyleItem, { type StyleItemOptions } from '../style/styleItem.js';
+import type StyleItem from '../style/styleItem.js';
+import { type StyleItemOptions } from '../style/styleItem.js';
 import type VcsMap from '../map/vcsMap.js';
 
 export type AbstractFeatureProviderOptions = VcsObjectOptions & {
@@ -96,7 +97,7 @@ class AbstractFeatureProvider extends VcsObject {
       options.vectorProperties instanceof VectorProperties
         ? options.vectorProperties
         : new VectorProperties({
-            ...defaultOptions.vectorProperties,
+            ...(defaultOptions.vectorProperties as VectorPropertiesOptions),
             ...options.vectorProperties,
           });
 
@@ -147,10 +148,13 @@ class AbstractFeatureProvider extends VcsObject {
    * @param resolution - meters per pixel for the given location
    * @param headers - headers optional request headers to be sent with the server request
    */
-  // eslint-disable-next-line no-unused-vars,class-methods-use-this
+  // eslint-disable-next-line class-methods-use-this
   getFeaturesByCoordinate(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _coordinate: Coordinate,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _resolution: number,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _headers?: Record<string, string>,
   ): Promise<Feature[]> {
     return Promise.resolve([]);
@@ -175,7 +179,7 @@ class AbstractFeatureProvider extends VcsObject {
 
     const vectorPropertiesConfig = this.vectorProperties.getVcsMeta({
       ...VectorProperties.getDefaultOptions(),
-      ...defaultOptions.vectorProperties,
+      ...(defaultOptions.vectorProperties as VectorPropertiesOptions),
     });
     if (Object.keys(vectorPropertiesConfig).length > 0) {
       config.vectorProperties = vectorPropertiesConfig;

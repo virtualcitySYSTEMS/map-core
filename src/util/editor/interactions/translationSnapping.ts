@@ -1,5 +1,5 @@
 import { LineString, MultiLineString, Polygon } from 'ol/geom.js';
-import { Coordinate } from 'ol/coordinate.js';
+import type { Coordinate } from 'ol/coordinate.js';
 import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import {
   EventType,
@@ -7,21 +7,18 @@ import {
 } from '../../../interaction/interactionType.js';
 import type VectorLayer from '../../../layer/vectorLayer.js';
 import { getCartesianBearing } from '../../math.js';
+import type { SnapResult, SnapType } from '../snappingHelpers.js';
 import {
   getSnappedCoordinateForResults,
   getAngleSnapResult,
   setSnappingFeatures,
-  SnapResult,
   getGeometrySnapResult,
-  SnapType,
   snapTypes,
 } from '../snappingHelpers.js';
 import { vertexIndexSymbol } from '../editorSymbols.js';
 import { isVertex } from '../editorHelpers.js';
-import {
-  alreadySnapped,
-  SnappingInteractionEvent,
-} from '../editorSessionHelpers.js';
+import type { SnappingInteractionEvent } from '../editorSessionHelpers.js';
+import { alreadySnapped } from '../editorSessionHelpers.js';
 
 function getBearings(coordinates: Coordinate[], isPolygon: boolean): number[] {
   const length = isPolygon ? coordinates.length : coordinates.length - 1;

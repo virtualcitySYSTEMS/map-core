@@ -1,6 +1,6 @@
 import { boundingExtent, containsXY } from 'ol/extent.js';
 import { getTransform, transform, transformExtent } from 'ol/proj.js';
-import { Map as OLMap } from 'ol';
+import type { Map as OLMap } from 'ol';
 import type { Coordinate } from 'ol/coordinate.js';
 
 import { check } from '@vcsuite/check';
@@ -13,15 +13,13 @@ import {
 } from '../layer/oblique/obliqueHelpers.js';
 import Viewpoint from '../util/viewpoint.js';
 import BaseOLMap from './baseOLMap.js';
-import VcsMap, { VcsMapOptions } from './vcsMap.js';
+import type { VcsMapOptions } from './vcsMap.js';
+import VcsMap from './vcsMap.js';
 import VcsEvent from '../vcsEvent.js';
-import {
-  ObliqueViewDirection,
-  ObliqueViewDirection as ViewDirection,
-} from '../oblique/obliqueViewDirection.js';
-import ObliqueProvider, {
-  ObliqueProviderMapChangeEventType,
-} from '../oblique/obliqueProvider.js';
+import type { ObliqueViewDirection } from '../oblique/obliqueViewDirection.js';
+import { ObliqueViewDirection as ViewDirection } from '../oblique/obliqueViewDirection.js';
+import type { ObliqueProviderMapChangeEventType } from '../oblique/obliqueProvider.js';
+import ObliqueProvider from '../oblique/obliqueProvider.js';
 import ObliqueCollection from '../oblique/obliqueCollection.js';
 import { transformFromImage } from '../oblique/helpers.js';
 import { mapClassRegistry } from '../classRegistry.js';

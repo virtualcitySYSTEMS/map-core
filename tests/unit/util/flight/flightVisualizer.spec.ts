@@ -1,13 +1,15 @@
 import { expect } from 'chai';
 import Feature from 'ol/Feature.js';
 import LineString from 'ol/geom/LineString.js';
-import {
-  createFlightVisualization,
-  VcsApp,
+import type {
   FlightVisualization,
   FlightInstance,
   CesiumMap,
   VectorLayer,
+} from '../../../../index.js';
+import {
+  createFlightVisualization,
+  VcsApp,
   LayerState,
 } from '../../../../index.js';
 import getDummyFlight from './getDummyFlightInstance.js';

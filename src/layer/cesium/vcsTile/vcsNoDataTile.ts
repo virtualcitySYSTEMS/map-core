@@ -1,8 +1,8 @@
-import { QuadtreeTile, TileBoundingRegion } from '@vcmap-cesium/engine';
+import type { QuadtreeTile, TileBoundingRegion } from '@vcmap-cesium/engine';
 import type CesiumMap from '../../../map/cesiumMap.js';
+import type { VcsTile } from './vcsTileHelpers.js';
 import {
   getTileBoundingRegion,
-  VcsTile,
   VcsTileState,
   VcsTileType,
 } from './vcsTileHelpers.js';
@@ -25,6 +25,6 @@ export default class VcsNoDataTile implements VcsTile {
     return false;
   }
 
-  // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-empty-function
+  // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-empty-function,no-empty-function
   set show(_show: boolean) {}
 }

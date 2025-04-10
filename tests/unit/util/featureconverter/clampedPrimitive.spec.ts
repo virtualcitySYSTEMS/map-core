@@ -1,14 +1,14 @@
+import type { Primitive } from '@vcmap-cesium/engine';
 import {
   Cartesian3,
   Cartographic,
   HeightReference,
   Matrix4,
-  Primitive,
 } from '@vcmap-cesium/engine';
 import { Feature } from 'ol';
 import Style from 'ol/style/Style.js';
 import Stroke from 'ol/style/Stroke.js';
-import { LineString, Point } from 'ol/geom.js';
+import { LineString } from 'ol/geom.js';
 import { expect } from 'chai';
 import { getMockScene } from '../../helpers/cesiumHelpers.js';
 import VectorProperties from '../../../../src/layer/vectorProperties.js';
@@ -26,7 +26,6 @@ describe('clampedPrimitive', () => {
     scene.updateHeight = (
       _c: Cartographic,
       cb: (carto: Cartographic) => void,
-      _h: HeightReference,
     ): (() => void) => {
       heightCallback = cb;
       return () => {
@@ -63,7 +62,7 @@ describe('clampedPrimitive', () => {
     vectorProperties.destroy();
   });
 
-  it('should set the height, if there is one', () => {
+  it('should set the height, if there is none', () => {
     const translation = Matrix4.getTranslation(
       primitive.modelMatrix,
       new Cartesian3(),

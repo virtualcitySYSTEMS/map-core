@@ -4,7 +4,7 @@ import VcsEvent from '../../src/vcsEvent.js';
 
 describe('VcsEvent', () => {
   let sandbox: SinonSandbox;
-  let event: VcsEvent<void | object>;
+  let event: VcsEvent<undefined | object>;
 
   before(() => {
     sandbox = sinon.createSandbox();
@@ -33,7 +33,7 @@ describe('VcsEvent', () => {
     it('should call the listener on event', () => {
       const spy = sandbox.spy();
       event.addEventListener(spy);
-      event.raiseEvent();
+      event.raiseEvent(undefined);
       expect(spy).to.have.been.called;
     });
 
@@ -65,7 +65,7 @@ describe('VcsEvent', () => {
       const spy = sandbox.spy();
       event.addEventListener(spy);
       event.removeEventListener(spy);
-      event.raiseEvent();
+      event.raiseEvent(undefined);
       expect(spy).to.not.have.been.called;
     });
   });
@@ -114,7 +114,7 @@ describe('VcsEvent', () => {
           }, 100);
         });
       event.addEventListener(listener);
-      await event.awaitRaisedEvent();
+      await event.awaitRaisedEvent(undefined);
       expect(spy).to.have.been.called;
     });
   });

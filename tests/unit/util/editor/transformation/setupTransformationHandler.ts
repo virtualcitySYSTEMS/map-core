@@ -1,17 +1,20 @@
 import { v4 } from 'uuid';
 import { Feature } from 'ol';
-import { Cartesian3, IntersectionTests } from '@vcmap-cesium/engine';
-import { Point } from 'ol/geom.js';
+import type { Cartesian3 } from '@vcmap-cesium/engine';
+import { IntersectionTests } from '@vcmap-cesium/engine';
+import type { Point } from 'ol/geom.js';
 import sinon from 'sinon';
-import {
+import type {
   AxisAndPlanes,
+  TransformationHandler,
+  TransformationMode,
+  VcsMap,
+} from '../../../../../index.js';
+import {
   createTransformationHandler,
   handlerSymbol,
   mercatorProjection,
-  TransformationHandler,
-  TransformationMode,
   VcsApp,
-  VcsMap,
   VectorLayer,
 } from '../../../../../index.js';
 

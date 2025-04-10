@@ -1,8 +1,8 @@
 import { expect } from 'chai';
-import sinon, { type SinonSandbox, SinonSpy } from 'sinon';
+import sinon, { type SinonSpy, type SinonSandbox } from 'sinon';
+import type { DisplayQualityOptions } from '../../../../src/util/displayQuality/displayQuality.js';
 import DisplayQuality, {
   DisplayQualityLevel,
-  DisplayQualityOptions,
 } from '../../../../src/util/displayQuality/displayQuality.js';
 import VcsApp from '../../../../src/vcsApp.js';
 import {
@@ -10,7 +10,7 @@ import {
   getVcsEventSpy,
   setCesiumMap,
 } from '../../helpers/cesiumHelpers.js';
-import { CesiumMap, CesiumTilesetLayer } from '../../../../index.js';
+import type { CesiumMap, CesiumTilesetLayer } from '../../../../index.js';
 
 describe('util.displayQuality.DisplayQuality', () => {
   let sandbox: SinonSandbox;

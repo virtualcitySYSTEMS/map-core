@@ -11,16 +11,14 @@ import type { Coordinate } from 'ol/coordinate.js';
 import type { TileWMS } from 'ol/source.js';
 import type FeatureFormat from 'ol/format/Feature.js';
 import { parseInteger } from '@vcsuite/parsers';
-import AbstractFeatureProvider, {
-  AbstractFeatureProviderOptions,
-} from './abstractFeatureProvider.js';
-import Projection, {
-  mercatorProjection,
-  ProjectionOptions,
-} from '../util/projection.js';
+import type { AbstractFeatureProviderOptions } from './abstractFeatureProvider.js';
+import AbstractFeatureProvider from './abstractFeatureProvider.js';
+import type { ProjectionOptions } from '../util/projection.js';
+import Projection, { mercatorProjection } from '../util/projection.js';
 import type { WMSSourceOptions } from '../layer/wmsHelpers.js';
 import { getWMSSource } from '../layer/wmsHelpers.js';
-import Extent, { ExtentOptions } from '../util/extent.js';
+import type { ExtentOptions } from '../util/extent.js';
+import Extent from '../util/extent.js';
 import { getInitForUrl, requestUrl } from '../util/fetch.js';
 import { featureProviderClassRegistry } from '../classRegistry.js';
 import { TilingScheme } from '../layer/rasterLayer.js';
@@ -203,6 +201,8 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
   }
 
   featureResponseCallback(
+    // any because this is the type provided by readFeatures
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-redundant-type-constituents
     data: Document | Element | ArrayBuffer | any | string,
     coordinate: Coordinate,
   ): Feature[] {
@@ -213,7 +213,7 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
         dataProjection: this.projection ? this.projection.proj : undefined,
         featureProjection: mercatorProjection.proj,
       });
-    } catch (ex) {
+    } catch (_err) {
       this.getLogger().warning(
         'Features could not be read, please verify the featureInfoResponseType with the capabilities from the server',
       );

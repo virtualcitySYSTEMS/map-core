@@ -6,9 +6,8 @@ import {
   ModificationKeyType,
 } from '../../../interaction/interactionType.js';
 import { handlerSymbol, vertexSymbol } from '../editorSymbols.js';
-import AbstractInteraction, {
-  EventAfterEventHandler,
-} from '../../../interaction/abstractInteraction.js';
+import type { EventAfterEventHandler } from '../../../interaction/abstractInteraction.js';
+import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import type BaseOLMap from '../../../map/baseOLMap.js';
 import type CesiumMap from '../../../map/cesiumMap.js';
 
@@ -32,6 +31,7 @@ type CachedScreenSpaceCameraControllerKeys =
   | 'tiltEventTypes'
   | 'rotateEventTypes';
 function suspendCesiumMap(map: CesiumMap): () => void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- cesium type
   function getOriginalEventTypes<T = any[] | CameraEventType | undefined>(
     types: T,
   ): T {
@@ -46,6 +46,8 @@ function suspendCesiumMap(map: CesiumMap): () => void {
   const originalScreenSpaceEvents: Partial<
     Record<
       CachedScreenSpaceCameraControllerKeys,
+      // cesium type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       any[] | CameraEventType | undefined
     >
   > = {};

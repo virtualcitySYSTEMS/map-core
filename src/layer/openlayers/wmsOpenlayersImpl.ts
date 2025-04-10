@@ -1,7 +1,7 @@
 import Tile from 'ol/layer/Tile.js';
 import type { Size } from 'ol/size.js';
 import type TileWMS from 'ol/source/TileWMS.js';
-import ImageWMS from 'ol/source/ImageWMS.js';
+import type ImageWMS from 'ol/source/ImageWMS.js';
 import ImageLayer from 'ol/layer/Image.js';
 import RasterLayerOpenlayersImpl from './rasterLayerOpenlayersImpl.js';
 import { getImageWMSSource, getWMSSource } from '../wmsHelpers.js';

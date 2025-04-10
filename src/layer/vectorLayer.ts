@@ -5,32 +5,30 @@ import Feature from 'ol/Feature.js';
 import { v4 as uuidv4 } from 'uuid';
 import { check, oneOf } from '@vcsuite/check';
 import { parseBoolean } from '@vcsuite/parsers';
+import type { ProjectionOptions } from '../util/projection.js';
 import Projection, {
   getDefaultProjection,
   mercatorProjection,
-  ProjectionOptions,
 } from '../util/projection.js';
-import Layer, { SplitLayer } from './layer.js';
+import type { SplitLayer } from './layer.js';
+import Layer from './layer.js';
+import type { VectorStyleItemOptions } from '../style/vectorStyleItem.js';
 import VectorStyleItem, {
   defaultVectorStyle,
-  VectorStyleItemOptions,
   vectorStyleSymbol,
 } from '../style/vectorStyleItem.js';
-import DeclarativeStyleItem, {
-  DeclarativeStyleItemOptions,
-} from '../style/declarativeStyleItem.js';
+import type { DeclarativeStyleItemOptions } from '../style/declarativeStyleItem.js';
+import DeclarativeStyleItem from '../style/declarativeStyleItem.js';
 import writeStyle from '../style/writeStyle.js';
 import { alreadyTransformedToMercator } from './vectorSymbols.js';
 import Extent from '../util/extent.js';
-import VectorProperties, {
-  VcsMeta,
-  vcsMetaVersion,
-  VectorPropertiesOptions,
-} from './vectorProperties.js';
-import FeatureLayer, {
+import type { VcsMeta, VectorPropertiesOptions } from './vectorProperties.js';
+import VectorProperties, { vcsMetaVersion } from './vectorProperties.js';
+import type {
   FeatureLayerImplementationOptions,
   FeatureLayerOptions,
 } from './featureLayer.js';
+import FeatureLayer from './featureLayer.js';
 import OpenlayersMap from '../map/openlayersMap.js';
 import VectorOpenlayersImpl from './openlayers/vectorOpenlayersImpl.js';
 import VectorCesiumImpl from './cesium/vectorCesiumImpl.js';
@@ -38,13 +36,14 @@ import VectorObliqueImpl from './oblique/vectorObliqueImpl.js';
 import ObliqueMap from '../map/obliqueMap.js';
 import CesiumMap from '../map/cesiumMap.js';
 import { originalStyle, updateOriginalStyle } from './featureVisibility.js';
-import StyleItem, { StyleItemOptions } from '../style/styleItem.js';
+import type { StyleItemOptions } from '../style/styleItem.js';
+import StyleItem from '../style/styleItem.js';
 import { layerClassRegistry } from '../classRegistry.js';
 
 import type VcsMap from '../map/vcsMap.js';
-import { GeoJSONwriteOptions } from './geojsonHelpers.js';
+import type { GeoJSONwriteOptions } from './geojsonHelpers.js';
 import { vcsLayerName } from './layerSymbols.js';
-import CesiumTilesetCesiumImpl from './cesium/cesiumTilesetCesiumImpl.js';
+import type CesiumTilesetCesiumImpl from './cesium/cesiumTilesetCesiumImpl.js';
 import VcsEvent from '../vcsEvent.js';
 import PanoramaMap from '../map/panoramaMap.js';
 import VectorPanoramaImpl from './panorama/vectorPanoramaImpl.js';

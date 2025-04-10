@@ -1,18 +1,16 @@
-import VectorSource from 'ol/source/Vector.js';
+import type VectorSource from 'ol/source/Vector.js';
 import OLVectorLayer from 'ol/layer/Vector.js';
 import type { SplitDirection } from '@vcmap-cesium/engine';
 import LayerObliqueImpl from './layerObliqueImpl.js';
 import { synchronizeFeatureVisibilityWithSource } from '../vectorHelpers.js';
-import { FeatureLayerImplementation } from '../featureLayer.js';
+import type { FeatureLayerImplementation } from '../featureLayer.js';
 import type { VectorImplementationOptions } from '../vectorLayer.js';
 import type ObliqueMap from '../../map/obliqueMap.js';
 import type GlobalHider from '../globalHider.js';
 import type StyleItem from '../../style/styleItem.js';
 import type FeatureVisibility from '../featureVisibility.js';
-import {
-  createSourceObliqueSync,
-  SourceObliqueSync,
-} from './sourceObliqueSync.js';
+import type { SourceObliqueSync } from './sourceObliqueSync.js';
+import { createSourceObliqueSync } from './sourceObliqueSync.js';
 
 /**
  * represents a specific vector layer for oblique.
@@ -60,7 +58,7 @@ class VectorObliqueImpl
     });
   }
 
-  // eslint-disable-next-line no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   updateStyle(style: StyleItem, _silent?: boolean): void {
     this.style = style;
     if (this.initialized && this.olLayer) {
@@ -68,7 +66,7 @@ class VectorObliqueImpl
     }
   }
 
-  // eslint-disable-next-line class-methods-use-this,no-unused-vars
+  // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-unused-vars
   updateSplitDirection(_splitDirection: SplitDirection): void {}
 
   async activate(): Promise<void> {

@@ -1,7 +1,7 @@
-import { Geometry, SimpleGeometry } from 'ol/geom.js';
+import type { Geometry, Point, SimpleGeometry } from 'ol/geom.js';
 import type { Coordinate } from 'ol/coordinate.js';
 import { Cartesian3, HeightReference } from '@vcmap-cesium/engine';
-import { GeometryLayout } from 'ol/geom/Geometry.js';
+import type { GeometryLayout } from 'ol/geom/Geometry.js';
 import type { Feature } from 'ol';
 import type VectorProperties from '../../layer/vectorProperties.js';
 import { is2DLayout } from '../geometryHelpers.js';
@@ -43,34 +43,34 @@ export type VectorHeightInfo<
       layout: L;
     }
   : T extends RelativeHeightReference
-  ? {
-      heightReference: T;
-      layout: L;
-      clampOrigin?: [number, number];
-      heightAboveGround?: number;
-      /**
-       * the level above or below mean sea level
-       */
-      groundLevel?: number;
-      /**
-       * true if not all z values are identical, e.g no height above ground was provided and no or only one storey was provided
-       */
-      perPositionHeight: boolean;
-    } & ExtrusionHeightInfo
-  : T extends HeightReference.NONE
-  ? {
-      heightReference: T;
-      layout: L;
-      /**
-       * the level above or below mean sea level (minZ value or ground_level or 0)
-       */
-      groundLevelOrMinHeight: number;
-      /**
-       * true if not all z values are identical, e.g no ground level was provided and no or only one storey was provided
-       */
-      perPositionHeight: boolean;
-    } & ExtrusionHeightInfo
-  : never;
+    ? {
+        heightReference: T;
+        layout: L;
+        clampOrigin?: [number, number];
+        heightAboveGround?: number;
+        /**
+         * the level above or below mean sea level
+         */
+        groundLevel?: number;
+        /**
+         * true if not all z values are identical, e.g no height above ground was provided and no or only one storey was provided
+         */
+        perPositionHeight: boolean;
+      } & ExtrusionHeightInfo
+    : T extends HeightReference.NONE
+      ? {
+          heightReference: T;
+          layout: L;
+          /**
+           * the level above or below mean sea level (minZ value or ground_level or 0)
+           */
+          groundLevelOrMinHeight: number;
+          /**
+           * true if not all z values are identical, e.g no ground level was provided and no or only one storey was provided
+           */
+          perPositionHeight: boolean;
+        } & ExtrusionHeightInfo
+      : never;
 
 export function isClampedHeightReference(
   heightReference: HeightReference,
@@ -388,4 +388,34 @@ export function mercatorToCartesianTransformerForHeightInfo(
       wgs84Coords[2],
     );
   };
+}
+
+/**
+ * Sets the correct height on the wgs84Coords depending on the height info
+ * @param geometry
+ * @param heightInfo
+ */
+export function getWgs84CoordinatesForPoint(
+  geometry: Point,
+  heightInfo: VectorHeightInfo,
+): Coordinate {
+  const transformer = mercatorToWgs84TransformerForHeightInfo(heightInfo);
+  const wgs84Coords = transformer(geometry.getCoordinates());
+  if (!isClampedHeightReference(heightInfo.heightReference)) {
+    // points get rendered at the top of the extrusion. we must add this to the Z value
+    const extrusionHeight = (
+      heightInfo as VectorHeightInfo<
+        RelativeHeightReference | HeightReference.NONE
+      >
+    ).storeyHeightsAboveGround.reduce(
+      (sum, currentValue) => sum + currentValue,
+      0,
+    );
+
+    if (extrusionHeight) {
+      wgs84Coords[2] += extrusionHeight;
+    }
+  }
+
+  return wgs84Coords;
 }

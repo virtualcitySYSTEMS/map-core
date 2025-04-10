@@ -2,6 +2,7 @@ import IndexedCollection from '../../../src/util/indexedCollection.js';
 
 describe('IndexedCollection', () => {
   let sandbox;
+
   before(() => {
     sandbox = sinon.createSandbox();
   });
