@@ -47,6 +47,7 @@
     "@types/proj4": "^2.5.5",
     "@types/sinon": "^10.0.15",
     "@types/sinon-chai": "^3.2.12",
+    "@vcsuite/eslint-config": "^4.0.0",
     "c8": "^10.1.2",
     "canvas": "^2.11.2",
     "chai": "^4.4.1",
@@ -72,7 +73,6 @@
   "prettier": "@vcsuite/eslint-config/prettier.js",
   "dependencies": {
     "@vcsuite/check": "^3.0.0",
-    "@vcsuite/eslint-config": "^4.0.0",
     "@vcsuite/logger": "^1.0.1",
     "@vcsuite/parsers": "^2.0.0",
     "fast-deep-equal": "^3.1.3",
