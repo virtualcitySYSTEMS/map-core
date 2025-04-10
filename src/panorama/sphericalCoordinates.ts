@@ -1,5 +1,4 @@
 import { Cartesian3, Math as CesiumMath, Matrix4 } from '@vcmap-cesium/engine';
-import type { PanoramaImage } from './panoramaImage.js';
 
 /**
  * Spherical coordinates for a unit sphere where:
@@ -11,6 +10,9 @@ import type { PanoramaImage } from './panoramaImage.js';
  * - The image spherical reference system, where x is inverted from the spheres reference system.
  * - The spheres cartesian reference system, where the cartesian is transformed by the inverse model matrix of the image.
  * - the global cartesian reference system.
+ *
+ * Spherical coordinates are orderd [phi, theta], where phi is the angle in the xy-plane (azimuth angle)
+ * from the x-axis and theta is the angle from the z-axis (polar angle) {@link https://en.wikipedia.org/wiki/Spherical_coordinate_system}
  */
 
 /**
@@ -38,7 +40,7 @@ const scratchNormal = new Cartesian3();
  * @param cartesian
  * @returns The spherical coordinates [phi, theta].
  */
-export function cartesianToSpherical(cartesian: Cartesian3): [number, number] {
+function cartesianToSpherical(cartesian: Cartesian3): [number, number] {
   Cartesian3.normalize(cartesian, scratchNormal);
   const { x, y, z } = scratchNormal;
   const phi = Math.atan2(y, x);
@@ -60,12 +62,12 @@ export function cartesianToImageSpherical(
 }
 
 /**
- * Converts spherical coordinates to cartesian coordinates the spheres reference system.
+ * Converts image (flipped) spherical coordinates to cartesian coordinates in the spheres reference system.
  * @param spherical - The spherical coordinates [phi, theta].
  * @param [result] - The cartesian coordinate to write to.
  * @returns
  */
-export function sphericalToCartesian(
+export function imageSphericalToCartesian(
   spherical: [number, number],
   result?: Cartesian3,
 ): Cartesian3 {
@@ -82,13 +84,13 @@ const scratchLocal = new Cartesian3();
 /**
  * Takes a global cesium cartesian in ECEF and converts it to spherical coordinates on the flipped image.
  * @param cartesian
- * @param image
+ * @param invModelMatrix - the inverse model matrix of the image.
  */
 export function globalCartesianToImageSpherical(
   cartesian: Cartesian3,
-  image: PanoramaImage,
+  invModelMatrix: Matrix4,
 ): [number, number] {
-  Matrix4.multiplyByPoint(image.invModelMatrix, cartesian, scratchLocal);
+  Matrix4.multiplyByPoint(invModelMatrix, cartesian, scratchLocal);
   Cartesian3.normalize(scratchLocal, scratchLocal);
   return cartesianToImageSpherical(scratchLocal);
 }

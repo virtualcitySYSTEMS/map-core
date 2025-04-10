@@ -1,4 +1,5 @@
-import { Cartesian2, Color, Material } from '@vcmap-cesium/engine';
+import type { Cartesian2 } from '@vcmap-cesium/engine';
+import { Color, Material } from '@vcmap-cesium/engine';
 import { getLogger } from '@vcsuite/logger';
 
 const source = `
@@ -21,7 +22,7 @@ export default class PanoramaTileMaterial extends Material {
 
   ready: Promise<void>;
 
-  private declare _loadedImages: unknown[];
+  declare private _loadedImages: unknown[];
 
   declare uniforms: {
     image: HTMLCanvasElement;

@@ -1,3 +1,4 @@
+import type { Matrix4 } from '@vcmap-cesium/engine';
 import {
   Cartesian2,
   Cartesian3,
@@ -5,11 +6,10 @@ import {
   GeometryInstance,
   MaterialAppearance,
   Math as CesiumMath,
-  Matrix4,
   Primitive,
   VertexFormat,
 } from '@vcmap-cesium/engine';
-import { Extent } from 'ol/extent.js';
+import type { Extent } from 'ol/extent.js';
 import { cartesian2DDistance } from '../util/math.js';
 import PanoramaTileMaterial from './panoramaTileMaterial.js';
 
@@ -45,47 +45,29 @@ export function createTileCoordinate(
   };
 }
 
-// let emptyTileAppearance: MaterialAppearance | undefined;
-// function getEmptyTileAppearance(): MaterialAppearance {
-//   if (!emptyTileAppearance) {
-//     emptyTileAppearance = new MaterialAppearance({
-//       material: Material.fromType('Color', {
-//         color: Color.HOTPINK.withAlpha(0.8),
-//       }),
-//     });
-//   }
-//   return emptyTileAppearance;
-// }
-
-function addDebugOverlay(
-  ctx: CanvasRenderingContext2D,
-  tileSize: TileSize,
-  text: string,
-): void {
-  ctx.strokeStyle = 'hotpink';
-  ctx.lineWidth = 5;
-  ctx.strokeRect(0, 0, tileSize[0], tileSize[1]);
-
-  ctx.translate(tileSize[0], 0);
-  ctx.scale(-1, 1); // Flip the context horizontally
-
-  ctx.fillStyle = 'hotpink';
-  ctx.font = '60px Arial';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(text, tileSize[0] / 2, tileSize[1] / 2);
-}
-
+/**
+ * Calculates the number of tiles in the given level.
+ * @param level
+ */
 export function getNumberOfTiles(level: number): [number, number] {
   const maxX = 2 ** level * 2;
   const maxY = 2 ** level;
   return [maxX, maxY];
 }
 
+/**
+ * Calculates the tile size in radians for the given level.
+ * @param level
+ */
 export function tileSizeInRadians(level: number): number {
   return CesiumMath.PI / 2 ** level;
 }
 
+/**
+ * Calculates the tile coordinates from the given image spherical coordinate & level.
+ * @param spherical
+ * @param level
+ */
 export function tileCoordinateFromImageCoordinate(
   spherical: [number, number],
   level: number,
@@ -101,6 +83,11 @@ export function tileCoordinateFromImageCoordinate(
   return createTileCoordinate(tileX, tileY, level);
 }
 
+/**
+ * Get the tile coordinates of all tiles which intersect the given extent of image coordinates for the given level.
+ * @param extent
+ * @param level
+ */
 export function getTileCoordinatesInImageExtent(
   extent: Extent,
   level: number,
@@ -130,6 +117,10 @@ export function getTileCoordinatesInImageExtent(
   return tileCoordinates;
 }
 
+/**
+ * Gets the center point of a tile in image spherical coordinates.
+ * @param tileCoordinate
+ */
 export function getTileSphericalCenter(
   tileCoordinate: TileCoordinate,
 ): [number, number] {
@@ -144,8 +135,8 @@ export function getTileSphericalCenter(
 
 /**
  * @param tileCoordinate - the tile coordinate to calculate the distance to
- * @param position - the spherical position to calculate the distance from
- * @returns the distance in radians. this is only used for relative comparison.
+ * @param position - the image spherical position to calculate the distance from
+ * @returns the distance in radians. this is only used for relative comparisons.
  */
 export function getDistanceToTileCoordinate(
   position: [number, number],
@@ -160,9 +151,28 @@ export function getDistanceToTileCoordinate(
   return distance;
 }
 
-function getImageTileAppearance(
+function addDebugOverlay(
+  ctx: CanvasRenderingContext2D,
+  tileSize: TileSize,
+  text: string,
+): void {
+  ctx.strokeStyle = 'hotpink';
+  ctx.lineWidth = 5;
+  ctx.strokeRect(0, 0, tileSize[0], tileSize[1]);
+
+  ctx.translate(tileSize[0], 0);
+  ctx.scale(-1, 1); // Flip the context horizontally
+
+  ctx.fillStyle = 'hotpink';
+  ctx.font = '60px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, tileSize[0] / 2, tileSize[1] / 2);
+}
+
+function createPanoramaTileAppearance(
   { x, y, level }: TileCoordinate,
-  image: ImageBitmap,
+  image: ImageBitmap | HTMLImageElement | HTMLCanvasElement,
   tileSize: TileSize,
   debug = false,
 ): MaterialAppearance {
@@ -173,7 +183,7 @@ function getImageTileAppearance(
   const min = new Cartesian2(x * sizeX, 1 - (y * sizeY + sizeY));
   const max = new Cartesian2(x * sizeX + sizeX, 1 - y * sizeY);
 
-  const canvas = document.createElement('canvas'); // XXX offscreen canvas? worker?
+  const canvas = document.createElement('canvas');
   canvas.width = tileSize[0];
   canvas.height = tileSize[1];
   const ctx = canvas.getContext('2d')!;
@@ -183,16 +193,14 @@ function getImageTileAppearance(
     addDebugOverlay(ctx, tileSize, `${level}/${x}/${y}`);
   }
 
-  const material = new PanoramaTileMaterial(canvas, min, max);
-
   return new MaterialAppearance({
-    material,
+    material: new PanoramaTileMaterial(canvas, min, max),
     closed: false,
     flat: true,
   });
 }
 
-function createPrimitive(
+function createPanoramaTilePrimitive(
   { x, y, level }: TileCoordinate,
   modelMatrix: Matrix4,
   appearance: MaterialAppearance,
@@ -217,21 +225,29 @@ function createPrimitive(
       }),
     ],
     appearance,
-    asynchronous: true,
     modelMatrix,
+    asynchronous: true,
   });
 }
 
+/**
+ * Creates a panorama tile primitive with the given tile coordinate and image. Typically only called
+ * by the PanoramaTileProvider when creating tiles.
+ * @param tileCoordinate
+ * @param image
+ * @param modelMatrix
+ * @param tileSize
+ */
 export function createPanoramaTile(
   tileCoordinate: TileCoordinate,
-  image: ImageBitmap,
+  image: ImageBitmap | HTMLImageElement | HTMLCanvasElement,
   modelMatrix: Matrix4,
   tileSize: TileSize,
 ): PanoramaTile {
-  const primitive = createPrimitive(
+  const primitive = createPanoramaTilePrimitive(
     tileCoordinate,
     modelMatrix,
-    getImageTileAppearance(tileCoordinate, image, tileSize),
+    createPanoramaTileAppearance(tileCoordinate, image, tileSize),
   );
 
   return {

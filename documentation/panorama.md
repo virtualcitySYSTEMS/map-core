@@ -7,11 +7,12 @@ Panorama image handling in the VCMap.
 The following outlines the two levels of data structure for panorama images in the VCMap. Basically we have to distinguish between
 a data set of images, and the images themselves.
 
-## Dataset
+## Panorama Dataset
 
-A panorama dataset is a collection of images. A dataset is represented by a
-FlatGeobuff file which MUST be named `images.fgb`. This FlatGeobuff MUST consist of Point features only.
-The coordinate reference system of the data within the `images.fgb` MUST be WGS84, as defined by the EPSG code 4326.
+A panorama dataset consists of multiple panorama images along with a FlatGeobuf file (MUST be named images.fgb),
+which contains the position the images. The FlatGeobuf file is used to geolocate the individual images and store
+essential information of each image. The images.fgb file MUST exclusively contain point features, representing
+the geographical location of each panorama image. The required coordinate reference system MUST be WGS84 (EPSG code 4326).
 The FlatGeobuf MUST contain the following columns:
 
 - `name` (string): The name of the image. This is used to reference the image within the dataset and must
@@ -32,7 +33,7 @@ These image files MUST be in the same directory as the `images.fgb`.
 ## Panorama Image
 
 This is the actual image data and MUST be provided as a Cloud Optimized GeoTIFF (COG). There are three files that can be
-associated with one image:
+associated with one panorama image:
 
 1. A color image, which is the actual image data.
 2. An intensity image, represents the intensity of the associated depth image values.
@@ -61,13 +62,13 @@ The following `Item`s CAN be present in the GDAL metadata:
 - `PANORAMA_INTENSITY` (0|1): Whether an intensity image is available. 1 if available, 0 (or missing) if not.
 - `PANORAMA_DEPTH` (0|1): Whether a depth image is available. 1 if available, 0 (or missing) if not.
 
-If no metadata is given, or the metadata given is not valid, the position will be assumed to be 0, 0, 0 and the
+NOTE: If no metadata is given, or the metadata given is not valid, the position will be assumed to be 0, 0, 0 and the
 orientation 0, 0, 0 as well.
 
 ### Intensity Image
 
 The intensity image represents the intensity of the depth image. It is solely used for visualization.
-An intensity image MUST abide to the same requirements as the color image as regards to aspect ratio, tiling,
+An intensity image MUST adhere to the same requirements as the color image as regards to aspect ratio, tiling,
 compression and flipping. Even though the intensity could be described by a single band,
 it MUST be provided as a four band image (RGBA) and it SHOULD be compressed with WEBP. The intensity image
 is not required to provide any additional metadata.
@@ -108,7 +109,7 @@ the other images. The depth image MUST be a single band image with
 an integer data type. For a decent relation of file size vs. precision, it is proposed to use UInt16. The
 NoData value of the depth image SHOULD be 0. The depth image SHOULD be compressed using deflate compression.
 
-The pixel value is used to interpolate the distance of a point in the image to the camera. To this extent, the following metadata
+The pixel value is used to interpolate the distance of a point in the image to the camera position. To this extent, the following metadata
 SHOULD be present. If provided, it MUST be within the non-standard TIFFTAG_GDAL_METADATA of the COG. The following fields MUST be present for
 the metadata to be considered valid:
 
@@ -119,7 +120,7 @@ The following values CAN be present in the GDAL metadata:
 
 - `PANORAMA_DEPTH_MIN` (float): The minimum distance in meters. If not provided, 0.0 is assumed.
 
-If no metadata is given, or the metadata given is not valid, the depth values will be assumed to be within the range of 0.0
+NOTE: If no metadata is given, or the metadata given is not valid, the depth values will be assumed to be within the range of 0.0
 to 50.0. Assuming UInt16 data, the formula to calculate the distance is as follows:
 
 ```ts
