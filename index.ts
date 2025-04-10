@@ -212,6 +212,7 @@ export { default as WmsOpenlayersImpl } from './src/layer/openlayers/wmsOpenlaye
 export { default as WmtsOpenlayersImpl } from './src/layer/openlayers/wmtsOpenlayersImpl.js';
 export type { PointCloudOptions } from './src/layer/pointCloudLayer.js';
 export { default as PointCloudLayer } from './src/layer/pointCloudLayer.js';
+export { default as PanoramaDatasetLayer } from './src/layer/panoramaDatasetLayer.js';
 export type {
   RasterLayerOptions,
   RasterLayerImplementation,
