@@ -1,5 +1,5 @@
+import type { Scene } from '@vcmap-cesium/engine';
 import {
-  Scene,
   Math as CesiumMath,
   MaterialAppearance,
   Material,
@@ -18,7 +18,7 @@ import {
   getFov,
   getFovImageSphericalExtent,
   getProjectedFov,
-} from './panoramaCameraHelpers.js';
+} from './fieldOfView.js';
 import type { PanoramaImage } from './panoramaImage.js';
 import { getNumberOfTiles, tileSizeInRadians } from './panoramaTile.js';
 import type PanoramaMap from '../map/panoramaMap.js';
@@ -135,7 +135,7 @@ function drawView(
     drawTiles(ctx, options.tileGrid);
   }
   if (options.fov) {
-    const cameraView = getProjectedFov(scene.camera, image);
+    const cameraView = getProjectedFov(scene.camera, image.invModelMatrix);
     if (cameraView) {
       ctx.lineWidth = 2;
       ctx.strokeStyle = 'green';
@@ -155,7 +155,10 @@ function drawView(
     }
 
     ctx.strokeStyle = 'red';
-    const { extents } = getFovImageSphericalExtent(scene.camera, image);
+    const { extents } = getFovImageSphericalExtent(
+      scene.camera,
+      image.invModelMatrix,
+    );
     extents.forEach((extent) => {
       if (!isEmpty(extent)) {
         const [minLon, minLat, maxLon, maxLat] = extent.map(

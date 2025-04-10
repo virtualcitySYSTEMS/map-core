@@ -35,19 +35,13 @@ import {
   type ContextOptions,
 } from '@vcmap-cesium/engine';
 import type { Coordinate } from 'ol/coordinate.js';
-
 import { check, maybe } from '@vcsuite/check';
 import { parseBoolean, parseInteger, parseNumber } from '@vcsuite/parsers';
 import VcsMap, { type VcsMapOptions } from './vcsMap.js';
-import Viewpoint from '../util/viewpoint.js';
+import type Viewpoint from '../util/viewpoint.js';
 import Projection, { mercatorProjection } from '../util/projection.js';
 import { getHeightFromTerrainProvider } from '../layer/terrainHelpers.js';
 import { vcsLayerName } from '../layer/layerSymbols.js';
-import {
-  ModificationKeyType,
-  PointerEventType,
-  PointerKeyType,
-} from '../interaction/interactionType.js';
 import type { CameraLimiterOptions } from './cameraLimiter.js';
 import CameraLimiter from './cameraLimiter.js';
 import { mapClassRegistry } from '../classRegistry.js';

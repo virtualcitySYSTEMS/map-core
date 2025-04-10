@@ -1,7 +1,8 @@
 import { Cartesian3, Math as CesiumMath, Matrix4 } from '@vcmap-cesium/engine';
-import { fromUrl, GeoTIFFImage, Pool, ReadRasterResult } from 'geotiff';
-import { sphericalToCartesian } from './sphericalCoordinates.js';
+import type { GeoTIFFImage, ReadRasterResult } from 'geotiff';
+import { fromUrl, Pool } from 'geotiff';
 import { getLogger } from '@vcsuite/logger';
+import { imageSphericalToCartesian } from './sphericalCoordinates.js';
 
 export type PanoramaDepth = {
   readonly maxDepth: number;
@@ -150,7 +151,7 @@ export async function createPanoramaDepth(
       if (depthValue === 0) {
         return undefined;
       }
-      const cartesian = sphericalToCartesian(imageCoordinate, result);
+      const cartesian = imageSphericalToCartesian(imageCoordinate, result);
       Cartesian3.normalize(cartesian, cartesian);
       Cartesian3.multiplyByScalar(cartesian, depthValue, cartesian);
       Matrix4.multiplyByPoint(modelMatrix, cartesian, cartesian);

@@ -1,16 +1,16 @@
+import type { PerspectiveFrustum } from '@vcmap-cesium/engine';
 import {
   Cartesian2,
   Math as CesiumMath,
-  PerspectiveFrustum,
   ScreenSpaceEventType,
 } from '@vcmap-cesium/engine';
-import { windowPositionToImageSpherical } from './panoramaCameraHelpers.js';
-import PanoramaMap from '../map/panoramaMap.js';
+import { windowPositionToImageSpherical } from './fieldOfView.js';
+import type PanoramaMap from '../map/panoramaMap.js';
 import {
   PointerEventType,
   PointerKeyType,
 } from '../interaction/interactionType.js';
-import { PanoramaImageView } from './panoramaImageView.js';
+import type { PanoramaImageView } from './panoramaImageView.js';
 
 const MAX_PITCH = CesiumMath.toRadians(85);
 const MIN_PITCH = -MAX_PITCH;
@@ -34,7 +34,6 @@ export function panoZoom(
   }
 }
 
-// eslint-disable-next-line import/prefer-default-export
 export function createPanoramaNavigation(map: PanoramaMap): () => void {
   const widget = map.getCesiumWidget();
   const { camera } = widget;
@@ -104,12 +103,12 @@ export function createPanoramaNavigation(map: PanoramaMap): () => void {
         const startImagePosition = windowPositionToImageSpherical(
           startPosition,
           camera,
-          currentImage,
+          currentImage.invModelMatrix,
         );
         const newImagePosition = windowPositionToImageSpherical(
           position,
           camera,
-          currentImage,
+          currentImage.invModelMatrix,
         );
 
         if (startImagePosition && newImagePosition) {

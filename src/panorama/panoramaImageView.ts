@@ -1,24 +1,18 @@
-import {
-  Camera,
-  Cartesian3,
-  Matrix4,
-  PrimitiveCollection,
-} from '@vcmap-cesium/engine';
+import type { Camera } from '@vcmap-cesium/engine';
+import { Cartesian3, Matrix4, PrimitiveCollection } from '@vcmap-cesium/engine';
 import { getWidth } from 'ol/extent.js';
 import { getLogger } from '@vcsuite/logger';
 import type { PanoramaImage } from './panoramaImage.js';
+import type { PanoramaTile, TileCoordinate, TileSize } from './panoramaTile.js';
 import {
   createTileCoordinate,
   getDistanceToTileCoordinate,
   getTileCoordinatesInImageExtent,
-  PanoramaTile,
-  TileCoordinate,
-  TileSize,
   tileSizeInRadians,
 } from './panoramaTile.js';
-import { getFovImageSphericalExtent } from './panoramaCameraHelpers.js';
-import PanoramaMap from '../map/panoramaMap.js';
-import { PanoramaTileProvider } from './panoramaTileProvider.js';
+import { getFovImageSphericalExtent } from './fieldOfView.js';
+import type PanoramaMap from '../map/panoramaMap.js';
+import type { PanoramaTileProvider } from './panoramaTileProvider.js';
 
 export type PanoramaImageView = {
   /**
@@ -102,7 +96,11 @@ function setupImageView(
 
   camera.setView({
     destination: image.position,
-    orientation: { ...image.orientation, heading: camera.heading },
+    orientation: {
+      heading: camera.heading,
+      pitch: image.orientation.pitch,
+      roll: image.orientation.roll,
+    },
   });
 
   const levelPixelPerRadians = new Array<number>(maxLevel); // XXX can be cached or pre calculated?
@@ -116,7 +114,7 @@ function setupImageView(
     }
     const { extents, center: imageCenter } = getFovImageSphericalExtent(
       camera,
-      image,
+      image.invModelMatrix,
     );
     const currentImageRadiansWidth = extents.reduce(
       (acc, extent) => acc + getWidth(extent),
@@ -190,8 +188,8 @@ function setupImageView(
             .then((intensityTileProvider) => {
               setupTileProvider(intensityTileProvider);
             })
-            .catch((e) => {
-              console.error(e);
+            .catch((e: unknown) => {
+              getLogger('PanoramaImageView').error(String(e));
               getLogger('PanoramaImageView').warning('no intensity available');
             });
         } else {
@@ -214,7 +212,9 @@ function setupImageView(
     },
     render,
     destroy(): void {
-      tileProviders.forEach((removeListener) => removeListener());
+      tileProviders.forEach((removeListener) => {
+        removeListener();
+      });
       tileProviders.clear();
       clearCurrentTiles();
     },

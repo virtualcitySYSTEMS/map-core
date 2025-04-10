@@ -19,7 +19,7 @@ import type CesiumMap from '../map/cesiumMap.js';
 import type ObliqueMap from '../map/obliqueMap.js';
 import type PanoramaMap from '../map/panoramaMap.js';
 import { cartesianToMercator } from '../util/math.js';
-import { windowPositionToImageSpherical } from '../panorama/panoramaCameraHelpers.js';
+import { windowPositionToImageSpherical } from '../panorama/fieldOfView.js';
 
 const scratchPanoramaCartesian = new Cartesian3();
 async function getCoordinateFromPanoramap(
@@ -33,7 +33,7 @@ async function getCoordinateFromPanoramap(
     const imageCoordinate = windowPositionToImageSpherical(
       event.windowPosition,
       camera,
-      image,
+      image.invModelMatrix,
     );
 
     event.positionOrPixel = imageCoordinate;
