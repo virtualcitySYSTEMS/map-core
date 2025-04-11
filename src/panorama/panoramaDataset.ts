@@ -168,4 +168,10 @@ export default class PanoramaDataset extends VcsObject {
       url: levels[0].url,
     };
   }
+
+  destroy(): void {
+    this.layer.deactivate();
+    this.layer.destroy();
+    super.destroy();
+  }
 }
