@@ -42,6 +42,8 @@ export default class PanoramaDataset extends VcsObject {
     };
   }
 
+  private _state: LayerState = LayerState.INACTIVE;
+
   readonly baseUrl: string;
 
   activeOnStartup = false;
@@ -52,7 +54,7 @@ export default class PanoramaDataset extends VcsObject {
 
   readonly layer: PanoramaDatasetLayer;
 
-  readonly stateChanged: VcsEvent<LayerState>;
+  readonly stateChanged: VcsEvent<LayerState> = new VcsEvent<LayerState>();
 
   constructor(options: PanoramaDatasetOptions) {
     super(options);
@@ -82,7 +84,11 @@ export default class PanoramaDataset extends VcsObject {
 
     this.layer = new PanoramaDatasetLayer(this);
     markVolatile(this.layer);
-    this.stateChanged = this.layer.stateChanged;
+    this.layer.stateChanged.addEventListener(() => {
+      if (this.layer.active && !this.active) {
+        this.activeOnStartup = true;
+      }
+    });
 
     this.activeOnStartup = parseBoolean(
       options.activeOnStartup,
@@ -95,26 +101,27 @@ export default class PanoramaDataset extends VcsObject {
     );
 
     if (this.activeOnStartup) {
-      this.activate().catch(() => {
-        this.getLogger().error('Error activating dataset');
-      });
+      this.activate();
     }
   }
 
   get state(): LayerState {
-    return this.layer.state;
+    return this._state;
   }
 
   get active(): boolean {
-    return this.layer.active;
+    return this._state === LayerState.ACTIVE;
   }
 
-  activate(): Promise<void> {
-    return this.layer.activate();
+  activate(): void {
+    this._state = LayerState.ACTIVE;
+    this.stateChanged.raiseEvent(LayerState.ACTIVE);
   }
 
   deactivate(): void {
+    this._state = LayerState.INACTIVE;
     this.layer.deactivate();
+    this.stateChanged.raiseEvent(LayerState.INACTIVE);
   }
 
   createPanoramaImage(
