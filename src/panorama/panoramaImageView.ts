@@ -90,7 +90,7 @@ function setupImageView(
       currentTileProvider = tileProvider;
       clearCurrentTiles();
     }
-    tileProvider.loadTiles(currentTileCoordinates);
+    tileProvider.setVisibleTiles(currentTileCoordinates);
   };
   setupTileProvider(image.tileProvider);
 
@@ -165,7 +165,7 @@ function setupImageView(
       }
     });
 
-    currentTileProvider.loadTiles(currentTileCoordinates);
+    currentTileProvider.setVisibleTiles(currentTileCoordinates);
   };
   render();
 
