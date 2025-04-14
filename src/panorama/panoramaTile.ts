@@ -46,6 +46,19 @@ export function createTileCoordinate(
 }
 
 /**
+ * Creates a tile coordinate from a the key string of a tile coordinate.
+ * The key is semantic and has the following structure: `level/x/y`
+ * @param key
+ */
+export function createTileCoordinateFromKey(key: string): TileCoordinate {
+  const keys = key.split('/').map(Number).filter(Number.isFinite);
+  if (keys.length === 3) {
+    return createTileCoordinate(keys[1], keys[2], keys[0]);
+  }
+  throw new Error(`Provided key "${key}" is not a valid tile coordinate key`);
+}
+
+/**
  * Calculates the number of tiles in the given level.
  * @param level
  */

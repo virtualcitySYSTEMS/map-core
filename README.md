@@ -76,6 +76,13 @@ The core provides a flexible and fully customizable configuration management. It
 The Interactions API is an abstraction layer to handle map events. For example a click event on the Map.
 This allows for developing applications which work in 2D/3D or oblique.
 
+## Workers
+
+Some features use `WebWorkers` to offload heavy computations from the main thread. If you host the library yourself,
+you can set the global `vcs.workerBase` to point to the hosted location of the workers. Otherwise it is assumed the code is
+hosted in the same structure and a relative URL to the workers directory is used
+(which may lead to issues if you dont allow `unsafe-inline` in your CSP).
+
 ## Feature Editor API
 
 Based on the Interactions API the Feature Editor provides functionality to `create`, `select`, and `transform` Features.
@@ -107,17 +114,12 @@ With the ClassRegistry concept and API its possible to register your own Item Ty
 For example with `app.layerClassRegistry.registerClass('myLayer', MyLayerClass)` its possible to implement a custom layer
 while following the Layer Interface. This allows to reuse the Module serialization/parsing Concept with custom Items.
 
-## Getting Started
-
-- clone Repo
-- npm install
-
 # Coding Conventions
 
 ### Exporting from a module
 
 - You should export all variables, functions, class etc. from a module
   which are required to use the API.
-- Party of your module which should be part of the library must be added to the index.ts file manually
+- Part of your module which should be part of the library must be added to the index.ts file manually
 - Make sure the names of exports have _meaning outside of their module_. E.g. a
   function names `extend(destination: extent3D, source: extend3D):void` would need to be rephrased to `extend3DExtent`.
