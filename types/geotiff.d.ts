@@ -1,4 +1,4 @@
-import { BaseDecoder, Pool } from 'geotiff';
+import type { BaseDecoder, Pool } from 'geotiff';
 
 declare module 'geotiff' {
   interface GeoTIFFImage {

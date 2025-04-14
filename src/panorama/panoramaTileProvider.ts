@@ -1,58 +1,41 @@
-import LRUCache from 'ol/structs/LRUCache.js';
-import { Matrix4 } from '@vcmap-cesium/engine';
+import type { Matrix4 } from '@vcmap-cesium/engine';
 import { getLogger } from '@vcsuite/logger';
 import type { GeoTIFFImage } from 'geotiff';
 import { Pool } from 'geotiff';
 import type { PanoramaTile, TileCoordinate, TileSize } from './panoramaTile.js';
-import { createPanoramaTile } from './panoramaTile.js';
+import {
+  createPanoramaTile,
+  createTileCoordinateFromKey,
+} from './panoramaTile.js';
 import VcsEvent from '../vcsEvent.js';
+import { addTileToCache, PanoramaTileCache } from './panoramaTileCache.js';
+
+export type TileLoadError = { tileCoordinate: TileCoordinate; error: Error };
 
 export type PanoramaTileProvider = {
   destroy(): void;
   /**
-   * Load the tiles for the given tile coordinates. Last coordinates get loaded first, LIFO
-   * @param tileCoordinate
+   * Sets the currently visible tiles. Currently not visible tiles will be loaded.
+   * Last coordinates in the provided array get loaded first (FILO). If the provided array is already visible,
+   * no tiles will be loaded.
+   * @param tileCoordinates
    */
-  loadTiles(tileCoordinate: TileCoordinate[]): void;
+  setVisibleTiles(tileCoordinates: TileCoordinate[]): void;
+  /**
+   * Returns the currently visible tiles. This is not the same as the tiles that are currently loaded,
+   * some visible tiles may still be loading.
+   */
+  getVisibleTiles(): TileCoordinate[];
   readonly loading: boolean;
   tileLoaded: VcsEvent<PanoramaTile>;
-  tileError: VcsEvent<{ tileCoordinate: TileCoordinate; error: Error }>;
+  tileError: VcsEvent<TileLoadError>;
   /**
    * Raised with true, if we start loading new data. raised with false, if all tiles are loaded.
    */
-  loadingState: VcsEvent<boolean>;
+  loadingStateChanged: VcsEvent<boolean>;
 };
 
-class PanoramaTileCache extends LRUCache<PanoramaTile> {
-  deleteOldest(): void {
-    const entry = this.pop();
-    if (entry) {
-      entry.destroy();
-    }
-  }
-
-  expireCache(usedTiles: Record<string, boolean> = {}): void {
-    while (this.canExpireCache()) {
-      const tile = this.peekLast();
-      if (usedTiles[tile.tileCoordinate.key]) {
-        break;
-      } else {
-        this.pop().destroy();
-      }
-    }
-  }
-}
-
-function addTileToCache(
-  tile: PanoramaTile,
-  cache: PanoramaTileCache,
-  currentlyVisibleTileKeys: Record<string, boolean>,
-): void {
-  cache.set(tile.tileCoordinate.key, tile);
-  cache.expireCache(currentlyVisibleTileKeys);
-}
-
-export type ImageBitmapDecoder = {
+type ImageBitmapDecoder = {
   decode(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fileDirectory: any,
@@ -63,7 +46,7 @@ export type ImageBitmapDecoder = {
 let defaultPool: Pool | undefined;
 function getDefaultPool(): Pool {
   if (!defaultPool) {
-    let workerUrl: URL | string;
+    let workerUrl: URL;
     if (window.vcs.workerBase) {
       workerUrl = new URL(
         `${window.vcs.workerBase}/webp.js`,
@@ -110,7 +93,7 @@ export function createPanoramaTileProvider(
     tileCoordinate: TileCoordinate;
     error: Error;
   }>();
-  const loadingState = new VcsEvent<boolean>();
+  const loadingStateChanged = new VcsEvent<boolean>();
 
   const destroy = (): void => {
     cache.clear();
@@ -121,25 +104,23 @@ export function createPanoramaTileProvider(
   ): Promise<PanoramaTile | null | Error> => {
     const levelImage = levelImages[tileCoordinate.level - minLevel];
     if (levelImage) {
-      const tile = await levelImage.getTileOrStrip(
-        tileCoordinate.x,
-        tileCoordinate.y,
-        levelImage.getSamplesPerPixel(),
-        poolOrDecoder,
-        // {
-        //   // @ts-ignore
-        //   decode: (_fi, buff): Promise<ArrayBuffer> =>
-        //     // @ts-ignore
-        //     createImageBitmap(new Blob([buff]), 0, 0, tileSize[0], tileSize[1]),
-        // },
-      );
+      try {
+        const tile = await levelImage.getTileOrStrip(
+          tileCoordinate.x,
+          tileCoordinate.y,
+          levelImage.getSamplesPerPixel(),
+          poolOrDecoder,
+        );
 
-      return createPanoramaTile(
-        tileCoordinate,
-        tile.data as unknown as ImageBitmap,
-        modelMatrix,
-        tileSize,
-      );
+        return createPanoramaTile(
+          tileCoordinate,
+          tile.data as unknown as ImageBitmap,
+          modelMatrix,
+          tileSize,
+        );
+      } catch (error) {
+        return error as Error;
+      }
     }
     return null;
   };
@@ -147,55 +128,55 @@ export function createPanoramaTileProvider(
   let currentQueue: TileCoordinate[] = [];
   const loadTilesQueue = (tileCoordinates: TileCoordinate[]): void => {
     currentQueue = tileCoordinates.slice();
-    async function* loadNextTileGenerator(): AsyncGenerator<void> {
+    async function* loadNextTileGenerator(): AsyncGenerator<
+      PanoramaTile | TileLoadError
+    > {
       while (currentQueue?.length) {
         const tileCoordinate = currentQueue.pop()!;
         if (cache.containsKey(tileCoordinate.key)) {
-          tileLoaded.raiseEvent(cache.get(tileCoordinate.key));
+          yield cache.get(tileCoordinate.key);
         } else {
           // eslint-disable-next-line no-await-in-loop
           const result = await loadTile(tileCoordinate);
-          if (cache.containsKey(tileCoordinate.key)) {
-            // cached in a previous iteration but got aborted too late.
-            tileLoaded.raiseEvent(cache.get(tileCoordinate.key));
-          } else if (result instanceof Error) {
-            if (result.name !== 'AbortError') {
-              tileError.raiseEvent({ tileCoordinate, error: result });
-            }
+          if (result instanceof Error) {
+            yield { tileCoordinate, error: result };
           } else if (result) {
             addTileToCache(result, cache, currentlyVisibleTiles);
-            tileLoaded.raiseEvent(result);
+            yield result;
           }
         }
-        yield;
       }
     }
 
+    // we create N generators. thus, AT MOST N web requests are made in parallel.
+    // this allows us to not abort web request and still keep the queue dynamic
     const generators = Array.from({ length: concurrency }, () =>
       loadNextTileGenerator(),
     );
 
     const promises = generators.map(async (gen) => {
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      for await (const _ of gen) {
-        // Just iterating through the generator
+      for await (const result of gen) {
+        if ((result as TileLoadError).error) {
+          tileError.raiseEvent(result as TileLoadError);
+        } else if (result) {
+          tileLoaded.raiseEvent(result as PanoramaTile);
+        }
       }
     });
 
     Promise.all(promises)
       .then(() => {
-        loadingState.raiseEvent(false);
         loading = false;
+        loadingStateChanged.raiseEvent(false);
       })
-      .catch((e) => {
+      .catch((e: unknown) => {
         getLogger('PanoramaTileProvider').warning('Error loading tiles');
         getLogger('PanoramaTileProvider').warning(String(e));
       });
   };
 
   return {
-    loadTiles(tileCoordinates: TileCoordinate[]): void {
-      loading = true;
+    setVisibleTiles(tileCoordinates: TileCoordinate[]): void {
       const newTileCoordinates = tileCoordinates.filter(
         (tc) =>
           !currentlyVisibleTiles[tc.key] ||
@@ -210,17 +191,23 @@ export function createPanoramaTileProvider(
         if (currentQueue?.length) {
           currentQueue.splice(0, currentQueue.length, ...newTileCoordinates);
         } else {
-          loadingState.raiseEvent(true);
+          loading = true;
+          loadingStateChanged.raiseEvent(true);
           loadTilesQueue(newTileCoordinates);
         }
       }
+    },
+    getVisibleTiles(): TileCoordinate[] {
+      return Object.keys(currentlyVisibleTiles).map(
+        createTileCoordinateFromKey,
+      );
     },
     get loading(): boolean {
       return loading;
     },
     tileLoaded,
     tileError,
-    loadingState,
+    loadingStateChanged,
     destroy,
   };
 }

@@ -16,7 +16,6 @@ declare global {
     };
     opera?: string;
   }
-
   interface CSSStyleDeclaration {
     [mouseOverSymbol]?: string;
   }

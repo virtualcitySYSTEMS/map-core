@@ -4,6 +4,7 @@ import type { EllipsoidGeometry, GeometryInstance } from '@vcmap-cesium/engine';
 import { Cartesian2, Math as CesiumMath, Matrix4 } from '@vcmap-cesium/engine';
 import type { PanoramaTile } from '../../../src/panorama/panoramaTile.js';
 import {
+  createTileCoordinateFromKey,
   createPanoramaTile,
   createTileCoordinate,
   getDistanceToTileCoordinate,
@@ -93,6 +94,14 @@ describe('panorama tile', () => {
       );
 
       expect(distance0).to.be.closeTo(CesiumMath.PI_OVER_FOUR, 0.0001);
+    });
+
+    it('should create a tile coordiante from a key', () => {
+      const tileCoordinate = createTileCoordinate(0, 0, 0);
+      const createdTileCoordinate = createTileCoordinateFromKey(
+        tileCoordinate.key,
+      );
+      expect(tileCoordinate).to.deep.equal(createdTileCoordinate);
     });
   });
 
