@@ -116,9 +116,16 @@ export default class PanoramaDataset extends VcsObject {
     this.layer.deactivate();
   }
 
-  createPanoramaImage(name: string): Promise<PanoramaImage> {
+  createPanoramaImage(
+    name: string,
+    coordinate?: Coordinate,
+  ): Promise<PanoramaImage> {
     // XXX cache images
-    return createPanoramaImageFromURL(`${this.baseUrl}/${name}_rgb.tif`, this);
+    return createPanoramaImageFromURL(
+      `${this.baseUrl}/${name}_rgb.tif`,
+      this,
+      coordinate,
+    );
   }
 
   // there can be optimizations done here, like using the tree and sort based on closest nodes before searching

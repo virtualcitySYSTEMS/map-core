@@ -14,6 +14,8 @@ import type { TileSize } from './panoramaTile.js';
 import { createPanoramaDepth, PanoramaDepth } from './panoramaDepth.js';
 import PanoramaDataset from './panoramaDataset.js';
 import { getLogger } from '@vcsuite/logger';
+import { Coordinate } from 'ol/coordinate.js';
+import Projection from '../util/projection.js';
 
 export type PanoramaImageOptions = {
   imageUrl: string;
@@ -179,6 +181,7 @@ function parseRgbUrl(imageUrl: string): { name: string; absoluteUrl: string } {
 export async function createPanoramaImageFromURL(
   imageUrl: string,
   dataset?: PanoramaDataset,
+  coordinate?: Coordinate,
 ): Promise<PanoramaImage> {
   const { name, absoluteUrl } = parseRgbUrl(imageUrl);
   const {
@@ -187,11 +190,17 @@ export async function createPanoramaImageFromURL(
     tileSize,
     minLevel,
     maxLevel,
-    position,
+    position: metadataPosition,
     orientation,
     hasIntensity,
     hasDepth,
   } = await loadRGBImages(absoluteUrl);
+
+  let position = metadataPosition;
+  if (dataset && coordinate) {
+    const wgs84 = Projection.mercatorToWgs84(coordinate);
+    position = Cartesian3.fromDegrees(wgs84[0], wgs84[1], wgs84[2]);
+  }
 
   const modelMatrix = Transforms.headingPitchRollToFixedFrame(
     position,

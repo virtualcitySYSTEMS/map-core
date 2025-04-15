@@ -17,6 +17,12 @@ import { destroyCollection } from '../vcsModuleHelpers.js';
  */
 export const maxZIndex = Number.MAX_SAFE_INTEGER;
 
+/**
+ * The largest integer zindex which can be safely assigned to a layer - 50
+ * You should use this for built-in layers that should render on top
+ */
+export const maxZIndexMin50 = maxZIndex - 50;
+
 export type LayerCollectionOptions = {
   vectorClusterGroupCollection?: VectorClusterGroupCollection;
   destroyVectorClusterGroupCollection?: boolean;

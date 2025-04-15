@@ -4,6 +4,7 @@ import PanoramaDatasetPanoramaImpl from './panorama/panoramaDatasetPanoramaImpl.
 import type VcsMap from '../map/vcsMap.js';
 import PanoramaMap from '../map/panoramaMap.js';
 import VectorProperties, { PrimitiveOptionsType } from './vectorProperties.js';
+import { maxZIndexMin50 } from '../util/layerCollection.js';
 
 export default class PanoramaDatasetLayer extends VectorTileLayer<PanoramaDatasetPanoramaImpl> {
   static get className(): string {
@@ -44,6 +45,7 @@ export default class PanoramaDatasetLayer extends VectorTileLayer<PanoramaDatase
       },
       minLevel: 15,
       maxLevel: 22,
+      zIndex: maxZIndexMin50,
     });
 
     this._panoramaVectorProperties = new VectorProperties({

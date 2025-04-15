@@ -1,4 +1,5 @@
 import type { Feature } from 'ol/index.js';
+import type { Coordinate } from 'ol/coordinate.js';
 import AbstractInteraction, {
   InteractionEvent,
 } from './abstractInteraction.js';
@@ -15,7 +16,10 @@ export default class PanoramaImageSelection extends AbstractInteraction {
   override async pipe(event: InteractionEvent): Promise<InteractionEvent> {
     if (event.feature && (event.feature as Feature)[panoramaFeature]) {
       const { dataset, name } = (event.feature as Feature)[panoramaFeature]!;
-      const panoramaImage = await dataset.createPanoramaImage(name);
+      const coordinate = (event.feature as Feature)
+        .getGeometry()
+        ?.getCoordinates() as Coordinate;
+      const panoramaImage = await dataset.createPanoramaImage(name, coordinate);
       event.stopPropagation = true;
 
       if (event.map instanceof PanoramaMap) {
@@ -25,8 +29,8 @@ export default class PanoramaImageSelection extends AbstractInteraction {
           PanoramaMap.className,
         )[0];
         if (firstPanoramaMap) {
-          (firstPanoramaMap as PanoramaMap).setCurrentImage(panoramaImage);
           await this._mapCollection.setActiveMap(firstPanoramaMap.name);
+          (firstPanoramaMap as PanoramaMap).setCurrentImage(panoramaImage);
         }
       }
     }
