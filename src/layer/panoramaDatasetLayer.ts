@@ -22,13 +22,6 @@ export default class PanoramaDatasetLayer extends VectorTileLayer<PanoramaDatase
       tileProvider: dataset.tileProvider,
       vectorProperties: {
         altitudeMode: 'absolute',
-        primitiveOptions: {
-          type: PrimitiveOptionsType.SPHERE,
-          geometryOptions: {
-            radius: 0.1,
-          },
-          offset: [0, 0, 0.1],
-        },
         extrudedHeight: 1.8,
       },
       renderer: 'primitive',
