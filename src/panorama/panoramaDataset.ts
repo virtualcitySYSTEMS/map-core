@@ -13,6 +13,7 @@ import Extent from '../util/extent.js';
 import { cartesian2DDistanceSquared } from '../util/math.js';
 import PanoramaDatasetLayer from '../layer/panoramaDatasetLayer.js';
 import { panoramaFeature } from '../layer/vectorSymbols.js';
+import { getRootNode } from './packedTree.js';
 
 export type PanoramaDatasetOptions = VcsObjectOptions & {
   url: string;
@@ -126,6 +127,16 @@ export default class PanoramaDataset extends VcsObject {
       this,
       coordinate,
     );
+  }
+
+  async getExtent(): Promise<Extent | undefined> {
+    const reader =
+      await this.tileProvider.getReaderAndProjection(DATASET_TILE_LEVEL);
+    const rootNode = await getRootNode(reader);
+    return new Extent({
+      coordinates: [rootNode.minX, rootNode.minY, rootNode.maxX, rootNode.maxY],
+      projection: mercatorProjection.toJSON(),
+    });
   }
 
   // there can be optimizations done here, like using the tree and sort based on closest nodes before searching
