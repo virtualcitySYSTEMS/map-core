@@ -3,9 +3,12 @@ import { expect } from 'chai';
 import LRUCache from 'ol/structs/LRUCache.js';
 import { Math as CesiumMath } from '@vcmap-cesium/engine';
 import Point from 'ol/geom/Point.js';
+import LineString from 'ol/geom/LineString.js';
+import Polygon from 'ol/geom/Polygon.js';
 import Feature from 'ol/Feature.js';
 import type { TileProviderOptions } from '../../../../src/layer/tileProvider/tileProvider.js';
 import TileProvider, {
+  FEATURE_BY_COORDINATE_PIXEL_BUFFER,
   mercatorResolutionsToLevel,
 } from '../../../../src/layer/tileProvider/tileProvider.js';
 import Extent from '../../../../src/util/extent.js';
@@ -393,32 +396,6 @@ describe('TileProvider', () => {
       });
     });
 
-    describe('getFeaturesAtCoordinate', () => {
-      it('should return intersecting features', async () => {
-        const features = await tileProvider.getFeaturesByCoordinate(
-          [1, 1, 0],
-          0.001,
-        );
-        expect(features).to.have.members([f3]);
-      });
-
-      it('should return intersecting features, with a buffer depending on the resolution', async () => {
-        const features = await tileProvider.getFeaturesByCoordinate(
-          [1, 1, 0],
-          2,
-        );
-        expect(features).to.have.members(featuresTile2);
-      });
-
-      it('should return empty array if no intersecting features are found', async () => {
-        const features = await tileProvider.getFeaturesByCoordinate(
-          [1, 4, 0],
-          1,
-        );
-        expect(features).to.be.empty;
-      });
-    });
-
     describe('larger Cache', () => {
       let tileProviderLargeCache: TileProvider;
 
@@ -531,6 +508,113 @@ describe('TileProvider', () => {
         expect(tileProviderIdProperty.featureIdToTileIds.has('idTest2')).to.be
           .true;
       });
+    });
+  });
+
+  describe('getFeaturesAtCoordinate', () => {
+    let pointFeature: Feature;
+    let lineFeature: Feature;
+    let polygonFeature: Feature;
+
+    before(() => {
+      pointFeature = new Feature({
+        geometry: new Point([3, 3]),
+      });
+      pointFeature.setId('point');
+      lineFeature = new Feature({
+        geometry: new LineString([
+          [3, 0],
+          [3, 1],
+        ]),
+      });
+      lineFeature.setId('line');
+      polygonFeature = new Feature({
+        geometry: new Polygon([
+          [
+            [0, 0],
+            [0, 2],
+            [2, 2],
+            [2, 0],
+            [0, 0],
+          ],
+        ]),
+      });
+      polygonFeature.setId('polygon');
+      sandbox.stub(tileProvider, 'loader').callsFake(() => {
+        return Promise.resolve([pointFeature, lineFeature, polygonFeature]);
+      });
+    });
+
+    afterEach(async () => {
+      await tileProvider.clearCache();
+    });
+
+    after(() => {
+      sandbox.restore();
+    });
+
+    it('should return exactly intersecting Point Feature', async () => {
+      const features = await tileProvider.getFeaturesByCoordinate(
+        [3, 3, 0],
+        0.001,
+      );
+      expect(features).to.have.members([pointFeature]);
+    });
+
+    it('should return the Point Feature if the coordinate is up to FEATURE_BY_COORDINATE_PIXEL_BUFFER next to it', async () => {
+      const features = await tileProvider.getFeaturesByCoordinate(
+        [3 + 0.1 * FEATURE_BY_COORDINATE_PIXEL_BUFFER, 3, 0],
+        0.1,
+      );
+      expect(features).to.have.members([pointFeature]);
+    });
+
+    it('should not return features, if its more than FEATURE_BY_COORDINATE_PIXEL_BUFFER distance', async () => {
+      const features = await tileProvider.getFeaturesByCoordinate(
+        [3 + (0.1 * FEATURE_BY_COORDINATE_PIXEL_BUFFER + 0.1), 3, 0],
+        0.1,
+      );
+      expect(features).to.be.empty;
+    });
+
+    it('should return exactly intersecting LineString Feature', async () => {
+      const features = await tileProvider.getFeaturesByCoordinate(
+        [3, 0, 0],
+        0.001,
+      );
+      expect(features).to.have.members([lineFeature]);
+    });
+
+    it('should return the Line Feature if the coordinate is up to FEATURE_BY_COORDINATE_PIXEL_BUFFER next to it', async () => {
+      const features = await tileProvider.getFeaturesByCoordinate(
+        [3 + 0.1 * FEATURE_BY_COORDINATE_PIXEL_BUFFER, 0.5, 0],
+        0.1,
+      );
+      expect(features).to.have.members([lineFeature]);
+    });
+
+    it('should not return the Line Feature if the coordinate is more than FEATURE_BY_COORDINATE_PIXEL_BUFFER next to it', async () => {
+      const features = await tileProvider.getFeaturesByCoordinate(
+        [3 + (0.1 * FEATURE_BY_COORDINATE_PIXEL_BUFFER + 0.1), 0.5, 0],
+        0.1,
+      );
+      expect(features).to.be.empty;
+    });
+
+    it('should return intersecting Polygon Feature', async () => {
+      const features = await tileProvider.getFeaturesByCoordinate(
+        [1, 1, 0],
+        0.001,
+      );
+      expect(features).to.have.members([polygonFeature]);
+    });
+
+    it('should not return Polygon Feature if the coordinate is not intersecting', async () => {
+      const features = await tileProvider.getFeaturesByCoordinate(
+        [1, 2.001, 0],
+        0.001,
+      );
+      expect(features).to.be.empty;
     });
   });
 

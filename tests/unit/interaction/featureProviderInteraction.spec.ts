@@ -78,7 +78,7 @@ describe('FeatureProviderInteraction', () => {
   it('should not overwrite a feature, if the event already has a feature', async () => {
     const feature = new Feature();
     await addLayerWithFeatureProvider(map.layerCollection, () =>
-      Promise.resolve([new Feature()]),
+      Promise.resolve([new Feature(), new Feature()]),
     );
     const event = getDummyEvent();
     event.feature = feature;
