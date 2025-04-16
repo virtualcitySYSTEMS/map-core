@@ -24,7 +24,6 @@ export default class PanoramaDatasetLayer extends VectorTileLayer<PanoramaDatase
         altitudeMode: 'absolute',
         extrudedHeight: 1.8,
       },
-      renderer: 'primitive',
       style: {
         fill: { color },
         image: {
