@@ -36,6 +36,11 @@ export type TileProviderRTreeEntry = {
   value: Feature;
 };
 
+/**
+ * Buffer around the coordinate in pixels
+ */
+export const FEATURE_BY_COORDINATE_PIXEL_BUFFER = 8;
+
 export type TileProviderRtree = RBush<TileProviderRTreeEntry>;
 
 /**
@@ -426,7 +431,7 @@ class TileProvider extends VcsObject {
     headers?: Record<string, string>,
   ): Promise<Feature[]> {
     const extent = createOrUpdateFromCoordinate(coordinate);
-    buffer(extent, resolution, extent);
+    buffer(extent, resolution * FEATURE_BY_COORDINATE_PIXEL_BUFFER, extent);
     const wgs84Coordinate = mercatorToWgs84Transformer(coordinate);
     const cartographic = Cartographic.fromDegrees(
       wgs84Coordinate[0],
@@ -436,21 +441,41 @@ class TileProvider extends VcsObject {
       resolution,
       cartographic.latitude,
     );
+    // TODO Edge case, if the coordinate is not resolution * FEATURE_BY_COORDINATE_PIXEL_BUFFER away from the tile border
+    // we also need to take a look at neighbouring tiles.
     const rtree = await this._getRtreeForBaseTile(
       baseLevel,
       cartographic,
       headers,
     );
     if (rtree) {
-      const features = rtree
+      return rtree
         .search({
           minX: extent[0],
           minY: extent[1],
           maxX: extent[2],
           maxY: extent[3],
         })
-        .map((item) => item.value);
-      return features;
+        .map((item) => item.value)
+        .filter((feature) => {
+          const geometryType = feature.getGeometry()?.getType();
+          if (
+            geometryType === 'Polygon' ||
+            geometryType === 'MultiPolygon' ||
+            geometryType === 'Circle' ||
+            geometryType === 'GeometryCollection'
+          ) {
+            return feature.getGeometry()?.intersectsCoordinate(coordinate);
+          } else if (
+            geometryType === 'Point' ||
+            geometryType === 'MultiPoint' ||
+            geometryType === 'LineString' ||
+            geometryType === 'MultiLineString'
+          ) {
+            return feature.getGeometry()?.intersectsExtent(extent);
+          }
+          return false;
+        });
     }
     return [];
   }
