@@ -143,7 +143,10 @@ export default class PanoramaDataset extends VcsObject {
   async getClosestImage(
     coordinate: Coordinate,
     maxDistance = 200,
-  ): Promise<{ imageName: string; distanceSqrd: number } | undefined> {
+  ): Promise<
+    | { imageName: string; distanceSqrd: number; position: Coordinate }
+    | undefined
+  > {
     const extent = createOrUpdateFromCoordinate(coordinate);
     buffer(extent, maxDistance, extent);
     const features = await this.tileProvider.getFeaturesForExtent(
@@ -155,6 +158,7 @@ export default class PanoramaDataset extends VcsObject {
     );
     let minDistanceSqrd = Infinity;
     let closestImageName: string | undefined;
+    let closestImagePosition: Coordinate | undefined;
     features.forEach((feature) => {
       const imagePosition = (feature.getGeometry() as Point).getCoordinates();
       const distanceSqrd = cartesian2DDistanceSquared(
@@ -164,6 +168,7 @@ export default class PanoramaDataset extends VcsObject {
 
       if (distanceSqrd < minDistanceSqrd) {
         minDistanceSqrd = distanceSqrd;
+        closestImagePosition = imagePosition;
         closestImageName = feature.get('name') as string;
       }
     });
@@ -171,6 +176,7 @@ export default class PanoramaDataset extends VcsObject {
     if (closestImageName) {
       return {
         imageName: closestImageName,
+        position: closestImagePosition!,
         distanceSqrd: minDistanceSqrd,
       };
     }

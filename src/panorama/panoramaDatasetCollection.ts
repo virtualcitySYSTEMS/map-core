@@ -100,8 +100,8 @@ export default class PanoramaDatasetCollection extends Collection<PanoramaDatase
     });
 
     if (closestIndex !== -1) {
-      const { imageName, dataset } = images[closestIndex]!;
-      return dataset.createPanoramaImage(imageName);
+      const { imageName, dataset, position } = images[closestIndex]!;
+      return dataset.createPanoramaImage(imageName, position); // XXX position is a HACK to support frankenstein datasets
     }
 
     return undefined;
