@@ -13,6 +13,7 @@ import {
 import { getFovImageSphericalExtent } from './fieldOfView.js';
 import type PanoramaMap from '../map/panoramaMap.js';
 import type { PanoramaTileProvider } from './panoramaTileProvider.js';
+import type PanoramaTileMaterial from './panoramaTileMaterial.js';
 
 export type PanoramaImageView = {
   /**
@@ -55,6 +56,7 @@ function setupPanoramaTileProviderView(
   tileProvider: PanoramaTileProvider,
   primitiveCollection: PrimitiveCollection,
   minLevel: number,
+  isIntensity = false,
 ): PanoramaTileProviderView {
   const currentTiles = new Map<string, PanoramaTile>();
   let opacity = 1;
@@ -74,6 +76,11 @@ function setupPanoramaTileProviderView(
           new Cartesian3(1.01, 1.01, 1.01),
           new Matrix4(),
         );
+      }
+      if (isIntensity) {
+        (
+          tile.primitive.appearance.material as PanoramaTileMaterial
+        ).isIntensity = true;
       }
       primitiveCollection.add(tile.primitive);
     }
@@ -125,6 +132,7 @@ function setupPanoramaTileProviderView(
       tileProvider.setVisibleTiles(currentTileCoordinates);
     },
     destroy(): void {
+      clearCurrentTiles();
       tileLoadedEvent();
     },
   };
@@ -237,6 +245,7 @@ function setupImageView(
                   intensityTileProvider,
                   primitiveCollection,
                   minLevel,
+                  true,
                 );
                 if (showIntensity) {
                   intensityTileProviderView.update(currentTileCoordinates);

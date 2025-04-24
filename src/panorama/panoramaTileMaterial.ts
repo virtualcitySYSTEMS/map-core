@@ -9,6 +9,9 @@ czm_material czm_getMaterial(czm_materialInput materialInput)
     vec2 clamped = clamp(materialInput.st, min, max);
     vec2 scaled = (clamped - min) / (max - min);
     vec4 t_color = texture(image, scaled);
+    if (isIntensity && t_color.rgb == vec3(0.0, 0.0, 0.0)) {
+        t_color.r = 1.0;
+    }
     m.diffuse = t_color.rgb;
     m.specular = 0.5;
     m.emission = t_color.rgb * vec3(0.5);
@@ -30,6 +33,7 @@ export default class PanoramaTileMaterial extends Material {
     max: Cartesian2;
     alpha: number;
     color: Color;
+    isIntensity: boolean;
   };
 
   private _readyResolve: (() => void) | undefined;
@@ -44,6 +48,7 @@ export default class PanoramaTileMaterial extends Material {
           min,
           max,
           alpha: 0,
+          isIntensity: false,
         },
         source,
       },
@@ -63,6 +68,14 @@ export default class PanoramaTileMaterial extends Material {
           'Error loading panorama tile material',
         );
       });
+  }
+
+  get isIntensity(): boolean {
+    return this.uniforms.isIntensity;
+  }
+
+  set isIntensity(value: boolean) {
+    this.uniforms.isIntensity = value;
   }
 
   get opacity(): number {
