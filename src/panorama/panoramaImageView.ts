@@ -20,13 +20,13 @@ export type PanoramaImageView = {
    */
   suspendTileLoading: boolean;
   showIntensity: boolean;
+  intensityOpacity: number;
   opacity: number;
   destroy(): void;
   /**
    * force a render of the panorama image
    */
   render(): void;
-  getCurrentTiles(): PanoramaTile[];
 };
 
 function createMinLevelTiles(minLevel: number): TileCoordinate[] {
@@ -43,6 +43,93 @@ function getLevelPixelPerRadians(level: number, tileSize: TileSize): number {
   return tileSize[0] / tileSizeInRadians(level);
 }
 
+type PanoramaTileProviderView = {
+  opacity: number;
+  disabled: boolean;
+  clearCurrentTiles(): void;
+  update(currentTileCoordinates: TileCoordinate[]): void;
+  destroy(): void;
+};
+
+function setupPanoramaTileProviderView(
+  tileProvider: PanoramaTileProvider,
+  primitiveCollection: PrimitiveCollection,
+  minLevel: number,
+): PanoramaTileProviderView {
+  const currentTiles = new Map<string, PanoramaTile>();
+  let opacity = 1;
+  let disabled = false;
+  let currentTileCoordinates: TileCoordinate[] = [];
+
+  const tileLoadedEvent = tileProvider.tileLoaded.addEventListener((tile) => {
+    if (disabled) {
+      return;
+    }
+    tile.opacity = opacity;
+    if (!currentTiles.has(tile.tileCoordinate.key)) {
+      currentTiles.set(tile.tileCoordinate.key, tile);
+      if (tile.tileCoordinate.level === minLevel) {
+        tile.primitive.modelMatrix = Matrix4.multiplyByScale(
+          tile.primitive.modelMatrix,
+          new Cartesian3(1.01, 1.01, 1.01),
+          new Matrix4(),
+        );
+      }
+      primitiveCollection.add(tile.primitive);
+    }
+  });
+
+  const clearCurrentTiles = (): void => {
+    currentTiles.forEach((tile) => {
+      primitiveCollection.remove(tile.primitive);
+    });
+    currentTiles.clear();
+  };
+
+  return {
+    get opacity(): number {
+      return opacity;
+    },
+    set opacity(value: number) {
+      opacity = value;
+      currentTiles.forEach((tile) => {
+        tile.opacity = value;
+      });
+    },
+    get disabled(): boolean {
+      return disabled;
+    },
+    set disabled(value: boolean) {
+      disabled = value;
+      if (disabled) {
+        clearCurrentTiles();
+        tileProvider.setVisibleTiles([]);
+      } else {
+        tileProvider.setVisibleTiles(currentTileCoordinates);
+      }
+    },
+    clearCurrentTiles,
+    update(newCurrentTileCoordinates: TileCoordinate[]): void {
+      currentTileCoordinates = newCurrentTileCoordinates;
+      if (disabled) {
+        return;
+      }
+      currentTiles.forEach((tile) => {
+        if (
+          !currentTileCoordinates.find((c) => c.key === tile.tileCoordinate.key)
+        ) {
+          primitiveCollection.remove(tile.primitive);
+          currentTiles.delete(tile.tileCoordinate.key);
+        }
+      });
+      tileProvider.setVisibleTiles(currentTileCoordinates);
+    },
+    destroy(): void {
+      tileLoadedEvent();
+    },
+  };
+}
+
 function setupImageView(
   image: PanoramaImage,
   primitiveCollection: PrimitiveCollection,
@@ -52,47 +139,14 @@ function setupImageView(
   const { tileSize, maxLevel, minLevel, hasIntensity } = image;
   const baseTileCoordinates = createMinLevelTiles(minLevel);
   let currentTileCoordinates: TileCoordinate[] = [...baseTileCoordinates];
-  let opacity = 1;
-  const currentTiles = new Map<string, PanoramaTile>();
-  const clearCurrentTiles = (): void => {
-    currentTiles.forEach((tile) => {
-      primitiveCollection.remove(tile.primitive);
-    });
-    currentTiles.clear();
-  };
 
   let showIntensity = false;
-  const tileProviders = new Map<PanoramaTileProvider, () => void>();
-  let currentTileProvider: PanoramaTileProvider;
-
-  const setupTileProvider = (tileProvider: PanoramaTileProvider): void => {
-    if (!tileProviders.has(tileProvider)) {
-      tileProviders.set(
-        tileProvider,
-        tileProvider.tileLoaded.addEventListener((tile) => {
-          tile.opacity = opacity;
-          if (!currentTiles.has(tile.tileCoordinate.key)) {
-            currentTiles.set(tile.tileCoordinate.key, tile);
-            if (tile.tileCoordinate.level === minLevel) {
-              tile.primitive.modelMatrix = Matrix4.multiplyByScale(
-                tile.primitive.modelMatrix,
-                new Cartesian3(1.01, 1.01, 1.01),
-                new Matrix4(),
-              );
-            }
-            primitiveCollection.add(tile.primitive);
-          }
-        }),
-      );
-    }
-
-    if (tileProvider !== currentTileProvider) {
-      currentTileProvider = tileProvider;
-      clearCurrentTiles();
-    }
-    tileProvider.setVisibleTiles(currentTileCoordinates);
-  };
-  setupTileProvider(image.tileProvider);
+  const rgbTileProviderView = setupPanoramaTileProviderView(
+    image.tileProvider,
+    primitiveCollection,
+    minLevel,
+  );
+  let intensityTileProviderView: PanoramaTileProviderView | undefined;
 
   camera.setView({
     destination: image.position,
@@ -156,16 +210,8 @@ function setupImageView(
       .sort((a, b) => b.distance - a.distance)
       .map((tc) => tc.tc);
 
-    currentTiles.forEach((tile) => {
-      if (
-        !currentTileCoordinates.find((c) => c.key === tile.tileCoordinate.key)
-      ) {
-        primitiveCollection.remove(tile.primitive);
-        currentTiles.delete(tile.tileCoordinate.key);
-      }
-    });
-
-    currentTileProvider.setVisibleTiles(currentTileCoordinates);
+    rgbTileProviderView.update(currentTileCoordinates);
+    intensityTileProviderView?.update(currentTileCoordinates);
   };
   render();
 
@@ -183,40 +229,54 @@ function setupImageView(
       if (value !== showIntensity) {
         if (value && hasIntensity) {
           showIntensity = value;
-          image
-            .getIntensityTileProvider()
-            .then((intensityTileProvider) => {
-              setupTileProvider(intensityTileProvider);
-            })
-            .catch((e: unknown) => {
-              getLogger('PanoramaImageView').error(String(e));
-              getLogger('PanoramaImageView').warning('no intensity available');
-            });
+          if (!intensityTileProviderView) {
+            image
+              .getIntensityTileProvider()
+              .then((intensityTileProvider) => {
+                intensityTileProviderView = setupPanoramaTileProviderView(
+                  intensityTileProvider,
+                  primitiveCollection,
+                  minLevel,
+                );
+                if (showIntensity) {
+                  intensityTileProviderView.update(currentTileCoordinates);
+                }
+              })
+              .catch((e: unknown) => {
+                getLogger('PanoramaImageView').error(String(e));
+                getLogger('PanoramaImageView').warning(
+                  'no intensity available',
+                );
+              });
+          } else {
+            intensityTileProviderView.disabled = false;
+          }
         } else {
           showIntensity = value;
-          setupTileProvider(image.tileProvider);
+          if (intensityTileProviderView) {
+            intensityTileProviderView.disabled = true;
+          }
         }
       }
     },
     get opacity(): number {
-      return opacity;
+      return rgbTileProviderView.opacity;
     },
     set opacity(value: number) {
-      opacity = value;
-      currentTiles.forEach((tile) => {
-        tile.opacity = value;
-      });
-    },
-    getCurrentTiles(): PanoramaTile[] {
-      return [...currentTiles.values()];
+      rgbTileProviderView.opacity = value;
     },
     render,
     destroy(): void {
-      tileProviders.forEach((removeListener) => {
-        removeListener();
-      });
-      tileProviders.clear();
-      clearCurrentTiles();
+      rgbTileProviderView.destroy();
+      intensityTileProviderView?.destroy();
+    },
+    get intensityOpacity(): number {
+      return intensityTileProviderView?.opacity ?? 1;
+    },
+    set intensityOpacity(value: number) {
+      if (intensityTileProviderView) {
+        intensityTileProviderView.opacity = value;
+      }
     },
   };
 }
@@ -299,15 +359,20 @@ export function createPanoramaImageView(map: PanoramaMap): PanoramaImageView {
         currentView.opacity = value;
       }
     },
-    getCurrentTiles(): PanoramaTile[] {
-      return currentView?.getCurrentTiles() ?? [];
-    },
     render,
     destroy(): void {
       scene.primitives.remove(primitiveCollection);
       primitiveCollection.destroy();
       currentView?.destroy();
       imageChangedListener();
+    },
+    get intensityOpacity(): number {
+      return currentView?.intensityOpacity ?? 1;
+    },
+    set intensityOpacity(value: number) {
+      if (currentView) {
+        currentView.intensityOpacity = value;
+      }
     },
   };
 }

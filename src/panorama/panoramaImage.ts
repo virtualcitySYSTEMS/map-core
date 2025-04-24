@@ -230,6 +230,7 @@ export async function createPanoramaImageFromURL(
   );
 
   let intensityTileProvider: PanoramaTileProvider | undefined;
+  let intensityModelMatrix: Matrix4 | undefined;
   const getIntensityTileProvider = async (): Promise<PanoramaTileProvider> => {
     if (!hasIntensity) {
       throw new Error('Intensity not available');
@@ -242,13 +243,20 @@ export async function createPanoramaImageFromURL(
       } = await loadRGBImages(
         new URL(`${name}_intensity.tif`, absoluteUrl).href,
       );
+
+      // XXX maybe this is no longer nessecary?
       if (intensityMinLevel !== minLevel || intensityMaxLevel !== maxLevel) {
         throw new Error('Intensity levels do not match RGB levels');
       }
 
+      intensityModelMatrix = Matrix4.multiplyByScale(
+        scaledModelMatrix,
+        new Cartesian3(0.9, 0.9, 0.9),
+        new Matrix4(),
+      );
       intensityTileProvider = createPanoramaTileProvider(
         intensity,
-        scaledModelMatrix,
+        intensityModelMatrix,
         tileSize,
         minLevel,
       );
@@ -275,6 +283,14 @@ export async function createPanoramaImageFromURL(
           ),
           scaledModelMatrix,
         );
+
+        if (intensityModelMatrix) {
+          intensityModelMatrix = Matrix4.multiplyByScale(
+            scaledModelMatrix,
+            new Cartesian3(0.9, 0.9, 0.9),
+            intensityModelMatrix,
+          );
+        }
       })
       .catch((err) => {
         console.error('Error loading depth', err);
