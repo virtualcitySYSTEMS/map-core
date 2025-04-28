@@ -29,8 +29,10 @@ export default class PanoramaImageSelection extends AbstractInteraction {
           PanoramaMap.className,
         )[0];
         if (firstPanoramaMap) {
-          await this._mapCollection.setActiveMap(firstPanoramaMap.name);
-          (firstPanoramaMap as PanoramaMap).setCurrentImage(panoramaImage);
+          await this._mapCollection.activatePanoramaMap(
+            firstPanoramaMap as PanoramaMap,
+            panoramaImage,
+          );
         }
       }
     }

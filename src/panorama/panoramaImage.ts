@@ -207,7 +207,7 @@ export async function createPanoramaImageFromURL(
     new HeadingPitchRoll(
       orientation.heading + Math.PI / 2, // spheres are oriented down the X axis, twist it to align.
       orientation.pitch,
-      orientation.roll,
+      -orientation.roll,
     ),
   );
   const scaledModelMatrix = Matrix4.clone(modelMatrix);

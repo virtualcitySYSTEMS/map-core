@@ -1,12 +1,14 @@
 import type { Coordinate } from 'ol/coordinate.js';
 import type { Extent as OLExtent } from 'ol/extent.js';
 import { containsCoordinate } from 'ol/extent.js';
-import { EasingFunction } from '@vcmap-cesium/engine';
+import { EasingFunction, Math as CesiumMath } from '@vcmap-cesium/engine';
 import { parseBoolean, parseNumber } from '@vcsuite/parsers';
 import Projection, { wgs84Projection } from './projection.js';
 import type { VcsObjectOptions } from '../vcsObject.js';
 import VcsObject from '../vcsObject.js';
 import Extent from './extent.js';
+import type { PanoramaImage } from '../panorama/panoramaImage.js';
+import { cartesianToMercator } from './math.js';
 
 /**
  * compares two numeric properties
@@ -414,3 +416,16 @@ class Viewpoint extends VcsObject {
 }
 
 export default Viewpoint;
+
+export function getViewpointForPanoramaImage(image: PanoramaImage): Viewpoint {
+  const { heading, pitch, roll } = image.orientation;
+
+  return new Viewpoint({
+    cameraPosition: Projection.mercatorToWgs84(
+      cartesianToMercator(image.position),
+    ),
+    heading: CesiumMath.toDegrees(heading),
+    pitch: CesiumMath.toDegrees(pitch),
+    roll: CesiumMath.toDegrees(roll),
+  });
+}

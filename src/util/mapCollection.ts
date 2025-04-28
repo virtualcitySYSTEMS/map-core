@@ -15,9 +15,12 @@ import type {
   VisualisationType,
 } from '../map/vcsMap.js';
 import type Viewpoint from './viewpoint.js';
+import { getViewpointForPanoramaImage } from './viewpoint.js';
 import Navigation from '../map/navigation/navigation.js';
 import KeyboardController from '../map/navigation/controller/keyboardController.js';
 import PanoramaImageSelection from '../interaction/panoramaImageSelection.js';
+import type { PanoramaImage } from '../panorama/panoramaImage.js';
+import type PanoramaMap from '../map/panoramaMap.js';
 
 export type MapCollectionInitializationError = {
   error: Error;
@@ -328,6 +331,68 @@ class MapCollection extends Collection<VcsMap> {
     return fallbackMap || this.getByType('OpenlayersMap')[0] || this._array[0];
   }
 
+  private async _setActiveMap(
+    map: VcsMap,
+    viewpoint?: Viewpoint | null,
+  ): Promise<void> {
+    if (this._activeMap) {
+      this._activeMap.deactivate();
+      if (this._target) {
+        const mapClassName = this._activeMap.className;
+        this._target.classList.remove(mapClassName);
+      }
+    }
+
+    const previousMap = this._activeMap;
+    this._activeMap = map;
+    await this._activeMap.activate();
+    this._setActiveMapCSSClass();
+
+    if (viewpoint) {
+      await this._activeMap.gotoViewpoint(viewpoint);
+    }
+
+    const disableMapControlOptions: DisableMapControlOptions = {
+      apiCalls: !!previousMap?.movementApiCallsDisabled,
+      keyEvents: !!previousMap?.movementKeyEventsDisabled,
+      pointerEvents: !!previousMap?.movementPointerEventsDisabled,
+    };
+    map.disableMovement(disableMapControlOptions);
+    previousMap?.disableMovement(false);
+
+    this.clippingObjectManager.mapActivated(map);
+    this.navigation.mapActivated(map);
+    this._postRenderListener();
+    this._postRenderListener = this._activeMap.postRender.addEventListener(
+      (event) => {
+        this.postRender.raiseEvent(event);
+      },
+    );
+    this.mapActivated.raiseEvent(map);
+  }
+
+  async activatePanoramaMap(
+    map: PanoramaMap,
+    panoramaImage: PanoramaImage,
+  ): Promise<void> {
+    if (!this._array.includes(map)) {
+      getLogger('MapCollection').warning(
+        'this map is not part of this collection',
+      );
+      return;
+    }
+
+    if (this._activeMap?.className === 'CesiumMap') {
+      const viewpoint = getViewpointForPanoramaImage(panoramaImage);
+      viewpoint.animate = true;
+      viewpoint.duration = 1;
+      await this._activeMap.gotoViewpoint(viewpoint);
+    }
+
+    map.setCurrentImage(panoramaImage);
+    await this._setActiveMap(map);
+  }
+
   /**
    * Sets the active map. This will 1. get the current viewpoint of an acitve map (if one is set) 2.
    * determine that the map to be activated can show this viewpoint or has no fallback map set and 3.
@@ -375,17 +440,31 @@ class MapCollection extends Collection<VcsMap> {
       throw new Error('cannot activate a single map');
     }
 
+    if (this._activeMap === map) {
+      return map.activate();
+    }
+
     let viewpoint;
     if (this._activeMap || this._cachedViewpoint) {
-      if (this._activeMap === map) {
-        return map.activate();
-      }
-
       viewpoint = this._activeMap
         ? await this._activeMap.getViewpoint()
         : this._cachedViewpoint;
 
-      const canShow = await map.canShowViewpoint(viewpoint as Viewpoint);
+      let canShow = false;
+      if (map.className === 'PanoramaMap' && viewpoint) {
+        const position = viewpoint?.groundPosition ?? viewpoint?.cameraPosition;
+        if (position) {
+          const panoramaImage = await (
+            map as PanoramaMap
+          ).panoramaDatasets.getClosestImage(position);
+          if (panoramaImage) {
+            return this.activatePanoramaMap(map as PanoramaMap, panoramaImage);
+          }
+        }
+      } else {
+        canShow = await map.canShowViewpoint(viewpoint as Viewpoint);
+      }
+
       if (!canShow) {
         const fallbackMap = this._getFallbackMap(map);
         if (fallbackMap) {
@@ -397,43 +476,11 @@ class MapCollection extends Collection<VcsMap> {
           return Promise.resolve();
         }
       }
+
       this._cachedViewpoint = null;
-      if (this._activeMap) {
-        this._activeMap.deactivate();
-        if (this._target) {
-          const mapClassName = this._activeMap.className;
-          this._target.classList.remove(mapClassName);
-        }
-      }
     }
 
-    const previousMap = this._activeMap;
-    this._activeMap = map;
-    await this._activeMap.activate();
-    this._setActiveMapCSSClass();
-
-    if (viewpoint) {
-      await this._activeMap.gotoViewpoint(viewpoint);
-    }
-
-    const disableMapControlOptions: DisableMapControlOptions = {
-      apiCalls: !!previousMap?.movementApiCallsDisabled,
-      keyEvents: !!previousMap?.movementKeyEventsDisabled,
-      pointerEvents: !!previousMap?.movementPointerEventsDisabled,
-    };
-    map.disableMovement(disableMapControlOptions);
-    previousMap?.disableMovement(false);
-
-    this.clippingObjectManager.mapActivated(map);
-    this.navigation.mapActivated(map);
-    this._postRenderListener();
-    this._postRenderListener = this._activeMap.postRender.addEventListener(
-      (event) => {
-        this.postRender.raiseEvent(event);
-      },
-    );
-    this.mapActivated.raiseEvent(map);
-    return Promise.resolve();
+    return this._setActiveMap(map, viewpoint);
   }
 
   /**
