@@ -44,6 +44,8 @@ export default class PanoramaMap extends VcsMap {
     };
   }
 
+  panoramaDatasetsChanged = new VcsEvent<PanoramaDatasetCollection>();
+
   private _cesiumWidget: CesiumWidget | undefined;
 
   private _imageView: PanoramaImageView | undefined;
@@ -108,6 +110,7 @@ export default class PanoramaMap extends VcsMap {
     }
     this._panoramaDatasets = collection;
     this._destroyCollection = false;
+    this.panoramaDatasetsChanged.raiseEvent(collection);
   }
 
   async initialize(): Promise<void> {
