@@ -6,7 +6,8 @@ import { expect } from 'chai';
 import type { PanoramaTileProvider } from '../../../src/panorama/panoramaTileProvider.js';
 import { createPanoramaTileProvider } from '../../../src/panorama/panoramaTileProvider.js';
 import type { PanoramaTile } from '../../../src/panorama/panoramaTile.js';
-import { createTileCoordinate } from '../../../src/panorama/panoramaTile.js';
+
+import { createTileCoordinate } from '../../../src/panorama/tileCoordinate.js';
 
 type ImageSetup = {
   image: GeoTIFF;

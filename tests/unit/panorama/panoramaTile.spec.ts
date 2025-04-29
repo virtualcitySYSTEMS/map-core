@@ -3,15 +3,16 @@ import { Canvas, createImageData } from 'canvas';
 import type { EllipsoidGeometry, GeometryInstance } from '@vcmap-cesium/engine';
 import { Cartesian2, Math as CesiumMath, Matrix4 } from '@vcmap-cesium/engine';
 import type { PanoramaTile } from '../../../src/panorama/panoramaTile.js';
+import { createPanoramaTile } from '../../../src/panorama/panoramaTile.js';
 import {
-  createTileCoordinateFromKey,
-  createPanoramaTile,
   createTileCoordinate,
+  createTileCoordinateFromKey,
   getDistanceToTileCoordinate,
   getTileCoordinatesInImageExtent,
   getTileSphericalCenter,
+  getTileSphericalExtent,
   tileCoordinateFromImageCoordinate,
-} from '../../../src/panorama/panoramaTile.js';
+} from '../../../src/panorama/tileCoordinate.js';
 
 /**
  * creates a red 4x4 image
@@ -53,6 +54,17 @@ describe('panorama tile', () => {
           12,
         ),
       ).to.eql(createTileCoordinate(2047, 1024, 12));
+    });
+
+    it.only('should the extent of a tile in image spherical coordinates', () => {
+      const tileCoordinate0 = createTileCoordinate(0, 0, 0);
+      const extent0 = getTileSphericalExtent(tileCoordinate0);
+      expect(extent0).to.eql([
+        CesiumMath.TWO_PI - CesiumMath.PI,
+        0,
+        CesiumMath.TWO_PI,
+        CesiumMath.PI,
+      ]);
     });
 
     it('should get the tile coordinates which touch a given extent', () => {
@@ -111,7 +123,6 @@ describe('panorama tile', () => {
     before(() => {
       tile = createPanoramaTile(
         createTileCoordinate(1, 1, 1),
-        createRedImage(),
         Matrix4.IDENTITY,
         [4, 4],
       );

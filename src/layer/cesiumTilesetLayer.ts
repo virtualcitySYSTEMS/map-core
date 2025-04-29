@@ -98,8 +98,6 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
 
   private _offset: Coordinate | undefined;
 
-  protected _supportedMaps = [CesiumMap.className];
-
   private _customShader: CustomShader | undefined = undefined;
 
   constructor(options: CesiumTilesetOptions) {

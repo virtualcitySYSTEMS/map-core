@@ -21,8 +21,49 @@ import type {
 import type { isTiledFeature } from '../layer/featureStoreLayer.js';
 import type { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
 import { scaleSymbol } from '../layer/vectorSymbols.js';
+import { WebGLConstants } from '@vcmap-cesium/engine';
 
 declare module '@vcmap-cesium/engine' {
+  enum TextureWarp {
+    CLAMP_TO_EDGE = 33071,
+    REPEAT = 10497,
+    MIRRORED_REPEAT = 33648,
+  }
+
+  class Sampler {
+    constructor(options: {
+      warpS?: TextureWarp;
+      warpT?: TextureWarp;
+      minificationFilter?: TextureMinificationFilter;
+      magnificationFilter?: TextureMagnificationFilter;
+      maximumAnisotropy?: number;
+    });
+
+    readonly warpS: TextureWarp;
+    readonly warpT: TextureWarp;
+    readonly minificationFilter: TextureMinificationFilter;
+    readonly magnificationFilter: TextureMagnificationFilter;
+    readonly maximumAnisotropy: number;
+  }
+
+  class Texture {
+    constructor(options: {
+      context: Context;
+      source?: any;
+      pixelFormat?: PixelFormat;
+      pixelDatatype?: PixelDatatype;
+      width?: number;
+      height?: number;
+      sampler?: Sampler;
+      flipY?: boolean;
+      preMultiplyAlpha?: boolean;
+      skipColorSpaceConversion?: boolean;
+    });
+
+    isDestroyed(): boolean;
+    destroy(): void;
+  }
+
   interface Scene {
     render(): void;
     frameState: FrameState;

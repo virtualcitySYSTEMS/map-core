@@ -20,8 +20,8 @@ import {
   getProjectedFov,
 } from './fieldOfView.js';
 import type { PanoramaImage } from './panoramaImage.js';
-import { getNumberOfTiles, tileSizeInRadians } from './panoramaTile.js';
 import type PanoramaMap from '../map/panoramaMap.js';
+import { getNumberOfTiles, tileSizeInRadians } from './tileCoordinate.js';
 
 export type DebugCameraSphereOptions = {
   paused?: boolean;
