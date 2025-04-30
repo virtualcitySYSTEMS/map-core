@@ -91,6 +91,14 @@ describe('EditGeometrySession', () => {
         expect(feature).to.have.property(createSync, true);
       });
 
+      it('should exclude the feature from picking', () => {
+        expect(
+          app.maps.eventHandler.featureInteraction.isExcludedFromPickPosition(
+            feature,
+          ),
+        ).to.be.true;
+      });
+
       describe('unsetting feature', () => {
         beforeEach(() => {
           session.setFeature();
@@ -98,6 +106,14 @@ describe('EditGeometrySession', () => {
 
         it('should remove createSync', () => {
           expect(feature).to.not.have.property(createSync);
+        });
+
+        it('should include the feature in picking', () => {
+          expect(
+            app.maps.eventHandler.featureInteraction.isExcludedFromPickPosition(
+              feature,
+            ),
+          ).to.be.false;
         });
       });
     });
@@ -814,6 +830,29 @@ describe('EditGeometrySession', () => {
       expect(app.maps.eventHandler.featureInteraction.pickPosition).to.equal(
         EventType.CLICK,
       );
+    });
+
+    describe('with a feature selected', () => {
+      let feature: Feature<Point>;
+
+      beforeEach(() => {
+        feature = createFeatureWithId(new Point([0, 0, 0]));
+        layer.addFeatures([feature]);
+        session.setFeature(feature);
+        session.stop();
+      });
+
+      it('should remove createSync', () => {
+        expect(feature).to.not.have.property(createSync);
+      });
+
+      it('should include the feature in picking', () => {
+        expect(
+          app.maps.eventHandler.featureInteraction.isExcludedFromPickPosition(
+            feature,
+          ),
+        ).to.be.false;
+      });
     });
   });
 

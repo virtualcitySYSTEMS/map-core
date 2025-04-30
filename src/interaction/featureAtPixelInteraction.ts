@@ -241,6 +241,10 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
     this._excludeFromPickPosition.delete(feature);
   }
 
+  isExcludedFromPickPosition(feature: Feature): boolean {
+    return this._excludeFromPickPosition.has(feature);
+  }
+
   private _openlayersHandler(
     event: InteractionEvent,
   ): Promise<InteractionEvent> {

@@ -509,6 +509,9 @@ function startEditGeometrySession(
       if (!geometryIsValid(currentFeature.getGeometry())) {
         layer.removeFeaturesById([currentFeature.getId() as string | number]);
       }
+      app.maps.eventHandler.featureInteraction.includeInPickPosition(
+        currentFeature,
+      );
     }
     currentFeature = null;
     altitudeModeChanged();
@@ -596,6 +599,9 @@ function startEditGeometrySession(
         getLogger('EditGeometrySession').warning(
           `Geometry of type ${geometryType} is currently not supported`,
         );
+        app.maps.eventHandler.featureInteraction.includeInPickPosition(
+          currentFeature,
+        );
         currentFeature[createSync] = false;
         currentFeature = null;
       }
@@ -612,11 +618,6 @@ function startEditGeometrySession(
   setupActiveMap();
 
   const stop = (): void => {
-    if (currentFeature) {
-      app.maps.eventHandler.featureInteraction.includeInPickPosition(
-        currentFeature,
-      );
-    }
     destroyScratchLayer();
     if (featureListener) {
       unByKey(featureListener);
