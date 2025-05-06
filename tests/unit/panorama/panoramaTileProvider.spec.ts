@@ -14,7 +14,7 @@ type ImageSetup = {
 };
 
 async function getTestImages(): Promise<ImageSetup> {
-  const image = await fromFile('tests/data/testGeotiff.tif');
+  const image = await fromFile('tests/data/panorama/testRgbGeotiff.tif');
   let imageCount = await image.getImageCount();
   const promises = [];
   while (imageCount) {
