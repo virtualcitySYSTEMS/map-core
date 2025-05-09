@@ -9,7 +9,11 @@ import Projection, {
 } from '../../util/projection.js';
 import Extent from '../../util/extent.js';
 import { tileProviderClassRegistry } from '../../classRegistry.js';
-import { getOlFeatures, getValidReader } from '../flatGeobufHelpers.js';
+import {
+  getOlFeatures,
+  getRootNode,
+  getValidReader,
+} from '../flatGeobufHelpers.js';
 
 export type FlatGeobufTileProviderOptions = Omit<
   TileProviderOptions,
@@ -62,6 +66,16 @@ export default class FlatGeobufTileProvider extends TileProvider {
     }
 
     return levelConfig.reader;
+  }
+
+  async getLevelExtent(level: number): Promise<Extent> {
+    const reader = await this.getReaderAndProjection(level);
+    const rootNode = await getRootNode(reader);
+
+    return new Extent({
+      coordinates: [rootNode.minX, rootNode.minY, rootNode.maxX, rootNode.maxY],
+      projection: this._projection.toJSON(),
+    });
   }
 
   async loader(x: number, y: number, z: number): Promise<Feature[]> {
