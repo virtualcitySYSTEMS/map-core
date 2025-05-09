@@ -56,6 +56,7 @@ import type VectorClusterGroupCollection from './vectorCluster/vectorClusterGrou
 import type { ClippingPolygonObjectOptions } from './util/clipping/clippingPolygonObject.js';
 import ClippingPolygonObject from './util/clipping/clippingPolygonObject.js';
 import ClippingPolygonObjectCollection from './util/clipping/clippingPolygonObjectCollection.js';
+import PanoramaDataset from './panorama/panoramaDataset.js';
 
 function getLogger(): Logger {
   return getLoggerByName('init');
@@ -128,6 +129,8 @@ class VcsApp {
   private _clippingPolygons: OverrideCollection<ClippingPolygonObject>;
 
   private _flights: OverrideCollection<FlightInstance, FlightCollection>;
+
+  private _panoramaDatasets: OverrideCollection<PanoramaDataset>;
 
   private _categoryClassRegistry: OverrideClassRegistry<
     typeof Category<any, any>
@@ -252,6 +255,20 @@ class VcsApp {
         new FlightInstance(flightOptions),
     );
 
+    this._panoramaDatasets = makeOverrideCollection(
+      new Collection(),
+      getDynamicModuleId,
+      undefined,
+      (config) => new PanoramaDataset(config),
+      PanoramaDataset,
+    );
+    this._panoramaDatasets.added.addEventListener((dataset) => {
+      this._layers.add(dataset.layer);
+    });
+    this._panoramaDatasets.removed.addEventListener((dataset) => {
+      this._layers.remove(dataset.layer);
+    });
+
     this._categoryClassRegistry = new OverrideClassRegistry(
       categoryClassRegistry,
     );
@@ -348,6 +365,10 @@ class VcsApp {
     return this._flights;
   }
 
+  get panoramaDatasets(): OverrideCollection<PanoramaDataset> {
+    return this._panoramaDatasets;
+  }
+
   get displayQuality(): DisplayQuality {
     return this._displayQuality;
   }
@@ -439,6 +460,10 @@ class VcsApp {
       module._id,
     );
     await this._flights.parseItems(config.flights, module._id);
+    await this._panoramaDatasets.parseItems(
+      config.panoramaDatasets,
+      module._id,
+    );
 
     if (Array.isArray(config.categories)) {
       await Promise.all(
@@ -671,6 +696,7 @@ class VcsApp {
     destroyCollection(this._styles);
     destroyCollection(this._categories);
     destroyCollection(this._clippingPolygons);
+    destroyCollection(this._panoramaDatasets);
     this._modules.destroy();
     this._hiddenObjects.destroy();
     this._mapClassRegistry.destroy();
