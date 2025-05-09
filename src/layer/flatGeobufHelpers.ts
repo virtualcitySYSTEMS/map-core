@@ -1,5 +1,6 @@
 import type Feature from 'ol/Feature.js';
 import { fromFeature } from 'flatgeobuf/lib/mjs/ol/feature.js';
+import { NODE_ITEM_BYTE_LEN } from 'flatgeobuf/lib/mjs/packedrtree.js';
 import { HttpReader } from 'flatgeobuf/lib/mjs/http-reader.js';
 import type Projection from '../util/projection.js';
 import { mercatorProjection, parseEPSGCode } from '../util/projection.js';
@@ -53,4 +54,39 @@ export async function getOlFeatures(
   }
 
   return features;
+}
+
+/**
+ * Values in data projection!
+ */
+export type PackeRTreeNode = {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+  offset: number;
+};
+
+function readNode(dataView: DataView, offset: number): PackeRTreeNode {
+  const minX = dataView.getFloat64(offset, true);
+  const minY = dataView.getFloat64(offset + 8, true);
+  const maxX = dataView.getFloat64(offset + 16, true);
+  const maxY = dataView.getFloat64(offset + 24, true);
+  const nodeOffset = dataView.getUint32(offset + 32, true);
+
+  return { minX, minY, maxX, maxY, offset: nodeOffset };
+}
+
+export async function getRootNode(reader: HttpReader): Promise<PackeRTreeNode> {
+  const lengthBeforeTree = reader.lengthBeforeTree();
+
+  // @ts-expect-error: not actually private
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
+  const buffer = (await reader.headerClient.getRange(
+    lengthBeforeTree,
+    NODE_ITEM_BYTE_LEN,
+    0,
+    'index',
+  )) as ArrayBuffer;
+  return readNode(new DataView(buffer), 0);
 }
