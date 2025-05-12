@@ -1,8 +1,8 @@
 import WFS from 'ol/format/WFS.js';
 import GML from 'ol/format/GML.js';
 import GeoJSON from 'ol/format/GeoJSON.js';
-import GML2 from 'ol/format/GML2.js';
 import GML3 from 'ol/format/GML3.js';
+import WMSGetFeatureInfo from 'ol/format/WMSGetFeatureInfo.js';
 import Point from 'ol/geom/Point.js';
 import nock from 'nock';
 import WMSFeatureProvider, {
@@ -166,9 +166,9 @@ describe('WMSFeatureProvider', () => {
         .and.to.be.an.instanceOf(GML);
     });
 
-    it('should create a GML2 format', () => {
+    it('should create a WMSFeatureInfo format', () => {
       const format = getFormat('application/vnd.ogc.gml');
-      expect(format).to.be.an.instanceOf(GML2);
+      expect(format).to.be.an.instanceOf(WMSGetFeatureInfo);
     });
 
     it('should create a GML3 format', () => {

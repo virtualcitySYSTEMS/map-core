@@ -10,6 +10,7 @@ import type { Feature } from 'ol/index.js';
 import type { Coordinate } from 'ol/coordinate.js';
 import type { TileWMS } from 'ol/source.js';
 import type FeatureFormat from 'ol/format/Feature.js';
+import WMSGetFeatureInfo from 'ol/format/WMSGetFeatureInfo.js';
 import { parseInteger } from '@vcsuite/parsers';
 import AbstractFeatureProvider, {
   AbstractFeatureProviderOptions,
@@ -95,7 +96,8 @@ export function getFormat(
     return new GeoJSON(options);
   }
   if (responseType === 'application/vnd.ogc.gml') {
-    return new GML2(options);
+    // works with mapServer and "msGMLOutput", replaces GML2 format, and still works with gml2 documents
+    return new WMSGetFeatureInfo({});
   }
   if (
     responseType === 'application/vnd.ogc.gml/3.1.1' ||

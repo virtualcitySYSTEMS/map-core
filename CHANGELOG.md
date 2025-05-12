@@ -1,3 +1,7 @@
+### 6.1.9
+
+- Fixes an issue with WMS FeatureInfo and MapServer
+
 ### 6.1.8
 
 - Fixes a bug, where clearing the feature on a geometry editing session would not properly reset the picking.
