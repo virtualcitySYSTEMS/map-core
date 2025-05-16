@@ -59,7 +59,7 @@ export async function getOlFeatures(
 /**
  * Values in data projection!
  */
-export type PackeRTreeNode = {
+export type PackedRTreeNode = {
   minX: number;
   minY: number;
   maxX: number;
@@ -67,7 +67,7 @@ export type PackeRTreeNode = {
   offset: number;
 };
 
-function readNode(dataView: DataView, offset: number): PackeRTreeNode {
+function readNode(dataView: DataView, offset: number): PackedRTreeNode {
   const minX = dataView.getFloat64(offset, true);
   const minY = dataView.getFloat64(offset + 8, true);
   const maxX = dataView.getFloat64(offset + 16, true);
@@ -77,7 +77,13 @@ function readNode(dataView: DataView, offset: number): PackeRTreeNode {
   return { minX, minY, maxX, maxY, offset: nodeOffset };
 }
 
-export async function getRootNode(reader: HttpReader): Promise<PackeRTreeNode> {
+/**
+ * Extracts the root node from the packed hilbert tree. The data is in data projection.
+ * @param reader
+ */
+export async function getRootNode(
+  reader: HttpReader,
+): Promise<PackedRTreeNode> {
   const lengthBeforeTree = reader.lengthBeforeTree();
 
   // @ts-expect-error: not actually private
