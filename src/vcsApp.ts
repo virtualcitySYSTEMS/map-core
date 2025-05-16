@@ -57,7 +57,6 @@ import type { ClippingPolygonObjectOptions } from './util/clipping/clippingPolyg
 import ClippingPolygonObject from './util/clipping/clippingPolygonObject.js';
 import ClippingPolygonObjectCollection from './util/clipping/clippingPolygonObjectCollection.js';
 import PanoramaDataset from './panorama/panoramaDataset.js';
-import PanoramaDatasetCollection from './panorama/panoramaDatasetCollection.js';
 
 function getLogger(): Logger {
   return getLoggerByName('init');
@@ -131,10 +130,7 @@ class VcsApp {
 
   private _flights: OverrideCollection<FlightInstance, FlightCollection>;
 
-  private _panoramaDatasets: OverrideCollection<
-    PanoramaDataset,
-    PanoramaDatasetCollection
-  >;
+  private _panoramaDatasets: OverrideCollection<PanoramaDataset>;
 
   private _categoryClassRegistry: OverrideClassRegistry<
     typeof Category<any, any>
@@ -260,7 +256,7 @@ class VcsApp {
     );
 
     this._panoramaDatasets = makeOverrideCollection(
-      new PanoramaDatasetCollection(),
+      new Collection(),
       getDynamicModuleId,
       undefined,
       (config) => new PanoramaDataset(config),
@@ -369,10 +365,7 @@ class VcsApp {
     return this._flights;
   }
 
-  get panoramaDatasets(): OverrideCollection<
-    PanoramaDataset,
-    PanoramaDatasetCollection
-  > {
+  get panoramaDatasets(): OverrideCollection<PanoramaDataset> {
     return this._panoramaDatasets;
   }
 

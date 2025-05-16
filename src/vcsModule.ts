@@ -11,7 +11,7 @@ import type { HiddenObject } from './util/hiddenObjects.js';
 import type { FlightInstanceOptions } from './util/flight/flightInstance.js';
 import type { VectorClusterGroupOptions } from './vectorCluster/vectorClusterGroup.js';
 import type { ClippingPolygonObjectOptions } from './util/clipping/clippingPolygonObject.js';
-import { PanoramaDatasetOptions } from './panorama/panoramaDataset.js';
+import type { PanoramaDatasetOptions } from './panorama/panoramaDataset.js';
 
 export type VcsModuleConfig = {
   _id?: string;
