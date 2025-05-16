@@ -8,8 +8,10 @@ import {
   ShadowMode,
   Math as CesiumMath,
 } from '@vcmap-cesium/engine';
-import VcsMap, { VcsMapOptions } from './vcsMap.js';
-import { PanoramaImage } from '../panorama/panoramaImage.js';
+import type { Coordinate } from 'ol/coordinate.js';
+import type { VcsMapOptions } from './vcsMap.js';
+import VcsMap from './vcsMap.js';
+import type { PanoramaImage } from '../panorama/panoramaImage.js';
 import { mapClassRegistry } from '../classRegistry.js';
 import {
   createPanoramaImageView,
@@ -26,10 +28,11 @@ import {
   DebugSphere,
   DebugCameraSphereOptions,
 } from '../panorama/debugSphere.js';
-import Viewpoint from '../util/viewpoint.js';
+import type Viewpoint from '../util/viewpoint.js';
 import { ensureInCollection } from './cesiumMap.js';
-import PanoramaDatasetCollection from '../panorama/panoramaDatasetCollection.js';
 import Projection from '../util/projection.js';
+import Collection from '../util/collection.js';
+import type PanoramaDataset from '../panorama/panoramaDataset.js';
 
 export type PanoramaMapOptions = VcsMapOptions;
 
@@ -44,7 +47,7 @@ export default class PanoramaMap extends VcsMap {
     };
   }
 
-  panoramaDatasetsChanged = new VcsEvent<PanoramaDatasetCollection>();
+  panoramaDatasetsChanged = new VcsEvent<Collection<PanoramaDataset>>();
 
   private _cesiumWidget: CesiumWidget | undefined;
 
@@ -62,7 +65,7 @@ export default class PanoramaMap extends VcsMap {
 
   readonly currentImageChanged = new VcsEvent<PanoramaImage | undefined>();
 
-  private _panoramaDatasets = new PanoramaDatasetCollection();
+  private _panoramaDatasets = new Collection<PanoramaDataset>();
 
   private _destroyCollection = true;
 
@@ -100,11 +103,11 @@ export default class PanoramaMap extends VcsMap {
     }
   }
 
-  get panoramaDatasets(): PanoramaDatasetCollection {
+  get panoramaDatasets(): Collection<PanoramaDataset> {
     return this._panoramaDatasets;
   }
 
-  set panoramaDatasets(collection: PanoramaDatasetCollection) {
+  set panoramaDatasets(collection: Collection<PanoramaDataset>) {
     if (this._destroyCollection) {
       this._panoramaDatasets.destroy();
     }
@@ -196,7 +199,7 @@ export default class PanoramaMap extends VcsMap {
       return;
     }
 
-    const closestImage = await this.panoramaDatasets.getClosestImage(
+    const closestImage = await this.getClosestImage(
       Projection.wgs84ToMercator(position),
     );
 
@@ -211,6 +214,47 @@ export default class PanoramaMap extends VcsMap {
 
       this.setCurrentImage(closestImage);
     }
+  }
+
+  async getClosestImage(
+    coordinate: Coordinate,
+    maxDistance = 200,
+  ): Promise<PanoramaImage | undefined> {
+    const loadPromises = [...this._panoramaDatasets]
+      .filter((dataset) => dataset.active)
+      .map(async (dataset) => {
+        const closesImage = await dataset.getClosestImage(
+          coordinate,
+          maxDistance,
+        );
+        if (closesImage) {
+          return {
+            ...closesImage,
+            dataset,
+          };
+        }
+
+        return undefined;
+      });
+
+    const images = await Promise.all(loadPromises);
+
+    let minDistanceSqrd = Infinity;
+    let closestIndex = -1;
+
+    images.forEach((image, index) => {
+      if (image && image.distanceSqrd < minDistanceSqrd) {
+        minDistanceSqrd = image.distanceSqrd;
+        closestIndex = index;
+      }
+    });
+
+    if (closestIndex !== -1) {
+      const { imageName, dataset } = images[closestIndex]!;
+      return dataset.createPanoramaImage(imageName); // XXX position is a HACK to support frankenstein datasets
+    }
+
+    return undefined;
   }
 
   setCurrentImage(image?: PanoramaImage): void {

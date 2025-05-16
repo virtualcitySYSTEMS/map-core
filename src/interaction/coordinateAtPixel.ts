@@ -41,6 +41,7 @@ async function getCoordinateFromPanoramap(
     if (imageCoordinate) {
       const cartesian = await image.getPositionAtImageCoordinate(
         imageCoordinate,
+        undefined,
         scratchPanoramaCartesian,
       );
       if (cartesian) {

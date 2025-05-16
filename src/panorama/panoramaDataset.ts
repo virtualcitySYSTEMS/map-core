@@ -103,6 +103,11 @@ export default class PanoramaDataset extends VcsObject {
       });
     });
 
+    this.cameraOffset = parseNumber(
+      options.cameraOffset,
+      defaultOptions.cameraOffset,
+    );
+
     this.layer = new PanoramaDatasetLayer(this);
     markVolatile(this.layer);
     this.layer.stateChanged.addEventListener(() => {
@@ -114,11 +119,6 @@ export default class PanoramaDataset extends VcsObject {
     this.activeOnStartup = parseBoolean(
       options.activeOnStartup,
       defaultOptions.activeOnStartup,
-    );
-
-    this.cameraOffset = parseNumber(
-      options.cameraOffset,
-      defaultOptions.cameraOffset,
     );
 
     if (this.activeOnStartup) {

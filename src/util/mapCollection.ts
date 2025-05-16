@@ -454,9 +454,9 @@ class MapCollection extends Collection<VcsMap> {
       if (map.className === 'PanoramaMap' && viewpoint) {
         const position = viewpoint?.groundPosition ?? viewpoint?.cameraPosition;
         if (position) {
-          const panoramaImage = await (
-            map as PanoramaMap
-          ).panoramaDatasets.getClosestImage(position);
+          const panoramaImage = await (map as PanoramaMap).getClosestImage(
+            position,
+          );
           if (panoramaImage) {
             return this.activatePanoramaMap(map as PanoramaMap, panoramaImage);
           }

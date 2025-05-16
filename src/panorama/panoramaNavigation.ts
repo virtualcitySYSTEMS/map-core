@@ -92,7 +92,6 @@ export function createPanoramaNavigation(map: PanoramaMap): () => void {
     currentImage = image;
   });
   let animationFrameHandle: number;
-  // IDEA maybe not attach to the clock to avoid blocking by renderer.
   const loop = (): void => {
     if (
       currentImage &&
