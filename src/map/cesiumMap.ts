@@ -8,10 +8,8 @@ import {
   DataSourceDisplay,
   DataSourceCollection,
   RequestScheduler,
-  Ellipsoid,
   ScreenSpaceEventHandler,
   Cartesian3,
-  Ray,
   Math as CesiumMath,
   Camera,
   BillboardVisualizer,
@@ -22,9 +20,6 @@ import {
   Intersect,
   ImageryLayer,
   PrimitiveCollection,
-  KeyboardEventModifier,
-  ScreenSpaceEventType,
-  Cartographic,
   type Scene,
   type ImageryLayerCollection,
   type Cesium3DTileset,
@@ -40,19 +35,13 @@ import {
   type ContextOptions,
 } from '@vcmap-cesium/engine';
 import type { Coordinate } from 'ol/coordinate.js';
-
 import { check, maybe } from '@vcsuite/check';
 import { parseBoolean, parseInteger, parseNumber } from '@vcsuite/parsers';
 import VcsMap, { type VcsMapOptions } from './vcsMap.js';
-import Viewpoint from '../util/viewpoint.js';
+import type Viewpoint from '../util/viewpoint.js';
 import Projection, { mercatorProjection } from '../util/projection.js';
 import { getHeightFromTerrainProvider } from '../layer/terrainHelpers.js';
 import { vcsLayerName } from '../layer/layerSymbols.js';
-import {
-  ModificationKeyType,
-  PointerEventType,
-  PointerKeyType,
-} from '../interaction/interactionType.js';
 import type { CameraLimiterOptions } from './cameraLimiter.js';
 import CameraLimiter from './cameraLimiter.js';
 import { mapClassRegistry } from '../classRegistry.js';
@@ -61,6 +50,11 @@ import type Layer from '../layer/layer.js';
 import VcsEvent from '../vcsEvent.js';
 import type { DisableMapControlOptions } from '../util/mapCollection.js';
 import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
+import {
+  getResolution,
+  getViewpointFromScene,
+  setupCesiumInteractions,
+} from './cesiumMapHelpers.js';
 
 export type CesiumMapOptions = VcsMapOptions & {
   /**
@@ -316,9 +310,9 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
     };
   }
 
-  private _cesiumWidget: CesiumWidget | null;
+  private _cesiumWidget: CesiumWidget | null = null;
 
-  dataSourceDisplay: DataSourceDisplay | null;
+  dataSourceDisplay: DataSourceDisplay | null = null;
 
   /**
    * clock for animated data
@@ -334,53 +328,51 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
    * clocks of active data sources
    * the last clock of the array corresponds to the active dataSourceDisplayClock
    */
-  private _dataSourceClocks: DataSourceClock[];
+  private _dataSourceClocks: DataSourceClock[] = [];
 
   enableLightning: boolean;
 
   tileCacheSize: number;
 
-  screenSpaceEventHandler: ScreenSpaceEventHandler | null;
+  screenSpaceEventHandler: ScreenSpaceEventHandler | null = null;
 
-  private _screenSpaceListeners: (() => void)[];
+  private _screenSpaceListener: (() => void) | undefined;
 
   defaultJDate: JulianDate;
 
   /**
    * The defaultShadowMap which is created when calling the constructor of the CesiumWidet in {@link initialize}. This is a reference, not a clone.
    */
-  private _defaultShadowMap: ShadowMap | null;
+  private _defaultShadowMap: ShadowMap | null = null;
 
   /**
    * A cache of the shadowMap that is set, before {@link initialize} is called. It is applied as soon the instance is initialized.
    */
-  private _initialShadowMap: ShadowMap | null;
+  private _initialShadowMap: ShadowMap | undefined;
 
-  shadowMapChanged: VcsEvent<ShadowMap>;
+  shadowMapChanged = new VcsEvent<ShadowMap>();
 
   webGLaa: boolean;
 
   globeColor: Color;
 
-  private _clusterDataSourceDisplay: DataSourceDisplay | null;
+  private _clusterDataSourceDisplay: DataSourceDisplay | undefined;
 
-  private _terrainProvider: TerrainProvider | null;
+  private _terrainProvider: TerrainProvider | null = null;
 
-  defaultTerrainProvider: TerrainProvider | null;
+  defaultTerrainProvider: TerrainProvider | null = null;
 
   useOriginalCesiumShader: boolean;
 
-  private _cameraLimiter: CameraLimiter | null;
+  private _cameraLimiter: CameraLimiter | null = null;
 
   private _cameraLimiterOptions: CameraLimiterOptions | undefined;
 
-  private _preUpdateListener: (() => void) | null;
+  private _preUpdateListener: (() => void) | undefined;
 
-  private _clockSyncListener: (() => void) | null;
+  private _clockSyncListener: (() => void) | undefined;
 
-  private _listeners: (() => void)[];
-
-  private _lastEventFrameNumber: number | null;
+  private _listeners: (() => void)[] = [];
 
   private _lightIntensity: number;
 
@@ -390,15 +382,11 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
     super(options);
 
     const defaultOptions = CesiumMap.getDefaultOptions();
-    this._cesiumWidget = null;
-    this.dataSourceDisplay = null;
     this.dataSourceDisplayClock = new Clock({ shouldAnimate: true });
 
     const defaultClock = new DataSourceClock();
     defaultClock.currentTime = this.dataSourceDisplayClock.currentTime;
     this._defaultClock = defaultClock;
-
-    this._dataSourceClocks = [];
 
     this.enableLightning = parseBoolean(
       options.enableLightning,
@@ -410,17 +398,7 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
       defaultOptions.tileCacheSize,
     );
 
-    this.screenSpaceEventHandler = null;
-
-    this._screenSpaceListeners = [];
-
     this.defaultJDate = JulianDate.fromDate(new Date(2014, 6, 20, 13, 0, 0, 0));
-
-    this._defaultShadowMap = null;
-
-    this._initialShadowMap = null;
-
-    this.shadowMapChanged = new VcsEvent();
 
     this.webGLaa = parseBoolean(options.webGLaa, defaultOptions.webGLaa);
 
@@ -433,24 +411,8 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
       options.globeColor || (defaultOptions.globeColor as string),
     );
 
-    this._clusterDataSourceDisplay = null;
-
-    this._terrainProvider = null;
-
-    this.defaultTerrainProvider = null;
-
-    this._cameraLimiter = null;
-
     this._cameraLimiterOptions =
       options.cameraLimiter || defaultOptions.cameraLimiter;
-
-    this._preUpdateListener = null;
-
-    this._clockSyncListener = null;
-
-    this._listeners = [];
-
-    this._lastEventFrameNumber = null;
 
     this._lightIntensity = parseNumber(
       options.lightIntensity,
@@ -516,7 +478,7 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
         this._setupPreUpdateListener();
       } else if (!this._cameraLimiter && this._preUpdateListener) {
         this._preUpdateListener();
-        this._preUpdateListener = null;
+        this._preUpdateListener = undefined;
       }
     }
   }
@@ -533,138 +495,6 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
           }
         });
     }
-  }
-
-  private _raisePointerInteraction(
-    key: ModificationKeyType,
-    pointer: number,
-    pointerEvent: PointerEventType,
-    csEvent:
-      | ScreenSpaceEventHandler.PositionedEvent
-      | ScreenSpaceEventHandler.MotionEvent,
-  ): void {
-    const multipleTouch =
-      // eslint-disable-next-line no-underscore-dangle
-      (this.screenSpaceEventHandler?._positions?.length ?? 0) > 1;
-    const windowPosition = (csEvent as ScreenSpaceEventHandler.PositionedEvent)
-      .position
-      ? (csEvent as ScreenSpaceEventHandler.PositionedEvent).position
-      : (csEvent as ScreenSpaceEventHandler.MotionEvent).endPosition;
-
-    this.pointerInteractionEvent.raiseEvent({
-      map: this,
-      windowPosition,
-      key,
-      pointer,
-      multipleTouch,
-      pointerEvent,
-    });
-  }
-
-  private _setupInteractions(): void {
-    if (!(this._cesiumWidget && this.screenSpaceEventHandler)) {
-      throw new Error('Cannot setup interactions on uninitailized map');
-    }
-    const mods = [
-      {
-        csModifier: KeyboardEventModifier.ALT,
-        vcsModifier: ModificationKeyType.ALT,
-      },
-      {
-        csModifier: KeyboardEventModifier.CTRL,
-        vcsModifier: ModificationKeyType.CTRL,
-      },
-      {
-        csModifier: KeyboardEventModifier.SHIFT,
-        vcsModifier: ModificationKeyType.SHIFT,
-      },
-      { csModifier: undefined, vcsModifier: ModificationKeyType.NONE },
-    ];
-
-    const types = [
-      {
-        type: ScreenSpaceEventType.LEFT_DOWN,
-        pointerEvent: PointerEventType.DOWN,
-        pointer: PointerKeyType.LEFT,
-      },
-      {
-        type: ScreenSpaceEventType.LEFT_UP,
-        pointerEvent: PointerEventType.UP,
-        pointer: PointerKeyType.LEFT,
-      },
-      {
-        type: ScreenSpaceEventType.RIGHT_DOWN,
-        pointerEvent: PointerEventType.DOWN,
-        pointer: PointerKeyType.RIGHT,
-      },
-      {
-        type: ScreenSpaceEventType.RIGHT_UP,
-        pointerEvent: PointerEventType.UP,
-        pointer: PointerKeyType.RIGHT,
-      },
-      {
-        type: ScreenSpaceEventType.MIDDLE_DOWN,
-        pointerEvent: PointerEventType.DOWN,
-        pointer: PointerKeyType.MIDDLE,
-      },
-      {
-        type: ScreenSpaceEventType.MIDDLE_UP,
-        pointerEvent: PointerEventType.UP,
-        pointer: PointerKeyType.MIDDLE,
-      },
-      {
-        type: ScreenSpaceEventType.MOUSE_MOVE,
-        pointerEvent: PointerEventType.MOVE,
-        pointer: PointerKeyType.ALL,
-      },
-    ];
-
-    this._screenSpaceListeners = types
-      .map(({ pointerEvent, pointer, type }) => {
-        return mods.map(({ csModifier, vcsModifier }) => {
-          const handler:
-            | ScreenSpaceEventHandler.PositionedEventCallback
-            | ScreenSpaceEventHandler.MotionEventCallback =
-            type === ScreenSpaceEventType.MOUSE_MOVE
-              ? (csEvent: ScreenSpaceEventHandler.MotionEvent): void => {
-                  const widget = this._cesiumWidget as CesiumWidget;
-                  if (
-                    widget.scene.frameState.frameNumber !==
-                    this._lastEventFrameNumber
-                  ) {
-                    this._lastEventFrameNumber =
-                      widget.scene.frameState.frameNumber;
-                    this._raisePointerInteraction(
-                      vcsModifier,
-                      pointer,
-                      pointerEvent,
-                      csEvent,
-                    );
-                  }
-                }
-              : (csEvent: ScreenSpaceEventHandler.PositionedEvent): void => {
-                  this._raisePointerInteraction(
-                    vcsModifier,
-                    pointer,
-                    pointerEvent,
-                    csEvent,
-                  );
-                };
-
-          this.screenSpaceEventHandler?.setInputAction?.(
-            handler,
-            type,
-            csModifier,
-          );
-          return (): void => {
-            this?.screenSpaceEventHandler?.removeInputAction?.(
-              type,
-              csModifier,
-            );
-          };
-        });
-      })
-      .flat();
   }
 
   initialize(): Promise<void> {
@@ -754,7 +584,11 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
       this.screenSpaceEventHandler = new ScreenSpaceEventHandler(
         this._cesiumWidget.scene.canvas,
       );
-      this._setupInteractions();
+      this._screenSpaceListener = setupCesiumInteractions(
+        this,
+        this._cesiumWidget.scene,
+        this.screenSpaceEventHandler,
+      );
       this.initialized = true;
 
       this.defaultTerrainProvider = this._cesiumWidget.scene.terrainProvider;
@@ -780,7 +614,7 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
 
       if (this._initialShadowMap) {
         this.setShadowMap(this._initialShadowMap);
-        this._initialShadowMap = null;
+        this._initialShadowMap = undefined;
       }
     }
     return Promise.resolve();
@@ -830,43 +664,7 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
     if (!this._cesiumWidget || !this._cesiumWidget.scene || !this.target) {
       return null;
     }
-    const cam = this._cesiumWidget.scene.camera;
-    const cameraPositionCartesian = cam.position;
-    let groundPosition;
-    let distance;
-    const ray = new Ray(cam.position, cam.direction);
-    const groundPositionCartesian = this._cesiumWidget.scene.globe.pick(
-      ray,
-      this._cesiumWidget.scene,
-    );
-    if (groundPositionCartesian) {
-      distance = Cartesian3.distance(
-        groundPositionCartesian,
-        cameraPositionCartesian,
-      );
-      const groundPositionCartographic =
-        Ellipsoid.WGS84.cartesianToCartographic(groundPositionCartesian);
-      groundPosition = [
-        CesiumMath.toDegrees(groundPositionCartographic.longitude),
-        CesiumMath.toDegrees(groundPositionCartographic.latitude),
-        groundPositionCartographic.height,
-      ];
-    }
-
-    const cameraPositionCartographic = cam.positionCartographic;
-    const cameraPosition = [
-      CesiumMath.toDegrees(cameraPositionCartographic.longitude),
-      CesiumMath.toDegrees(cameraPositionCartographic.latitude),
-      cameraPositionCartographic.height,
-    ];
-    return new Viewpoint({
-      groundPosition,
-      cameraPosition,
-      distance,
-      heading: CesiumMath.toDegrees(cam.heading),
-      pitch: CesiumMath.toDegrees(cam.pitch),
-      roll: CesiumMath.toDegrees(cam.roll),
-    });
+    return getViewpointFromScene(this._cesiumWidget.scene);
   }
 
   async gotoViewpoint(
@@ -967,24 +765,18 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
 
   private _getCurrentResolutionFromCartesianLatitude(
     cartesian: Cartesian3,
-    latitude: number,
+    latitude?: number,
   ): number {
     if (!this._cesiumWidget) {
       return 1;
     }
-    const cam = this._cesiumWidget.scene.camera;
-    const distance = Cartesian3.distance(cartesian, cam.position);
 
-    const fov = Math.PI / 3.0;
-    const width = this.mapElement.offsetWidth;
-    const height = this.mapElement.offsetHeight;
-    const aspectRatio = width / height;
-    const fovy = Math.atan(Math.tan(fov * 0.5) / aspectRatio) * 2.0;
-    const visibleMeters = 2 * distance * Math.tan(fovy / 2);
-    const relativeCircumference = Math.cos(Math.abs(latitude));
-    const visibleMapUnits = visibleMeters / relativeCircumference;
-
-    return visibleMapUnits / height;
+    return getResolution(
+      cartesian,
+      this._cesiumWidget.camera,
+      this.mapElement,
+      latitude,
+    );
   }
 
   getCurrentResolution(coordinate: Coordinate): number {
@@ -1001,10 +793,7 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
   }
 
   getCurrentResolutionFromCartesian(cartesian: Cartesian3): number {
-    return this._getCurrentResolutionFromCartesianLatitude(
-      cartesian,
-      Cartographic.fromCartesian(cartesian).latitude,
-    );
+    return this._getCurrentResolutionFromCartesianLatitude(cartesian);
   }
 
   disableMovement(prevent: boolean | DisableMapControlOptions): void {
@@ -1025,7 +814,7 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
     if (clock !== activeClock) {
       if (this._clockSyncListener) {
         this._clockSyncListener();
-        this._clockSyncListener = null;
+        this._clockSyncListener = undefined;
       }
       this._clockSyncListener = synchronizeClock(
         clock,
@@ -1048,7 +837,7 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
           this._defaultClock;
         if (this._clockSyncListener) {
           this._clockSyncListener();
-          this._clockSyncListener = null;
+          this._clockSyncListener = undefined;
         }
         this._clockSyncListener = synchronizeClock(
           activeClock,
@@ -1106,7 +895,7 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
    */
   setDefaultShadowMap(): void {
     if (!this._cesiumWidget || !this._defaultShadowMap) {
-      this._initialShadowMap = null;
+      this._initialShadowMap = undefined;
       return;
     }
 
@@ -1459,9 +1248,7 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
     if (this.dataSourceDisplay && !this.dataSourceDisplay.isDestroyed()) {
       this.dataSourceDisplay.destroy();
     }
-    this._screenSpaceListeners.forEach((cb) => {
-      cb();
-    });
+    this._screenSpaceListener?.();
     if (this.screenSpaceEventHandler) {
       this.screenSpaceEventHandler.destroy();
       this.screenSpaceEventHandler = null;
@@ -1476,12 +1263,12 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
 
     if (this._clockSyncListener) {
       this._clockSyncListener();
-      this._clockSyncListener = null;
+      this._clockSyncListener = undefined;
     }
 
     if (this._preUpdateListener) {
       this._preUpdateListener();
-      this._preUpdateListener = null;
+      this._preUpdateListener = undefined;
     }
 
     if (this._cameraLimiter) {
@@ -1500,7 +1287,7 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
       this._cesiumWidget = null;
     }
 
-    this._initialShadowMap = null;
+    this._initialShadowMap = undefined;
     this._defaultShadowMap = null;
     this.shadowMapChanged.destroy();
 
