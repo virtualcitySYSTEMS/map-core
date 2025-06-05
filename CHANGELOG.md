@@ -1,6 +1,7 @@
 ### 6.1.9
 
 - Fixes an issue with WMS FeatureInfo and MapServer
+- Add missing properties in the `toJSON` function of the VectorTileLayer: `highlight` and `debug`
 
 ### 6.1.8
 

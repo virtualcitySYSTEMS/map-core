@@ -542,6 +542,10 @@ class VectorTileLayer extends FeatureLayer<
       config.vectorProperties = vectorPropertiesConfig;
     }
 
+    if (this.highlightStyle) {
+      config.highlightStyle = this.highlightStyle.toJSON();
+    }
+
     if (this.tileProvider) {
       config.tileProvider = this.tileProvider.toJSON();
     }
@@ -552,6 +556,10 @@ class VectorTileLayer extends FeatureLayer<
 
     if (this._renderer !== defaultOptions.renderer) {
       config.renderer = this._renderer;
+    }
+
+    if (this._debug !== defaultOptions.debug) {
+      config.debug = this._debug;
     }
 
     return config;
