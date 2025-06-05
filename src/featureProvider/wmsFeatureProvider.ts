@@ -3,6 +3,7 @@ import type { Options as GMLOptions } from 'ol/format/GMLBase.js';
 import WFS from 'ol/format/WFS.js';
 import GeoJSON, { type Options as GeoJSONOptions } from 'ol/format/GeoJSON.js';
 import GML3 from 'ol/format/GML3.js';
+import GML32 from 'ol/format/GML32.js';
 import Point from 'ol/geom/Point.js';
 import { getTransform, type Projection as OLProjection } from 'ol/proj.js';
 import type { Size } from 'ol/size.js';
@@ -69,11 +70,7 @@ export type WMSFeatureProviderOptions = AbstractFeatureProviderOptions & {
   version?: string;
 };
 
-const gmlFormats = {
-  GML: GML3,
-  GML2,
-  GML3,
-};
+const gmlFormats = { GML: GML3, GML2, GML3, GML32 };
 
 const geojsonFormats = [
   'application/geojson',
@@ -104,6 +101,12 @@ export function getFormat(
     responseType === 'text/xml; subtype=gml/3.1.1'
   ) {
     return new GML3(options);
+  }
+  if (
+    responseType === 'text/xml; subtype=gml/3.2.1' ||
+    responseType === 'text/xml;subtype=gml/3.2.1'
+  ) {
+    return new GML32(options);
   }
   return null;
 }
