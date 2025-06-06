@@ -5,6 +5,15 @@
 - Updated eslint to eslint 9 & vcs eslint config 4.
 - Uses `madge` to detect circular dependencies in the code base.
 
+### 6.1.9
+
+- Fixes an issue with WMS FeatureInfo and MapServer
+
+### 6.1.8
+
+- Fixes a bug, where clearing the feature on a geometry editing session would not properly reset the picking.
+- Adds a `isExcludedFromPickPosition` API to the `FeatureAtPixelInteraction` to check, if a feature is excluded from the pick position.
+
 ### 6.1.7
 
 - Fixes a bug, where the feature provider interaction would provide features, even if there was already a feature on the event.
