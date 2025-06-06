@@ -4,11 +4,16 @@ import type { PanoramaImage } from './panoramaImage.js';
 /**
  * A specialized LRU cache
  */
-export class PanoramaImageCache extends LRUCache<PanoramaImage> {
+export class PanoramaImageCache extends LRUCache<Promise<PanoramaImage>> {
   deleteOldest(): void {
     const entry = this.pop();
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     if (entry) {
-      entry.destroy();
+      entry
+        .then((image) => {
+          image.destroy();
+        })
+        .catch(() => {});
     }
   }
 }

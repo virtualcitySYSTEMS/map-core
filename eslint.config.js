@@ -54,4 +54,25 @@ export default [
       ],
     },
   },
+  {
+    files: [
+      'src/panorama/panoramaTileMaterial.ts',
+      'src/panorama/panoramaTileMaterial.spec.ts',
+      'src/panorama/panoramaTileMaterial.test.ts',
+    ],
+    rules: {
+      '@typescript-eslint/naming-convention': [
+        'error',
+        ...createNamingConventionOptions(),
+        {
+          selector: ['property', 'objectLiteralProperty'],
+          format: null,
+          filter: {
+            regex: '^u_.*',
+            match: true,
+          },
+        },
+      ],
+    },
+  },
 ];

@@ -1,47 +1,76 @@
+import type { Primitive } from '@vcmap-cesium/engine';
 import {
-  Primitive,
   PrimitiveCollection,
   Cartesian3,
+  Color,
+  Math as CesiumMath,
 } from '@vcmap-cesium/engine';
-import PanoramaTileMaterial from './panoramaTileMaterial.js';
+import PanoramaTileMaterial, {
+  PanoramaOverlayMode,
+} from './panoramaTileMaterial.js';
 import VcsEvent from '../vcsEvent.js';
 
 export default class PanoramaTilePrimitiveCollection extends PrimitiveCollection {
   declare private _primitives: Primitive[];
 
-  // XXX get defautls from the material
-  private _showIntensity = false;
-
   private _showDebug = false;
-
-  private _showDepth = false;
 
   private _opacity = 1.0;
 
-  private _intensityOpacity = 1.0;
-
-  private _kernelRadius = 3.0;
-
   private _cursorPosition: Cartesian3 = new Cartesian3(-1, -1, -1);
 
-  private _cursorRadius = 0.01;
+  private _overlay: PanoramaOverlayMode = PanoramaOverlayMode.None;
 
-  private _cursorRings = 3;
+  private _overlayOpacity = 1.0;
 
-  showIntensityChanged = new VcsEvent<boolean>();
+  private _overlayNaNColor: Color = Color.RED;
 
-  get showIntensity(): boolean {
-    return this._showIntensity;
+  overlayChanged = new VcsEvent<PanoramaOverlayMode>();
+
+  constructor(options?: ConstructorParameters<typeof PrimitiveCollection>[0]) {
+    super(options ?? { destroyPrimitives: false });
   }
 
-  set showIntensity(value: boolean) {
-    if (this._showIntensity !== value) {
-      this._showIntensity = value;
+  get overlay(): PanoramaOverlayMode {
+    return this._overlay;
+  }
+
+  set overlay(value: PanoramaOverlayMode) {
+    if (this._overlay !== value) {
+      this._overlay = value;
       this._primitives.forEach((primitive) => {
-        (primitive.appearance.material as PanoramaTileMaterial).showIntensity =
+        (primitive.appearance.material as PanoramaTileMaterial).overlay = value;
+      });
+      this.overlayChanged.raiseEvent(value);
+    }
+  }
+
+  get overlayOpacity(): number {
+    return this._overlayOpacity;
+  }
+
+  set overlayOpacity(value: number) {
+    if (this._overlayOpacity !== value) {
+      this._overlayOpacity = value;
+      this._primitives.forEach((primitive) => {
+        (primitive.appearance.material as PanoramaTileMaterial).overlayOpacity =
           value;
       });
-      this.showIntensityChanged.raiseEvent(this._showIntensity);
+    }
+  }
+
+  get overlayNaNColor(): Color {
+    return this._overlayNaNColor;
+  }
+
+  set overlayNaNColor(value: Color) {
+    if (!this._overlayNaNColor.equals(value)) {
+      this._overlayNaNColor = value;
+      this._primitives.forEach((primitive) => {
+        (
+          primitive.appearance.material as PanoramaTileMaterial
+        ).overlayNaNColor = value;
+      });
     }
   }
 
@@ -54,20 +83,6 @@ export default class PanoramaTilePrimitiveCollection extends PrimitiveCollection
       this._showDebug = value;
       this._primitives.forEach((primitive) => {
         (primitive.appearance.material as PanoramaTileMaterial).showDebug =
-          value;
-      });
-    }
-  }
-
-  get showDepth(): boolean {
-    return this._showDepth;
-  }
-
-  set showDepth(value: boolean) {
-    if (this._showDepth !== value) {
-      this._showDepth = value;
-      this._primitives.forEach((primitive) => {
-        (primitive.appearance.material as PanoramaTileMaterial).showDepth =
           value;
       });
     }
@@ -86,72 +101,21 @@ export default class PanoramaTilePrimitiveCollection extends PrimitiveCollection
     }
   }
 
-  get intensityOpacity(): number {
-    return this._intensityOpacity;
-  }
-
-  set intensityOpacity(value: number) {
-    if (this._intensityOpacity !== value) {
-      this._intensityOpacity = value;
-      this._primitives.forEach((primitive) => {
-        (
-          primitive.appearance.material as PanoramaTileMaterial
-        ).intensityOpacity = value;
-      });
-    }
-  }
-
-  get kernelRadius(): number {
-    return this._kernelRadius;
-  }
-
-  set kernelRadius(value: number) {
-    if (this._kernelRadius !== value) {
-      this._kernelRadius = value;
-      this._primitives.forEach((primitive) => {
-        (primitive.appearance.material as PanoramaTileMaterial).kernelRadius =
-          value;
-      });
-    }
-  }
-
   get cursorPosition(): Cartesian3 {
     return this._cursorPosition;
   }
 
   set cursorPosition(value: Cartesian3) {
-    if (this._cursorPosition !== value) {
+    if (
+      !Cartesian3.equalsEpsilon(
+        this._cursorPosition,
+        value,
+        CesiumMath.EPSILON8,
+      )
+    ) {
       this._cursorPosition = value;
       this._primitives.forEach((primitive) => {
         (primitive.appearance.material as PanoramaTileMaterial).cursorPosition =
-          value;
-      });
-    }
-  }
-
-  get cursorRadius(): number {
-    return this._cursorRadius;
-  }
-
-  set cursorRadius(value: number) {
-    if (this._cursorRadius !== value) {
-      this._cursorRadius = value;
-      this._primitives.forEach((primitive) => {
-        (primitive.appearance.material as PanoramaTileMaterial).cursorRadius =
-          value;
-      });
-    }
-  }
-
-  get cursorRings(): number {
-    return this._cursorRings;
-  }
-
-  set cursorRings(value: number) {
-    if (this._cursorRings !== value) {
-      this._cursorRings = value;
-      this._primitives.forEach((primitive) => {
-        (primitive.appearance.material as PanoramaTileMaterial).cursorRings =
           value;
       });
     }
@@ -164,12 +128,11 @@ export default class PanoramaTilePrimitiveCollection extends PrimitiveCollection
       throw new Error('Material is not a PanoramaTileMaterial');
     }
 
-    material.showIntensity = this.showIntensity;
+    material.overlay = this.overlay;
+    material.overlayOpacity = this.overlayOpacity;
+    material.overlayNaNColor = this.overlayNaNColor;
     material.showDebug = this.showDebug;
-    material.showDepth = this.showDepth;
     material.opacity = this.opacity;
-    material.intensityOpacity = this.intensityOpacity;
-    material.kernelRadius = this.kernelRadius;
     material.cursorPosition = this.cursorPosition;
 
     return super.add(primitive, index) as Primitive;

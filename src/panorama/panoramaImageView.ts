@@ -1,6 +1,7 @@
-import { Camera, Cartesian2, Matrix4 } from '@vcmap-cesium/engine';
-import { Cartesian3 } from '@vcmap-cesium/engine';
+import type { Camera } from '@vcmap-cesium/engine';
+import { Cartesian2, Matrix4, Cartesian3 } from '@vcmap-cesium/engine';
 import { getWidth } from 'ol/extent.js';
+import { getLogger } from '@vcsuite/logger';
 import type { PanoramaImage } from './panoramaImage.js';
 import type { PanoramaTile } from './panoramaTile.js';
 import {
@@ -8,39 +9,40 @@ import {
   windowPositionToImageSpherical,
 } from './fieldOfView.js';
 import type PanoramaMap from '../map/panoramaMap.js';
+import type { TileCoordinate, TileSize } from './panoramaTileCoordinate.js';
 import {
   createTileCoordinate,
   getDistanceToTileCoordinate,
   getTileCoordinatesInImageExtent,
-  TileCoordinate,
-  TileSize,
   tileSizeInRadians,
-} from './tileCoordinate.js';
+} from './panoramaTileCoordinate.js';
 import PanoramaTilePrimitiveCollection from './panoramaTilePrimitiveCollection.js';
-import { getLogger } from '@vcsuite/logger';
 import { imageSphericalToCartesian } from './sphericalCoordinates.js';
+import { PanoramaOverlayMode } from './panoramaTileMaterial.js';
 
-const baseLevelScaled = Symbol('baseLevelScaled');
 export type PanoramaImageView = {
   /**
-   * debugging. suspend tile loading
+   * Suspends the loading of tiles. This is used as a debug feature.
    */
   suspendTileLoading: boolean;
-  showIntensity: boolean;
-  intensityOpacity: number;
-  showDepth: boolean;
-  showDebug: boolean;
-  opacity: number;
-  kernelRadius: number;
-  cursorRings: number;
-  cursorRadius: number;
-  destroy(): void;
   /**
-   * force a render of the panorama image
+   * The primitive collection that contains the panorama tiles.
+   */
+  readonly tilePrimitiveCollection: PanoramaTilePrimitiveCollection;
+  /**
+   * Force a render of the panorama image. You do not need to call this for the normal rendering loop.
    */
   render(): void;
+  destroy(): void;
 };
 
+const baseLevelScaled = Symbol('baseLevelScaled');
+const MIN_DEPTH_MOVEMENT_DISTANCE = 5 ** 2; // 5 pixels squared, to avoid too many updates
+
+/**
+ * Creates all the tile coordinates for the minimum level of the panorama image.
+ * @param minLevel
+ */
 function createMinLevelTiles(minLevel: number): TileCoordinate[] {
   const tiles: TileCoordinate[] = [];
   for (let x = 0; x < 2 ** minLevel * 2; x++) {
@@ -51,16 +53,29 @@ function createMinLevelTiles(minLevel: number): TileCoordinate[] {
   return tiles;
 }
 
+/**
+ * Calculates the pixel per radians for the given level and tile size.
+ * @param level
+ * @param tileSize
+ */
 function getLevelPixelPerRadians(level: number, tileSize: TileSize): number {
   return tileSize[0] / tileSizeInRadians(level);
 }
 
 type ImageWrapper = {
   suspendTileLoading: boolean;
-  render: () => void;
-  destroy: () => void;
+  render(): void;
+  destroy(): void;
 };
 
+/**
+ * Creates an event listener that handles cursor position changes and sets the cursor position in the primitive collection based on depth information from the panorama image.
+ * This is set up by the panorama image wrapper, should the image have depth information.
+ * @param image
+ * @param primitiveCollection
+ * @param camera
+ * @param canvas
+ */
 function setupDepthHandling(
   image: PanoramaImage,
   primitiveCollection: PanoramaTilePrimitiveCollection,
@@ -68,10 +83,18 @@ function setupDepthHandling(
   canvas: HTMLCanvasElement,
 ): () => void {
   let windowPositon: Cartesian2 | undefined;
-  // TODO debounce. check for "enough" changes
   const handlePointerChanged = (x?: number, y?: number): void => {
     if (x != null && y != null) {
-      windowPositon = new Cartesian2(x, y);
+      const newPosition = new Cartesian2(x, y);
+      if (
+        windowPositon &&
+        Cartesian2.distanceSquared(windowPositon, newPosition) <
+          MIN_DEPTH_MOVEMENT_DISTANCE
+      ) {
+        return;
+      }
+
+      windowPositon = newPosition;
       const imageSpherical = windowPositionToImageSpherical(
         windowPositon,
         camera,
@@ -79,14 +102,18 @@ function setupDepthHandling(
       );
 
       if (imageSpherical) {
-        image
+        image.tileProvider
           .getDepthAtImageCoordinate(imageSpherical)
           .then((depth) => {
+            if (windowPositon !== newPosition) {
+              return;
+            }
+
             if (depth !== undefined) {
               const imageCartesian = imageSphericalToCartesian(imageSpherical);
               Cartesian3.multiplyByScalar(
                 imageCartesian,
-                depth / 50,
+                depth / image.maxDepth,
                 imageCartesian,
               );
               primitiveCollection.cursorPosition = imageCartesian;
@@ -96,12 +123,14 @@ function setupDepthHandling(
           })
           .catch(() => {
             getLogger('PanoramaImageView').warning('Failed to get depth');
+            primitiveCollection.cursorPosition = new Cartesian3(-1, -1, -1);
           });
       } else {
         primitiveCollection.cursorPosition = new Cartesian3(-1, -1, -1);
       }
     } else {
       primitiveCollection.cursorPosition = new Cartesian3(-1, -1, -1);
+      windowPositon = undefined;
     }
   };
 
@@ -131,6 +160,13 @@ function setupDepthHandling(
   };
 }
 
+/**
+ * The image wrapper is responsible for managing the panorama image tiles and rendering them.
+ * @param image
+ * @param primitiveCollection
+ * @param camera
+ * @param canvas
+ */
 function createImageWrapper(
   image: PanoramaImage,
   primitiveCollection: PanoramaTilePrimitiveCollection,
@@ -174,12 +210,15 @@ function createImageWrapper(
         }
       });
   };
-  const setShowIntensity = (): void => {
-    image.tileProvider.showIntensity = primitiveCollection.showIntensity;
-  };
-  setShowIntensity();
+
+  image.tileProvider.showIntensity =
+    primitiveCollection.overlay === PanoramaOverlayMode.Intensity;
+
   const showIntensityListener =
-    primitiveCollection.showIntensityChanged.addEventListener(setShowIntensity);
+    primitiveCollection.overlayChanged.addEventListener((overlayMode) => {
+      image.tileProvider.showIntensity =
+        overlayMode === PanoramaOverlayMode.Intensity;
+    });
 
   camera.setView({
     destination: image.position,
@@ -211,6 +250,7 @@ function createImageWrapper(
     const currentRadiansPerPixel =
       currentScenePixelWidth / currentImageRadiansWidth;
     currentLevel = minLevel;
+
     if (currentRadiansPerPixel > levelPixelPerRadians[maxLevel - minLevel]) {
       currentLevel = maxLevel;
     } else if (currentRadiansPerPixel > levelPixelPerRadians[0]) {
@@ -219,9 +259,10 @@ function createImageWrapper(
         minLevel;
     }
 
-    if (extents.length === 1) {
+    if (currentLevel === minLevel) {
+      currentTileCoordinates = [];
+    } else if (extents.length === 1) {
       currentTileCoordinates = [
-        ...baseTileCoordinates,
         ...getTileCoordinatesInImageExtent(extents[0], currentLevel),
       ];
     } else {
@@ -229,11 +270,11 @@ function createImageWrapper(
       const rightExtent = extents[1];
       leftExtent[2] -= 0.0001; // dont overlap the extents since 0 === 2 * PI
       currentTileCoordinates = [
-        ...baseTileCoordinates,
         ...getTileCoordinatesInImageExtent(leftExtent, currentLevel),
         ...getTileCoordinatesInImageExtent(rightExtent, currentLevel),
       ];
     }
+
     currentTileCoordinates = currentTileCoordinates
       .map((tc) => ({
         tc,
@@ -243,6 +284,8 @@ function createImageWrapper(
       .sort((a, b) => b.distance - a.distance)
       .map((tc) => tc.tc);
 
+    // push base tile coordinates onto the back of the array, so they are always loaded first.
+    currentTileCoordinates.push(...baseTileCoordinates);
     currentTiles.forEach((tile) => {
       if (
         !currentTileCoordinates.find((c) => c.key === tile.tileCoordinate.key)
@@ -275,6 +318,13 @@ function createImageWrapper(
   };
 }
 
+/**
+ * The panorama image view is responsible for rendering the current panorama image of a PanoramaMap.
+ * It will react to image changes and update the view. It tracks changes
+ * to the panorama camera and updates the panorama tiles accordingly. Typically, you will not
+ * have to create this directly, but rather use the PanoramaMap's imageView property.
+ * @param map
+ */
 export function createPanoramaImageView(map: PanoramaMap): PanoramaImageView {
   const { scene } = map.getCesiumWidget();
   const primitiveCollection = scene.primitives.add(
@@ -322,7 +372,7 @@ export function createPanoramaImageView(map: PanoramaMap): PanoramaImageView {
   const render = (): void => {
     currentView?.render();
   };
-  scene.camera.changed.addEventListener(render);
+  const cameraChangedListener = scene.camera.changed.addEventListener(render);
   render();
 
   return {
@@ -335,60 +385,16 @@ export function createPanoramaImageView(map: PanoramaMap): PanoramaImageView {
         currentView.suspendTileLoading = value;
       }
     },
-    get showIntensity(): boolean {
-      return primitiveCollection.showIntensity;
-    },
-    set showIntensity(value: boolean) {
-      primitiveCollection.showIntensity = value;
-    },
-    get opacity(): number {
-      return primitiveCollection.opacity;
-    },
-    set opacity(value: number) {
-      primitiveCollection.opacity = value;
-    },
-    get intensityOpacity(): number {
-      return primitiveCollection.intensityOpacity;
-    },
-    set intensityOpacity(value: number) {
-      primitiveCollection.intensityOpacity = value;
-    },
-    get showDepth(): boolean {
-      return primitiveCollection.showDepth;
-    },
-    set showDepth(value: boolean) {
-      primitiveCollection.showDepth = value;
-    },
-    get showDebug(): boolean {
-      return primitiveCollection.showDebug;
-    },
-    set showDebug(value: boolean) {
-      primitiveCollection.showDebug = value;
-    },
-    get kernelRadius(): number {
-      return primitiveCollection.kernelRadius;
-    },
-    set kernelRadius(value: number) {
-      primitiveCollection.kernelRadius = value;
-    },
-    get cursorRings(): number {
-      return primitiveCollection.cursorRings;
-    },
-    set cursorRings(value: number) {
-      primitiveCollection.cursorRings = value;
-    },
-    get cursorRadius(): number {
-      return primitiveCollection.cursorRadius;
-    },
-    set cursorRadius(value: number) {
-      primitiveCollection.cursorRadius = value;
+    get tilePrimitiveCollection(): PanoramaTilePrimitiveCollection {
+      return primitiveCollection;
     },
     render,
     destroy(): void {
+      this.render = (): void => {};
       scene.primitives.remove(primitiveCollection);
-      primitiveCollection.destroy();
       currentView?.destroy();
       imageChangedListener();
+      cameraChangedListener();
     },
   };
 }

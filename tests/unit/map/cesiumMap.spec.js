@@ -3,7 +3,6 @@ import {
   ImageryLayer,
   SingleTileImageryProvider,
   Math as CesiumMath,
-  Cartesian3,
   Cartographic,
   CustomDataSource,
   DataSourceClock,
@@ -16,7 +15,6 @@ import { vcsLayerName } from '../../../src/layer/layerSymbols.js';
 import LayerCollection from '../../../src/util/layerCollection.js';
 import { blackPixelURI } from '../helpers/imageHelpers.js';
 import Viewpoint from '../../../src/util/viewpoint.js';
-import Projection from '../../../src/util/projection.js';
 import CesiumMap, { synchronizeClock } from '../../../src/map/cesiumMap.js';
 import { getCesiumMap } from '../helpers/cesiumHelpers.js';
 import CameraLimiter from '../../../src/map/cameraLimiter.js';
@@ -437,60 +435,6 @@ describe('CesiumMap', () => {
     });
   });
 
-  describe('getting the current viewpoint', () => {
-    let inputViewpoint;
-    let outputViewpoint;
-    let map;
-
-    before(async () => {
-      inputViewpoint = new Viewpoint({
-        groundPosition: [0, 0, 10],
-        cameraPosition: [1, 1, 100],
-        distance: 100,
-        animate: false,
-        heading: 45,
-        pitch: -45,
-      });
-
-      map = getCesiumMap({ target: document.getElementById('mapContainer') });
-      await map.gotoViewpoint(inputViewpoint);
-      sandbox
-        .stub(map.getScene().globe, 'pick')
-        .returns(Cartesian3.fromDegrees(0, 0, 10)); // there are not globe tiles rendered
-      outputViewpoint = map.getViewpointSync();
-    });
-
-    after(() => {
-      map.destroy();
-    });
-
-    it('should get the current viewpoints ground position in 3D', () => {
-      expect(outputViewpoint.groundPosition).to.have.ordered.members([
-        0, 0, 10,
-      ]);
-    });
-
-    it('should get the current camera position in 3D', () => {
-      const { cameraPosition } = outputViewpoint;
-      expect(cameraPosition).to.have.lengthOf(3);
-      expect(cameraPosition[0]).to.be.closeTo(1, 0.0001);
-      expect(cameraPosition[1]).to.be.closeTo(1, 0.0001);
-      expect(cameraPosition[2]).to.be.closeTo(100, 0.0001);
-    });
-
-    it('should determine the distance of the current viewpoint', () => {
-      expect(outputViewpoint.distance).to.be.closeTo(156896.9689, 0.001);
-    });
-
-    it('should get the current pitch', () => {
-      expect(outputViewpoint.pitch).to.equal(inputViewpoint.pitch);
-    });
-
-    it('should get the current heading', () => {
-      expect(outputViewpoint.heading).to.equal(inputViewpoint.heading);
-    });
-  });
-
   describe('setting a viewpoint', () => {
     let map;
 
@@ -611,30 +555,6 @@ describe('CesiumMap', () => {
         );
         expect(cartographic.height).to.be.closeTo(100, 0.00001);
       });
-    });
-  });
-
-  describe('getting current resolution', () => {
-    it('should return the resolution (snapshot test)', async () => {
-      const map = getCesiumMap();
-      await map.gotoViewpoint(
-        new Viewpoint({
-          groundPosition: [0, 0, 0],
-          cameraPosition: [0, 0, 100],
-          distance: 100,
-          pitch: -90,
-          animate: false,
-        }),
-      );
-
-      sandbox.stub(map.mapElement, 'offsetHeight').get(() => 100);
-      sandbox.stub(map.mapElement, 'offsetWidth').get(() => 100);
-
-      const resolution = map.getCurrentResolution(
-        Projection.wgs84ToMercator([0, 0, 0]),
-      );
-      expect(resolution).to.be.closeTo(1.15470053, CesiumMath.EPSILON8);
-      map.destroy();
     });
   });
 

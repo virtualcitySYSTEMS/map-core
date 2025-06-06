@@ -22,6 +22,9 @@ global.fetch = fetch;
 global.ResizeObserver = ResizeObserverPolyfill;
 global.ShadowRoot = Function;
 global.createImageBitmap = (image, sx, sy, sw, sh) => {
+  if (image instanceof HTMLCanvasElement) {
+    return image;
+  }
   const canElem = canvas.createCanvas(sw, sh);
   const ctx = canElem.getContext('2d');
   const imageData = canvas.createImageData(
@@ -45,6 +48,16 @@ global.Blob = function BlobPolyfill(parts, options) {
     );
   }
   return parts[0];
+};
+
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
+global.Touch = class TouchMock {
+  constructor({ identifier = 0, target = null, clientX = 0, clientY = 0 }) {
+    this.identifier = identifier;
+    this.target = target;
+    this.clientX = clientX;
+    this.clientY = clientY;
+  }
 };
 
 Object.assign(canvas, {

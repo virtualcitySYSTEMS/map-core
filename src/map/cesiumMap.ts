@@ -586,6 +586,7 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
       );
       this._screenSpaceListener = setupCesiumInteractions(
         this,
+        this._cesiumWidget.scene,
         this.screenSpaceEventHandler,
       );
       this.initialized = true;

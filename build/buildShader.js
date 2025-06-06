@@ -1,5 +1,5 @@
-import { readFile, writeFile } from 'node:fs/promises';
-const { watch } = await import('node:fs/promises');
+import { readFile, writeFile, watch } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import { getFilesInDirectory } from './postinstall.js';
 
 async function buildShader(file) {
@@ -22,7 +22,7 @@ async function buildShaders() {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (fileURLToPath(import.meta.url) === process.argv[1]) {
   buildShaders()
     .then(async () => {
       if (process.argv.includes('--watch')) {

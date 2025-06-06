@@ -1,26 +1,27 @@
-import {
+import type {
   Camera,
+  Scene,
+  ScreenSpaceEventHandler,
+} from '@vcmap-cesium/engine';
+import {
   Cartesian3,
   Cartographic,
   Ellipsoid,
   KeyboardEventModifier,
   Math as CesiumMath,
   Ray,
-  Scene,
-  ScreenSpaceEventHandler,
   ScreenSpaceEventType,
 } from '@vcmap-cesium/engine';
-import type PanoramaMap from './panoramaMap.js';
 import {
   ModificationKeyType,
   PointerEventType,
   PointerKeyType,
 } from '../interaction/interactionType.js';
-import type CesiumMap from './cesiumMap.js';
 import Viewpoint from '../util/viewpoint.js';
+import type VcsMap from './vcsMap.js';
 
 function raisePointerInteraction(
-  map: PanoramaMap | CesiumMap,
+  map: VcsMap,
   key: ModificationKeyType,
   pointer: number,
   pointerEvent: PointerEventType,
@@ -47,15 +48,11 @@ function raisePointerInteraction(
   });
 }
 
-// eslint-disable-next-line import/prefer-default-export
 export function setupCesiumInteractions(
-  map: CesiumMap | PanoramaMap,
+  map: VcsMap,
+  scene: Scene,
   screenSpaceEventHandler: ScreenSpaceEventHandler,
 ): () => void {
-  const widget = map.getCesiumWidget();
-  if (!widget) {
-    throw new Error('Cannot setup interactions on uninitailized map');
-  }
   const mods = [
     {
       csModifier: KeyboardEventModifier.ALT,
@@ -118,10 +115,8 @@ export function setupCesiumInteractions(
           | ScreenSpaceEventHandler.MotionEventCallback =
           type === ScreenSpaceEventType.MOUSE_MOVE
             ? (csEvent: ScreenSpaceEventHandler.MotionEvent): void => {
-                if (
-                  widget.scene.frameState.frameNumber !== lastEventFrameNumber
-                ) {
-                  lastEventFrameNumber = widget.scene.frameState.frameNumber;
+                if (scene.frameState.frameNumber !== lastEventFrameNumber) {
+                  lastEventFrameNumber = scene.frameState.frameNumber;
                   raisePointerInteraction(
                     map,
                     vcsModifier,
@@ -144,7 +139,7 @@ export function setupCesiumInteractions(
               };
 
         screenSpaceEventHandler.setInputAction?.(handler, type, csModifier);
-        return () => {
+        return (): void => {
           screenSpaceEventHandler.removeInputAction?.(type, csModifier);
         };
       });
@@ -152,7 +147,9 @@ export function setupCesiumInteractions(
     .flat();
 
   return (): void => {
-    screenSpaceListeners.forEach((removeListener) => removeListener());
+    screenSpaceListeners.forEach((removeListener) => {
+      removeListener();
+    });
   };
 }
 

@@ -6,12 +6,15 @@ import {
   Transforms,
 } from '@vcmap-cesium/engine';
 import { v4 as uuid } from 'uuid';
-import type { GeoTIFF, GeoTIFFImage } from 'geotiff';
+import type { GeoTIFF, GeoTIFFImage, Pool } from 'geotiff';
 import { fromUrl } from 'geotiff';
 import { getLogger } from '@vcsuite/logger';
-import type { PanoramaTileProvider } from './panoramaTileProvider.js';
+import type {
+  PanoramaImageDecoder,
+  PanoramaTileProvider,
+} from './panoramaTileProvider.js';
 import { createPanoramaTileProvider } from './panoramaTileProvider.js';
-import type { TileSize } from './tileCoordinate.js';
+import type { TileSize } from './panoramaTileCoordinate.js';
 import { imageSphericalToCartesian } from './sphericalCoordinates.js';
 import type PanoramaDataset from './panoramaDataset.js';
 
@@ -50,6 +53,8 @@ export type DepthGDALMetadata = {
   max: number;
 };
 
+export type PanoramaFileDirectoryMetadata = { type: 'image' | 'depth' };
+
 /**
  * The panorama image represents all resources associated with a panorama image.
  * When created, it extracts all available metadata from the base geotiff resource
@@ -80,7 +85,8 @@ export type PanoramaImage = Readonly<
    */
   readonly dataset?: PanoramaDataset;
   /**
-   * Tries to determine the global position at the given image spherical coordinate. Will return undefined, if the image has no depth
+   * Tries to determine the global position at the given image spherical coordinate. Will return undefined, if the image has no depth.
+   * Uses the current level on the tile provider
    * @param coordinate
    * @param result
    */
@@ -89,13 +95,54 @@ export type PanoramaImage = Readonly<
     result?: Cartesian3,
   ): Promise<Cartesian3 | undefined>;
   /**
-   * Gets the raw depth value at the given image spherical coordinate.
+   * Tries to determine the global position at the given image spherical coordinate. Will return undefined, if the image has no depth
+   * Uses the heighest available depth data, but is more resource intense
    * @param coordinate
+   * @param result
    */
-  getDepthAtImageCoordinate(
+  getPositionAtImageCoordinateMostDetailed(
     coordinate: [number, number],
-  ): Promise<number | undefined>;
+    result?: Cartesian3,
+  ): Promise<Cartesian3 | undefined>;
   destroy(): void;
+};
+
+/**
+ * additional image creating options, mainly used for testing.
+ */
+export type CreatePanoramaImageOptions = {
+  /**
+   * The dataset an image may belong to
+   */
+  dataset?: PanoramaDataset;
+  /**
+   * The root URL for the image. This is used to load the intensity and depth images.
+   */
+  absoluteRootUrl?: string;
+  /**
+   * a preloaded depth image for this RGB image.
+   */
+  depthImage?: GeoTIFF;
+  /**
+   * a preloaded intensity image for this RGB image.
+   */
+  intensityImage?: GeoTIFF;
+  /**
+   * the name of the image. This is used to load intensity and depth images. if not provided, a uuid is used.
+   */
+  name?: string;
+  /**
+   * an optional pool or decoder to be passed to the tile provider. mainly used in testing
+   */
+  poolOrDecoder?: Pool | PanoramaImageDecoder;
+  /**
+   * The size of the tile cache. If not provided, the default is used.
+   */
+  tileCacheSize?: number;
+  /**
+   * The concurrency of the tile provider. If not provided, the default is used.
+   */
+  providerConcurrency?: number;
 };
 
 function createDefaultMetadata(): PanoramaGDALMetadata {
@@ -231,6 +278,12 @@ async function loadRGBImages(
     images.at(-1)!.getGDALMetadata() as Record<string, string> | undefined,
   );
 
+  images.forEach((i) => {
+    (
+      i.fileDirectory as { vcsPanorama: PanoramaFileDirectoryMetadata }
+    ).vcsPanorama = { type: 'image' };
+  });
+
   return {
     images,
     ...meta,
@@ -238,7 +291,10 @@ async function loadRGBImages(
   };
 }
 
-function parseRgbUrl(imageUrl: string): { name: string; absoluteUrl: string } {
+function parseRgbUrl(imageUrl: string): {
+  name: string;
+  absoluteRootUrl: string;
+} {
   const absoluteImageUrl = new URL(imageUrl, window.location.href);
   const fileName = absoluteImageUrl.pathname.split('/').pop();
   if (!fileName || !fileName.endsWith('_rgb.tif')) {
@@ -248,18 +304,8 @@ function parseRgbUrl(imageUrl: string): { name: string; absoluteUrl: string } {
 
   return {
     name,
-    absoluteUrl: absoluteImageUrl.href,
+    absoluteRootUrl: absoluteImageUrl.href,
   };
-}
-
-export function interpolateDepth(
-  value: number,
-  min: number,
-  max: number,
-  minValue = 1,
-  maxValue = 65535,
-): number {
-  return min + ((value - minValue) / (maxValue - minValue)) * (max - min);
 }
 
 /**
@@ -267,15 +313,11 @@ export function interpolateDepth(
  * In most cases, you should use {@link createPanoramaImageFromURL} directly.
  * Creates a panorama image from a GeoTIFF image. The image should contain the metadata in the GDAL metadata format.
  * @param rgbImage - the RGB image
- * @param [dataset] - the dataset to which the image belongs, if applicable
- * @param [absoluteRootUrl] - the root URL for the image. This is used to load the intensity and depth images.
- * @param [name] - the name of the image. This is used to load intensity and depth images. if not provided, a uuid is used.
+ * @param [options]
  */
 export async function createPanoramaImage(
   rgbImage: GeoTIFF,
-  dataset?: PanoramaDataset,
-  absoluteRootUrl?: string,
-  name = uuid(),
+  options: CreatePanoramaImageOptions = {},
 ): Promise<PanoramaImage> {
   const {
     images: rgb,
@@ -287,7 +329,10 @@ export async function createPanoramaImage(
     hasIntensity,
     hasDepth,
   } = await loadRGBImages(rgbImage);
+  const { name, absoluteRootUrl, intensityImage, depthImage, dataset } =
+    options;
 
+  const nameOrId = name ?? uuid();
   const modelMatrix = Transforms.headingPitchRollToFixedFrame(
     position,
     new HeadingPitchRoll(
@@ -309,21 +354,28 @@ export async function createPanoramaImage(
   );
 
   let getIntensityImages: (() => Promise<GeoTIFFImage[]>) | undefined;
-  if (hasIntensity && absoluteRootUrl) {
+  if (intensityImage || (hasIntensity && absoluteRootUrl)) {
     getIntensityImages = async (): Promise<GeoTIFFImage[]> => {
-      const intensityImage = await fromUrl(
-        new URL(`${name}_intensity.tif`, absoluteRootUrl).href,
-      );
+      const usedIntensityImage =
+        intensityImage ??
+        (await fromUrl(new URL(`${name}_intensity.tif`, absoluteRootUrl).href));
 
       const {
         images: intensity,
         minLevel: intensityMinLevel,
         maxLevel: intensityMaxLevel,
-      } = await loadMetadataFromImage(intensityImage);
+      } = await loadMetadataFromImage(usedIntensityImage);
 
       if (intensityMinLevel !== minLevel || intensityMaxLevel !== maxLevel) {
         throw new Error('Intensity levels do not match RGB levels');
       }
+
+      intensity.forEach((i) => {
+        (
+          i.fileDirectory as { vcsPanorama: PanoramaFileDirectoryMetadata }
+        ).vcsPanorama = { type: 'image' };
+      });
+
       return intensity;
     };
   }
@@ -331,15 +383,26 @@ export async function createPanoramaImage(
   let depth:
     | { levelImages: GeoTIFFImage[]; metadata: DepthGDALMetadata }
     | undefined;
-  if (hasDepth && absoluteRootUrl) {
-    const depthImage = await fromUrl(
-      new URL(`${name}_depth.tif`, absoluteRootUrl).href,
-    );
+
+  let usedDepthImage = depthImage;
+  if (!usedDepthImage && hasDepth && absoluteRootUrl) {
+    try {
+      usedDepthImage = await fromUrl(
+        new URL(`${name}_depth.tif`, absoluteRootUrl).href,
+      );
+    } catch (e) {
+      getLogger('PanoramaImage').warning(
+        `ailed to load depth image for ${name}`,
+      );
+    }
+  }
+
+  if (usedDepthImage) {
     const {
       images: depthImages,
       minLevel: depthMinLevel,
       maxLevel: depthMaxLevel,
-    } = await loadMetadataFromImage(depthImage);
+    } = await loadMetadataFromImage(usedDepthImage);
 
     if (depthMinLevel !== minLevel || depthMaxLevel !== maxLevel) {
       throw new Error('Depth levels do not match RGB levels');
@@ -348,6 +411,13 @@ export async function createPanoramaImage(
     const depthMetadata = parseDepthGDALMetadata(
       depthImages.at(-1)!.getGDALMetadata() as Record<string, string>,
     );
+    depthImages.forEach((i) => {
+      (
+        i.fileDirectory as { vcsPanorama: PanoramaFileDirectoryMetadata }
+      ).vcsPanorama = {
+        type: 'depth',
+      };
+    });
 
     depth = { levelImages: depthImages, metadata: depthMetadata };
   }
@@ -360,11 +430,34 @@ export async function createPanoramaImage(
     maxLevel,
     getIntensityImages,
     depth,
+    options.tileCacheSize,
+    options.providerConcurrency,
+    options.poolOrDecoder,
   );
+
+  const positionAtDepth = async (
+    imageCoordinate: [number, number],
+    mostDetailed: boolean,
+    result?: Cartesian3,
+  ): Promise<Cartesian3 | undefined> => {
+    const depthValue = mostDetailed
+      ? await tileProvider.getDepthAtImageCoordinateMostDetailed(
+          imageCoordinate,
+        )
+      : await tileProvider.getDepthAtImageCoordinate(imageCoordinate);
+    if (depthValue === undefined) {
+      return undefined;
+    }
+    const cartesian = imageSphericalToCartesian(imageCoordinate, result);
+    Cartesian3.normalize(cartesian, cartesian);
+    Cartesian3.multiplyByScalar(cartesian, depthValue, cartesian);
+    Matrix4.multiplyByPoint(modelMatrix, cartesian, cartesian);
+    return cartesian;
+  };
 
   return {
     get name(): string {
-      return name ?? '';
+      return nameOrId;
     },
     get position(): Cartesian3 {
       return position;
@@ -403,31 +496,22 @@ export async function createPanoramaImage(
       return maxLevel;
     },
     get maxDepth(): number {
-      // TODO better meta data handling here.
-      return 50;
+      return depth?.metadata?.max ?? 50;
     },
     get dataset(): PanoramaDataset | undefined {
       return dataset;
-    },
-    async getDepthAtImageCoordinate(
-      imageCoordinate: [number, number],
-    ): Promise<number | undefined> {
-      return tileProvider.getDepthAtImageCoordinate(imageCoordinate);
     },
     async getPositionAtImageCoordinate(
       imageCoordinate: [number, number],
       result?: Cartesian3,
     ): Promise<Cartesian3 | undefined> {
-      const depthValue =
-        await tileProvider.getDepthAtImageCoordinate(imageCoordinate);
-      if (depthValue === undefined) {
-        return undefined;
-      }
-      const cartesian = imageSphericalToCartesian(imageCoordinate, result);
-      Cartesian3.normalize(cartesian, cartesian);
-      Cartesian3.multiplyByScalar(cartesian, depthValue, cartesian);
-      Matrix4.multiplyByPoint(modelMatrix, cartesian, cartesian);
-      return cartesian;
+      return positionAtDepth(imageCoordinate, false, result);
+    },
+    async getPositionAtImageCoordinateMostDetailed(
+      imageCoordinate: [number, number],
+      result?: Cartesian3,
+    ): Promise<Cartesian3 | undefined> {
+      return positionAtDepth(imageCoordinate, true, result);
     },
     destroy(): void {
       tileProvider.destroy();
@@ -444,7 +528,7 @@ export async function createPanoramaImageFromURL(
   rgbImageUrl: string,
   dataset?: PanoramaDataset,
 ): Promise<PanoramaImage> {
-  const { name, absoluteUrl } = parseRgbUrl(rgbImageUrl);
-  const image = await fromUrl(absoluteUrl);
-  return createPanoramaImage(image, dataset, absoluteUrl, name);
+  const { name, absoluteRootUrl } = parseRgbUrl(rgbImageUrl);
+  const image = await fromUrl(absoluteRootUrl);
+  return createPanoramaImage(image, { dataset, absoluteRootUrl, name });
 }

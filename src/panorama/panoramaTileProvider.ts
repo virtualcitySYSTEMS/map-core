@@ -1,6 +1,7 @@
 import type { Matrix4 } from '@vcmap-cesium/engine';
 import { getLogger } from '@vcsuite/logger';
-import { BaseDecoder, GeoTIFFImage, Pool } from 'geotiff';
+import type { GeoTIFFImage } from 'geotiff';
+import { Pool } from 'geotiff';
 import type { PanoramaTile } from './panoramaTile.js';
 import { createPanoramaTile } from './panoramaTile.js';
 import VcsEvent from '../vcsEvent.js';
@@ -10,10 +11,11 @@ import {
   type TileCoordinate,
   type TileSize,
   getTileSphericalExtent,
-} from './tileCoordinate.js';
-import type { DepthGDALMetadata } from './panoramaImage.js';
-import WorkerPool from '../util/workerPool.js';
-import type { DepthProcessingMessage } from '../workers/panoramaDepthKernel.js';
+} from './panoramaTileCoordinate.js';
+import type {
+  DepthGDALMetadata,
+  PanoramaFileDirectoryMetadata,
+} from './panoramaImage.js';
 
 export type PanoramaResourceType = 'rgb' | 'intensity' | 'depth';
 export type PanoramaResourceData<T extends PanoramaResourceType> =
@@ -33,7 +35,16 @@ export type TileLoadError = {
 
 type PanoramaResourceProvider = {
   destroy(): void;
-  setVisibleTiles(tileCoordinates: PanoramaTile[]): void;
+  /**
+   * Sets the currently visible tiles and creates or updates the queue for loading resources.
+   */
+  setVisibleTiles(panoramaTiles: PanoramaTile[]): void;
+  /**
+   * Loads the resource for the given tile and type. If the resource is already loaded, it returns a resolved promise.
+   * If the resource is currently loading, it returns the promise of that loading operation. Mainly used to request depth.
+   * @param tile - The panorama tile to load the resource for.
+   * @param type - The type of resource to load.
+   */
   loadResource(tile: PanoramaTile, type: PanoramaResourceType): Promise<void>;
   showIntensity: boolean;
   readonly loading: boolean;
@@ -41,24 +52,16 @@ type PanoramaResourceProvider = {
   tileError: VcsEvent<TileLoadError>;
 };
 
-export type ImageBitmapDecoder = {
+export type PanoramaImageDecoder = {
   decode(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fileDirectory: any,
+    fileDirectory: { vcsPanorama: PanoramaFileDirectoryMetadata },
     buffer: ArrayBuffer,
-  ): Promise<ImageBitmap>;
+  ): Promise<PanoramaResourceData<PanoramaResourceType>>;
 };
 
 type PanoramaResource<T extends PanoramaResourceType> = {
   type: T;
   levelImages: GeoTIFFImage[];
-  poolOrDecoder: T extends 'rgb'
-    ? Pool | ImageBitmapDecoder
-    : T extends 'intensity'
-      ? Pool | ImageBitmapDecoder
-      : T extends 'depth'
-        ? Pool | BaseDecoder
-        : never;
 } & (T extends 'depth'
   ? {
       metadata: DepthGDALMetadata;
@@ -79,23 +82,41 @@ type ResourceOptions = {
 };
 
 export type PanoramaTileProvider = {
-  destroy(): void;
+  /**
+   * Creates or the visible tiles for the given tile coordinates or retrieves them from the cache.
+   */
   createVisibleTiles(tileCoordinates: TileCoordinate[]): PanoramaTile[];
-  loadIntensityImages(): void;
+  /**
+   * Gets the depth at the given image coordinate for the current level.
+   */
   getDepthAtImageCoordinate(
     imageCoordinate: [number, number],
   ): Promise<number | undefined>;
+  /**
+   * Gets the depth at the given image coordinate for the most detailed level.
+   */
   getDepthAtImageCoordinateMostDetailed(
     imageCoordinate: [number, number],
   ): Promise<number | undefined>;
+  /**
+   * The promise that resolves when the intensity images are loaded and ready to be used.
+   */
+  intensityReady: Promise<void>;
+  /**
+   * Load & show intensity images.
+   */
   showIntensity: boolean;
+  /**
+   * The current level of the panorama tile provider. This is set by the panorama viewer and is used to determine which depth tiles to query.
+   */
   currentLevel: number;
   readonly loading: boolean;
-  tileError: VcsEvent<TileLoadError>;
   /**
    * Raised with true, if we start loading new data. raised with false, if all tiles are loaded.
    */
   loadingStateChanged: VcsEvent<boolean>;
+  tileError: VcsEvent<TileLoadError>;
+  destroy(): void;
 };
 
 let defaultImagePool: Pool | undefined;
@@ -104,11 +125,11 @@ function getDefaultImagePool(): Pool {
     let workerUrl: URL;
     if (window.vcs.workerBase) {
       workerUrl = new URL(
-        `${window.vcs.workerBase}/webp.js`,
+        `${window.vcs.workerBase}/panoramaImageWorker.js`,
         window.location.href,
       );
     } else {
-      workerUrl = new URL('../workers/webp.js', import.meta.url);
+      workerUrl = new URL('../workers/panoramaImageWorker.js', import.meta.url);
     }
 
     defaultImagePool = new Pool(undefined, () => {
@@ -120,48 +141,19 @@ function getDefaultImagePool(): Pool {
   return defaultImagePool;
 }
 
-let defaultDepthPool: Pool | undefined;
-function getDefaultDepthPool(): Pool {
-  if (!defaultDepthPool) {
-    defaultDepthPool = new Pool();
-  }
-  return defaultDepthPool;
-}
-
-let defaultDepthKernelPool: WorkerPool<DepthProcessingMessage> | undefined;
-export function getDefaultDepthKernelPool(): WorkerPool<DepthProcessingMessage> {
-  if (!defaultDepthKernelPool) {
-    let workerUrl: URL;
-    if (window.vcs.workerBase) {
-      workerUrl = new URL(
-        `${window.vcs.workerBase}/panoramaDepthKernel.js`,
-        window.location.href,
-      );
-    } else {
-      workerUrl = new URL('../workers/panoramaDepthKernel.js', import.meta.url);
-    }
-
-    defaultDepthKernelPool = new WorkerPool(workerUrl);
-  }
-  return defaultDepthKernelPool;
-}
-
+/**
+ * The priority order in which the panorama resources are loaded.
+ */
 const typeOrder: Record<PanoramaResourceType, number> = {
   rgb: 0,
   intensity: 1,
   depth: 2,
 } as const;
 
-function resourceIsDepth(
-  resource: PanoramaResource<PanoramaResourceType>,
-): resource is PanoramaResource<'depth'> {
-  return resource.type === 'depth';
-}
-
 function createPanoramaResourceProvider(
   resources: ResourceOptions,
   minLevel: number,
-  tileSize: TileSize,
+  poolOrDecoder: Pool | PanoramaImageDecoder,
   concurrency = 6,
 ): PanoramaResourceProvider {
   let currentlyVisibleTiles: PanoramaTile[] = [];
@@ -176,8 +168,8 @@ function createPanoramaResourceProvider(
   ): Promise<void> => {
     const { tile, resource } = request;
     const { type } = resource;
-    if (!tile.hasTexture(type)) {
-      const { levelImages, poolOrDecoder } = resource;
+    if (!tile.material.hasTexture(type)) {
+      const { levelImages } = resource;
       const { tileCoordinate } = tile;
       const levelImage = levelImages[tileCoordinate.level - minLevel];
       if (levelImage) {
@@ -188,23 +180,11 @@ function createPanoramaResourceProvider(
             levelImage.getSamplesPerPixel(),
             poolOrDecoder,
           );
-          if (resourceIsDepth(resource)) {
-            const { data } = resourceData;
-            const result = await getDefaultDepthKernelPool().process(
-              {
-                data,
-                width: tileSize[0],
-                height: tileSize[1],
-              },
-              [data],
-            );
 
-            if (result.success) {
-              tile.setTexture('depth', new Float32Array(result.data));
-            }
-          } else {
-            tile.setTexture(type, resourceData.data as unknown as ImageBitmap);
-          }
+          tile.material.setTexture(
+            type,
+            resourceData.data as unknown as PanoramaResourceData<PanoramaResourceType>,
+          );
         } catch (error) {
           tileError.raiseEvent({
             tileCoordinate,
@@ -235,7 +215,7 @@ function createPanoramaResourceProvider(
         }
         const currentTileTypes = loadingTiles.get(currentTile.tile)!;
         const promise = loadResource(currentTile);
-        currentTileTypes[currentTile.resource.type] = loadResource(currentTile);
+        currentTileTypes[currentTile.resource.type] = promise;
         // eslint-disable-next-line no-await-in-loop
         await promise;
         currentTileTypes[currentTile.resource.type] = undefined;
@@ -277,14 +257,17 @@ function createPanoramaResourceProvider(
   const createOrUpdateQueue = (panoramaTile: PanoramaTile[]): void => {
     const newResources = panoramaTile.flatMap((tile) => {
       const resourceRequests: TileResourceRequest<PanoramaResourceType>[] = [];
-      if (!tile.hasTexture('rgb') && !loadingTiles.get(tile)?.rgb) {
+      if (!tile.material.hasTexture('rgb') && !loadingTiles.get(tile)?.rgb) {
         resourceRequests.push({
           tile,
           resource: resources.rgb,
         });
       }
       if (resources.depth) {
-        if (!tile.hasTexture('depth') && !loadingTiles.get(tile)?.depth) {
+        if (
+          !tile.material.hasTexture('depth') &&
+          !loadingTiles.get(tile)?.depth
+        ) {
           resourceRequests.push({
             tile,
             resource: resources.depth,
@@ -293,7 +276,7 @@ function createPanoramaResourceProvider(
       }
       if (showIntensity && resources.intensity) {
         if (
-          !tile.hasTexture('intensity') &&
+          !tile.material.hasTexture('intensity') &&
           !loadingTiles.get(tile)?.intensity
         ) {
           resourceRequests.push({
@@ -311,8 +294,9 @@ function createPanoramaResourceProvider(
     }
 
     newResources.sort(
-      (a, b) => typeOrder[a.resource.type] - typeOrder[b.resource.type],
+      (a, b) => typeOrder[b.resource.type] - typeOrder[a.resource.type],
     );
+
     if (currentQueue.length > 0) {
       currentQueue.splice(0, currentQueue.length, ...newResources);
     } else {
@@ -325,15 +309,8 @@ function createPanoramaResourceProvider(
 
   return {
     setVisibleTiles(panoramaTiles: PanoramaTile[]): void {
-      const newTiles = panoramaTiles.filter(
-        (tile) =>
-          !currentlyVisibleTiles.includes(tile) && !loadingTiles.has(tile),
-      );
       currentlyVisibleTiles = panoramaTiles.slice();
-
-      if (newTiles.length > 0) {
-        createOrUpdateQueue(newTiles);
-      }
+      createOrUpdateQueue(currentlyVisibleTiles);
     },
     get showIntensity(): boolean {
       return showIntensity;
@@ -352,7 +329,7 @@ function createPanoramaResourceProvider(
         throw new Error(`Resource type ${type} not found`);
       }
 
-      if (tile.hasTexture(type)) {
+      if (tile.material.hasTexture(type)) {
         return Promise.resolve();
       }
 
@@ -372,6 +349,16 @@ function createPanoramaResourceProvider(
       tileError.destroy();
     },
   };
+}
+
+function interpolateDepth(
+  value: number,
+  min: number,
+  max: number,
+  minValue = 1 / 65535,
+  maxValue = 1,
+): number {
+  return min + ((value - minValue) / (maxValue - minValue)) * (max - min);
 }
 
 /**
@@ -394,15 +381,13 @@ export function createPanoramaTileProvider(
   depth?: { levelImages: GeoTIFFImage[]; metadata: DepthGDALMetadata },
   maxCacheSize?: number,
   concurrency = 6,
-  imagePoolOrDecoder: Pool | ImageBitmapDecoder = getDefaultImagePool(),
-  depthPoolOrDecoder: Pool | BaseDecoder = getDefaultDepthPool(),
+  poolOrDecoder: Pool | PanoramaImageDecoder = getDefaultImagePool(),
 ): PanoramaTileProvider {
   const cache = new PanoramaTileCache(maxCacheSize);
   const resources: ResourceOptions = {
     rgb: {
       type: 'rgb',
       levelImages: rgbImages,
-      poolOrDecoder: imagePoolOrDecoder,
     },
   };
 
@@ -410,14 +395,13 @@ export function createPanoramaTileProvider(
     resources.depth = {
       ...depth,
       type: 'depth',
-      poolOrDecoder: depthPoolOrDecoder,
     };
   }
 
   const resourceProvider = createPanoramaResourceProvider(
     resources,
     minLevel,
-    tileSize,
+    poolOrDecoder,
     concurrency,
   );
   let showIntensity = false;
@@ -463,11 +447,45 @@ export function createPanoramaTileProvider(
     const x = tileSize[0] - Math.floor((offsetX / width) * tileSize[0]);
     const y = Math.floor((offsetY / height) * tileSize[1]);
 
-    const depthValue = tile.getDepthAtPixel(x, y);
+    const depthValue = tile.material.getDepthAtPixel(x, y);
     if (depthValue) {
-      return depthValue * resources.depth.metadata.max;
+      return interpolateDepth(
+        depthValue,
+        depth?.metadata?.min ?? 0,
+        depth?.metadata?.max ?? 50,
+      );
     }
     return depthValue;
+  };
+
+  let resolveIntensity: () => void;
+  let rejectIntensity: (reason?: unknown) => void;
+  const intensityReady = new Promise<void>((resolve, reject) => {
+    resolveIntensity = resolve;
+    rejectIntensity = reject;
+  });
+
+  const loadIntensityImages = (): void => {
+    if (!resources.intensity && getIntensityImages) {
+      getIntensityImages()
+        .then((intensityImages) => {
+          resources.intensity = {
+            type: 'intensity',
+            levelImages: intensityImages,
+          };
+          if (showIntensity) {
+            resourceProvider.showIntensity = true;
+          }
+          resolveIntensity();
+        })
+        .catch((e: unknown) => {
+          getLogger('PanoramaTileProvider').warning(
+            'Error loading intensity images',
+          );
+          getLogger('PanoramaTileProvider').warning(String(e));
+          rejectIntensity(e);
+        });
+    }
   };
 
   return {
@@ -484,26 +502,8 @@ export function createPanoramaTileProvider(
     get loading(): boolean {
       return resourceProvider.loading;
     },
-    loadIntensityImages(): void {
-      if (!resources.intensity && getIntensityImages) {
-        getIntensityImages()
-          .then((intensityImages) => {
-            resources.intensity = {
-              type: 'intensity',
-              levelImages: intensityImages,
-              poolOrDecoder: imagePoolOrDecoder,
-            };
-            if (showIntensity) {
-              resourceProvider.showIntensity = true;
-            }
-          })
-          .catch((e: unknown) => {
-            getLogger('PanoramaTileProvider').warning(
-              'Error loading intensity images',
-            );
-            getLogger('PanoramaTileProvider').warning(String(e));
-          });
-      }
+    get intensityReady(): Promise<void> {
+      return intensityReady;
     },
     get showIntensity(): boolean {
       return showIntensity;
@@ -514,7 +514,7 @@ export function createPanoramaTileProvider(
       if (resources.intensity) {
         resourceProvider.showIntensity = value;
       } else if (value) {
-        this.loadIntensityImages();
+        loadIntensityImages();
       }
     },
     getDepthAtImageCoordinateMostDetailed(

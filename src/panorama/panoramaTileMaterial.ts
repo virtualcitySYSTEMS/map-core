@@ -1,43 +1,56 @@
+import type {
+  TextureMinificationFilter,
+  Context,
+  TextureMagnificationFilter,
+} from '@vcmap-cesium/engine';
 import {
   Material,
   Cartesian2,
   Cartesian3,
+  Color,
   Texture,
-  TextureMinificationFilter,
   Sampler,
   PixelDatatype,
   PixelFormat,
-  Context,
-  TextureMagnificationFilter,
 } from '@vcmap-cesium/engine';
-import { getLogger } from '@vcsuite/logger';
 import {
   getNumberOfTiles,
   type TileCoordinate,
   type TileSize,
-} from './tileCoordinate.js';
+} from './panoramaTileCoordinate.js';
 import source from './panoramaTileMaterialFS.shader.js';
 import type {
   PanoramaResourceData,
   PanoramaResourceType,
 } from './panoramaTileProvider.js';
 
+/**
+ * The overlay mode for panorama tiles.
+ */
+export enum PanoramaOverlayMode {
+  None = 0,
+  Intensity = 1,
+  Depth = 2,
+}
+
 export type PanoramaTileMaterialUniforms = {
-  image: HTMLCanvasElement | string;
-  intensity: HTMLCanvasElement | string;
-  debug: HTMLCanvasElement | string;
-  depth: Texture | string;
-  cursorPosition: Cartesian3;
-  minSt: Cartesian2;
-  maxSt: Cartesian2;
-  opacity: number;
-  showIntensity: boolean;
-  showDebug: boolean;
-  showDepth: boolean;
-  intensityOpacity: number;
-  depthReady: boolean;
-  cursorRadius: number;
-  cursorRings: number;
+  u_rgb: HTMLCanvasElement | string;
+  u_intensity: HTMLCanvasElement | string;
+  u_depth: Texture | string;
+  u_debug: HTMLCanvasElement | string;
+  u_cursorPosition: Cartesian3;
+  u_minUV: Cartesian2;
+  u_maxUV: Cartesian2;
+  u_opacity: number;
+  u_overlay: PanoramaOverlayMode;
+  u_overlayOpacity: number;
+  u_overlayNaNColor: Color;
+  u_showDebug: boolean;
+  u_depthReady: boolean;
+  u_cursorRadius: number;
+  u_cursorRings: number;
+  u_imageReady: boolean;
+  u_intensityReady: boolean;
 };
 
 function createDebugCanvas(
@@ -67,269 +80,263 @@ function createDebugCanvas(
 
 function getUniformForType(
   type: PanoramaResourceType,
-): 'image' | 'intensity' | 'depth' {
-  if (type === 'rgb') {
-    return 'image';
-  }
-  return type;
+): 'u_rgb' | 'u_intensity' | 'u_depth' {
+  return `u_${type}`;
 }
 
 export function getDefaultPanoramaTileMaterialUniforms(): PanoramaTileMaterialUniforms {
   return {
-    image: Material.DefaultImageId,
-    intensity: Material.DefaultImageId,
-    depth: Material.DefaultImageId,
-    debug: Material.DefaultImageId,
-    minSt: new Cartesian2(),
-    maxSt: new Cartesian2(),
-    opacity: 0,
-    intensityOpacity: 1,
-    showIntensity: false,
-    showDebug: false,
-    showDepth: false,
-    cursorPosition: new Cartesian3(-1, -1, -1),
-    depthReady: false,
-    cursorRadius: 0.01,
-    cursorRings: 3,
+    u_rgb: Material.DefaultImageId,
+    u_intensity: Material.DefaultImageId,
+    u_depth: Material.DefaultImageId,
+    u_debug: Material.DefaultImageId,
+    u_minUV: new Cartesian2(),
+    u_maxUV: new Cartesian2(),
+    u_opacity: 1,
+    u_overlay: PanoramaOverlayMode.Intensity,
+    u_overlayOpacity: 1,
+    u_showDebug: false,
+    u_cursorPosition: new Cartesian3(-1, -1, -1),
+    u_imageReady: false,
+    u_intensityReady: false,
+    u_depthReady: false,
+    u_cursorRadius: 0.01,
+    u_cursorRings: 3,
+    u_overlayNaNColor: Color.RED,
   };
 }
 
 export default class PanoramaTileMaterial extends Material {
-  private _opacity = 1;
-
-  private _showIntensity = false;
-
-  ready: Promise<void>;
-
-  intensityReady: Promise<void>;
-
   declare private _loadedImages: { id: string }[];
 
+  /**
+   * The uniforms used by the panorama tile material. These are not intended to be modified directly
+   * but rather through the provided properties.
+   */
   declare uniforms: PanoramaTileMaterialUniforms;
-
-  private _rgbResolve: (() => void) | undefined;
-
-  private _intensityResolve: (() => void) | undefined;
-
-  private _depthData: { buffer: Float32Array; tileSize: TileSize } | undefined;
-
-  kernelRadius = 3;
 
   declare private _minificationFilter: TextureMinificationFilter;
 
   declare private _magnificationFilter: TextureMagnificationFilter;
 
-  constructor(public readonly tileCoordinate: TileCoordinate) {
+  private _depthData: Float32Array | undefined;
+
+  constructor(
+    public readonly tileCoordinate: TileCoordinate,
+    private _tileSize: TileSize,
+  ) {
     const [numx, numy] = getNumberOfTiles(tileCoordinate.level);
     const sizeX = 1 / numx;
     const sizeY = 1 / numy;
 
     const { x, y } = tileCoordinate;
-    const minSt = new Cartesian2(x * sizeX, 1 - (y * sizeY + sizeY));
-    const maxSt = new Cartesian2(x * sizeX + sizeX, 1 - y * sizeY);
+    const minUV = new Cartesian2(x * sizeX, 1 - (y * sizeY + sizeY));
+    const maxUV = new Cartesian2(x * sizeX + sizeX, 1 - y * sizeY);
 
     super({
       fabric: {
         type: 'TileImage',
         uniforms: {
           ...getDefaultPanoramaTileMaterialUniforms(),
-          minSt,
-          maxSt,
+          u_minUV: minUV,
+          u_maxUV: maxUV,
         },
         source,
       },
       translucent: false,
     });
-
-    this.ready = new Promise<void>((resolve) => {
-      this._rgbResolve = resolve;
-    });
-
-    this.intensityReady = new Promise<void>((resolve) => {
-      this._intensityResolve = resolve;
-    });
-
-    this.ready
-      .then(() => {
-        this.uniforms.opacity = this.opacity;
-      })
-      .catch(() => {
-        getLogger('PanoramaTileMaterial').error(
-          'Error loading panorama tile material',
-        );
-      });
-
-    this.intensityReady
-      .then(() => {
-        this.uniforms.showIntensity = this.showIntensity;
-      })
-      .catch(() => {
-        getLogger('PanoramaTileMaterial').error(
-          'Error loading panorama tile material',
-        );
-      });
   }
 
+  /**
+   * Shows the debug overlay on the panorama tile.
+   */
   get showDebug(): boolean {
-    return this.uniforms.showDebug;
+    return this.uniforms.u_showDebug;
   }
 
   set showDebug(value: boolean) {
-    this.uniforms.showDebug = value;
-    if (value && this.uniforms.debug === Material.DefaultImageId) {
-      this.uniforms.debug = createDebugCanvas(
-        [512, 512],
+    this.uniforms.u_showDebug = value;
+    if (value && this.uniforms.u_debug === Material.DefaultImageId) {
+      this.uniforms.u_debug = createDebugCanvas(
+        this._tileSize,
         this.tileCoordinate.key,
       );
     }
   }
 
-  get showIntensity(): boolean {
-    return this._showIntensity;
+  /**
+   * Display the overlay on the panorama tile.
+   */
+  get overlay(): PanoramaOverlayMode {
+    return this.uniforms.u_overlay;
   }
 
-  set showIntensity(value: boolean) {
-    this._showIntensity = value;
-    if (!this._intensityResolve) {
-      this.uniforms.showIntensity = value;
-    }
+  set overlay(value: PanoramaOverlayMode) {
+    this.uniforms.u_overlay = value;
   }
 
-  get showDepth(): boolean {
-    return this.uniforms.showDepth;
+  /**
+   * The opacity of the overlay on the panorama tile.
+   */
+  get overlayOpacity(): number {
+    return this.uniforms.u_overlayOpacity;
   }
 
-  set showDepth(value: boolean) {
-    this.uniforms.showDepth = value;
+  set overlayOpacity(value: number) {
+    this.uniforms.u_overlayOpacity = value;
   }
 
+  /**
+   * The color used where overlay values are 0.
+   */
+  get overlayNaNColor(): Color {
+    return this.uniforms.u_overlayNaNColor;
+  }
+
+  set overlayNaNColor(value: Color) {
+    this.uniforms.u_overlayNaNColor = value;
+  }
+
+  /**
+   * The global opacity of the panorama tile.
+   */
   get opacity(): number {
-    return this._opacity;
+    return this.uniforms.u_opacity;
   }
 
   set opacity(value: number) {
-    this._opacity = value;
-    if (!this._rgbResolve) {
-      this.uniforms.opacity = value;
-    }
+    this.uniforms.u_opacity = value;
   }
 
-  get cursorPositon(): Cartesian3 {
-    return this.uniforms.cursorPosition;
+  /**
+   * The position of the cursor in the panorama tile. Internal API to render the depth cursor.
+   * (-1, -1, -1) means no data is available.
+   * It should be a valid position in the panorama tiles cartesian coordinate system, scaled by the normalized depth.
+   */
+  get cursorPosition(): Cartesian3 {
+    return this.uniforms.u_cursorPosition;
   }
 
   set cursorPosition(value: Cartesian3) {
-    this.uniforms.cursorPosition = value;
+    this.uniforms.u_cursorPosition = value;
   }
 
   get cursorRadius(): number {
-    return this.uniforms.cursorRadius;
+    return this.uniforms.u_cursorRadius;
   }
 
   set cursorRadius(value: number) {
-    this.uniforms.cursorRadius = value;
+    this.uniforms.u_cursorRadius = value;
   }
 
   get cursorRings(): number {
-    return this.uniforms.cursorRings;
+    return this.uniforms.u_cursorRings;
   }
 
   set cursorRings(value: number) {
-    this.uniforms.cursorRings = value;
+    this.uniforms.u_cursorRings = value;
   }
 
-  get intensityOpacity(): number {
-    return this.uniforms.intensityOpacity;
-  }
-
-  set intensityOpacity(value: number) {
-    this.uniforms.intensityOpacity = value;
-  }
-
+  /**
+   * Sets the texture for the given panorama resource type.
+   * @param type
+   * @param data
+   */
   setTexture<T extends PanoramaResourceType>(
     type: T,
     data: PanoramaResourceData<T>,
-    tileSize: TileSize,
   ): void {
     if (this.hasTexture(type)) {
       throw new Error(`Texture for ${type} can only be set once!`);
     }
 
     const uniformType = getUniformForType(type);
-    if (uniformType === 'depth') {
-      this._depthData = {
-        buffer: data as Float32Array,
-        tileSize,
-      };
+    if (uniformType === 'u_depth') {
+      this._depthData = data as Float32Array;
     } else {
       const canvas = document.createElement('canvas');
-      canvas.width = tileSize[0];
-      canvas.height = tileSize[1];
+      canvas.width = this._tileSize[0];
+      canvas.height = this._tileSize[1];
       const context = canvas.getContext('2d');
-      context!.drawImage(data as ImageBitmap, 0, 0, tileSize[0], tileSize[1]);
+      context!.drawImage(
+        data as ImageBitmap,
+        0,
+        0,
+        this._tileSize[0],
+        this._tileSize[1],
+      );
       this.uniforms[uniformType] = canvas;
     }
   }
 
   hasTexture(type: PanoramaResourceType): boolean {
     const uniform = getUniformForType(type);
+    if (uniform === 'u_depth') {
+      return this._depthData !== undefined;
+    }
     return this.uniforms[uniform] !== Material.DefaultImageId;
   }
 
+  /**
+   * Returns the normalized depth value [0, 1] at the given pixel coordinates in the panorama tile.
+   * @param x
+   * @param y
+   */
   getDepthAtPixel(x: number, y: number): number | undefined {
     if (!this._depthData) {
       return undefined;
     }
 
-    const { tileSize, buffer } = this._depthData;
-
-    const index = y * tileSize[0] + x;
-    return buffer[index];
+    const index = y * this._tileSize[0] + x;
+    return this._depthData[index];
   }
 
+  /**
+   * Internal cesium API to update the material.
+   * @param context
+   */
   update(context: Context): void {
-    const resolveRgb =
-      this._rgbResolve && this._loadedImages?.some((i) => i.id === 'image');
+    const resolveImage =
+      !this.uniforms.u_imageReady &&
+      this._loadedImages?.some((i) => i.id === 'u_rgb');
     const resolveIntensity =
-      this._intensityResolve &&
-      this._loadedImages?.find((i) => i.id === 'intensity');
+      !this.uniforms.u_intensityReady &&
+      this._loadedImages?.find((i) => i.id === 'u_intensity');
 
-    if (this.uniforms.depth === Material.DefaultImageId && this._depthData) {
+    if (this.uniforms.u_depth === Material.DefaultImageId && this._depthData) {
       const sampler = new Sampler({
         minificationFilter: this._minificationFilter,
         magnificationFilter: this._magnificationFilter,
       });
 
-      this.uniforms.depth = new Texture({
+      this.uniforms.u_depth = new Texture({
         context,
         pixelDatatype: PixelDatatype.FLOAT,
         pixelFormat: PixelFormat.RED,
         source: {
-          arrayBufferView: this._depthData.buffer,
-          width: this._depthData.tileSize[0],
-          height: this._depthData.tileSize[1],
+          arrayBufferView: this._depthData,
+          width: this._tileSize[0],
+          height: this._tileSize[1],
         },
         sampler,
       });
     } else if (
-      !this.uniforms.depthReady &&
-      this.uniforms.depth !== Material.DefaultImageId
+      !this.uniforms.u_depthReady &&
+      this.uniforms.u_depth !== Material.DefaultImageId
     ) {
-      this.uniforms.depthReady = true;
+      this.uniforms.u_depthReady = true;
     }
 
     // @ts-expect-error is actually private
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     super.update(context);
 
-    if (resolveRgb) {
-      this._rgbResolve?.();
-      this._rgbResolve = undefined;
+    if (resolveImage) {
+      this.uniforms.u_imageReady = true;
     }
 
     if (resolveIntensity) {
-      this._intensityResolve?.();
-      this._intensityResolve = undefined;
+      this.uniforms.u_intensityReady = true;
     }
   }
 }

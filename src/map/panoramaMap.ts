@@ -1,9 +1,7 @@
+import type { JulianDate, Cesium3DTileset, Scene } from '@vcmap-cesium/engine';
 import {
-  type Cesium3DTileset,
-  CesiumWidget,
-  JulianDate,
   PrimitiveCollection,
-  type Scene,
+  CesiumWidget,
   ScreenSpaceEventHandler,
   ShadowMode,
   Math as CesiumMath,
@@ -13,26 +11,21 @@ import type { VcsMapOptions } from './vcsMap.js';
 import VcsMap from './vcsMap.js';
 import type { PanoramaImage } from '../panorama/panoramaImage.js';
 import { mapClassRegistry } from '../classRegistry.js';
-import {
-  createPanoramaImageView,
-  PanoramaImageView,
-} from '../panorama/panoramaImageView.js';
+import type { PanoramaImageView } from '../panorama/panoramaImageView.js';
+import { createPanoramaImageView } from '../panorama/panoramaImageView.js';
 import {
   getViewpointFromScene,
   setupCesiumInteractions,
 } from './cesiumMapHelpers.js';
 import VcsEvent from '../vcsEvent.js';
-import { createPanoramaNavigation } from '../panorama/panoramaNavigation.js';
-import {
-  createDebugSphere,
-  DebugSphere,
-  DebugCameraSphereOptions,
-} from '../panorama/debugSphere.js';
+import type { PanoramaCameraController } from '../panorama/panoramaCameraController.js';
+import { createPanoramaCameraController } from '../panorama/panoramaCameraController.js';
 import type Viewpoint from '../util/viewpoint.js';
-import { ensureInCollection } from './cesiumMap.js';
+import { ensureInCollection, indexChangedOnPrimitive } from './cesiumMap.js';
 import Projection from '../util/projection.js';
 import Collection from '../util/collection.js';
 import type PanoramaDataset from '../panorama/panoramaDataset.js';
+import type Layer from '../layer/layer.js';
 
 export type PanoramaMapOptions = VcsMapOptions;
 
@@ -47,7 +40,18 @@ export default class PanoramaMap extends VcsMap {
     };
   }
 
-  panoramaDatasetsChanged = new VcsEvent<Collection<PanoramaDataset>>();
+  /**
+   * The event raised when the panorama datasets collection on this map is changed.
+   */
+  readonly panoramaDatasetsChanged = new VcsEvent<
+    Collection<PanoramaDataset>
+  >();
+
+  /**
+   * The event raised when the current image changes. Can be raised with undefined if the current image is cleared
+   * or a viewpoint fails to load an image.
+   */
+  readonly currentImageChanged = new VcsEvent<PanoramaImage | undefined>();
 
   private _cesiumWidget: CesiumWidget | undefined;
 
@@ -59,11 +63,7 @@ export default class PanoramaMap extends VcsMap {
 
   private _screenSpaceEventHandler: ScreenSpaceEventHandler | undefined;
 
-  private _destroyNavigation: (() => void) | undefined;
-
-  private _debugSphere: DebugSphere | undefined;
-
-  readonly currentImageChanged = new VcsEvent<PanoramaImage | undefined>();
+  private _cameraController: PanoramaCameraController | undefined;
 
   private _panoramaDatasets = new Collection<PanoramaDataset>();
 
@@ -71,6 +71,9 @@ export default class PanoramaMap extends VcsMap {
 
   private _listeners: (() => void)[] = [];
 
+  /**
+   * Internal API. throws if not properly initialized
+   */
   get screenSpaceEventHandler(): ScreenSpaceEventHandler {
     if (!this._screenSpaceEventHandler) {
       throw new Error('ScreenSpaceEventHandler not initialized');
@@ -82,6 +85,10 @@ export default class PanoramaMap extends VcsMap {
     return this._currentImage;
   }
 
+  /**
+   * The panorama image view controlling image loading and rendering.
+   * Throws if not properly initialized
+   */
   get panoramaView(): PanoramaImageView {
     if (!this._imageView) {
       throw new Error('PanoramaImageView not initialized');
@@ -89,20 +96,21 @@ export default class PanoramaMap extends VcsMap {
     return this._imageView;
   }
 
-  get debugSphere(): DebugSphere | undefined {
-    return this._debugSphere;
+  /**
+   * The panorama camera controller controlling the camera movement.
+   * Throws if not properly initialized
+   */
+  get panoramaCameraController(): PanoramaCameraController {
+    if (!this._cameraController) {
+      throw new Error('PanoramaCameraController not initialized');
+    }
+    return this._cameraController;
   }
 
-  setDebugSphere(debugSphere?: DebugCameraSphereOptions): void {
-    if (this._debugSphere) {
-      this._debugSphere.destroy();
-    }
-
-    if (debugSphere) {
-      this._debugSphere = createDebugSphere(this, debugSphere);
-    }
-  }
-
+  /**
+   * The panorama datasets collection. The initial collection is destroyed with the map. If you
+   * set your own collection, you are responsible for destroying it.
+   */
   get panoramaDatasets(): Collection<PanoramaDataset> {
     return this._panoramaDatasets;
   }
@@ -116,7 +124,17 @@ export default class PanoramaMap extends VcsMap {
     this.panoramaDatasetsChanged.raiseEvent(collection);
   }
 
-  async initialize(): Promise<void> {
+  /**
+   * Access to the raw cesium widget for finer control. Throws if not properly initialized.
+   */
+  getCesiumWidget(): CesiumWidget {
+    if (!this._cesiumWidget) {
+      throw new Error('CesiumWidget not initialized');
+    }
+    return this._cesiumWidget;
+  }
+
+  override async initialize(): Promise<void> {
     if (!this.initialized) {
       this._cesiumWidget = new CesiumWidget(this.mapElement, {
         requestRenderMode: false,
@@ -139,10 +157,11 @@ export default class PanoramaMap extends VcsMap {
 
       this._screenSpaceListener = setupCesiumInteractions(
         this,
+        this._cesiumWidget.scene,
         this.screenSpaceEventHandler,
       );
       this._imageView = createPanoramaImageView(this);
-      this._destroyNavigation = createPanoramaNavigation(this);
+      this._cameraController = createPanoramaCameraController(this);
       this.initialized = true;
 
       this._listeners.push(
@@ -159,7 +178,7 @@ export default class PanoramaMap extends VcsMap {
     await super.initialize();
   }
 
-  async activate(): Promise<void> {
+  override async activate(): Promise<void> {
     await super.activate();
     if (this.active && this._cesiumWidget) {
       this._cesiumWidget.useDefaultRenderLoop = true;
@@ -167,7 +186,7 @@ export default class PanoramaMap extends VcsMap {
     }
   }
 
-  deactivate(): void {
+  override deactivate(): void {
     super.deactivate();
     if (this._cesiumWidget) {
       this._cesiumWidget.useDefaultRenderLoop = false;
@@ -185,6 +204,11 @@ export default class PanoramaMap extends VcsMap {
     return getViewpointFromScene(this._cesiumWidget.scene);
   }
 
+  /**
+   * Sets the current image to the closest image to the given coordinate. Does not set the
+   * current image, if there is no image within the default distance.
+   * @param viewpoint
+   */
   override async gotoViewpoint(viewpoint: Viewpoint): Promise<void> {
     if (
       this.movementApiCallsDisabled ||
@@ -216,6 +240,11 @@ export default class PanoramaMap extends VcsMap {
     }
   }
 
+  /**
+   * Returns the closest image to the given coordinate within the given distance from all the datasets in the panorama datasets collection.
+   * @param coordinate
+   * @param maxDistance
+   */
   async getClosestImage(
     coordinate: Coordinate,
     maxDistance = 200,
@@ -258,15 +287,25 @@ export default class PanoramaMap extends VcsMap {
   }
 
   setCurrentImage(image?: PanoramaImage): void {
-    this._currentImage = image;
-    this.currentImageChanged.raiseEvent(image);
+    if (this._currentImage !== image) {
+      this._currentImage = image;
+      this.currentImageChanged.raiseEvent(image);
+    }
   }
 
-  getCesiumWidget(): CesiumWidget {
-    if (!this._cesiumWidget) {
-      throw new Error('CesiumWidget not initialized');
+  override indexChanged(layer: Layer): void {
+    const viz = this.getVisualizationsForLayer(layer);
+    if (viz) {
+      viz.forEach((item) => {
+        if (item instanceof PrimitiveCollection) {
+          indexChangedOnPrimitive(
+            this.getCesiumWidget().scene.primitives,
+            item,
+            this.layerCollection,
+          );
+        }
+      });
     }
-    return this._cesiumWidget;
   }
 
   /**
@@ -303,7 +342,7 @@ export default class PanoramaMap extends VcsMap {
   destroy(): void {
     this.currentImageChanged.destroy();
     this._currentImage?.destroy();
-    this._destroyNavigation?.();
+    this._cameraController?.destroy();
     this._imageView?.destroy();
     this._screenSpaceListener?.();
     this._screenSpaceEventHandler?.destroy();

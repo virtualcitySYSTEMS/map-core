@@ -165,16 +165,16 @@ export default class PanoramaDataset extends VcsObject {
    * @param name
    * @returns
    */
-  async createPanoramaImage(name: string): Promise<PanoramaImage> {
+  createPanoramaImage(name: string): Promise<PanoramaImage> {
     const imageUrl = `${this.baseUrl}/${name}_rgb.tif`;
     if (this._cache.containsKey(imageUrl)) {
       return this._cache.get(imageUrl);
     }
-    const image = await createPanoramaImageFromURL(imageUrl, this);
-    this._cache.set(imageUrl, image);
+    const imagePromise = createPanoramaImageFromURL(imageUrl, this);
+    this._cache.set(imageUrl, imagePromise);
     this._cache.expireCache();
 
-    return image;
+    return imagePromise;
   }
 
   async getExtent(): Promise<Extent | undefined> {

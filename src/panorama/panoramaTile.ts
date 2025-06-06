@@ -8,27 +8,13 @@ import {
   VertexFormat,
 } from '@vcmap-cesium/engine';
 import PanoramaTileMaterial from './panoramaTileMaterial.js';
-import {
-  TileCoordinate,
-  TileSize,
-  tileSizeInRadians,
-} from './tileCoordinate.js';
-import type {
-  PanoramaResourceData,
-  PanoramaResourceType,
-} from './panoramaTileProvider.js';
+import type { TileCoordinate, TileSize } from './panoramaTileCoordinate.js';
+import { tileSizeInRadians } from './panoramaTileCoordinate.js';
 
 export type PanoramaTile = {
   readonly primitive: Primitive;
   readonly tileCoordinate: TileCoordinate;
-  opacity: number;
-  showIntensity: boolean;
-  setTexture<T extends PanoramaResourceType>(
-    type: T,
-    data: PanoramaResourceData<T>,
-  ): void;
-  hasTexture(type: PanoramaResourceType): boolean;
-  getDepthAtPixel(x: number, y: number): number | undefined;
+  readonly material: PanoramaTileMaterial;
   destroy(): void;
 };
 
@@ -62,7 +48,6 @@ function createPanoramaTilePrimitive(
       flat: true,
     }),
     modelMatrix,
-    asynchronous: level !== 1,
   });
 }
 
@@ -71,13 +56,14 @@ function createPanoramaTilePrimitive(
  * by the PanoramaTileProvider when creating tiles.
  * @param tileCoordinate
  * @param modelMatrix
+ * @param tileSize
  */
 export function createPanoramaTile(
   tileCoordinate: TileCoordinate,
   modelMatrix: Matrix4,
   tileSize: TileSize,
 ): PanoramaTile {
-  const material = new PanoramaTileMaterial(tileCoordinate);
+  const material = new PanoramaTileMaterial(tileCoordinate, tileSize);
   const primitive = createPanoramaTilePrimitive(
     tileCoordinate,
     modelMatrix,
@@ -91,32 +77,12 @@ export function createPanoramaTile(
     get tileCoordinate(): TileCoordinate {
       return tileCoordinate;
     },
-    get opacity(): number {
-      return material.opacity;
-    },
-    set opacity(value: number) {
-      material.opacity = value;
-    },
-    get showIntensity(): boolean {
-      return material.showIntensity;
-    },
-    set showIntensity(value: boolean) {
-      material.showIntensity = value;
-    },
-    setTexture<T extends PanoramaResourceType>(
-      type: T,
-      data: PanoramaResourceData<T>,
-    ): void {
-      material.setTexture(type, data, tileSize);
-    },
-    hasTexture(type: PanoramaResourceType): boolean {
-      return material.hasTexture(type);
-    },
-    getDepthAtPixel(x: number, y: number): number | undefined {
-      return material.getDepthAtPixel(x, y);
+    get material(): PanoramaTileMaterial {
+      return material;
     },
     destroy(): void {
       primitive.destroy();
+      material.destroy();
     },
   };
 }
