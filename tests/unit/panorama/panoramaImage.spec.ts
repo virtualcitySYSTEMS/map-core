@@ -9,7 +9,7 @@ import type { GeoTIFF } from 'geotiff';
 import { fromFile } from 'geotiff';
 import type { PanoramaImage } from '../../../src/panorama/panoramaImage.js';
 import { createPanoramaImage } from '../../../src/panorama/panoramaImage.js';
-import { createTestingDecoder } from '../helpers/panoramaHelpers.js';
+import { getPanoramaImage } from '../helpers/panoramaHelpers.js';
 import { imageSphericalToCartesian } from '../../../src/panorama/sphericalCoordinates.js';
 
 describe('PanoramaImage', () => {
@@ -82,23 +82,15 @@ describe('PanoramaImage', () => {
   });
 
   describe('depth handling', () => {
-    let depthImage: GeoTIFF;
-    let rgbImage: GeoTIFF;
     let panoramaImage: PanoramaImage;
+    let destroy: () => void;
 
     before(async () => {
-      depthImage = await fromFile('tests/data/panorama/testDepthGeotiff.tif');
-      rgbImage = await fromFile('tests/data/panorama/testRgbGeotiff.tif');
-      panoramaImage = await createPanoramaImage(rgbImage, {
-        depthImage,
-        poolOrDecoder: createTestingDecoder(),
-      });
+      ({ panoramaImage, destroy } = await getPanoramaImage({ depth: true }));
     });
 
     after(() => {
-      panoramaImage.destroy();
-      depthImage.close();
-      rgbImage.close();
+      destroy();
     });
 
     it('should calculate the position of an image position', async () => {
@@ -217,9 +209,12 @@ describe('PanoramaImage', () => {
 
     it('should read in a file with wrong metadata version', async () => {
       const newImage = await fromFile('tests/data/panorama/noVersionDepth.tif');
-      const badMetadataPanoramaDepth = await createPanoramaImage(rgbImage, {
-        depthImage: newImage,
-      });
+      const badMetadataPanoramaDepth = await createPanoramaImage(
+        panoramaImage.image,
+        {
+          depthImage: newImage,
+        },
+      );
 
       expect(badMetadataPanoramaDepth.maxDepth).to.equal(50);
       badMetadataPanoramaDepth.destroy();

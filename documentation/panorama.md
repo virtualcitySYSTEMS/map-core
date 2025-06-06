@@ -181,7 +181,7 @@ gdal_translate depth_tiff.tif panorama_depth.tif -of GTiff -co TILED=YES -co BLO
 
 The following objects are used at runtime to represent the panorama data.
 
-## [PanoramaDatasetCollection](../src/panorama/panoramaDatasetCollection.ts)
+## PanoramaDatasetCollection
 
 The dataset collection holds all the configured datasets and is attached to the `VcsApp` as well
 as the [PanoramaMap](#PanoramaMap). This is simply a normal Collection.
@@ -226,8 +226,9 @@ Behavior:
 Relations:
 
 - Most images will have a reference to the [PanoramaDataset](#PanoramaDataset) they belong to.
-- Has one or more [PanoramaTileProvider](#PanoramaTileProvider) objects. For RGB & Intensity.
-- Has an optional [PanoramaDepth](#PanoramaDepth) object.
+- Has a [PanoramaTileProvider](#PanoramaTileProvider) object.
+- Has a way to get the position of an image coordinate by using the [PanoramaTileProvider](#PanoramaTileProvider)
+  and its model matrix.
 
 ## [PanoramaTile](../src/panorama/panoramaTile.ts)
 
@@ -240,16 +241,31 @@ Relations:
 
 - The tile is attached to a [PanoramaTileProvider](#PanoramaTileProvider).
 - The tile is rendered by the [PanoramaImageView](#PanoramaImageView).
+- The tiles primitive is stored in the [PanoramaTilePrimitiveCollection](#PanoramaTilePrimitiveCollection).
+- The tile uses the [PanoramaTileMaterial](#PanoramaTileMaterial) to render the image data.
+
+## [PanoramaTileMaterial](../src/panorama/panoramaTileMaterial.ts)
+
+This is a specizalization of the cesium [Material](https://cesium.com/docs/cesiumjs-ref-doc/Material.html).
+It is used to render the [PanoramaTile](#PanoramaTile) with the image data. It has a custom shader and texture handling.
+When a tile is created (sync) the material is translucent. Once resources are loaded for the tile, the textures
+are set on the material and rendered accordingly.
+
+Relations:
+
+- The material is used to render the [PanoramaTile](#PanoramaTile) with the image data.
+- The material is accessed by the [PanoramaTilePrimitiveCollection](#PanoramaTilePrimitiveCollection) to set uniforms.
+- The material is accessed by the [PanoramaTileProvider](#PanoramaTileProvider) to set the image data texture.
 
 ## [PanoramaTileProvider](../src/panorama/panoramaTileProvider.ts)
 
 A construct that is able to load image data with a certain strategy (static or COG come to mind) and provide it to the tile.
 
 - The tile provider is valid for one image.
-- Provides [PanoramaTiles](#PanoramaTile) based on tile coordinates and caches them on the image.
+- Creates [PanoramaTiles](#PanoramaTile) based on tile coordinates and caches them.
 - Provides a method to perform „getDepth“ at a spherical coordinate and „getDepthMostDetailed“ at a spherical coordinate.
-- Maintains a cache of its loaded [PanoramaTiles](#PanoramaTile). (LRU?)
-- Maintains a cache of its loaded depth data. (LRU?)
+- Maintains a cache of its loaded [PanoramaTiles](#PanoramaTile).
+- Loads the resources of the currently visible tiles and set them as a texture on the [PanoramaTileMaterial](#PanoramaTileMaterial).
 
 Relations:
 
@@ -272,6 +288,17 @@ Relations:
 
 - The depth provider is attached to a [PanoramaImage](#PanoramaImage).
 
+## [PanoramaTilePrimitiveCollection](../src/panorama/panoramaTilePrimitiveCollection.ts)
+
+This is a collection of primitives that are rendered by the [PanoramaImageView](#PanoramaImageView) for each tile.
+Furthermore, they globally track the uniforms that can be set on the [PanoramaTileMaterial](#PanoramaTileMaterial).
+
+Relations:
+
+- The collection is attached to a [PanoramaImageView](#PanoramaImageView).
+- Contains multiple [PanoramaTile](#PanoramaTile) primitives.
+- Used to set uniforms on the [PanoramaTileMaterial](#PanoramaTileMaterial) of its containing primitives.
+
 ## [PanoramaImageView](../src/panorama/panoramaImageView.ts)
 
 This construct is similar to the ol.View and describes a scene based on an image.
@@ -287,6 +314,7 @@ Relations:
 
 - Is attached to a [PanoramaMap](#PanoramaMap).
 - Renders multiple [PanoramaTiles](#PanoramaTile) from the current [PanoramaImage](#PanoramaImage) on the map.
+- Has a [PanoramaTilePrimitiveCollection](#PanoramaTilePrimitiveCollection) attached to it.
 
 ## [PanoramaMap](../src/map/panoramaMap.ts)
 

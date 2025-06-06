@@ -45,7 +45,7 @@ function createStubbedDataset(
       if (!images.has(imageName)) {
         images.set(
           imageName,
-          await getPanoramaImage(dataset, undefined, imageName),
+          await getPanoramaImage({ dataset, name: imageName }),
         );
       }
       return images.get(imageName)!.panoramaImage;
@@ -91,6 +91,7 @@ describe('PanoramaMap', () => {
     describe('adding primitive collection', () => {
       let map: PanoramaMap;
       let layerCollection: LayerCollection;
+      let numberOfDefaultPrimitives: number;
 
       before(() => {
         layerCollection = LayerCollection.from([layer1, layer2]);
@@ -98,6 +99,8 @@ describe('PanoramaMap', () => {
 
       beforeEach(() => {
         map = getPanoramaMap({ layerCollection });
+        numberOfDefaultPrimitives =
+          map.getCesiumWidget().scene.primitives.length;
       });
 
       afterEach(() => {
@@ -118,22 +121,28 @@ describe('PanoramaMap', () => {
       it('should not add a visualization twice', () => {
         map.addPrimitiveCollection(primitiveCollection1);
         map.addPrimitiveCollection(primitiveCollection1);
-        expect(map.getCesiumWidget().scene.primitives.length).to.equal(1);
+        expect(map.getCesiumWidget().scene.primitives.length).to.equal(
+          numberOfDefaultPrimitives + 1,
+        );
       });
 
       it('should add a visualization at the correct index based on the index in the layer collection', () => {
         map.addPrimitiveCollection(primitiveCollection2);
         map.addPrimitiveCollection(primitiveCollection1);
         const { primitives } = map.getCesiumWidget().scene;
-        expect(primitives.length).to.equal(2);
-        expect(primitives.get(0)).to.equal(primitiveCollection1);
-        expect(primitives.get(1)).to.equal(primitiveCollection2);
+        expect(primitives.length).to.equal(numberOfDefaultPrimitives + 2);
+        expect(primitives.get(numberOfDefaultPrimitives)).to.equal(
+          primitiveCollection1,
+        );
+        expect(primitives.get(numberOfDefaultPrimitives + 1)).to.equal(
+          primitiveCollection2,
+        );
       });
 
       it('should not add a primitive collection without a vcsLayerName symbol', () => {
         const collection = new PrimitiveCollection();
         map.addPrimitiveCollection(collection);
-        expect(map.getCesiumWidget().scene.primitives.length).to.equal(0);
+        expect(map.getCesiumWidget().scene.primitives.length).to.equal(1);
         collection.destroy();
       });
 
@@ -141,23 +150,47 @@ describe('PanoramaMap', () => {
         const collection = new PrimitiveCollection();
         collection[vcsLayerName] = 'test';
         map.addPrimitiveCollection(collection);
-        expect(map.getCesiumWidget().scene.primitives.length).to.equal(0);
+        expect(map.getCesiumWidget().scene.primitives.length).to.equal(
+          numberOfDefaultPrimitives,
+        );
         collection.destroy();
       });
     });
 
     describe('moving of layers within the layer collection', () => {
+      let map: PanoramaMap;
+      let layerCollection: LayerCollection;
+      let numberOfDefaultPrimitives: number;
+
+      before(() => {
+        layerCollection = LayerCollection.from([layer1, layer2]);
+      });
+
+      beforeEach(() => {
+        map = getPanoramaMap({ layerCollection });
+        numberOfDefaultPrimitives =
+          map.getCesiumWidget().scene.primitives.length;
+      });
+
+      afterEach(() => {
+        map.destroy();
+      });
+
+      after(() => {
+        layerCollection.destroy();
+      });
+
       it('should rearrange the primitive collections to place them at the right index', () => {
-        const layerCollection = LayerCollection.from([layer1, layer2]);
-        const map = getPanoramaMap({ layerCollection });
         map.addPrimitiveCollection(primitiveCollection1);
         map.addPrimitiveCollection(primitiveCollection2);
         layerCollection.raise(layer1);
         const { primitives } = map.getCesiumWidget().scene;
-        expect(primitives.get(0)).to.equal(primitiveCollection2);
-        expect(primitives.get(1)).to.equal(primitiveCollection1);
-        map.destroy();
-        layerCollection.destroy();
+        expect(primitives.get(numberOfDefaultPrimitives)).to.equal(
+          primitiveCollection2,
+        );
+        expect(primitives.get(numberOfDefaultPrimitives + 1)).to.equal(
+          primitiveCollection1,
+        );
       });
     });
 

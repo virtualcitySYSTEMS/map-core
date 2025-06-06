@@ -53,14 +53,29 @@ export function createTestingDecoder() {
 }
 
 /**
- * @param {import("../../../src/panorama/panoramaDataset").default} [dataset]
- * @param {string} [absoluteRootUrl]
- * @param {string} [name]
+ * @param {{
+ *  dataset?: import("../../../src/panorama/panoramaDataset").default,
+ *  absoluteRootUrl?: string,
+ *  name?: string,
+ *  fileName?: string,
+ *  depth?: boolean,
+ * }}
  * @returns {Promise<{ panoramaImage: import("../../../src/panorama/panoramaImage.js").PanoramaImage, destroy: () => void }>}
  */
-export async function getPanoramaImage(dataset, absoluteRootUrl, name) {
-  const image = await fromFile('tests/data/panorama/badOrientation.tif');
+export async function getPanoramaImage({
+  dataset,
+  absoluteRootUrl,
+  name,
+  fileName = 'testRgbGeotiff.tif',
+  depth = false,
+} = {}) {
+  const image = await fromFile(`tests/data/panorama/${fileName}`);
+  let depthImage;
+  if (depth) {
+    depthImage = await fromFile(`tests/data/panorama/testDepthGeotiff.tif`);
+  }
   const panoramaImage = await createPanoramaImage(image, {
+    depthImage,
     dataset,
     absoluteRootUrl,
     name,
@@ -72,6 +87,7 @@ export async function getPanoramaImage(dataset, absoluteRootUrl, name) {
     destroy() {
       panoramaImage.destroy();
       image.close();
+      depthImage?.close();
     },
   };
 }
