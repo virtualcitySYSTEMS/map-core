@@ -184,7 +184,7 @@ The following objects are used at runtime to represent the panorama data.
 ## [PanoramaDatasetCollection](../src/panorama/panoramaDatasetCollection.ts)
 
 The dataset collection holds all the configured datasets and is attached to the `VcsApp` as well
-as the [PanoramaMap](#PanoramaMap).
+as the [PanoramaMap](#PanoramaMap). This is simply a normal Collection.
 
 - Allows the loading of the _closest_ image from all active datasets.
 
