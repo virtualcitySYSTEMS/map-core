@@ -36,7 +36,9 @@ describe('panoramaCameraController', () => {
     map = getPanoramaMap();
     sandbox = sinon.createSandbox();
     controller = map.panoramaCameraController;
-    const { panoramaImage, destroy } = await getPanoramaImage();
+    const { panoramaImage, destroy } = await getPanoramaImage({
+      fileName: 'badOrientation.tif', // forces heading and pitch to be set to 0
+    });
     map.setCurrentImage(panoramaImage);
     map.getCesiumWidget().camera.setView({
       destination: panoramaImage.position,

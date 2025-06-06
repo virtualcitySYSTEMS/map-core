@@ -20,10 +20,12 @@ function spawnProcess(command, args, name) {
   return childProcess;
 }
 
-// Start TypeScript compiler in watch mode
-const tscProcess = spawnProcess('npx', ['tsc', '--watch'], 'tsc');
+const tscProcess = spawnProcess(
+  'node',
+  ['node_modules/typescript/bin/tsc', '--watch'],
+  'tsc',
+);
 
-// Start shader builder in watch mode
 const shaderProcess = spawnProcess(
   'node',
   ['build/buildShader.js', '--watch'],
