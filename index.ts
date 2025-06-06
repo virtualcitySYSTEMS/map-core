@@ -386,7 +386,7 @@ export type {
 } from './src/map/vcsMap.js';
 export { default as VcsMap } from './src/map/vcsMap.js';
 export { default as PanoramaMap } from './src/map/panoramaMap.js';
-export { panoZoom } from './src/panorama/panoramaNavigation.js';
+export { PanoramaOverlayMode } from './src/panorama/panoramaTileMaterial.js';
 export { default as DefaultObliqueCollection } from './src/oblique/defaultObliqueCollection.js';
 export type {
   LineIntersectionResult,
