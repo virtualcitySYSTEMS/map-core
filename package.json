@@ -13,13 +13,15 @@
     "lint": "npm run lint:js && npm run lint:prettier",
     "format": "prettier --write --list-different . && npm run lint:js -- --fix",
     "type-check": "tsc --noEmit",
-    "postinstall": "node build/postinstall.js",
+    "postinstall": "node build/postinstall.js && node build/buildShader.js",
     "coverage": "c8 --reporter text-summary npm run test",
     "coverage:gitlab": "c8 --reporter text-summary npm run test -- --reporter mocha-junit-reporter",
     "build-docs": "typedoc index.ts --out docs --skipErrorChecking",
+    "build-shader": "node build/buildShader.js",
+    "prebuild": "node build/buildShader.js",
     "build": "tsc && node -e \"require('fs').cpSync('tests/data', 'dist/tests/data', { recursive: true })\"",
     "postbuild": "node build/postBuild.js",
-    "watch": "tsc --watch",
+    "watch": "node build/watch.js",
     "circular-check": "madge --circular src/**/*.ts",
     "prepare": "npm run build"
   },
@@ -29,12 +31,14 @@
   },
   "files": [
     "build/postinstall.js",
+    "build/buildShader.js",
     "src/",
     "dist/",
     "LICENSE.md",
     "README.md",
     "index.ts",
-    "!dist/tsconfig.tsbuildinfo"
+    "!dist/tsconfig.tsbuildinfo",
+    "!**/*.shader.ts"
   ],
   "author": "Virtual City Systems",
   "license": "MIT",

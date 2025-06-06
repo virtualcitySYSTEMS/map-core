@@ -32,19 +32,40 @@ export function getPanoramaMap(options = {}) {
 }
 
 /**
+ * @returns {import("../../../src/panorama/panoramaTileProvider.js").PanoramaImageDecoder}
+ */
+export function createTestingDecoder() {
+  return {
+    decode(fileDirectory, arrayBuffer) {
+      if (fileDirectory.vcsPanorama.type === 'depth') {
+        const depthData = new Uint16Array(arrayBuffer);
+        const result = new Float32Array(depthData.length);
+
+        for (let i = 0; i < depthData.length; i++) {
+          result[i] = depthData[i] / 65535; // Normalize to [0, 1]
+        }
+
+        return result;
+      }
+      return global.createImageBitmap(new Blob([arrayBuffer]), 0, 0, 64, 64);
+    },
+  };
+}
+
+/**
  * @param {import("../../../src/panorama/panoramaDataset").default} [dataset]
- * @param {string} [absoluteUrl]
+ * @param {string} [absoluteRootUrl]
  * @param {string} [name]
  * @returns {Promise<{ panoramaImage: import("../../../src/panorama/panoramaImage.js").PanoramaImage, destroy: () => void }>}
  */
-export async function getPanoramaImage(dataset, absoluteUrl, name) {
+export async function getPanoramaImage(dataset, absoluteRootUrl, name) {
   const image = await fromFile('tests/data/panorama/badOrientation.tif');
-  const panoramaImage = await createPanoramaImage(
-    image,
+  const panoramaImage = await createPanoramaImage(image, {
     dataset,
-    absoluteUrl,
+    absoluteRootUrl,
     name,
-  );
+    poolOrDecoder: createTestingDecoder(),
+  });
 
   return {
     panoramaImage,

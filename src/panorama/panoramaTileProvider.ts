@@ -2,149 +2,231 @@ import type { Matrix4 } from '@vcmap-cesium/engine';
 import { getLogger } from '@vcsuite/logger';
 import type { GeoTIFFImage } from 'geotiff';
 import { Pool } from 'geotiff';
-import type { PanoramaTile, TileCoordinate, TileSize } from './panoramaTile.js';
-import {
-  createPanoramaTile,
-  createTileCoordinateFromKey,
-} from './panoramaTile.js';
+import type { PanoramaTile } from './panoramaTile.js';
+import { createPanoramaTile } from './panoramaTile.js';
 import VcsEvent from '../vcsEvent.js';
 import { addTileToCache, PanoramaTileCache } from './panoramaTileCache.js';
+import {
+  tileCoordinateFromImageCoordinate,
+  type TileCoordinate,
+  type TileSize,
+  getTileSphericalExtent,
+} from './panoramaTileCoordinate.js';
+import type {
+  DepthGDALMetadata,
+  PanoramaFileDirectoryMetadata,
+} from './panoramaImage.js';
 
-export type TileLoadError = { tileCoordinate: TileCoordinate; error: Error };
+export type PanoramaResourceType = 'rgb' | 'intensity' | 'depth';
+export type PanoramaResourceData<T extends PanoramaResourceType> =
+  T extends 'rgb'
+    ? ImageBitmap
+    : T extends 'intensity'
+      ? ImageBitmap
+      : T extends 'depth'
+        ? Float32Array
+        : never;
 
-export type PanoramaTileProvider = {
+export type TileLoadError = {
+  tileCoordinate: TileCoordinate;
+  error: Error;
+  type: PanoramaResourceType;
+};
+
+type PanoramaResourceProvider = {
   destroy(): void;
   /**
-   * Sets the currently visible tiles. Currently not visible tiles will be loaded.
-   * Last coordinates in the provided array get loaded first (FILO). If the provided array is already visible,
-   * no tiles will be loaded.
-   * @param tileCoordinates
+   * Sets the currently visible tiles and creates or updates the queue for loading resources.
    */
-  setVisibleTiles(tileCoordinates: TileCoordinate[]): void;
+  setVisibleTiles(panoramaTiles: PanoramaTile[]): void;
   /**
-   * Returns the currently visible tiles. This is not the same as the tiles that are currently loaded,
-   * some visible tiles may still be loading.
+   * Loads the resource for the given tile and type. If the resource is already loaded, it returns a resolved promise.
+   * If the resource is currently loading, it returns the promise of that loading operation. Mainly used to request depth.
+   * @param tile - The panorama tile to load the resource for.
+   * @param type - The type of resource to load.
    */
-  getVisibleTiles(): TileCoordinate[];
+  loadResource(tile: PanoramaTile, type: PanoramaResourceType): Promise<void>;
+  showIntensity: boolean;
   readonly loading: boolean;
-  tileLoaded: VcsEvent<PanoramaTile>;
+  loadingStateChanged: VcsEvent<boolean>;
   tileError: VcsEvent<TileLoadError>;
+};
+
+export type PanoramaImageDecoder = {
+  decode(
+    fileDirectory: { vcsPanorama: PanoramaFileDirectoryMetadata },
+    buffer: ArrayBuffer,
+  ): Promise<PanoramaResourceData<PanoramaResourceType>>;
+};
+
+type PanoramaResource<T extends PanoramaResourceType> = {
+  type: T;
+  levelImages: GeoTIFFImage[];
+} & (T extends 'depth'
+  ? {
+      metadata: DepthGDALMetadata;
+    }
+  : {
+      metadata?: never;
+    });
+
+type TileResourceRequest<T extends PanoramaResourceType> = {
+  tile: PanoramaTile;
+  resource: PanoramaResource<T>;
+};
+
+type ResourceOptions = {
+  rgb: PanoramaResource<'rgb'>;
+  intensity?: PanoramaResource<'intensity'>;
+  depth?: PanoramaResource<'depth'>;
+};
+
+export type PanoramaTileProvider = {
+  /**
+   * Creates or the visible tiles for the given tile coordinates or retrieves them from the cache.
+   */
+  createVisibleTiles(tileCoordinates: TileCoordinate[]): PanoramaTile[];
+  /**
+   * Gets the depth at the given image coordinate for the current level.
+   */
+  getDepthAtImageCoordinate(
+    imageCoordinate: [number, number],
+  ): Promise<number | undefined>;
+  /**
+   * Gets the depth at the given image coordinate for the most detailed level.
+   */
+  getDepthAtImageCoordinateMostDetailed(
+    imageCoordinate: [number, number],
+  ): Promise<number | undefined>;
+  /**
+   * The promise that resolves when the intensity images are loaded and ready to be used.
+   */
+  intensityReady: Promise<void>;
+  /**
+   * Load & show intensity images.
+   */
+  showIntensity: boolean;
+  /**
+   * The current level of the panorama tile provider. This is set by the panorama viewer and is used to determine which depth tiles to query.
+   */
+  currentLevel: number;
+  readonly loading: boolean;
   /**
    * Raised with true, if we start loading new data. raised with false, if all tiles are loaded.
    */
   loadingStateChanged: VcsEvent<boolean>;
+  tileError: VcsEvent<TileLoadError>;
+  destroy(): void;
 };
 
-type ImageBitmapDecoder = {
-  decode(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fileDirectory: any,
-    buffer: ArrayBuffer,
-  ): Promise<ImageBitmap>;
-};
-
-let defaultPool: Pool | undefined;
-function getDefaultPool(): Pool {
-  if (!defaultPool) {
+let defaultImagePool: Pool | undefined;
+function getDefaultImagePool(): Pool {
+  if (!defaultImagePool) {
     let workerUrl: URL;
     if (window.vcs.workerBase) {
       workerUrl = new URL(
-        `${window.vcs.workerBase}/webp.js`,
+        `${window.vcs.workerBase}/panoramaImageWorker.js`,
         window.location.href,
       );
     } else {
-      workerUrl = new URL('../workers/webp.js', import.meta.url);
+      workerUrl = new URL('../workers/panoramaImageWorker.js', import.meta.url);
     }
 
-    defaultPool = new Pool(undefined, () => {
+    defaultImagePool = new Pool(undefined, () => {
       return new Worker(workerUrl, {
         type: 'module',
       });
     });
   }
-  return defaultPool;
+  return defaultImagePool;
 }
 
 /**
- * Creates a panorama tile provider for the given images.
- * @param levelImages - the images ordered by level. lowest level (smallest overview) first. that level is given by minLevel. all other levels must be consecutive.
- * @param modelMatrix - the model matrix of the image
- * @param tileSize - the size of the tile in pixels
- * @param minLevel - the minimum level of the images
- * @param maxCacheSize - the cache size for the number of tiles to cache. (LRU cache in use)
- * @param concurrency - the number of concurrent web requests to load tiles with
- * @param poolOrDecoder - an optional pool to decode directly to image bitmaps. most scenarios will use the default, mainly used for headless testing
+ * The priority order in which the panorama resources are loaded.
  */
-export function createPanoramaTileProvider(
-  levelImages: GeoTIFFImage[],
-  modelMatrix: Matrix4,
-  tileSize: TileSize,
-  minLevel: number,
-  maxCacheSize?: number,
-  concurrency = 6,
-  poolOrDecoder: Pool | ImageBitmapDecoder = getDefaultPool(),
-): PanoramaTileProvider {
-  const cache = new PanoramaTileCache(maxCacheSize);
-  let currentlyVisibleTiles: Record<string, boolean> = {};
-  let loading = false;
+const typeOrder: Record<PanoramaResourceType, number> = {
+  rgb: 0,
+  intensity: 1,
+  depth: 2,
+} as const;
 
-  const tileLoaded = new VcsEvent<PanoramaTile>();
-  const tileError = new VcsEvent<{
-    tileCoordinate: TileCoordinate;
-    error: Error;
-  }>();
+function createPanoramaResourceProvider(
+  resources: ResourceOptions,
+  minLevel: number,
+  poolOrDecoder: Pool | PanoramaImageDecoder,
+  concurrency = 6,
+): PanoramaResourceProvider {
+  let currentlyVisibleTiles: PanoramaTile[] = [];
+  let loading = false;
+  let showIntensity = false;
+
+  const tileError = new VcsEvent<TileLoadError>();
   const loadingStateChanged = new VcsEvent<boolean>();
 
-  const destroy = (): void => {
-    cache.clear();
-  };
+  const loadResource = async (
+    request: TileResourceRequest<PanoramaResourceType>,
+  ): Promise<void> => {
+    const { tile, resource } = request;
+    const { type } = resource;
+    if (!tile.material.hasTexture(type)) {
+      const { levelImages } = resource;
+      const { tileCoordinate } = tile;
+      const levelImage = levelImages[tileCoordinate.level - minLevel];
+      if (levelImage) {
+        try {
+          const resourceData = await levelImage.getTileOrStrip(
+            tileCoordinate.x,
+            tileCoordinate.y,
+            levelImage.getSamplesPerPixel(),
+            poolOrDecoder,
+          );
 
-  const loadTile = async (
-    tileCoordinate: TileCoordinate,
-  ): Promise<PanoramaTile | null | Error> => {
-    const levelImage = levelImages[tileCoordinate.level - minLevel];
-    if (levelImage) {
-      try {
-        const tile = await levelImage.getTileOrStrip(
-          tileCoordinate.x,
-          tileCoordinate.y,
-          levelImage.getSamplesPerPixel(),
-          poolOrDecoder,
-        );
-
-        return createPanoramaTile(
-          tileCoordinate,
-          tile.data as unknown as ImageBitmap,
-          modelMatrix,
-          tileSize,
-        );
-      } catch (error) {
-        return error as Error;
+          tile.material.setTexture(
+            type,
+            resourceData.data as unknown as PanoramaResourceData<PanoramaResourceType>,
+          );
+        } catch (error) {
+          tileError.raiseEvent({
+            tileCoordinate,
+            error: error as Error,
+            type,
+          });
+        }
       }
     }
-    return null;
   };
 
-  let currentQueue: TileCoordinate[] = [];
-  const loadTilesQueue = (tileCoordinates: TileCoordinate[]): void => {
-    currentQueue = tileCoordinates.slice();
-    async function* loadNextTileGenerator(): AsyncGenerator<
-      PanoramaTile | TileLoadError
-    > {
+  let currentQueue: TileResourceRequest<PanoramaResourceType>[] = [];
+  const loadingTiles = new Map<
+    PanoramaTile,
+    Record<PanoramaResourceType, Promise<void> | undefined>
+  >();
+
+  const startQueue = (): void => {
+    async function* loadNextTileGenerator(): AsyncGenerator<void> {
       while (currentQueue?.length) {
-        const tileCoordinate = currentQueue.pop()!;
-        if (cache.containsKey(tileCoordinate.key)) {
-          yield cache.get(tileCoordinate.key);
-        } else {
-          // eslint-disable-next-line no-await-in-loop
-          const result = await loadTile(tileCoordinate);
-          if (result instanceof Error) {
-            yield { tileCoordinate, error: result };
-          } else if (result) {
-            addTileToCache(result, cache, currentlyVisibleTiles);
-            yield result;
-          }
+        const currentTile = currentQueue.pop()!;
+        if (!loadingTiles.has(currentTile.tile)) {
+          loadingTiles.set(currentTile.tile, {
+            rgb: undefined,
+            intensity: undefined,
+            depth: undefined,
+          });
         }
+        const currentTileTypes = loadingTiles.get(currentTile.tile)!;
+        const promise = loadResource(currentTile);
+        currentTileTypes[currentTile.resource.type] = promise;
+        // eslint-disable-next-line no-await-in-loop
+        await promise;
+        currentTileTypes[currentTile.resource.type] = undefined;
+        if (
+          !currentTileTypes.rgb &&
+          !currentTileTypes.depth &&
+          !currentTileTypes.intensity
+        ) {
+          loadingTiles.delete(currentTile.tile);
+        }
+        yield;
       }
     }
 
@@ -155,12 +237,9 @@ export function createPanoramaTileProvider(
     );
 
     const promises = generators.map(async (gen) => {
-      for await (const result of gen) {
-        if ((result as TileLoadError).error) {
-          tileError.raiseEvent(result as TileLoadError);
-        } else if (result) {
-          tileLoaded.raiseEvent(result as PanoramaTile);
-        }
+      // eslint-disable-next-line @typescript-eslint/naming-convention,@typescript-eslint/no-unused-vars
+      for await (const _ of gen) {
+        // just iterating
       }
     });
 
@@ -175,39 +254,281 @@ export function createPanoramaTileProvider(
       });
   };
 
-  return {
-    setVisibleTiles(tileCoordinates: TileCoordinate[]): void {
-      const newTileCoordinates = tileCoordinates.filter(
-        (tc) =>
-          !currentlyVisibleTiles[tc.key] ||
-          currentQueue.find((c) => tc.key === c.key),
-      );
-
-      currentlyVisibleTiles = Object.fromEntries(
-        tileCoordinates.map((tile) => [tile.key, true]),
-      );
-
-      if (newTileCoordinates.length > 0) {
-        if (currentQueue?.length) {
-          currentQueue.splice(0, currentQueue.length, ...newTileCoordinates);
-        } else {
-          loading = true;
-          loadingStateChanged.raiseEvent(true);
-          loadTilesQueue(newTileCoordinates);
+  const createOrUpdateQueue = (panoramaTile: PanoramaTile[]): void => {
+    const newResources = panoramaTile.flatMap((tile) => {
+      const resourceRequests: TileResourceRequest<PanoramaResourceType>[] = [];
+      if (!tile.material.hasTexture('rgb') && !loadingTiles.get(tile)?.rgb) {
+        resourceRequests.push({
+          tile,
+          resource: resources.rgb,
+        });
+      }
+      if (resources.depth) {
+        if (
+          !tile.material.hasTexture('depth') &&
+          !loadingTiles.get(tile)?.depth
+        ) {
+          resourceRequests.push({
+            tile,
+            resource: resources.depth,
+          });
         }
       }
+      if (showIntensity && resources.intensity) {
+        if (
+          !tile.material.hasTexture('intensity') &&
+          !loadingTiles.get(tile)?.intensity
+        ) {
+          resourceRequests.push({
+            tile,
+            resource: resources.intensity,
+          });
+        }
+      }
+
+      return resourceRequests;
+    });
+
+    if (newResources.length === 0) {
+      return;
+    }
+
+    newResources.sort(
+      (a, b) => typeOrder[b.resource.type] - typeOrder[a.resource.type],
+    );
+
+    if (currentQueue.length > 0) {
+      currentQueue.splice(0, currentQueue.length, ...newResources);
+    } else {
+      loading = true;
+      loadingStateChanged.raiseEvent(true);
+      currentQueue = newResources;
+      startQueue();
+    }
+  };
+
+  return {
+    setVisibleTiles(panoramaTiles: PanoramaTile[]): void {
+      currentlyVisibleTiles = panoramaTiles.slice();
+      createOrUpdateQueue(currentlyVisibleTiles);
     },
-    getVisibleTiles(): TileCoordinate[] {
-      return Object.keys(currentlyVisibleTiles).map(
-        createTileCoordinateFromKey,
-      );
+    get showIntensity(): boolean {
+      return showIntensity;
+    },
+    set showIntensity(value: boolean) {
+      showIntensity = value;
+      if (value && resources.intensity) {
+        createOrUpdateQueue(currentlyVisibleTiles);
+      }
+    },
+    loadResource(
+      tile: PanoramaTile,
+      type: PanoramaResourceType,
+    ): Promise<void> {
+      if (!resources[type]) {
+        throw new Error(`Resource type ${type} not found`);
+      }
+
+      if (tile.material.hasTexture(type)) {
+        return Promise.resolve();
+      }
+
+      if (loadingTiles.has(tile) && loadingTiles.get(tile)?.[type]) {
+        return loadingTiles.get(tile)![type]!;
+      }
+
+      return loadResource({ tile, resource: resources[type] });
     },
     get loading(): boolean {
       return loading;
     },
-    tileLoaded,
     tileError,
     loadingStateChanged,
+    destroy(): void {
+      currentQueue = [];
+      tileError.destroy();
+    },
+  };
+}
+
+function interpolateDepth(
+  value: number,
+  min: number,
+  max: number,
+  minValue = 1 / 65535,
+  maxValue = 1,
+): number {
+  return min + ((value - minValue) / (maxValue - minValue)) * (max - min);
+}
+
+/**
+ * Creates a panorama tile provider for the given images.
+ * @param rgbImages - the images ordered by level. lowest level (smallest overview) first. that level is given by minLevel. all other levels must be consecutive.
+ * @param modelMatrix - the model matrix of the image
+ * @param tileSize - the size of the tile in pixels
+ * @param minLevel - the minimum level of the images
+ * @param maxCacheSize - the cache size for the number of tiles to cache. (LRU cache in use)
+ * @param concurrency - the number of concurrent web requests to load tiles with
+ * @param poolOrDecoder - an optional pool to decode directly to image bitmaps. most scenarios will use the default, mainly used for headless testing
+ */
+export function createPanoramaTileProvider(
+  rgbImages: GeoTIFFImage[],
+  modelMatrix: Matrix4,
+  tileSize: TileSize,
+  minLevel: number,
+  maxLevel: number,
+  getIntensityImages?: () => Promise<GeoTIFFImage[]>,
+  depth?: { levelImages: GeoTIFFImage[]; metadata: DepthGDALMetadata },
+  maxCacheSize?: number,
+  concurrency = 6,
+  poolOrDecoder: Pool | PanoramaImageDecoder = getDefaultImagePool(),
+): PanoramaTileProvider {
+  const cache = new PanoramaTileCache(maxCacheSize);
+  const resources: ResourceOptions = {
+    rgb: {
+      type: 'rgb',
+      levelImages: rgbImages,
+    },
+  };
+
+  if (depth) {
+    resources.depth = {
+      ...depth,
+      type: 'depth',
+    };
+  }
+
+  const resourceProvider = createPanoramaResourceProvider(
+    resources,
+    minLevel,
+    poolOrDecoder,
+    concurrency,
+  );
+  let showIntensity = false;
+
+  const destroy = (): void => {
+    cache.clear();
+    resourceProvider.destroy();
+  };
+
+  let currentlyVisibleTileCoordinates: Record<string, boolean> = {};
+  const createTile = (tileCoordinate: TileCoordinate): PanoramaTile => {
+    if (cache.containsKey(tileCoordinate.key)) {
+      return cache.get(tileCoordinate.key);
+    }
+    const newTile = createPanoramaTile(tileCoordinate, modelMatrix, tileSize);
+    addTileToCache(newTile, cache, currentlyVisibleTileCoordinates);
+    return newTile;
+  };
+
+  const getDepthAtImageCoordinate = async (
+    imageCoordinate: [number, number],
+    level: number,
+  ): Promise<number | undefined> => {
+    if (!resources.depth) {
+      return undefined;
+    }
+
+    const tileCoordinate = tileCoordinateFromImageCoordinate(
+      imageCoordinate,
+      level,
+    );
+    const tile = createTile(tileCoordinate);
+    await resourceProvider.loadResource(tile, 'depth');
+
+    const [minPhi, minTheta, maxPhi, maxTheta] =
+      getTileSphericalExtent(tileCoordinate);
+    const offsetX = imageCoordinate[0] - minPhi;
+    const offsetY = imageCoordinate[1] - minTheta;
+
+    const width = maxPhi - minPhi;
+    const height = maxTheta - minTheta;
+
+    const x = tileSize[0] - Math.floor((offsetX / width) * tileSize[0]);
+    const y = Math.floor((offsetY / height) * tileSize[1]);
+
+    const depthValue = tile.material.getDepthAtPixel(x, y);
+    if (depthValue) {
+      return interpolateDepth(
+        depthValue,
+        depth?.metadata?.min ?? 0,
+        depth?.metadata?.max ?? 50,
+      );
+    }
+    return depthValue;
+  };
+
+  let resolveIntensity: () => void;
+  let rejectIntensity: (reason?: unknown) => void;
+  const intensityReady = new Promise<void>((resolve, reject) => {
+    resolveIntensity = resolve;
+    rejectIntensity = reject;
+  });
+
+  const loadIntensityImages = (): void => {
+    if (!resources.intensity && getIntensityImages) {
+      getIntensityImages()
+        .then((intensityImages) => {
+          resources.intensity = {
+            type: 'intensity',
+            levelImages: intensityImages,
+          };
+          if (showIntensity) {
+            resourceProvider.showIntensity = true;
+          }
+          resolveIntensity();
+        })
+        .catch((e: unknown) => {
+          getLogger('PanoramaTileProvider').warning(
+            'Error loading intensity images',
+          );
+          getLogger('PanoramaTileProvider').warning(String(e));
+          rejectIntensity(e);
+        });
+    }
+  };
+
+  return {
+    createVisibleTiles(tileCoordinates: TileCoordinate[]): PanoramaTile[] {
+      currentlyVisibleTileCoordinates = Object.fromEntries(
+        tileCoordinates.map((tile) => [tile.key, true]),
+      );
+
+      const panoramaTiles = tileCoordinates.map(createTile);
+      resourceProvider.setVisibleTiles(panoramaTiles.slice());
+      return panoramaTiles;
+    },
+    currentLevel: minLevel,
+    get loading(): boolean {
+      return resourceProvider.loading;
+    },
+    get intensityReady(): Promise<void> {
+      return intensityReady;
+    },
+    get showIntensity(): boolean {
+      return showIntensity;
+    },
+    set showIntensity(value: boolean) {
+      showIntensity = value;
+      // XXX this entire thing is a mess
+      if (resources.intensity) {
+        resourceProvider.showIntensity = value;
+      } else if (value) {
+        loadIntensityImages();
+      }
+    },
+    getDepthAtImageCoordinateMostDetailed(
+      imageCoordinate: [number, number],
+    ): Promise<number | undefined> {
+      return getDepthAtImageCoordinate(imageCoordinate, maxLevel);
+    },
+    getDepthAtImageCoordinate(
+      imageCoordinate: [number, number],
+    ): Promise<number | undefined> {
+      return getDepthAtImageCoordinate(imageCoordinate, this.currentLevel);
+    },
+    tileError: resourceProvider.tileError,
+    loadingStateChanged: resourceProvider.loadingStateChanged,
     destroy,
   };
 }
