@@ -6,6 +6,7 @@ import URLTemplateTileProvider from '../../../src/layer/tileProvider/urlTemplate
 import TileProviderFeatureProvider from '../../../src/featureProvider/tileProviderFeatureProvider.js';
 import { vcsLayerName } from '../../../src/layer/layerSymbols.js';
 import GlobalHider from '../../../src/layer/globalHider.js';
+import VectorStyleItem from '../../../src/style/vectorStyleItem.js';
 
 describe('VectorTileLayer', () => {
   describe('initialization', () => {
@@ -307,14 +308,18 @@ describe('VectorTileLayer', () => {
     let configObject;
     let options;
     let vectorTile;
+    let highlightStyle;
 
     before(() => {
+      highlightStyle = new VectorStyleItem({
+        fill: { color: 'rgba(255, 0, 0, 0.5)' },
+      });
       options = {
         minLevel: 12,
         maxLevel: 13,
-        vectorProperties: {
-          heightAboveGround: 12,
-        },
+        debug: true,
+        highlightStyle,
+        vectorProperties: { heightAboveGround: 12 },
         tileProvider: {
           type: 'URLTemplateTileProvider',
           url: 'myURL',
@@ -335,6 +340,16 @@ describe('VectorTileLayer', () => {
 
     it('should export minLevel', () => {
       expect(configObject.minLevel).to.be.equal(12);
+    });
+
+    it('should export debug state', () => {
+      expect(configObject.debug).to.be.equal(true);
+    });
+
+    it('should export highlightStyle', () => {
+      expect(configObject.highlightStyle).to.be.deep.equal(
+        highlightStyle.toJSON(),
+      );
     });
 
     it('should export vectorProperties Options', () => {
