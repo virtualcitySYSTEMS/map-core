@@ -1,4 +1,3 @@
-import nock from 'nock';
 import Feature from 'ol/Feature.js';
 import { LineString, Point } from 'ol/geom.js';
 import { Fill, RegularShape, Style } from 'ol/style.js';
@@ -780,6 +779,46 @@ describe('VectorContext', () => {
 
       const primitiveAtIndex = vectorContext.primitives.get(index) as Primitive;
       expect(primitiveAtIndex).to.have.property('olFeature', feature);
+    });
+  });
+
+  describe('clearing the context', () => {
+    let vectorContext: VectorContext;
+    let feature: Feature;
+
+    before(async () => {
+      const collection = new PrimitiveCollection();
+      vectorContext = new VectorContext(map, collection, SplitDirection.NONE);
+      feature = new Feature({
+        geometry: new LineString([
+          [1, 1, 1],
+          [2, 2, 1],
+        ]),
+      });
+      await vectorContext.addFeature(
+        feature,
+        new Style({
+          stroke: new Stroke({
+            color: '#ff0000',
+            width: 1,
+          }),
+        }),
+        new VectorProperties({}),
+        scene,
+      );
+      vectorContext.clear();
+    });
+
+    after(() => {
+      vectorContext.destroy();
+    });
+
+    it('should remove the feature', () => {
+      expect(vectorContext.hasFeature(feature)).to.be.false;
+    });
+
+    it('should remove the primitives symbol', () => {
+      expect(feature[primitives]).to.be.undefined;
     });
   });
 });

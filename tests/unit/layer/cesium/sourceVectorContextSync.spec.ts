@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import sinon from 'sinon';
 import Feature from 'ol/Feature.js';
 import VectorSource from 'ol/source/Vector.js';
 import { StyleLike } from 'ol/style/Style.js';
@@ -312,6 +313,99 @@ describe('sourceVectorContextSync', () => {
     describe('if inactive', () => {
       it('should cache the feature', () => {
         vectorProperties.propertyChanged.raiseEvent(['modelAutoScale']);
+        sourceSync.activate();
+        expect(vectorContext.hasFeature(feature)).to.be.true;
+      });
+    });
+  });
+
+  describe('setting a new style', () => {
+    let vectorSource: VectorSource;
+    let vectorContext: VectorContext;
+    let sourceSync: SourceVectorContextSync;
+    let feature: Feature;
+    let newStyle: StyleLike;
+
+    before(() => {
+      newStyle = defaultVectorStyle.clone().style;
+    });
+
+    beforeEach(() => {
+      vectorSource = new VectorSource();
+      vectorContext = new VectorContext(
+        map,
+        rootCollection,
+        SplitDirection.NONE,
+      );
+      sourceSync = createSourceVectorContextSync(
+        vectorSource,
+        vectorContext,
+        map.getScene()!,
+        style,
+        vectorProperties,
+      );
+      feature = createFeature();
+      vectorSource.addFeature(feature);
+    });
+
+    afterEach(() => {
+      vectorSource.dispose();
+      vectorContext.destroy();
+      sourceSync.destroy();
+    });
+
+    describe('if active', () => {
+      beforeEach(() => {
+        sourceSync.activate();
+      });
+
+      it('should set the new style', () => {
+        sourceSync.setStyle(newStyle);
+        expect(sourceSync.style).to.equal(newStyle);
+      });
+
+      it('should remove the feature from the context and add it again', async () => {
+        await timeout(100);
+        const primitiveCollection = rootCollection.get(
+          0,
+        ) as PrimitiveCollection;
+        expect(primitiveCollection.length).to.equal(1);
+        const p = primitiveCollection.get(0) as Primitive;
+        sourceSync.setStyle(newStyle);
+        await timeout(100);
+        expect(primitiveCollection.length).to.equal(1);
+        const p2 = primitiveCollection.get(0) as Primitive;
+        expect(p).to.not.equal(p2);
+        expect(vectorContext.hasFeature(feature)).to.be.true;
+      });
+
+      it('should not refresh, if silent is set', async () => {
+        await timeout(100);
+        const primitiveCollection = rootCollection.get(
+          0,
+        ) as PrimitiveCollection;
+        expect(primitiveCollection.length).to.equal(1);
+        const p = primitiveCollection.get(0) as Primitive;
+        sourceSync.setStyle(newStyle, true);
+        await timeout(100);
+        expect(primitiveCollection.length).to.equal(1);
+        const p2 = primitiveCollection.get(0) as Primitive;
+        expect(p).to.equal(p2);
+        expect(vectorContext.hasFeature(feature)).to.be.true;
+      });
+    });
+
+    describe('if inactive', () => {
+      it('should set the new style', () => {
+        sourceSync.setStyle(newStyle);
+        expect(sourceSync.style).to.equal(newStyle);
+      });
+
+      it('should cache the feature', () => {
+        sourceSync.activate();
+        sourceSync.deactivate();
+        sourceSync.setStyle(newStyle);
+        expect(vectorContext.hasFeature(feature)).to.be.false;
         sourceSync.activate();
         expect(vectorContext.hasFeature(feature)).to.be.true;
       });

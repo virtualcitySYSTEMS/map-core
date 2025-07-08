@@ -405,6 +405,9 @@ export default class VectorContext implements CesiumVectorContext {
     this.scaledPrimitives.removeAll();
     this.billboards.removeAll();
     this.labels.removeAll();
+    for (const feature of this._featureItems.keys()) {
+      feature[primitivesSymbol] = undefined;
+    }
     this._featureItems.clear();
     this._convertingFeatures.forEach((destroy) => {
       destroy(true);
@@ -429,6 +432,9 @@ export default class VectorContext implements CesiumVectorContext {
       destroy(true);
     });
     this._convertingFeatures.clear();
+    for (const feature of this._featureItems.keys()) {
+      feature[primitivesSymbol] = undefined;
+    }
     this._featureItems.clear();
     this._postRenderListener();
   }

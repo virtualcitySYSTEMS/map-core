@@ -1,3 +1,7 @@
+### 6.1.11
+
+- Fixes a bug, where updating the style of a vector layer would not update the style of the primitives in the layer.
+
 ### 6.1.10
 
 - Add support for GML3.2 to `WMSFeatureInfoResponseType`

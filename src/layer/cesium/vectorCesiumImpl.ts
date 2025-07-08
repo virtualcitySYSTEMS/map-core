@@ -120,12 +120,7 @@ class VectorCesiumImpl
 
   updateStyle(style: StyleItem, silent?: boolean): void {
     this.style = style;
-    if (this.initialized && !silent) {
-      this.source
-        .getFeatures()
-        .filter((f) => !f.getStyle())
-        .forEach((f) => f.changed());
-    }
+    this._sourceVectorContextSync?.setStyle(style.style, silent);
   }
 
   updateSplitDirection(splitDirection: SplitDirection): void {

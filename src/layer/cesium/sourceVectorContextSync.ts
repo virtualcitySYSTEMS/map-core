@@ -10,6 +10,17 @@ import VectorProperties from '../vectorProperties.js';
 
 export type SourceVectorContextSync = {
   readonly active: boolean;
+  /**
+   * The style used for the features in the source that do not have their own style.
+   */
+  readonly style: StyleLike;
+  /**
+   * Sets the style for the context.
+   * Setting this will trigger a refresh of the context unless silent is set to true.
+   * @param style
+   * @param silent - optional flag to not trigger a refresh
+   */
+  setStyle(style: StyleLike, silent?: boolean): void;
   activate(): void;
   deactivate(): void;
   /**
@@ -37,6 +48,7 @@ export function createSourceVectorContextSync(
 ): SourceVectorContextSync {
   const featureToAdd = new Set<Feature>();
   let active = false;
+  let layerStyle = style;
   const vectorPropertiesChanged = new Map<VectorProperties, () => void>();
   const getVectorProperties =
     typeof vectorProperties === 'function'
@@ -52,9 +64,14 @@ export function createSourceVectorContextSync(
         featureVectorProperties.propertyChanged.addEventListener(refresh),
       );
     }
+
     if (active) {
-      // XXX cluster check here? or on init?
-      await context.addFeature(feature, style, featureVectorProperties, scene);
+      await context.addFeature(
+        feature,
+        layerStyle,
+        featureVectorProperties,
+        scene,
+      );
     } else {
       featureToAdd.add(feature);
     }
@@ -114,6 +131,17 @@ export function createSourceVectorContextSync(
   return {
     get active(): boolean {
       return active;
+    },
+    get style(): StyleLike {
+      return layerStyle;
+    },
+    setStyle(newStyle: StyleLike, silent?: boolean): void {
+      if (newStyle !== layerStyle) {
+        layerStyle = newStyle;
+        if (!silent) {
+          refresh();
+        }
+      }
     },
     activate(): void {
       active = true;
