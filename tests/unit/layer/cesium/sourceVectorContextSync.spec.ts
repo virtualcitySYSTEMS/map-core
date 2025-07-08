@@ -1,5 +1,4 @@
 import { expect } from 'chai';
-import sinon from 'sinon';
 import Feature from 'ol/Feature.js';
 import VectorSource from 'ol/source/Vector.js';
 import type { StyleLike } from 'ol/style/Style.js';
