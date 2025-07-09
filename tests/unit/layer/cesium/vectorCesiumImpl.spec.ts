@@ -14,6 +14,7 @@ import VcsApp from '../../../../src/vcsApp.js';
 import VectorLayer from '../../../../src/layer/vectorLayer.js';
 import { setCesiumMap } from '../../helpers/cesiumHelpers.js';
 import { timeout } from '../../helpers/helpers.js';
+import { primitives } from '../../../../index.js';
 import type { CesiumMap, VectorCesiumImpl } from '../../../../index.js';
 
 describe('VectorCesiumImpl', () => {
@@ -142,15 +143,25 @@ describe('VectorCesiumImpl', () => {
   });
 
   describe('updateStyle', () => {
-    it('should call changed on each feature', async () => {
+    it('should replace features via the vector context sync', async () => {
       await vectorCesiumImpl.initialize();
       await vectorCesiumImpl.activate();
-      const changedF = sandbox.spy(feature, 'changed');
-      const changedP = sandbox.spy(pointFeature, 'changed');
       commonLayer.addFeatures([feature, pointFeature]);
-      vectorCesiumImpl.updateStyle(commonLayer.style);
-      expect(changedF).to.have.been.calledOnce;
-      expect(changedP).to.have.been.calledOnce;
+      await timeout(100);
+      expect(feature).to.have.property(primitives).and.to.not.be.empty;
+      expect(pointFeature).to.have.property(primitives).and.to.not.be.empty;
+
+      const featurePrimitive = feature[primitives]?.[0];
+      const pointPrimitive = pointFeature[primitives]?.[0];
+      vectorCesiumImpl.updateStyle(commonLayer.style.clone());
+
+      await timeout(100);
+      expect(feature)
+        .to.have.property(primitives)
+        .and.to.not.include(featurePrimitive);
+      expect(pointFeature)
+        .to.have.property(primitives)
+        .and.to.not.include(pointPrimitive);
     });
   });
 

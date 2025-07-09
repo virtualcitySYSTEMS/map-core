@@ -5,6 +5,7 @@ import GML3 from 'ol/format/GML3.js';
 import WMSGetFeatureInfo from 'ol/format/WMSGetFeatureInfo.js';
 import Point from 'ol/geom/Point.js';
 import nock from 'nock';
+import GML32 from 'ol/format/GML32.js';
 import WMSFeatureProvider, {
   getFormat,
 } from '../../../src/featureProvider/wmsFeatureProvider.js';
@@ -26,22 +27,11 @@ describe('WMSFeatureProvider', () => {
       testGeojson = {
         type: 'FeatureCollection',
         features: [
+          { type: 'Feature', geometry: null, properties: { foo: 'bar' } },
           {
             type: 'Feature',
-            geometry: null,
-            properties: {
-              foo: 'bar',
-            },
-          },
-          {
-            type: 'Feature',
-            geometry: {
-              type: 'Point',
-              coordinates: [1, 1, 2],
-            },
-            properties: {
-              foo: 'baz',
-            },
+            geometry: { type: 'Point', coordinates: [1, 1, 2] },
+            properties: { foo: 'baz' },
           },
         ],
       };
@@ -54,9 +44,7 @@ describe('WMSFeatureProvider', () => {
 
       provider = new WMSFeatureProvider('test', {
         url: 'http://myWmsFeatureProvider/wms',
-        parameters: {
-          LAYERS: 'one',
-        },
+        parameters: { LAYERS: 'one' },
         responseType: 'application/json',
         projection: mercatorProjection.toJSON(),
       });
@@ -95,31 +83,18 @@ describe('WMSFeatureProvider', () => {
       testGeojson = {
         type: 'FeatureCollection',
         features: [
+          { type: 'Feature', geometry: null, properties: { foo: 'bar' } },
           {
             type: 'Feature',
-            geometry: null,
-            properties: {
-              foo: 'bar',
-            },
-          },
-          {
-            type: 'Feature',
-            geometry: {
-              type: 'Point',
-              coordinates: [1, 1, 2],
-            },
-            properties: {
-              foo: 'baz',
-            },
+            geometry: { type: 'Point', coordinates: [1, 1, 2] },
+            properties: { foo: 'baz' },
           },
         ],
       };
 
       provider = new WMSFeatureProvider('test', {
         url: 'http://myWmsFeatureProvider/wms',
-        parameters: {
-          LAYERS: 'one',
-        },
+        parameters: { LAYERS: 'one' },
         responseType: 'application/json',
         projection: mercatorProjection.toJSON(),
       });
@@ -155,9 +130,7 @@ describe('WMSFeatureProvider', () => {
     });
 
     it('should set the correct GML format', () => {
-      const options = {
-        gmlFormat: 'GML',
-      };
+      const options = { gmlFormat: 'GML' };
 
       const format = getFormat('text/xml', options);
       expect(format).to.be.an.instanceOf(WFS);
@@ -174,6 +147,11 @@ describe('WMSFeatureProvider', () => {
     it('should create a GML3 format', () => {
       const format = getFormat('application/vnd.ogc.gml/3.1.1');
       expect(format).to.be.an.instanceOf(GML3);
+    });
+
+    it('should create a GML32 format', () => {
+      const format = getFormat('text/xml; subtype=gml/3.2.1');
+      expect(format).to.be.an.instanceOf(GML32);
     });
 
     it('should return null, if no response type is specified', () => {
@@ -216,18 +194,14 @@ describe('WMSFeatureProvider', () => {
       before(() => {
         inputConfig = {
           url: '/wms',
-          parameters: {
-            LAYERS: 'one',
-          },
+          parameters: { LAYERS: 'one' },
           version: '1.3.0',
           tilingSchema: 'mercator',
           maxLevel: 22,
           minLevel: 3,
           tileSize: [512, 512],
           responseType: 'application/json',
-          formatOptions: {
-            geometryName: 'foo',
-          },
+          formatOptions: { geometryName: 'foo' },
           extent: new Extent({
             coordinates: [0, 0, 1, 1],
             projection: mercatorProjection.toJSON(),
@@ -292,6 +266,60 @@ describe('WMSFeatureProvider', () => {
           .to.have.property('extent')
           .and.to.eql(inputConfig.extent);
       });
+    });
+  });
+
+  describe('GML32 response parsing', () => {
+    let scope;
+    let provider;
+    let features;
+
+    const gml32Response = `<?xml version="1.0" encoding="utf-8"?>
+<gml:FeatureCollection gml:id="collection.0"  xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/gml/3.2" xmlns:test="http://example.org/test">
+<gml:featureMember>
+    <test:Feature gml:id="Feature.123">
+      <test:name>Test Feature</test:name>
+      <test:geometry>
+        <gml:Point srsName="urn:ogc:def:crs:EPSG::4326">
+          <gml:pos>1 2</gml:pos>
+        </gml:Point>
+      </test:geometry>
+    </test:Feature>
+</gml:featureMember>
+</gml:FeatureCollection>`;
+
+    before(async () => {
+      scope = nock('http://gml32test')
+        .get(/\/wms\?(\S)*/)
+        .reply(200, gml32Response);
+      provider = new WMSFeatureProvider('gml32test', {
+        url: 'http://gml32test/wms',
+        parameters: { LAYERS: 'test' },
+        responseType: 'text/xml; subtype=gml/3.2.1',
+      });
+      features = await provider.getFeaturesByCoordinate([0, 0, 0], 1);
+    });
+
+    after(() => {
+      scope.done();
+      provider.destroy();
+    });
+
+    it('should parse the GML32 response and return features', () => {
+      expect(features).to.be.an('array').with.lengthOf(1);
+    });
+
+    it('should parse feature properties correctly', () => {
+      expect(features[0].get('name')).to.equal('Test Feature');
+    });
+
+    it('should parse geometry correctly', () => {
+      const geometry = features[0].getGeometry();
+      expect(geometry).to.be.an.instanceOf(Point);
+
+      const coords = geometry.getCoordinates();
+      expect(coords[0]).to.equal(2);
+      expect(coords[1]).to.equal(1);
     });
   });
 });

@@ -8,6 +8,7 @@ import {
   Cartesian3,
   Matrix4,
   SplitDirection,
+  Math as CesiumMath,
 } from '@vcmap-cesium/engine';
 import { expect } from 'chai';
 import type { SinonStub } from 'sinon';
@@ -20,7 +21,11 @@ import VectorContext, {
 } from '../../../../src/layer/cesium/vectorContext.js';
 import { getCesiumMap } from '../../helpers/cesiumHelpers.js';
 import VectorProperties from '../../../../src/layer/vectorProperties.js';
-import type { CesiumMap } from '../../../../index.js';
+import {
+  cartesianToMercator,
+  type CesiumMap,
+  Projection,
+} from '../../../../index.js';
 import { primitives } from '../../../../src/layer/vectorSymbols.js';
 
 describe('VectorContext', () => {
@@ -598,13 +603,22 @@ describe('VectorContext', () => {
     let scaledListener: () => void;
     let dirtyRef: { value: boolean };
     let addPrimitive: () => Primitive;
-    let getCurrentResolutionFromCartesian: SinonStub;
+    let stubs: SinonStub[];
 
     beforeEach(() => {
       dirtyRef = { value: false };
       primitiveCollection = new PrimitiveCollection();
       addPrimitive = (): Primitive => {
         const primitive = new Primitive();
+        Matrix4.setTranslation(
+          primitive.modelMatrix,
+          Cartesian3.add(
+            scene.camera.position,
+            new Cartesian3(1, 0, 0),
+            new Cartesian3(),
+          ),
+          primitive.modelMatrix,
+        );
         primitiveCollection.add(primitive);
         return primitive;
       };
@@ -613,22 +627,34 @@ describe('VectorContext', () => {
         primitiveCollection,
         dirtyRef,
       );
-      getCurrentResolutionFromCartesian = sinon
-        .stub(map, 'getCurrentResolutionFromCartesian')
-        .returns(2);
+      stubs = [
+        sinon.stub(map.mapElement, 'offsetHeight').get(() => 1),
+        sinon.stub(map.mapElement, 'offsetWidth').get(() => 1),
+      ];
     });
 
     afterEach(() => {
       scaledListener();
       primitiveCollection.destroy();
-      getCurrentResolutionFromCartesian.restore();
+      stubs.forEach((s) => {
+        s.restore();
+      });
     });
 
     it('should scale a primitive post render', () => {
       const primitive = addPrimitive();
       scene.postRender.raiseEvent();
       const scale = Matrix4.getScale(primitive.modelMatrix, new Cartesian3());
-      expect(scale.equals(new Cartesian3(2, 2, 2))).to.be.true;
+      expect(
+        scale.equalsEpsilon(
+          new Cartesian3(
+            1.4122545587710322,
+            1.4122545587710322,
+            1.4122545587710322,
+          ),
+          CesiumMath.EPSILON10,
+        ),
+      ).to.be.true;
     });
 
     it('should set dirty to false post render', () => {
@@ -641,12 +667,30 @@ describe('VectorContext', () => {
       const primitive = addPrimitive();
       scene.postRender.raiseEvent();
       const vp = map.getViewpointSync()!;
-      vp.cameraPosition = [0, 0, 1];
+      vp.cameraPosition = Projection.mercatorToWgs84(
+        cartesianToMercator(
+          Cartesian3.add(
+            scene.camera.position,
+            new Cartesian3(10, 0, 0),
+            new Cartesian3(),
+          ),
+        ),
+      );
       await map.gotoViewpoint(vp);
-      getCurrentResolutionFromCartesian.returns(3);
+      stubs[0].get(() => 1);
+      stubs[1].get(() => 1);
       scene.postRender.raiseEvent();
       const scale = Matrix4.getScale(primitive.modelMatrix, new Cartesian3());
-      expect(scale.equals(new Cartesian3(3, 3, 3))).to.be.true;
+      expect(
+        scale.equalsEpsilon(
+          new Cartesian3(
+            12.710291026966392,
+            12.710291026966392,
+            12.710291026966392,
+          ),
+          CesiumMath.EPSILON10,
+        ),
+      ).to.be.true;
     });
 
     it('should not scale a primitive post render, if the viewpoint doesnt change', () => {
@@ -659,27 +703,25 @@ describe('VectorContext', () => {
       );
     });
 
-    it('should not scale a primitive post render, if the viewpoint changes, but the resolution does not', async () => {
-      const primitive = addPrimitive();
-      scene.postRender.raiseEvent();
-      const scale = Matrix4.getScale(primitive.modelMatrix, new Cartesian3());
-      const vp = map.getViewpointSync()!;
-      vp.cameraPosition = [0, 0, 1];
-      await map.gotoViewpoint(vp);
-      scene.postRender.raiseEvent();
-      expect(Matrix4.getScale(primitive.modelMatrix, new Cartesian3())).to.eql(
-        scale,
-      );
-    });
-
     it('should scale a primitive post render, if the viewpoint doesnt change, but the collection is dirty', () => {
       const primitive = addPrimitive();
       scene.postRender.raiseEvent();
       dirtyRef.value = true;
-      getCurrentResolutionFromCartesian.returns(3);
+      stubs.forEach((s) => {
+        s.get(() => 2);
+      });
       scene.postRender.raiseEvent();
       const scale = Matrix4.getScale(primitive.modelMatrix, new Cartesian3());
-      expect(scale.equals(new Cartesian3(3, 3, 3))).to.be.true;
+      expect(
+        scale.equalsEpsilon(
+          new Cartesian3(
+            0.7061272597499293,
+            0.7061272597499293,
+            0.7061272597499293,
+          ),
+          CesiumMath.EPSILON10,
+        ),
+      ).to.be.true;
     });
   });
 
@@ -777,6 +819,46 @@ describe('VectorContext', () => {
 
       const primitiveAtIndex = vectorContext.primitives.get(index) as Primitive;
       expect(primitiveAtIndex).to.have.property('olFeature', feature);
+    });
+  });
+
+  describe('clearing the context', () => {
+    let vectorContext: VectorContext;
+    let feature: Feature;
+
+    before(async () => {
+      const collection = new PrimitiveCollection();
+      vectorContext = new VectorContext(map, collection, SplitDirection.NONE);
+      feature = new Feature({
+        geometry: new LineString([
+          [1, 1, 1],
+          [2, 2, 1],
+        ]),
+      });
+      await vectorContext.addFeature(
+        feature,
+        new Style({
+          stroke: new Stroke({
+            color: '#ff0000',
+            width: 1,
+          }),
+        }),
+        new VectorProperties({}),
+        scene,
+      );
+      vectorContext.clear();
+    });
+
+    after(() => {
+      vectorContext.destroy();
+    });
+
+    it('should remove the feature', () => {
+      expect(vectorContext.hasFeature(feature)).to.be.false;
+    });
+
+    it('should remove the primitives symbol', () => {
+      expect(feature[primitives]).to.be.undefined;
     });
   });
 });

@@ -1,6 +1,6 @@
 import { PrimitiveCollection, SplitDirection } from '@vcmap-cesium/engine';
 import VectorSource from 'ol/source/Vector.js';
-import StyleItem from '../../style/styleItem.js';
+import type StyleItem from '../../style/styleItem.js';
 import LayerImplementation from '../layerImplementation.js';
 import type {
   VectorTileImplementation,
@@ -9,13 +9,11 @@ import type {
 import { vcsLayerName } from '../layerSymbols.js';
 import type PanoramaMap from '../../map/panoramaMap.js';
 import type { PanoramaImage } from '../../panorama/panoramaImage.js';
-import TileProvider from '../tileProvider/tileProvider.js';
+import type TileProvider from '../tileProvider/tileProvider.js';
 import VectorContext from '../cesium/vectorContext.js';
-import {
-  createSourceVectorContextSync,
-  SourceVectorContextSync,
-} from '../cesium/sourceVectorContextSync.js';
-import VectorProperties from '../vectorProperties.js';
+import type { SourceVectorContextSync } from '../cesium/sourceVectorContextSync.js';
+import { createSourceVectorContextSync } from '../cesium/sourceVectorContextSync.js';
+import type VectorProperties from '../vectorProperties.js';
 import { cartesianToMercator } from '../../util/math.js';
 import { mercatorProjection } from '../../util/projection.js';
 import Extent from '../../util/extent.js';
@@ -66,6 +64,7 @@ export default class VectorTilePanoramaImpl
     if (image === this._currentImage) {
       return;
     }
+
     if (this.active) {
       this.source.clear();
 
@@ -95,12 +94,6 @@ export default class VectorTilePanoramaImpl
             this.getLogger().warning('failed to load tiles');
           });
       }
-    }
-  }
-
-  updateTiles(_tiles: string[], featureVisibility: boolean): void {
-    if (!featureVisibility) {
-      // do SOMETHING
     }
   }
 
@@ -136,11 +129,21 @@ export default class VectorTilePanoramaImpl
     super.deactivate();
   }
 
-  updateStyle(_style: StyleItem, _silent?: boolean): void {
-    this._sourceVectorContextSync?.refresh();
+  updateStyle(style: StyleItem, silent?: boolean): void {
+    this._style = style;
+    this._sourceVectorContextSync?.setStyle(style.style, silent);
   }
 
-  updateSplitDirection(_direction: SplitDirection): void {}
+  updateTiles(_tiles: string[], featureVisibility: boolean): void {
+    if (!featureVisibility && this._currentImage) {
+      const currentImage = this._currentImage;
+      this._setImage();
+      this._setImage(currentImage);
+    }
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  updateSplitDirection(): void {}
 
   destroy(): void {
     if (!this.isDestroyed) {

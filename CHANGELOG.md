@@ -5,6 +5,15 @@
 - Updated eslint to eslint 9 & vcs eslint config 4.
 - Uses `madge` to detect circular dependencies in the code base.
 
+### 6.1.11
+
+- Fixes a bug, where updating the style of a vector layer would not update the style of the primitives in the layer.
+
+### 6.1.10
+
+- Add support for GML3.2 to `WMSFeatureInfoResponseType`
+- Add missing properties in the `toJSON` function of the VectorTileLayer: `highlight` and `debug`
+
 ### 6.1.9
 
 - Fixes an issue with WMS FeatureInfo and MapServer

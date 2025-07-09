@@ -231,8 +231,6 @@ export default class PanoramaMap extends VcsMap {
       if (viewpoint.heading != null) {
         this._cesiumWidget.camera.setView({
           orientation: {
-            pitch: closestImage.orientation.pitch,
-            roll: closestImage.orientation.roll,
             heading: CesiumMath.toRadians(viewpoint.heading),
           },
         });

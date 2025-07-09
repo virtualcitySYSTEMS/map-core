@@ -1,4 +1,4 @@
-import VectorTileLayer, { VectorTileImpls } from './vectorTileLayer.js';
+import VectorTileLayer, { type VectorTileImpls } from './vectorTileLayer.js';
 import type PanoramaDataset from '../panorama/panoramaDataset.js';
 import PanoramaDatasetPanoramaImpl from './panorama/panoramaDatasetPanoramaImpl.js';
 import type VcsMap from '../map/vcsMap.js';
@@ -16,7 +16,7 @@ export default class PanoramaDatasetLayer extends VectorTileLayer<PanoramaDatase
   private _panoramaVectorProperties = new VectorProperties({});
 
   constructor(public readonly dataset: PanoramaDataset) {
-    const color = 'rgba(255, 255, 255, 0.5)'; // XXX configurable
+    const color = 'rgba(255, 255, 255, 0.5)';
 
     super({
       tileProvider: dataset.tileProvider,
@@ -25,6 +25,7 @@ export default class PanoramaDatasetLayer extends VectorTileLayer<PanoramaDatase
         extrudedHeight: 1.8,
       },
       style: {
+        type: 'VectorStyleItem',
         fill: { color },
         image: {
           radius: 5,
@@ -52,6 +53,8 @@ export default class PanoramaDatasetLayer extends VectorTileLayer<PanoramaDatase
         offset: [0, 0, this.dataset.cameraOffset],
       },
     });
+
+    this._supportedMaps.push(PanoramaMap.className);
   }
 
   get hideInPanorama(): boolean {
@@ -69,8 +72,8 @@ export default class PanoramaDatasetLayer extends VectorTileLayer<PanoramaDatase
     }
   }
 
-  override createImplementationsForMap<T extends VcsMap>(
-    map: T,
+  override createImplementationsForMap(
+    map: VcsMap,
   ): (PanoramaDatasetPanoramaImpl | VectorTileImpls)[] {
     if (map instanceof PanoramaMap) {
       return [

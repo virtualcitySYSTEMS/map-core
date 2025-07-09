@@ -336,9 +336,9 @@ class DeclarativeStyleItem extends StyleItem {
         radius += width / 2;
       }
 
-      const circleCacheKey = `${String(radius)}${String(color)}${String(width)}${String(
-        pointOutlineColor,
-      )}`;
+      const circleCacheKey = `${String(radius)}${String(color)}${String(
+        width,
+      )}${String(pointOutlineColor)}`;
       if (!this._circleCache.has(circleCacheKey)) {
         const circleOptions: CircleOptions = {
           radius,

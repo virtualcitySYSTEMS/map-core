@@ -22,7 +22,9 @@ export default class PanoramaDatasetPanoramaImpl extends VectorTilePanoramaImpl 
         panoramaProps.dataset.tileProvider === options.tileProvider &&
         panoramaProps.name === this._currentImage?.name
       ) {
-        setTimeout(() => this.source.removeFeature(feature!), 0);
+        setTimeout(() => {
+          this.source.removeFeature(feature!);
+        }, 0);
       }
     });
   }
