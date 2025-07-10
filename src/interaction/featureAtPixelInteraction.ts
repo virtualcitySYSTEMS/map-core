@@ -119,7 +119,7 @@ export function getFeatureFromPickObject(
   return feature;
 }
 
-function getFeatureFromScene(
+export function getFeatureFromScene(
   scene: Scene,
   windowPosition: Cartesian2,
   hitTolerance: number,
