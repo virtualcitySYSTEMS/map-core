@@ -18,7 +18,6 @@ import {
   ContextLimits,
   Fog,
 } from '@vcmap-cesium/engine';
-import sinon from 'sinon';
 import CesiumTilesetLayer from '../../../src/layer/cesiumTilesetLayer.js';
 import DataSourceLayer from '../../../src/layer/dataSourceLayer.js';
 import CesiumMap from '../../../src/map/cesiumMap.js';
@@ -48,7 +47,7 @@ export const tilesetJSON = {
  * @returns {*|Sinon.SinonFakeServer|null}
  */
 export function createTilesetServer(sandbox, url) {
-  const server = sandbox ? sandbox.useFakeServer() : sinon.createFakeServer();
+  const server = sandbox.useFakeServer();
   server.autoRespond = true;
   server.respondImmediately = true;
   server.respondWith(url || 'http://test.com/tileset.json', [
@@ -111,11 +110,11 @@ export function createEntities(numberOfEntities = 1) {
 
 /**
  * @param {import("@vcmap/core").VcsEvent} event
- * @param {sinon.sandbox} [sandbox]
+ * @param {sinon|sinon.sandbox} sandbox
  * @returns {import("sinon").SinonSpy}
  */
 export function getVcsEventSpy(event, sandbox) {
-  const spy = (sandbox ?? sinon).spy();
+  const spy = sandbox.spy();
   const listener = event.addEventListener(function callback() {
     listener();
     // eslint-disable-next-line prefer-rest-params

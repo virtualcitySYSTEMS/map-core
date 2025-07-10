@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import sinon from 'sinon';
 import Feature from 'ol/Feature.js';
 import LineString from 'ol/geom/LineString.js';
 import type {
@@ -128,13 +129,13 @@ describe('FlightVisualizer', () => {
       });
 
       it('should raise state changed when activating', async () => {
-        const spy = getVcsEventSpy(FV.stateChanged);
+        const spy = getVcsEventSpy(FV.stateChanged, sinon);
         await FV.activate();
         expect(spy).to.have.been.called;
       });
 
       it('should not raise state changed, when calling deactivate on an inactive visualization', () => {
-        const spy = getVcsEventSpy(FV.stateChanged);
+        const spy = getVcsEventSpy(FV.stateChanged, sinon);
         FV.deactivate();
         expect(spy).to.not.have.been.called;
       });
@@ -151,13 +152,13 @@ describe('FlightVisualizer', () => {
       });
 
       it('should raise state changed on deactivation', () => {
-        const spy = getVcsEventSpy(FV.stateChanged);
+        const spy = getVcsEventSpy(FV.stateChanged, sinon);
         FV.deactivate();
         expect(spy).to.have.been.calledOnce;
       });
 
       it('should not raise state changed, when calling activate on an active visualization', async () => {
-        const spy = getVcsEventSpy(FV.stateChanged);
+        const spy = getVcsEventSpy(FV.stateChanged, sinon);
         await FV.activate();
         expect(spy).to.not.have.been.called;
       });
@@ -166,7 +167,7 @@ describe('FlightVisualizer', () => {
 
   describe('manipulation the flights collection', () => {
     it('should destroy the visualization, when adding a flight with the same name to the app', () => {
-      const spy = getVcsEventSpy(FV.destroyed);
+      const spy = getVcsEventSpy(FV.destroyed, sinon);
       app.flights.add(flight);
       expect(spy).to.have.been.called;
     });
@@ -175,13 +176,13 @@ describe('FlightVisualizer', () => {
       FV.destroy();
       app.flights.add(flight);
       FV = await createFlightVisualization(flight, app);
-      const spy = getVcsEventSpy(FV.destroyed);
+      const spy = getVcsEventSpy(FV.destroyed, sinon);
       app.flights.remove(flight);
       expect(spy).to.have.been.called;
     });
 
     it('should return the existing visualization when visualizing the same flight twice', async () => {
-      const spy = getVcsEventSpy(FV.destroyed);
+      const spy = getVcsEventSpy(FV.destroyed, sinon);
       FV = await createFlightVisualization(flight, app);
       expect(spy).to.not.have.been.called;
     });

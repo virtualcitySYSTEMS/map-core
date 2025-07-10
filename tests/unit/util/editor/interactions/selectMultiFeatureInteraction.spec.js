@@ -1,3 +1,4 @@
+import sinon from 'sinon';
 import { Feature } from 'ol';
 import { Point } from 'ol/geom.js';
 import {
@@ -33,7 +34,10 @@ describe('SelectMultiFeatureInteraction', () => {
 
       before(async () => {
         interaction = new SelectMultiFeatureInteraction(layer);
-        featuresChangedListener = getVcsEventSpy(interaction.featuresChanged);
+        featuresChangedListener = getVcsEventSpy(
+          interaction.featuresChanged,
+          sinon,
+        );
         event = { feature: featureA };
         await interaction.pipe(event);
       });
@@ -63,7 +67,10 @@ describe('SelectMultiFeatureInteraction', () => {
       before(async () => {
         interaction = new SelectMultiFeatureInteraction(layer);
         await interaction.setSelected([featureA]);
-        featuresChangedListener = getVcsEventSpy(interaction.featuresChanged);
+        featuresChangedListener = getVcsEventSpy(
+          interaction.featuresChanged,
+          sinon,
+        );
         event = { feature: featureA };
         await interaction.pipe(event);
       });
@@ -93,7 +100,10 @@ describe('SelectMultiFeatureInteraction', () => {
       before(async () => {
         interaction = new SelectMultiFeatureInteraction(layer);
         await interaction.setSelected([featureA]);
-        featuresChangedListener = getVcsEventSpy(interaction.featuresChanged);
+        featuresChangedListener = getVcsEventSpy(
+          interaction.featuresChanged,
+          sinon,
+        );
         event = { feature: featureA, key: ModificationKeyType.CTRL };
         await interaction.pipe(event);
       });
@@ -123,7 +133,10 @@ describe('SelectMultiFeatureInteraction', () => {
       before(async () => {
         interaction = new SelectMultiFeatureInteraction(layer);
         await interaction.setSelected([featureA]);
-        featuresChangedListener = getVcsEventSpy(interaction.featuresChanged);
+        featuresChangedListener = getVcsEventSpy(
+          interaction.featuresChanged,
+          sinon,
+        );
         event = { feature: featureB };
         await interaction.pipe(event);
       });
@@ -153,7 +166,10 @@ describe('SelectMultiFeatureInteraction', () => {
       before(async () => {
         interaction = new SelectMultiFeatureInteraction(layer);
         await interaction.setSelected([featureA]);
-        featuresChangedListener = getVcsEventSpy(interaction.featuresChanged);
+        featuresChangedListener = getVcsEventSpy(
+          interaction.featuresChanged,
+          sinon,
+        );
         event = { feature: featureB, key: ModificationKeyType.CTRL };
         await interaction.pipe(event);
       });
@@ -185,7 +201,10 @@ describe('SelectMultiFeatureInteraction', () => {
 
       before(async () => {
         interaction = new SelectMultiFeatureInteraction(layer);
-        featuresChangedListener = getVcsEventSpy(interaction.featuresChanged);
+        featuresChangedListener = getVcsEventSpy(
+          interaction.featuresChanged,
+          sinon,
+        );
         event = { feature: new Feature() };
         await interaction.pipe(event);
       });
@@ -215,7 +234,10 @@ describe('SelectMultiFeatureInteraction', () => {
       before(async () => {
         interaction = new SelectMultiFeatureInteraction(layer);
         await interaction.setSelected([featureA]);
-        featuresChangedListener = getVcsEventSpy(interaction.featuresChanged);
+        featuresChangedListener = getVcsEventSpy(
+          interaction.featuresChanged,
+          sinon,
+        );
         event = { feature: new Feature() };
         await interaction.pipe(event);
       });
@@ -245,7 +267,10 @@ describe('SelectMultiFeatureInteraction', () => {
       before(async () => {
         interaction = new SelectMultiFeatureInteraction(layer);
         await interaction.setSelected([featureA]);
-        featuresChangedListener = getVcsEventSpy(interaction.featuresChanged);
+        featuresChangedListener = getVcsEventSpy(
+          interaction.featuresChanged,
+          sinon,
+        );
         event = { feature: null };
         await interaction.pipe(event);
       });
@@ -279,7 +304,10 @@ describe('SelectMultiFeatureInteraction', () => {
       interaction = new SelectMultiFeatureInteraction(layer);
       const tiledFeature = new Feature();
       tiledFeature[isTiledFeature] = true;
-      featuresChangedListener = getVcsEventSpy(interaction.featuresChanged);
+      featuresChangedListener = getVcsEventSpy(
+        interaction.featuresChanged,
+        sinon,
+      );
       await interaction.setSelected([tiledFeature]);
     });
 

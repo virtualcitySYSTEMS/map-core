@@ -1,4 +1,4 @@
-import type { SinonSpy } from 'sinon';
+import sinon, { type SinonSpy } from 'sinon';
 import { expect } from 'chai';
 import { describe } from 'mocha';
 import getDummyFlight from './getDummyFlightInstance.js';
@@ -18,7 +18,7 @@ describe('FlightCollection', () => {
     await setCesiumMap(app);
     flight = getDummyFlight();
     flightCollection = new FlightCollection(app);
-    playerChangedSpy = getVcsEventSpy(flightCollection.playerChanged);
+    playerChangedSpy = getVcsEventSpy(flightCollection.playerChanged, sinon);
     FP = await flightCollection.setPlayerForFlight(flight);
   });
 
@@ -38,7 +38,7 @@ describe('FlightCollection', () => {
     });
 
     it('should set player to undefined, if player is destroyed', () => {
-      playerChangedSpy = getVcsEventSpy(flightCollection.playerChanged);
+      playerChangedSpy = getVcsEventSpy(flightCollection.playerChanged, sinon);
       FP!.destroy();
       expect(playerChangedSpy).to.have.been.calledOnceWith(undefined);
       expect(flightCollection).to.have.property('player', undefined);
@@ -53,8 +53,8 @@ describe('FlightCollection', () => {
     before(async () => {
       FP = await flightCollection.setPlayerForFlight(flight);
       flight2 = getDummyFlight();
-      playerChangedSpy = getVcsEventSpy(flightCollection.playerChanged);
-      destroyedSpy = getVcsEventSpy(FP?.destroyed);
+      playerChangedSpy = getVcsEventSpy(flightCollection.playerChanged, sinon);
+      destroyedSpy = getVcsEventSpy(FP?.destroyed, sinon);
       FP2 = await flightCollection.setPlayerForFlight(flight2);
     });
 
@@ -79,8 +79,8 @@ describe('FlightCollection', () => {
       flight = getDummyFlight();
       flightCollection = new FlightCollection(app);
       FP = await flightCollection.setPlayerForFlight(flight);
-      playerChangedSpy = getVcsEventSpy(flightCollection.playerChanged);
-      destroyedSpy = getVcsEventSpy(FP!.destroyed);
+      playerChangedSpy = getVcsEventSpy(flightCollection.playerChanged, sinon);
+      destroyedSpy = getVcsEventSpy(FP!.destroyed, sinon);
       FP!.play();
       flightCollection.remove(flight);
     });

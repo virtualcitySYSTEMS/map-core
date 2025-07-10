@@ -1507,13 +1507,13 @@ describe('startEditFeaturesSession', () => {
     });
 
     it('should call mode changed', () => {
-      const spy = getVcsEventSpy(session.modeChanged);
+      const spy = getVcsEventSpy(session.modeChanged, sinon);
       session.setMode(TransformationMode.ROTATE);
       expect(spy).to.have.been.calledWith(TransformationMode.ROTATE);
     });
 
     it('should only call mode changed once', () => {
-      const spy = getVcsEventSpy(session.modeChanged);
+      const spy = getVcsEventSpy(session.modeChanged, sinon);
       session.setMode(TransformationMode.ROTATE);
       session.setMode(TransformationMode.ROTATE);
       expect(spy).to.have.been.calledOnce;
@@ -1550,7 +1550,7 @@ describe('startEditFeaturesSession', () => {
     });
 
     it('should call modeChanged', async () => {
-      const modeChangeListener = getVcsEventSpy(session.modeChanged);
+      const modeChangeListener = getVcsEventSpy(session.modeChanged, sinon);
       await app.maps.setActiveMap(defaultMap.name);
       expect(modeChangeListener).to.have.been.calledWithExactly(
         TransformationMode.TRANSLATE,

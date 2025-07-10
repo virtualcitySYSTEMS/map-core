@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import nock from 'nock';
+import sinon from 'sinon';
 import type { FlightAnchor, FlightInstanceOptions } from '../../../../index.js';
 import {
   anchorFromViewpoint,
@@ -35,7 +36,7 @@ describe('FlightInstance', () => {
     });
 
     it('should raise changed, when adding a new anchor', () => {
-      const spy = getVcsEventSpy(FI.anchorsChanged);
+      const spy = getVcsEventSpy(FI.anchorsChanged, sinon);
       FI.anchors.add(anchor);
       expect(spy).to.have.been.called;
     });
@@ -49,7 +50,7 @@ describe('FlightInstance', () => {
         )!,
       );
       FI.anchors.add(anchor);
-      const spy = getVcsEventSpy(FI.anchorsChanged);
+      const spy = getVcsEventSpy(FI.anchorsChanged, sinon);
       FI.anchors.remove(anchor);
       expect(spy).to.have.been.called;
     });
@@ -63,14 +64,14 @@ describe('FlightInstance', () => {
         )!,
       );
       FI.anchors.add(anchor);
-      const spy = getVcsEventSpy(FI.anchorsChanged);
+      const spy = getVcsEventSpy(FI.anchorsChanged, sinon);
       FI.anchors.lower(anchor);
       expect(spy).to.have.been.called;
     });
 
     it('should raise change, when changing an anchor property', () => {
       FI.anchors.add(anchor);
-      const spy = getVcsEventSpy(FI.anchorsChanged);
+      const spy = getVcsEventSpy(FI.anchorsChanged, sinon);
       anchor.duration = 2;
       expect(spy).to.have.been.called;
     });
@@ -78,7 +79,7 @@ describe('FlightInstance', () => {
     it('should no longer listen to changes on removed anchors', () => {
       FI.anchors.add(anchor);
       FI.anchors.remove(anchor);
-      const spy = getVcsEventSpy(FI.anchorsChanged);
+      const spy = getVcsEventSpy(FI.anchorsChanged, sinon);
       anchor.duration = 2;
       expect(spy).to.not.have.been.called;
     });
@@ -86,25 +87,25 @@ describe('FlightInstance', () => {
 
   describe('property changed', () => {
     it('should raise on loop change', () => {
-      const spy = getVcsEventSpy(FI.propertyChanged);
+      const spy = getVcsEventSpy(FI.propertyChanged, sinon);
       FI.loop = !FI.loop;
       expect(spy).to.have.been.calledOnceWith('loop');
     });
 
     it('should raise on multiplier change', () => {
-      const spy = getVcsEventSpy(FI.propertyChanged);
+      const spy = getVcsEventSpy(FI.propertyChanged, sinon);
       FI.multiplier += 1;
       expect(spy).to.have.been.calledOnceWith('multiplier');
     });
 
     it('should raise on interpolation change', () => {
-      const spy = getVcsEventSpy(FI.propertyChanged);
+      const spy = getVcsEventSpy(FI.propertyChanged, sinon);
       FI.interpolation = 'linear';
       expect(spy).to.have.been.calledOnceWith('interpolation');
     });
 
     it('should not be raised if not changing the value', () => {
-      const spy = getVcsEventSpy(FI.propertyChanged);
+      const spy = getVcsEventSpy(FI.propertyChanged, sinon);
       // eslint-disable-next-line no-self-assign
       FI.interpolation = FI.interpolation;
       expect(spy).to.not.have.been.called;
