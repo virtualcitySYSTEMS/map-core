@@ -50,8 +50,12 @@ describe('EditGeometrySession', () => {
 
   describe('starting a session', () => {
     let session: EditGeometrySession;
+    let interactionChain: InteractionChain;
 
     beforeEach(() => {
+      app.maps.eventHandler.exclusiveAdded.addEventListener((chain) => {
+        interactionChain = chain as InteractionChain;
+      });
       session = startEditGeometrySession(app, layer, undefined, {
         initialSnapToLayers: [],
       });
@@ -62,9 +66,7 @@ describe('EditGeometrySession', () => {
     });
 
     it('should add a an exclusive listener to the event handler', () => {
-      expect(app.maps.eventHandler.interactions[3]).to.be.an.instanceof(
-        InteractionChain,
-      );
+      expect(interactionChain).to.be.an.instanceof(InteractionChain);
     });
 
     it('should change the picking', () => {
@@ -141,7 +143,7 @@ describe('EditGeometrySession', () => {
 
       it('should update the geometry, if changing a vertex', async () => {
         const vertex = vertices[0];
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAGSTART,
@@ -149,7 +151,7 @@ describe('EditGeometrySession', () => {
           positionOrPixel: [0, 0, 0],
           ...mapEvent,
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAG,
@@ -157,7 +159,7 @@ describe('EditGeometrySession', () => {
           positionOrPixel: [1, 0, 0],
           ...mapEvent,
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAGEND,
@@ -176,7 +178,7 @@ describe('EditGeometrySession', () => {
 
       it('should update the geometry, if removing a vertex', async () => {
         const vertex = vertices[0];
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.SHIFT,
           type: EventType.CLICK,
@@ -190,7 +192,7 @@ describe('EditGeometrySession', () => {
       });
 
       it('should update the feature, on insert of a vertex', async () => {
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.CLICK,
@@ -236,7 +238,7 @@ describe('EditGeometrySession', () => {
 
       it('should update the geometry, if changing a vertex', async () => {
         const vertex = vertices[0];
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAGSTART,
@@ -244,7 +246,7 @@ describe('EditGeometrySession', () => {
           positionOrPixel: [0, 0, 0],
           ...mapEvent,
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAG,
@@ -252,7 +254,7 @@ describe('EditGeometrySession', () => {
           positionOrPixel: [1, 0, 0],
           ...mapEvent,
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAGEND,
@@ -273,7 +275,7 @@ describe('EditGeometrySession', () => {
 
       it('should update the geometry, if removing a vertex', async () => {
         const vertex = vertices[0];
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.SHIFT,
           type: EventType.CLICK,
@@ -293,7 +295,7 @@ describe('EditGeometrySession', () => {
       });
 
       it('should update the feature, on insert of a vertex', async () => {
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.CLICK,
@@ -333,7 +335,7 @@ describe('EditGeometrySession', () => {
 
       it('should translate the point, if moving the center vertex', async () => {
         const vertex = vertices[0];
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAGSTART,
@@ -341,7 +343,7 @@ describe('EditGeometrySession', () => {
           positionOrPixel: [0, 0, 0],
           ...mapEvent,
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAG,
@@ -349,7 +351,7 @@ describe('EditGeometrySession', () => {
           positionOrPixel: [1, 0, 0],
           ...mapEvent,
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAGEND,
@@ -382,7 +384,7 @@ describe('EditGeometrySession', () => {
 
       it('should translate the circles center, if moving the center vertex', async () => {
         const vertex = vertices[0];
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAGSTART,
@@ -390,7 +392,7 @@ describe('EditGeometrySession', () => {
           positionOrPixel: [0, 0, 0],
           ...mapEvent,
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAG,
@@ -398,7 +400,7 @@ describe('EditGeometrySession', () => {
           positionOrPixel: [1, 0, 0],
           ...mapEvent,
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAGEND,
@@ -414,7 +416,7 @@ describe('EditGeometrySession', () => {
 
       it('should translate the circle radius, if moving the outer vertex', async () => {
         const vertex = vertices[1];
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAGSTART,
@@ -422,7 +424,7 @@ describe('EditGeometrySession', () => {
           positionOrPixel: [1, 0, 0],
           ...mapEvent,
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAG,
@@ -430,7 +432,7 @@ describe('EditGeometrySession', () => {
           positionOrPixel: [2, 0, 0],
           ...mapEvent,
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAGEND,
@@ -473,7 +475,7 @@ describe('EditGeometrySession', () => {
 
       it('should ensure bbox, if moving bottom left vertex', async () => {
         const vertex = vertices[0];
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAGSTART,
@@ -481,7 +483,7 @@ describe('EditGeometrySession', () => {
           positionOrPixel: [0, 0, 0],
           ...mapEvent,
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAG,
@@ -489,7 +491,7 @@ describe('EditGeometrySession', () => {
           positionOrPixel: [-1, -1, 0],
           ...mapEvent,
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAGEND,
@@ -511,7 +513,7 @@ describe('EditGeometrySession', () => {
 
       it('should ensure bbox, if moving bottom right vertex', async () => {
         const vertex = vertices[1];
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAGSTART,
@@ -519,7 +521,7 @@ describe('EditGeometrySession', () => {
           positionOrPixel: [1, 0, 0],
           ...mapEvent,
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAG,
@@ -527,7 +529,7 @@ describe('EditGeometrySession', () => {
           positionOrPixel: [2, -1, 0],
           ...mapEvent,
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAGEND,
@@ -549,7 +551,7 @@ describe('EditGeometrySession', () => {
 
       it('should ensure bbox, if moving top right vertex', async () => {
         const vertex = vertices[2];
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAGSTART,
@@ -557,7 +559,7 @@ describe('EditGeometrySession', () => {
           positionOrPixel: [1, 1, 0],
           ...mapEvent,
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAG,
@@ -565,7 +567,7 @@ describe('EditGeometrySession', () => {
           positionOrPixel: [2, 2, 0],
           ...mapEvent,
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAGEND,
@@ -587,7 +589,7 @@ describe('EditGeometrySession', () => {
 
       it('should ensure bbox, if moving top left vertex', async () => {
         const vertex = vertices[3];
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAGSTART,
@@ -595,7 +597,7 @@ describe('EditGeometrySession', () => {
           positionOrPixel: [0, 1, 0],
           ...mapEvent,
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAG,
@@ -603,7 +605,7 @@ describe('EditGeometrySession', () => {
           positionOrPixel: [-1, 2, 0],
           ...mapEvent,
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAGEND,
@@ -625,7 +627,7 @@ describe('EditGeometrySession', () => {
 
       it('should prevent collapsing of the bbox', async () => {
         const vertex = vertices[0];
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAGSTART,
@@ -633,7 +635,7 @@ describe('EditGeometrySession', () => {
           positionOrPixel: [0, 0, 0],
           ...mapEvent,
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAG,
@@ -641,7 +643,7 @@ describe('EditGeometrySession', () => {
           positionOrPixel: [1, 1, 0],
           ...mapEvent,
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
           type: EventType.DRAGEND,
@@ -806,15 +808,20 @@ describe('EditGeometrySession', () => {
 
   describe('stopping a session', () => {
     let session: EditGeometrySession;
+    let interactionChain: InteractionChain;
 
     beforeEach(() => {
+      app.maps.eventHandler.exclusiveAdded.addEventListener((chain) => {
+        interactionChain = chain as InteractionChain;
+      });
       session = startEditGeometrySession(app, layer);
     });
 
     it('should remove the interaction', () => {
-      const interaction = app.maps.eventHandler.interactions[3];
       session.stop();
-      expect(app.maps.eventHandler.interactions).to.not.include(interaction);
+      expect(app.maps.eventHandler.interactions).to.not.include(
+        interactionChain,
+      );
     });
 
     it('should call stopped', () => {
@@ -874,8 +881,12 @@ describe('EditGeometrySession', () => {
     let session: EditGeometrySession;
     let feature: Feature<LineString>;
     let vertices: Feature<Point>[];
+    let interactionChain: InteractionChain;
 
     beforeEach(() => {
+      app.maps.eventHandler.exclusiveAdded.addEventListener((chain) => {
+        interactionChain = chain as InteractionChain;
+      });
       session = startEditGeometrySession(app, layer, undefined, {
         denyInsertion: true,
         denyRemoval: true,
@@ -898,7 +909,7 @@ describe('EditGeometrySession', () => {
     });
 
     it('should not insert a vertex', async () => {
-      await app.maps.eventHandler.interactions[3].pipe({
+      await interactionChain.pipe({
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
         type: EventType.CLICK,
@@ -918,7 +929,7 @@ describe('EditGeometrySession', () => {
     it('should not remove a vertex', async () => {
       const vertex = vertices[0];
 
-      await app.maps.eventHandler.interactions[3].pipe({
+      await interactionChain.pipe({
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.SHIFT,
         type: EventType.CLICK,

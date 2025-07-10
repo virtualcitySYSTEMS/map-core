@@ -8,6 +8,10 @@ import LayerCollection from '../../../src/util/layerCollection.js';
 import Layer from '../../../src/layer/layer.js';
 import VcsMap from '../../../src/map/vcsMap.js';
 import { makeOverrideCollection } from '../../../index.js';
+import {
+  getPanoramaImage,
+  getPanoramaMap,
+} from '../helpers/panoramaHelpers.js';
 
 describe('MapCollection', () => {
   let target;
@@ -468,6 +472,52 @@ describe('MapCollection', () => {
         expect(newVp.groundPosition).to.have.members([0, 0]);
         expect(newVp.distance).to.equal(200);
       });
+    });
+  });
+
+  describe('setting a panorama map with a specific image', () => {
+    let mapCollection;
+    let openlayers;
+    let cesiumMap;
+    let panoramaMap;
+    let panoramaImage;
+    let destroy;
+
+    before(async () => {
+      ({ panoramaImage, destroy } = await getPanoramaImage({}));
+    });
+
+    beforeEach(async () => {
+      openlayers = await getOpenlayersMap();
+      cesiumMap = await getCesiumMap();
+      panoramaMap = getPanoramaMap();
+      mapCollection = MapCollection.from([openlayers, cesiumMap, panoramaMap]);
+      mapCollection.setTarget(target);
+      await mapCollection.setActiveMap(openlayers.name);
+    });
+
+    afterEach(() => {
+      openlayers.destroy();
+      cesiumMap.destroy();
+      panoramaMap.destroy();
+      mapCollection.destroy();
+    });
+
+    after(() => {
+      destroy();
+    });
+
+    it('should set the panorama image on the panorama map', async () => {
+      await mapCollection.activatePanoramaMap(panoramaMap, panoramaImage);
+      expect(mapCollection.activeMap).to.equal(panoramaMap);
+      expect(panoramaMap.currentPanoramaImage).to.equal(panoramaImage);
+    });
+
+    it('should go to the viewpoint of the panorama image, if the current map is a cesium map', async () => {
+      await mapCollection.setActiveMap(cesiumMap.name);
+      const gotoVpSpy = sinon.spy(cesiumMap, 'gotoViewpoint');
+      await mapCollection.activatePanoramaMap(panoramaMap, panoramaImage);
+      expect(gotoVpSpy).to.have.been.calledOnce;
     });
   });
 

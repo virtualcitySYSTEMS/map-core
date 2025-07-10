@@ -63,7 +63,7 @@ class EventHandler {
 
   exclusiveRemoved: VcsEvent<void>;
 
-  exclusiveAdded: VcsEvent<void>;
+  exclusiveAdded: VcsEvent<AbstractInteraction>;
 
   private _boundKeyListener: (e: KeyboardEvent) => void;
 
@@ -168,7 +168,7 @@ class EventHandler {
     removed: () => void,
     index?: number,
     id?: string,
-  ): () => void {
+  ): () => number {
     check(interaction, AbstractInteraction);
     check(removed, Function);
     check(index, maybe(Number));
@@ -188,7 +188,7 @@ class EventHandler {
         interactions: [interaction],
       };
     }
-    this.exclusiveAdded.raiseEvent();
+    this.exclusiveAdded.raiseEvent(interaction);
     return this._exclusiveUnListen.bind(
       this,
       interaction,

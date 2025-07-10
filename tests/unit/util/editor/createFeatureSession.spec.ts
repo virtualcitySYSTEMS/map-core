@@ -46,8 +46,12 @@ describe('create feature session', () => {
 
   describe('starting a session', () => {
     let session: CreateFeatureSession<GeometryType.LineString>;
+    let interactionChain: InteractionChain;
 
     beforeEach(() => {
+      app.maps.eventHandler.exclusiveAdded.addEventListener((chain) => {
+        interactionChain = chain as InteractionChain;
+      });
       session = startCreateFeatureSession(app, layer, GeometryType.LineString);
     });
 
@@ -56,15 +60,13 @@ describe('create feature session', () => {
     });
 
     it('should add a an exclusive listener to the event handler', () => {
-      expect(app.maps.eventHandler.interactions[3]).to.be.an.instanceof(
-        InteractionChain,
-      );
+      expect(interactionChain).to.be.an.instanceof(InteractionChain);
     });
 
     it('should trigger feature created, if a feature is created', async () => {
       const spy = sinon.spy();
       session.featureCreated.addEventListener(spy);
-      await app.maps.eventHandler.interactions[3].pipe({
+      await interactionChain.pipe({
         type: EventType.CLICK,
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
@@ -80,7 +82,7 @@ describe('create feature session', () => {
       session.featureCreated.addEventListener((f) => {
         feature = f;
       });
-      await app.maps.eventHandler.interactions[3].pipe({
+      await interactionChain.pipe({
         type: EventType.CLICK,
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
@@ -96,7 +98,7 @@ describe('create feature session', () => {
       session.featureCreated.addEventListener((f) => {
         feature = f;
       });
-      await app.maps.eventHandler.interactions[3].pipe({
+      await interactionChain.pipe({
         type: EventType.CLICK,
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
@@ -112,7 +114,7 @@ describe('create feature session', () => {
       session.featureCreated.addEventListener((f) => {
         feature = f;
       });
-      await app.maps.eventHandler.interactions[3].pipe({
+      await interactionChain.pipe({
         type: EventType.CLICK,
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
@@ -120,7 +122,7 @@ describe('create feature session', () => {
         positionOrPixel: [1, 2, 3],
         ...mapEvent,
       });
-      await app.maps.eventHandler.interactions[3].pipe({
+      await interactionChain.pipe({
         type: EventType.CLICK,
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
@@ -137,7 +139,7 @@ describe('create feature session', () => {
       session.featureCreated.addEventListener((f) => {
         feature = f;
       });
-      await app.maps.eventHandler.interactions[3].pipe({
+      await interactionChain.pipe({
         type: EventType.CLICK,
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
@@ -152,7 +154,7 @@ describe('create feature session', () => {
     it('should continue creating features, after a feature is created', async () => {
       const spy = sinon.spy();
       session.featureCreated.addEventListener(spy);
-      await app.maps.eventHandler.interactions[3].pipe({
+      await interactionChain.pipe({
         type: EventType.CLICK,
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
@@ -161,7 +163,7 @@ describe('create feature session', () => {
         ...mapEvent,
       });
       session.finish();
-      await app.maps.eventHandler.interactions[3].pipe({
+      await interactionChain.pipe({
         type: EventType.CLICK,
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
@@ -175,7 +177,7 @@ describe('create feature session', () => {
     it('should trigger finish on finish, passing null if the feature is not valid', async () => {
       const spy = sinon.spy();
       session.creationFinished.addEventListener(spy);
-      await app.maps.eventHandler.interactions[3].pipe({
+      await interactionChain.pipe({
         type: EventType.CLICK,
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
@@ -190,7 +192,7 @@ describe('create feature session', () => {
     it('should trigger finish on finish, passing the feature if the feature is valid', async () => {
       const spy = sinon.spy();
       session.creationFinished.addEventListener(spy);
-      await app.maps.eventHandler.interactions[3].pipe({
+      await interactionChain.pipe({
         type: EventType.CLICK,
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
@@ -198,7 +200,7 @@ describe('create feature session', () => {
         positionOrPixel: [1, 2, 3],
         ...mapEvent,
       });
-      await app.maps.eventHandler.interactions[3].pipe({
+      await interactionChain.pipe({
         type: EventType.CLICK,
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
@@ -220,15 +222,20 @@ describe('create feature session', () => {
 
   describe('stopping a session', () => {
     let session: CreateFeatureSession<GeometryType.LineString>;
+    let interactionChain: InteractionChain;
 
     beforeEach(() => {
+      app.maps.eventHandler.exclusiveAdded.addEventListener((chain) => {
+        interactionChain = chain as InteractionChain;
+      });
       session = startCreateFeatureSession(app, layer, GeometryType.LineString);
     });
 
     it('should remove the interaction', () => {
-      const interaction = app.maps.eventHandler.interactions[3];
       session.stop();
-      expect(app.maps.eventHandler.interactions).to.not.include(interaction);
+      expect(app.maps.eventHandler.interactions).to.not.include(
+        interactionChain,
+      );
     });
 
     it('should call stopped', () => {
@@ -256,6 +263,7 @@ describe('create feature session', () => {
   describe('changing the active map', () => {
     let session: CreateFeatureSession<GeometryType.LineString>;
     let otherMap: OpenlayersMap;
+    let interactionChain: InteractionChain;
 
     before(() => {
       otherMap = new OpenlayersMap({});
@@ -263,6 +271,9 @@ describe('create feature session', () => {
     });
 
     beforeEach(() => {
+      app.maps.eventHandler.exclusiveAdded.addEventListener((chain) => {
+        interactionChain = chain as InteractionChain;
+      });
       session = startCreateFeatureSession(app, layer, GeometryType.LineString);
     });
 
@@ -284,7 +295,7 @@ describe('create feature session', () => {
       const spy = sinon.spy();
       session.featureCreated.addEventListener(spy);
       await app.maps.setActiveMap(otherMap.name);
-      await app.maps.eventHandler.interactions[3].pipe({
+      await interactionChain.pipe({
         type: EventType.CLICK,
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
@@ -299,6 +310,7 @@ describe('create feature session', () => {
   describe('changing the active map to an oblique map', () => {
     let session: CreateFeatureSession<GeometryType.LineString>;
     let otherMap: ObliqueMap;
+    let interactionChain: InteractionChain;
 
     before(() => {
       otherMap = new ObliqueMap({});
@@ -306,6 +318,9 @@ describe('create feature session', () => {
     });
 
     beforeEach(() => {
+      app.maps.eventHandler.exclusiveAdded.addEventListener((chain) => {
+        interactionChain = chain as InteractionChain;
+      });
       session = startCreateFeatureSession(app, layer, GeometryType.LineString);
     });
 
@@ -330,7 +345,7 @@ describe('create feature session', () => {
       const spy = sinon.spy();
       session.featureCreated.addEventListener(spy);
       await app.maps.setActiveMap(otherMap.name);
-      await app.maps.eventHandler.interactions[3].pipe({
+      await interactionChain.pipe({
         type: EventType.CLICK,
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
@@ -361,7 +376,7 @@ describe('create feature session', () => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         otherMap.imageChanged.raiseEvent();
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           type: EventType.CLICK,
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
@@ -404,14 +419,16 @@ describe('create feature session', () => {
 
   describe('stopping the session in the finished callback', () => {
     let session: CreateFeatureSession<GeometryType.Point>;
+    let interactionChain: InteractionChain;
 
     beforeEach(() => {
+      app.maps.eventHandler.exclusiveAdded.addEventListener((chain) => {
+        interactionChain = chain as InteractionChain;
+      });
       session = startCreateFeatureSession(app, layer, GeometryType.Point);
     });
 
     it('should not recreate the creation interaction', async () => {
-      const interactionChain = app.maps.eventHandler
-        .interactions[3] as InteractionChain;
       session.creationFinished.addEventListener(() => {
         session.stop();
       });
@@ -435,7 +452,7 @@ describe('create feature session', () => {
         session.stop();
       });
 
-      await app.maps.eventHandler.interactions[3].pipe({
+      await interactionChain.pipe({
         type: EventType.CLICK,
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
@@ -465,8 +482,12 @@ describe('create feature session', () => {
   describe('altitude mode handling', () => {
     describe('setting the feature altitude mode on the session', () => {
       let session: CreateFeatureSession<GeometryType.LineString>;
+      let interactionChain: InteractionChain;
 
       beforeEach(() => {
+        app.maps.eventHandler.exclusiveAdded.addEventListener((chain) => {
+          interactionChain = chain as InteractionChain;
+        });
         session = startCreateFeatureSession(
           app,
           layer,
@@ -484,7 +505,7 @@ describe('create feature session', () => {
         session.featureCreated.addEventListener((f) => {
           feature = f;
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           type: EventType.CLICK,
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
@@ -500,7 +521,7 @@ describe('create feature session', () => {
         session.featureCreated.addEventListener((f) => {
           feature = f;
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           type: EventType.CLICK,
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
@@ -517,7 +538,7 @@ describe('create feature session', () => {
         session.featureCreated.addEventListener((f) => {
           feature = f;
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           type: EventType.CLICK,
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
@@ -525,7 +546,7 @@ describe('create feature session', () => {
           positionOrPixel: [1, 2, 3],
           ...mapEvent,
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           type: EventType.DBLCLICK,
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
@@ -540,8 +561,12 @@ describe('create feature session', () => {
 
     describe('unsetting the feature altitude mode on the session', () => {
       let session: CreateFeatureSession<GeometryType.LineString>;
+      let interactionChain: InteractionChain;
 
       beforeEach(() => {
+        app.maps.eventHandler.exclusiveAdded.addEventListener((chain) => {
+          interactionChain = chain as InteractionChain;
+        });
         session = startCreateFeatureSession(
           app,
           layer,
@@ -560,7 +585,7 @@ describe('create feature session', () => {
         session.featureCreated.addEventListener((f) => {
           feature = f;
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           type: EventType.CLICK,
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
@@ -576,7 +601,7 @@ describe('create feature session', () => {
         session.featureCreated.addEventListener((f) => {
           feature = f;
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           type: EventType.CLICK,
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
@@ -593,7 +618,7 @@ describe('create feature session', () => {
         session.featureCreated.addEventListener((f) => {
           feature = f;
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           type: EventType.CLICK,
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
@@ -601,7 +626,7 @@ describe('create feature session', () => {
           positionOrPixel: [1, 2, 3],
           ...mapEvent,
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           type: EventType.DBLCLICK,
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
@@ -617,8 +642,12 @@ describe('create feature session', () => {
     describe('setting the altitude mode on the feature currently in creation', () => {
       let session: CreateFeatureSession<GeometryType.LineString>;
       let feature: Feature<LineString> | undefined;
+      let interactionChain: InteractionChain;
 
       beforeEach(async () => {
+        app.maps.eventHandler.exclusiveAdded.addEventListener((chain) => {
+          interactionChain = chain as InteractionChain;
+        });
         session = startCreateFeatureSession(
           app,
           layer,
@@ -627,7 +656,7 @@ describe('create feature session', () => {
         session.featureCreated.addEventListener((f) => {
           feature = f;
         });
-        await app.maps.eventHandler.interactions[3].pipe({
+        await interactionChain.pipe({
           type: EventType.CLICK,
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
