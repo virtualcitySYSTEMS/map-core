@@ -347,10 +347,6 @@ describe('FeatureAtPixelInteraction', () => {
           key: ModificationKeyType.NONE,
         };
 
-        // @ts-expect-error: stub
-        sandbox.stub(cesiumMap, 'getCesiumWidget').returns({
-          clock: new Clock({}),
-        });
         fap.pickTranslucent = false;
 
         return fap

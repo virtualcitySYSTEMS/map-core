@@ -181,15 +181,23 @@ describe('startEditFeaturesSession', () => {
 
   describe('stopping an edit session', () => {
     let session: EditFeaturesSession;
+    let interactionChain: InteractionChain;
 
     beforeEach(() => {
+      const listener = app.maps.eventHandler.exclusiveAdded.addEventListener(
+        (chain) => {
+          interactionChain = chain as InteractionChain;
+          listener();
+        },
+      );
       session = startEditFeaturesSession(app, layer);
     });
 
     it('should remove the interaction', () => {
-      const interaction = app.maps.eventHandler.interactions[4];
       session.stop();
-      expect(app.maps.eventHandler.interactions).to.not.include(interaction);
+      expect(app.maps.eventHandler.interactions).to.not.include(
+        interactionChain,
+      );
     });
 
     it('should call stopped', () => {
@@ -216,8 +224,15 @@ describe('startEditFeaturesSession', () => {
 
   describe('starting a TRANSLATE session', () => {
     let session: EditFeaturesSession;
+    let interactionChain: InteractionChain;
 
     before(() => {
+      const listener = app.maps.eventHandler.exclusiveAdded.addEventListener(
+        (chain) => {
+          interactionChain = chain as InteractionChain;
+          listener();
+        },
+      );
       session = startEditFeaturesSession(
         app,
         layer,
@@ -235,9 +250,7 @@ describe('startEditFeaturesSession', () => {
     });
 
     it('should add a an exclusive listener to the event handler', () => {
-      expect(app.maps.eventHandler.interactions[4]).to.be.an.instanceof(
-        InteractionChain,
-      );
+      expect(interactionChain).to.be.an.instanceof(InteractionChain);
     });
 
     it('should add the translate interaction and work for 3D geometries', async () => {
@@ -247,7 +260,7 @@ describe('startEditFeaturesSession', () => {
       const map = app.maps.activeMap!;
       const pointerEvent = PointerEventType.DOWN;
       const windowPosition = new Cartesian2(0, 0);
-      await app.maps.eventHandler.interactions[4].pipe({
+      await interactionChain.pipe({
         pointerEvent,
         windowPosition,
         map,
@@ -257,7 +270,7 @@ describe('startEditFeaturesSession', () => {
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
       });
-      await app.maps.eventHandler.interactions[4].pipe({
+      await interactionChain.pipe({
         pointerEvent,
         windowPosition,
         map,
@@ -267,7 +280,7 @@ describe('startEditFeaturesSession', () => {
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
       });
-      await app.maps.eventHandler.interactions[4].pipe({
+      await interactionChain.pipe({
         pointerEvent,
         windowPosition,
         map,
@@ -287,7 +300,7 @@ describe('startEditFeaturesSession', () => {
       const map = app.maps.activeMap!;
       const pointerEvent = PointerEventType.DOWN;
       const windowPosition = new Cartesian2(0, 0);
-      await app.maps.eventHandler.interactions[4].pipe({
+      await interactionChain.pipe({
         pointerEvent,
         windowPosition,
         map,
@@ -297,7 +310,7 @@ describe('startEditFeaturesSession', () => {
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
       });
-      await app.maps.eventHandler.interactions[4].pipe({
+      await interactionChain.pipe({
         pointerEvent,
         windowPosition,
         map,
@@ -307,7 +320,7 @@ describe('startEditFeaturesSession', () => {
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
       });
-      await app.maps.eventHandler.interactions[4].pipe({
+      await interactionChain.pipe({
         pointerEvent,
         windowPosition,
         map,
@@ -323,8 +336,15 @@ describe('startEditFeaturesSession', () => {
 
   describe('starting a ROTATE session', () => {
     let session: EditFeaturesSession;
+    let interactionChain: InteractionChain;
 
     before(() => {
+      const listener = app.maps.eventHandler.exclusiveAdded.addEventListener(
+        (chain) => {
+          interactionChain = chain as InteractionChain;
+          listener();
+        },
+      );
       session = startEditFeaturesSession(
         app,
         layer,
@@ -342,9 +362,7 @@ describe('startEditFeaturesSession', () => {
     });
 
     it('should add a an exclusive listener to the event handler', () => {
-      expect(app.maps.eventHandler.interactions[4]).to.be.an.instanceof(
-        InteractionChain,
-      );
+      expect(interactionChain).to.be.an.instanceof(InteractionChain);
     });
 
     it('should add the rotate interaction and work for 3D geometries', async () => {
@@ -358,7 +376,7 @@ describe('startEditFeaturesSession', () => {
       const map = app.maps.activeMap!;
       const pointerEvent = PointerEventType.DOWN;
       const windowPosition = new Cartesian2(0, 0);
-      await app.maps.eventHandler.interactions[4].pipe({
+      await interactionChain.pipe({
         pointerEvent,
         windowPosition,
         map,
@@ -368,7 +386,7 @@ describe('startEditFeaturesSession', () => {
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
       });
-      await app.maps.eventHandler.interactions[4].pipe({
+      await interactionChain.pipe({
         pointerEvent,
         windowPosition,
         map,
@@ -378,7 +396,7 @@ describe('startEditFeaturesSession', () => {
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
       });
-      await app.maps.eventHandler.interactions[4].pipe({
+      await interactionChain.pipe({
         pointerEvent,
         windowPosition,
         map,
@@ -407,7 +425,7 @@ describe('startEditFeaturesSession', () => {
       const map = app.maps.activeMap!;
       const pointerEvent = PointerEventType.DOWN;
       const windowPosition = new Cartesian2(0, 0);
-      await app.maps.eventHandler.interactions[4].pipe({
+      await interactionChain.pipe({
         pointerEvent,
         windowPosition,
         map,
@@ -417,7 +435,7 @@ describe('startEditFeaturesSession', () => {
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
       });
-      await app.maps.eventHandler.interactions[4].pipe({
+      await interactionChain.pipe({
         pointerEvent,
         windowPosition,
         map,
@@ -427,7 +445,7 @@ describe('startEditFeaturesSession', () => {
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
       });
-      await app.maps.eventHandler.interactions[4].pipe({
+      await interactionChain.pipe({
         pointerEvent,
         windowPosition,
         map,
@@ -460,7 +478,7 @@ describe('startEditFeaturesSession', () => {
         const map = app.maps.activeMap!;
         const pointerEvent = PointerEventType.DOWN;
         const windowPosition = new Cartesian2(0, 0);
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -470,7 +488,7 @@ describe('startEditFeaturesSession', () => {
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
         });
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -480,7 +498,7 @@ describe('startEditFeaturesSession', () => {
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
         });
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -504,7 +522,7 @@ describe('startEditFeaturesSession', () => {
         const map = app.maps.activeMap!;
         const pointerEvent = PointerEventType.DOWN;
         const windowPosition = new Cartesian2(0, 0);
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -514,7 +532,7 @@ describe('startEditFeaturesSession', () => {
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
         });
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -524,7 +542,7 @@ describe('startEditFeaturesSession', () => {
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
         });
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -548,7 +566,7 @@ describe('startEditFeaturesSession', () => {
         const map = app.maps.activeMap!;
         const pointerEvent = PointerEventType.DOWN;
         const windowPosition = new Cartesian2(0, 0);
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -558,7 +576,7 @@ describe('startEditFeaturesSession', () => {
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
         });
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -568,7 +586,7 @@ describe('startEditFeaturesSession', () => {
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
         });
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -606,7 +624,7 @@ describe('startEditFeaturesSession', () => {
         const map = app.maps.activeMap!;
         const pointerEvent = PointerEventType.DOWN;
         const windowPosition = new Cartesian2(0, 0);
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -616,7 +634,7 @@ describe('startEditFeaturesSession', () => {
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
         });
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -626,7 +644,7 @@ describe('startEditFeaturesSession', () => {
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
         });
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -650,7 +668,7 @@ describe('startEditFeaturesSession', () => {
         const map = app.maps.activeMap!;
         const pointerEvent = PointerEventType.DOWN;
         const windowPosition = new Cartesian2(0, 0);
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -660,7 +678,7 @@ describe('startEditFeaturesSession', () => {
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
         });
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -670,7 +688,7 @@ describe('startEditFeaturesSession', () => {
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
         });
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -694,7 +712,7 @@ describe('startEditFeaturesSession', () => {
         const map = app.maps.activeMap!;
         const pointerEvent = PointerEventType.DOWN;
         const windowPosition = new Cartesian2(0, 0);
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -704,7 +722,7 @@ describe('startEditFeaturesSession', () => {
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
         });
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -714,7 +732,7 @@ describe('startEditFeaturesSession', () => {
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
         });
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -737,8 +755,15 @@ describe('startEditFeaturesSession', () => {
 
   describe('starting a SCALE session', () => {
     let session: EditFeaturesSession;
+    let interactionChain: InteractionChain;
 
     before(() => {
+      const listener = app.maps.eventHandler.exclusiveAdded.addEventListener(
+        (chain) => {
+          interactionChain = chain as InteractionChain;
+          listener();
+        },
+      );
       session = startEditFeaturesSession(
         app,
         layer,
@@ -756,9 +781,7 @@ describe('startEditFeaturesSession', () => {
     });
 
     it('should add a an exclusive listener to the event handler', () => {
-      expect(app.maps.eventHandler.interactions[4]).to.be.an.instanceof(
-        InteractionChain,
-      );
+      expect(interactionChain).to.be.an.instanceof(InteractionChain);
     });
 
     it('should add the scale interaction and work for 3D geometries', async () => {
@@ -772,7 +795,7 @@ describe('startEditFeaturesSession', () => {
       const map = app.maps.activeMap!;
       const pointerEvent = PointerEventType.DOWN;
       const windowPosition = new Cartesian2(0, 0);
-      await app.maps.eventHandler.interactions[4].pipe({
+      await interactionChain.pipe({
         pointerEvent,
         windowPosition,
         map,
@@ -782,7 +805,7 @@ describe('startEditFeaturesSession', () => {
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
       });
-      await app.maps.eventHandler.interactions[4].pipe({
+      await interactionChain.pipe({
         pointerEvent,
         windowPosition,
         map,
@@ -792,7 +815,7 @@ describe('startEditFeaturesSession', () => {
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
       });
-      await app.maps.eventHandler.interactions[4].pipe({
+      await interactionChain.pipe({
         pointerEvent,
         windowPosition,
         map,
@@ -821,7 +844,7 @@ describe('startEditFeaturesSession', () => {
       const map = app.maps.activeMap!;
       const pointerEvent = PointerEventType.DOWN;
       const windowPosition = new Cartesian2(0, 0);
-      await app.maps.eventHandler.interactions[4].pipe({
+      await interactionChain.pipe({
         pointerEvent,
         windowPosition,
         map,
@@ -831,7 +854,7 @@ describe('startEditFeaturesSession', () => {
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
       });
-      await app.maps.eventHandler.interactions[4].pipe({
+      await interactionChain.pipe({
         pointerEvent,
         windowPosition,
         map,
@@ -841,7 +864,7 @@ describe('startEditFeaturesSession', () => {
         pointer: PointerKeyType.LEFT,
         key: ModificationKeyType.NONE,
       });
-      await app.maps.eventHandler.interactions[4].pipe({
+      await interactionChain.pipe({
         pointerEvent,
         windowPosition,
         map,
@@ -893,7 +916,7 @@ describe('startEditFeaturesSession', () => {
           mercatorToCartesian([2, 2, 1]),
         ]);
 
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -903,7 +926,7 @@ describe('startEditFeaturesSession', () => {
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
         });
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -913,7 +936,7 @@ describe('startEditFeaturesSession', () => {
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
         });
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -936,7 +959,7 @@ describe('startEditFeaturesSession', () => {
           mercatorToCartesian([2, 2, 1]),
           mercatorToCartesian([2, 2, 1]),
         ]);
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -947,7 +970,7 @@ describe('startEditFeaturesSession', () => {
           key: ModificationKeyType.NONE,
         });
 
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -958,7 +981,7 @@ describe('startEditFeaturesSession', () => {
           key: ModificationKeyType.NONE,
         });
 
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -981,7 +1004,7 @@ describe('startEditFeaturesSession', () => {
           mercatorToCartesian([1, 1, 2]),
           mercatorToCartesian([1, 1, 2]),
         ]);
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -992,7 +1015,7 @@ describe('startEditFeaturesSession', () => {
           key: ModificationKeyType.NONE,
         });
 
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -1003,7 +1026,7 @@ describe('startEditFeaturesSession', () => {
           key: ModificationKeyType.NONE,
         });
 
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -1026,7 +1049,7 @@ describe('startEditFeaturesSession', () => {
           mercatorToCartesian([2, 2, 2]),
           mercatorToCartesian([2, 2, 2]),
         ]);
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -1037,7 +1060,7 @@ describe('startEditFeaturesSession', () => {
           key: ModificationKeyType.NONE,
         });
 
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -1048,7 +1071,7 @@ describe('startEditFeaturesSession', () => {
           key: ModificationKeyType.NONE,
         });
 
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -1101,7 +1124,7 @@ describe('startEditFeaturesSession', () => {
           mercatorToCartesian([2, 2, 1]),
         ]);
 
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -1111,7 +1134,7 @@ describe('startEditFeaturesSession', () => {
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
         });
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -1121,7 +1144,7 @@ describe('startEditFeaturesSession', () => {
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
         });
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -1144,7 +1167,7 @@ describe('startEditFeaturesSession', () => {
           mercatorToCartesian([2, 2, 1]),
           mercatorToCartesian([2, 2, 1]),
         ]);
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -1155,7 +1178,7 @@ describe('startEditFeaturesSession', () => {
           key: ModificationKeyType.NONE,
         });
 
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -1166,7 +1189,7 @@ describe('startEditFeaturesSession', () => {
           key: ModificationKeyType.NONE,
         });
 
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -1189,7 +1212,7 @@ describe('startEditFeaturesSession', () => {
           mercatorToCartesian([1, 1, 2]),
           mercatorToCartesian([1, 1, 2]),
         ]);
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -1200,7 +1223,7 @@ describe('startEditFeaturesSession', () => {
           key: ModificationKeyType.NONE,
         });
 
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -1211,7 +1234,7 @@ describe('startEditFeaturesSession', () => {
           key: ModificationKeyType.NONE,
         });
 
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -1234,7 +1257,7 @@ describe('startEditFeaturesSession', () => {
           mercatorToCartesian([2, 2, 2]),
           mercatorToCartesian([2, 2, 2]),
         ]);
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -1245,7 +1268,7 @@ describe('startEditFeaturesSession', () => {
           key: ModificationKeyType.NONE,
         });
 
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -1256,7 +1279,7 @@ describe('startEditFeaturesSession', () => {
           key: ModificationKeyType.NONE,
         });
 
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -1275,8 +1298,15 @@ describe('startEditFeaturesSession', () => {
 
   describe('starting a EXTRUDE session', () => {
     let session: EditFeaturesSession;
+    let interactionChain: InteractionChain;
 
     before(async () => {
+      const listener = app.maps.eventHandler.exclusiveAdded.addEventListener(
+        (chain) => {
+          interactionChain = chain as InteractionChain;
+          listener();
+        },
+      );
       await app.maps.setActiveMap(cesiumMap.name);
       session = startEditFeaturesSession(
         app,
@@ -1296,9 +1326,7 @@ describe('startEditFeaturesSession', () => {
     });
 
     it('should add a an exclusive listener to the event handler', () => {
-      expect(app.maps.eventHandler.interactions[4]).to.be.an.instanceof(
-        InteractionChain,
-      );
+      expect(interactionChain).to.be.an.instanceof(InteractionChain);
     });
 
     describe('extruding a feature', () => {
@@ -1333,7 +1361,7 @@ describe('startEditFeaturesSession', () => {
         const map = app.maps.activeMap!;
         const pointerEvent = PointerEventType.DOWN;
         const windowPosition = new Cartesian2(0, 0);
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -1343,7 +1371,7 @@ describe('startEditFeaturesSession', () => {
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
         });
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -1353,7 +1381,7 @@ describe('startEditFeaturesSession', () => {
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
         });
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -1376,7 +1404,7 @@ describe('startEditFeaturesSession', () => {
         const map = app.maps.activeMap!;
         const pointerEvent = PointerEventType.DOWN;
         const windowPosition = new Cartesian2(0, 0);
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -1386,7 +1414,7 @@ describe('startEditFeaturesSession', () => {
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
         });
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,
@@ -1396,7 +1424,7 @@ describe('startEditFeaturesSession', () => {
           pointer: PointerKeyType.LEFT,
           key: ModificationKeyType.NONE,
         });
-        await app.maps.eventHandler.interactions[4].pipe({
+        await interactionChain.pipe({
           pointerEvent,
           windowPosition,
           map,

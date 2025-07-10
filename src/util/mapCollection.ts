@@ -21,6 +21,7 @@ import KeyboardController from '../map/navigation/controller/keyboardController.
 import PanoramaImageSelection from '../interaction/panoramaImageSelection.js';
 import type { PanoramaImage } from '../panorama/panoramaImage.js';
 import type PanoramaMap from '../map/panoramaMap.js';
+import PanoramaTileHighlight from '../interaction/panoramaTileHighlight.js';
 
 export type MapCollectionInitializationError = {
   error: Error;
@@ -101,6 +102,8 @@ class MapCollection extends Collection<VcsMap> {
 
   private _panoramaImageSelection = new PanoramaImageSelection(this);
 
+  private _panoramaTileHighlight = new PanoramaTileHighlight();
+
   /**
    * Called, if a map fails to initialize. The map causing the error will be removed from the collection.
    */
@@ -164,7 +167,9 @@ class MapCollection extends Collection<VcsMap> {
     this.navigation.addController(
       new KeyboardController({ id: 'keyboard', target: this._target }),
     );
+
     this.eventHandler.addPersistentInteraction(this._panoramaImageSelection);
+    this.eventHandler.addPersistentInteraction(this._panoramaTileHighlight);
   }
 
   /**
@@ -554,6 +559,7 @@ class MapCollection extends Collection<VcsMap> {
     });
     this._layerCollection.destroy();
     this._panoramaImageSelection.destroy();
+    this._panoramaTileHighlight.destroy();
     this.eventHandler.destroy();
     this.mapActivated.destroy();
     this.clippingObjectManager.destroy();

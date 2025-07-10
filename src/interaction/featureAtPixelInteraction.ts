@@ -119,7 +119,7 @@ export function getFeatureFromPickObject(
   return feature;
 }
 
-function getFeatureFromScene(
+export function getFeatureFromScene(
   scene: Scene,
   windowPosition: Cartesian2,
   hitTolerance: number,
@@ -217,10 +217,11 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
       await this._obliqueHandler(event);
     } else if (
       event.map.className === 'CesiumMap' ||
-      event.map.className === 'PanoramaMap' // XXX write dedicated panorama handler
+      event.map.className === 'PanoramaMap'
     ) {
       await this._cesiumHandler(event);
     }
+
     if (event.type & EventType.DRAGSTART && event.feature) {
       this._draggingFeature = event.feature;
     }

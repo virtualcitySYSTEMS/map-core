@@ -126,7 +126,7 @@ export type SelectFeaturesSession = EditorSession<SessionType.SELECT> & {
    */
   setMode(mode: SelectionMode): void;
   modeChanged: VcsEvent<SelectionMode>;
-  setCurrentFeatures(features: Feature[]): Promise<void>;
+  setCurrentFeatures(features: Feature[] | Feature): Promise<void>;
   clearSelection(): void;
 };
 
@@ -282,7 +282,7 @@ function startSelectFeaturesSession(
     type: SessionType.SELECT,
     stopped,
     stop,
-    setCurrentFeatures(features: Feature[]): Promise<void> {
+    setCurrentFeatures(features: Feature[] | Feature): Promise<void> {
       return (
         currentSelectInteraction?.setSelected(features) ?? Promise.resolve()
       );
