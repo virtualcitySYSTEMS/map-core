@@ -1,9 +1,20 @@
 ### 6.2.0
 
+#### Highlights
+
+- A completely new VcsMap type `PanoramaMap` to render panoramas, see [the documentation](documentation/panorama.md) for more details.
+- Adds a new API to the map collecition to activate a panorama map with a given image.
+- Adds an API to create a `Viewpoint` from a panorama image.
+
 #### Changes
 
 - Updated eslint to eslint 9 & vcs eslint config 4.
 - Uses `madge` to detect circular dependencies in the code base.
+- The `EventHandler` `exclusiveAdded` event now gets passed the interaction.
+
+#### Fixes
+
+- Fixes an issue where custom shading would not properly work for I3S datasets.
 
 ### 6.1.11
 

@@ -148,8 +148,8 @@ describe('EventHandler', () => {
 
     it('should raise the exclusive add interaction, when adding an exclusive interaction', () => {
       const spy = sinonBox.spy();
-      const listener = EH.exclusiveAdded.addEventListener(() => {
-        spy();
+      const listener = EH.exclusiveAdded.addEventListener((a) => {
+        spy(a);
       });
       const remover1 = EH.addExclusiveInteraction(
         dummy1,
@@ -164,6 +164,8 @@ describe('EventHandler', () => {
         'test',
       );
       expect(spy).to.have.been.calledTwice;
+      expect(spy.firstCall.args[0]).to.equal(dummy1);
+      expect(spy.secondCall.args[0]).to.equal(dummy2);
       remover1();
       remover2();
       listener();

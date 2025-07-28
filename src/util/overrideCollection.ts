@@ -51,7 +51,7 @@ export type OverrideCollectionInterface<T, S> = {
   ) => Promise<void>;
   getSerializedByKey: (key: string) => S | undefined;
   removeModule: (moduleId: string) => void;
-  serializeModule: (moduleId: string) => object[];
+  serializeModule: (moduleId: string) => S[];
   [isOverrideCollection]: boolean;
   uniqueKey: keyof T;
 };
@@ -293,9 +293,7 @@ function makeOverrideCollection<
 
   overrideCollection.replaced = new VcsEvent();
 
-  overrideCollection.serializeModule = function serializeModule(
-    moduleId,
-  ): object[] {
+  overrideCollection.serializeModule = function serializeModule(moduleId): S[] {
     return [...overrideCollection]
       .map((item) => {
         if (item[moduleIdSymbol] === moduleId) {
@@ -313,7 +311,7 @@ function makeOverrideCollection<
         }
         return null;
       })
-      .filter((i) => i) as object[];
+      .filter((i) => i) as S[];
   };
 
   const originalDestroy = overrideCollection.destroy.bind(overrideCollection);

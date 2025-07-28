@@ -60,6 +60,8 @@ export {
 } from './src/interaction/featureAtPixelInteraction.js';
 export { default as FeatureProviderInteraction } from './src/interaction/featureProviderInteraction.js';
 export { default as InteractionChain } from './src/interaction/interactionChain.js';
+export { default as PanoramaImageSelection } from './src/interaction/panoramaImageSelection.js';
+export { default as PanoramaFeatureHighlighting } from './src/interaction/panoramaFeatureHighlight.js';
 export * from './src/interaction/interactionType.js';
 export {
   cesiumTilesetLastUpdated,
@@ -337,6 +339,7 @@ export {
   actuallyIsCircle,
   createSync,
   primitives,
+  panoramaFeature,
 } from './src/layer/vectorSymbols.js';
 export type {
   VectorTileImplementation,
@@ -358,6 +361,13 @@ export type {
   WMTSImplementationOptions,
 } from './src/layer/wmtsLayer.js';
 export { default as WMTSLayer } from './src/layer/wmtsLayer.js';
+export type {
+  PanoramaDatasetOptions,
+  PanoramaDatasetFeatureProperties,
+} from './src/layer/panoramaDatasetLayer.js';
+export { default as PanoramaDatasetLayer } from './src/layer/panoramaDatasetLayer.js';
+export { default as VectorTilePanoramaImpl } from './src/layer/panorama/vectorTilePanoramaImpl.js';
+export { default as PanoramaDatasetPanoramaImpl } from './src/layer/panorama/panoramaDatasetPanoramaImpl.js';
 export { default as BaseOLMap } from './src/map/baseOLMap.js';
 export type { CameraLimiterOptions } from './src/map/cameraLimiter.js';
 export {
@@ -378,6 +388,8 @@ export {
 } from './src/map/obliqueMap.js';
 export type { OpenlayersOptions } from './src/map/openlayersMap.js';
 export { default as OpenlayersMap } from './src/map/openlayersMap.js';
+export type { PanoramaMapOptions } from './src/map/panoramaMap.js';
+export { default as PanoramaMap } from './src/map/panoramaMap.js';
 export type {
   VcsMapOptions,
   VcsMapRenderEvent,
@@ -760,6 +772,7 @@ export { default as IndexedCollection } from './src/util/indexedCollection.js';
 export { isMobile } from './src/util/isMobile.js';
 export {
   maxZIndex,
+  maxZIndexMin50,
   default as LayerCollection,
 } from './src/util/layerCollection.js';
 export type { HiddenObject } from './src/util/hiddenObjects.js';
@@ -912,3 +925,48 @@ export type { ControllerOptions } from './src/map/navigation/controller/controll
 export { default as Controller } from './src/map/navigation/controller/controller.js';
 export { default as KeyboardController } from './src/map/navigation/controller/keyboardController.js';
 export { createAbsoluteFeature } from './src/util/createAbsoluteFeature.js';
+export type { PanoramaCameraController } from './src/panorama/panoramaCameraController.js';
+export type {
+  PanoramaImage,
+  CreatePanoramaImageOptions,
+} from './src/panorama/panoramaImage.js';
+export {
+  createPanoramaImage,
+  createPanoramaImageFromURL,
+} from './src/panorama/panoramaImage.js';
+export type { PanoramaImageView } from './src/panorama/panoramaImageView.js';
+export { createPanoramaImageView } from './src/panorama/panoramaImageView.js';
+export type { PanoramaTile } from './src/panorama/panoramaTile.js';
+export { createPanoramaTile } from './src/panorama/panoramaTile.js';
+export type { PanoramaTileCoordinate } from './src/panorama/panoramaTileCoordinate.js';
+export {
+  createTileCoordinate,
+  getDistanceToTileCoordinate,
+  getTileCoordinatesInImageExtent,
+  tileSizeInRadians,
+  createTileCoordinateFromKey,
+  getTileSphericalExtent,
+  getTileSphericalCenter,
+  tileCoordinateFromImageCoordinate,
+  getNumberOfTiles,
+} from './src/panorama/panoramaTileCoordinate.js';
+export type { PanoramaTileMaterialUniforms } from './src/panorama/panoramaTileMaterial.js';
+export {
+  default as PanoramaTileMaterial,
+  PanoramaOverlayMode,
+  getDefaultPanoramaTileMaterialUniforms,
+} from './src/panorama/panoramaTileMaterial.js';
+export { default as PanoramaTilePrimitiveCollection } from './src/panorama/panoramaTilePrimitiveCollection.js';
+export type {
+  PanoramaTileProvider,
+  PanoramaResourceData,
+  PanoramaResourceType,
+  PanoramaImageDecoder,
+  PanoramaTileLoadError,
+} from './src/panorama/panoramaTileProvider.js';
+export { createPanoramaTileProvider } from './src/panorama/panoramaTileProvider.js';
+export {
+  cartesianToImageSpherical,
+  imageSphericalToCartesian,
+  globalCartesianToImageSpherical,
+} from './src/panorama/sphericalCoordinates.js';

@@ -1,9 +1,13 @@
 import { expect } from 'chai';
 import { Point } from 'ol/geom.js';
+import { type Feature } from 'ol';
+import sinon from 'sinon';
 import {
+  type CesiumMap,
   createSync,
   ObliqueMap,
   OpenlayersMap,
+  type SelectFeaturesSession,
   SelectionMode,
   startSelectFeaturesSession,
 } from '../../../../index.js';
@@ -11,14 +15,15 @@ import VcsApp from '../../../../src/vcsApp.js';
 import VectorLayer from '../../../../src/layer/vectorLayer.js';
 import { createFeatureWithId } from './transformation/setupTransformationHandler.js';
 import { getCesiumMap } from '../../helpers/cesiumHelpers.js';
+import type InteractionChain from '../../../../src/interaction/interactionChain.js';
 
 describe('startSelectFeaturesSession', () => {
-  let app;
-  let layer;
-  let defaultMap;
-  let obliqueMap;
-  let cesiumMap;
-  let feature;
+  let app: VcsApp;
+  let layer: VectorLayer;
+  let defaultMap: OpenlayersMap;
+  let obliqueMap: ObliqueMap;
+  let cesiumMap: CesiumMap;
+  let feature: Feature;
 
   before(async () => {
     defaultMap = new OpenlayersMap({});
@@ -43,7 +48,7 @@ describe('startSelectFeaturesSession', () => {
       });
 
       describe('feature selection', () => {
-        let session;
+        let session: SelectFeaturesSession;
 
         before(async () => {
           session = startSelectFeaturesSession(app, layer);
@@ -54,13 +59,13 @@ describe('startSelectFeaturesSession', () => {
           session.stop();
         });
 
-        it('should set create sync on the features', async () => {
+        it('should set create sync on the features', () => {
           expect(feature).to.have.property(createSync, true);
         });
 
-        it('should highlight the feature', async () => {
+        it('should highlight the feature', () => {
           expect(layer.featureVisibility.highlightedObjects).to.have.property(
-            feature.getId(),
+            String(feature.getId()),
           );
         });
       });
@@ -84,7 +89,7 @@ describe('startSelectFeaturesSession', () => {
       });
 
       describe('deselecting a feature', () => {
-        let session;
+        let session: SelectFeaturesSession;
 
         before(async () => {
           session = startSelectFeaturesSession(app, layer);
@@ -96,14 +101,14 @@ describe('startSelectFeaturesSession', () => {
           session.stop();
         });
 
-        it('should unset create sync on the features', async () => {
+        it('should unset create sync on the features', () => {
           expect(feature).to.not.have.property(createSync);
         });
 
-        it('should unhighlight the feature', async () => {
+        it('should unhighlight the feature', () => {
           expect(
             layer.featureVisibility.highlightedObjects,
-          ).to.not.have.property(feature.getId());
+          ).to.not.have.property(String(feature.getId()));
         });
       });
 
@@ -112,7 +117,7 @@ describe('startSelectFeaturesSession', () => {
           const session = startSelectFeaturesSession(app, layer);
           await app.maps.setActiveMap(obliqueMap.name);
           await session.setCurrentFeatures([feature]);
-          await session.clearSelection();
+          session.clearSelection();
           expect(obliqueMap.switchEnabled).to.be.true;
           session.stop();
           await app.maps.setActiveMap(defaultMap.name);
@@ -121,11 +126,11 @@ describe('startSelectFeaturesSession', () => {
     });
 
     describe('changing a selection set', () => {
-      let feature1;
-      let feature2;
-      let feature3;
+      let feature1: Feature;
+      let feature2: Feature;
+      let feature3: Feature;
 
-      before(async () => {
+      before(() => {
         feature1 = createFeatureWithId(new Point([0, 0, 0]));
         feature2 = createFeatureWithId(new Point([0, 0, 0]));
         feature3 = createFeatureWithId(new Point([0, 0, 0]));
@@ -136,14 +141,14 @@ describe('startSelectFeaturesSession', () => {
         // catch all if oblique spec throws
         await app.maps.setActiveMap(defaultMap.name);
         layer.removeFeaturesById([
-          feature1.getId(),
-          feature2.getId(),
-          feature3.getId(),
+          String(feature1.getId()),
+          String(feature2.getId()),
+          String(feature3.getId()),
         ]);
       });
 
       describe('deselecting a feature', () => {
-        let session;
+        let session: SelectFeaturesSession;
 
         before(async () => {
           session = startSelectFeaturesSession(app, layer);
@@ -155,13 +160,13 @@ describe('startSelectFeaturesSession', () => {
           session.stop();
         });
 
-        it('should set create sync on the features', async () => {
+        it('should set create sync on the features', () => {
           expect(feature1).to.have.property(createSync, true);
           expect(feature2).to.not.have.property(createSync);
           expect(feature3).to.have.property(createSync, true);
         });
 
-        it('should highlight the feature', async () => {
+        it('should highlight the feature', () => {
           expect(layer.featureVisibility.highlightedObjects).to.have.keys([
             feature1.getId(),
             feature3.getId(),
@@ -184,9 +189,13 @@ describe('startSelectFeaturesSession', () => {
   });
 
   describe('stopping a session', () => {
-    let session;
+    let session: SelectFeaturesSession;
+    let interactionChain: InteractionChain;
 
     beforeEach(() => {
+      app.maps.eventHandler.exclusiveAdded.addEventListener((chain) => {
+        interactionChain = chain as InteractionChain;
+      });
       session = startSelectFeaturesSession(app, layer);
     });
 
@@ -196,9 +205,10 @@ describe('startSelectFeaturesSession', () => {
     });
 
     it('should remove the interaction', () => {
-      const interaction = app.maps.eventHandler.interactions[3];
       session.stop();
-      expect(app.maps.eventHandler.interactions).to.not.include(interaction);
+      expect(app.maps.eventHandler.interactions).to.not.include(
+        interactionChain,
+      );
     });
 
     it('should call stopped', () => {
@@ -213,15 +223,15 @@ describe('startSelectFeaturesSession', () => {
         await session.setCurrentFeatures([feature]);
       });
 
-      it('should remove create sync on the features', async () => {
+      it('should remove create sync on the features', () => {
         session.stop();
         expect(feature).to.not.have.property(createSync);
       });
 
-      it('should unhighlight the feature', async () => {
+      it('should unhighlight the feature', () => {
         session.stop();
         expect(layer.featureVisibility.highlightedObjects).to.not.have.property(
-          feature.getId(),
+          String(feature.getId()),
         );
       });
 
@@ -235,7 +245,7 @@ describe('startSelectFeaturesSession', () => {
   });
 
   describe('changing the active map to an oblique map', () => {
-    let session;
+    let session: SelectFeaturesSession;
 
     beforeEach(() => {
       session = startSelectFeaturesSession(app, layer);
@@ -259,14 +269,14 @@ describe('startSelectFeaturesSession', () => {
 
       it('should clear the current selection', async () => {
         await session.setCurrentFeatures([feature]);
-        obliqueMap.imageChanged.raiseEvent();
+        obliqueMap.imageChanged?.raiseEvent(obliqueMap.currentImage!);
         expect(session.currentFeatures).to.be.empty;
       });
     });
   });
 
   describe('changing the active map from an oblique map', () => {
-    let session;
+    let session: SelectFeaturesSession;
 
     before(async () => {
       await app.maps.setActiveMap(obliqueMap.name);
@@ -287,7 +297,7 @@ describe('startSelectFeaturesSession', () => {
     it('should no longer listen to image changed', async () => {
       await app.maps.setActiveMap(defaultMap.name);
       await session.setCurrentFeatures([feature]);
-      obliqueMap.imageChanged.raiseEvent();
+      obliqueMap.imageChanged?.raiseEvent(obliqueMap.currentImage!);
       expect(session.currentFeatures).to.include.members([feature]);
     });
 
@@ -340,7 +350,7 @@ describe('startSelectFeaturesSession', () => {
         );
         await app.maps.setActiveMap(obliqueMap.name);
         await session.setCurrentFeatures(feature);
-        await session.clearSelection();
+        session.clearSelection();
         expect(obliqueMap.switchEnabled).to.be.true;
         session.stop();
         await app.maps.setActiveMap(defaultMap.name);
@@ -384,9 +394,13 @@ describe('startSelectFeaturesSession', () => {
   });
 
   describe('stopping a single session', () => {
-    let session;
+    let session: SelectFeaturesSession;
+    let interactionChain: InteractionChain;
 
     beforeEach(() => {
+      app.maps.eventHandler.exclusiveAdded.addEventListener((chain) => {
+        interactionChain = chain as InteractionChain;
+      });
       session = startSelectFeaturesSession(
         app,
         layer,
@@ -401,9 +415,10 @@ describe('startSelectFeaturesSession', () => {
     });
 
     it('should remove the interaction', () => {
-      const interaction = app.maps.eventHandler.interactions[3];
       session.stop();
-      expect(app.maps.eventHandler.interactions).to.not.include(interaction);
+      expect(app.maps.eventHandler.interactions).to.not.include(
+        interactionChain,
+      );
     });
 
     it('should call stopped', () => {
@@ -429,7 +444,7 @@ describe('startSelectFeaturesSession', () => {
   });
 
   describe('changing the active map to an oblique map on a single session', () => {
-    let session;
+    let session: SelectFeaturesSession;
 
     beforeEach(() => {
       session = startSelectFeaturesSession(
@@ -458,14 +473,14 @@ describe('startSelectFeaturesSession', () => {
 
       it('should clear the current selection', async () => {
         await session.setCurrentFeatures(feature);
-        obliqueMap.imageChanged.raiseEvent();
+        obliqueMap.imageChanged?.raiseEvent(obliqueMap.currentImage!);
         expect(session.firstFeature).to.be.null;
       });
     });
   });
 
   describe('changing the active map from an oblique map on a single session', () => {
-    let session;
+    let session: SelectFeaturesSession;
 
     before(async () => {
       await app.maps.setActiveMap(obliqueMap.name);
@@ -485,7 +500,7 @@ describe('startSelectFeaturesSession', () => {
     it('should no longer listen to image changed', async () => {
       await app.maps.setActiveMap(defaultMap.name);
       await session.setCurrentFeatures(feature);
-      obliqueMap.imageChanged.raiseEvent();
+      obliqueMap.imageChanged?.raiseEvent(obliqueMap.currentImage!);
       expect(session.firstFeature).to.equal(feature);
     });
 

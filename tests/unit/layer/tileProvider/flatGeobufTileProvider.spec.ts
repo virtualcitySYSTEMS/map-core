@@ -64,6 +64,14 @@ describe('FlatGeobufTileProvider', () => {
     });
   });
 
+  describe('getting the extent of a level', () => {
+    it('should load the correct extent', async () => {
+      const extent = await tileProvider.getLevelExtent(5);
+      expect(extent.extent).to.eql([0, 1, 12, 12]);
+      expect(extent.projection.epsg).to.equal('EPSG:4326');
+    });
+  });
+
   describe('serialization', () => {
     describe('of a default tile provider', () => {
       it('should only return type and name', () => {

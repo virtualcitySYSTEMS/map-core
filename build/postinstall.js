@@ -1,7 +1,8 @@
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'node:url';
 
-async function* getFilesInDirectory(filePath) {
+export async function* getFilesInDirectory(filePath) {
   const entries = await fs.promises.readdir(filePath, { withFileTypes: true });
 
   for (const file of entries) {
@@ -107,4 +108,6 @@ async function run() {
   console.log('fixed modules');
 }
 
-await run();
+if (fileURLToPath(import.meta.url) === process.argv[1]) {
+  await run();
+}

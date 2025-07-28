@@ -11,10 +11,11 @@ declare global {
     vcs: {
       apps: Map<string, VcsApp>;
       createModuleFromConfig: (config: VcsModuleConfig) => VcsModule;
+      getFirstApp: () => VcsApp | undefined;
+      workerBase?: string;
     };
     opera?: string;
   }
-
   interface CSSStyleDeclaration {
     [mouseOverSymbol]?: string;
   }

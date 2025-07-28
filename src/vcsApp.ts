@@ -580,12 +580,8 @@ class VcsApp {
       this._obliqueCollections.serializeModule(moduleId);
     config.viewpoints = this._viewpoints.serializeModule(moduleId);
     config.styles = this._styles.serializeModule(moduleId);
-    config.hiddenObjects = this._hiddenObjects.serializeModule(
-      moduleId,
-    ) as HiddenObject[];
-    config.clippingPolygons = this._clippingPolygons.serializeModule(
-      moduleId,
-    ) as ClippingPolygonObjectOptions[];
+    config.hiddenObjects = this._hiddenObjects.serializeModule(moduleId);
+    config.clippingPolygons = this._clippingPolygons.serializeModule(moduleId);
     config.flights = this._flights.serializeModule(moduleId);
     config.categories = [...this._categories]
       .map((c) => c.serializeModule(moduleId))
@@ -694,6 +690,9 @@ export function getVcsAppById(id: string): VcsApp | undefined {
 
 window.vcs = window.vcs || {};
 window.vcs.apps = vcsApps;
+window.vcs.getFirstApp = (): VcsApp | undefined => {
+  return vcsApps.values().next().value;
+};
 window.vcs.createModuleFromConfig = (config: VcsModuleConfig): VcsModule =>
   new VcsModule(config);
 

@@ -16,6 +16,7 @@ import type {
   doNotTransform,
   obliqueGeometry,
   originalFeatureSymbol,
+  panoramaFeature,
   primitives,
 } from '../layer/vectorSymbols.js';
 import type { vcsLayerName } from '../layer/layerSymbols.js';
@@ -47,6 +48,8 @@ import type {
 import type { validityPlaceholder } from '../util/editor/interactions/createPolygonInteraction.js';
 import type { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
 import type { PrimitiveType } from '../util/featureconverter/convert.js';
+
+import { PanoramaDatasetFeatureProperties } from '../layer/panoramaDatasetLayer.js';
 
 declare module 'ol/geom.js' {
   interface Geometry {
@@ -121,6 +124,7 @@ declare module 'ol/index.js' {
     [createSync]?: boolean;
     [vectorClusterGroupName]?: string;
     [primitives]?: (PrimitiveType | Label | Billboard | Entity)[];
+    [panoramaFeature]?: PanoramaDatasetFeatureProperties;
   }
 
   class CanvasTileRenderer extends CanvasImmediateRenderer {

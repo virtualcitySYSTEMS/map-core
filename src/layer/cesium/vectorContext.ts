@@ -30,6 +30,8 @@ import {
   primitives as primitivesSymbol,
   scaleSymbol,
 } from '../vectorSymbols.js';
+import type PanoramaMap from '../../map/panoramaMap.js';
+import { getResolution } from '../../map/cesiumMapHelpers.js';
 
 export function setReferenceForPicking(
   feature: Feature,
@@ -101,12 +103,13 @@ const scratchCenter = new Cartesian3();
  * in such a fashion, that the cartesian unit of 1 equals 1 pixel.
  */
 export function setupScalingPrimitiveCollection(
-  map: CesiumMap,
+  map: CesiumMap | PanoramaMap,
   primitiveCollection: PrimitiveCollection,
   dirtyRef: { value: boolean },
 ): () => void {
   let cachedVP = new Viewpoint({});
-  return map.getScene()!.postRender.addEventListener(() => {
+  const { scene } = map.getCesiumWidget()!;
+  return scene.postRender.addEventListener(() => {
     const { length } = primitiveCollection;
     if (length === 0) {
       return;
@@ -122,7 +125,7 @@ export function setupScalingPrimitiveCollection(
       if (!primitive.isDestroyed()) {
         const { modelMatrix } = primitive;
         const center = Matrix4.getTranslation(modelMatrix, scratchCenter);
-        const res = map.getCurrentResolutionFromCartesian(center);
+        const res = getResolution(center, scene.camera, map.mapElement);
         if (primitive[scaleSymbol] !== res) {
           primitive.modelMatrix = Matrix4.setScale(
             modelMatrix,
@@ -191,11 +194,11 @@ export default class VectorContext implements CesiumVectorContext {
   private _postRenderListener: () => void;
 
   constructor(
-    map: CesiumMap,
+    map: CesiumMap | PanoramaMap,
     rootCollection: PrimitiveCollection,
     splitDirection: SplitDirection,
   ) {
-    const scene = map.getScene()!;
+    const { scene } = map.getCesiumWidget()!;
     this.billboards = new BillboardCollection({ scene });
     this.labels = new LabelCollection({ scene });
     this.splitDirection = splitDirection;

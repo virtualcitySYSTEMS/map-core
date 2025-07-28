@@ -33,6 +33,7 @@ export function deserializeMap(
   if (map) {
     map.layerCollection = vcsApp.layers;
   }
+
   return map;
 }
 

@@ -193,10 +193,12 @@ export function getMockScene() {
   return scene;
 }
 
-export function getCesiumMap(mapOptions) {
-  const map = new CesiumMap(mapOptions || {});
+/**
+ * @returns {import("@vcmap-cesium/engine").CesiumWidget}
+ */
+export function getMockCesiumWidget() {
   const scene = getMockScene();
-  map._cesiumWidget = {
+  return {
     scene,
     camera: scene.camera,
     render: scene.render,
@@ -209,6 +211,13 @@ export function getCesiumMap(mapOptions) {
     },
     resize() {},
   };
+}
+
+export function getCesiumMap(mapOptions) {
+  const map = new CesiumMap(mapOptions || {});
+  const cesiumWidget = getMockCesiumWidget();
+  const { scene } = cesiumWidget;
+  map._cesiumWidget = cesiumWidget;
 
   map._defaultShadowMap = scene.shadowMap;
 
