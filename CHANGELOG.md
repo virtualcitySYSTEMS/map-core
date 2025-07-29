@@ -11,6 +11,7 @@
 - Updated eslint to eslint 9 & vcs eslint config 4.
 - Uses `madge` to detect circular dependencies in the code base.
 - The `EventHandler` `exclusiveAdded` event now gets passed the interaction.
+- Add new options to WMSFeatureInfo: `featureInfoFormat` to override the responseType to format mapping and `wfsGMLFormat` to override the default GML2 format of WFS
 
 #### Fixes
 

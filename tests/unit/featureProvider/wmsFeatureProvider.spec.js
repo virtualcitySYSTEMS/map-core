@@ -130,9 +130,7 @@ describe('WMSFeatureProvider', () => {
     });
 
     it('should set the correct GML format', () => {
-      const options = { gmlFormat: 'GML' };
-
-      const format = getFormat('text/xml', options);
+      const format = getFormat('text/xml', {}, undefined, 'GML');
       expect(format).to.be.an.instanceOf(WFS);
       expect(format)
         .to.have.property('gmlFormat_')

@@ -7,12 +7,14 @@ import GML32 from 'ol/format/GML32.js';
 import Point from 'ol/geom/Point.js';
 import { getTransform, type Projection as OLProjection } from 'ol/proj.js';
 import type { Size } from 'ol/size.js';
-import type { Feature } from 'ol/index.js';
+import { Feature } from 'ol';
 import type { Coordinate } from 'ol/coordinate.js';
 import type { TileWMS } from 'ol/source.js';
 import type FeatureFormat from 'ol/format/Feature.js';
 import WMSGetFeatureInfo from 'ol/format/WMSGetFeatureInfo.js';
+import type { Options as WMSGetFeatureInfoOptions } from 'ol/format/WMSGetFeatureInfo.js';
 import { parseInteger } from '@vcsuite/parsers';
+import { getLogger } from '@vcsuite/logger';
 import type { AbstractFeatureProviderOptions } from './abstractFeatureProvider.js';
 import AbstractFeatureProvider from './abstractFeatureProvider.js';
 import type { ProjectionOptions } from '../util/projection.js';
@@ -27,7 +29,7 @@ import { TilingScheme } from '../layer/rasterLayer.js';
 
 export type FormatOptions = GeoJSONOptions &
   GMLOptions &
-  Record<string, unknown> & { gmlFormat?: keyof typeof gmlFormats };
+  Record<string, unknown>;
 
 export type WMSFeatureProviderOptions = AbstractFeatureProviderOptions & {
   /**
@@ -36,9 +38,17 @@ export type WMSFeatureProviderOptions = AbstractFeatureProviderOptions & {
    */
   responseType?: string;
   /**
-   * format options for the GeojsonLayer, WfsLayer or GML format. To overwrite the gmlFormat option in WfsLayer format, use 'GML', 'GML2' or 'GML3' as string
+   * format options forwarded to OpenLayers
    */
   formatOptions?: FormatOptions;
+  /**
+   * optional format to use to parse the feature info response, overriding the responseType to format mapping. Use 'GeoJSON', 'GML2', 'GML3', 'GML32', 'WMSGetFeatureInfo' or 'WFS' as string.
+   */
+  featureInfoFormat?: keyof typeof featureInfoFormat;
+  /**
+   * optional GMLFormat for the WFS format to override the default GML2 format. Use 'GML', 'GML2', 'GML3' or 'GML32' as string
+   */
+  wfsGMLFormat?: keyof typeof gmlFormats;
   /**
    * the projection of the data, if not encoded in the response
    */
@@ -70,6 +80,15 @@ export type WMSFeatureProviderOptions = AbstractFeatureProviderOptions & {
 
 const gmlFormats = { GML: GML3, GML2, GML3, GML32 };
 
+const featureInfoFormat = {
+  GeoJSON,
+  GML2,
+  GML3,
+  GML32,
+  WMSGetFeatureInfo,
+  WFS,
+};
+
 const geojsonFormats = [
   'application/geojson',
   'application/json',
@@ -80,11 +99,36 @@ const geojsonFormats = [
 export function getFormat(
   responseType: string,
   options: FormatOptions = {},
+  format?: keyof typeof featureInfoFormat,
+  gmlFormatKey?: keyof typeof gmlFormats,
 ): null | FeatureFormat {
+  if (format) {
+    if (!(format in featureInfoFormat)) {
+      getLogger('WMSFeatureProvider').error(
+        `Unknown featureInfoFormat ${format}`,
+      );
+      return null;
+    }
+    const formatOptions = {
+      ...options,
+      ...(gmlFormatKey && { gmlFormat: new gmlFormats[gmlFormatKey]() }),
+    };
+    return new featureInfoFormat[format](formatOptions);
+  }
+
+  if (responseType === 'text/html') {
+    return new WMSGetFeatureInfo(options as WMSGetFeatureInfoOptions);
+  }
   if (responseType === 'text/xml') {
-    const gmlFormat: GML3 | GML2 = options.gmlFormat
-      ? new gmlFormats[options.gmlFormat]()
-      : new GML2();
+    if (gmlFormatKey && !(gmlFormatKey in gmlFormats)) {
+      getLogger('WMSFeatureProvider').error(
+        `Unknown GML format ${gmlFormatKey}`,
+      );
+      return null;
+    }
+    const gmlFormat: GML2 | GML3 | GML32 = new gmlFormats[
+      gmlFormatKey ?? 'GML2'
+    ]();
     return new WFS({ ...options, gmlFormat });
   }
   if (geojsonFormats.includes(responseType)) {
@@ -92,7 +136,7 @@ export function getFormat(
   }
   if (responseType === 'application/vnd.ogc.gml') {
     // works with mapServer and "msGMLOutput", replaces GML2 format, and still works with gml2 documents
-    return new WMSGetFeatureInfo({});
+    return new WMSGetFeatureInfo(options as WMSGetFeatureInfoOptions);
   }
   if (
     responseType === 'application/vnd.ogc.gml/3.1.1' ||
@@ -146,7 +190,18 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
    */
   featureInfoResponseType: string;
 
+  /**
+   * The feature info format, if different from the responseType.
+   */
+  featureInfoFormat: keyof typeof featureInfoFormat | undefined;
+
   private _formatOptions: FormatOptions | undefined;
+
+  /**
+   * The GMLFormat used for the WfsLayer, defaults to GML2.
+   * Use 'GML', 'GML2', 'GML3' or 'GML32' as string
+   */
+  wfsGMLFormat: keyof typeof gmlFormats | undefined;
 
   /**
    * The feature response format determined by the response type. Use formatOptions to configure the underlying ol.format.Feature
@@ -183,11 +238,14 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
     this._wmsSource = getWMSSource(this._wmsSourceOptions);
     this.featureInfoResponseType =
       options.responseType || (defaultOptions.responseType as string);
-
+    this.featureInfoFormat = options.featureInfoFormat;
     this._formatOptions = options.formatOptions || defaultOptions.formatOptions;
+    this.wfsGMLFormat = options.wfsGMLFormat;
     this.featureFormat = getFormat(
       this.featureInfoResponseType,
       options.formatOptions,
+      this.featureInfoFormat,
+      this.wfsGMLFormat,
     );
     this.projection = options.projection
       ? new Projection(options.projection)
@@ -211,13 +269,17 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
     data: Document | Element | ArrayBuffer | any | string,
     coordinate: Coordinate,
   ): Feature[] {
-    let features: Feature[];
+    let features = [];
 
     try {
-      features = this.featureFormat!.readFeatures(data, {
-        dataProjection: this.projection ? this.projection.proj : undefined,
-        featureProjection: mercatorProjection.proj,
-      });
+      if (this.featureInfoResponseType === 'text/html') {
+        features = [new Feature()];
+      } else {
+        features = this.featureFormat!.readFeatures(data, {
+          dataProjection: this.projection ? this.projection.proj : undefined,
+          featureProjection: mercatorProjection.proj,
+        });
+      }
     } catch (_err) {
       this.getLogger().warning(
         'Features could not be read, please verify the featureInfoResponseType with the capabilities from the server',
@@ -259,7 +321,11 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
       { INFO_FORMAT: this.featureInfoResponseType },
     );
 
-    if (url) {
+    if (this.featureInfoResponseType === 'text/html') {
+      return this.featureResponseCallback(null, coordinate).map((f) =>
+        this.getProviderFeature(f),
+      );
+    } else if (url) {
       const init = getInitForUrl(url, headers);
       let data: string;
       try {
@@ -281,6 +347,14 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
     const defaultOptions = WMSFeatureProvider.getDefaultOptions();
     if (this.featureInfoResponseType !== defaultOptions.responseType) {
       config.responseType = this.featureInfoResponseType;
+    }
+
+    if (this.featureInfoFormat) {
+      config.featureInfoFormat = this.featureInfoFormat;
+    }
+
+    if (this.wfsGMLFormat) {
+      config.wfsGMLFormat = this.wfsGMLFormat;
     }
 
     if (this._formatOptions !== defaultOptions.formatOptions) {
