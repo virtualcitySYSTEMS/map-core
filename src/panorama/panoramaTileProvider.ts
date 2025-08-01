@@ -168,7 +168,7 @@ function createPanoramaResourceProvider(
   ): Promise<void> => {
     const { tile, resource } = request;
     const { type } = resource;
-    if (!tile.material.hasTexture(type)) {
+    if (!tile.hasResource(type)) {
       const { levelImages } = resource;
       const { tileCoordinate } = tile;
       const levelImage = levelImages[tileCoordinate.level - minLevel];
@@ -181,7 +181,7 @@ function createPanoramaResourceProvider(
             poolOrDecoder,
           );
 
-          tile.material.setTexture(
+          tile.setResource(
             type,
             resourceData.data as unknown as PanoramaResourceData<PanoramaResourceType>,
           );
@@ -257,17 +257,14 @@ function createPanoramaResourceProvider(
   const createOrUpdateQueue = (panoramaTile: PanoramaTile[]): void => {
     const newResources = panoramaTile.flatMap((tile) => {
       const resourceRequests: TileResourceRequest<PanoramaResourceType>[] = [];
-      if (!tile.material.hasTexture('rgb') && !loadingTiles.get(tile)?.rgb) {
+      if (!tile.hasResource('rgb') && !loadingTiles.get(tile)?.rgb) {
         resourceRequests.push({
           tile,
           resource: resources.rgb,
         });
       }
       if (resources.depth) {
-        if (
-          !tile.material.hasTexture('depth') &&
-          !loadingTiles.get(tile)?.depth
-        ) {
+        if (!tile.hasResource('depth') && !loadingTiles.get(tile)?.depth) {
           resourceRequests.push({
             tile,
             resource: resources.depth,
@@ -276,7 +273,7 @@ function createPanoramaResourceProvider(
       }
       if (showIntensity && resources.intensity) {
         if (
-          !tile.material.hasTexture('intensity') &&
+          !tile.hasResource('intensity') &&
           !loadingTiles.get(tile)?.intensity
         ) {
           resourceRequests.push({
@@ -329,7 +326,7 @@ function createPanoramaResourceProvider(
         throw new Error(`Resource type ${type} not found`);
       }
 
-      if (tile.material.hasTexture(type)) {
+      if (tile.hasResource(type)) {
         return Promise.resolve();
       }
 
@@ -447,7 +444,7 @@ export function createPanoramaTileProvider(
     const x = tileSize[0] - Math.floor((offsetX / width) * tileSize[0]);
     const y = Math.floor((offsetY / height) * tileSize[1]);
 
-    const depthValue = tile.material.getDepthAtPixel(x, y);
+    const depthValue = tile.getDepthAtPixel(x, y);
     if (depthValue) {
       return interpolateDepth(
         depthValue,

@@ -236,9 +236,12 @@ export default class PanoramaMap extends VcsMap {
 
     if (closestImage) {
       if (viewpoint.heading != null) {
-        this._cesiumWidget.camera.setView({
+        const { camera } = this._cesiumWidget;
+        camera.setView({
           orientation: {
             heading: CesiumMath.toRadians(viewpoint.heading),
+            pitch: camera.pitch,
+            roll: camera.roll,
           },
         });
       }
@@ -318,7 +321,9 @@ export default class PanoramaMap extends VcsMap {
    */
   setCurrentImage(image?: PanoramaImage): void {
     if (this._currentImage !== image) {
+      const currentImage = this._currentImage;
       this._currentImage = image;
+      currentImage?.destroy();
       this.currentImageChanged.raiseEvent(image);
     }
   }

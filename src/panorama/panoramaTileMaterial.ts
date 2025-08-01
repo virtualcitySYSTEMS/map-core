@@ -259,20 +259,6 @@ export default class PanoramaTileMaterial extends Material {
   }
 
   /**
-   * Returns the normalized depth value [0, 1] at the given pixel coordinates in the panorama tile.
-   * @param x
-   * @param y
-   */
-  getDepthAtPixel(x: number, y: number): number | undefined {
-    if (!this._depthData) {
-      return undefined;
-    }
-
-    const index = y * this._tileSize[0] + x;
-    return this._depthData[index];
-  }
-
-  /**
    * Internal cesium API to update the material.
    * @param context
    */

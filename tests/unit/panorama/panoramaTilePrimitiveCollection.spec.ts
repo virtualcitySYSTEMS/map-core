@@ -13,8 +13,20 @@ import { createPanoramaTile } from '../../../src/panorama/panoramaTile.js';
 import { createTileCoordinate } from '../../../src/panorama/panoramaTileCoordinate.js';
 import { PanoramaOverlayMode } from '../../../src/panorama/panoramaTileMaterial.js';
 import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
+import type { PanoramaMap } from '../../../index.js';
+import { getPanoramaMap } from '../helpers/panoramaHelpers.js';
 
 describe('PanoramaTilePrimitiveCollection', () => {
+  let map: PanoramaMap;
+
+  before(() => {
+    map = getPanoramaMap();
+  });
+
+  after(() => {
+    map.destroy();
+  });
+
   describe('setting material properties', () => {
     let collection: PanoramaTilePrimitiveCollection;
     let tiles: PanoramaTile[];
@@ -32,7 +44,7 @@ describe('PanoramaTilePrimitiveCollection', () => {
       }
       collection = new PanoramaTilePrimitiveCollection();
       tiles.forEach((tile) => {
-        collection.add(tile.primitive);
+        collection.add(tile.getPrimitive(map));
       });
     });
 
@@ -46,7 +58,9 @@ describe('PanoramaTilePrimitiveCollection', () => {
     it('should set a new overlay value and update all primitives', () => {
       collection.overlay = PanoramaOverlayMode.Depth;
       tiles.forEach((tile) => {
-        expect(tile.material.overlay).to.equal(PanoramaOverlayMode.Depth);
+        expect(tile.getMaterial(map)?.overlay).to.equal(
+          PanoramaOverlayMode.Depth,
+        );
       });
     });
 
@@ -66,57 +80,61 @@ describe('PanoramaTilePrimitiveCollection', () => {
     it('should set a new overlayOpacity and update all primitives', () => {
       collection.overlayOpacity = 0.5;
       tiles.forEach((tile) => {
-        expect(tile.material.overlayOpacity).to.equal(0.5);
+        expect(tile.getMaterial(map)?.overlayOpacity).to.equal(0.5);
       });
     });
 
     it('should set a new overlayNaNColor and update all primitives', () => {
       collection.overlayNaNColor = Color.BLUE;
       tiles.forEach((tile) => {
-        expect(tile.material.overlayNaNColor).to.eql(Color.BLUE);
+        expect(tile.getMaterial(map)?.overlayNaNColor).to.eql(Color.BLUE);
       });
     });
 
     it('should set a new showDebug value and update all primitives', () => {
       collection.showDebug = true;
       tiles.forEach((tile) => {
-        expect(tile.material.showDebug).to.be.true;
+        expect(tile.getMaterial(map)?.showDebug).to.be.true;
       });
     });
 
     it('should set a new opacity value and update all primitives', () => {
       collection.opacity = 0.25;
       tiles.forEach((tile) => {
-        expect(tile.material.opacity).to.equal(0.25);
+        expect(tile.getMaterial(map)?.opacity).to.equal(0.25);
       });
     });
 
     it('should set a new cursorPosition and update all primitives', () => {
       collection.cursorPosition = new Cartesian3(1, 1, 1);
       tiles.forEach((tile) => {
-        expect(tile.material.cursorPosition).to.eql(new Cartesian3(1, 1, 1));
+        expect(tile.getMaterial(map)?.cursorPosition).to.eql(
+          new Cartesian3(1, 1, 1),
+        );
       });
     });
 
     it('should not update primitives when setting the same value', () => {
       tiles.forEach((tile) => {
-        tile.material.opacity = 0.5;
+        tile.getMaterial(map)!.opacity = 0.5;
       });
 
       collection.opacity = 1;
       tiles.forEach((tile) => {
-        expect(tile.material.opacity).to.equal(0.5);
+        expect(tile.getMaterial(map)?.opacity).to.equal(0.5);
       });
     });
 
     it('should not update the primitive cursor position when setting a value close to the current one', () => {
       collection.cursorPosition = new Cartesian3(1, 1, 1);
       tiles.forEach((tile) => {
-        tile.material.cursorPosition = new Cartesian3(2, 2, 2);
+        tile.getMaterial(map)!.cursorPosition = new Cartesian3(2, 2, 2);
       });
       collection.cursorPosition = new Cartesian3(1, 1, 1);
       tiles.forEach((tile) => {
-        expect(tile.material.cursorPosition).to.eql(new Cartesian3(2, 2, 2));
+        expect(tile.getMaterial(map)?.cursorPosition).to.eql(
+          new Cartesian3(2, 2, 2),
+        );
       });
       collection.cursorPosition = new Cartesian3(
         1 + CesiumMath.EPSILON11,
@@ -124,18 +142,20 @@ describe('PanoramaTilePrimitiveCollection', () => {
         1 + CesiumMath.EPSILON11,
       );
       tiles.forEach((tile) => {
-        expect(tile.material.cursorPosition).to.eql(new Cartesian3(2, 2, 2));
+        expect(tile.getMaterial(map)?.cursorPosition).to.eql(
+          new Cartesian3(2, 2, 2),
+        );
       });
     });
 
     it('should not update the overlay NaN color, if the color is the same', () => {
       collection.overlayNaNColor = Color.BLUE;
       tiles.forEach((tile) => {
-        tile.material.overlayNaNColor = Color.RED;
+        tile.getMaterial(map)!.overlayNaNColor = Color.RED;
       });
       collection.overlayNaNColor = Color.BLUE;
       tiles.forEach((tile) => {
-        expect(tile.material.overlayNaNColor).to.eql(Color.RED);
+        expect(tile.getMaterial(map)?.overlayNaNColor).to.eql(Color.RED);
       });
     });
   });
@@ -159,7 +179,7 @@ describe('PanoramaTilePrimitiveCollection', () => {
     });
 
     it('should set all material properties from the collection', () => {
-      collection.add(tile.primitive);
+      collection.add(tile.getPrimitive(map));
       collection.overlay = PanoramaOverlayMode.Depth;
       collection.opacity = 0.5;
       collection.overlayOpacity = 0.5;
@@ -167,17 +187,23 @@ describe('PanoramaTilePrimitiveCollection', () => {
       collection.showDebug = true;
       collection.cursorPosition = new Cartesian3(1, 1, 1);
 
-      expect(tile.material.overlay).to.equal(collection.overlay);
-      expect(tile.material.overlayOpacity).to.equal(collection.overlayOpacity);
-      expect(tile.material.overlayNaNColor).to.eql(collection.overlayNaNColor);
-      expect(tile.material.showDebug).to.equal(collection.showDebug);
-      expect(tile.material.opacity).to.equal(collection.opacity);
-      expect(tile.material.cursorPosition).to.eql(collection.cursorPosition);
+      expect(tile.getMaterial(map)?.overlay).to.equal(collection.overlay);
+      expect(tile.getMaterial(map)?.overlayOpacity).to.equal(
+        collection.overlayOpacity,
+      );
+      expect(tile.getMaterial(map)?.overlayNaNColor).to.eql(
+        collection.overlayNaNColor,
+      );
+      expect(tile.getMaterial(map)?.showDebug).to.equal(collection.showDebug);
+      expect(tile.getMaterial(map)?.opacity).to.equal(collection.opacity);
+      expect(tile.getMaterial(map)?.cursorPosition).to.eql(
+        collection.cursorPosition,
+      );
     });
 
     it('should add the primitive to the collection', () => {
-      collection.add(tile.primitive);
-      expect(collection.contains(tile.primitive)).to.be.true;
+      collection.add(tile.getPrimitive(map));
+      expect(collection.contains(tile.getPrimitive(map))).to.be.true;
     });
 
     describe('invalid primitive', () => {
@@ -208,7 +234,7 @@ describe('PanoramaTilePrimitiveCollection', () => {
         [4, 4],
       );
       collection = new PanoramaTilePrimitiveCollection();
-      collection.add(tile.primitive);
+      collection.add(tile.getPrimitive(map));
     });
 
     afterEach(() => {
@@ -217,14 +243,14 @@ describe('PanoramaTilePrimitiveCollection', () => {
     });
 
     it('should remove the primitive from the collection', () => {
-      expect(collection.contains(tile.primitive)).to.be.true;
-      collection.remove(tile.primitive);
-      expect(collection.contains(tile.primitive)).to.be.false;
+      expect(collection.contains(tile.getPrimitive(map))).to.be.true;
+      collection.remove(tile.getPrimitive(map));
+      expect(collection.contains(tile.getPrimitive(map))).to.be.false;
     });
 
     it('should not destroy the primitive when removed', () => {
-      collection.remove(tile.primitive);
-      expect(tile.primitive.isDestroyed()).to.be.false;
+      collection.remove(tile.getPrimitive(map));
+      expect(tile.getPrimitive(map).isDestroyed()).to.be.false;
     });
   });
 });

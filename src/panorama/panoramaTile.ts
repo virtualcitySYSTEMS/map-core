@@ -1,4 +1,3 @@
-import type { Matrix4 } from '@vcmap-cesium/engine';
 import {
   Cartesian3,
   EllipsoidGeometry,
@@ -6,16 +5,28 @@ import {
   MaterialAppearance,
   Primitive,
   VertexFormat,
+  type Matrix4,
 } from '@vcmap-cesium/engine';
 import type { Size } from 'ol/size.js';
 import PanoramaTileMaterial from './panoramaTileMaterial.js';
 import type { PanoramaTileCoordinate } from './panoramaTileCoordinate.js';
 import { tileSizeInRadians } from './panoramaTileCoordinate.js';
+import type PanoramaMap from '../map/panoramaMap.js';
+import type {
+  PanoramaResourceData,
+  PanoramaResourceType,
+} from './panoramaTileProvider.js';
 
 export type PanoramaTile = {
-  readonly primitive: Primitive;
+  hasResource(type: PanoramaResourceType): boolean;
+  setResource<T extends PanoramaResourceType>(
+    type: T,
+    resource: PanoramaResourceData<T>,
+  ): void;
+  getDepthAtPixel(x: number, y: number): number | undefined;
   readonly tileCoordinate: PanoramaTileCoordinate;
-  readonly material: PanoramaTileMaterial;
+  getPrimitive(map: PanoramaMap): Primitive;
+  getMaterial(map: PanoramaMap): PanoramaTileMaterial | undefined;
   destroy(): void;
 };
 
@@ -64,26 +75,80 @@ export function createPanoramaTile(
   modelMatrix: Matrix4,
   tileSize: Size,
 ): PanoramaTile {
-  const material = new PanoramaTileMaterial(tileCoordinate, tileSize);
-  const primitive = createPanoramaTilePrimitive(
-    tileCoordinate,
-    modelMatrix,
-    material,
-  );
+  let destroyed = false;
+  const primitives = new Map<
+    PanoramaMap,
+    { primitive: Primitive; material: PanoramaTileMaterial }
+  >();
+
+  let resources: { [K in PanoramaResourceType]?: PanoramaResourceData<K> } = {};
 
   return {
-    get primitive(): Primitive {
-      return primitive;
-    },
     get tileCoordinate(): PanoramaTileCoordinate {
       return tileCoordinate;
     },
-    get material(): PanoramaTileMaterial {
-      return material;
+    hasResource(type: PanoramaResourceType): boolean {
+      return resources[type] != null;
+    },
+    setResource<T extends PanoramaResourceType>(
+      type: T,
+      resource: PanoramaResourceData<T>,
+    ): void {
+      if (this.hasResource(type)) {
+        throw new Error(
+          `Resource of type "${type}" already set for this tile. Cannot overwrite.`,
+        );
+      }
+      resources[type] = resource as ImageBitmap & Float32Array;
+      primitives.forEach(({ material }) => {
+        material.setTexture(type, resource);
+      });
+    },
+    getPrimitive(map: PanoramaMap): Primitive {
+      if (destroyed) {
+        throw new Error('Cannot get primitive from destroyed panorama tile.');
+      }
+      if (primitives.has(map)) {
+        return primitives.get(map)!.primitive;
+      }
+      const material = new PanoramaTileMaterial(tileCoordinate, tileSize);
+      Object.entries(resources).forEach(([type, resource]) => {
+        material.setTexture(type as PanoramaResourceType, resource);
+      });
+      const primitive = createPanoramaTilePrimitive(
+        tileCoordinate,
+        modelMatrix,
+        material,
+      );
+      primitives.set(map, { primitive, material });
+      return primitive;
+    },
+    getMaterial(map: PanoramaMap): PanoramaTileMaterial | undefined {
+      if (primitives.has(map)) {
+        return primitives.get(map)!.material;
+      }
+      return undefined;
+    },
+    /**
+     * Returns the normalized depth value [0, 1] at the given pixel coordinates in the panorama tile.
+     * @param x
+     * @param y
+     */
+    getDepthAtPixel(x: number, y: number): number | undefined {
+      if (!resources.depth) {
+        return undefined;
+      }
+
+      const index = y * tileSize[0] + x;
+      return resources.depth[index];
     },
     destroy(): void {
-      primitive.destroy();
-      material.destroy();
+      destroyed = true;
+      resources = {};
+      primitives.forEach(({ primitive, material }) => {
+        primitive.destroy();
+        material.destroy();
+      });
     },
   };
 }

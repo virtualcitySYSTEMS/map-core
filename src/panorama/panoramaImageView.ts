@@ -1,4 +1,4 @@
-import type { Camera } from '@vcmap-cesium/engine';
+import type { Camera, Primitive } from '@vcmap-cesium/engine';
 import { Cartesian2, Matrix4, Cartesian3 } from '@vcmap-cesium/engine';
 import { getWidth } from 'ol/extent.js';
 import type { Size } from 'ol/size.js';
@@ -164,16 +164,13 @@ function setupDepthHandling(
 
 /**
  * The image wrapper is responsible for managing the panorama image tiles and rendering them.
- * @param image
- * @param primitiveCollection
- * @param camera
- * @param canvas
  */
 function createImageWrapper(
   image: PanoramaImage,
   primitiveCollection: PanoramaTilePrimitiveCollection,
   camera: Camera,
   canvas: HTMLCanvasElement,
+  map: PanoramaMap,
 ): ImageWrapper {
   const { tileSize, maxLevel, minLevel, hasDepth } = image;
   const baseTileCoordinates = createMinLevelTiles(minLevel);
@@ -181,7 +178,7 @@ function createImageWrapper(
     ? setupDepthHandling(image, primitiveCollection, camera, canvas)
     : (): void => {};
 
-  const currentTiles = new Map<string, PanoramaTile>();
+  const currentTiles = new Map<string, Primitive>();
   let currentLevel = minLevel;
   let currentTileCoordinates: PanoramaTileCoordinate[] = [
     ...baseTileCoordinates,
@@ -193,14 +190,15 @@ function createImageWrapper(
       .createVisibleTiles(currentTileCoordinates)
       .forEach((tile) => {
         if (!currentTiles.has(tile.tileCoordinate.key)) {
+          const primitive = tile.getPrimitive(map);
           if (
             tile.tileCoordinate.level === minLevel &&
             !(tile as PanoramaTile & { [baseLevelScaled]?: boolean })[
               baseLevelScaled
             ]
           ) {
-            tile.primitive.modelMatrix = Matrix4.multiplyByScale(
-              tile.primitive.modelMatrix,
+            primitive.modelMatrix = Matrix4.multiplyByScale(
+              primitive.modelMatrix,
               new Cartesian3(1.01, 1.01, 1.01),
               new Matrix4(),
             );
@@ -209,8 +207,8 @@ function createImageWrapper(
             ] = true;
           }
 
-          currentTiles.set(tile.tileCoordinate.key, tile);
-          primitiveCollection.add(tile.primitive);
+          currentTiles.set(tile.tileCoordinate.key, primitive);
+          primitiveCollection.add(primitive);
         }
       });
   };
@@ -290,12 +288,10 @@ function createImageWrapper(
 
     // push base tile coordinates onto the back of the array, so they are always loaded first.
     currentTileCoordinates.push(...baseTileCoordinates);
-    currentTiles.forEach((tile) => {
-      if (
-        !currentTileCoordinates.find((c) => c.key === tile.tileCoordinate.key)
-      ) {
-        primitiveCollection.remove(tile.primitive);
-        currentTiles.delete(tile.tileCoordinate.key);
+    currentTiles.forEach((primitive, key) => {
+      if (!currentTileCoordinates.find((c) => c.key === key)) {
+        primitiveCollection.remove(primitive);
+        currentTiles.delete(key);
       }
     });
 
@@ -313,8 +309,8 @@ function createImageWrapper(
     },
     render,
     destroy(): void {
-      currentTiles.forEach((tile) => {
-        primitiveCollection.remove(tile.primitive);
+      currentTiles.forEach((primitive) => {
+        primitiveCollection.remove(primitive);
       });
       currentTiles.clear();
       showIntensityListener();
@@ -400,6 +396,7 @@ export function createPanoramaImageView(map: PanoramaMap): PanoramaImageView {
         primitiveCollection,
         scene.camera,
         scene.canvas,
+        map,
       );
       currentView.suspendTileLoading = suspendTileLoading;
     } else {

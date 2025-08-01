@@ -430,18 +430,21 @@ describe('PanoramaMap', () => {
     let image: PanoramaImage;
     let destroyImage: () => void;
 
-    before(async () => {
+    before(() => {
       map = getPanoramaMap();
+    });
+
+    beforeEach(async () => {
+      map.setCurrentImage(undefined);
       ({ panoramaImage: image, destroy: destroyImage } =
         await getPanoramaImage());
     });
 
-    beforeEach(() => {
-      map.setCurrentImage(undefined);
+    afterEach(() => {
+      destroyImage();
     });
 
     after(() => {
-      destroyImage();
       map.destroy();
     });
 
@@ -461,6 +464,13 @@ describe('PanoramaMap', () => {
       map.setCurrentImage(image);
       map.setCurrentImage(image);
       expect(spy).to.have.been.calledOnce;
+    });
+
+    it('should destroy the previous image, if one was set', () => {
+      const destroySpy = sinon.spy(image, 'destroy');
+      map.setCurrentImage(image);
+      map.setCurrentImage(undefined);
+      expect(destroySpy).to.have.been.calledOnce;
     });
   });
 

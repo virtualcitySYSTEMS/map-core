@@ -31,9 +31,7 @@ function tilesLoaded(
   tiles: PanoramaTile[],
   types: PanoramaResourceType[] = ['rgb'],
 ): boolean {
-  return tiles.every((tile) =>
-    types.every((type) => tile.material.hasTexture(type)),
-  );
+  return tiles.every((tile) => types.every((type) => tile.hasResource(type)));
 }
 
 describe('PanoramaTileProvider', () => {
@@ -147,8 +145,8 @@ describe('PanoramaTileProvider', () => {
         createTileCoordinate(1, 0, 1),
       ];
       const tiles = tileProvider.createVisibleTiles(tileCoordinates);
-      const setTextureSpy1 = sinon.spy(tiles[0].material, 'setTexture');
-      const setTextureSpy2 = sinon.spy(tiles[1].material, 'setTexture');
+      const setTextureSpy1 = sinon.spy(tiles[0], 'setResource');
+      const setTextureSpy2 = sinon.spy(tiles[1], 'setResource');
 
       await promise1;
       expect(tiles).to.have.lengthOf(2);
@@ -213,7 +211,7 @@ describe('PanoramaTileProvider', () => {
 
       const tileCoordinate = createTileCoordinate(0, 0, 0);
       const tiles = tileProvider.createVisibleTiles([tileCoordinate]);
-      const setTextureSpy = sinon.spy(tiles[0].material, 'setTexture');
+      const setTextureSpy = sinon.spy(tiles[0], 'setResource');
       await promise;
       expect(tiles.length).to.equal(1);
       expect(setTextureSpy).to.have.been.calledTwice; // rgb and depth
@@ -282,7 +280,7 @@ describe('PanoramaTileProvider', () => {
       const promise = tileLoadedPromise(tileProvider);
       const tileCoordinate = createTileCoordinate(0, 0, 0);
       const tiles = tileProvider.createVisibleTiles([tileCoordinate]);
-      const setTextureSpy = sinon.spy(tiles[0].material, 'setTexture');
+      const setTextureSpy = sinon.spy(tiles[0], 'setResource');
       await promise;
       expect(tiles.length).to.equal(1);
       expect(setTextureSpy).to.have.been.calledThrice; // rgb, depth, intensity
@@ -300,7 +298,7 @@ describe('PanoramaTileProvider', () => {
       await promise;
       expect(tiles.length).to.equal(1);
 
-      expect(tiles[0].material.hasTexture('intensity')).to.be.false;
+      expect(tiles[0].hasResource('intensity')).to.be.false;
     });
 
     it('should load intensity on already loaded tiles', async () => {
@@ -313,7 +311,7 @@ describe('PanoramaTileProvider', () => {
       const promise1 = tileLoadedPromise(tileProvider);
       tileProvider.showIntensity = true;
       await promise1;
-      expect(tiles[0].material.hasTexture('intensity')).to.be.true;
+      expect(tiles[0].hasResource('intensity')).to.be.true;
     });
 
     it('should load intensity on tiles currently being loaded', async () => {
@@ -323,7 +321,7 @@ describe('PanoramaTileProvider', () => {
       const tiles = tileProvider.createVisibleTiles([tileCoordinate]);
       tileProvider.showIntensity = true;
       await promise;
-      expect(tiles[0].material.hasTexture('intensity')).to.be.true;
+      expect(tiles[0].hasResource('intensity')).to.be.true;
     });
   });
 

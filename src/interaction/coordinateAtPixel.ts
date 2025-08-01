@@ -22,7 +22,7 @@ import { cartesianToMercator } from '../util/math.js';
 import { windowPositionToImageSpherical } from '../panorama/fieldOfView.js';
 
 const scratchPanoramaCartesian = new Cartesian3();
-async function getCoordinateFromPanoramap(
+async function getCoordinateFromPanoramaMap(
   map: PanoramaMap,
   event: InteractionEvent,
 ): Promise<InteractionEvent> {
@@ -73,7 +73,7 @@ class CoordinateAtPixel extends AbstractInteraction {
     } else if (event.map.className === 'ObliqueMap') {
       return CoordinateAtPixel.obliqueHandler(event);
     } else if (event.map.className === 'PanoramaMap') {
-      return getCoordinateFromPanoramap(event.map as PanoramaMap, event);
+      return getCoordinateFromPanoramaMap(event.map as PanoramaMap, event);
     }
     return event;
   }

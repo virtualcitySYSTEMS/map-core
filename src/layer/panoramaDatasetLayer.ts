@@ -15,7 +15,6 @@ import { layerClassRegistry } from '../classRegistry.js';
 import FlatGeobufTileProvider from './tileProvider/flatGeobufTileProvider.js';
 import { mercatorProjection, wgs84Projection } from '../util/projection.js';
 import { panoramaFeature } from './vectorSymbols.js';
-import { PanoramaImageCache } from '../panorama/panoramaImageCache.js';
 import {
   createPanoramaImageFromURL,
   type PanoramaImage,
@@ -62,8 +61,6 @@ export default class PanoramaDatasetLayer extends VectorTileLayer<PanoramaDatase
   private _hideInPanorama = false;
 
   private _panoramaVectorProperties = new VectorProperties({});
-
-  private _cache = new PanoramaImageCache();
 
   private _dataExtent?: Extent;
 
@@ -178,15 +175,7 @@ export default class PanoramaDatasetLayer extends VectorTileLayer<PanoramaDatase
    * @returns
    */
   createPanoramaImage(name: string): Promise<PanoramaImage> {
-    const imageUrl = `${this.baseUrl}/${name}_rgb.tif`;
-    if (this._cache.containsKey(imageUrl)) {
-      return this._cache.get(imageUrl);
-    }
-    const imagePromise = createPanoramaImageFromURL(imageUrl, this);
-    this._cache.set(imageUrl, imagePromise);
-    this._cache.expireCache();
-
-    return imagePromise;
+    return createPanoramaImageFromURL(`${this.baseUrl}/${name}_rgb.tif`, this);
   }
 
   override getZoomToExtent(): Extent | null {

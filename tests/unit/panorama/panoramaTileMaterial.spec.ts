@@ -203,42 +203,6 @@ describe('Panorama tile material', () => {
     });
   });
 
-  describe('getDepthAtPixel', () => {
-    let depthData: Float32Array;
-    let tileSize: [number, number];
-    let material: PanoramaTileMaterial;
-
-    before(() => {
-      tileSize = [4, 4];
-      depthData = new Float32Array(tileSize[0] * tileSize[1]);
-      for (let i = 0; i <= depthData.length; i++) {
-        depthData[i] = i;
-      }
-    });
-
-    beforeEach(() => {
-      material = new PanoramaTileMaterial(
-        createTileCoordinate(1, 1, 1),
-        tileSize,
-      );
-    });
-
-    afterEach(() => {
-      material.destroy();
-    });
-
-    it('should return the normalized depth value at given pixel coordinates', () => {
-      material.setTexture('depth', depthData);
-      const depth = material.getDepthAtPixel(2, 2);
-      expect(depth).to.equal(10); // 2 * tileSize[0] + 2
-    });
-
-    it('should return undefined if depth data is not set', () => {
-      const depth = material.getDepthAtPixel(2, 2);
-      expect(depth).to.be.undefined;
-    });
-  });
-
   describe('update', () => {
     let material: PanoramaTileMaterial;
     let context: Context;
