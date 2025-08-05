@@ -889,6 +889,8 @@ export {
   getSplineAndTimesForInstance,
   parseFlightOptionsFromGeoJson,
 } from './src/util/flight/flightHelpers.js';
+export { createFlightMovie } from './src/util/flight/flightRecorder.js';
+export type { FlightPathRecorderOptions } from './src/util/flight/flightRecorder.js';
 export type { FlightVisualization } from './src/util/flight/flightVisualizer.js';
 export { createFlightVisualization } from './src/util/flight/flightVisualizer.js';
 export { getTileLoadFunction } from './src/layer/openlayers/loadFunctionHelpers.js';

@@ -13,6 +13,7 @@
 - Uses `madge` to detect circular dependencies in the code base.
 - The `EventHandler` `exclusiveAdded` event now gets passed the interaction.
 - Add new options to WMSFeatureInfo: `featureInfoFormat` to override the responseType to format mapping and `wfsGMLFormat` to override the default GML2 format of WFS
+- Add `createFlightMovie` function, allowing to start the recording of a flight in order to create a movie.
 
 #### Fixes
 
