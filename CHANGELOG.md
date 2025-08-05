@@ -5,6 +5,7 @@
 - A completely new VcsMap type `PanoramaMap` to render panoramas, see [the documentation](documentation/panorama.md) for more details.
 - Adds a new API to the map collecition to activate a panorama map with a given image.
 - Adds an API to create a `Viewpoint` from a panorama image.
+- Adds a `COGLayer` for TMS aligned cogs (with an aligned google maps compatible tiling scheme).
 
 #### Changes
 

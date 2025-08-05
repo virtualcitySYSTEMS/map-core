@@ -88,16 +88,14 @@ class LayerOpenlayersImpl extends LayerImplementation<OpenlayersMap> {
           this.olLayer!.on('prerender', this._splitPreRender.bind(this)),
         );
         this._splitDirectionRenderListeners.push(
-          this.olLayer!.on('postrender', (event) => {
-            (event.context as CanvasRenderingContext2D).restore();
-          }),
+          this.olLayer!.on('postrender', this._splitPostReder.bind(this)),
         );
         this.olLayer!.changed();
       }
     }
   }
 
-  private _splitPreRender(event: RenderEvent): void {
+  protected _splitPreRender(event: RenderEvent): void {
     const context = event.context as CanvasRenderingContext2D;
     const width = context.canvas.width * this.map.splitPosition;
     context.save();
@@ -114,6 +112,11 @@ class LayerOpenlayersImpl extends LayerImplementation<OpenlayersMap> {
       );
     }
     context.clip();
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  protected _splitPostReder(event: RenderEvent): void {
+    (event.context as CanvasRenderingContext2D).restore();
   }
 
   destroy(): void {

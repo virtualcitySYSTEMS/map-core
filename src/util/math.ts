@@ -2,9 +2,11 @@ import {
   Math as CesiumMath,
   Cartesian3,
   Cartographic,
+  Rectangle,
 } from '@vcmap-cesium/engine';
 import type { Coordinate } from 'ol/coordinate.js';
 import { getDistance as haversineDistance } from 'ol/sphere.js';
+import { type Extent, getBottomLeft, getTopRight } from 'ol/extent.js';
 import Projection from './projection.js';
 
 /**
@@ -175,6 +177,38 @@ export function cartesianToMercator(cartesian: Cartesian3): Coordinate {
   const cartographic = Cartographic.fromCartesian(cartesian);
   const wgs84 = cartographicToWgs84(cartographic);
   return Projection.wgs84ToMercator(wgs84);
+}
+
+export function mercatorExtentToRectangle(
+  extent: Extent,
+  result?: Rectangle,
+): Rectangle {
+  const bottomLeft = getBottomLeft(extent);
+  const topRight = getTopRight(extent);
+
+  Projection.mercatorToWgs84(bottomLeft, true);
+  Projection.mercatorToWgs84(topRight, true);
+
+  return Rectangle.fromDegrees(
+    bottomLeft[0],
+    bottomLeft[1],
+    topRight[0],
+    topRight[1],
+    result,
+  );
+}
+
+export function rectangleToMercatorExtent(rectangle: Rectangle): Extent {
+  const bottomLeft = Projection.wgs84ToMercator([
+    CesiumMath.toDegrees(rectangle.west),
+    CesiumMath.toDegrees(rectangle.south),
+  ]);
+  const topRight = Projection.wgs84ToMercator([
+    CesiumMath.toDegrees(rectangle.east),
+    CesiumMath.toDegrees(rectangle.north),
+  ]);
+
+  return [bottomLeft[0], bottomLeft[1], topRight[0], topRight[1]];
 }
 
 export function getMidPoint(p1: Coordinate, p2: Coordinate): Coordinate {

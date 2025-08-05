@@ -68,6 +68,7 @@ export {
   getExtentFromTileset,
   default as CesiumTilesetCesiumImpl,
 } from './src/layer/cesium/cesiumTilesetCesiumImpl.js';
+export { default as COGCesiumImpl } from './src/layer/cesium/cogCesiumImpl.js';
 export { default as DataSourceCesiumImpl } from './src/layer/cesium/dataSourceCesiumImpl.js';
 export { default as OpenStreetMapCesiumImpl } from './src/layer/cesium/openStreetMapCesiumImpl.js';
 export { default as RasterLayerCesiumImpl } from './src/layer/cesium/rasterLayerCesiumImpl.js';
@@ -114,6 +115,11 @@ export {
 } from './src/layer/cesium/vcsTile/vcsTileHelpers.js';
 export type { SourceVectorContextSync } from './src/layer/cesium/sourceVectorContextSync.js';
 export { createSourceVectorContextSync } from './src/layer/cesium/sourceVectorContextSync.js';
+export {
+  default as COGLayer,
+  type COGLayerOptions,
+  type COGLayerImplementationOptions,
+} from './src/layer/cogLayer.js';
 export type { CzmlOptions } from './src/layer/czmlLayer.js';
 export { default as CzmlLayer } from './src/layer/czmlLayer.js';
 export type { DataSourceImplementationOptions } from './src/layer/dataSourceLayer.js';
@@ -201,6 +207,7 @@ export type { SourceObliqueSync } from './src/layer/oblique/sourceObliqueSync.js
 export { createSourceObliqueSync } from './src/layer/oblique/sourceObliqueSync.js';
 export type { OpenStreetMapOptions } from './src/layer/openStreetMapLayer.js';
 export { default as OpenStreetMapLayer } from './src/layer/openStreetMapLayer.js';
+export { default as COGOpenlayersImpl } from './src/layer/openlayers/cogOpenlayersImpl.js';
 export type { LayerOpenlayersImplementationOptions } from './src/layer/openlayers/layerOpenlayersImpl.js';
 export { default as LayerOpenlayersImpl } from './src/layer/openlayers/layerOpenlayersImpl.js';
 export { default as OpenStreetMapOpenlayersImpl } from './src/layer/openlayers/openStreetMapOpenlayersImpl.js';

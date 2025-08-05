@@ -439,4 +439,9 @@ declare module '@vcmap-cesium/engine' {
     _totalPositions: number;
     setDirty(): void;
   }
+
+  interface WebMercatorTilingScheme {
+    _projection: MapProjection;
+    _rectangle: Rectangle;
+  }
 }
