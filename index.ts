@@ -61,7 +61,7 @@ export {
 export { default as FeatureProviderInteraction } from './src/interaction/featureProviderInteraction.js';
 export { default as InteractionChain } from './src/interaction/interactionChain.js';
 export { default as PanoramaImageSelection } from './src/interaction/panoramaImageSelection.js';
-export { default as PanoramaFeatureHighlighting } from './src/interaction/panoramaFeatureHighlight.js';
+export { default as PanoramaFeatureHighlight } from './src/interaction/panoramaFeatureHighlight.js';
 export * from './src/interaction/interactionType.js';
 export {
   cesiumTilesetLastUpdated,

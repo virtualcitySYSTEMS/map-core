@@ -320,7 +320,7 @@ export default class PanoramaMap extends VcsMap {
    * @param image
    */
   setCurrentImage(image?: PanoramaImage): void {
-    if (this._currentImage !== image) {
+    if (!this._currentImage?.equals(image)) {
       const currentImage = this._currentImage;
       this._currentImage = image;
       currentImage?.destroy();

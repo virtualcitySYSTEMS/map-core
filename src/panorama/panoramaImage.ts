@@ -104,6 +104,13 @@ export type PanoramaImage = Readonly<
     coordinate: [number, number],
     result?: Cartesian3,
   ): Promise<Cartesian3 | undefined>;
+  /**
+   * Checks if this panorama image is equal to another panorama image
+   * by comparing name and baseUrl of dataset.
+   * @param other - the other image to compare with
+   * @returns true if the images represent the same panorama data
+   */
+  equals(other?: PanoramaImage): boolean;
   destroy(): void;
 };
 
@@ -509,6 +516,13 @@ export async function createPanoramaImage(
       result?: Cartesian3,
     ): Promise<Cartesian3 | undefined> {
       return positionAtDepth(imageCoordinate, true, result);
+    },
+    equals(other?: PanoramaImage): boolean {
+      return (
+        other !== undefined &&
+        nameOrId === other.name &&
+        dataset?.baseUrl === other.dataset?.baseUrl
+      );
     },
     destroy(): void {
       tileProvider.destroy();

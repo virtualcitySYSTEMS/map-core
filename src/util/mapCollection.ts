@@ -179,6 +179,10 @@ class MapCollection extends Collection<VcsMap> {
     return this._activeMap;
   }
 
+  get panoramaImageSelection(): PanoramaImageSelection {
+    return this._panoramaImageSelection;
+  }
+
   /**
    * The currently set HTML element in which to render the maps
    */
