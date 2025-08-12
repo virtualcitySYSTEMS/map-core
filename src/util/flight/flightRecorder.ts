@@ -142,6 +142,9 @@ export function createFlightMovie(
 
     recorder.onerror = reject;
     recorder.onstop = (): void => {
+      if (cancelToken.cancelled) {
+        return;
+      }
       resolve(new Blob(chunksBuffer, { type: 'video/webm' }));
     };
   });
