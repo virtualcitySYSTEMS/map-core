@@ -519,7 +519,7 @@ export async function createPanoramaImage(
     },
     equals(other?: PanoramaImage): boolean {
       return (
-        other !== undefined &&
+        other != null &&
         nameOrId === other.name &&
         dataset?.baseUrl === other.dataset?.baseUrl
       );

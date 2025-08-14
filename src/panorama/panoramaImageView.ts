@@ -319,31 +319,26 @@ function createImageWrapper(
   };
 }
 
-let emptyImageOverlay: HTMLDivElement | undefined;
-function getEmptyImageBitmap(): HTMLDivElement {
-  if (!emptyImageOverlay) {
-    const overlay = document.createElement('div');
-    overlay.style.position = 'absolute';
-    overlay.style.display = 'block';
-    overlay.style.top = '0px';
-    overlay.style.left = '0px';
-    overlay.style.bottom = '0px';
-    overlay.style.right = '0px';
-    overlay.style.backgroundColor = '#409D76';
-    overlay.style.padding = '8px';
-    overlay.style.font = 'bold 64px Monospace, Courier New';
-    overlay.style.textAlign = 'center';
-    overlay.style.alignContent = 'center';
-    overlay.style.color = '#424242';
-    overlay.innerText = 'No Image';
-
-    emptyImageOverlay = overlay;
-  }
-  return emptyImageOverlay;
+function createEmptyImageBitmap(): HTMLDivElement {
+  const overlay = document.createElement('div');
+  overlay.style.position = 'absolute';
+  overlay.style.display = 'block';
+  overlay.style.top = '0px';
+  overlay.style.left = '0px';
+  overlay.style.bottom = '0px';
+  overlay.style.right = '0px';
+  overlay.style.backgroundColor = '#409D76';
+  overlay.style.padding = '8px';
+  overlay.style.font = 'bold 64px Monospace, Courier New';
+  overlay.style.textAlign = 'center';
+  overlay.style.alignContent = 'center';
+  overlay.style.color = '#424242';
+  overlay.innerText = 'No Image';
+  return overlay;
 }
 
 function setupEmptyImageOverlay(container: HTMLElement): () => void {
-  const overlay = getEmptyImageBitmap();
+  const overlay = createEmptyImageBitmap();
   container.appendChild(overlay);
 
   let remover: (() => void) | undefined = () => {
