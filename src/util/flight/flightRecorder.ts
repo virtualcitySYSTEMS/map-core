@@ -7,6 +7,8 @@ import { type FlightPlayer } from './flightPlayer.js';
 export type FlightPathRecorderOptions = {
   fps?: number;
   highDefinition?: boolean;
+  mimeType?: string;
+  videoBitsPerSecond?: number;
 };
 
 async function getFlightFrames(
@@ -109,7 +111,9 @@ export function createFlightMovie(
   }
 
   const cancelToken = { cancelled: false };
-  const videoBitsPerSecond = options?.highDefinition ? 12000000 : 6000000;
+  const videoBitsPerSecond =
+    options?.videoBitsPerSecond ??
+    (options?.highDefinition ? 18000000 : 12000000);
 
   const map = app.maps.activeMap;
   const scene = map.getScene()!;
@@ -122,7 +126,7 @@ export function createFlightMovie(
 
   const stream = destinationCanvas.captureStream(options?.fps ?? 30);
   const recorder = new MediaRecorder(stream, {
-    mimeType: 'video/webm',
+    mimeType: options?.mimeType ?? 'video/webm',
     videoBitsPerSecond,
   });
 
