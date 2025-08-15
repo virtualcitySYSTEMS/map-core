@@ -3,17 +3,17 @@
 #### Highlights
 
 - A completely new VcsMap type `PanoramaMap` to render panoramas, see [the documentation](documentation/panorama.md) for more details.
-- Adds a new API to the map collecition to activate a panorama map with a given image.
-- Adds an API to create a `Viewpoint` from a panorama image.
 - Adds a `COGLayer` for TMS aligned cogs (with an aligned google maps compatible tiling scheme).
+- Add `createFlightMovie` function, allowing to start the recording of a flight in order to create a movie.
 
 #### Changes
 
 - Updated eslint to eslint 9 & vcs eslint config 4.
 - Uses `madge` to detect circular dependencies in the code base.
+- Adds a new API to the map collection to activate a panorama map with a given image.
+- Adds an API to create a `Viewpoint` from a panorama image.
 - The `EventHandler` `exclusiveAdded` event now gets passed the interaction.
 - Add new options to WMSFeatureInfo: `featureInfoFormat` to override the responseType to format mapping and `wfsGMLFormat` to override the default GML2 format of WFS
-- Add `createFlightMovie` function, allowing to start the recording of a flight in order to create a movie.
 
 #### Fixes
 

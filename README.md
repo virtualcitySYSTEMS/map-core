@@ -2,7 +2,7 @@
 
 > Part of the [VC Map Project](https://github.com/virtualcitySYSTEMS/map-ui)
 
-> [API Docs](https://lib.virtualcitymap.de/core/6.0/docs/)
+> [API Docs](https://lib.virtualcitymap.de/core/6.2/docs/)
 
 The VC Map Core is a thin abstraction layer and wrapper around OpenLayers and Cesium.
 It provides a common data and feature management API and automatically synchronizes data and user actions between the 2D, oblique and 3D views.
@@ -19,6 +19,7 @@ still work with the same API.
 - 2D Map using Openlayers
 - 3D Map using CesiumJs
 - Oblique Map using Openlayers
+- Panorama Map using CesiumJs
 
 ## [VcsApp](./documentation/vcsApp.md)
 
@@ -44,9 +45,12 @@ Some layer are map specific and only work for example in 3D. Layers can be creat
 - WMS Layer
 - WMTS Layer
 - TMS Layer
+- COGLayer (Cloud Optimized GeoTIFF)
 - SingleImageryLayer
 - Vector Tile Layer
+- FlatGeobuf Layer
 - OpenstreetMap Layer
+- PanoramaDataset Layer (shows positions in 2D/3D and the Panorama in the PanoramaMap)
 
 #### Supported in 2D, 3D and Oblique
 
@@ -54,7 +58,7 @@ Some layer are map specific and only work for example in 3D. Layers can be creat
 - GeoJSON Layer
 - Vector Layer (allows adding Features via API) `layer.addFeature(new Feature({ geometry: new Polygon({...}) }))`
 
-#### FeatureLayer `Vector`, `WFSLayer`, `GeoJSONLayer`, `VectorLayer`, `CesiumTileset`
+#### FeatureLayer `Vector`, `WFSLayer`, `GeoJSONLayer`, `VectorLayer`, `CesiumTileset`, 'FlatGeobufLayer', `PanoramaDatasetLayer`
 
 Layers which provide Features have a common API to hide/highlight/style/access Features.
 
