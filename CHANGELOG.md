@@ -1,3 +1,7 @@
+### 6.2.1
+
+- Add PanoramaMap support to `renderScreenshot` helper function
+
 ### 6.2.0
 
 #### Highlights
