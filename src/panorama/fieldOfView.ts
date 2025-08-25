@@ -222,6 +222,14 @@ export function getFovImageSphericalExtent(
     extents = [simpleExtent];
   }
 
+  extents.forEach((e) => {
+    if (e[1] > e[3]) {
+      const largerY = e[1];
+      e[1] = e[3];
+      e[3] = largerY;
+    }
+  });
+
   return {
     extents,
     center: projectedFov.center,

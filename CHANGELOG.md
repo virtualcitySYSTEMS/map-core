@@ -1,3 +1,8 @@
+### 6.2.2
+
+- Fixes an issue where the first panorama image was not shown in the correct resolution
+- Fixes an issue where the panorama viewer could crash if view was directly down.
+
 ### 6.2.1
 
 - Add PanoramaMap support to `renderScreenshot` helper function

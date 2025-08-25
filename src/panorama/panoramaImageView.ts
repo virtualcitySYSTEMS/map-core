@@ -1,4 +1,4 @@
-import type { Camera, Primitive } from '@vcmap-cesium/engine';
+import type { Camera, Primitive, Scene } from '@vcmap-cesium/engine';
 import { Cartesian2, Matrix4, Cartesian3 } from '@vcmap-cesium/engine';
 import { getWidth } from 'ol/extent.js';
 import type { Size } from 'ol/size.js';
@@ -168,12 +168,12 @@ function setupDepthHandling(
 function createImageWrapper(
   image: PanoramaImage,
   primitiveCollection: PanoramaTilePrimitiveCollection,
-  camera: Camera,
-  canvas: HTMLCanvasElement,
+  scene: Scene,
   map: PanoramaMap,
 ): ImageWrapper {
   const { tileSize, maxLevel, minLevel, hasDepth } = image;
   const baseTileCoordinates = createMinLevelTiles(minLevel);
+  const { camera, canvas } = scene;
   const destroyDepth = hasDepth
     ? setupDepthHandling(image, primitiveCollection, camera, canvas)
     : (): void => {};
@@ -236,6 +236,7 @@ function createImageWrapper(
     levelPixelPerRadians[i] = getLevelPixelPerRadians(i + minLevel, tileSize);
   }
   let suspendTileLoading = false;
+  let waitingForCanvas: undefined | (() => void);
   const render = (): void => {
     if (suspendTileLoading) {
       return;
@@ -249,6 +250,16 @@ function createImageWrapper(
       0,
     );
     const currentScenePixelWidth = canvas.width;
+    if (currentScenePixelWidth === 0) {
+      if (!waitingForCanvas) {
+        waitingForCanvas = scene.postRender.addEventListener(render);
+      }
+      return;
+    } else if (waitingForCanvas) {
+      waitingForCanvas();
+      waitingForCanvas = undefined;
+    }
+
     const currentRadiansPerPixel =
       currentScenePixelWidth / currentImageRadiansWidth;
     currentLevel = minLevel;
@@ -309,6 +320,7 @@ function createImageWrapper(
     },
     render,
     destroy(): void {
+      waitingForCanvas?.();
       currentTiles.forEach((primitive) => {
         primitiveCollection.remove(primitive);
       });
@@ -386,13 +398,7 @@ export function createPanoramaImageView(map: PanoramaMap): PanoramaImageView {
     const oldView = currentView;
     removeOverlay?.();
     if (image) {
-      currentView = createImageWrapper(
-        image,
-        primitiveCollection,
-        scene.camera,
-        scene.canvas,
-        map,
-      );
+      currentView = createImageWrapper(image, primitiveCollection, scene, map);
       currentView.suspendTileLoading = suspendTileLoading;
     } else {
       currentView = undefined;
