@@ -103,6 +103,56 @@ describe('PanoramaImageView', () => {
     });
   });
 
+  describe('handling of 0 width canvas', () => {
+    let map: PanoramaMap;
+    let panoramaImage: PanoramaImage;
+    let destroy: () => void;
+    let sandbox: SinonSandbox;
+    let widthGetter: SinonStub;
+
+    before(async () => {
+      sandbox = sinon.createSandbox();
+      ({ panoramaImage, destroy } = await getPanoramaImage());
+    });
+
+    beforeEach(() => {
+      map = getPanoramaMap();
+      sandbox
+        .stub(panoramaImage.tileProvider, 'createVisibleTiles')
+        .callsFake(
+          (tileCoordinates: PanoramaTileCoordinate[]): PanoramaTile[] => {
+            return tileCoordinates.map((tileCoordinate) => {
+              return createPanoramaTile(
+                tileCoordinate,
+                panoramaImage.modelMatrix,
+                panoramaImage.tileSize,
+              );
+            });
+          },
+        );
+      widthGetter = sandbox
+        .stub(map.getCesiumWidget().scene.canvas, 'width')
+        .get(() => 0);
+      map.setCurrentImage(panoramaImage);
+    });
+
+    afterEach(() => {
+      map.destroy();
+      sandbox.restore();
+    });
+
+    after(() => {
+      destroy();
+    });
+
+    it('should wait for the canvas to have a width before loading tiles', () => {
+      expect(map.panoramaView.tilePrimitiveCollection.length).to.equal(0);
+      widthGetter.get(() => 100);
+      map.getCesiumWidget().camera.changed.raiseEvent();
+      expect(map.panoramaView.tilePrimitiveCollection.length).to.equal(6);
+    });
+  });
+
   describe('image change reaction', () => {
     describe('setting a new image', () => {
       let map: PanoramaMap;
