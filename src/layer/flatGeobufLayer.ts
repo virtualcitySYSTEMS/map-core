@@ -18,10 +18,16 @@ export default class FlatGeobufLayer extends VectorLayer {
     return {
       ...super.getDefaultOptions(),
       url: '',
+      ignoreMapLayerTypes: false,
     };
   }
 
   private _dataFetchedPromise: Promise<void> | undefined;
+
+  constructor(options: FlatGeobufLayerOptions) {
+    const defaultOptions = FlatGeobufLayer.getDefaultOptions();
+    super({ ...defaultOptions, ...options });
+  }
 
   async initialize(): Promise<void> {
     if (!this.initialized) {
@@ -62,6 +68,12 @@ export default class FlatGeobufLayer extends VectorLayer {
       await this.fetchData();
     }
     return this.forceRedraw();
+  }
+
+  override toJSON(
+    defaultOptions = FlatGeobufLayer.getDefaultOptions(),
+  ): VectorOptions {
+    return super.toJSON(defaultOptions);
   }
 }
 layerClassRegistry.registerClass(FlatGeobufLayer.className, FlatGeobufLayer);

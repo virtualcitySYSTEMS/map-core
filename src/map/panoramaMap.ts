@@ -374,9 +374,10 @@ export default class PanoramaMap extends VcsMap {
     this._cesiumWidget?.scene.primitives.remove(primitiveCollection);
   }
 
-  override toJSON(): PanoramaMapOptions {
-    const config = super.toJSON() as Partial<PanoramaMapOptions>;
-    const defaultOptions = PanoramaMap.getDefaultOptions();
+  override toJSON(
+    defaultOptions = PanoramaMap.getDefaultOptions(),
+  ): PanoramaMapOptions {
+    const config = super.toJSON(defaultOptions) as Partial<PanoramaMapOptions>;
 
     if (this._overlayNaNColor !== defaultOptions.overlayNaNColor) {
       config.overlayNaNColor = this._overlayNaNColor;
@@ -384,12 +385,6 @@ export default class PanoramaMap extends VcsMap {
 
     if (this._cursorColor !== defaultOptions.cursorColor) {
       config.cursorColor = this._cursorColor;
-    }
-
-    if (this.fallbackToCurrentMap !== defaultOptions.fallbackToCurrentMap) {
-      config.fallbackToCurrentMap = this.fallbackToCurrentMap;
-    } else {
-      delete config.fallbackToCurrentMap;
     }
 
     return config;

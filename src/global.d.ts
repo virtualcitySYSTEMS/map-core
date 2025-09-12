@@ -4,7 +4,6 @@ import type { mouseOverSymbol } from './util/editor/editorSymbols.js';
 import type { default as VcsModule, VcsModuleConfig } from './vcsModule.js';
 
 declare global {
-  // eslint-disable-next-line no-var
   var useVcsCustomShading: boolean | undefined;
 
   interface Window {

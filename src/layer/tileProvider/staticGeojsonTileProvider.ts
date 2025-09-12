@@ -30,7 +30,11 @@ class StaticGeoJSONTileProvider extends TileProvider {
 
   constructor(options: StaticGeoJSONTileProviderOptions) {
     const defaultOptions = StaticGeoJSONTileProvider.getDefaultOptions();
-    super({ ...options, baseLevels: defaultOptions.baseLevels });
+    super({
+      ...defaultOptions,
+      ...options,
+      baseLevels: defaultOptions.baseLevels,
+    });
 
     this.url = options.url || defaultOptions.url;
   }
@@ -47,9 +51,12 @@ class StaticGeoJSONTileProvider extends TileProvider {
     return features;
   }
 
-  toJSON(): StaticGeoJSONTileProviderOptions {
-    const config: Partial<StaticGeoJSONTileProviderOptions> = super.toJSON();
-    delete config.baseLevels;
+  toJSON(
+    defaultOptions = StaticGeoJSONTileProvider.getDefaultOptions(),
+  ): StaticGeoJSONTileProviderOptions {
+    const config: Partial<StaticGeoJSONTileProviderOptions> = super.toJSON(
+      defaultOptions,
+    );
 
     if (this.url) {
       config.url = this.url;

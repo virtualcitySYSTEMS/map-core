@@ -110,8 +110,8 @@ class ObliqueMap extends BaseOLMap {
   }
 
   constructor(options: ObliqueOptions) {
-    super(options);
     const defaultOptions = ObliqueMap.getDefaultOptions();
+    super({ ...defaultOptions, ...options });
     this._loadingCollection = null;
 
     this._mapChangeEvent = options.changeOnMoveEnd ? 'moveend' : 'postrender';
@@ -483,9 +483,8 @@ class ObliqueMap extends BaseOLMap {
     return containsXY(transformedBbox, coords[0], coords[1]);
   }
 
-  toJSON(): ObliqueOptions {
-    const config: ObliqueOptions = super.toJSON();
-    const defaultOptions = ObliqueMap.getDefaultOptions();
+  toJSON(defaultOptions = ObliqueMap.getDefaultOptions()): ObliqueOptions {
+    const config: ObliqueOptions = super.toJSON(defaultOptions);
 
     if (this.mapChangeEvent === 'moveend') {
       config.changeOnMoveEnd = true;

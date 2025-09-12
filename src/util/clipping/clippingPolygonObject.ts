@@ -82,8 +82,8 @@ class ClippingPolygonObject extends VcsObject {
   terrainChanged = new VcsEvent<boolean>();
 
   constructor(options: ClippingPolygonObjectOptions) {
-    super(options);
     const defaultOptions = ClippingPolygonObject.getDefaultOptions();
+    super({ ...defaultOptions, ...options });
 
     this.activeOnStartup = parseBoolean(
       options.activeOnStartup,
@@ -190,12 +190,13 @@ class ClippingPolygonObject extends VcsObject {
     }
   }
 
-  toJSON(): ClippingPolygonObjectOptions {
+  toJSON(
+    defaultOptions = ClippingPolygonObject.getDefaultOptions(),
+  ): ClippingPolygonObjectOptions {
     const config: ClippingPolygonObjectOptions = {
-      ...super.toJSON(),
+      ...super.toJSON(defaultOptions),
       coordinates: structuredClone(this._coordinates),
     };
-    const defaultOptions = ClippingPolygonObject.getDefaultOptions();
 
     if (!deepEqual(this._layerNames, defaultOptions.layerNames)) {
       config.layerNames = getLayerNamesClone(this._layerNames);

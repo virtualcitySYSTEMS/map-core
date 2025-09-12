@@ -25,7 +25,6 @@ import type { DeclarativeStyleItemOptions } from '../style/declarativeStyleItem.
 
 export type FeatureLayerOptions = LayerOptions & {
   style?: VectorStyleItemOptions | DeclarativeStyleItemOptions | StyleItem;
-  balloonHeightOffset?: number;
   splitDirection?: string;
   featureVisibility?: FeatureVisibility;
 };
@@ -60,7 +59,6 @@ class FeatureLayer<
     return {
       ...Layer.getDefaultOptions(),
       style: undefined,
-      balloonHeightOffset: 10,
       splitDirection: undefined,
     };
   }
@@ -77,7 +75,7 @@ class FeatureLayer<
   /**
    * a height offset for rendering of a balloon for a feature of this layer.
    */
-  balloonHeightOffset: number;
+  private _balloonHeightOffset = 10;
 
   private _splitDirection: SplitDirection = SplitDirection.NONE;
 
@@ -95,16 +93,24 @@ class FeatureLayer<
    * @param  options
    */
   constructor(options: FeatureLayerOptions) {
-    super(options);
     const defaultOptions = FeatureLayer.getDefaultOptions();
+    super({ ...defaultOptions, ...options });
 
     this._style = this.getStyleOrDefaultStyle(options.style);
     this._defaultStyle = this._style;
 
-    this.balloonHeightOffset = parseInteger(
-      options.balloonHeightOffset,
-      defaultOptions.balloonHeightOffset,
-    );
+    const { balloonHeightOffset } =
+      (options as { balloonHeightOffset?: unknown }) || {};
+    if (balloonHeightOffset != null) {
+      this.getLogger().deprecate(
+        'balloonHeightOffset',
+        'balloonHeightOffset is deprecated and will be removed in future versions',
+      );
+      this._balloonHeightOffset = parseInteger(
+        balloonHeightOffset,
+        this._balloonHeightOffset,
+      );
+    }
 
     if (options.splitDirection) {
       this._splitDirection =
@@ -115,6 +121,26 @@ class FeatureLayer<
 
     this.featureVisibility =
       options.featureVisibility || new FeatureVisibility();
+  }
+
+  get balloonHeightOffset(): number {
+    this.getLogger().deprecate(
+      'balloonHeightOffset',
+      'balloonHeightOffset is deprecated and will be removed in future versions',
+    );
+    return this._balloonHeightOffset;
+  }
+
+  /**
+   * @deprecated v6.3
+   * @param value
+   */
+  set balloonHeightOffset(value: number) {
+    this.getLogger().deprecate(
+      'balloonHeightOffset',
+      'balloonHeightOffset is deprecated and will be removed in future versions',
+    );
+    this._balloonHeightOffset = value;
   }
 
   /**
@@ -201,8 +227,10 @@ class FeatureLayer<
     this.setStyle(this.defaultStyle);
   }
 
-  toJSON(): FeatureLayerOptions {
-    const config: FeatureLayerOptions = super.toJSON();
+  toJSON(
+    defaultOptions = FeatureLayer.getDefaultOptions(),
+  ): FeatureLayerOptions {
+    const config: FeatureLayerOptions = super.toJSON(defaultOptions);
     if (!this.getStyleOrDefaultStyle().equals(this._style)) {
       config.style = this.style.toJSON();
     }

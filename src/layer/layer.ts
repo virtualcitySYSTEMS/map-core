@@ -58,6 +58,10 @@ export type LayerOptions = VcsObjectOptions & {
    * Optional Request Headers which will be sent with each request.
    */
   headers?: Record<string, string>;
+  /**
+   * if true, the layer types of the map will be ignored when checking if the layer is supported
+   */
+  ignoreMapLayerTypes?: boolean;
 };
 
 export type LayerImplementationOptions = {
@@ -92,6 +96,7 @@ class Layer<
       copyright: undefined,
       datasourceId: undefined,
       headers: undefined,
+      ignoreMapLayerTypes: false,
       zIndex: 0,
     };
   }
@@ -108,12 +113,9 @@ class Layer<
 
   private _initialized: boolean;
 
-  /**
-   * if provided, the layer will only be shown in the given MapNames.
-   * An empty array will show the layer in all configured maps.
-   * Changes require calling layer.redraw() to take effect.
-   */
-  mapNames: string[];
+  private _mapNames: string[];
+
+  readonly mapNamesChanged = new VcsEvent<string[]>();
 
   /**
    * The class names of the supported maps.
@@ -145,9 +147,12 @@ class Layer<
 
   copyright: CopyrightOptions | undefined;
 
-  private _implementations: Map<VcsMap, I[]>;
+  private _implementations = new Map<
+    VcsMap,
+    { implementations: I[]; destroy: () => void }
+  >();
 
-  private _activeMaps: Set<VcsMap>;
+  private _activeMaps = new Set<VcsMap>();
 
   /**
    * Event raised, if the layers state changes. Is passed the LayerState as its only parameter
@@ -169,9 +174,11 @@ class Layer<
    */
   datasourceId?: string;
 
+  private _ignoreMapLayerTypes: boolean;
+
   constructor(options: LayerOptions) {
-    super(options);
     const defaultOptions = Layer.getDefaultOptions();
+    super({ ...defaultOptions, ...options });
 
     this.extent = options.extent ? new Extent(options.extent) : null;
 
@@ -191,7 +198,8 @@ class Layer<
 
     this._initialized = false;
 
-    this.mapNames = options.mapNames ?? (defaultOptions.mapNames as string[]);
+    this._mapNames =
+      options.mapNames?.slice() ?? (defaultOptions.mapNames as string[]);
 
     this._supportedMaps = [];
 
@@ -215,19 +223,18 @@ class Layer<
 
     this.copyright = options.copyright || defaultOptions.copyright;
 
-    this._implementations = new Map();
-
-    this._activeMaps = new Set();
-
     this.stateChanged = new VcsEvent();
-
-    this.featureProvider = undefined;
 
     this._locale = 'en';
 
     this.datasourceId = options.datasourceId || defaultOptions.datasourceId;
 
     this._headers = structuredClone(options.headers);
+
+    this._ignoreMapLayerTypes = parseBoolean(
+      options.ignoreMapLayerTypes,
+      defaultOptions.ignoreMapLayerTypes,
+    );
   }
 
   /**
@@ -302,6 +309,31 @@ class Layer<
 
   get globalHider(): GlobalHider | undefined {
     return this._globalHider;
+  }
+
+  get mapNames(): string[] {
+    return this._mapNames.slice();
+  }
+
+  /**
+   * if provided, the layer will only be shown in the given MapNames.
+   * An empty array will show the layer in all configured maps.
+   * Changes will call reload on the layer.
+   */
+  set mapNames(mapNames: string[]) {
+    check(mapNames, [String]);
+
+    if (
+      mapNames.length !== this._mapNames.length ||
+      !mapNames.every((m) => this._mapNames.includes(m))
+    ) {
+      this._mapNames = mapNames.slice();
+      this.mapNamesChanged.raiseEvent(this._mapNames.slice());
+      this.forceRedraw().catch((err: unknown) => {
+        this.getLogger().error('failed to reload after mapNames setting');
+        this.getLogger().error(String(err));
+      });
+    }
   }
 
   setGlobalHider(globalHider?: GlobalHider): void {
@@ -400,6 +432,28 @@ class Layer<
     }
   }
 
+  get ignoreMapLayerTypes(): boolean {
+    return this._ignoreMapLayerTypes;
+  }
+
+  /**
+   * if set to true, the layer types of the map will be ignored when checking if the layer is supported.
+   * Changes will call reload on the layer.
+   */
+  set ignoreMapLayerTypes(value: boolean) {
+    check(value, Boolean);
+
+    if (this._ignoreMapLayerTypes !== value) {
+      this._ignoreMapLayerTypes = value;
+      this.reload().catch((err: unknown) => {
+        this.getLogger().error(
+          'failed to reload after setting ignoreMapLayerTypes',
+        );
+        this.getLogger().error(String(err));
+      });
+    }
+  }
+
   /**
    * creates an array of layer implementations for the given map.
    * @param  _map Map
@@ -417,20 +471,61 @@ class Layer<
    */
   getImplementationsForMap(map: VcsMap): I[] {
     if (!this._implementations.has(map)) {
+      let currentlySupported = this.isSupported(map);
+      let destroy: () => void;
+      const layerTypesChangedListener = map.layerTypesChanged.addEventListener(
+        () => {
+          const nowSupported = this.isSupported(map);
+          if (currentlySupported !== nowSupported) {
+            currentlySupported = nowSupported;
+            // either destroy current implementation or remove the empty array for unsupported layers.
+            // either way we have to reset this map if the inclusion changes
+            destroy();
+
+            if (
+              this.initialized &&
+              map.active &&
+              (this.active || this.loading)
+            ) {
+              this.getImplementationsForMap(map);
+              if (nowSupported) {
+                this._activateImplsForMap(map).catch(() => {
+                  this.getLogger().error(
+                    `Layer ${this.name} could not activate impl for map ${map.name} after layerTypesChanged`,
+                  );
+                });
+              }
+            }
+          }
+        },
+      );
+      destroy = (): void => {
+        layerTypesChangedListener();
+        this._implementations.get(map)?.implementations?.forEach((i) => {
+          i.destroy();
+        });
+        this._implementations.delete(map);
+      };
+
       if (this.isSupported(map)) {
-        this._implementations.set(map, this.createImplementationsForMap(map));
+        this._implementations.set(map, {
+          implementations: this.createImplementationsForMap(map),
+          destroy,
+        });
       } else {
-        this._implementations.set(map, []);
+        this._implementations.set(map, { implementations: [], destroy });
       }
     }
-    return this._implementations.get(map)!;
+    return this._implementations.get(map)!.implementations;
   }
 
   /**
    * Returns all implementation of this layer for all maps
    */
   getImplementations(): I[] {
-    return [...this._implementations.values()].flat();
+    return [...this._implementations.values()].flatMap(
+      (i) => i.implementations,
+    );
   }
 
   getImplementationOptions(): LayerImplementationOptions {
@@ -529,10 +624,7 @@ class Layer<
    */
   removedFromMap(map: VcsMap): void {
     this._activeMaps.delete(map);
-    this.getImplementationsForMap(map).forEach((impl) => {
-      impl.destroy();
-    });
-    this._implementations.delete(map);
+    this._implementations.get(map)?.destroy();
   }
 
   /**
@@ -540,10 +632,23 @@ class Layer<
    * @param  map
    */
   isSupported(map: VcsMap): boolean {
+    if (!map) {
+      return false;
+    }
+
+    const isSupportedMap = (): boolean =>
+      this._supportedMaps.includes(map.className);
+
+    const isAllowedMapName = (): boolean =>
+      this._mapNames.length === 0 || this._mapNames.includes(map.name);
+
+    const isAllowedLayerType = (): boolean =>
+      this._ignoreMapLayerTypes ||
+      map.layerTypes.length === 0 ||
+      map.layerTypes.includes(this.className);
+
     return (
-      map &&
-      this._supportedMaps.includes(map.className) &&
-      (this.mapNames.length === 0 || this.mapNames.indexOf(map.name) >= 0)
+      !!map && isSupportedMap() && isAllowedMapName() && isAllowedLayerType()
     );
   }
 
@@ -556,9 +661,12 @@ class Layer<
         `Layer ${this.name} could not activate impl for map ${map.name}`,
       );
       this.getLogger().error(String(err));
-      this._implementations.set(map, []);
-      impls.forEach((i) => {
-        i.destroy();
+      this._implementations.get(map)?.destroy();
+      this._implementations.set(map, {
+        implementations: [],
+        destroy: () => {
+          this._implementations.delete(map);
+        },
       });
     }
   }
@@ -580,7 +688,7 @@ class Layer<
     }
 
     await Promise.all(
-      [...this._activeMaps].map((m) => this._activateImplsForMap(m)),
+      [...this._activeMaps.keys()].map((m) => this._activateImplsForMap(m)),
     );
     if (this._state !== LayerState.LOADING) {
       return;
@@ -653,9 +761,8 @@ class Layer<
     }
   }
 
-  toJSON(): LayerOptions {
-    const config: LayerOptions = super.toJSON();
-    const defaultOptions = Layer.getDefaultOptions();
+  toJSON(defaultOptions = Layer.getDefaultOptions()): LayerOptions {
+    const config: LayerOptions = super.toJSON(defaultOptions);
 
     if (this.activeOnStartup !== defaultOptions.activeOnStartup) {
       config.activeOnStartup = this.activeOnStartup;
@@ -665,8 +772,8 @@ class Layer<
       config.allowPicking = this.allowPicking;
     }
 
-    if (this.mapNames.length > 0) {
-      config.mapNames = this.mapNames.slice();
+    if (this._mapNames.length > 0) {
+      config.mapNames = this._mapNames.slice();
     }
 
     if (this.hiddenObjectIds.length > 0) {
@@ -701,6 +808,10 @@ class Layer<
       config.zIndex = this._zIndex;
     }
 
+    if (this._ignoreMapLayerTypes !== defaultOptions.ignoreMapLayerTypes) {
+      config.ignoreMapLayerTypes = this._ignoreMapLayerTypes;
+    }
+
     return config;
   }
 
@@ -723,6 +834,7 @@ class Layer<
     this.stateChanged.destroy();
     this.zIndexChanged.destroy();
     this.exclusiveGroupsChanged.destroy();
+    this.mapNamesChanged.destroy();
   }
 }
 

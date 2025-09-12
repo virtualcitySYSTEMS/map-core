@@ -129,8 +129,8 @@ class Category<
   private _moduleRemovedListener: () => void = () => {};
 
   constructor(options: CategoryOptions<T>) {
-    super(options);
     const defaultOptions = Category.getDefaultConfig();
+    super({ ...defaultOptions, ...options });
 
     this.title = options.title || this.name;
     this._featureProperty =
@@ -372,10 +372,9 @@ class Category<
     };
   }
 
-  toJSON(): CategoryOptions<T> {
-    const config: CategoryOptions<T> = super.toJSON();
+  toJSON(defaultOptions = Category.getDefaultConfig()): CategoryOptions<T> {
+    const config: CategoryOptions<T> = super.toJSON(defaultOptions);
 
-    const defaultOptions = Category.getDefaultConfig();
     if (this.title !== this.name) {
       config.title = this.title;
     }

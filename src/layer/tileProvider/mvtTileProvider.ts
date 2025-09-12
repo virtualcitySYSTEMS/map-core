@@ -36,7 +36,7 @@ class MVTTileProvider extends TileProvider {
 
   constructor(options: MVTTileProviderOptions) {
     const defaultOptions = MVTTileProvider.getDefaultOptions();
-    super(options);
+    super({ ...defaultOptions, ...options });
 
     this.url = options.url || defaultOptions.url;
   }
@@ -90,8 +90,12 @@ class MVTTileProvider extends TileProvider {
     return features;
   }
 
-  toJSON(): MVTTileProviderOptions {
-    const config: Partial<MVTTileProviderOptions> = super.toJSON();
+  toJSON(
+    defaultOptions = MVTTileProvider.getDefaultOptions(),
+  ): MVTTileProviderOptions {
+    const config: Partial<MVTTileProviderOptions> = super.toJSON(
+      defaultOptions,
+    );
 
     if (this.url) {
       config.url = this.url;

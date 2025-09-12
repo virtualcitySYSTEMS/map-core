@@ -25,7 +25,7 @@ export default class StaticFeatureTileProvider extends TileProvider {
 
   constructor(options: StaticFeatureTileProviderOptions) {
     const defaultOptions = StaticFeatureTileProvider.getDefaultOptions();
-    super({ ...options, baseLevels: [0] });
+    super({ ...defaultOptions, ...options, baseLevels: [0] });
     this._features = options.features || defaultOptions.features;
   }
 
@@ -42,8 +42,10 @@ export default class StaticFeatureTileProvider extends TileProvider {
     return Promise.resolve(this._features);
   }
 
-  toJSON(): StaticFeatureTileProviderOptions {
-    const config: TileProviderOptions = super.toJSON();
+  toJSON(
+    defaultOptions = StaticFeatureTileProvider.getDefaultOptions(),
+  ): StaticFeatureTileProviderOptions {
+    const config: TileProviderOptions = super.toJSON(defaultOptions);
 
     delete config.baseLevels;
     const staticFeatureConfig: StaticFeatureTileProviderOptions = {

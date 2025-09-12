@@ -5,6 +5,7 @@ import { expect } from 'chai';
 import Feature from 'ol/Feature.js';
 import { fromExtent } from 'ol/geom/Polygon.js';
 import Point from 'ol/geom/Point.js';
+import type { VectorOptions } from '../../../src/layer/vectorLayer.js';
 import VectorLayer from '../../../src/layer/vectorLayer.js';
 import { wgs84Projection } from '../../../src/util/projection.js';
 import DeclarativeStyleItem from '../../../src/style/declarativeStyleItem.js';
@@ -307,6 +308,104 @@ describe('VectorLayer', () => {
       const impls = VL.getImplementations();
       expect(impls).to.not.include(impl);
       expect(impls).to.have.lengthOf(1);
+    });
+  });
+
+  describe('getting config objects', () => {
+    describe('of a default object', () => {
+      let layer: VectorLayer;
+
+      before(() => {
+        layer = new VectorLayer({});
+      });
+
+      after(() => {
+        layer.destroy();
+      });
+
+      it('should return an object with type and name for default layers', () => {
+        const config = layer.toJSON();
+        expect(config).to.have.all.keys('name', 'type');
+      });
+    });
+
+    describe('of a configured layer', () => {
+      let inputConfig: VectorOptions;
+      let outputConfig: VectorOptions;
+      let configuredLayer: VectorLayer;
+
+      before(() => {
+        inputConfig = {
+          extent: new Extent({
+            projection: wgs84Projection.toJSON(),
+            coordinates: [0, 0, 1, 1],
+          }).toJSON(),
+          vectorProperties: {
+            skirt: 5,
+            classificationType: 'cesium3DTile',
+            altitudeMode: 'absolute',
+            storeyHeightsAboveGround: [3, 6],
+          },
+          maxResolution: 5,
+          minResolution: 1,
+          zIndex: 10,
+          isDynamic: true,
+          properties: { test: 'test' },
+          ignoreMapLayerTypes: false,
+          vectorClusterGroup: 'foo',
+        };
+        configuredLayer = new VectorLayer(inputConfig);
+        outputConfig = configuredLayer.toJSON();
+      });
+
+      it('should configure the extent', () => {
+        expect(outputConfig).to.have.property('extent');
+        expect(outputConfig.extent).to.eql(inputConfig.extent);
+      });
+
+      it('should configure the vectorProperties', () => {
+        expect(outputConfig).to.have.property('vectorProperties');
+        expect(outputConfig.vectorProperties).to.eql(
+          inputConfig.vectorProperties,
+        );
+      });
+
+      it('should configure the maxResolution', () => {
+        expect(outputConfig).to.have.property(
+          'maxResolution',
+          inputConfig.maxResolution,
+        );
+      });
+
+      it('should configure the minResolution', () => {
+        expect(outputConfig).to.have.property(
+          'minResolution',
+          inputConfig.minResolution,
+        );
+      });
+
+      it('should configure the zIndex', () => {
+        expect(outputConfig).to.have.property('zIndex', inputConfig.zIndex);
+      });
+
+      it('should configure the isDynamic', () => {
+        expect(outputConfig).to.have.property(
+          'isDynamic',
+          inputConfig.isDynamic,
+        );
+      });
+
+      it('should configure the properties', () => {
+        expect(outputConfig).to.have.property('properties');
+        expect(outputConfig.properties).to.eql(inputConfig.properties);
+      });
+
+      it('should configure the ignoreMapLayerTypes', () => {
+        expect(outputConfig).to.have.property(
+          'ignoreMapLayerTypes',
+          inputConfig.ignoreMapLayerTypes,
+        );
+      });
     });
   });
 });

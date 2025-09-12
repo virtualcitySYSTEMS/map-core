@@ -99,9 +99,9 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
   private _customShader: CustomShader | undefined = undefined;
 
   constructor(options: CesiumTilesetOptions) {
-    super(options);
-    this._supportedMaps = [CesiumMap.className];
     const defaultOptions = CesiumTilesetLayer.getDefaultOptions();
+    super({ ...defaultOptions, ...options });
+    this._supportedMaps = [CesiumMap.className];
 
     this.highlightStyle = null;
     if (options.highlightStyle) {
@@ -244,9 +244,10 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
     });
   }
 
-  toJSON(): CesiumTilesetOptions {
-    const config: CesiumTilesetOptions = super.toJSON();
-    const defaultOptions = CesiumTilesetLayer.getDefaultOptions();
+  toJSON(
+    defaultOptions = CesiumTilesetLayer.getDefaultOptions(),
+  ): CesiumTilesetOptions {
+    const config: CesiumTilesetOptions = super.toJSON(defaultOptions);
     if (this.highlightStyle) {
       config.highlightStyle = this.highlightStyle.toJSON();
     }

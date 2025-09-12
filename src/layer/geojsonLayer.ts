@@ -3,7 +3,7 @@ import type { FeatureCollection } from 'geojson';
 import type { VectorOptions } from './vectorLayer.js';
 import VectorLayer from './vectorLayer.js';
 import { parseGeoJSON, writeGeoJSONFeature } from './geojsonHelpers.js';
-import Projection, { wgs84Projection } from '../util/projection.js';
+import { wgs84Projection } from '../util/projection.js';
 import { layerClassRegistry } from '../classRegistry.js';
 import { getInitForUrl, requestJson } from '../util/fetch.js';
 
@@ -29,6 +29,7 @@ class GeoJSONLayer extends VectorLayer {
       ...VectorLayer.getDefaultOptions(),
       projection: wgs84Projection.toJSON(),
       features: undefined,
+      ignoreMapLayerTypes: false,
     };
   }
 
@@ -39,7 +40,7 @@ class GeoJSONLayer extends VectorLayer {
   constructor(options: GeoJSONOptions) {
     const defaultOptions = GeoJSONLayer.getDefaultOptions();
     super({
-      projection: defaultOptions.projection,
+      ...defaultOptions,
       ...options,
     });
     this._featuresToLoad = options.features || defaultOptions.features;
@@ -120,16 +121,8 @@ class GeoJSONLayer extends VectorLayer {
     }
   }
 
-  toJSON(): GeoJSONOptions {
-    const config: GeoJSONOptions = super.toJSON();
-    const defaultOptions = GeoJSONLayer.getDefaultOptions();
-
-    const defaultProjection = new Projection(defaultOptions.projection);
-    if (!this.projection.equals(defaultProjection)) {
-      config.projection = this.projection.toJSON();
-    } else {
-      delete config.projection;
-    }
+  toJSON(defaultOptions = GeoJSONLayer.getDefaultOptions()): GeoJSONOptions {
+    const config: GeoJSONOptions = super.toJSON(defaultOptions);
 
     if (Array.isArray(this._featuresToLoad)) {
       config.features = this._featuresToLoad.slice();

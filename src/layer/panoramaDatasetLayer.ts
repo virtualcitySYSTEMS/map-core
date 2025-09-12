@@ -48,11 +48,11 @@ export default class PanoramaDatasetLayer extends VectorTileLayer<PanoramaDatase
       ...VectorTileLayer.getDefaultOptions(),
       url: '',
       baseLevel: 15,
-      activeOnStartup: false,
       cameraOffset: 0,
       minLevel: 15,
       maxLevel: 22,
       zIndex: maxZIndexMin50,
+      ignoreMapLayerTypes: true,
     };
   }
 
@@ -231,13 +231,15 @@ export default class PanoramaDatasetLayer extends VectorTileLayer<PanoramaDatase
     return undefined;
   }
 
-  override toJSON(): PanoramaDatasetOptions {
-    const config = super.toJSON() as Partial<PanoramaDatasetOptions> &
-      VectorTileOptions;
+  override toJSON(
+    defaultOptions = PanoramaDatasetLayer.getDefaultOptions(),
+  ): PanoramaDatasetOptions {
+    const config = super.toJSON(
+      defaultOptions,
+    ) as Partial<PanoramaDatasetOptions> & VectorTileOptions;
     delete config.tileProvider; // tileProvider is not serializable
     config.url = this.url;
 
-    const defaultOptions = PanoramaDatasetLayer.getDefaultOptions();
     if (this.cameraOffset !== defaultOptions.cameraOffset) {
       config.cameraOffset = this.cameraOffset;
     }

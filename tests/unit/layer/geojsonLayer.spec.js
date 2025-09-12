@@ -179,6 +179,7 @@ describe('GeoJSONLayer', () => {
         inputConfig = {
           url: 'http://myGeoJsonProvider/test.json',
           features: [JSON.parse(JSON.stringify(testGeoJSON.featureWithStyle))],
+          ignoreMapLayerTypes: true,
         };
         configuredLayer = new GeoJSONLayer(inputConfig);
         outputConfig = configuredLayer.toJSON();
@@ -196,6 +197,13 @@ describe('GeoJSONLayer', () => {
         expect(outputConfig)
           .to.have.property('features')
           .and.to.have.members(inputConfig.features);
+      });
+
+      it('should configure ignoreMapLayerTypes', () => {
+        expect(outputConfig).to.have.property(
+          'ignoreMapLayerTypes',
+          inputConfig.ignoreMapLayerTypes,
+        );
       });
     });
 

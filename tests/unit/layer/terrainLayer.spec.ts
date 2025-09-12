@@ -1,4 +1,7 @@
-import TerrainLayer from '../../../src/layer/terrainLayer.js';
+import { expect } from 'chai';
+import TerrainLayer, {
+  type TerrainOptions,
+} from '../../../src/layer/terrainLayer.js';
 
 describe('TerrainLayer', () => {
   describe('getting config objects', () => {
@@ -10,14 +13,15 @@ describe('TerrainLayer', () => {
     });
 
     describe('of a configured layer', () => {
-      let inputConfig;
-      let outputConfig;
-      let configuredLayer;
+      let inputConfig: TerrainOptions;
+      let outputConfig: TerrainOptions;
+      let configuredLayer: TerrainLayer;
 
       before(() => {
         inputConfig = {
           requestVertexNormals: false,
           requestWaterMask: true,
+          ignoreMapLayerTypes: false,
         };
         configuredLayer = new TerrainLayer(inputConfig);
         outputConfig = configuredLayer.toJSON();
@@ -38,6 +42,13 @@ describe('TerrainLayer', () => {
         expect(outputConfig).to.have.property(
           'requestWaterMask',
           inputConfig.requestWaterMask,
+        );
+      });
+
+      it('should configure ignoreMapLayerTypes', () => {
+        expect(outputConfig).to.have.property(
+          'ignoreMapLayerTypes',
+          inputConfig.ignoreMapLayerTypes,
         );
       });
     });

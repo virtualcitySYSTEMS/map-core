@@ -72,8 +72,13 @@ export type VectorImplementationOptions = FeatureLayerImplementationOptions & {
 };
 
 /**
- * VectorLayer Layer for OpenlayersMap, Cesium and ObliqueMap
- * @group Layer
+ * the vector layer is the standard layer to display vector features on the map. mostly, a specialization
+ * is used to load data from a certain source, e.g. GeoJSONLayer, FlatGeobufLayer, etc. But it can also
+ * be used as a generic layer to add features to, mostly at runtime.
+ *
+ * This layer ignores the mapLayerTypes configuration by default, as it is mostly used to display user data.
+ * Be sure to configure this otherwise if needed and reset the default when extending this class to implement
+ * a layer for a specific data source.
  */
 class VectorLayer
   extends FeatureLayer<
@@ -95,11 +100,11 @@ class VectorLayer
       maxResolution: undefined,
       minResolution: undefined,
       dontUseTerrainForOblique: false,
-      zIndex: 50,
       highlightStyle: undefined,
       isDynamic: false,
       vectorProperties: {}, // XXX or should we return VectorProperties default options?
       vectorClusterGroup: undefined,
+      ignoreMapLayerTypes: true,
     };
   }
 
@@ -148,9 +153,9 @@ class VectorLayer
   }>();
 
   constructor(options: VectorOptions) {
-    super(options);
-
     const defaultOptions = VectorLayer.getDefaultOptions();
+    super({ ...defaultOptions, ...options });
+
     this.projection = new Projection(options.projection);
     this.maxResolution =
       options.maxResolution != null
@@ -499,11 +504,13 @@ class VectorLayer
     return null;
   }
 
-  toJSON(): VectorOptions {
-    const config: VectorOptions = super.toJSON();
-    const defaultOptions = VectorLayer.getDefaultOptions();
+  toJSON(defaultOptions = VectorLayer.getDefaultOptions()): VectorOptions {
+    const config: VectorOptions = super.toJSON(defaultOptions);
 
-    if (this.projection.epsg !== getDefaultProjection().epsg) {
+    const defaultProjection =
+      defaultOptions.projection ?? getDefaultProjection();
+
+    if (this.projection.epsg !== defaultProjection.epsg) {
       config.projection = this.projection.toJSON();
     }
 

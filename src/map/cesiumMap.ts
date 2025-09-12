@@ -379,9 +379,9 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
   private _contextOptions: ContextOptions | undefined;
 
   constructor(options: CesiumMapOptions) {
-    super(options);
-
     const defaultOptions = CesiumMap.getDefaultOptions();
+    super({ ...defaultOptions, ...options });
+
     this.dataSourceDisplayClock = new Clock({ shouldAnimate: true });
 
     const defaultClock = new DataSourceClock();
@@ -1201,9 +1201,8 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
     return this._cesiumWidget?.scene.context.fragmentDepth ?? false;
   }
 
-  toJSON(): CesiumMapOptions {
-    const config: CesiumMapOptions = super.toJSON();
-    const defaultOptions = CesiumMap.getDefaultOptions();
+  toJSON(defaultOptions = CesiumMap.getDefaultOptions()): CesiumMapOptions {
+    const config: CesiumMapOptions = super.toJSON(defaultOptions);
 
     if (this.enableLightning !== defaultOptions.enableLightning) {
       config.enableLightning = this.enableLightning;

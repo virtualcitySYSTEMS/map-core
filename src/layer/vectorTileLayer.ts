@@ -204,11 +204,10 @@ class VectorTileLayer<
    * @param  options
    */
   constructor(options: VectorTileOptions) {
-    super(options);
+    const defaultOptions = VectorTileLayer.getDefaultOptions();
+    super({ ...defaultOptions, ...options });
 
     this._supportedMaps = [CesiumMap.className, OpenlayersMap.className];
-
-    const defaultOptions = VectorTileLayer.getDefaultOptions();
 
     this.highlightStyle = undefined;
     if (options.highlightStyle) {
@@ -535,9 +534,10 @@ class VectorTileLayer<
     }
   }
 
-  toJSON(): VectorTileOptions {
-    const config: VectorTileOptions = super.toJSON();
-    const defaultOptions = VectorTileLayer.getDefaultOptions();
+  toJSON(
+    defaultOptions = VectorTileLayer.getDefaultOptions(),
+  ): VectorTileOptions {
+    const config: VectorTileOptions = super.toJSON(defaultOptions);
 
     if (this._maxLevel !== defaultOptions.maxLevel) {
       config.maxLevel = this._maxLevel;

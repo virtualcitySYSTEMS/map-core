@@ -135,8 +135,8 @@ export default class VectorClusterGroup extends VcsObject {
   clusterDistance: number;
 
   constructor(options: VectorClusterGroupOptions) {
-    super(options);
     const defaultOptions = VectorClusterGroup.getDefaultOptions();
+    super({ ...defaultOptions, ...options });
 
     this._style = getStyleOrDefaultStyle(
       options.style,
@@ -445,9 +445,12 @@ export default class VectorClusterGroup extends VcsObject {
     }
   }
 
-  toJSON(): VectorClusterGroupOptions {
-    const config: Partial<VectorClusterGroupOptions> = super.toJSON();
-    const defaultOptions = VectorClusterGroup.getDefaultOptions();
+  toJSON(
+    defaultOptions = VectorClusterGroup.getDefaultOptions(),
+  ): VectorClusterGroupOptions {
+    const config: Partial<VectorClusterGroupOptions> = super.toJSON(
+      defaultOptions,
+    );
 
     if (!this.style.equals(new VectorClusterStyleItem({}))) {
       config.style = this.style.toJSON();

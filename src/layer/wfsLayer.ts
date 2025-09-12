@@ -56,6 +56,7 @@ class WFSLayer extends VectorLayer {
       featurePrefix: '',
       getFeatureOptions: {},
       version: undefined,
+      ignoreMapLayerTypes: false,
     };
   }
 
@@ -66,7 +67,8 @@ class WFSLayer extends VectorLayer {
         (proj.epsg as string).match(/\d+/)?.[0] as string
       }`,
     ];
-    super({ ...options, projection: proj });
+    const defaultOptions = WFSLayer.getDefaultOptions();
+    super({ ...defaultOptions, ...options, projection: proj });
 
     this.featureType = Array.isArray(options.featureType)
       ? options.featureType
@@ -157,15 +159,16 @@ class WFSLayer extends VectorLayer {
     this.addFeatures(features);
   }
 
-  toJSON(): WFSOptions {
-    const config: Partial<WFSOptions> = super.toJSON();
-    const defaultOptions = WFSLayer.getDefaultOptions();
+  toJSON(defaultOptions = WFSLayer.getDefaultOptions()): WFSOptions {
+    const config: Partial<WFSOptions> = super.toJSON(defaultOptions);
     config.featureType = this.featureType.slice();
     config.featureNS = this.featureNS;
     config.featurePrefix = this.featurePrefix;
+
     if (Object.keys(this.getFeaturesOptions).length > 0) {
       config.getFeatureOptions = this.getFeaturesOptions;
     }
+
     if (this.version !== defaultOptions.version) {
       config.version = this.version;
     }

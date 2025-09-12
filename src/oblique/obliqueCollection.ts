@@ -183,8 +183,8 @@ class ObliqueCollection extends VcsObject {
    * @param  options
    */
   constructor(options: ObliqueCollectionOptions) {
-    super(options);
     const defaultOptions = ObliqueCollection.getDefaultOptions();
+    super({ ...defaultOptions, ...options });
 
     this.viewOptions = {
       maxZoom: parseInteger(options.maxZoom, defaultOptions.maxZoom),
@@ -607,9 +607,10 @@ class ObliqueCollection extends VcsObject {
     this._destroyed.destroy();
   }
 
-  toJSON(): ObliqueCollectionOptions {
-    const config: ObliqueCollectionOptions = super.toJSON();
-    const defaultOptions = ObliqueCollection.getDefaultOptions();
+  toJSON(
+    defaultOptions = ObliqueCollection.getDefaultOptions(),
+  ): ObliqueCollectionOptions {
+    const config: ObliqueCollectionOptions = super.toJSON(defaultOptions);
     if (this.viewOptions.maxZoom !== defaultOptions.maxZoom) {
       config.maxZoom = this.viewOptions.maxZoom;
     }

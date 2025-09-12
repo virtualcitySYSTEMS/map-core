@@ -41,8 +41,9 @@ export default class FlatGeobufTileProvider extends TileProvider {
   private _projection: Projection;
 
   constructor(options: FlatGeobufTileProviderOptions) {
+    const defaultOptions = FlatGeobufTileProvider.getDefaultOptions();
     const baseLevels = options.levels.map((level) => level.level);
-    super({ ...options, baseLevels });
+    super({ ...defaultOptions, ...options, baseLevels });
 
     this._levels = new Map(
       options.levels.map((level) => [level.level, { url: level.url }]),
@@ -90,13 +91,15 @@ export default class FlatGeobufTileProvider extends TileProvider {
     return getOlFeatures(reader, this._projection, mercatorExtent);
   }
 
-  toJSON(): FlatGeobufTileProviderOptions {
+  toJSON(
+    defaultOptions = FlatGeobufTileProvider.getDefaultOptions(),
+  ): FlatGeobufTileProviderOptions {
     const config: FlatGeobufTileProviderOptions & { baseLevels?: number[] } = {
       levels: Array.from(this._levels.entries()).map(([level, { url }]) => ({
         level,
         url,
       })),
-      ...super.toJSON(),
+      ...super.toJSON(defaultOptions),
     };
     delete config.baseLevels;
     if (this._projection.epsg !== getDefaultProjection().epsg) {

@@ -43,6 +43,10 @@ export type VcsMapOptions = VcsObjectOptions & {
    * the HTMLElement to render the map into
    */
   target?: string | HTMLElement;
+  /**
+   * The types of layers to display on this map.
+   */
+  layerTypes?: string[];
 };
 
 export type VisualisationType = CesiumVisualisationType | OLLayer;
@@ -67,6 +71,7 @@ class VcsMap<
     return {
       fallbackMap: undefined,
       fallbackToCurrentMap: false,
+      layerTypes: [],
     };
   }
 
@@ -142,12 +147,16 @@ class VcsMap<
 
   private _postRender = new VcsEvent<VcsMapRenderEvent<V>>();
 
+  private _layerTypes: string[];
+
+  readonly layerTypesChanged = new VcsEvent<string[]>();
+
   /**
    * @param  options
    */
   constructor(options: VcsMapOptions) {
-    super(options);
     const defaultOptions = VcsMap.getDefaultOptions();
+    super({ ...defaultOptions, ...options });
     this.mapElement = document.createElement('div');
     this.mapElement.setAttribute('id', uuidv4());
     this.mapElement.classList.add('mapElement');
@@ -188,6 +197,8 @@ class VcsMap<
     this.pointerInteractionEvent = new VcsEvent();
 
     this._splitPosition = 0.5;
+
+    this._layerTypes = options.layerTypes || defaultOptions.layerTypes || [];
   }
 
   /**
@@ -313,6 +324,26 @@ class VcsMap<
    */
   get postRender(): VcsEvent<VcsMapRenderEvent<V>> {
     return this._postRender;
+  }
+
+  get layerTypes(): string[] {
+    return this._layerTypes.slice();
+  }
+
+  /**
+   * The types of layers to display on this map. An empty array means all types.
+   * @param types
+   */
+  set layerTypes(types: string[]) {
+    check(types, [String]);
+
+    if (
+      types.length !== this._layerTypes.length ||
+      !types.every((t) => this._layerTypes.includes(t))
+    ) {
+      this._layerTypes = types.slice();
+      this.layerTypesChanged.raiseEvent(this._layerTypes.slice());
+    }
   }
 
   private _setLayerCollectionListeners(): void {
@@ -597,14 +628,21 @@ class VcsMap<
   // eslint-disable-next-line class-methods-use-this
   requestRender(): void {}
 
-  toJSON(): VcsMapOptions {
-    const config: VcsMapOptions = super.toJSON();
+  toJSON(defaultOptions = VcsMap.getDefaultOptions()): VcsMapOptions {
+    const config: VcsMapOptions = super.toJSON(defaultOptions);
+
     if (this.fallbackMap) {
       config.fallbackMap = this.fallbackMap;
     }
+
     if (this.fallbackToCurrentMap) {
       config.fallbackToCurrentMap = this.fallbackToCurrentMap;
     }
+
+    if (this._layerTypes.length > 0) {
+      config.layerTypes = this._layerTypes.slice();
+    }
+
     return config;
   }
 
@@ -625,6 +663,7 @@ class VcsMap<
       cb();
     });
     this._collectionListeners = [];
+    this.layerTypesChanged.destroy();
 
     if (this.layerCollection) {
       [...this.layerCollection].forEach((l) => {

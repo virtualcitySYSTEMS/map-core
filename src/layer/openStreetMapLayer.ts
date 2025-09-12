@@ -105,8 +105,8 @@ class OpenStreetMapLayer
   protected _supportedMaps = [CesiumMap.className, OpenlayersMap.className];
 
   constructor(options: OpenStreetMapOptions) {
-    super(options);
     const defaultOptions = OpenStreetMapLayer.getDefaultOptions();
+    super({ ...defaultOptions, ...options });
     this._splitDirection = SplitDirection.NONE;
 
     if (options.splitDirection) {
@@ -196,9 +196,10 @@ class OpenStreetMapLayer
     return [];
   }
 
-  toJSON(): OpenStreetMapOptions {
-    const config: OpenStreetMapOptions = super.toJSON();
-    const defaultOptions = OpenStreetMapLayer.getDefaultOptions();
+  toJSON(
+    defaultOptions = OpenStreetMapLayer.getDefaultOptions(),
+  ): OpenStreetMapOptions {
+    const config: OpenStreetMapOptions = super.toJSON(defaultOptions);
 
     if (this._splitDirection !== SplitDirection.NONE) {
       config.splitDirection =

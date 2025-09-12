@@ -206,7 +206,14 @@ describe('RasterLayer', () => {
         ARL.getImplementationOptions(),
       );
       // @ts-expect-error testing setup
-      ARL._implementations.set(map, [impl]);
+      ARL._implementations.set(map, {
+        implementations: [impl],
+        destroy: () => {
+          // @ts-expect-error testing setup
+          ARL._implementations.delete(map);
+          impl.destroy();
+        },
+      });
       const updateOpacity = sandbox.spy(impl, 'updateOpacity');
       ARL.opacity = 0.5;
       ARL.opacity = 0.5;

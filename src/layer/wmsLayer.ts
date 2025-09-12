@@ -96,8 +96,8 @@ class WMSLayer extends RasterLayer<WmsCesiumImpl | WmsOpenlayersImpl> {
    * @param  options
    */
   constructor(options: WMSOptions) {
-    super(options);
     const defaultOptions = WMSLayer.getDefaultOptions();
+    super({ ...defaultOptions, ...options });
 
     this.version = options.version || (defaultOptions.version as string);
 
@@ -217,9 +217,8 @@ class WMSLayer extends RasterLayer<WmsCesiumImpl | WmsOpenlayersImpl> {
     return this.parameters.LAYERS ? this.parameters.LAYERS.split(',') : [];
   }
 
-  toJSON(): WMSOptions {
-    const config: WMSOptions = super.toJSON();
-    const defaultOptions = WMSLayer.getDefaultOptions();
+  toJSON(defaultOptions = WMSLayer.getDefaultOptions()): WMSOptions {
+    const config: WMSOptions = super.toJSON(defaultOptions);
 
     if (this.parameters.LAYERS) {
       config.layers = this.parameters.LAYERS;

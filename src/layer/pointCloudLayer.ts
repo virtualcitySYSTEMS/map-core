@@ -49,9 +49,8 @@ class PointCloudLayer extends CesiumTilesetLayer {
   protected _supportedMaps = [CesiumMap.className];
 
   constructor(options: PointCloudOptions) {
-    super(options);
-
     const defaultOptions = PointCloudLayer.getDefaultOptions();
+    super({ ...defaultOptions, ...options });
 
     this.defaultPointSize =
       options.pointSize != null ? options.pointSize : defaultOptions.pointSize;
@@ -117,9 +116,10 @@ class PointCloudLayer extends CesiumTilesetLayer {
     }
   }
 
-  toJSON(): PointCloudOptions {
-    const config: PointCloudOptions = super.toJSON();
-    const defaultOptions = PointCloudLayer.getDefaultOptions();
+  toJSON(
+    defaultOptions = PointCloudLayer.getDefaultOptions(),
+  ): PointCloudOptions {
+    const config: PointCloudOptions = super.toJSON(defaultOptions);
 
     if (this.defaultPointSize !== defaultOptions.pointSize) {
       config.pointSize = this.defaultPointSize;

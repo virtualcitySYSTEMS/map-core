@@ -99,8 +99,8 @@ export default class VectorClusterStyleItem extends VcsObject {
   styleChanged = new VcsEvent<void>();
 
   constructor(options: VectorClusterStyleItemOptions) {
-    super(options);
     const defaultOptions = VectorClusterStyleItem.getDefaultOptions();
+    super({ ...defaultOptions, ...options });
 
     const configTemplate = Array.isArray(options.template)
       ? options.template.join('')
@@ -336,9 +336,13 @@ export default class VectorClusterStyleItem extends VcsObject {
     this._styleCache.clear();
   }
 
-  toJSON(): VectorClusterStyleItemOptions {
-    const config: Partial<VectorClusterStyleItemOptions> = super.toJSON();
-    const defaultOptions = VectorClusterStyleItem.getDefaultOptions();
+  toJSON(
+    defaultOptions = VectorClusterStyleItem.getDefaultOptions(),
+  ): VectorClusterStyleItemOptions {
+    const config: Partial<VectorClusterStyleItemOptions> = super.toJSON(
+      defaultOptions,
+    );
+
     if (this.template !== defaultOptions.template) {
       config.template = this.template;
     }

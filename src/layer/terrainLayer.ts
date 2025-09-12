@@ -32,6 +32,7 @@ class TerrainLayer extends Layer<TerrainCesiumImpl> {
   static getDefaultOptions(): TerrainOptions {
     return {
       ...Layer.getDefaultOptions(),
+      ignoreMapLayerTypes: true,
       requestVertexNormals: true,
       requestWaterMask: false,
     };
@@ -44,8 +45,8 @@ class TerrainLayer extends Layer<TerrainCesiumImpl> {
   requestWaterMask: boolean;
 
   constructor(options: TerrainOptions) {
-    super(options);
     const defaultOptions = TerrainLayer.getDefaultOptions();
+    super({ ...defaultOptions, ...options });
 
     this.requestVertexNormals = parseBoolean(
       options.requestVertexNormals,
@@ -95,13 +96,13 @@ class TerrainLayer extends Layer<TerrainCesiumImpl> {
     );
   }
 
-  toJSON(): TerrainOptions {
-    const config: TerrainOptions = super.toJSON();
-    const defaultOptions = TerrainLayer.getDefaultOptions();
+  toJSON(defaultOptions = TerrainLayer.getDefaultOptions()): TerrainOptions {
+    const config: TerrainOptions = super.toJSON(defaultOptions);
 
     if (this.requestVertexNormals !== defaultOptions.requestVertexNormals) {
       config.requestVertexNormals = this.requestVertexNormals;
     }
+
     if (this.requestWaterMask !== defaultOptions.requestWaterMask) {
       config.requestWaterMask = this.requestWaterMask;
     }

@@ -79,8 +79,8 @@ class AbstractFeatureProvider extends VcsObject {
   mapTypes: string[];
 
   constructor(layerName: string, options: AbstractFeatureProviderOptions) {
-    super(options);
     const defaultOptions = AbstractFeatureProvider.getDefaultOptions();
+    super({ ...defaultOptions, ...options });
 
     this.layerName = layerName;
 
@@ -163,10 +163,11 @@ class AbstractFeatureProvider extends VcsObject {
   /**
    * Returns the object required to configure this feature provider.
    */
-  toJSON(): AbstractFeatureProviderOptions {
-    const config: AbstractFeatureProviderOptions = super.toJSON();
+  toJSON(
+    defaultOptions = AbstractFeatureProvider.getDefaultOptions(),
+  ): AbstractFeatureProviderOptions {
+    const config: AbstractFeatureProviderOptions = super.toJSON(defaultOptions);
 
-    const defaultOptions = AbstractFeatureProvider.getDefaultOptions();
     delete config.name; // the name is irrelevant, since its the layers name
 
     if (this.showGeometry !== defaultOptions.showGeometry) {

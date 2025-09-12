@@ -179,9 +179,10 @@ class FeatureStoreLayer extends VectorLayer {
   constructor(options: FeatureStoreOptions) {
     const defaultOptions = FeatureStoreLayer.getDefaultOptions();
     super({
-      projection: defaultOptions.projection,
+      ...defaultOptions,
       ...options,
     });
+
     this._supportedMaps = [
       CesiumMap.className,
       OpenlayersMap.className,
@@ -588,9 +589,10 @@ class FeatureStoreLayer extends VectorLayer {
     }
   }
 
-  toJSON(): FeatureStoreOptions {
-    const config = super.toJSON() as Partial<FeatureStoreOptions>;
-    const defaultOptions = FeatureStoreLayer.getDefaultOptions();
+  toJSON(
+    defaultOptions = FeatureStoreLayer.getDefaultOptions(),
+  ): FeatureStoreOptions {
+    const config = super.toJSON(defaultOptions) as Partial<FeatureStoreOptions>;
 
     delete config.projection;
     const vcsMeta = this.vectorProperties.getVcsMeta({
@@ -616,6 +618,7 @@ class FeatureStoreLayer extends VectorLayer {
     if (this.hiddenStaticFeatureIds.size > 0) {
       config.hiddenStaticFeatureIds = [...this.hiddenStaticFeatureIds];
     }
+
     return config as FeatureStoreOptions;
   }
 

@@ -69,9 +69,9 @@ class FlightInstance extends VcsObject {
   }
 
   constructor(options: FlightInstanceOptions) {
-    super(options);
-
     const defaultOptions = FlightInstance.getDefaultOptions();
+    super({ ...defaultOptions, ...options });
+
     const anchorsArray = (options.anchors ?? defaultOptions.anchors!)
       .map(anchorFromGeojsonFeature)
       .filter((a): a is FlightAnchor => !!a);
@@ -205,15 +205,16 @@ class FlightInstance extends VcsObject {
    * returns an options object for this flight. if this flight was configured via an URL, only the url will be configured.
    * @returns
    */
-  toJSON(): FlightInstanceOptions {
-    const config = super.toJSON() as FlightInstanceOptions;
+  toJSON(
+    defaultOptions = FlightInstance.getDefaultOptions(),
+  ): FlightInstanceOptions {
+    const config = super.toJSON(defaultOptions) as FlightInstanceOptions;
 
     if (this._url) {
       config.url = this._url;
       return config;
     }
 
-    const defaultOptions = FlightInstance.getDefaultOptions();
     if (this._multiplier !== defaultOptions.multiplier) {
       config.multiplier = this._multiplier;
     }

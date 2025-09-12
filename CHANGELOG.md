@@ -1,3 +1,8 @@
+### 6.3.0
+
+- Adds the `layerTypes` concept to the `VcsMap`. This allows to restrict layer types to be supported on certain maps.
+- Made the `mapNames` concept reactive on `Layer`. Changing the mapNames of a layer will now add or remove the layer from maps automatically.
+
 ### 6.2.2
 
 - Fixes an issue where the first panorama image was not shown in the correct resolution

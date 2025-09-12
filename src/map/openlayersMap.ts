@@ -35,9 +35,8 @@ class OpenlayersMap extends BaseOLMap {
    * @param  options
    */
   constructor(options: OpenlayersOptions) {
-    super(options);
-
     const defaultOptions = OpenlayersMap.getDefaultOptions();
+    super({ ...defaultOptions, ...options });
 
     this.fixedNorthOrientation = parseBoolean(
       options.fixedNorthOrientation,
@@ -190,10 +189,11 @@ class OpenlayersMap extends BaseOLMap {
     return containsXY(boundingExtent(bbox), coords[0], coords[1]);
   }
 
-  toJSON(): OpenlayersOptions {
-    const config: OpenlayersOptions = super.toJSON();
+  toJSON(
+    defaultOptions = OpenlayersMap.getDefaultOptions(),
+  ): OpenlayersOptions {
+    const config: OpenlayersOptions = super.toJSON(defaultOptions);
 
-    const defaultOptions = OpenlayersMap.getDefaultOptions();
     if (this.fixedNorthOrientation !== defaultOptions.fixedNorthOrientation) {
       config.fixedNorthOrientation = this.fixedNorthOrientation;
     }

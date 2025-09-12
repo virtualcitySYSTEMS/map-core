@@ -7,3 +7,4 @@ docs/
 dist/
 .tests/
 *.shader.ts
+.idea/copilot*

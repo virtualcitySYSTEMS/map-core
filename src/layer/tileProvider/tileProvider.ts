@@ -163,8 +163,8 @@ class TileProvider extends VcsObject {
   private _idProperty: string | undefined;
 
   constructor(options: TileProviderOptions) {
-    super(options);
     const defaultOptions = TileProvider.getDefaultOptions();
+    super({ ...defaultOptions, ...options });
 
     this._tileCacheSize = parseInteger(
       options.tileCacheSize,
@@ -649,9 +649,10 @@ class TileProvider extends VcsObject {
     return Promise.resolve([]);
   }
 
-  toJSON(): TileProviderOptions {
-    const config: TileProviderOptions = super.toJSON();
-    const defaultOptions = TileProvider.getDefaultOptions();
+  toJSON(
+    defaultOptions = TileProvider.getDefaultOptions(),
+  ): TileProviderOptions {
+    const config: TileProviderOptions = super.toJSON(defaultOptions);
 
     if (defaultOptions.tileCacheSize !== this.tileCacheSize) {
       config.tileCacheSize = this.tileCacheSize;

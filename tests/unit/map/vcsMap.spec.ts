@@ -1,12 +1,14 @@
 import { validate, v4 as uuidv4 } from 'uuid';
-import VcsMap from '../../../src/map/vcsMap.js';
+import sinon from 'sinon';
+import { expect } from 'chai';
+import VcsMap, { type VcsMapOptions } from '../../../src/map/vcsMap.js';
 import LayerCollection from '../../../src/util/layerCollection.js';
 import Layer from '../../../src/layer/layer.js';
 import MapState from '../../../src/map/mapState.js';
 import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
 
-describe('maps.VcmMap', () => {
-  let sandbox;
+describe('VcmMap', () => {
+  let sandbox: sinon.SinonSandbox;
 
   before(() => {
     sandbox = sinon.createSandbox();
@@ -17,8 +19,7 @@ describe('maps.VcmMap', () => {
   });
 
   describe('creating a map', () => {
-    /** @type {import("@vcmap/core").VcsMap} */
-    let map;
+    let map: VcsMap;
 
     before(() => {
       map = new VcsMap({});
@@ -47,18 +48,16 @@ describe('maps.VcmMap', () => {
       });
 
       it('should have mapElement and vcm-map-top classes', () => {
-        expect([...map.mapElement.classList.values()]).to.include.members([
-          'mapElement',
-        ]);
+        expect(map.mapElement.classList.contains('mapElement')).to.be.true;
       });
     });
   });
 
   describe('layer collection handling', () => {
-    let layer1;
-    let layer2;
-    let map;
-    let layerCollection;
+    let layer1: Layer;
+    let layer2: Layer;
+    let map: VcsMap;
+    let layerCollection: LayerCollection;
 
     before(() => {
       layer1 = new Layer({});
@@ -116,7 +115,7 @@ describe('maps.VcmMap', () => {
     });
 
     describe('setting a new layer collection', () => {
-      let otherLayerCollection;
+      let otherLayerCollection: LayerCollection;
 
       beforeEach(() => {
         otherLayerCollection = new LayerCollection();
@@ -219,7 +218,7 @@ describe('maps.VcmMap', () => {
     });
 
     describe('using the API', () => {
-      let map;
+      let map: VcsMap;
 
       beforeEach(() => {
         map = new VcsMap({});
@@ -257,8 +256,7 @@ describe('maps.VcmMap', () => {
   });
 
   describe('activating a map', () => {
-    /** @type {import("@vcmap/core").VcsMap} */
-    let map;
+    let map: VcsMap;
 
     beforeEach(() => {
       map = new VcsMap({});
@@ -307,8 +305,8 @@ describe('maps.VcmMap', () => {
     });
 
     describe('with layers', () => {
-      let layer;
-      let mapActivated;
+      let layer: Layer;
+      let mapActivated: sinon.SinonSpy;
 
       before(() => {
         layer = new Layer({});
@@ -349,8 +347,9 @@ describe('maps.VcmMap', () => {
 
       it('should not raise state changed, if the map is deactivated while a layer is handling mapActivated', async () => {
         const layer2 = new Layer({});
-        layer2.mapActivated = async () => {
+        layer2.mapActivated = (): Promise<void> => {
           map.deactivate();
+          return Promise.resolve();
         };
         map.layerCollection.add(layer2);
         const spy = sandbox.spy();
@@ -364,8 +363,7 @@ describe('maps.VcmMap', () => {
   });
 
   describe('deactivating a map', () => {
-    /** @type {import("@vcmap/core").VcsMap} */
-    let map;
+    let map: VcsMap;
 
     beforeEach(async () => {
       map = new VcsMap({});
@@ -393,8 +391,8 @@ describe('maps.VcmMap', () => {
     });
 
     describe('with layers', () => {
-      let layer;
-      let mapDeactivated;
+      let layer: Layer;
+      let mapDeactivated: sinon.SinonSpy;
 
       before(() => {
         layer = new Layer({});
@@ -427,10 +425,53 @@ describe('maps.VcmMap', () => {
     });
   });
 
+  describe('setting layer types', () => {
+    let map: VcsMap;
+
+    beforeEach(() => {
+      map = new VcsMap({});
+    });
+
+    afterEach(() => {
+      map.destroy();
+    });
+
+    it('should set the layer types on the map', () => {
+      const layerTypes = ['type1', 'type2'];
+      map.layerTypes = layerTypes;
+      expect(map.layerTypes).to.have.members(layerTypes);
+    });
+
+    it('should default to an empty array', () => {
+      expect(map.layerTypes).to.be.an('array').that.is.empty;
+    });
+
+    it('should call layerTypeChanged when setting layer types', () => {
+      const spy = getVcsEventSpy(map.layerTypesChanged, sandbox);
+      const layerTypes = ['type1', 'type2'];
+      map.layerTypes = layerTypes;
+      expect(spy).to.have.been.calledOnceWith(layerTypes);
+    });
+
+    it('should not call layerTypeChanged when setting the same layer types', () => {
+      const layerTypes = ['type1', 'type2'];
+      map.layerTypes = layerTypes;
+      const spy = getVcsEventSpy(map.layerTypesChanged, sandbox);
+      map.layerTypes = layerTypes;
+      expect(spy).to.not.have.been.called;
+    });
+
+    it('should not call layerTypeChanged when setting the same layer types, regardless of order', () => {
+      map.layerTypes = ['type1', 'type2'];
+      const spy = getVcsEventSpy(map.layerTypesChanged, sandbox);
+      map.layerTypes = ['type2', 'type1'];
+      expect(spy).to.not.have.been.called;
+    });
+  });
+
   describe('destroying a map', () => {
-    /** @type {import("@vcmap/core").VcsMap} */
-    let map;
-    let layer;
+    let map: VcsMap;
+    let layer: Layer;
 
     before(() => {
       layer = new Layer({});
@@ -453,8 +494,8 @@ describe('maps.VcmMap', () => {
     it('should remove the map from its parent', () => {
       const { mapElement } = map;
       map.destroy();
-      expect(document.getElementById('mapContainer').contains(mapElement)).to.be
-        .false;
+      expect(document.getElementById('mapContainer')?.contains(mapElement)).to
+        .be.false;
     });
 
     it('should no longer listen to events on the layer collection', () => {
@@ -489,6 +530,70 @@ describe('maps.VcmMap', () => {
       const destroy = sandbox.spy(map.layerCollection, 'destroy');
       map.destroy();
       expect(destroy).to.not.have.been.called;
+    });
+  });
+
+  describe('getting a config', () => {
+    describe('of a default object', () => {
+      let map: VcsMap;
+
+      before(() => {
+        map = new VcsMap({});
+      });
+
+      after(() => {
+        map.destroy();
+      });
+
+      it('should return a valid config object', () => {
+        const config = map.toJSON();
+        expect(config).to.have.all.keys('name', 'type');
+      });
+    });
+
+    describe('of a configured object', () => {
+      let map: VcsMap;
+      let inputConfig: VcsMapOptions;
+      let outputConfig: VcsMapOptions;
+
+      before(() => {
+        inputConfig = {
+          name: 'name',
+          layerTypes: ['type1', 'type2'],
+          fallbackToCurrentMap: true,
+          fallbackMap: 'mapId',
+        };
+        map = new VcsMap(inputConfig);
+        outputConfig = map.toJSON();
+      });
+
+      after(() => {
+        map.destroy();
+      });
+
+      it('should configure name', () => {
+        expect(outputConfig).to.have.property('name', inputConfig.name);
+      });
+
+      it('should configure layerTypes', () => {
+        expect(outputConfig)
+          .to.have.property('layerTypes')
+          .that.has.members(inputConfig.layerTypes!);
+      });
+
+      it('should configure fallbackToCurrentMap', () => {
+        expect(outputConfig).to.have.property(
+          'fallbackToCurrentMap',
+          inputConfig.fallbackToCurrentMap,
+        );
+      });
+
+      it('should configure fallbackMap', () => {
+        expect(outputConfig).to.have.property(
+          'fallbackMap',
+          inputConfig.fallbackMap,
+        );
+      });
     });
   });
 });

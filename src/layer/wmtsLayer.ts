@@ -106,7 +106,7 @@ class WMTSLayer extends RasterLayer<WmtsCesiumImpl | WmtsOpenlayersImpl> {
 
   constructor(options: WMTSOptions) {
     const defaultOptions = WMTSLayer.getDefaultOptions();
-    super({ tilingSchema: defaultOptions.tilingSchema, ...options });
+    super({ ...defaultOptions, ...options });
 
     this._supportedMaps = [OpenlayersMap.className, CesiumMap.className];
 
@@ -174,15 +174,8 @@ class WMTSLayer extends RasterLayer<WmtsCesiumImpl | WmtsOpenlayersImpl> {
     return [];
   }
 
-  toJSON(): WMTSOptions {
-    const config: Partial<WMTSOptions> = super.toJSON();
-    const defaultOptions = WMTSLayer.getDefaultOptions();
-
-    if (this.tilingSchema !== defaultOptions.tilingSchema) {
-      config.tilingSchema = this.tilingSchema;
-    } else {
-      delete config.tilingSchema;
-    }
+  toJSON(defaultOptions = WMTSLayer.getDefaultOptions()): WMTSOptions {
+    const config: Partial<WMTSOptions> = super.toJSON(defaultOptions);
 
     if (
       this.numberOfLevelZeroTilesX !== defaultOptions.numberOfLevelZeroTilesX

@@ -79,8 +79,8 @@ class COGLayer extends RasterLayer<COGOpenlayersImpl | COGCesiumImpl> {
   private _source: GeoTIFF | undefined;
 
   constructor(options: COGLayerOptions) {
-    super(options);
     const defaultOptions = COGLayer.getDefaultOptions();
+    super({ ...defaultOptions, ...options });
     this._sourceOptions = {
       convertToRGB: options.convertToRGB ?? defaultOptions.convertToRGB,
       normalize: options.normalize,
@@ -120,10 +120,10 @@ class COGLayer extends RasterLayer<COGOpenlayersImpl | COGCesiumImpl> {
     return [];
   }
 
-  toJSON(): COGLayerOptions {
-    const config: Partial<COGLayerOptions> & RasterLayerOptions =
-      super.toJSON();
-    const defaultOptions = COGLayer.getDefaultOptions();
+  toJSON(defaultOptions = COGLayer.getDefaultOptions()): COGLayerOptions {
+    const config: Partial<COGLayerOptions> & RasterLayerOptions = super.toJSON(
+      defaultOptions,
+    );
 
     delete config.tilingSchema;
     if (this._sourceOptions.convertToRGB !== defaultOptions.convertToRGB) {

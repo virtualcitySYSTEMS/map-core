@@ -44,7 +44,7 @@ class TMSLayer extends RasterLayer<TmsCesiumImpl | TmsOpenlayersImpl> {
 
   constructor(options: TMSOptions) {
     const defaultOptions = TMSLayer.getDefaultOptions();
-    super({ tilingSchema: defaultOptions.tilingSchema, ...options });
+    super({ ...defaultOptions, ...options });
 
     this._supportedMaps = [OpenlayersMap.className, CesiumMap.className];
 
@@ -75,15 +75,8 @@ class TMSLayer extends RasterLayer<TmsCesiumImpl | TmsOpenlayersImpl> {
     return [];
   }
 
-  toJSON(): TMSOptions {
-    const config: TMSOptions = super.toJSON();
-    const defaultOptions = TMSLayer.getDefaultOptions();
-
-    if (this.tilingSchema !== defaultOptions.tilingSchema) {
-      config.tilingSchema = this.tilingSchema;
-    } else {
-      delete config.tilingSchema;
-    }
+  toJSON(defaultOptions = TMSLayer.getDefaultOptions()): TMSOptions {
+    const config: TMSOptions = super.toJSON(defaultOptions);
 
     if (this.format !== defaultOptions.format) {
       config.format = this.format;

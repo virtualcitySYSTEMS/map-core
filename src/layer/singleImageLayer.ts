@@ -43,8 +43,8 @@ class SingleImageLayer extends RasterLayer<
   credit: string | undefined;
 
   constructor(options: SingleImageOptions) {
-    super(options);
     const defaultOptions = SingleImageLayer.getDefaultOptions();
+    super({ ...defaultOptions, ...options });
     this.credit = options.credit || defaultOptions.credit;
 
     if (!this.extent.isValid()) {
@@ -95,8 +95,10 @@ class SingleImageLayer extends RasterLayer<
     void this.forceRedraw();
   }
 
-  toJSON(): SingleImageOptions {
-    const config: SingleImageOptions = super.toJSON();
+  toJSON(
+    defaultOptions = SingleImageLayer.getDefaultOptions(),
+  ): SingleImageOptions {
+    const config: SingleImageOptions = super.toJSON(defaultOptions);
     delete config.tilingSchema;
 
     if (this.credit) {

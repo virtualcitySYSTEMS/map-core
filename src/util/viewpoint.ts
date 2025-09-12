@@ -182,9 +182,9 @@ class Viewpoint extends VcsObject {
    * @param  options
    */
   constructor(options: ViewpointOptions) {
-    super(options);
-
     const defaultOptions = Viewpoint.getDefaultOptions();
+    super({ ...defaultOptions, ...options });
+
     this.cameraPosition = null;
     if (
       Array.isArray(options.cameraPosition) &&

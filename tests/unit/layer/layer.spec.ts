@@ -1,4 +1,6 @@
-import Layer from '../../../src/layer/layer.js';
+import sinon from 'sinon';
+import { expect } from 'chai';
+import Layer, { type LayerOptions } from '../../../src/layer/layer.js';
 import VcsApp from '../../../src/vcsApp.js';
 import LayerState from '../../../src/layer/layerState.js';
 import LayerImplementation from '../../../src/layer/layerImplementation.js';
@@ -9,13 +11,13 @@ import {
 } from '../helpers/openlayersHelpers.js';
 import Extent from '../../../src/util/extent.js';
 import GlobalHider from '../../../src/layer/globalHider.js';
+import type OpenlayersMap from '../../../src/map/openlayersMap.js';
 
 describe('Layer', () => {
-  let sandbox;
-  let app;
-  /** @type {import("@vcmap/core").Layer} */
-  let AL;
-  let map;
+  let sandbox: sinon.SinonSandbox;
+  let app: VcsApp;
+  let AL: Layer;
+  let map: OpenlayersMap;
 
   before(async () => {
     sandbox = sinon.createSandbox();
@@ -26,6 +28,7 @@ describe('Layer', () => {
   beforeEach(() => {
     AL = new Layer({});
     AL.setGlobalHider(new GlobalHider());
+    // @ts-expect-error using private for testing
     AL._supportedMaps = [map.className];
     sandbox
       .stub(AL, 'createImplementationsForMap')
@@ -88,6 +91,7 @@ describe('Layer', () => {
     });
 
     it('should activate if deactivated in between', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       AL.activate();
       AL.deactivate();
       await AL.activate();
@@ -119,7 +123,7 @@ describe('Layer', () => {
       });
 
       it('should hide objects on the global hider', async () => {
-        const hideObjects = sandbox.spy(AL.globalHider, 'hideObjects');
+        const hideObjects = sandbox.spy(AL.globalHider!, 'hideObjects');
         await AL.activate();
         expect(hideObjects).to.have.been.calledWithExactly(AL.hiddenObjectIds);
       });
@@ -177,7 +181,7 @@ describe('Layer', () => {
       });
 
       it('should show hiddenObjectIds', () => {
-        const showObjects = sandbox.spy(AL.globalHider, 'showObjects');
+        const showObjects = sandbox.spy(AL.globalHider!, 'showObjects');
         AL.deactivate();
         expect(showObjects).to.have.been.calledWithExactly(AL.hiddenObjectIds);
       });
@@ -185,10 +189,12 @@ describe('Layer', () => {
   });
 
   describe('mapActivated', () => {
-    let impl;
+    let impl: LayerImplementation<OpenlayersMap>;
 
     beforeEach(() => {
-      [impl] = AL.getImplementationsForMap(map);
+      [impl] = AL.getImplementationsForMap(
+        map,
+      ) as LayerImplementation<OpenlayersMap>[];
     });
 
     it('should activate all implementations for the map, if active', async () => {
@@ -219,28 +225,30 @@ describe('Layer', () => {
   });
 
   describe('mapDeactivated', () => {
-    let impl;
+    let impl: LayerImplementation<OpenlayersMap>;
 
     beforeEach(async () => {
-      [impl] = AL.getImplementationsForMap(map);
+      [impl] = AL.getImplementationsForMap(
+        map,
+      ) as LayerImplementation<OpenlayersMap>[];
       await impl.activate();
     });
 
     it('should deactivate all implementations for the map, if active', async () => {
       await AL.activate();
-      await AL.mapDeactivated(map);
+      AL.mapDeactivated(map);
       expect(impl.active).to.be.false;
     });
 
     it('should deactivate all implementations for the map, if loading', async () => {
       const promise = AL.activate();
-      await AL.mapDeactivated(map);
+      AL.mapDeactivated(map);
       expect(impl.active).to.be.false;
       await promise;
     });
 
-    it('should not deactivate the impl, if inactive', async () => {
-      await AL.mapDeactivated(map);
+    it('should not deactivate the impl, if inactive', () => {
+      AL.mapDeactivated(map);
       expect(impl.active).to.be.true;
     });
 
@@ -248,17 +256,19 @@ describe('Layer', () => {
       const map2 = await getOpenlayersMap();
       const [impl2] = AL.getImplementationsForMap(map2);
       await impl2.activate();
-      await AL.mapDeactivated(map);
+      AL.mapDeactivated(map);
       expect(impl2.active).to.be.true;
       map2.destroy();
     });
   });
 
   describe('removedFromMap', () => {
-    let impl;
+    let impl: LayerImplementation<OpenlayersMap>;
 
     beforeEach(() => {
-      [impl] = AL.getImplementationsForMap(map);
+      [impl] = AL.getImplementationsForMap(
+        map,
+      ) as LayerImplementation<OpenlayersMap>[];
     });
 
     it('should remove the implementations', () => {
@@ -325,18 +335,20 @@ describe('Layer', () => {
       });
 
       describe('with implementations', () => {
-        let impl;
+        let impl: LayerImplementation<OpenlayersMap>;
 
         beforeEach(() => {
-          [impl] = AL.getImplementationsForMap(map);
+          [impl] = AL.getImplementationsForMap(
+            map,
+          ) as LayerImplementation<OpenlayersMap>[];
         });
 
-        it('should do nothing, if the url does not change', async () => {
+        it('should do nothing, if the url does not change', () => {
           AL.url = 'before';
           expect(AL.getImplementations()).to.have.members([impl]);
         });
 
-        it('should force a redraw if active', async () => {
+        it('should force a redraw if active', () => {
           const spy = sandbox.spy(AL, 'forceRedraw');
           AL.url = 'after';
           expect(spy).to.have.been.called;
@@ -354,9 +366,9 @@ describe('Layer', () => {
     });
 
     describe('of a configured layer', () => {
-      let inputConfig;
-      let outputConfig;
-      let configuredLayer;
+      let inputConfig: LayerOptions;
+      let outputConfig: LayerOptions;
+      let configuredLayer: Layer;
 
       before(() => {
         inputConfig = {
@@ -412,13 +424,13 @@ describe('Layer', () => {
       it('should set hiddenObjectIds', () => {
         expect(outputConfig)
           .to.have.property('hiddenObjectIds')
-          .and.to.have.members(inputConfig.hiddenObjectIds);
+          .and.to.have.members(inputConfig.hiddenObjectIds!);
       });
 
       it('should set mapNames', () => {
         expect(outputConfig)
           .to.have.property('mapNames')
-          .and.to.have.members(inputConfig.mapNames);
+          .and.to.have.members(inputConfig.mapNames!);
       });
 
       it('should set extent', () => {
@@ -450,10 +462,12 @@ describe('Layer', () => {
     });
 
     describe('with implementations', () => {
-      let impl;
+      let impl: LayerImplementation<OpenlayersMap>;
 
       beforeEach(() => {
-        [impl] = AL.getImplementationsForMap(map);
+        [impl] = AL.getImplementationsForMap(
+          map,
+        ) as LayerImplementation<OpenlayersMap>[];
       });
 
       it('should do nothing, if the language is not part of URL', async () => {
@@ -464,7 +478,9 @@ describe('Layer', () => {
 
       it('should do nothing, if the url is a string', async () => {
         AL.url = 'test';
-        [impl] = AL.getImplementationsForMap(map);
+        [impl] = AL.getImplementationsForMap(
+          map,
+        ) as LayerImplementation<OpenlayersMap>[];
         await AL.activate();
         AL.locale = 'en';
         expect(AL.getImplementations()).to.have.members([impl]);
@@ -482,21 +498,123 @@ describe('Layer', () => {
   describe('forcing implementation recreation', () => {
     it('should destroy the impl, if initialized', async () => {
       map.deactivate();
-      AL.forceRedraw();
+      await AL.forceRedraw();
       expect(AL.getImplementations()).to.be.empty;
       await map.activate();
     });
 
-    it('should not recreate impls for maps which are active, if the layer is inactive', () => {
-      AL.forceRedraw();
+    it('should not recreate impls for maps which are active, if the layer is inactive', async () => {
+      await AL.forceRedraw();
       expect(AL.getImplementations()).to.be.empty;
     });
 
     it('should activate newly created impls, if the layer is active', async () => {
       await AL.activate();
       await AL.mapActivated(map);
-      AL.forceRedraw();
+      const p = AL.forceRedraw();
       expect(AL.getImplementations()[0].loading).to.be.true;
+      await p;
+    });
+  });
+
+  describe('reacting to layer types changes', () => {
+    beforeEach(() => {
+      map.layerCollection.add(AL);
+    });
+
+    afterEach(() => {
+      map.layerTypes = [];
+      map.layerCollection.remove(AL);
+    });
+
+    it('should remove implementations for unsupported maps', async () => {
+      await AL.activate();
+      const [impl] = AL.getImplementationsForMap(
+        map,
+      ) as LayerImplementation<OpenlayersMap>[];
+      expect(impl).to.be.instanceOf(LayerImplementation);
+      map.layerTypes = ['NotLayerType'];
+      expect(AL.getImplementations()).to.be.empty;
+    });
+
+    it('should not remove implementations for supported maps', async () => {
+      await AL.activate();
+      const [impl] = AL.getImplementationsForMap(
+        map,
+      ) as LayerImplementation<OpenlayersMap>[];
+      expect(impl).to.be.instanceOf(LayerImplementation);
+      map.layerTypes = [Layer.className];
+      expect(AL.getImplementations()).to.have.members([impl]);
+    });
+
+    it('should create implementations for newly supported maps', async () => {
+      map.layerTypes = ['NotLayerType'];
+      await AL.activate();
+      expect(AL.getImplementations()).to.be.empty;
+      map.layerTypes = [Layer.className];
+      const impls =
+        AL.getImplementations() as LayerImplementation<OpenlayersMap>[];
+      expect(impls).to.have.lengthOf(1);
+    });
+
+    it('should remove. but not recreate impls, if the layer is inactive', async () => {
+      await AL.activate();
+      map.layerTypes = ['NotLayerType'];
+      expect(AL.getImplementations()).to.be.empty;
+      AL.deactivate();
+      map.layerTypes = [Layer.className];
+      expect(AL.getImplementations()).to.be.empty;
+    });
+
+    it('should remove, but not recreate impls, if the map is inactive', async () => {
+      await AL.activate();
+      map.layerTypes = ['NotLayerType'];
+      expect(AL.getImplementations()).to.be.empty;
+      map.deactivate();
+      map.layerTypes = [Layer.className];
+      expect(AL.getImplementations()).to.be.empty;
+      await map.activate();
+      const impls =
+        AL.getImplementations() as LayerImplementation<OpenlayersMap>[];
+      expect(impls).to.have.lengthOf(1);
+    });
+
+    it('should not remove an impl, if ignoring map layer types', async () => {
+      AL.ignoreMapLayerTypes = true;
+      await AL.activate();
+      map.layerTypes = ['NotLayerType'];
+      expect(AL.getImplementations()).to.have.lengthOf(1);
+    });
+  });
+
+  describe('mapNames', () => {
+    it('should emit mapNamesChanged', () => {
+      const spy = getVcsEventSpy(AL.mapNamesChanged, sandbox);
+      AL.mapNames = ['test'];
+      expect(spy).to.have.been.calledWith(['test']);
+    });
+
+    it('should not emit mapNamesChanged, if the names are the same', () => {
+      AL.mapNames = ['test'];
+      const spy = getVcsEventSpy(AL.mapNamesChanged, sandbox);
+      AL.mapNames = ['test'];
+      expect(spy).to.not.have.been.called;
+    });
+
+    it('should force redraw on change', () => {
+      const spy = sandbox.spy(AL, 'forceRedraw');
+      AL.mapNames = ['test'];
+      expect(spy).to.have.been.called;
+    });
+
+    it('should no longer be supported, if the map name does not match', () => {
+      AL.mapNames = ['notTheCurrentMap'];
+      expect(AL.isSupported(map)).to.be.false;
+    });
+
+    it('should be supported, if the map name matches', () => {
+      AL.mapNames = ['test', map.name];
+      expect(AL.isSupported(map)).to.be.true;
     });
   });
 });

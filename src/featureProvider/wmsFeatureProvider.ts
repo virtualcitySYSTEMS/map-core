@@ -214,8 +214,8 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
   projection: Projection | undefined;
 
   constructor(layerName: string, options: WMSFeatureProviderOptions) {
-    super(layerName, options);
     const defaultOptions = WMSFeatureProvider.getDefaultOptions();
+    super(layerName, { ...defaultOptions, ...options });
 
     if (options.extent) {
       if (options.extent instanceof Extent) {
@@ -342,9 +342,13 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
     return [];
   }
 
-  toJSON(): WMSFeatureProviderOptions {
-    const config: Partial<WMSFeatureProviderOptions> = super.toJSON();
-    const defaultOptions = WMSFeatureProvider.getDefaultOptions();
+  toJSON(
+    defaultOptions = WMSFeatureProvider.getDefaultOptions(),
+  ): WMSFeatureProviderOptions {
+    const config: Partial<WMSFeatureProviderOptions> = super.toJSON(
+      defaultOptions,
+    );
+
     if (this.featureInfoResponseType !== defaultOptions.responseType) {
       config.responseType = this.featureInfoResponseType;
     }

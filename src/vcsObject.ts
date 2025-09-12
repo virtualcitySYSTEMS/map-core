@@ -25,6 +25,14 @@ class VcsObject {
     return 'VcsObject';
   }
 
+  static getDefaultOptions(): VcsObjectOptions {
+    return {
+      type: undefined,
+      name: undefined,
+      properties: {},
+    };
+  }
+
   /**
    * unique Name
    */
@@ -50,7 +58,8 @@ class VcsObject {
     return getLogger(this.className);
   }
 
-  toJSON(): VcsObjectOptions {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  toJSON(_defaultOptions?: VcsObjectOptions): VcsObjectOptions {
     const config: VcsObjectOptions = {
       type: this.className,
       name: this.name,

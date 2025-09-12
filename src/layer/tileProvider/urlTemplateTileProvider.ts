@@ -74,7 +74,7 @@ class URLTemplateTileProvider extends TileProvider {
 
   constructor(options: URLTemplateTileProviderOptions) {
     const defaultOptions = URLTemplateTileProvider.getDefaultOptions();
-    super(options);
+    super({ ...defaultOptions, ...options });
     this.url = options.url || defaultOptions.url;
   }
 
@@ -110,8 +110,12 @@ class URLTemplateTileProvider extends TileProvider {
     return features;
   }
 
-  toJSON(): URLTemplateTileProviderOptions {
-    const config: Partial<URLTemplateTileProviderOptions> = super.toJSON();
+  toJSON(
+    defaultOptions = URLTemplateTileProvider.getDefaultOptions(),
+  ): URLTemplateTileProviderOptions {
+    const config: Partial<URLTemplateTileProviderOptions> = super.toJSON(
+      defaultOptions,
+    );
 
     if (this.url) {
       config.url = this.url;

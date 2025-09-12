@@ -186,6 +186,7 @@ class RasterLayer<
   static getDefaultOptions(): RasterLayerOptions {
     return {
       ...Layer.getDefaultOptions(),
+      url: '',
       minLevel: 0,
       maxLevel: 18,
       minRenderingLevel: undefined,
@@ -251,8 +252,8 @@ class RasterLayer<
    * @param  options
    */
   constructor(options: RasterLayerOptions) {
-    super({ url: '', ...options });
     const defaultOptions = RasterLayer.getDefaultOptions();
+    super({ ...defaultOptions, ...options });
     this.extent = options.extent ? new Extent(options.extent) : new Extent();
     this.tilingSchema = parseEnumValue(
       options.tilingSchema,
@@ -349,9 +350,8 @@ class RasterLayer<
     return options;
   }
 
-  toJSON(): RasterLayerOptions {
-    const config: RasterLayerOptions = super.toJSON();
-    const defaultOptions = RasterLayer.getDefaultOptions();
+  toJSON(defaultOptions = RasterLayer.getDefaultOptions()): RasterLayerOptions {
+    const config: RasterLayerOptions = super.toJSON(defaultOptions);
 
     if (this.extent?.equals(new Extent())) {
       delete config.extent;

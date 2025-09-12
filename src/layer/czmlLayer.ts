@@ -49,10 +49,10 @@ class CzmlLayer extends DataSourceLayer {
    * @param  options
    */
   constructor(options: CzmlOptions) {
-    super(options);
+    const defaultOptions = CzmlLayer.getDefaultOptions();
+    super({ ...defaultOptions, ...options });
     this.entities = this.dataSource.entities;
 
-    const defaultOptions = CzmlLayer.getDefaultOptions();
     this.sourceUri = options.sourceUri || defaultOptions.sourceUri;
   }
 
@@ -99,8 +99,8 @@ class CzmlLayer extends DataSourceLayer {
     await this.forceRedraw();
   }
 
-  toJSON(): CzmlOptions {
-    const config: CzmlOptions = super.toJSON();
+  toJSON(defaultOptions = CzmlLayer.getDefaultOptions()): CzmlOptions {
+    const config: CzmlOptions = super.toJSON(defaultOptions);
     if (this.sourceUri) {
       config.sourceUri = this.sourceUri;
     }

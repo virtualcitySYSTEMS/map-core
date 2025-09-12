@@ -13,7 +13,7 @@
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
-
+    "sourceMap": true,
     /* Additional Checks */
     "noImplicitReturns": false,
     "noFallthroughCasesInSwitch": false,
