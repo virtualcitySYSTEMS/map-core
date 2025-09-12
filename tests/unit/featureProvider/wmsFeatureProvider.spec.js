@@ -71,6 +71,64 @@ describe('WMSFeatureProvider', () => {
       scope.done();
       provider.destroy();
     });
+
+    describe('extent handling', () => {
+      let wmsFeatureProvider;
+
+      before(() => {
+        wmsFeatureProvider = new WMSFeatureProvider('testExtent', {
+          url: 'http://myWmsFeatureProvider/wms',
+          parameters: {},
+          responseType: 'text/html',
+          projection: mercatorProjection.toJSON(),
+          extent: new Extent({
+            coordinates: [-1, -1, 1, 1],
+            projection: mercatorProjection.toJSON(),
+          }),
+        });
+      });
+
+      it('should return features if coordinate is within the extent', async () => {
+        const insideFeatures = await wmsFeatureProvider.getFeaturesByCoordinate(
+          [0, 0],
+          1,
+        );
+        expect(insideFeatures).to.be.an('array').with.lengthOf(1);
+      });
+
+      it('should return an empty array if coordinate is outside the extent', async () => {
+        const outsideFeatures =
+          await wmsFeatureProvider.getFeaturesByCoordinate([10, 10], 1);
+        expect(outsideFeatures).to.be.an('array').that.is.empty;
+      });
+
+      after(() => {
+        wmsFeatureProvider.destroy();
+      });
+    });
+
+    describe('text/html no extent handling', () => {
+      let providerNoExtent;
+
+      before(() => {
+        providerNoExtent = new WMSFeatureProvider('testNoExtent', {
+          url: 'http://myWmsFeatureProvider/wms',
+          parameters: {},
+          responseType: 'text/html',
+          projection: mercatorProjection.toJSON(),
+          htmlPositionFeatureTitle: 'HTML Feature',
+        });
+      });
+
+      it('should return one feature when no extent is configured', async () => {
+        const feats = await providerNoExtent.getFeaturesByCoordinate([5, 5], 1);
+        expect(feats).to.be.an('array').with.lengthOf(1);
+      });
+
+      after(() => {
+        providerNoExtent.destroy();
+      });
+    });
   });
 
   describe('requestHeaders with getFeaturesByCoordinate', () => {

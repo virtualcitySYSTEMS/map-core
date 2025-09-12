@@ -13,6 +13,7 @@ import type { TileWMS } from 'ol/source.js';
 import type FeatureFormat from 'ol/format/Feature.js';
 import WMSGetFeatureInfo from 'ol/format/WMSGetFeatureInfo.js';
 import type { Options as WMSGetFeatureInfoOptions } from 'ol/format/WMSGetFeatureInfo.js';
+import { containsCoordinate } from 'ol/extent.js';
 import { parseInteger } from '@vcsuite/parsers';
 import { getLogger } from '@vcsuite/logger';
 import type { AbstractFeatureProviderOptions } from './abstractFeatureProvider.js';
@@ -76,6 +77,7 @@ export type WMSFeatureProviderOptions = AbstractFeatureProviderOptions & {
    * @default '1.1.1'
    */
   version?: string;
+  htmlPositionFeatureTitle?: string;
 };
 
 const gmlFormats = { GML: GML3, GML2, GML3, GML32 };
@@ -213,6 +215,8 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
    */
   projection: Projection | undefined;
 
+  htmlPositionFeatureTitle?: string;
+
   constructor(layerName: string, options: WMSFeatureProviderOptions) {
     super(layerName, options);
     const defaultOptions = WMSFeatureProvider.getDefaultOptions();
@@ -250,6 +254,7 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
     this.projection = options.projection
       ? new Projection(options.projection)
       : undefined;
+    this.htmlPositionFeatureTitle = options.htmlPositionFeatureTitle;
   }
 
   get wmsSource(): TileWMS {
@@ -273,7 +278,7 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
 
     try {
       if (this.featureInfoResponseType === 'text/html') {
-        features = [new Feature()];
+        features = [new Feature({ title: this.htmlPositionFeatureTitle })];
       } else {
         features = this.featureFormat!.readFeatures(data, {
           dataProjection: this.projection ? this.projection.proj : undefined,
@@ -305,12 +310,21 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
     resolution: number,
     headers?: Record<string, string>,
   ): Promise<Feature[]> {
+    if (
+      this.extent?.isValid() &&
+      !containsCoordinate(
+        this.extent.getCoordinatesInProjection(mercatorProjection),
+        coordinate,
+      )
+    ) {
+      return [];
+    }
+
     const projection = this.wmsSource.getProjection() as OLProjection;
     let coords = coordinate;
     if (projection) {
       const transform = getTransform(mercatorProjection.proj, projection);
-      // error in TransformFunction type definition, remove undefined after openlayer fixed the type
-      coords = transform(coordinate.slice(), undefined, undefined);
+      coords = transform(coordinate.slice());
     }
 
     const metersPerUnit = 111194.87428468118;
@@ -388,6 +402,9 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
     }
     if (this.extent) {
       config.extent = this.extent.toJSON();
+    }
+    if (this.htmlPositionFeatureTitle) {
+      config.htmlPositionFeatureTitle = this.htmlPositionFeatureTitle;
     }
 
     return config as WMSFeatureProviderOptions;
