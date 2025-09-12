@@ -26,14 +26,21 @@ import {
 } from '../helpers/cesiumHelpers.js';
 import VcsApp from '../../../src/vcsApp.js';
 import { allowPicking, vcsLayerName } from '../../../src/layer/layerSymbols.js';
-import type {
-  CesiumMap,
-  FeatureAtPixelInteraction,
-  InteractionEvent,
+import {
+  cartesianToMercator,
+  vectorClusterGroupName,
+  type CesiumMap,
+  type FeatureAtPixelInteraction,
+  type InteractionEvent,
+  type PanoramaImage,
+  type PanoramaMap,
 } from '../../../index.js';
-import { vectorClusterGroupName } from '../../../index.js';
 import { primitives } from '../../../src/layer/vectorSymbols.js';
 import { arrayCloseTo } from '../helpers/helpers.js';
+import {
+  getPanoramaImage,
+  getPanoramaMap,
+} from '../helpers/panoramaHelpers.js';
 
 describe('FeatureAtPixelInteraction', () => {
   let sandbox: SinonSandbox;
@@ -481,7 +488,7 @@ describe('FeatureAtPixelInteraction', () => {
           );
         });
 
-        it('should not pick underground features, if they aren too far away', async () => {
+        it('should not pick underground features, if they are too far away', async () => {
           const olFeature = new Feature({});
           const primitive = {};
           olFeature[primitives] = [primitive as Primitive];
@@ -512,6 +519,124 @@ describe('FeatureAtPixelInteraction', () => {
             Projection.wgs84ToMercator([12, 12, 0]),
           );
         });
+      });
+    });
+  });
+
+  describe('panorama', () => {
+    let panoramaMap: PanoramaMap;
+    let panoramaImage: PanoramaImage;
+    let destroyPanoramaImage: () => void;
+    let imagePosition10: Cartesian3;
+    let imagePosition20: Cartesian3;
+
+    before(async () => {
+      panoramaMap = getPanoramaMap();
+      ({ panoramaImage, destroy: destroyPanoramaImage } =
+        await getPanoramaImage());
+      app.maps.add(panoramaMap);
+      await app.maps.setActiveMap(panoramaMap.name);
+      panoramaMap.setCurrentImage(panoramaImage);
+      imagePosition10 = Cartesian3.add(
+        panoramaImage.position,
+        new Cartesian3(10, 0, 0),
+        new Cartesian3(),
+      );
+      imagePosition20 = Cartesian3.add(
+        panoramaImage.position,
+        new Cartesian3(20, 0, 0),
+        new Cartesian3(),
+      );
+    });
+
+    beforeEach(() => {
+      sceneStub = panoramaMap.getCesiumWidget().scene!;
+      sceneStub.pickTranslucentDepth = false;
+      pick = sandbox.stub(sceneStub, 'pick');
+
+      positionSpy = sandbox
+        .stub(sceneStub, 'pickPosition')
+        .returns(imagePosition10.clone());
+      fap = new FeatureAtPixel();
+    });
+
+    after(async () => {
+      await app.maps.setActiveMap(cesiumMap.name);
+      panoramaMap.setCurrentImage();
+      destroyPanoramaImage();
+    });
+
+    it('should set the picked position, if its closer to the camera then the existing position', async () => {
+      pick.returns({ primitive: { olFeature: true } });
+      const event = await fap.pipe({
+        pointer: PointerKeyType.LEFT,
+        pointerEvent: PointerEventType.UP,
+        windowPosition: new Cartesian2(0, 0),
+        map: panoramaMap,
+        type: EventType.CLICK,
+        key: ModificationKeyType.NONE,
+        position: cartesianToMercator(imagePosition20),
+      });
+
+      expect(event).to.have.property('position').and.to.be.an('array');
+      arrayCloseTo(event.position!, cartesianToMercator(imagePosition10));
+    });
+
+    it('should not set the picked position, if its farther away from the camera then the existing position', async () => {
+      pick.returns({ primitive: { olFeature: true } });
+      const event = await fap.pipe({
+        pointer: PointerKeyType.LEFT,
+        pointerEvent: PointerEventType.UP,
+        windowPosition: new Cartesian2(0, 0),
+        map: panoramaMap,
+        type: EventType.CLICK,
+        key: ModificationKeyType.NONE,
+        position: cartesianToMercator(panoramaImage.position),
+      });
+
+      expect(event).to.have.property('position').and.to.be.an('array');
+      arrayCloseTo(
+        event.position!,
+        cartesianToMercator(panoramaImage.position),
+      );
+    });
+
+    it('should pick the position, if there is no position yet', async () => {
+      pick.returns({ primitive: { olFeature: true } });
+      const event = await fap.pipe({
+        pointer: PointerKeyType.LEFT,
+        pointerEvent: PointerEventType.UP,
+        windowPosition: new Cartesian2(0, 0),
+        map: panoramaMap,
+        type: EventType.CLICK,
+        key: ModificationKeyType.NONE,
+      });
+
+      expect(event).to.have.property('position').and.to.be.an('array');
+      arrayCloseTo(event.position!, cartesianToMercator(imagePosition10));
+    });
+
+    describe('without an image', () => {
+      before(() => {
+        panoramaMap.setCurrentImage();
+      });
+
+      after(() => {
+        panoramaMap.setCurrentImage(panoramaImage);
+      });
+
+      it('should not pick a position', async () => {
+        pick.returns({ primitive: { olFeature: true } });
+        const event = await fap.pipe({
+          pointer: PointerKeyType.LEFT,
+          pointerEvent: PointerEventType.UP,
+          windowPosition: new Cartesian2(0, 0),
+          map: panoramaMap,
+          type: EventType.CLICK,
+          key: ModificationKeyType.NONE,
+        });
+
+        expect(event).to.not.have.property('position');
       });
     });
   });

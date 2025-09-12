@@ -27,7 +27,7 @@ async function getCoordinateFromPanoramaMap(
   event: InteractionEvent,
 ): Promise<InteractionEvent> {
   const image = map.currentPanoramaImage;
-  let position = [0, 0, 0];
+  let position;
   if (image) {
     const { camera } = map.getCesiumWidget();
     const imageCoordinate = windowPositionToImageSpherical(
@@ -35,8 +35,6 @@ async function getCoordinateFromPanoramaMap(
       camera,
       image.invModelMatrix,
     );
-
-    event.positionOrPixel = imageCoordinate;
 
     if (imageCoordinate) {
       const cartesian = await image.getPositionAtImageCoordinate(
@@ -50,6 +48,7 @@ async function getCoordinateFromPanoramaMap(
   }
 
   event.position = position;
+  event.positionOrPixel = position;
   return event;
 }
 
@@ -93,9 +92,7 @@ class CoordinateAtPixel extends AbstractInteraction {
       scene,
       this._scratchCartesian,
     );
-    if (!pickResult) {
-      event.position = [0, 0, 0];
-    } else {
+    if (pickResult) {
       this._scratchCartographic = Cartographic.fromCartesian(
         pickResult,
         scene.globe.ellipsoid,

@@ -1,7 +1,6 @@
 import Style, { type StyleFunction } from 'ol/style/Style.js';
 
 import { check, oneOf } from '@vcsuite/check';
-import { parseInteger } from '@vcsuite/parsers';
 import { SplitDirection } from '@vcmap-cesium/engine';
 import type {
   LayerImplementationOptions,
@@ -72,11 +71,6 @@ class FeatureLayer<
    */
   readonly styleChanged = new VcsEvent<StyleItem>();
 
-  /**
-   * a height offset for rendering of a balloon for a feature of this layer.
-   */
-  private _balloonHeightOffset = 10;
-
   private _splitDirection: SplitDirection = SplitDirection.NONE;
 
   /**
@@ -99,19 +93,6 @@ class FeatureLayer<
     this._style = this.getStyleOrDefaultStyle(options.style);
     this._defaultStyle = this._style;
 
-    const { balloonHeightOffset } =
-      (options as { balloonHeightOffset?: unknown }) || {};
-    if (balloonHeightOffset != null) {
-      this.getLogger().deprecate(
-        'balloonHeightOffset',
-        'balloonHeightOffset is deprecated and will be removed in future versions',
-      );
-      this._balloonHeightOffset = parseInteger(
-        balloonHeightOffset,
-        this._balloonHeightOffset,
-      );
-    }
-
     if (options.splitDirection) {
       this._splitDirection =
         options.splitDirection === 'left'
@@ -121,26 +102,6 @@ class FeatureLayer<
 
     this.featureVisibility =
       options.featureVisibility || new FeatureVisibility();
-  }
-
-  get balloonHeightOffset(): number {
-    this.getLogger().deprecate(
-      'balloonHeightOffset',
-      'balloonHeightOffset is deprecated and will be removed in future versions',
-    );
-    return this._balloonHeightOffset;
-  }
-
-  /**
-   * @deprecated v6.3
-   * @param value
-   */
-  set balloonHeightOffset(value: number) {
-    this.getLogger().deprecate(
-      'balloonHeightOffset',
-      'balloonHeightOffset is deprecated and will be removed in future versions',
-    );
-    this._balloonHeightOffset = value;
   }
 
   /**

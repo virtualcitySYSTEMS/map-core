@@ -26,11 +26,11 @@ import { allowPicking, vcsLayerName } from '../layer/layerSymbols.js';
 import { originalFeatureSymbol, primitives } from '../layer/vectorSymbols.js';
 import type OpenlayersMap from '../map/openlayersMap.js';
 import type ObliqueMap from '../map/obliqueMap.js';
-import type CesiumMap from '../map/cesiumMap.js';
 import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
-import { cartesianToMercator } from '../util/math.js';
+import { cartesian3DDistance, cartesianToMercator } from '../util/math.js';
 import type { PrimitiveType } from '../util/featureconverter/convert.js';
 import type PanoramaMap from '../map/panoramaMap.js';
+import type CesiumMap from '../map/cesiumMap.js';
 
 /**
  * This is the return from cesium scene.pick and scene.drillPick, which returns "any". We cast to this type.
@@ -301,14 +301,10 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
     }
 
     const { pickTranslucentDepth } = scene;
-    if (!(event.type & this.pickPosition)) {
-      return Promise.resolve(event);
-    }
-
     if (
+      !!(event.type & this.pickPosition) &&
       pickObject &&
-      scene.pickPositionSupported &&
-      event.map.className === 'CesiumMap'
+      scene.pickPositionSupported
     ) {
       if (this.pickTranslucent) {
         scene.pickTranslucentDepth = true;
@@ -334,30 +330,44 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
       );
 
       if (
-        !cartesianPosition ||
-        Cartesian3.equals(cartesianPosition, Cartesian3.ZERO)
+        cartesianPosition &&
+        !Cartesian3.equals(cartesianPosition, Cartesian3.ZERO)
       ) {
-        return Promise.resolve(event);
+        if (this.pullPickedPosition && event.ray) {
+          const pulledCartesian = Cartesian3.multiplyByScalar(
+            event.ray.direction,
+            this.pullPickedPosition,
+            new Cartesian3(),
+          );
+
+          Cartesian3.subtract(
+            cartesianPosition,
+            pulledCartesian,
+            cartesianPosition,
+          );
+        }
+
+        if (event.map.className === 'CesiumMap') {
+          event.position = cartesianToMercator(cartesianPosition);
+          event.positionOrPixel = event.position.slice();
+        } else {
+          const currentImage = (event.map as PanoramaMap).currentPanoramaImage;
+          if (currentImage) {
+            const imageCenter = cartesianToMercator(currentImage.position);
+            const newPosition = cartesianToMercator(cartesianPosition);
+            const newDistance = cartesian3DDistance(imageCenter, newPosition);
+            const currentDistance = event.position
+              ? cartesian3DDistance(imageCenter, event.position)
+              : undefined;
+
+            if (currentDistance == null || newDistance < currentDistance) {
+              event.position = newPosition;
+              event.positionOrPixel = event.position.slice();
+            }
+          }
+        }
       }
-
-      if (this.pullPickedPosition && event.ray) {
-        const pulledCartesian = Cartesian3.multiplyByScalar(
-          event.ray.direction,
-          this.pullPickedPosition,
-          new Cartesian3(),
-        );
-
-        Cartesian3.subtract(
-          cartesianPosition,
-          pulledCartesian,
-          cartesianPosition,
-        );
-      }
-
-      event.position = cartesianToMercator(cartesianPosition);
-      event.positionOrPixel = event.position.slice();
       scene.pickTranslucentDepth = pickTranslucentDepth;
-      return Promise.resolve(event);
     }
 
     return Promise.resolve(event);

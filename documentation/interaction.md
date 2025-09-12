@@ -3,6 +3,9 @@
 The interactions concept is an abstraction layer handling [pointer events](https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events) of the user interacting with the map and its content.
 The combination of mouse pointer keys, modification keys and event types is called `Interaction`.
 The [EventHandler](#event-handler) handles _ordered_ interactions within a chain and the `InteractionEvent` gets passed down from one event to the next in a specific order.
+Not all events are passed allong the interaction chain by the [EventHandler](#event-handler), if
+there is no geographical positon at the given event location, the [EnsurePositionInteraction](../src/interaction/ensurePositionInteraction.ts) will stop the event propagation
+(if, for some reason you would like to provide a custom position handling yourself, either add it _before_ the [EnsurePositionInteraction](../src/interaction/ensurePositionInteraction.ts)).
 
 ## Interaction types
 
@@ -68,6 +71,7 @@ Per default the event handler has base interactions already registered:
 
 - [CoordinateAtPixelInteraction](../src/interaction/coordinateAtPixel.ts) providing a click position
 - [FeatureAtPixelInteraction](../src/interaction/featureAtPixelInteraction.ts) providing a clicked feature
+- [EnsurePositionInteraction](../src/interaction/ensurePositionInteraction.ts) ensuring a position is always available, otherwise stopping event propagation.
 - [FeatureProviderInteraction](../src/interaction/featureProviderInteraction.ts) providing a clicked feature from a [FeatureProvider](../src/featureProvider/abstractFeatureProvider.ts).
 
 Those interactions are lined up at the beginning of the chain and will enrich the `InteractionEvent` by a position and a feature, if available.

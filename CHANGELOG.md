@@ -1,7 +1,17 @@
 ### 6.3.0
 
+#### Features
+
 - Adds the `layerTypes` concept to the `VcsMap`. This allows to restrict layer types to be supported on certain maps.
 - Made the `mapNames` concept reactive on `Layer`. Changing the mapNames of a layer will now add or remove the layer from maps automatically.
+- Added a `EnsurePositionInteraction` to the event handler. This will stop propagation on any events after
+  coordinate at pixel & feature interactions, which do not have a position set.
+
+#### Breaking Changes
+
+- Removed the `balloonHeightOffset` property from all `FeatureLayer`s.
+- The event handler will no longer emit events with a position of `[0, 0, 0]` if no position could be determined.
+  Instead, propagation is stopped on these events
 
 ### 6.2.2
 

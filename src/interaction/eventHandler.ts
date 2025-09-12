@@ -13,6 +13,7 @@ import {
   PointerEventType,
 } from './interactionType.js';
 import FeatureProviderInteraction from './featureProviderInteraction.js';
+import EnsurePositionInteraction from './ensurePositionInteraction.js';
 import VcsEvent from '../vcsEvent.js';
 
 type EventHandlerExclusiveInteraction = {
@@ -34,6 +35,8 @@ class EventHandler {
   private _positionInteraction: CoordinateAtPixel;
 
   private _featureInteraction: FeatureAtPixelInteraction;
+
+  private _ensurePositionInteraction: EnsurePositionInteraction;
 
   private _featureProviderInteraction: FeatureProviderInteraction;
 
@@ -72,10 +75,12 @@ class EventHandler {
   constructor() {
     this._positionInteraction = new CoordinateAtPixel();
     this._featureInteraction = new FeatureAtPixelInteraction();
+    this._ensurePositionInteraction = new EnsurePositionInteraction();
     this._featureProviderInteraction = new FeatureProviderInteraction();
     this._interactionChain = new InteractionChain([
       this._positionInteraction,
       this._featureInteraction,
+      this._ensurePositionInteraction,
       this._featureProviderInteraction,
     ]);
 
@@ -124,6 +129,10 @@ class EventHandler {
 
   get featureInteraction(): FeatureAtPixelInteraction {
     return this._featureInteraction;
+  }
+
+  get ensurePositionInteraction(): EnsurePositionInteraction {
+    return this._ensurePositionInteraction;
   }
 
   get featureProviderInteraction(): FeatureProviderInteraction {
@@ -255,7 +264,7 @@ class EventHandler {
    */
   addPersistentInteraction(
     interaction: AbstractInteraction,
-    index = 3,
+    index = 4,
   ): () => number {
     check(interaction, AbstractInteraction);
     check(index, Number);
@@ -440,6 +449,8 @@ class EventHandler {
     this._interactionChain.destroy();
     this._positionInteraction.destroy();
     this._featureInteraction.destroy();
+    this._ensurePositionInteraction.destroy();
+    this._featureProviderInteraction.destroy();
     this._eventQueue = [];
     window.removeEventListener('keydown', this._boundKeyListener);
     window.removeEventListener('keyup', this._boundKeyListener);
