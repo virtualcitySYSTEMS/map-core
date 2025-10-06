@@ -2,6 +2,7 @@
 
 - Updates `getFeaturesByCoordinate` in `wmsFeatureProvider` to consider the extent
 - adds `htmlPositionFeatureTitle` to `wmsFeatureProvider` which is added as to the point feature created if (responseType === 'text/html').
+- Fixes an issue with COG layers, where there would be stripes in 3D.
 
 ### 6.2.2
 
