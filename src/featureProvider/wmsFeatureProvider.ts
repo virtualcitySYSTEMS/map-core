@@ -155,6 +155,22 @@ export function getFormat(
   return null;
 }
 
+/**
+ * Calculates meters per degree at a given coordinate's latitude
+ * @param coordinate - Coordinate in geographic projection
+ * @returns Meters per degree at the coordinate's latitude
+ */
+function getMetersPerDegreeAtCoordinate(coordinate: Coordinate): number {
+  const latitude = coordinate[1];
+  const latitudeRadians = (latitude * Math.PI) / 180;
+
+  // Meters per degree longitude varies with latitude: cos(lat) * metersPerDegreeAtEquator
+  // Meters per degree latitude is approximately constant at ~111,320 m
+  // Using an average that accounts for longitude compression at latitude
+  const metersPerDegreeAtEquator = 111320;
+  return metersPerDegreeAtEquator * Math.cos(latitudeRadians);
+}
+
 class WMSFeatureProvider extends AbstractFeatureProvider {
   static get className(): string {
     return 'WMSFeatureProvider';
@@ -322,18 +338,19 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
 
     const projection = this.wmsSource.getProjection() as OLProjection;
     let coords = coordinate;
+    let res = resolution;
     if (projection) {
       const transform = getTransform(mercatorProjection.proj, projection);
       coords = transform(coordinate.slice());
     }
+    if (projection.getUnits() === 'degrees') {
+      const metersPerDegree = getMetersPerDegreeAtCoordinate(coords);
+      res = resolution / metersPerDegree;
+    }
 
-    const metersPerUnit = 111194.87428468118;
-    const url = this.wmsSource.getFeatureInfoUrl(
-      coords,
-      resolution / metersPerUnit,
-      projection,
-      { INFO_FORMAT: this.featureInfoResponseType },
-    );
+    const url = this.wmsSource.getFeatureInfoUrl(coords, res, projection, {
+      INFO_FORMAT: this.featureInfoResponseType,
+    });
 
     if (this.featureInfoResponseType === 'text/html') {
       return this.featureResponseCallback(null, coordinate).map((f) =>

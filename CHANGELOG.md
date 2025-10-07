@@ -1,6 +1,6 @@
 ### 6.2.3
 
-- Updates `getFeaturesByCoordinate` in `wmsFeatureProvider` to consider the extent
+- Updates `getFeaturesByCoordinate` in `wmsFeatureProvider` to consider the extent and to respect the `tilingSchema` in the bbox calculation
 - adds `htmlPositionFeatureTitle` to `wmsFeatureProvider` which is added as to the point feature created if (responseType === 'text/html').
 - Fixes an issue with COG layers, where there would be stripes in 3D.
 
