@@ -22,6 +22,9 @@ describe('COGLayer', () => {
           convertToRGB: false,
           normalize: true,
           interpolate: false,
+          sourceOptions: {
+            allowFullFile: true,
+          },
         };
         configuredLayer = new COGLayer(inputConfig);
         outputConfig = configuredLayer.toJSON();
@@ -45,6 +48,12 @@ describe('COGLayer', () => {
 
       it('should configure interpolate', () => {
         expect(outputConfig).to.have.property('interpolate', false);
+      });
+
+      it('should configure sourceOptions', () => {
+        expect(outputConfig)
+          .to.have.property('sourceOptions')
+          .and.deep.equals({ allowFullFile: true });
       });
     });
   });
