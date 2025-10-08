@@ -4,7 +4,7 @@ import type { EventAfterEventHandler } from '../../../interaction/abstractIntera
 import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import { EventType } from '../../../interaction/interactionType.js';
 import { handlerSymbol } from '../editorSymbols.js';
-import CesiumMap from '../../../map/cesiumMap.js';
+import BaseCesiumMap from '../../../map/baseCesiumMap.js';
 
 /**
  * This interaction ensure a potential handler is dragged in 3D when it is obscured by a transparent feature.
@@ -28,7 +28,7 @@ class EnsureHandlerSelectionInteraction extends AbstractInteraction {
       event.feature &&
       this._featureSelection.length > 0 &&
       !(event.feature as Feature)[handlerSymbol] &&
-      event.map instanceof CesiumMap
+      event.map instanceof BaseCesiumMap
     ) {
       const scene = event.map.getScene() as Scene;
       const drillPicks = scene.drillPick(

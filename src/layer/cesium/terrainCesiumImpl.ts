@@ -2,13 +2,13 @@ import type { CesiumTerrainProvider } from '@vcmap-cesium/engine';
 import LayerImplementation from '../layerImplementation.js';
 import { vcsLayerName } from '../layerSymbols.js';
 import { getTerrainProviderForUrl } from '../terrainHelpers.js';
-import type CesiumMap from '../../map/cesiumMap.js';
 import type { TerrainImplementationOptions } from '../terrainLayer.js';
+import type BaseCesiumMap from '../../map/baseCesiumMap.js';
 
 /**
  * TerrainLayer implementation for {@link CesiumMap}
  */
-class TerrainCesiumImpl extends LayerImplementation<CesiumMap> {
+class TerrainCesiumImpl extends LayerImplementation<BaseCesiumMap> {
   static get className(): string {
     return 'TerrainCesiumImpl';
   }
@@ -19,7 +19,7 @@ class TerrainCesiumImpl extends LayerImplementation<CesiumMap> {
 
   terrainProvider: CesiumTerrainProvider | undefined = undefined;
 
-  constructor(map: CesiumMap, options: TerrainImplementationOptions) {
+  constructor(map: BaseCesiumMap, options: TerrainImplementationOptions) {
     super(map, options);
 
     this.requestVertexNormals = options.requestVertexNormals;

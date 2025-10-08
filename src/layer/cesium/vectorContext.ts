@@ -31,7 +31,7 @@ import {
   scaleSymbol,
 } from '../vectorSymbols.js';
 import type PanoramaMap from '../../map/panoramaMap.js';
-import { getResolution } from '../../map/cesiumMapHelpers.js';
+import { getResolution } from '../../map/baseCesiumMap.js';
 
 export function setReferenceForPicking(
   feature: Feature,

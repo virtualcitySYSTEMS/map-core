@@ -456,7 +456,7 @@ function startEditGeometrySession(
     interactionChain,
     removed: interactionRemoved,
     destroy: destroyInteractionChain,
-  } = setupInteractionChain(app.maps.eventHandler, interactionId);
+  } = setupInteractionChain(app.maps, interactionId);
 
   const { layer: scratchLayer, destroy: destroyScratchLayer } =
     setupScratchLayer(app.layers, app.maps.eventHandler.featureInteraction);

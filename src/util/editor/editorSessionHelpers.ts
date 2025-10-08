@@ -10,10 +10,10 @@ import type LayerCollection from '../layerCollection.js';
 import { maxZIndex } from '../layerCollection.js';
 import { markVolatile } from '../../vcsModule.js';
 import { PrimitiveOptionsType } from '../../layer/vectorProperties.js';
-import type EventHandler from '../../interaction/eventHandler.js';
 import type VcsApp from '../../vcsApp.js';
 import type { InteractionEvent } from '../../interaction/abstractInteraction.js';
 import type FeatureAtPixelInteraction from '../../interaction/featureAtPixelInteraction.js';
+import type MapCollection from '../mapCollection.js';
 
 export const alreadySnapped = Symbol('alreadySnapped');
 
@@ -50,6 +50,7 @@ export function setupScratchLayer(
 ): { layer: VectorLayer; destroy: () => void } {
   // IDEA pass in stopped and cleanup ourselves?
   const layer = new VectorLayer({
+    ignoreMapLayerTypes: true,
     projection: mercatorProjection.toJSON(),
     vectorProperties: {
       altitudeMode: 'clampToGround',
@@ -110,18 +111,19 @@ export function setupScratchLayer(
  * Sets up the default interaction chain for the editors. This will set the provided event handlers
  * feature interaction to be active on CLICKMOVE & DRAGSTART. Destroying the setup will reset the interaction
  * to its previous active state.
- * @param  eventHandler
+ * @param  maps
  * @param  [interactionId]
  * @private
  */
 export function setupInteractionChain(
-  eventHandler: EventHandler,
+  maps: MapCollection,
   interactionId?: string,
 ): {
   interactionChain: InteractionChain;
   removed: VcsEvent<void>;
   destroy(this: void): void;
 } {
+  const { eventHandler, panoramaImageSelection } = maps;
   const interactionChain = new InteractionChain();
   const removed = new VcsEvent<void>();
   const listener = eventHandler.addExclusiveInteraction(
@@ -137,6 +139,9 @@ export function setupInteractionChain(
     EventType.CLICKMOVE | EventType.DRAGEVENTS,
   );
 
+  const currentPanoramaSelectionEvent = panoramaImageSelection.active;
+  panoramaImageSelection.setActive(false);
+
   return {
     interactionChain,
     destroy(): void {
@@ -144,6 +149,7 @@ export function setupInteractionChain(
       removed.destroy();
       interactionChain.destroy();
       eventHandler.featureInteraction.setActive(currentFeatureInteractionEvent);
+      panoramaImageSelection.setActive(currentPanoramaSelectionEvent);
     },
     removed,
   };

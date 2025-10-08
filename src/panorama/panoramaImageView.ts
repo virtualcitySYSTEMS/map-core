@@ -1,5 +1,15 @@
-import type { Camera, Primitive, Scene } from '@vcmap-cesium/engine';
-import { Cartesian2, Matrix4, Cartesian3 } from '@vcmap-cesium/engine';
+import type {
+  Camera,
+  PerspectiveFrustum,
+  Primitive,
+  Scene,
+} from '@vcmap-cesium/engine';
+import {
+  Cartesian2,
+  Matrix4,
+  Cartesian3,
+  Math as CesiumMath,
+} from '@vcmap-cesium/engine';
 import { getWidth } from 'ol/extent.js';
 import type { Size } from 'ol/size.js';
 import { getLogger } from '@vcsuite/logger';
@@ -26,6 +36,10 @@ export type PanoramaImageView = {
    * Suspends the loading of tiles. This is used as a debug feature.
    */
   suspendTileLoading: boolean;
+  /**
+   * The default field of view to set when a new image is loaded in radians.
+   */
+  defaultFov: number;
   /**
    * The primitive collection that contains the panorama tiles.
    */
@@ -369,8 +383,12 @@ function setupEmptyImageOverlay(container: HTMLElement): () => void {
  * to the panorama camera and updates the panorama tiles accordingly. Typically, you will not
  * have to create this directly, but rather use the PanoramaMap's imageView property.
  * @param map
+ * @param [initialFov=CesiumMath.PI_OVER_FOUR] The default field of view to set when a new image is loaded in radians
  */
-export function createPanoramaImageView(map: PanoramaMap): PanoramaImageView {
+export function createPanoramaImageView(
+  map: PanoramaMap,
+  initialFov = CesiumMath.PI_OVER_FOUR,
+): PanoramaImageView {
   const { scene } = map.getCesiumWidget();
   const primitiveCollection = scene.primitives.add(
     new PanoramaTilePrimitiveCollection({
@@ -382,6 +400,7 @@ export function createPanoramaImageView(map: PanoramaMap): PanoramaImageView {
   const defaultPosition = Cartesian3.fromDegrees(12, 53, 0);
 
   let currentView: ImageWrapper | undefined;
+  let defaultFov = initialFov;
   let removeOverlay: (() => void) | undefined;
   scene.camera.setView({
     destination: defaultPosition,
@@ -400,6 +419,7 @@ export function createPanoramaImageView(map: PanoramaMap): PanoramaImageView {
     if (image) {
       currentView = createImageWrapper(image, primitiveCollection, scene, map);
       currentView.suspendTileLoading = suspendTileLoading;
+      (scene.camera.frustum as PerspectiveFrustum).fov = defaultFov;
     } else {
       currentView = undefined;
       if (scene.canvas.parentElement) {
@@ -432,6 +452,12 @@ export function createPanoramaImageView(map: PanoramaMap): PanoramaImageView {
     },
     get tilePrimitiveCollection(): PanoramaTilePrimitiveCollection {
       return primitiveCollection;
+    },
+    get defaultFov(): number {
+      return defaultFov;
+    },
+    set defaultFov(value: number) {
+      defaultFov = value;
     },
     render,
     destroy(): void {

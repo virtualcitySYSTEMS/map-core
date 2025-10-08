@@ -34,7 +34,7 @@ export type PanoramaDatasetOptions = Omit<
 
 export type PanoramaDatasetFeatureProperties = {
   name: string;
-  time: string;
+  time: Date;
   dataset: PanoramaDatasetLayer;
 };
 
@@ -100,7 +100,7 @@ export default class PanoramaDatasetLayer extends VectorTileLayer<PanoramaDatase
         if (name && time) {
           feature[panoramaFeature] = {
             name,
-            time,
+            time: new Date(time),
             dataset: this,
           };
         }
@@ -172,10 +172,15 @@ export default class PanoramaDatasetLayer extends VectorTileLayer<PanoramaDatase
    * Creates a panorama image with the given name, if it belongs to this dataset.
    * Will cache the image for later use.
    * @param name
+   * @param [time] - optional time for the image.
    * @returns
    */
-  createPanoramaImage(name: string): Promise<PanoramaImage> {
-    return createPanoramaImageFromURL(`${this.baseUrl}/${name}_rgb.tif`, this);
+  createPanoramaImage(name: string, time?: Date): Promise<PanoramaImage> {
+    return createPanoramaImageFromURL(
+      `${this.baseUrl}/${name}_rgb.tif`,
+      this,
+      time,
+    );
   }
 
   override getZoomToExtent(): Extent | null {
@@ -196,7 +201,9 @@ export default class PanoramaDatasetLayer extends VectorTileLayer<PanoramaDatase
   async getClosestImage(
     coordinate: Coordinate,
     maxDistance = 200,
-  ): Promise<{ imageName: string; distanceSqrd: number } | undefined> {
+  ): Promise<
+    { imageName: string; distanceSqrd: number; time?: Date } | undefined
+  > {
     const extent = createOrUpdateFromCoordinate(coordinate);
     buffer(extent, maxDistance, extent);
     const features = await this.tileProvider.getFeaturesForExtent(
@@ -208,6 +215,7 @@ export default class PanoramaDatasetLayer extends VectorTileLayer<PanoramaDatase
     );
     let minDistanceSqrd = Infinity;
     let closestImageName: string | undefined;
+    let closestImageTime: Date | undefined;
     features.forEach((feature) => {
       const imagePosition = (feature.getGeometry() as Point).getCoordinates();
       const distanceSqrd = cartesian2DDistanceSquared(
@@ -218,12 +226,17 @@ export default class PanoramaDatasetLayer extends VectorTileLayer<PanoramaDatase
       if (distanceSqrd < minDistanceSqrd) {
         minDistanceSqrd = distanceSqrd;
         closestImageName = feature.get('name') as string;
+        const dateString = feature.get('time') as string | undefined;
+        if (dateString) {
+          closestImageTime = new Date(dateString);
+        }
       }
     });
 
     if (closestImageName) {
       return {
         imageName: closestImageName,
+        time: closestImageTime,
         distanceSqrd: minDistanceSqrd,
       };
     }

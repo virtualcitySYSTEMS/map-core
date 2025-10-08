@@ -19,6 +19,7 @@ import { vertexIndexSymbol } from '../editorSymbols.js';
 import { isVertex } from '../editorHelpers.js';
 import type { SnappingInteractionEvent } from '../editorSessionHelpers.js';
 import { alreadySnapped } from '../editorSessionHelpers.js';
+import PanoramaMap from '../../../map/panoramaMap.js';
 
 function getBearings(coordinates: Coordinate[], isPolygon: boolean): number[] {
   const length = isPolygon ? coordinates.length : coordinates.length - 1;
@@ -141,13 +142,14 @@ export default class TranslationSnapping extends AbstractInteraction {
       return Promise.resolve(event);
     }
 
+    const ctrlKey = event.key === ModificationKeyType.CTRL;
+    const useSnapping =
+      event.map.className === PanoramaMap.className ? ctrlKey : !ctrlKey;
+
     if (event.type === EventType.DRAGEND && this._lastCoordinate) {
       event.positionOrPixel = this._lastCoordinate;
       this._lastCoordinate = undefined;
-    } else if (
-      event.key !== ModificationKeyType.CTRL &&
-      isVertex(event.feature)
-    ) {
+    } else if (useSnapping && isVertex(event.feature)) {
       const index = event.feature[vertexIndexSymbol];
       if (event.type === EventType.DRAGSTART) {
         this._setCoordinates(index);

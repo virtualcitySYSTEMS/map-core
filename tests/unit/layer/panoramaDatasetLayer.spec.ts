@@ -78,12 +78,12 @@ describe('PanoramaDatasetLayer', () => {
       const features = [
         new Feature({
           name: 'test',
-          time: 1,
+          time: new Date(),
           geometry: new Point([0, 0]),
         }),
         new Feature({
           name: 'not.close',
-          time: 2,
+          time: new Date(),
           geometry: new Point([10, 10]),
         }),
       ];
@@ -112,7 +112,7 @@ describe('PanoramaDatasetLayer', () => {
           .to.have.property(panoramaFeature)
           .and.to.eql({
             name: feature.get('name') as string,
-            time: feature.get('time') as number,
+            time: feature.get('time') as Date,
             dataset,
           });
       });

@@ -1,20 +1,16 @@
 import type { Size } from 'ol/size.js';
 import { getLogger } from '@vcsuite/logger';
-import CesiumMap from '../map/cesiumMap.js';
 import OpenlayersMap from '../map/openlayersMap.js';
 import ObliqueMap from '../map/obliqueMap.js';
-import PanoramaMap from '../map/panoramaMap.js';
 import type VcsApp from '../vcsApp.js';
+import BaseCesiumMap from '../map/baseCesiumMap.js';
 /**
  * Prepares the cesium map for the screenshot
  * @param map - The cesium map
  * @param scale - The factor to scale the map according to the required resolution
  * @returns The function to reset the applied scale.
  */
-function prepareCesiumMap(
-  map: CesiumMap | PanoramaMap,
-  scale: number,
-): () => void {
+function prepareCesiumMap(map: BaseCesiumMap, scale: number): () => void {
   const viewer = map.getCesiumWidget()!;
   const { resolutionScale } = viewer;
   viewer.resolutionScale = scale;
@@ -64,7 +60,7 @@ function prepareOlMap(
  * @returns A promise that resolves to the canvas element.
  */
 async function getImageFromCesium(
-  map: CesiumMap | PanoramaMap,
+  map: BaseCesiumMap,
 ): Promise<HTMLCanvasElement> {
   const { scene } = map.getCesiumWidget()!;
 
@@ -167,7 +163,7 @@ export default async function renderScreenshot(
   let resetMap: () => void;
   const map = app.maps.activeMap;
 
-  if (map instanceof CesiumMap || map instanceof PanoramaMap) {
+  if (map instanceof BaseCesiumMap) {
     const { canvas } = map.getCesiumWidget()!.scene;
     const canvasWidth = canvas.width;
     const canvasHeight = canvas.height;

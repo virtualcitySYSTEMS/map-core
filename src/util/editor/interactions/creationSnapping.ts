@@ -19,6 +19,7 @@ import type VectorLayer from '../../../layer/vectorLayer.js';
 import { validityPlaceholder } from './createPolygonInteraction.js';
 import type { SnappingInteractionEvent } from '../editorSessionHelpers.js';
 import { alreadySnapped } from '../editorSessionHelpers.js';
+import PanoramaMap from '../../../map/panoramaMap.js';
 
 function getBearings(coordinates: Coordinate[]): number[] {
   // we dont want to take into account the last bearing, since that would be our own
@@ -143,9 +144,14 @@ export default class CreationSnapping extends AbstractInteraction {
         this._coordinatesDirty = true;
       });
     }
+
+    const ctrlKey = event.key === ModificationKeyType.CTRL;
+    const useSnapping =
+      event.map.className === PanoramaMap.className ? ctrlKey : !ctrlKey;
+
     if (
       !event[alreadySnapped] &&
-      event.key !== ModificationKeyType.CTRL &&
+      useSnapping &&
       this._coordinates.length >= 3
     ) {
       const results = new Array<SnapResult | undefined>(2);

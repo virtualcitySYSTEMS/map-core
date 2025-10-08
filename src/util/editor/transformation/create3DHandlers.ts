@@ -35,7 +35,7 @@ import {
 } from './transformationTypes.js';
 import Projection from '../../projection.js';
 import { mercatorToCartesian } from '../../math.js';
-import type CesiumMap from '../../../map/cesiumMap.js';
+import type BaseCesiumMap from '../../../map/baseCesiumMap.js';
 
 function setFeatureOnPrimitive(primitive: Primitive): void {
   if (primitive[handlerSymbol]) {
@@ -545,7 +545,7 @@ function createShowShadowPrimitive(
  * @param  mode
  */
 export default function create3DHandlers(
-  map: CesiumMap,
+  map: BaseCesiumMap,
   mode: TransformationMode,
 ): Handlers {
   const primitiveCollection = new PrimitiveCollection();

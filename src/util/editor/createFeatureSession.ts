@@ -126,7 +126,7 @@ function startCreateFeatureSession<T extends GeometryType>(
     interactionChain,
     removed: interactionRemoved,
     destroy: destroyInteractionChain,
-  } = setupInteractionChain(app.maps.eventHandler);
+  } = setupInteractionChain(app.maps);
   const { layer: scratchLayer, destroy: destroyScratchLayer } =
     setupScratchLayer(app.layers, app.maps.eventHandler.featureInteraction);
 

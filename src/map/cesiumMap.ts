@@ -1,38 +1,30 @@
 import {
-  JulianDate,
-  Clock,
-  DataSourceClock,
-  Color,
-  CesiumWidget,
-  ShadowMode,
-  DataSourceDisplay,
-  DataSourceCollection,
-  RequestScheduler,
-  ScreenSpaceEventHandler,
-  Cartesian3,
-  Math as CesiumMath,
-  Camera,
   BillboardVisualizer,
-  LabelVisualizer,
-  PointVisualizer,
-  CustomDataSource,
   BoundingSphere,
-  Intersect,
-  ImageryLayer,
-  PrimitiveCollection,
-  type Scene,
-  type ImageryLayerCollection,
-  type Cesium3DTileset,
-  type TerrainProvider,
-  type Event as CesiumEvent,
-  type CzmlDataSource,
+  Camera,
+  Cartesian3,
   type CesiumTerrainProvider,
-  type EntityCollection,
-  type EntityCluster,
-  type DataSource,
-  type Visualizer,
-  type ShadowMap,
+  CesiumWidget,
+  Clock,
+  Color,
   type ContextOptions,
+  CustomDataSource,
+  type DataSource,
+  DataSourceClock,
+  DataSourceCollection,
+  DataSourceDisplay,
+  type EntityCluster,
+  type EntityCollection,
+  type Event as CesiumEvent,
+  Intersect,
+  JulianDate,
+  LabelVisualizer,
+  Math as CesiumMath,
+  PointVisualizer,
+  type Scene,
+  type ShadowMap,
+  ShadowMode,
+  type Visualizer,
 } from '@vcmap-cesium/engine';
 import type { Coordinate } from 'ol/coordinate.js';
 import { check, maybe } from '@vcsuite/check';
@@ -46,102 +38,12 @@ import type { CameraLimiterOptions } from './cameraLimiter.js';
 import CameraLimiter from './cameraLimiter.js';
 import { mapClassRegistry } from '../classRegistry.js';
 import type LayerCollection from '../util/layerCollection.js';
-import type Layer from '../layer/layer.js';
 import VcsEvent from '../vcsEvent.js';
 import type { DisableMapControlOptions } from '../util/mapCollection.js';
 import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
-import {
-  getResolution,
-  getViewpointFromScene,
-  setupCesiumInteractions,
-} from './cesiumMapHelpers.js';
-
-export type CesiumMapOptions = VcsMapOptions & {
-  /**
-   * if true, lighting will be activated.
-   */
-  enableLightning?: boolean;
-  /**
-   * the tilecache size of cesium terrain and tile layer
-   */
-  tileCacheSize?: number;
-  /**
-   * activates webGL antialiasing (not every Browser respects this value)
-   */
-  webGLaa?: boolean;
-  cameraLimiter?: CameraLimiterOptions;
-  /**
-   * the color of the globe, if no image is provided
-   */
-  globeColor?: string;
-
-  /**
-   * use Original Cesium Shader, otherwise the VCS Customized Shader will be used.
-   * This is a global Setting for all VCMap Instances on the same page.
-   */
-  useOriginalCesiumShader?: boolean;
-
-  /**
-   * changes the default Cesium Sunlight Intensity (default is 3.0)
-   * Cesium Default is 2.0
-   */
-  lightIntensity?: number;
-
-  /**
-   * can be used to forward contextOptions to the CesiumWidget
-   * https://cesium.com/learn/cesiumjs/ref-doc/global.html#ContextOptions
-   */
-  contextOptions?: ContextOptions;
-};
-
-export type CesiumMapEvent = {
-  scene: Scene;
-  time: JulianDate;
-};
-
-/**
- * Ensures, a primitive/imageryLayer/entity is part of a collection and placed at the correct location
- * @param  cesiumCollection
- * @param  item
- * @param  layerCollection
- * @private
- */
-export function ensureInCollection<
-  T extends PrimitiveCollection | ImageryLayerCollection,
->(
-  cesiumCollection: T,
-  item: T extends PrimitiveCollection
-    ? PrimitiveCollection | Cesium3DTileset
-    : ImageryLayer,
-  layerCollection: LayerCollection,
-): void {
-  const targetIndex = layerCollection.indexOfKey(item[vcsLayerName]) as number;
-  if (targetIndex > -1) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    if (!cesiumCollection.contains(item)) {
-      const primitivesLength = cesiumCollection.length;
-      let index = primitivesLength;
-      for (let i = 0; i < primitivesLength; i++) {
-        const collectionItem = cesiumCollection.get(
-          i,
-        ) as T extends PrimitiveCollection
-          ? PrimitiveCollection | Cesium3DTileset
-          : ImageryLayer;
-        if (
-          (layerCollection.indexOfKey(collectionItem[vcsLayerName]) as number) >
-          targetIndex
-        ) {
-          index = i;
-          break;
-        }
-      }
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      cesiumCollection.add(item, index);
-    }
-  }
-}
+import BaseCesiumMap, {
+  type CesiumVisualisationType,
+} from './baseCesiumMap.js';
 
 /**
  * @param  dataSourceCollection
@@ -149,7 +51,7 @@ export function ensureInCollection<
  * @param  layerCollection
  * @private
  */
-export async function ensureInDataSourceCollection(
+async function ensureInDataSourceCollection(
   dataSourceCollection: DataSourceCollection,
   dataSource: CustomDataSource,
   layerCollection: LayerCollection,
@@ -200,45 +102,12 @@ export async function ensureInDataSourceCollection(
 }
 
 /**
- * @param  primitiveCollection
- * @param  item
- * @param  layerCollection
- * @private
- */
-export function indexChangedOnPrimitive(
-  primitiveCollection: PrimitiveCollection,
-  item: PrimitiveCollection,
-  layerCollection: LayerCollection,
-): void {
-  const { destroyPrimitives } = primitiveCollection;
-  primitiveCollection.destroyPrimitives = false;
-  primitiveCollection.remove(item);
-  ensureInCollection(primitiveCollection, item, layerCollection);
-  primitiveCollection.destroyPrimitives = destroyPrimitives;
-}
-
-/**
- * @param  imageryLayerCollection
- * @param  item
- * @param  layerCollection
- * @private
- */
-export function indexChangedOnImageryLayer(
-  imageryLayerCollection: ImageryLayerCollection,
-  item: ImageryLayer,
-  layerCollection: LayerCollection,
-): void {
-  imageryLayerCollection.remove(item, false);
-  ensureInCollection(imageryLayerCollection, item, layerCollection);
-}
-
-/**
  * @param  dataSourceCollection
  * @param  item
  * @param  layerCollection
  * @private
  */
-export function indexChangedOnDataSource(
+function indexChangedOnDataSource(
   dataSourceCollection: DataSourceCollection,
   item: CustomDataSource,
   layerCollection: LayerCollection,
@@ -250,6 +119,49 @@ export function indexChangedOnDataSource(
     layerCollection,
   );
 }
+
+export type CesiumMapOptions = VcsMapOptions & {
+  /**
+   * if true, lighting will be activated.
+   */
+  enableLightning?: boolean;
+  /**
+   * the tilecache size of cesium terrain and tile layer
+   */
+  tileCacheSize?: number;
+  /**
+   * activates webGL antialiasing (not every Browser respects this value)
+   */
+  webGLaa?: boolean;
+  cameraLimiter?: CameraLimiterOptions;
+  /**
+   * the color of the globe, if no image is provided
+   */
+  globeColor?: string;
+
+  /**
+   * use Original Cesium Shader, otherwise the VCS Customized Shader will be used.
+   * This is a global Setting for all VCMap Instances on the same page.
+   */
+  useOriginalCesiumShader?: boolean;
+
+  /**
+   * changes the default Cesium Sunlight Intensity (default is 3.0)
+   * Cesium Default is 2.0
+   */
+  lightIntensity?: number;
+
+  /**
+   * can be used to forward contextOptions to the CesiumWidget
+   * https://cesium.com/learn/cesiumjs/ref-doc/global.html#ContextOptions
+   */
+  contextOptions?: ContextOptions;
+};
+
+export type CesiumMapEvent = {
+  scene: Scene;
+  time: JulianDate;
+};
 
 /**
  * @param  source
@@ -280,18 +192,11 @@ export function synchronizeClock(
   );
 }
 
-export type CesiumVisualisationType =
-  | CustomDataSource
-  | CzmlDataSource
-  | PrimitiveCollection
-  | Cesium3DTileset
-  | ImageryLayer;
-
 /**
  * Cesium Globe Map Class (3D map)
  * @group Map
  */
-class CesiumMap extends VcsMap<CesiumVisualisationType> {
+class CesiumMap extends BaseCesiumMap {
   static get className(): string {
     return 'CesiumMap';
   }
@@ -309,8 +214,6 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
       contextOptions: undefined,
     };
   }
-
-  private _cesiumWidget: CesiumWidget | null = null;
 
   dataSourceDisplay: DataSourceDisplay | null = null;
 
@@ -334,10 +237,6 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
 
   tileCacheSize: number;
 
-  screenSpaceEventHandler: ScreenSpaceEventHandler | null = null;
-
-  private _screenSpaceListener: (() => void) | undefined;
-
   defaultJDate: JulianDate;
 
   /**
@@ -358,10 +257,6 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
 
   private _clusterDataSourceDisplay: DataSourceDisplay | undefined;
 
-  private _terrainProvider: TerrainProvider | null = null;
-
-  defaultTerrainProvider: TerrainProvider | null = null;
-
   useOriginalCesiumShader: boolean;
 
   private _cameraLimiter: CameraLimiter | null = null;
@@ -371,8 +266,6 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
   private _preUpdateListener: (() => void) | undefined;
 
   private _clockSyncListener: (() => void) | undefined;
-
-  private _listeners: (() => void)[] = [];
 
   private _lightIntensity: number;
 
@@ -454,10 +347,6 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
     return this._defaultShadowMap;
   }
 
-  get terrainProvider(): TerrainProvider | null {
-    return this._terrainProvider;
-  }
-
   /**
    * A camera limit to not allow the camera to get too close to the globe.
    */
@@ -506,6 +395,7 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
           'Cannot activate Original Cesium Shader, flag to use VCS Shader is already set by another Cesium Map or VCMap Instance',
         );
       }
+
       const contextOptions = {
         ...this._contextOptions,
         webgl: {
@@ -513,7 +403,8 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
           antialias: this.webGLaa,
         },
       };
-      this._cesiumWidget = new CesiumWidget(this.mapElement, {
+
+      const cesiumWidget = new CesiumWidget(this.mapElement, {
         requestRenderMode: false,
         scene3DOnly: true,
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -523,21 +414,20 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
         terrainShadows: ShadowMode.ENABLED,
         contextOptions,
       });
-      this._cesiumWidget.scene.globe.tileCacheSize = this.tileCacheSize;
-      this._cesiumWidget.scene.globe.baseColor = this.globeColor;
+
+      cesiumWidget.scene.globe.tileCacheSize = this.tileCacheSize;
+      cesiumWidget.scene.globe.baseColor = this.globeColor;
 
       this.dataSourceDisplay = new DataSourceDisplay({
-        scene: this._cesiumWidget.scene,
+        scene: cesiumWidget.scene,
         dataSourceCollection: new DataSourceCollection(),
       });
 
-      this._cesiumWidget.scene.frameState.creditDisplay.update = (): void => {};
-      this._cesiumWidget.scene.frameState.creditDisplay.beginFrame =
-        (): void => {};
-      this._cesiumWidget.scene.frameState.creditDisplay.endFrame =
-        (): void => {};
+      cesiumWidget.scene.frameState.creditDisplay.update = (): void => {};
+      cesiumWidget.scene.frameState.creditDisplay.beginFrame = (): void => {};
+      cesiumWidget.scene.frameState.creditDisplay.endFrame = (): void => {};
 
-      const { clock } = this._cesiumWidget;
+      const { clock } = cesiumWidget;
       clock.shouldAnimate = true;
       this._listeners.push(
         clock.onTick.addEventListener(() => {
@@ -547,21 +437,15 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
         }),
       );
 
-      // deactivate cesium Requestthrottling let the browser manage that
-      // RequestScheduler.throttleRequests = false;
-      RequestScheduler.maximumRequestsPerServer = 12;
+      cesiumWidget.scene.shadowMap.maximumDistance = 5000.0;
+      cesiumWidget.scene.shadowMap.darkness = 0.6;
+      cesiumWidget.scene.globe.depthTestAgainstTerrain = true;
+      cesiumWidget.scene.highDynamicRange = false;
+      // cesiumWidget.scene.logarithmicDepthBuffer = false; // TODO observe this
+      cesiumWidget.scene.splitPosition = this.splitPosition;
+      cesiumWidget.scene.light.intensity = this._lightIntensity;
 
-      this._cesiumWidget.scene.shadowMap.maximumDistance = 5000.0;
-      this._cesiumWidget.scene.shadowMap.darkness = 0.6;
-      this._cesiumWidget.scene.globe.depthTestAgainstTerrain = true;
-      this._cesiumWidget.scene.highDynamicRange = false;
-      // this._cesiumWidget.scene.logarithmicDepthBuffer = false; // TODO observe this
-      this._cesiumWidget.scene.splitPosition = this.splitPosition;
-      this._cesiumWidget.scene.light.intensity = this._lightIntensity;
-
-      this._cesiumWidget.scene.globe.enableLighting = this.enableLightning;
-
-      this.setDay(this.defaultJDate);
+      cesiumWidget.scene.globe.enableLighting = this.enableLightning;
 
       // hide default cesium credits container
       const creditsContainer = document.getElementsByClassName(
@@ -574,6 +458,9 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
         }
       }
 
+      this.initialized = true;
+      this._initializeCesiumWidget(cesiumWidget);
+
       if (this._cameraLimiterOptions && !this._cameraLimiter) {
         this._cameraLimiter = new CameraLimiter(this._cameraLimiterOptions);
       }
@@ -581,36 +468,8 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
       if (this._cameraLimiter) {
         this._setupPreUpdateListener();
       }
-      this.screenSpaceEventHandler = new ScreenSpaceEventHandler(
-        this._cesiumWidget.scene.canvas,
-      );
-      this._screenSpaceListener = setupCesiumInteractions(
-        this,
-        this._cesiumWidget.scene,
-        this.screenSpaceEventHandler,
-      );
-      this.initialized = true;
 
-      this.defaultTerrainProvider = this._cesiumWidget.scene.terrainProvider;
-      this._terrainProvider = this.defaultTerrainProvider;
-      this._listeners.push(
-        this._cesiumWidget.scene.terrainProviderChanged.addEventListener(
-          this._terrainProviderChanged.bind(this),
-        ),
-      );
-
-      this._listeners.push(
-        this._cesiumWidget.scene.postRender.addEventListener(
-          (eventScene: Scene, time: JulianDate) => {
-            this.postRender.raiseEvent({
-              map: this,
-              originalEvent: { scene: eventScene, time },
-            });
-          },
-        ),
-      );
-
-      this._defaultShadowMap = this._cesiumWidget.scene.shadowMap;
+      this._defaultShadowMap = cesiumWidget.scene.shadowMap;
 
       if (this._initialShadowMap) {
         this.setShadowMap(this._initialShadowMap);
@@ -618,21 +477,6 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
       }
     }
     return Promise.resolve();
-  }
-
-  async activate(): Promise<void> {
-    await super.activate();
-    if (this.active && this._cesiumWidget) {
-      this._cesiumWidget.useDefaultRenderLoop = true;
-      this._cesiumWidget.resize();
-    }
-  }
-
-  deactivate(): void {
-    super.deactivate();
-    if (this._cesiumWidget) {
-      this._cesiumWidget.useDefaultRenderLoop = false;
-    }
   }
 
   /**
@@ -654,17 +498,6 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
       );
     }
     return Promise.resolve(positions);
-  }
-
-  getViewpoint(): Promise<null | Viewpoint> {
-    return Promise.resolve(this.getViewpointSync());
-  }
-
-  getViewpointSync(): Viewpoint | null {
-    if (!this._cesiumWidget || !this._cesiumWidget.scene || !this.target) {
-      return null;
-    }
-    return getViewpointFromScene(this._cesiumWidget.scene);
   }
 
   async gotoViewpoint(
@@ -761,39 +594,6 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
         orientation: cameraOptions,
       });
     }
-  }
-
-  private _getCurrentResolutionFromCartesianLatitude(
-    cartesian: Cartesian3,
-    latitude?: number,
-  ): number {
-    if (!this._cesiumWidget) {
-      return 1;
-    }
-
-    return getResolution(
-      cartesian,
-      this._cesiumWidget.camera,
-      this.mapElement,
-      latitude,
-    );
-  }
-
-  getCurrentResolution(coordinate: Coordinate): number {
-    const wgs84Coordinate = Projection.mercatorToWgs84(coordinate);
-    const cartesian = Cartesian3.fromDegrees(
-      wgs84Coordinate[0],
-      wgs84Coordinate[1],
-      wgs84Coordinate[2],
-    );
-    return this._getCurrentResolutionFromCartesianLatitude(
-      cartesian,
-      CesiumMath.toRadians(wgs84Coordinate[1]),
-    );
-  }
-
-  getCurrentResolutionFromCartesian(cartesian: Cartesian3): number {
-    return this._getCurrentResolutionFromCartesianLatitude(cartesian);
   }
 
   disableMovement(prevent: boolean | DisableMapControlOptions): void {
@@ -903,13 +703,6 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
   }
 
   /**
-   * returns the cesium Widget Object
-   */
-  getCesiumWidget(): CesiumWidget | null {
-    return this._cesiumWidget;
-  }
-
-  /**
    * returns the Entities Collection
    */
   getEntities(): EntityCollection | undefined {
@@ -967,89 +760,18 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
     return dataSourceCollection;
   }
 
-  indexChanged(layer: Layer): void {
-    const viz = this.getVisualizationsForLayer(layer);
-    if (viz) {
-      viz.forEach((item) => {
-        if (item instanceof PrimitiveCollection) {
-          indexChangedOnPrimitive(
-            (this.getScene() as Scene).primitives,
-            item,
-            this.layerCollection,
-          );
-        } else if (item instanceof ImageryLayer) {
-          indexChangedOnImageryLayer(
-            (this.getScene() as Scene).imageryLayers,
-            item,
-            this.layerCollection,
-          );
-        } else if (item instanceof CustomDataSource) {
-          indexChangedOnDataSource(
-            (this.dataSourceDisplay as DataSourceDisplay).dataSources,
-            item,
-            this.layerCollection,
-          );
-        }
-      });
-    }
-  }
-
-  /**
-   * Internal API used to register visualizations from layer implementations
-   * @param  primitiveCollection
-   */
-  addPrimitiveCollection(
-    primitiveCollection: PrimitiveCollection | Cesium3DTileset,
+  protected override _indexChangedOnVisualization(
+    vis: CesiumVisualisationType,
   ): void {
-    if (!this._cesiumWidget) {
-      throw new Error('Cannot add primitive to uninitialized map');
-    }
-    if (this.validateVisualization(primitiveCollection)) {
-      this.addVisualization(primitiveCollection);
-      ensureInCollection(
-        this._cesiumWidget.scene.primitives,
-        primitiveCollection,
+    if (vis instanceof CustomDataSource) {
+      indexChangedOnDataSource(
+        (this.dataSourceDisplay as DataSourceDisplay).dataSources,
+        vis,
         this.layerCollection,
       );
+    } else {
+      super._indexChangedOnVisualization(vis);
     }
-  }
-
-  /**
-   * Internal API to unregister the visualization for a layers implementation
-   * @param  primitiveCollection
-   */
-  removePrimitiveCollection(
-    primitiveCollection: PrimitiveCollection | Cesium3DTileset,
-  ): void {
-    // XXX add destroy as boolean?
-    this.removeVisualization(primitiveCollection);
-    this.getScene()?.primitives.remove(primitiveCollection);
-  }
-
-  /**
-   * Internal API used to register visualizations from layer implementations
-   * @param  imageryLayer
-   */
-  addImageryLayer(imageryLayer: ImageryLayer): void {
-    if (!this._cesiumWidget) {
-      throw new Error('Cannot add primitive to uninitialized map');
-    }
-    if (this.validateVisualization(imageryLayer)) {
-      this.addVisualization(imageryLayer);
-      ensureInCollection(
-        this._cesiumWidget.scene.imageryLayers,
-        imageryLayer,
-        this.layerCollection,
-      );
-    }
-  }
-
-  /**
-   * Internal API used to unregister visualizations from layer implementations
-   */
-  removeImageryLayer(imageryLayer: ImageryLayer): void {
-    this.removeVisualization(imageryLayer);
-    this.getScene()?.imageryLayers.remove(imageryLayer);
   }
 
   /**
@@ -1110,38 +832,10 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
   }
 
   /**
-   * set the cesium TerrainProvider
-   */
-  setTerrainProvider(terrainProvider: TerrainProvider): void {
-    if (this.terrainProvider !== terrainProvider && this._cesiumWidget) {
-      this._cesiumWidget.scene.terrainProvider = terrainProvider;
-    }
-  }
-
-  /**
-   * unsets the TerrainProvider (changes to the default TerrainProvider if the given terranProvider is currently active)
-   */
-  unsetTerrainProvider(terrainProvider: TerrainProvider): void {
-    if (this.terrainProvider === terrainProvider) {
-      this._terrainProvider = this.defaultTerrainProvider;
-      if (this._cesiumWidget && this.defaultTerrainProvider) {
-        this._cesiumWidget.scene.terrainProvider = this.defaultTerrainProvider;
-      }
-    }
-  }
-
-  /**
    * returns the cesium DataSourceDisplay Object
    */
   getDataSourceDisplay(): DataSourceDisplay | null {
     return this.dataSourceDisplay;
-  }
-
-  /**
-   * returns the cesium Scene Object, returns null on non initialized or destroyed maps
-   */
-  getScene(): Scene | undefined {
-    return this._cesiumWidget?.scene;
   }
 
   pointIsVisible(coords: Coordinate): boolean {
@@ -1163,22 +857,6 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
       return true;
     }
     return false;
-  }
-
-  /**
-   * is called when the cesium Terrainprovider changes. Sets the .terrainProvider and deactivates currently
-   * active TerrainLayer layer if necessary
-   */
-  private _terrainProviderChanged(terrainProvider: TerrainProvider): void {
-    if (this.terrainProvider !== terrainProvider) {
-      const layer = this.layerCollection.getByKey(
-        this?.terrainProvider?.[vcsLayerName],
-      );
-      this._terrainProvider = terrainProvider;
-      if (layer) {
-        layer.deactivate();
-      }
-    }
   }
 
   /**
@@ -1247,18 +925,6 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
     if (this.dataSourceDisplay && !this.dataSourceDisplay.isDestroyed()) {
       this.dataSourceDisplay.destroy();
     }
-    this._screenSpaceListener?.();
-    if (this.screenSpaceEventHandler) {
-      this.screenSpaceEventHandler.destroy();
-      this.screenSpaceEventHandler = null;
-    }
-    this._listeners.forEach((cb) => {
-      cb();
-    });
-    this._listeners = [];
-
-    this._terrainProvider = null;
-    this.defaultTerrainProvider = null;
 
     if (this._clockSyncListener) {
       this._clockSyncListener();
@@ -1274,16 +940,8 @@ class CesiumMap extends VcsMap<CesiumVisualisationType> {
       this._cameraLimiter = null;
     }
 
-    [...this.layerCollection].forEach((l) => {
-      l.removedFromMap(this);
-    });
-
     if (this._clusterDataSourceDisplay) {
       this._clusterDataSourceDisplay.destroy();
-    }
-    if (this._cesiumWidget) {
-      this._cesiumWidget.destroy();
-      this._cesiumWidget = null;
     }
 
     this._initialShadowMap = undefined;

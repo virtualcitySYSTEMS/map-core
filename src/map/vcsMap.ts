@@ -14,13 +14,14 @@ import MapState from './mapState.js';
 import { vcsLayerName } from '../layer/layerSymbols.js';
 import VcsEvent from '../vcsEvent.js';
 import { mapClassRegistry } from '../classRegistry.js';
-import type { CesiumMapEvent, CesiumVisualisationType } from './cesiumMap.js';
+import type { CesiumMapEvent } from './cesiumMap.js';
 import type Viewpoint from '../util/viewpoint.js';
 import type Layer from '../layer/layer.js';
 import type { MapEvent } from '../interaction/abstractInteraction.js';
 import type { DisableMapControlOptions } from '../util/mapCollection.js';
 import type VectorClusterGroup from '../vectorCluster/vectorClusterGroup.js';
 import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
+import type { CesiumVisualisationType } from './baseCesiumMap.js';
 
 function getLogger(): Logger {
   return getLoggerByName('vcMap');
@@ -639,7 +640,7 @@ class VcsMap<
       config.fallbackToCurrentMap = this.fallbackToCurrentMap;
     }
 
-    if (this._layerTypes.length > 0) {
+    if (this._layerTypes.some((l) => !defaultOptions.layerTypes?.includes(l))) {
       config.layerTypes = this._layerTypes.slice();
     }
 

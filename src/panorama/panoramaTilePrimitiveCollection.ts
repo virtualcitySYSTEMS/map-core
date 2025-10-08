@@ -28,6 +28,10 @@ export default class PanoramaTilePrimitiveCollection extends PrimitiveCollection
 
   private _cursorColor: Color = Color.fromCssColorString(defaultCursorColor);
 
+  private _contrast = 1.0;
+
+  private _brightness = 0.0;
+
   overlayChanged = new VcsEvent<PanoramaOverlayMode>();
 
   constructor(options?: ConstructorParameters<typeof PrimitiveCollection>[0]) {
@@ -104,6 +108,34 @@ export default class PanoramaTilePrimitiveCollection extends PrimitiveCollection
     }
   }
 
+  get contrast(): number {
+    return this._contrast;
+  }
+
+  set contrast(value: number) {
+    if (this._contrast !== value) {
+      this._contrast = value;
+      this._primitives.forEach((primitive) => {
+        (primitive.appearance.material as PanoramaTileMaterial).contrast =
+          value;
+      });
+    }
+  }
+
+  get brightness(): number {
+    return this._brightness;
+  }
+
+  set brightness(value: number) {
+    if (this._brightness !== value) {
+      this._brightness = value;
+      this._primitives.forEach((primitive) => {
+        (primitive.appearance.material as PanoramaTileMaterial).brightness =
+          value;
+      });
+    }
+  }
+
   get cursorPosition(): Cartesian3 {
     return this._cursorPosition;
   }
@@ -152,6 +184,8 @@ export default class PanoramaTilePrimitiveCollection extends PrimitiveCollection
     material.opacity = this.opacity;
     material.cursorPosition = this.cursorPosition;
     material.cursorColor = this.cursorColor;
+    material.brightness = this.brightness;
+    material.contrast = this.contrast;
 
     return super.add(primitive, index) as Primitive;
   }

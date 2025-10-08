@@ -13,8 +13,10 @@ export default class PanoramaImageSelection extends AbstractInteraction {
 
   override async pipe(event: InteractionEvent): Promise<InteractionEvent> {
     if (event.feature && (event.feature as Feature)[panoramaFeature]) {
-      const { dataset, name } = (event.feature as Feature)[panoramaFeature]!;
-      const panoramaImage = await dataset.createPanoramaImage(name);
+      const { dataset, name, time } = (event.feature as Feature)[
+        panoramaFeature
+      ]!;
+      const panoramaImage = await dataset.createPanoramaImage(name, time);
       event.stopPropagation = true;
 
       if (event.map instanceof PanoramaMap) {

@@ -140,7 +140,7 @@ describe('panoramaCameraController', () => {
 
       map.pointerInteractionEvent.raiseEvent({
         map,
-        windowPosition: new Cartesian2(50, 25),
+        windowPosition: new Cartesian2(50, 12),
         key: ModificationKeyType.NONE,
         pointer: PointerKeyType.LEFT,
         pointerEvent: PointerEventType.DOWN,
@@ -169,7 +169,7 @@ describe('panoramaCameraController', () => {
 
       map.pointerInteractionEvent.raiseEvent({
         map,
-        windowPosition: new Cartesian2(50, 25),
+        windowPosition: new Cartesian2(50, 30),
         key: ModificationKeyType.NONE,
         pointer: PointerKeyType.LEFT,
         multipleTouch: false,
@@ -177,7 +177,7 @@ describe('panoramaCameraController', () => {
       });
       map.pointerInteractionEvent.raiseEvent({
         map,
-        windowPosition: new Cartesian2(50, 50),
+        windowPosition: new Cartesian2(50, 22),
         key: ModificationKeyType.NONE,
         pointer: PointerKeyType.ALL,
         multipleTouch: false,

@@ -8,7 +8,6 @@ import {
 } from 'ol/extent.js';
 import { HeightReference } from '@vcmap-cesium/engine';
 import Extent3D from '../../featureconverter/extent3D.js';
-import CesiumMap from '../../../map/cesiumMap.js';
 import BaseOLMap from '../../../map/baseOLMap.js';
 import create3DHandlers from './create3DHandlers.js';
 import create2DHandlers from './create2DHandlers.js';
@@ -28,6 +27,7 @@ import {
 } from '../../featureconverter/vectorHeightInfo.js';
 import { mercatorToCartographic } from '../../math.js';
 import { is2DLayout } from '../../geometryHelpers.js';
+import BaseCesiumMap from '../../../map/baseCesiumMap.js';
 
 type FeatureCenterInfo = {
   center: Coordinate;
@@ -126,7 +126,7 @@ export default function createTransformationHandler(
   let handlerFeatures: Handlers;
   let center: Coordinate = [0, 0, 0];
   let getCenterFromFeatures: (features: Feature[]) => FeatureCenterInfo;
-  let cesiumMap: CesiumMap | null = null;
+  let cesiumMap: BaseCesiumMap | null = null;
 
   const setFeatures = (features: Feature[]): void => {
     const show = features.length > 0;
@@ -168,13 +168,15 @@ export default function createTransformationHandler(
     }
   };
 
-  if (map instanceof CesiumMap) {
+  if (map instanceof BaseCesiumMap) {
     handlerFeatures = create3DHandlers(map, mode);
     getCenterFromFeatures = getCenterFromFeatures3D.bind(null, layer, mode);
     cesiumMap = map;
   } else if (map instanceof BaseOLMap) {
     handlerFeatures = create2DHandlers(map, scratchLayer, mode);
     getCenterFromFeatures = getCenterFromFeatures2D;
+  } else {
+    throw new Error('unsupported map type for transformation handler');
   }
 
   return {

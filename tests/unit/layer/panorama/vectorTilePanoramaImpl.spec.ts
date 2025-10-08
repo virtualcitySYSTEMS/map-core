@@ -33,6 +33,7 @@ describe('VectorTilePanoramaImpl', () => {
 
   before(async () => {
     map = getPanoramaMap();
+    map.layerTypes = [...map.layerTypes, VectorTileLayer.className];
     await map.activate();
     const { panoramaImage, destroy } = await getPanoramaImage();
     image = panoramaImage;

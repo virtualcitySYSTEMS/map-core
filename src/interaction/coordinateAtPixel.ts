@@ -27,6 +27,7 @@ async function getCoordinateFromPanoramaMap(
   event: InteractionEvent,
 ): Promise<InteractionEvent> {
   const image = map.currentPanoramaImage;
+  event.ray = map.getCesiumWidget().camera.getPickRay(event.windowPosition);
   let position;
   if (image) {
     const { camera } = map.getCesiumWidget();

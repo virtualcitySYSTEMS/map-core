@@ -16,6 +16,7 @@ import {
   setSnappingFeatures,
   getGeometrySnapResult,
 } from '../snappingHelpers.js';
+import PanoramaMap from '../../../map/panoramaMap.js';
 
 export default class LayerSnapping extends AbstractInteraction {
   private _removeFeatures: (() => void) | undefined;
@@ -59,7 +60,12 @@ export default class LayerSnapping extends AbstractInteraction {
 
   pipe(event: SnappingInteractionEvent): Promise<SnappingInteractionEvent> {
     this._removeFeatures?.();
-    if (event.key !== ModificationKeyType.CTRL) {
+
+    const ctrlKey = event.key === ModificationKeyType.CTRL;
+    const useSnapping =
+      event.map.className === PanoramaMap.className ? ctrlKey : !ctrlKey;
+
+    if (useSnapping) {
       const coordinate = event.positionOrPixel!;
       const bufferDistance = event.map.getCurrentResolution(coordinate) * 12;
       const maxDistanceSquared = bufferDistance ** 2;

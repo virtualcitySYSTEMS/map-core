@@ -375,18 +375,16 @@ export type {
 export { default as PanoramaDatasetLayer } from './src/layer/panoramaDatasetLayer.js';
 export { default as VectorTilePanoramaImpl } from './src/layer/panorama/vectorTilePanoramaImpl.js';
 export { default as PanoramaDatasetPanoramaImpl } from './src/layer/panorama/panoramaDatasetPanoramaImpl.js';
+export { default as VectorPanoramaImpl } from './src/layer/panorama/vectorPanoramaImpl.js';
 export { default as BaseOLMap } from './src/map/baseOLMap.js';
 export type { CameraLimiterOptions } from './src/map/cameraLimiter.js';
 export {
   CameraLimiterMode,
   default as CameraLimiter,
 } from './src/map/cameraLimiter.js';
-export type {
-  CesiumMapOptions,
-  CesiumMapEvent,
-  CesiumVisualisationType,
-} from './src/map/cesiumMap.js';
+export type { CesiumMapOptions, CesiumMapEvent } from './src/map/cesiumMap.js';
 export { default as CesiumMap } from './src/map/cesiumMap.js';
+export { default as BaseCesiumMap } from './src/map/baseCesiumMap.js';
 export { default as MapState } from './src/map/mapState.js';
 export type { ObliqueOptions } from './src/map/obliqueMap.js';
 export {

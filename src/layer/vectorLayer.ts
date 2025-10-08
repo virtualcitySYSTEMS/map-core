@@ -45,6 +45,8 @@ import type { GeoJSONwriteOptions } from './geojsonHelpers.js';
 import { vcsLayerName } from './layerSymbols.js';
 import type CesiumTilesetCesiumImpl from './cesium/cesiumTilesetCesiumImpl.js';
 import VcsEvent from '../vcsEvent.js';
+import PanoramaMap from '../map/panoramaMap.js';
+import VectorPanoramaImpl from './panorama/vectorPanoramaImpl.js';
 
 export type VectorOptions = FeatureLayerOptions & {
   /**
@@ -86,6 +88,7 @@ class VectorLayer
     | VectorOpenlayersImpl
     | VectorCesiumImpl
     | CesiumTilesetCesiumImpl
+    | VectorPanoramaImpl
   >
   implements SplitLayer
 {
@@ -112,6 +115,7 @@ class VectorLayer
     CesiumMap.className,
     ObliqueMap.className,
     OpenlayersMap.className,
+    PanoramaMap.className,
   ];
 
   source: VectorSource = new VectorSource({});
@@ -296,6 +300,7 @@ class VectorLayer
     | VectorOpenlayersImpl
     | VectorCesiumImpl
     | CesiumTilesetCesiumImpl
+    | VectorPanoramaImpl
   )[] {
     if (!this.visibility || !!this.vectorClusterGroup) {
       return [];
@@ -311,6 +316,10 @@ class VectorLayer
 
     if (map instanceof ObliqueMap) {
       return [new VectorObliqueImpl(map, this.getImplementationOptions())];
+    }
+
+    if (map instanceof PanoramaMap) {
+      return [new VectorPanoramaImpl(map, this.getImplementationOptions())];
     }
 
     return [];

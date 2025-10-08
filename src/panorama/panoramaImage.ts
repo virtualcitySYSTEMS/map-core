@@ -68,6 +68,10 @@ export type PanoramaImage = Readonly<
    * The image name
    */
   readonly name: string;
+  /**
+   * The image time, if known
+   */
+  readonly time?: Date;
   readonly up: Cartesian3;
   readonly modelMatrix: Matrix4;
   readonly invModelMatrix: Matrix4;
@@ -122,6 +126,10 @@ export type CreatePanoramaImageOptions = {
    * The dataset an image may belong to
    */
   dataset?: PanoramaDatasetLayer;
+  /**
+   * The time of the image, if known
+   */
+  time?: Date;
   /**
    * The root URL for the image. This is used to load the intensity and depth images.
    */
@@ -333,9 +341,10 @@ export async function createPanoramaImage(
     hasIntensity,
     hasDepth,
   } = await loadRGBImages(rgbImage);
-  const { name, absoluteRootUrl, intensityImage, depthImage, dataset } =
+  const { name, absoluteRootUrl, intensityImage, depthImage, dataset, time } =
     options;
 
+  const imageTime = time ? new Date(time) : undefined;
   const nameOrId = name ?? uuid();
   const modelMatrix = Transforms.headingPitchRollToFixedFrame(
     position,
@@ -449,7 +458,7 @@ export async function createPanoramaImage(
           imageCoordinate,
         )
       : await tileProvider.getDepthAtImageCoordinate(imageCoordinate);
-    if (depthValue === undefined) {
+    if (depthValue === undefined || depthValue === 0) {
       return undefined;
     }
     const cartesian = imageSphericalToCartesian(imageCoordinate, result);
@@ -462,6 +471,9 @@ export async function createPanoramaImage(
   return {
     get name(): string {
       return nameOrId;
+    },
+    get time(): Date | undefined {
+      return imageTime;
     },
     get position(): Cartesian3 {
       return position;
@@ -534,12 +546,14 @@ export async function createPanoramaImage(
  * Creates a panorama image from a URL. The URL must point to a RGB image with the name ending in "_rgb.tif".
  * @param rgbImageUrl - the url to the RGB image
  * @param [dataset] - the dataset to which the image belongs, if applicable
+ * @param [time] - the time of the image, if known
  */
 export async function createPanoramaImageFromURL(
   rgbImageUrl: string,
   dataset?: PanoramaDatasetLayer,
+  time?: Date,
 ): Promise<PanoramaImage> {
   const { name, absoluteRootUrl } = parseRgbUrl(rgbImageUrl);
   const image = await fromUrl(absoluteRootUrl);
-  return createPanoramaImage(image, { dataset, absoluteRootUrl, name });
+  return createPanoramaImage(image, { dataset, absoluteRootUrl, name, time });
 }

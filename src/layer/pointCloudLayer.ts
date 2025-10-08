@@ -8,11 +8,8 @@ import type DeclarativeStyleItem from '../style/declarativeStyleItem.js';
 import { defaultDeclarativeStyle } from '../style/declarativeStyleItem.js';
 import type { VectorStyleItemOptions } from '../style/vectorStyleItem.js';
 import VectorStyleItem from '../style/vectorStyleItem.js';
-import CesiumMap from '../map/cesiumMap.js';
-import CesiumTilesetCesiumImpl from './cesium/cesiumTilesetCesiumImpl.js';
 import { layerClassRegistry } from '../classRegistry.js';
 import type StyleItem from '../style/styleItem.js';
-import type VcsMap from '../map/vcsMap.js';
 
 export type PointCloudOptions = CesiumTilesetOptions & {
   pointSize?: number | string;
@@ -45,8 +42,6 @@ class PointCloudLayer extends CesiumTilesetLayer {
   defaultPointSize: number | string | undefined;
 
   private _pointSize: number | string | undefined;
-
-  protected _supportedMaps = [CesiumMap.className];
 
   constructor(options: PointCloudOptions) {
     const defaultOptions = PointCloudLayer.getDefaultOptions();
@@ -83,16 +78,6 @@ class PointCloudLayer extends CesiumTilesetLayer {
   async initialize(): Promise<void> {
     await super.initialize();
     this.pointSize = this._pointSize;
-  }
-
-  createImplementationsForMap(map: VcsMap): CesiumTilesetCesiumImpl[] {
-    if (map instanceof CesiumMap) {
-      return [
-        new CesiumTilesetCesiumImpl(map, this.getImplementationOptions()),
-      ];
-    }
-
-    return [];
   }
 
   /**

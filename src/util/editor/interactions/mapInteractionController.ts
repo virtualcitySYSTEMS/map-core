@@ -9,7 +9,8 @@ import { handlerSymbol, vertexSymbol } from '../editorSymbols.js';
 import type { EventAfterEventHandler } from '../../../interaction/abstractInteraction.js';
 import AbstractInteraction from '../../../interaction/abstractInteraction.js';
 import type BaseOLMap from '../../../map/baseOLMap.js';
-import type CesiumMap from '../../../map/cesiumMap.js';
+import CesiumMap from '../../../map/cesiumMap.js';
+import PanoramaMap from '../../../map/panoramaMap.js';
 
 function suspendOpenlayerMap(map: BaseOLMap): () => void {
   const dragPan = map
@@ -24,6 +25,13 @@ function suspendOpenlayerMap(map: BaseOLMap): () => void {
     };
   }
   return () => {};
+}
+
+function suspendPanoramaMap(map: PanoramaMap): () => void {
+  map.panoramaCameraController.enabled = false;
+  return () => {
+    map.panoramaCameraController.enabled = true;
+  };
 }
 
 type CachedScreenSpaceCameraControllerKeys =
@@ -99,8 +107,10 @@ class MapInteractionController extends AbstractInteraction {
       ((event.feature as Feature)[vertexSymbol] ||
         (event.feature as Feature)[handlerSymbol])
     ) {
-      if (event.map.className === 'CesiumMap') {
+      if (event.map.className === CesiumMap.className) {
         this._clear = suspendCesiumMap(event.map as CesiumMap);
+      } else if (event.map.className === PanoramaMap.className) {
+        this._clear = suspendPanoramaMap(event.map as PanoramaMap);
       } else {
         this._clear = suspendOpenlayerMap(event.map as BaseOLMap);
       }

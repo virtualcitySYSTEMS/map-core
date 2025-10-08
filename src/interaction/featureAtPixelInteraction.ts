@@ -29,8 +29,8 @@ import type ObliqueMap from '../map/obliqueMap.js';
 import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
 import { cartesian3DDistance, cartesianToMercator } from '../util/math.js';
 import type { PrimitiveType } from '../util/featureconverter/convert.js';
+import type BaseCesiumMap from '../map/baseCesiumMap.js';
 import type PanoramaMap from '../map/panoramaMap.js';
-import type CesiumMap from '../map/cesiumMap.js';
 
 /**
  * This is the return from cesium scene.pick and scene.drillPick, which returns "any". We cast to this type.
@@ -283,7 +283,7 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
   }
 
   private _cesiumHandler(event: InteractionEvent): Promise<InteractionEvent> {
-    const cesiumMap = event.map as CesiumMap | PanoramaMap;
+    const cesiumMap = event.map as BaseCesiumMap;
     const { scene } = cesiumMap.getCesiumWidget()!;
 
     if (!scene) {

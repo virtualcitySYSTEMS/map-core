@@ -160,7 +160,7 @@ function startSelectFeaturesSession(
     interactionChain,
     removed: interactionRemoved,
     destroy: destroyInteractionChain,
-  } = setupInteractionChain(app.maps.eventHandler, interactionId);
+  } = setupInteractionChain(app.maps, interactionId);
 
   const highlightManager = createHighlightManager(layer, highlightStyle);
 

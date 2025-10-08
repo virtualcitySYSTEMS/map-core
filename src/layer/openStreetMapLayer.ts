@@ -12,6 +12,8 @@ import { layerClassRegistry } from '../classRegistry.js';
 import type { RasterLayerImplementationOptions } from './rasterLayer.js';
 import { TilingScheme } from './rasterLayer.js';
 import type VcsMap from '../map/vcsMap.js';
+import PanoramaMap from '../map/panoramaMap.js';
+import BaseCesiumMap from '../map/baseCesiumMap.js';
 
 export type OpenStreetMapOptions = LayerOptions & {
   /**
@@ -102,7 +104,11 @@ class OpenStreetMapLayer
    */
   imageryLayerOptions: ImageryLayer.ConstructorOptions | undefined;
 
-  protected _supportedMaps = [CesiumMap.className, OpenlayersMap.className];
+  protected _supportedMaps = [
+    CesiumMap.className,
+    OpenlayersMap.className,
+    PanoramaMap.className,
+  ];
 
   constructor(options: OpenStreetMapOptions) {
     const defaultOptions = OpenStreetMapLayer.getDefaultOptions();
@@ -188,7 +194,7 @@ class OpenStreetMapLayer
       ];
     }
 
-    if (map instanceof CesiumMap) {
+    if (map instanceof BaseCesiumMap) {
       return [
         new OpenStreetMapCesiumImpl(map, this.getImplementationOptions()),
       ];

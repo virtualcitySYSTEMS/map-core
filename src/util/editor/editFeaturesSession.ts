@@ -39,6 +39,7 @@ import type VcsApp from '../../vcsApp.js';
 import type VectorLayer from '../../layer/vectorLayer.js';
 import type VcsMap from '../../map/vcsMap.js';
 import RightClickInteraction from './interactions/rightClickInteraction.js';
+import BaseCesiumMap from '../../map/baseCesiumMap.js';
 
 /**
  * Saves the original allowPicking settings and sets them to false if CTRL is not pressed.
@@ -189,7 +190,7 @@ function startEditFeaturesSession(
     interactionChain,
     removed: interactionRemoved,
     destroy: destroyInteractionChain,
-  } = setupInteractionChain(app.maps.eventHandler, interactionId);
+  } = setupInteractionChain(app.maps, interactionId);
 
   const { exclusiveInteractionId } = app.maps.eventHandler;
   const removeRightClickStart = app.maps.eventHandler.addExclusiveInteraction(
@@ -410,7 +411,10 @@ function startEditFeaturesSession(
     } else {
       obliqueImageChangedListener = (): void => {};
     }
-    if (mode === TransformationMode.EXTRUDE && !(map instanceof CesiumMap)) {
+    if (
+      mode === TransformationMode.EXTRUDE &&
+      !(map instanceof BaseCesiumMap)
+    ) {
       setMode(TransformationMode.TRANSLATE);
     } else {
       createTransformations();

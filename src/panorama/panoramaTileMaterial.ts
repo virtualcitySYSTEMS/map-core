@@ -52,6 +52,8 @@ export type PanoramaTileMaterialUniforms = {
   u_imageReady: boolean;
   u_intensityReady: boolean;
   u_cursorColor: Color;
+  u_contrast: number;
+  u_brightness: number;
 };
 
 function createDebugCanvas(tileSize: Size, text: string): HTMLCanvasElement {
@@ -100,6 +102,8 @@ export function getDefaultPanoramaTileMaterialUniforms(): PanoramaTileMaterialUn
     u_depthReady: false,
     u_overlayNaNColor: Color.RED,
     u_cursorColor: Color.fromCssColorString(defaultCursorColor),
+    u_contrast: 1,
+    u_brightness: 0,
   };
 }
 
@@ -203,6 +207,22 @@ export default class PanoramaTileMaterial extends Material {
 
   set opacity(value: number) {
     this.uniforms.u_opacity = value;
+  }
+
+  get contrast(): number {
+    return this.uniforms.u_contrast;
+  }
+
+  set contrast(value: number) {
+    this.uniforms.u_contrast = value;
+  }
+
+  get brightness(): number {
+    return this.uniforms.u_brightness;
+  }
+
+  set brightness(value: number) {
+    this.uniforms.u_brightness = value;
   }
 
   /**

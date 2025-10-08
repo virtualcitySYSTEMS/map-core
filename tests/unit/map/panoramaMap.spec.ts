@@ -3,16 +3,12 @@ import { Feature } from 'ol';
 import { intersects } from 'ol/extent.js';
 import Point from 'ol/geom/Point.js';
 import sinon from 'sinon';
-import { PrimitiveCollection } from '@vcmap-cesium/engine';
 import {
   getPanoramaImage,
   getPanoramaMap,
 } from '../helpers/panoramaHelpers.js';
 import type { PanoramaMapOptions } from '../../../src/map/panoramaMap.js';
 import PanoramaMap from '../../../src/map/panoramaMap.js';
-import Layer from '../../../src/layer/layer.js';
-import { vcsLayerName } from '../../../src/layer/layerSymbols.js';
-import LayerCollection from '../../../src/util/layerCollection.js';
 import PanoramaDataset from '../../../src/layer/panoramaDatasetLayer.js';
 import type { PanoramaImage } from '../../../src/panorama/panoramaImage.js';
 import { Projection, Viewpoint, Extent } from '../../../index.js';
@@ -70,175 +66,6 @@ async function createStubbedDataset(
 }
 
 describe('PanoramaMap', () => {
-  describe('handling primitive collection / tileset visualizations', () => {
-    let layer1: Layer;
-    let layer2: Layer;
-    let primitiveCollection1: PrimitiveCollection;
-    let primitiveCollection2: PrimitiveCollection;
-
-    before(() => {
-      layer1 = new Layer({});
-      layer2 = new Layer({});
-    });
-
-    beforeEach(() => {
-      // destroyed on map destroy or removal
-      primitiveCollection1 = new PrimitiveCollection();
-      primitiveCollection1[vcsLayerName] = layer1.name;
-      primitiveCollection2 = new PrimitiveCollection();
-      primitiveCollection2[vcsLayerName] = layer2.name;
-    });
-
-    after(() => {
-      layer1.destroy();
-      layer2.destroy();
-    });
-
-    describe('adding primitive collection', () => {
-      let map: PanoramaMap;
-      let layerCollection: LayerCollection;
-      let numberOfDefaultPrimitives: number;
-
-      before(() => {
-        layerCollection = LayerCollection.from([layer1, layer2]);
-      });
-
-      beforeEach(() => {
-        map = getPanoramaMap({ layerCollection });
-        numberOfDefaultPrimitives =
-          map.getCesiumWidget().scene.primitives.length;
-      });
-
-      afterEach(() => {
-        map.destroy();
-      });
-
-      after(() => {
-        layerCollection.destroy();
-      });
-
-      it('should add a primitive collection to the scene', () => {
-        map.addPrimitiveCollection(primitiveCollection1);
-        expect(
-          map.getCesiumWidget().scene.primitives.contains(primitiveCollection1),
-        ).to.be.true;
-      });
-
-      it('should not add a visualization twice', () => {
-        map.addPrimitiveCollection(primitiveCollection1);
-        map.addPrimitiveCollection(primitiveCollection1);
-        expect(map.getCesiumWidget().scene.primitives.length).to.equal(
-          numberOfDefaultPrimitives + 1,
-        );
-      });
-
-      it('should add a visualization at the correct index based on the index in the layer collection', () => {
-        map.addPrimitiveCollection(primitiveCollection2);
-        map.addPrimitiveCollection(primitiveCollection1);
-        const { primitives } = map.getCesiumWidget().scene;
-        expect(primitives.length).to.equal(numberOfDefaultPrimitives + 2);
-        expect(primitives.get(numberOfDefaultPrimitives)).to.equal(
-          primitiveCollection1,
-        );
-        expect(primitives.get(numberOfDefaultPrimitives + 1)).to.equal(
-          primitiveCollection2,
-        );
-      });
-
-      it('should not add a primitive collection without a vcsLayerName symbol', () => {
-        const collection = new PrimitiveCollection();
-        map.addPrimitiveCollection(collection);
-        expect(map.getCesiumWidget().scene.primitives.length).to.equal(1);
-        collection.destroy();
-      });
-
-      it('should not add an primitive collection with a vcsLayerName not corresponding to a layer in the layerCollection', () => {
-        const collection = new PrimitiveCollection();
-        collection[vcsLayerName] = 'test';
-        map.addPrimitiveCollection(collection);
-        expect(map.getCesiumWidget().scene.primitives.length).to.equal(
-          numberOfDefaultPrimitives,
-        );
-        collection.destroy();
-      });
-    });
-
-    describe('moving of layers within the layer collection', () => {
-      let map: PanoramaMap;
-      let layerCollection: LayerCollection;
-      let numberOfDefaultPrimitives: number;
-
-      before(() => {
-        layerCollection = LayerCollection.from([layer1, layer2]);
-      });
-
-      beforeEach(() => {
-        map = getPanoramaMap({ layerCollection });
-        numberOfDefaultPrimitives =
-          map.getCesiumWidget().scene.primitives.length;
-      });
-
-      afterEach(() => {
-        map.destroy();
-      });
-
-      after(() => {
-        layerCollection.destroy();
-      });
-
-      it('should rearrange the primitive collections to place them at the right index', () => {
-        map.addPrimitiveCollection(primitiveCollection1);
-        map.addPrimitiveCollection(primitiveCollection2);
-        layerCollection.raise(layer1);
-        const { primitives } = map.getCesiumWidget().scene;
-        expect(primitives.get(numberOfDefaultPrimitives)).to.equal(
-          primitiveCollection2,
-        );
-        expect(primitives.get(numberOfDefaultPrimitives + 1)).to.equal(
-          primitiveCollection1,
-        );
-      });
-    });
-
-    describe('removing of layers', () => {
-      let map: PanoramaMap;
-      let layerCollection: LayerCollection;
-
-      before(() => {
-        layerCollection = LayerCollection.from([layer1, layer2]);
-      });
-
-      beforeEach(() => {
-        map = getPanoramaMap({ layerCollection });
-        map.addPrimitiveCollection(primitiveCollection1);
-        map.addPrimitiveCollection(primitiveCollection2);
-      });
-
-      afterEach(() => {
-        map.destroy();
-      });
-
-      after(() => {
-        layerCollection.destroy();
-      });
-
-      it('should remove the primitive collection from the map', () => {
-        map.removePrimitiveCollection(primitiveCollection1);
-        expect(
-          map.getCesiumWidget().scene.primitives.contains(primitiveCollection1),
-        ).to.be.false;
-      });
-
-      it('should no longer place the primitive collection at an index, if it has been removed after the removal of its visualization', () => {
-        map.removePrimitiveCollection(primitiveCollection1);
-        layerCollection.raise(layer1);
-        expect(
-          map.getCesiumWidget().scene.primitives.contains(primitiveCollection1),
-        ).to.be.false;
-      });
-    });
-  });
-
   describe('activating a panorama map', () => {
     let map: PanoramaMap;
 

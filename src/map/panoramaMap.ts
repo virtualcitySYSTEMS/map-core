@@ -1,9 +1,7 @@
-import type { JulianDate, Cesium3DTileset, Scene } from '@vcmap-cesium/engine';
+import { parseNumber } from '@vcsuite/parsers';
 import {
   Color,
-  PrimitiveCollection,
   CesiumWidget,
-  ScreenSpaceEventHandler,
   ShadowMode,
   Math as CesiumMath,
 } from '@vcmap-cesium/engine';
@@ -13,20 +11,15 @@ import type { PanoramaImage } from '../panorama/panoramaImage.js';
 import { mapClassRegistry } from '../classRegistry.js';
 import type { PanoramaImageView } from '../panorama/panoramaImageView.js';
 import { createPanoramaImageView } from '../panorama/panoramaImageView.js';
-import {
-  getViewpointFromScene,
-  setupCesiumInteractions,
-} from './cesiumMapHelpers.js';
 import VcsEvent from '../vcsEvent.js';
 import type { PanoramaCameraController } from '../panorama/panoramaCameraController.js';
 import { createPanoramaCameraController } from '../panorama/panoramaCameraController.js';
 import type Viewpoint from '../util/viewpoint.js';
-import { ensureInCollection, indexChangedOnPrimitive } from './cesiumMap.js';
 import Projection from '../util/projection.js';
-import type Layer from '../layer/layer.js';
 import { defaultCursorColor } from '../panorama/panoramaTileMaterial.js';
 import LayerState from '../layer/layerState.js';
 import type PanoramaDatasetLayer from '../layer/panoramaDatasetLayer.js';
+import BaseCesiumMap from './baseCesiumMap.js';
 
 export type PanoramaMapOptions = VcsMapOptions & {
   /**
@@ -37,9 +30,13 @@ export type PanoramaMapOptions = VcsMapOptions & {
    * Css color string to use for the cursor color.
    */
   cursorColor?: string;
+  /**
+   * The default field of view in degrees when loading a new image.
+   */
+  defaultFov?: number;
 };
 
-export default class PanoramaMap extends VcsMap {
+export default class PanoramaMap extends BaseCesiumMap {
   static get className(): string {
     return 'PanoramaMap';
   }
@@ -50,6 +47,8 @@ export default class PanoramaMap extends VcsMap {
       overlayNaNColor: 'rgba(255, 0, 0, 1)',
       cursorColor: defaultCursorColor,
       fallbackToCurrentMap: false,
+      layerTypes: ['PanoramaDatasetLayer', 'TerrainLayer', 'VectorLayer'],
+      defaultFov: 90,
     };
   }
 
@@ -59,23 +58,19 @@ export default class PanoramaMap extends VcsMap {
    */
   readonly currentImageChanged = new VcsEvent<PanoramaImage | undefined>();
 
-  private _cesiumWidget: CesiumWidget | undefined;
-
   private _imageView: PanoramaImageView | undefined;
 
   private _currentImage: PanoramaImage | undefined;
 
-  private _screenSpaceListener: (() => void) | undefined;
-
-  private _screenSpaceEventHandler: ScreenSpaceEventHandler | undefined;
-
   private _cameraController: PanoramaCameraController | undefined;
 
-  private _listeners: (() => void)[] = [];
+  protected _listeners: (() => void)[] = [];
 
   private _overlayNaNColor: string | undefined;
 
   private _cursorColor: string | undefined;
+
+  private _defaultFov = 90;
 
   constructor(options: PanoramaMapOptions) {
     const defaultOptions = PanoramaMap.getDefaultOptions();
@@ -84,16 +79,10 @@ export default class PanoramaMap extends VcsMap {
     this._overlayNaNColor =
       options.overlayNaNColor ?? defaultOptions.overlayNaNColor;
     this._cursorColor = options.cursorColor ?? defaultOptions.cursorColor;
-  }
-
-  /**
-   * Internal API. throws if not properly initialized
-   */
-  get screenSpaceEventHandler(): ScreenSpaceEventHandler {
-    if (!this._screenSpaceEventHandler) {
-      throw new Error('ScreenSpaceEventHandler not initialized');
-    }
-    return this._screenSpaceEventHandler;
+    this._defaultFov = parseNumber(
+      options.defaultFov,
+      defaultOptions.defaultFov,
+    );
   }
 
   get currentPanoramaImage(): PanoramaImage | undefined {
@@ -122,10 +111,27 @@ export default class PanoramaMap extends VcsMap {
     return this._cameraController;
   }
 
+  get defaultFov(): number {
+    if (!this._imageView) {
+      return this._defaultFov;
+    }
+    return CesiumMath.toDegrees(this._imageView.defaultFov);
+  }
+
+  /**
+   * Sets the default field of view in degrees when loading a new image.
+   */
+  set defaultFov(fov: number) {
+    this._defaultFov = fov;
+    if (this._imageView) {
+      this._imageView.defaultFov = CesiumMath.toRadians(fov);
+    }
+  }
+
   /**
    * Access to the raw cesium widget for finer control. Throws if not properly initialized.
    */
-  getCesiumWidget(): CesiumWidget {
+  override getCesiumWidget(): CesiumWidget {
     if (!this._cesiumWidget) {
       throw new Error('CesiumWidget not initialized');
     }
@@ -134,31 +140,34 @@ export default class PanoramaMap extends VcsMap {
 
   override async initialize(): Promise<void> {
     if (!this.initialized) {
-      this._cesiumWidget = new CesiumWidget(this.mapElement, {
+      const cesiumWidget = new CesiumWidget(this.mapElement, {
         requestRenderMode: false,
         scene3DOnly: true,
         baseLayer: false,
         shadows: false,
         skyBox: false,
         skyAtmosphere: false,
-        globe: false,
         terrainShadows: ShadowMode.DISABLED,
         msaaSamples: 1,
       });
 
-      this._cesiumWidget.scene.screenSpaceCameraController.enableInputs = false;
-      this._cesiumWidget.scene.primitives.destroyPrimitives = false;
+      cesiumWidget.scene.globe.depthTestAgainstTerrain = true;
+      cesiumWidget.scene.globe.baseColor = Color.WHITE.withAlpha(0.01);
+      const defaultTranslucency = cesiumWidget.scene.globe.translucency;
+      defaultTranslucency.enabled = true;
+      defaultTranslucency.backFaceAlpha = 0.75;
+      defaultTranslucency.frontFaceAlpha = 0.75;
+      cesiumWidget.scene.screenSpaceCameraController.enableInputs = false;
+      cesiumWidget.scene.screenSpaceCameraController.enableCollisionDetection =
+        false;
+      cesiumWidget.scene.primitives.destroyPrimitives = false;
+      this.initialized = true;
+      this._initializeCesiumWidget(cesiumWidget);
 
-      this._screenSpaceEventHandler = new ScreenSpaceEventHandler(
-        this._cesiumWidget.canvas,
-      );
-
-      this._screenSpaceListener = setupCesiumInteractions(
+      this._imageView = createPanoramaImageView(
         this,
-        this._cesiumWidget.scene,
-        this.screenSpaceEventHandler,
+        CesiumMath.toRadians(this._defaultFov),
       );
-      this._imageView = createPanoramaImageView(this);
 
       if (this._overlayNaNColor) {
         this._imageView.tilePrimitiveCollection.overlayNaNColor =
@@ -171,46 +180,8 @@ export default class PanoramaMap extends VcsMap {
       }
 
       this._cameraController = createPanoramaCameraController(this);
-      this.initialized = true;
-
-      this._listeners.push(
-        this._cesiumWidget.scene.postRender.addEventListener(
-          (eventScene: Scene, time: JulianDate) => {
-            this.postRender.raiseEvent({
-              map: this,
-              originalEvent: { scene: eventScene, time },
-            });
-          },
-        ),
-      );
     }
     await super.initialize();
-  }
-
-  override async activate(): Promise<void> {
-    await super.activate();
-    if (this.active && this._cesiumWidget) {
-      this._cesiumWidget.useDefaultRenderLoop = true;
-      this._cesiumWidget.resize();
-    }
-  }
-
-  override deactivate(): void {
-    super.deactivate();
-    if (this._cesiumWidget) {
-      this._cesiumWidget.useDefaultRenderLoop = false;
-    }
-  }
-
-  override getViewpoint(): Promise<null | Viewpoint> {
-    return Promise.resolve(this.getViewpointSync());
-  }
-
-  override getViewpointSync(): Viewpoint | null {
-    if (!this._cesiumWidget || !this._cesiumWidget.scene || !this.target) {
-      return null;
-    }
-    return getViewpointFromScene(this._cesiumWidget.scene);
   }
 
   /**
@@ -308,8 +279,8 @@ export default class PanoramaMap extends VcsMap {
     });
 
     if (closestIndex !== -1) {
-      const { imageName, dataset } = images[closestIndex]!;
-      return dataset.createPanoramaImage(imageName); // XXX position is a HACK to support frankenstein datasets
+      const { imageName, dataset, time } = images[closestIndex]!;
+      return dataset.createPanoramaImage(imageName, time);
     }
 
     return undefined;
@@ -328,52 +299,6 @@ export default class PanoramaMap extends VcsMap {
     }
   }
 
-  override indexChanged(layer: Layer): void {
-    const viz = this.getVisualizationsForLayer(layer);
-    if (viz) {
-      viz.forEach((item) => {
-        if (item instanceof PrimitiveCollection) {
-          indexChangedOnPrimitive(
-            this.getCesiumWidget().scene.primitives,
-            item,
-            this.layerCollection,
-          );
-        }
-      });
-    }
-  }
-
-  /**
-   * Internal API used to register visualizations from layer implementations
-   * @param  primitiveCollection
-   */
-  addPrimitiveCollection(
-    primitiveCollection: PrimitiveCollection | Cesium3DTileset,
-  ): void {
-    if (!this._cesiumWidget) {
-      throw new Error('Cannot add primitive to uninitialized map');
-    }
-    if (this.validateVisualization(primitiveCollection)) {
-      this.addVisualization(primitiveCollection);
-      ensureInCollection(
-        this._cesiumWidget.scene.primitives,
-        primitiveCollection,
-        this.layerCollection,
-      );
-    }
-  }
-
-  /**
-   * Internal API to unregister the visualization for a layers implementation
-   * @param  primitiveCollection
-   */
-  removePrimitiveCollection(
-    primitiveCollection: PrimitiveCollection | Cesium3DTileset,
-  ): void {
-    this.removeVisualization(primitiveCollection);
-    this._cesiumWidget?.scene.primitives.remove(primitiveCollection);
-  }
-
   override toJSON(
     defaultOptions = PanoramaMap.getDefaultOptions(),
   ): PanoramaMapOptions {
@@ -387,6 +312,13 @@ export default class PanoramaMap extends VcsMap {
       config.cursorColor = this._cursorColor;
     }
 
+    const defaultFov = this._imageView
+      ? CesiumMath.toDegrees(this._imageView.defaultFov)
+      : this._defaultFov;
+    if (defaultFov !== defaultOptions.defaultFov) {
+      config.defaultFov = defaultFov;
+    }
+
     return config;
   }
 
@@ -395,13 +327,6 @@ export default class PanoramaMap extends VcsMap {
     this._currentImage?.destroy();
     this._cameraController?.destroy();
     this._imageView?.destroy();
-    this._screenSpaceListener?.();
-    this._screenSpaceEventHandler?.destroy();
-    this._cesiumWidget?.destroy();
-    this._cesiumWidget = undefined;
-    this._listeners.forEach((cb) => {
-      cb();
-    });
 
     super.destroy();
   }

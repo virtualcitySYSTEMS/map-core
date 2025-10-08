@@ -20,7 +20,7 @@ export function getPanoramaMap(options = {}) {
   scene.screenSpaceCameraController.enableInputs = false;
   scene.primitives.destroyPrimitives = false;
 
-  map._screenSpaceEventHandler = new ScreenSpaceEventHandler(
+  map.screenSpaceEventHandler = new ScreenSpaceEventHandler(
     cesiumWidget.canvas,
   );
 

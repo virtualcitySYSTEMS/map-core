@@ -46,6 +46,8 @@ import type StyleItem from '../style/styleItem.js';
 import type VcsMap from '../map/vcsMap.js';
 import type VectorCesiumImpl from './cesium/vectorCesiumImpl.js';
 import FeatureStoreFeatureVisibility from './featureStoreFeatureVisibility.js';
+import BaseCesiumMap from '../map/baseCesiumMap.js';
+import type VectorPanoramaImpl from './panorama/vectorPanoramaImpl.js';
 
 export type FeatureStoreStaticRepresentation = {
   /**
@@ -316,10 +318,11 @@ class FeatureStoreLayer extends VectorLayer {
     | VectorOpenlayersImpl
     | VectorCesiumImpl
     | CesiumTilesetCesiumImpl
+    | VectorPanoramaImpl
   )[] {
     const impls = super.createImplementationsForMap(map);
     if (
-      map instanceof CesiumMap &&
+      map instanceof BaseCesiumMap &&
       this.staticRepresentation &&
       this.staticRepresentation.threeDim
     ) {

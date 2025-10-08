@@ -22,6 +22,7 @@ import CesiumTilesetLayer from '../../../src/layer/cesiumTilesetLayer.js';
 import DataSourceLayer from '../../../src/layer/dataSourceLayer.js';
 import CesiumMap from '../../../src/map/cesiumMap.js';
 import Viewpoint from '../../../src/util/viewpoint.js';
+import BaseCesiumMap from '../../../src/map/baseCesiumMap.js';
 
 export const tilesetJSON = {
   asset: {
@@ -213,17 +214,15 @@ export function getMockCesiumWidget() {
   };
 }
 
-export function getCesiumMap(mapOptions) {
-  const map = new CesiumMap(mapOptions || {});
+function hackMap(map) {
   const cesiumWidget = getMockCesiumWidget();
   const { scene } = cesiumWidget;
   map._cesiumWidget = cesiumWidget;
-
   map._defaultShadowMap = scene.shadowMap;
-
   map.screenSpaceEventHandler = new ScreenSpaceEventHandler(
     map._cesiumWidget.scene.canvas,
   );
+
   map.dataSourceDisplay = {
     dataSources: new DataSourceCollection(),
     isDestroyed() {
@@ -242,7 +241,25 @@ export function getCesiumMap(mapOptions) {
     }
     return new Viewpoint({});
   };
+}
 
+/**
+ * @param {import("@vcmap/core").CesiumMapOptions} [mapOptions={}]
+ * @returns {CesiumMap}
+ */
+export function getCesiumMap(mapOptions) {
+  const map = new CesiumMap(mapOptions || {});
+  hackMap(map);
+  return map;
+}
+
+/**
+ * @param {import("@vcmap/core").VcsMapOptions} [mapOptions={}]
+ * @returns {BaseCesiumMap}
+ */
+export function getBaseCesiumMap(mapOptions = {}) {
+  const map = new BaseCesiumMap(mapOptions);
+  hackMap(map);
   return map;
 }
 

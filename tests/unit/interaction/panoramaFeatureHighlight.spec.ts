@@ -38,7 +38,7 @@ describe('PanoramaFeatureHighlight', () => {
     feature[panoramaFeature] = {
       dataset,
       name: 'testPanorama',
-      time: '2023-10-01T00:00:00Z',
+      time: new Date('2023-10-01T00:00:00Z'),
     };
 
     testEvent = {

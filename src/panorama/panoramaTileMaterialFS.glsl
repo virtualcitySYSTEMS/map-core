@@ -22,6 +22,8 @@
  * @uniform {bool} u_intensityReady - Flag indicating if intensity data is ready
  * @uniform {bool} u_depthReady - Flag indicating if depth data is ready
  * @uniform {vec4} u_overlayNaNColor - Color used for missing/NaN overlay values
+ * @uniform {float} u_brightness - Brightness adjustment
+ * @uniform {float} u_contrast - Contrast adjustment
  */
 
 #define OVERLAY_INTENSITY 1.0
@@ -93,6 +95,18 @@ czm_material czm_getMaterial(czm_materialInput materialInput)
     vec2 scaled_uv = (clamped_uv - u_minUV) / (u_maxUV - u_minUV);
 
     vec4 t_color = texture(u_rgb, scaled_uv);
+    if (u_brightness != 0.0)
+    {
+        t_color.rgb += u_brightness;
+    }
+
+    if (u_contrast != 1.0)
+    {
+        t_color.rgb = ((t_color.rgb - 0.5) * u_contrast) + 0.5;
+    }
+
+    clamp(t_color, 0.0, 1.0);
+
     if (u_intensityReady && u_overlay == OVERLAY_INTENSITY)
     {
         float inensity_value = get_texel_value(u_intensity, scaled_uv);

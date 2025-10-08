@@ -1,10 +1,10 @@
 import { check, oneOf } from '@vcsuite/check';
 import type VcsApp from '../../vcsApp.js';
 import FeatureStoreLayer from '../../layer/featureStoreLayer.js';
-import CesiumMap from '../../map/cesiumMap.js';
 import { isMobile } from '../isMobile.js';
 import CesiumTilesetLayer from '../../layer/cesiumTilesetLayer.js';
 import VcsEvent from '../../vcsEvent.js';
+import BaseCesiumMap from '../../map/baseCesiumMap.js';
 
 export enum DisplayQualityLevel {
   LOW = 'low',
@@ -104,7 +104,7 @@ class DisplayQuality {
     this._listeners = [
       this._app.maps.mapActivated.addEventListener(() => {
         if (
-          this._app.maps.activeMap instanceof CesiumMap &&
+          this._app.maps.activeMap instanceof BaseCesiumMap &&
           !this.currentQualityLevel
         ) {
           if (isMobile()) {
@@ -115,7 +115,7 @@ class DisplayQuality {
         }
       }),
       this._app.layers.stateChanged.addEventListener((layer) => {
-        if (layer.active && this._app.maps.activeMap instanceof CesiumMap) {
+        if (layer.active && this._app.maps.activeMap instanceof BaseCesiumMap) {
           this._setLayerQuality(layer.name);
         }
       }),
@@ -222,7 +222,7 @@ class DisplayQuality {
       ),
     );
 
-    if (!(this._app.maps.activeMap instanceof CesiumMap)) {
+    if (!(this._app.maps.activeMap instanceof BaseCesiumMap)) {
       this._currentQualityLevel = undefined;
       this._viewModelSettings.startingQualityLevel = level;
       this._viewModelSettings.startingMobileQualityLevel = level;

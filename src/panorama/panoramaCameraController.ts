@@ -47,6 +47,10 @@ const DECAY_FRAMES = 60;
  */
 export type PanoramaCameraController = {
   /**
+   * Whether the controller is enabled. If false, the camera will not respond to user input.
+   */
+  enabled: boolean;
+  /**
    * Zooms in, until MIN_FOV of 10 degrees is reached
    * @param [step=0.1] - optional step in radians
    */
@@ -63,6 +67,7 @@ export function createPanoramaCameraController(
   map: PanoramaMap,
 ): PanoramaCameraController {
   const widget = map.getCesiumWidget();
+  let enabled = true;
   const { camera } = widget;
   const frustum = camera.frustum as PerspectiveFrustum;
 
@@ -114,7 +119,7 @@ export function createPanoramaCameraController(
     }
   }
 
-  map.screenSpaceEventHandler.setInputAction((event: number): void => {
+  map.screenSpaceEventHandler!.setInputAction((event: number): void => {
     if (!map.movementPointerEventsDisabled) {
       panoZoom(event);
     }
@@ -140,6 +145,7 @@ export function createPanoramaCameraController(
   const loop = (): void => {
     if (
       currentImage &&
+      enabled &&
       !widget.scene.screenSpaceCameraController.enableInputs &&
       !map.movementPointerEventsDisabled
     ) {
@@ -188,6 +194,12 @@ export function createPanoramaCameraController(
   loop();
 
   return {
+    get enabled(): boolean {
+      return enabled;
+    },
+    set enabled(value: boolean) {
+      enabled = value;
+    },
     zoomIn(step = 0.1): void {
       if (!map.movementApiCallsDisabled) {
         panoZoom(1, step);

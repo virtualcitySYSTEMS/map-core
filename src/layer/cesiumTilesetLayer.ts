@@ -23,6 +23,8 @@ import type { LayerOptions } from './layer.js';
 import type FeatureVisibility from './featureVisibility.js';
 import type VcsMap from '../map/vcsMap.js';
 import { cesiumColorToColor, getStringColor } from '../style/styleHelpers.js';
+import PanoramaMap from '../map/panoramaMap.js';
+import BaseCesiumMap from '../map/baseCesiumMap.js';
 
 export type CesiumTilesetOptions = LayerOptions & {
   /**
@@ -94,14 +96,13 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
 
   private _offset: Coordinate | undefined;
 
-  protected _supportedMaps = [CesiumMap.className];
+  protected _supportedMaps = [CesiumMap.className, PanoramaMap.className];
 
   private _customShader: CustomShader | undefined = undefined;
 
   constructor(options: CesiumTilesetOptions) {
     const defaultOptions = CesiumTilesetLayer.getDefaultOptions();
     super({ ...defaultOptions, ...options });
-    this._supportedMaps = [CesiumMap.className];
 
     this.highlightStyle = null;
     if (options.highlightStyle) {
@@ -199,7 +200,7 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
   }
 
   createImplementationsForMap(map: VcsMap): CesiumTilesetCesiumImpl[] {
-    if (map instanceof CesiumMap) {
+    if (map instanceof BaseCesiumMap) {
       return [
         new CesiumTilesetCesiumImpl(map, this.getImplementationOptions()),
       ];

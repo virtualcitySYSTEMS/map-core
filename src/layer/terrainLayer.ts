@@ -10,6 +10,8 @@ import CesiumMap from '../map/cesiumMap.js';
 import TerrainCesiumImpl from './cesium/terrainCesiumImpl.js';
 import { layerClassRegistry } from '../classRegistry.js';
 import type VcsMap from '../map/vcsMap.js';
+import PanoramaMap from '../map/panoramaMap.js';
+import BaseCesiumMap from '../map/baseCesiumMap.js';
 
 export type TerrainOptions = LayerOptions & {
   requestVertexNormals?: boolean;
@@ -38,7 +40,7 @@ class TerrainLayer extends Layer<TerrainCesiumImpl> {
     };
   }
 
-  protected _supportedMaps = [CesiumMap.className];
+  protected _supportedMaps = [CesiumMap.className, PanoramaMap.className];
 
   requestVertexNormals: boolean;
 
@@ -67,7 +69,7 @@ class TerrainLayer extends Layer<TerrainCesiumImpl> {
   }
 
   createImplementationsForMap(map: VcsMap): TerrainCesiumImpl[] {
-    if (map instanceof CesiumMap) {
+    if (map instanceof BaseCesiumMap) {
       return [new TerrainCesiumImpl(map, this.getImplementationOptions())];
     }
     return [];

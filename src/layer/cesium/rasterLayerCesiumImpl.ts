@@ -1,16 +1,16 @@
 import type { ImageryLayer, SplitDirection } from '@vcmap-cesium/engine';
 import { vcsLayerName } from '../layerSymbols.js';
 import LayerImplementation from '../layerImplementation.js';
-import type CesiumMap from '../../map/cesiumMap.js';
 import type {
   RasterLayerImplementation,
   RasterLayerImplementationOptions,
   TilingScheme,
 } from '../rasterLayer.js';
 import type Extent from '../../util/extent.js';
+import type BaseCesiumMap from '../../map/baseCesiumMap.js';
 
 class RasterLayerCesiumImpl
-  extends LayerImplementation<CesiumMap>
+  extends LayerImplementation<BaseCesiumMap>
   implements RasterLayerImplementation
 {
   static get className(): string {
@@ -37,7 +37,7 @@ class RasterLayerCesiumImpl
 
   imageryLayerOptions: ImageryLayer.ConstructorOptions | undefined;
 
-  constructor(map: CesiumMap, options: RasterLayerImplementationOptions) {
+  constructor(map: BaseCesiumMap, options: RasterLayerImplementationOptions) {
     super(map, options);
     this.splitDirection = options.splitDirection;
     this.minLevel = options.minLevel;
