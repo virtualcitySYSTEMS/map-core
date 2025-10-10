@@ -1,4 +1,7 @@
-import GeoTIFF, { type Options as GeoTIFFOptions } from 'ol/source/GeoTIFF.js';
+import GeoTIFF, {
+  type GeoTIFFSourceOptions,
+  type Options as GeoTIFFOptions,
+} from 'ol/source/GeoTIFF.js';
 import type { EventsKey } from 'ol/events.js';
 import { unByKey } from 'ol/Observable.js';
 import RasterLayer, {
@@ -28,6 +31,11 @@ export type COGLayerOptions = Omit<RasterLayerOptions, 'tilingSchema'> & {
    * Passed directly to the GeoTIFF source.
    */
   interpolate?: boolean;
+  /**
+   * Passed directly to the GeoTIFF.js source options see
+   * https://openlayers.org/en/latest/apidoc/module-ol_source_GeoTIFF.html#~GeoTIFFSourceOptions
+   */
+  sourceOptions?: GeoTIFFSourceOptions;
 };
 
 export type COGLayerImplementationOptions = RasterLayerImplementationOptions & {
@@ -72,6 +80,7 @@ class COGLayer extends RasterLayer<COGOpenlayersImpl | COGCesiumImpl> {
       convertToRGB: 'auto',
       normalize: undefined,
       interpolate: undefined,
+      sourceOptions: undefined,
     };
   }
 
@@ -85,6 +94,9 @@ class COGLayer extends RasterLayer<COGOpenlayersImpl | COGCesiumImpl> {
       convertToRGB: options.convertToRGB ?? defaultOptions.convertToRGB,
       normalize: options.normalize,
       interpolate: options.interpolate,
+      sourceOptions: options.sourceOptions
+        ? structuredClone(options.sourceOptions)
+        : defaultOptions.sourceOptions,
     };
 
     this._supportedMaps = [OpenlayersMap.className, CesiumMap.className];
@@ -136,6 +148,10 @@ class COGLayer extends RasterLayer<COGOpenlayersImpl | COGCesiumImpl> {
 
     if (this._sourceOptions.interpolate != null) {
       config.interpolate = this._sourceOptions.interpolate;
+    }
+
+    if (this._sourceOptions.sourceOptions != null) {
+      config.sourceOptions = structuredClone(this._sourceOptions.sourceOptions);
     }
 
     return config;

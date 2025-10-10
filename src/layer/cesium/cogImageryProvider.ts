@@ -98,6 +98,10 @@ export default class COGImageryProvider {
     level: number,
   ) => Promise<ImageryTypes>;
 
+  readonly tileWidth: number = 256;
+
+  readonly tileHeight: number = 256;
+
   constructor(private _source: GeoTIFFSource) {
     this._emptyCanvas = createEmptyCanvas(this.tileWidth, this.tileHeight);
     this._projection = this._source.getProjection()!;
@@ -108,6 +112,11 @@ export default class COGImageryProvider {
     } else {
       this._boundTileLoader = this._loadUnalignedTile.bind(this);
     }
+
+    // @ts-expect-error protected
+    const [width, height] = this._source.getTileSize(0);
+    this.tileWidth = Math.round(width);
+    this.tileHeight = Math.round(height);
   }
 
   // eslint-disable-next-line class-methods-use-this,@typescript-eslint/naming-convention
@@ -138,32 +147,6 @@ export default class COGImageryProvider {
   // eslint-disable-next-line class-methods-use-this
   get proxy(): undefined {
     return undefined;
-  }
-
-  get tileWidth(): number {
-    const tileGrid = this._source.getTileGrid();
-    if (tileGrid) {
-      const tileSizeAtZoom0 = tileGrid.getTileSize(0);
-      if (Array.isArray(tileSizeAtZoom0)) {
-        return Math.round(tileSizeAtZoom0[0]);
-      } else {
-        return Math.round(tileSizeAtZoom0); // same width and height
-      }
-    }
-    return 256;
-  }
-
-  get tileHeight(): number {
-    const tileGrid = this._source.getTileGrid();
-    if (tileGrid) {
-      const tileSizeAtZoom0 = tileGrid.getTileSize(0);
-      if (Array.isArray(tileSizeAtZoom0)) {
-        return Math.round(tileSizeAtZoom0[1]);
-      } else {
-        return Math.round(tileSizeAtZoom0); // same width and height
-      }
-    }
-    return 256;
   }
 
   get maximumLevel(): number {

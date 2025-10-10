@@ -13,6 +13,7 @@ import type { TileWMS } from 'ol/source.js';
 import type FeatureFormat from 'ol/format/Feature.js';
 import WMSGetFeatureInfo from 'ol/format/WMSGetFeatureInfo.js';
 import type { Options as WMSGetFeatureInfoOptions } from 'ol/format/WMSGetFeatureInfo.js';
+import { containsCoordinate } from 'ol/extent.js';
 import { parseInteger } from '@vcsuite/parsers';
 import { getLogger } from '@vcsuite/logger';
 import type { AbstractFeatureProviderOptions } from './abstractFeatureProvider.js';
@@ -76,6 +77,7 @@ export type WMSFeatureProviderOptions = AbstractFeatureProviderOptions & {
    * @default '1.1.1'
    */
   version?: string;
+  htmlPositionFeatureTitle?: string;
 };
 
 const gmlFormats = { GML: GML3, GML2, GML3, GML32 };
@@ -153,6 +155,22 @@ export function getFormat(
   return null;
 }
 
+/**
+ * Calculates meters per degree at a given coordinate's latitude
+ * @param coordinate - Coordinate in geographic projection
+ * @returns Meters per degree at the coordinate's latitude
+ */
+function getMetersPerDegreeAtCoordinate(coordinate: Coordinate): number {
+  const latitude = coordinate[1];
+  const latitudeRadians = (latitude * Math.PI) / 180;
+
+  // Meters per degree longitude varies with latitude: cos(lat) * metersPerDegreeAtEquator
+  // Meters per degree latitude is approximately constant at ~111,320 m
+  // Using an average that accounts for longitude compression at latitude
+  const metersPerDegreeAtEquator = 111320;
+  return metersPerDegreeAtEquator * Math.cos(latitudeRadians);
+}
+
 class WMSFeatureProvider extends AbstractFeatureProvider {
   static get className(): string {
     return 'WMSFeatureProvider';
@@ -213,6 +231,8 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
    */
   projection: Projection | undefined;
 
+  htmlPositionFeatureTitle?: string;
+
   constructor(layerName: string, options: WMSFeatureProviderOptions) {
     const defaultOptions = WMSFeatureProvider.getDefaultOptions();
     super(layerName, { ...defaultOptions, ...options });
@@ -250,6 +270,7 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
     this.projection = options.projection
       ? new Projection(options.projection)
       : undefined;
+    this.htmlPositionFeatureTitle = options.htmlPositionFeatureTitle;
   }
 
   get wmsSource(): TileWMS {
@@ -273,7 +294,7 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
 
     try {
       if (this.featureInfoResponseType === 'text/html') {
-        features = [new Feature()];
+        features = [new Feature({ title: this.htmlPositionFeatureTitle })];
       } else {
         features = this.featureFormat!.readFeatures(data, {
           dataProjection: this.projection ? this.projection.proj : undefined,
@@ -305,21 +326,31 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
     resolution: number,
     headers?: Record<string, string>,
   ): Promise<Feature[]> {
-    const projection = this.wmsSource.getProjection() as OLProjection;
-    let coords = coordinate;
-    if (projection) {
-      const transform = getTransform(mercatorProjection.proj, projection);
-      // error in TransformFunction type definition, remove undefined after openlayer fixed the type
-      coords = transform(coordinate.slice(), undefined, undefined);
+    if (
+      this.extent?.isValid() &&
+      !containsCoordinate(
+        this.extent.getCoordinatesInProjection(mercatorProjection),
+        coordinate,
+      )
+    ) {
+      return [];
     }
 
-    const metersPerUnit = 111194.87428468118;
-    const url = this.wmsSource.getFeatureInfoUrl(
-      coords,
-      resolution / metersPerUnit,
-      projection,
-      { INFO_FORMAT: this.featureInfoResponseType },
-    );
+    const projection = this.wmsSource.getProjection() as OLProjection;
+    let coords = coordinate;
+    let res = resolution;
+    if (projection) {
+      const transform = getTransform(mercatorProjection.proj, projection);
+      coords = transform(coordinate.slice());
+    }
+    if (projection.getUnits() === 'degrees') {
+      const metersPerDegree = getMetersPerDegreeAtCoordinate(coords);
+      res = resolution / metersPerDegree;
+    }
+
+    const url = this.wmsSource.getFeatureInfoUrl(coords, res, projection, {
+      INFO_FORMAT: this.featureInfoResponseType,
+    });
 
     if (this.featureInfoResponseType === 'text/html') {
       return this.featureResponseCallback(null, coordinate).map((f) =>
@@ -392,6 +423,9 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
     }
     if (this.extent) {
       config.extent = this.extent.toJSON();
+    }
+    if (this.htmlPositionFeatureTitle) {
+      config.htmlPositionFeatureTitle = this.htmlPositionFeatureTitle;
     }
 
     return config as WMSFeatureProviderOptions;
