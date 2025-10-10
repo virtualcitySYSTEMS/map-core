@@ -220,6 +220,15 @@ export default class PanoramaMap extends BaseCesiumMap {
     this.setCurrentImage(closestImage);
   }
 
+  override getViewpointSync(): Viewpoint | null {
+    const vp = super.getViewpointSync();
+    if (vp) {
+      vp.groundPosition = null;
+      vp.distance = 100;
+    }
+    return vp;
+  }
+
   /**
    * {@link getClosestImage} for the given viewpoint. Prefers the ground position
    * @param viewpoint
