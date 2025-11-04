@@ -6,6 +6,12 @@
 - Made the `mapNames` concept reactive on `Layer`. Changing the mapNames of a layer will now add or remove the layer from maps automatically.
 - Added a `EnsurePositionInteraction` to the event handler. This will stop propagation on any events after
   coordinate at pixel & feature interactions, which do not have a position set.
+- All 3D layers now also support `PanoramaMap`.
+- `PanoramaMap` renders in HDR by default.
+
+#### Fixes
+
+- Fixes an issue in panorama, where the sRGB color space was not correctly handled for panorama images.
 
 #### Breaking Changes
 

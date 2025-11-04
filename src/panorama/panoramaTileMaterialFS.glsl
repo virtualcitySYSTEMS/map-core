@@ -94,7 +94,8 @@ czm_material czm_getMaterial(czm_materialInput materialInput)
     vec2 clamped_uv = clamp(materialInput.st, u_minUV, u_maxUV);
     vec2 scaled_uv = (clamped_uv - u_minUV) / (u_maxUV - u_minUV);
 
-    vec4 t_color = texture(u_rgb, scaled_uv);
+    vec4 t_color = czm_srgbToLinear(texture(u_rgb, scaled_uv));
+
     if (u_brightness != 0.0)
     {
         t_color.rgb += u_brightness;
