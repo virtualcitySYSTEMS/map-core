@@ -617,6 +617,7 @@ function startEditGeometrySession(
   const mapActivatedListener =
     app.maps.mapActivated.addEventListener(setupActiveMap);
   setupActiveMap();
+  app.maps.pausePanoramaImageSelection = true;
 
   const stop = (): void => {
     destroyScratchLayer();
@@ -624,6 +625,7 @@ function startEditGeometrySession(
       unByKey(featureListener);
     }
     mapActivatedListener();
+    app.maps.pausePanoramaImageSelection = false;
     mapInteractionController.reset();
     mouseOverInteraction.reset();
     destroyCurrentInteractionSet();

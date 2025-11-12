@@ -17,7 +17,7 @@ import Projection, { mercatorProjection } from '../../projection.js';
 import { cartographicToWgs84, mercatorToCartesian } from '../../math.js';
 import type { TransformationHandler } from './transformationTypes.js';
 import { AxisAndPlanes, is1DAxis, is2DAxis } from './transformationTypes.js';
-import CesiumMap from '../../../map/cesiumMap.js';
+import BaseCesiumMap from '../../../map/baseCesiumMap.js';
 
 /**
  * Of type [dx, dy, dz];
@@ -66,7 +66,7 @@ class TranslateInteraction extends AbstractInteraction {
       const axis = (event.feature as Feature)[handlerSymbol] as AxisAndPlanes;
       if (axis !== AxisAndPlanes.NONE) {
         this._transformationHandler!.showAxis = axis;
-        if (event.map instanceof CesiumMap) {
+        if (event.map instanceof BaseCesiumMap) {
           if (is1DAxis(axis)) {
             this._getTranslateEvent = this._dragAlongAxis3D(axis, event);
           } else if (is2DAxis(axis)) {
@@ -86,7 +86,7 @@ class TranslateInteraction extends AbstractInteraction {
     axis: AxisAndPlanes,
     event: EventAfterEventHandler,
   ): GetTranslateEvent {
-    const scene = (event.map as CesiumMap).getScene() as Scene;
+    const scene = (event.map as BaseCesiumMap).getScene() as Scene;
     if (axis !== AxisAndPlanes.Z) {
       const center = mercatorToCartesian(this._transformationHandler!.center);
       let plane = Plane.clone(Plane.ORIGIN_XY_PLANE);
@@ -147,7 +147,7 @@ class TranslateInteraction extends AbstractInteraction {
     axis: AxisAndPlanes,
     event: EventAfterEventHandler,
   ): GetTranslateEvent {
-    const scene = (event.map as CesiumMap).getScene() as Scene;
+    const scene = (event.map as BaseCesiumMap).getScene() as Scene;
     const center = mercatorToCartesian(this._transformationHandler!.center);
     let plane: Plane;
     if (axis === AxisAndPlanes.YZ) {

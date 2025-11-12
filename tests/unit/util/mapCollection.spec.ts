@@ -1,3 +1,6 @@
+import { expect } from 'chai';
+import sinon from 'sinon';
+import { MapEvent } from 'ol';
 import { JulianDate } from '@vcmap-cesium/engine';
 import { getOpenlayersMap } from '../helpers/openlayersHelpers.js';
 import Viewpoint from '../../../src/util/viewpoint.js';
@@ -6,16 +9,23 @@ import OpenlayersMap from '../../../src/map/openlayersMap.js';
 import { getVcsEventSpy, getCesiumMap } from '../helpers/cesiumHelpers.js';
 import LayerCollection from '../../../src/util/layerCollection.js';
 import Layer from '../../../src/layer/layer.js';
-import VcsMap from '../../../src/map/vcsMap.js';
-import { makeOverrideCollection } from '../../../index.js';
+import VcsMap, { type VcsMapOptions } from '../../../src/map/vcsMap.js';
+import {
+  makeOverrideCollection,
+  type PanoramaImage,
+  type PanoramaMap,
+  type CesiumMap,
+  type OverrideCollection,
+  EventType,
+} from '../../../index.js';
 import {
   getPanoramaImage,
   getPanoramaMap,
 } from '../helpers/panoramaHelpers.js';
 
 describe('MapCollection', () => {
-  let target;
-  let sandbox;
+  let target: HTMLElement;
+  let sandbox: sinon.SinonSandbox;
 
   before(() => {
     sandbox = sinon.createSandbox();
@@ -27,8 +37,8 @@ describe('MapCollection', () => {
   });
 
   describe('adding a map', () => {
-    let mapCollection;
-    let map;
+    let mapCollection: MapCollection;
+    let map: VcsMap;
 
     before(() => {
       mapCollection = new MapCollection();
@@ -57,8 +67,8 @@ describe('MapCollection', () => {
 
   describe('removing a map', () => {
     describe('which was part of the collection', () => {
-      let mapCollection;
-      let map;
+      let mapCollection: MapCollection;
+      let map: VcsMap;
 
       before(() => {
         mapCollection = new MapCollection();
@@ -88,9 +98,9 @@ describe('MapCollection', () => {
     });
 
     describe('which was not part of the collection', () => {
-      let mapCollection;
-      let otherMapCollection;
-      let map;
+      let mapCollection: MapCollection;
+      let otherMapCollection: MapCollection;
+      let map: VcsMap;
 
       before(() => {
         mapCollection = new MapCollection();
@@ -121,8 +131,8 @@ describe('MapCollection', () => {
     });
 
     describe('which was the active map', () => {
-      let mapCollection;
-      let map;
+      let mapCollection: MapCollection;
+      let map: OpenlayersMap;
 
       before(async () => {
         mapCollection = new MapCollection();
@@ -144,16 +154,19 @@ describe('MapCollection', () => {
 
       it('should no longer listen to the postRender event on said map', () => {
         const spy = getVcsEventSpy(mapCollection.postRender, sandbox);
-        map.postRender.raiseEvent({ map });
+        map.postRender.raiseEvent({
+          originalEvent: new MapEvent('postrender', map.olMap!),
+          map,
+        });
         expect(spy).to.not.have.been.called;
       });
     });
   });
 
   describe('setting a layerCollection', () => {
-    let mapCollection;
-    let map;
-    let layerCollection;
+    let mapCollection: MapCollection;
+    let map: VcsMap;
+    let layerCollection: LayerCollection;
 
     before(() => {
       mapCollection = new MapCollection();
@@ -182,8 +195,8 @@ describe('MapCollection', () => {
   });
 
   describe('split position', () => {
-    let mapCollection;
-    let map;
+    let mapCollection: MapCollection;
+    let map: VcsMap;
 
     before(() => {
       mapCollection = new MapCollection();
@@ -198,6 +211,7 @@ describe('MapCollection', () => {
     });
 
     it('should return position', () => {
+      // @ts-expect-error private
       mapCollection._splitPosition = 0.1;
       expect(mapCollection.splitPosition).to.equal(0.1);
     });
@@ -208,7 +222,7 @@ describe('MapCollection', () => {
     });
 
     it('should throw, when setting bellow 0', () => {
-      function setBellowZero() {
+      function setBellowZero(): void {
         mapCollection.splitPosition = -1;
       }
 
@@ -216,7 +230,7 @@ describe('MapCollection', () => {
     });
 
     it('should throw, when setting above 1', () => {
-      function setAboveZero() {
+      function setAboveZero(): void {
         mapCollection.splitPosition = 2;
       }
 
@@ -245,8 +259,8 @@ describe('MapCollection', () => {
   });
 
   describe('setting a target', () => {
-    let mapCollection;
-    let map;
+    let mapCollection: MapCollection;
+    let map: VcsMap;
 
     before(() => {
       mapCollection = new MapCollection();
@@ -271,13 +285,13 @@ describe('MapCollection', () => {
 
   describe('setting the active map', () => {
     /** @type {import("@vcmap/core").MapCollection} */
-    let mapCollection;
-    let openlayers;
-    let cesiumMap;
+    let mapCollection: MapCollection;
+    let openlayers: OpenlayersMap;
+    let cesiumMap: CesiumMap;
 
     beforeEach(async () => {
       openlayers = await getOpenlayersMap();
-      cesiumMap = await getCesiumMap();
+      cesiumMap = getCesiumMap();
       mapCollection = MapCollection.from([openlayers, cesiumMap]);
       mapCollection.setTarget(target);
     });
@@ -346,9 +360,9 @@ describe('MapCollection', () => {
       it('should set the previous maps viewpoint on the new map', async () => {
         await mapCollection.setActiveMap(openlayers.name);
         const newVp = await openlayers.getViewpoint();
-        newVp.pitch = -45;
-        expect(newVp.groundPosition).to.have.members([0, 0]);
-        expect(newVp.distance).to.equal(200);
+        newVp!.pitch = -45;
+        expect(newVp!.groundPosition).to.have.members([0, 0]);
+        expect(newVp!.distance).to.equal(200);
       });
 
       it('should no longer listen to post render events from the previous map', async () => {
@@ -356,13 +370,14 @@ describe('MapCollection', () => {
         const spy = getVcsEventSpy(mapCollection.postRender, sandbox);
         cesiumMap.postRender.raiseEvent({
           map: cesiumMap,
+          // @ts-expect-error wront original event
           originalEven: { scene: cesiumMap.getScene(), time: JulianDate.now() },
         });
         expect(spy).to.not.have.been.called;
       });
 
       describe('cant show viewpoint & fallbackMap is defined', () => {
-        let fallbackMap;
+        let fallbackMap: VcsMap;
 
         beforeEach(async () => {
           fallbackMap = await getOpenlayersMap({ name: 'test' });
@@ -393,7 +408,7 @@ describe('MapCollection', () => {
       });
 
       describe('cant show viewpoint & fallbackToCurrent is defined', () => {
-        beforeEach(async () => {
+        beforeEach(() => {
           openlayers.fallbackToCurrentMap = true;
           sandbox.stub(openlayers, 'canShowViewpoint').resolves(false);
         });
@@ -414,7 +429,7 @@ describe('MapCollection', () => {
       });
 
       describe('map cannot be initialized', () => {
-        let fallbackMap;
+        let fallbackMap: VcsMap;
 
         beforeEach(async () => {
           fallbackMap = await getOpenlayersMap({ name: 'test' });
@@ -468,20 +483,20 @@ describe('MapCollection', () => {
       it('should use a cachedViewpoint from the last activeMap', async () => {
         await mapCollection.setActiveMap(openlayers.name);
         const newVp = await openlayers.getViewpoint();
-        newVp.pitch = -45;
-        expect(newVp.groundPosition).to.have.members([0, 0]);
-        expect(newVp.distance).to.equal(200);
+        newVp!.pitch = -45;
+        expect(newVp!.groundPosition).to.have.members([0, 0]);
+        expect(newVp!.distance).to.equal(200);
       });
     });
   });
 
   describe('setting a panorama map with a specific image', () => {
-    let mapCollection;
-    let openlayers;
-    let cesiumMap;
-    let panoramaMap;
-    let panoramaImage;
-    let destroy;
+    let mapCollection: MapCollection;
+    let openlayers: OpenlayersMap;
+    let cesiumMap: CesiumMap;
+    let panoramaMap: PanoramaMap;
+    let panoramaImage: PanoramaImage;
+    let destroy: () => void;
 
     before(async () => {
       ({ panoramaImage, destroy } = await getPanoramaImage({}));
@@ -489,7 +504,7 @@ describe('MapCollection', () => {
 
     beforeEach(async () => {
       openlayers = await getOpenlayersMap();
-      cesiumMap = await getCesiumMap();
+      cesiumMap = getCesiumMap();
       panoramaMap = getPanoramaMap();
       mapCollection = MapCollection.from([openlayers, cesiumMap, panoramaMap]);
       mapCollection.setTarget(target);
@@ -522,18 +537,20 @@ describe('MapCollection', () => {
   });
 
   describe('overrideMapCollection', () => {
-    /** @type {OverrideMapCollection} */
-    let mapCollection;
+    let mapCollection: OverrideCollection<VcsMap, MapCollection, VcsMapOptions>;
 
     beforeEach(() => {
-      mapCollection = new MapCollection();
-      makeOverrideCollection(
-        mapCollection,
+      mapCollection = makeOverrideCollection<
+        VcsMap,
+        MapCollection,
+        VcsMapOptions
+      >(
+        new MapCollection(),
         () => {
           return 'uuid';
         },
-        null,
-        null,
+        undefined,
+        undefined,
         VcsMap,
       );
     });
@@ -544,15 +561,12 @@ describe('MapCollection', () => {
 
     describe('on override', () => {
       it('the originalMap should not be activeMap after override', async () => {
-        /** @type {VcsMap} */
         const originalMap = new VcsMap({
           name: 'map',
-          exclusiveGroups: ['test'],
         });
         /** @type {VcsMap} */
         const overrideMap = new VcsMap({
           name: 'map',
-          exclusiveGroups: ['test'],
         });
         mapCollection.add(originalMap);
         await mapCollection.setActiveMap('map');
@@ -577,17 +591,16 @@ describe('MapCollection', () => {
         mapCollection.override(olMap2);
         await mapCollection.setActiveMap('map');
         const newVp = await olMap2.getViewpoint();
-        expect(newVp.groundPosition).to.have.members([0, 0]);
-        expect(newVp.distance).to.equal(200);
+        expect(newVp!.groundPosition).to.have.members([0, 0]);
+        expect(newVp!.distance).to.equal(200);
       });
     });
   });
 
   describe('requestExclusiveMapControls', () => {
-    /** @type {import("@vcmap/core").MapCollection} */
-    let mapCollection;
-    let openlayers;
-    let cesiumMap;
+    let mapCollection: MapCollection;
+    let openlayers: OpenlayersMap;
+    let cesiumMap: CesiumMap;
     const disableMovementOptions = {
       apiCalls: true,
       keyEvents: true,
@@ -596,7 +609,7 @@ describe('MapCollection', () => {
 
     beforeEach(async () => {
       openlayers = await getOpenlayersMap();
-      cesiumMap = await getCesiumMap();
+      cesiumMap = getCesiumMap();
       mapCollection = MapCollection.from([openlayers, cesiumMap]);
       mapCollection.setTarget(target);
       await mapCollection.setActiveMap(cesiumMap.name);
@@ -608,14 +621,14 @@ describe('MapCollection', () => {
       mapCollection.destroy();
     });
 
-    it('should pass options to activeMap.disableMovement', async () => {
+    it('should pass options to activeMap.disableMovement', () => {
       mapCollection.requestExclusiveMapControls(
         disableMovementOptions,
         () => {},
       );
-      expect(mapCollection.activeMap.movementApiCallsDisabled).to.be.true;
-      expect(mapCollection.activeMap.movementKeyEventsDisabled).to.be.true;
-      expect(mapCollection.activeMap.movementPointerEventsDisabled).to.be.true;
+      expect(mapCollection.activeMap!.movementApiCallsDisabled).to.be.true;
+      expect(mapCollection.activeMap!.movementKeyEventsDisabled).to.be.true;
+      expect(mapCollection.activeMap!.movementPointerEventsDisabled).to.be.true;
     });
 
     it('should listen to active map changes and reset prev map', async () => {
@@ -630,7 +643,7 @@ describe('MapCollection', () => {
       expect(cesiumMap.movementApiCallsDisabled).to.be.false;
     });
 
-    it('should reset after calling return function', async () => {
+    it('should reset after calling return function', () => {
       const reset = mapCollection.requestExclusiveMapControls(
         disableMovementOptions,
         () => {},
@@ -639,7 +652,7 @@ describe('MapCollection', () => {
       expect(cesiumMap.movementApiCallsDisabled).to.be.false;
     });
 
-    it('should call removed callback when removed by another exclusive map control', async () => {
+    it('should call removed callback when removed by another exclusive map control', () => {
       const spy = sinon.spy();
       mapCollection.requestExclusiveMapControls(disableMovementOptions, spy);
       mapCollection.requestExclusiveMapControls(
@@ -649,7 +662,7 @@ describe('MapCollection', () => {
       expect(spy).to.have.been.called;
     });
 
-    it('should not reset if not exclusiveMapControls owner', async () => {
+    it('should not reset if not exclusiveMapControls owner', () => {
       const reset1 = mapCollection.requestExclusiveMapControls(
         disableMovementOptions,
         () => {},
@@ -706,6 +719,44 @@ describe('MapCollection', () => {
       mapCollection.exclusiveMapControlsChanged.addEventListener(spy);
       mapCollection.resetExclusiveMapControls();
       expect(spy).to.not.have.been.called;
+    });
+  });
+
+  describe('pausing panorama selection tools', () => {
+    let mapCollection: MapCollection;
+
+    beforeEach(() => {
+      mapCollection = new MapCollection();
+    });
+
+    afterEach(() => {
+      mapCollection.destroy();
+    });
+
+    it('should set pausePanoramaSelectionTools to true', () => {
+      mapCollection.pausePanoramaImageSelection = true;
+      expect(mapCollection.pausePanoramaImageSelection).to.be.true;
+    });
+
+    it('should set pausePanoramaSelectionTools to false', () => {
+      mapCollection.pausePanoramaImageSelection = true;
+      mapCollection.pausePanoramaImageSelection = false;
+      expect(mapCollection.pausePanoramaImageSelection).to.be.false;
+    });
+
+    it('should disable the selection tool when paused', () => {
+      mapCollection.pausePanoramaImageSelection = true;
+      expect(mapCollection.panoramaImageSelection.active).to.equal(
+        EventType.NONE,
+      );
+    });
+
+    it('should enable the selection tool when unpaused', () => {
+      mapCollection.pausePanoramaImageSelection = true;
+      mapCollection.pausePanoramaImageSelection = false;
+      expect(mapCollection.panoramaImageSelection.active).to.not.equal(
+        EventType.NONE,
+      );
     });
   });
 });

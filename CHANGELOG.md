@@ -8,6 +8,7 @@
   coordinate at pixel & feature interactions, which do not have a position set.
 - All 3D layers now also support `PanoramaMap`.
 - `PanoramaMap` renders in HDR by default.
+- The maps collection has a convenience API to pause panorama image selection & highlighting: `app.maps.pausePanoramaSelection = true;` turns off panorama image selection & highlighting for all panorama maps.
 
 #### Fixes
 
@@ -17,7 +18,8 @@
 
 - Removed the `balloonHeightOffset` property from all `FeatureLayer`s.
 - The event handler will no longer emit events with a position of `[0, 0, 0]` if no position could be determined.
-  Instead, propagation is stopped on these events
+  Instead, propagation is stopped on these events. Drag events will always emit start & end, but end may
+  use the last known position, if now position is available at end.
 
 ### 6.2.3
 

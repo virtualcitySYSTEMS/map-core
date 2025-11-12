@@ -123,7 +123,7 @@ export function setupInteractionChain(
   removed: VcsEvent<void>;
   destroy(this: void): void;
 } {
-  const { eventHandler, panoramaImageSelection } = maps;
+  const { eventHandler } = maps;
   const interactionChain = new InteractionChain();
   const removed = new VcsEvent<void>();
   const listener = eventHandler.addExclusiveInteraction(
@@ -139,9 +139,6 @@ export function setupInteractionChain(
     EventType.CLICKMOVE | EventType.DRAGEVENTS,
   );
 
-  const currentPanoramaSelectionEvent = panoramaImageSelection.active;
-  panoramaImageSelection.setActive(false);
-
   return {
     interactionChain,
     destroy(): void {
@@ -149,7 +146,6 @@ export function setupInteractionChain(
       removed.destroy();
       interactionChain.destroy();
       eventHandler.featureInteraction.setActive(currentFeatureInteractionEvent);
-      panoramaImageSelection.setActive(currentPanoramaSelectionEvent);
     },
     removed,
   };

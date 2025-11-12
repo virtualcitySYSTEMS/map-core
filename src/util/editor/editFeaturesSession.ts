@@ -329,7 +329,9 @@ function startEditFeaturesSession(
 
   const createTransformations = (): void => {
     destroyTransformation();
-
+    const currentEnsurePositionActive =
+      app.maps.eventHandler.ensurePositionInteraction.active;
+    app.maps.eventHandler.ensurePositionInteraction.setActive(false);
     transformationHandler = createTransformationHandler(
       app.maps.activeMap!,
       layer,
@@ -375,6 +377,9 @@ function startEditFeaturesSession(
     interactionChain.addInteraction(interaction);
 
     destroyTransformation = (): void => {
+      app.maps.eventHandler.ensurePositionInteraction.setActive(
+        currentEnsurePositionActive,
+      );
       interactionChain.removeInteraction(interaction);
       interaction.destroy();
       transformationHandler?.destroy();
@@ -436,7 +441,7 @@ function startEditFeaturesSession(
   };
 
   const originalCreateSyncMap = new Map<string | number, boolean>();
-
+  app.maps.pausePanoramaImageSelection = true;
   const stop = (): void => {
     destroyTransformation();
     destroyInteractionChain();
@@ -444,6 +449,7 @@ function startEditFeaturesSession(
     mapChangedListener();
     modifierChangedListener();
     unByKey(featureListeners);
+    app.maps.pausePanoramaImageSelection = false;
     currentFeatures.forEach((feature) => {
       clearAllowPicking(feature, allowPickingMap);
       clearCreateSync(feature, originalCreateSyncMap);

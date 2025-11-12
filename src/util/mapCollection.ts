@@ -22,6 +22,7 @@ import PanoramaImageSelection from '../interaction/panoramaImageSelection.js';
 import type { PanoramaImage } from '../panorama/panoramaImage.js';
 import type PanoramaMap from '../map/panoramaMap.js';
 import PanoramaFeatureHighlight from '../interaction/panoramaFeatureHighlight.js';
+import { EventType } from '../interaction/interactionType.js';
 
 export type MapCollectionInitializationError = {
   error: Error;
@@ -256,6 +257,23 @@ class MapCollection extends Collection<VcsMap> {
    */
   get exclusiveMapControlsId(): string | symbol | undefined {
     return this._exclusiveMapControls?.id;
+  }
+
+  /**
+   * Indicates whether panorama image selection is paused.
+   */
+  get pausePanoramaImageSelection(): boolean {
+    return (
+      this._panoramaImageSelection.active === EventType.NONE &&
+      this._panoramaTileHighlight.active === EventType.NONE
+    );
+  }
+
+  set pausePanoramaImageSelection(paused: boolean) {
+    check(paused, Boolean);
+    const active = paused ? false : undefined;
+    this._panoramaImageSelection.setActive(active);
+    this._panoramaTileHighlight.setActive(active);
   }
 
   /**

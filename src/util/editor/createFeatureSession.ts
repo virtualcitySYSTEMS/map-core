@@ -340,6 +340,7 @@ function startCreateFeatureSession<T extends GeometryType>(
   if (app.maps.target) {
     app.maps.target.style.cursor = cursorMap.edit;
   }
+  app.maps.pausePanoramaImageSelection = true;
 
   const stop = (): void => {
     isStopped = true; // setting stopped true immediately, to prevent the recreation of the interaction chain on finished
@@ -348,6 +349,8 @@ function startCreateFeatureSession<T extends GeometryType>(
     if (app.maps.target) {
       app.maps.target.style.cursor = cursorMap.auto;
     }
+    app.maps.pausePanoramaImageSelection = false;
+
     mapChangedListener();
     obliqueImageChangedListener();
     if (currentInteraction) {

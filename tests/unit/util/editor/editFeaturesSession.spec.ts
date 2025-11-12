@@ -220,6 +220,19 @@ describe('startEditFeaturesSession', () => {
       session.stop();
       expect(feature[createSync]).to.not.exist;
     });
+
+    it('should reset the active of the ensure position interaction', () => {
+      const { ensurePositionInteraction } = app.maps.eventHandler;
+      expect(ensurePositionInteraction.active).to.equal(0);
+      session.stop();
+      expect(ensurePositionInteraction.active).to.not.equal(0);
+    });
+
+    it('should unpause panorama selection', () => {
+      expect(app.maps.pausePanoramaImageSelection).to.be.true;
+      session.stop();
+      expect(app.maps.pausePanoramaImageSelection).to.be.false;
+    });
   });
 
   describe('starting a TRANSLATE session', () => {
@@ -251,6 +264,11 @@ describe('startEditFeaturesSession', () => {
 
     it('should add a an exclusive listener to the event handler', () => {
       expect(interactionChain).to.be.an.instanceof(InteractionChain);
+    });
+
+    it('should disable the ensure position interaction', () => {
+      const { ensurePositionInteraction } = app.maps.eventHandler;
+      expect(ensurePositionInteraction.active).to.equal(0);
     });
 
     it('should add the translate interaction and work for 3D geometries', async () => {
@@ -363,6 +381,11 @@ describe('startEditFeaturesSession', () => {
 
     it('should add a an exclusive listener to the event handler', () => {
       expect(interactionChain).to.be.an.instanceof(InteractionChain);
+    });
+
+    it('should disable the ensure position interaction', () => {
+      const { ensurePositionInteraction } = app.maps.eventHandler;
+      expect(ensurePositionInteraction.active).to.equal(0);
     });
 
     it('should add the rotate interaction and work for 3D geometries', async () => {
@@ -782,6 +805,11 @@ describe('startEditFeaturesSession', () => {
 
     it('should add a an exclusive listener to the event handler', () => {
       expect(interactionChain).to.be.an.instanceof(InteractionChain);
+    });
+
+    it('should disable the ensure position interaction', () => {
+      const { ensurePositionInteraction } = app.maps.eventHandler;
+      expect(ensurePositionInteraction.active).to.equal(0);
     });
 
     it('should add the scale interaction and work for 3D geometries', async () => {
@@ -1329,6 +1357,11 @@ describe('startEditFeaturesSession', () => {
       expect(interactionChain).to.be.an.instanceof(InteractionChain);
     });
 
+    it('should disable the ensure position interaction', () => {
+      const { ensurePositionInteraction } = app.maps.eventHandler;
+      expect(ensurePositionInteraction.active).to.equal(0);
+    });
+
     describe('extruding a feature', () => {
       let stub: SinonStub;
       let restorePick: () => void;
@@ -1551,6 +1584,11 @@ describe('startEditFeaturesSession', () => {
     it('should not allow changing the mode to extrude, if the map is not a cesium map', () => {
       session.setMode(TransformationMode.EXTRUDE);
       expect(session.mode).to.equal(TransformationMode.TRANSLATE);
+    });
+
+    it('should still disable the ensure position interaction', () => {
+      const { ensurePositionInteraction } = app.maps.eventHandler;
+      expect(ensurePositionInteraction.active).to.equal(0);
     });
   });
 

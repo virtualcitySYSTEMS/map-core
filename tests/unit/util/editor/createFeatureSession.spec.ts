@@ -218,6 +218,10 @@ describe('create feature session', () => {
         EventType.CLICKMOVE | EventType.DRAGEVENTS,
       );
     });
+
+    it('should pause panorama selection', () => {
+      expect(app.maps.pausePanoramaImageSelection).to.be.true;
+    });
   });
 
   describe('stopping a session', () => {

@@ -75,6 +75,10 @@ describe('EditGeometrySession', () => {
       );
     });
 
+    it('should pause panorama selection', () => {
+      expect(app.maps.pausePanoramaImageSelection).to.be.true;
+    });
+
     describe('setting a feature', () => {
       let feature: Feature<Point>;
 
@@ -836,6 +840,12 @@ describe('EditGeometrySession', () => {
       expect(app.maps.eventHandler.featureInteraction.pickPosition).to.equal(
         EventType.CLICK,
       );
+    });
+
+    it('should unpause panorama selection', () => {
+      expect(app.maps.pausePanoramaImageSelection).to.be.true;
+      session.stop();
+      expect(app.maps.pausePanoramaImageSelection).to.be.false;
     });
 
     describe('with a feature selected', () => {
