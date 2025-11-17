@@ -165,7 +165,7 @@ export default class PanoramaMap extends BaseCesiumMap {
       cesiumWidget.scene.primitives.destroyPrimitives = false;
 
       cesiumWidget.scene.highDynamicRange = true;
-      cesiumWidget.scene.gamma = 1.8;
+      cesiumWidget.scene.gamma = 2.2;
 
       this.initialized = true;
       this._initializeCesiumWidget(cesiumWidget);
