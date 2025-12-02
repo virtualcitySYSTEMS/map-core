@@ -1,3 +1,7 @@
+### 6.2.4
+
+- Fixes an issue where `getAttributes` of cesium3DTileFeature did not return anything if the attributes where not defined in attributes bag and version was not set on 1.1
+
 ### 6.2.3
 
 - Updates `getFeaturesByCoordinate` in `wmsFeatureProvider` to consider the extent and to respect the `tilingSchema` in the bbox calculation
