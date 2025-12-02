@@ -9,10 +9,16 @@
 - All 3D layers now also support `PanoramaMap`.
 - `PanoramaMap` renders in HDR by default.
 - The maps collection has a convenience API to pause panorama image selection & highlighting: `app.maps.pausePanoramaSelection = true;` turns off panorama image selection & highlighting for all panorama maps.
+- `getInitForUrl` is properly documented and exported for use in plugins.
+- `PanoramaDatasetLayer` has a new option `panoramaVectorProperties` to override the default vector properties for panorama images.
 
 #### Fixes
 
 - Fixes an issue in panorama, where the sRGB color space was not correctly handled for panorama images.
+- Panorama maps properly hide cesium credits container.
+- Panorama image names derived from URLs are properly decoded.
+- Fixes an issue with `VectorProperties` where `getVcsMeta` would not return `modelOptions`, `primitiveOptions` & `modelAutoScale`.
+- Fixes an issue where declarative styles would re-use the same color object.
 
 #### Breaking Changes
 

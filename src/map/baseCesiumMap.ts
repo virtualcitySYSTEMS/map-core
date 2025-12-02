@@ -183,6 +183,22 @@ export default class BaseCesiumMap extends VcsMap<CesiumVisualisationType> {
       ),
     );
 
+    this._cesiumWidget.scene.frameState.creditDisplay.update = (): void => {};
+    this._cesiumWidget.scene.frameState.creditDisplay.beginFrame =
+      (): void => {};
+    this._cesiumWidget.scene.frameState.creditDisplay.endFrame = (): void => {};
+
+    // hide default cesium credits container
+    const creditsContainer = document.getElementsByClassName(
+      'cesium-widget-credits',
+    );
+    if (creditsContainer) {
+      for (let i = 0; i < creditsContainer.length; i++) {
+        const element = creditsContainer[i] as HTMLElement;
+        element.style.display = 'none';
+      }
+    }
+
     this._listeners.push(
       this._cesiumWidget.scene.postRender.addEventListener(
         (eventScene: Scene, time: JulianDate) => {

@@ -423,10 +423,6 @@ class CesiumMap extends BaseCesiumMap {
         dataSourceCollection: new DataSourceCollection(),
       });
 
-      cesiumWidget.scene.frameState.creditDisplay.update = (): void => {};
-      cesiumWidget.scene.frameState.creditDisplay.beginFrame = (): void => {};
-      cesiumWidget.scene.frameState.creditDisplay.endFrame = (): void => {};
-
       const { clock } = cesiumWidget;
       clock.shouldAnimate = true;
       this._listeners.push(
@@ -446,17 +442,6 @@ class CesiumMap extends BaseCesiumMap {
       cesiumWidget.scene.light.intensity = this._lightIntensity;
 
       cesiumWidget.scene.globe.enableLighting = this.enableLightning;
-
-      // hide default cesium credits container
-      const creditsContainer = document.getElementsByClassName(
-        'cesium-widget-credits',
-      );
-      if (creditsContainer) {
-        for (let i = 0; i < creditsContainer.length; i++) {
-          const element = creditsContainer[i] as HTMLElement;
-          element.style.display = 'none';
-        }
-      }
 
       this.initialized = true;
       this._initializeCesiumWidget(cesiumWidget);

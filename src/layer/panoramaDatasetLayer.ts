@@ -9,7 +9,10 @@ import VectorTileLayer, {
 import PanoramaDatasetPanoramaImpl from './panorama/panoramaDatasetPanoramaImpl.js';
 import type VcsMap from '../map/vcsMap.js';
 import PanoramaMap from '../map/panoramaMap.js';
-import VectorProperties, { PrimitiveOptionsType } from './vectorProperties.js';
+import VectorProperties, {
+  PrimitiveOptionsType,
+  type VectorPropertiesOptions,
+} from './vectorProperties.js';
 import { maxZIndexMin50 } from '../util/layerCollection.js';
 import { layerClassRegistry } from '../classRegistry.js';
 import FlatGeobufTileProvider from './tileProvider/flatGeobufTileProvider.js';
@@ -30,6 +33,7 @@ export type PanoramaDatasetOptions = Omit<
   url: string;
   baseLevel?: number;
   cameraOffset?: number;
+  panoramaVectorProperties?: VectorPropertiesOptions;
 };
 
 export type PanoramaDatasetFeatureProperties = {
@@ -53,6 +57,17 @@ export default class PanoramaDatasetLayer extends VectorTileLayer<PanoramaDatase
       maxLevel: 22,
       zIndex: maxZIndexMin50,
       ignoreMapLayerTypes: true,
+      panoramaVectorProperties: {
+        altitudeMode: 'absolute',
+        primitiveOptions: {
+          type: PrimitiveOptionsType.CYLINDER,
+          geometryOptions: {
+            topRadius: 1,
+            bottomRadius: 1,
+            length: 0.01,
+          },
+        },
+      },
     };
   }
 
@@ -115,18 +130,20 @@ export default class PanoramaDatasetLayer extends VectorTileLayer<PanoramaDatase
       defaultOptions.cameraOffset,
     );
 
-    this._panoramaVectorProperties = new VectorProperties({
-      altitudeMode: 'absolute',
-      primitiveOptions: {
-        type: PrimitiveOptionsType.CYLINDER,
-        geometryOptions: {
-          topRadius: 1,
-          bottomRadius: 1,
-          length: 0.01,
-        },
-        offset: [0, 0, this.cameraOffset],
-      },
-    });
+    defaultOptions.panoramaVectorProperties!.primitiveOptions!.offset = [
+      0,
+      0,
+      this.cameraOffset,
+    ];
+
+    this._panoramaVectorProperties = new VectorProperties(
+      defaultOptions.panoramaVectorProperties!,
+    );
+    if (options.panoramaVectorProperties) {
+      this._panoramaVectorProperties.setValues(
+        options.panoramaVectorProperties,
+      );
+    }
 
     this._supportedMaps.push(PanoramaMap.className);
   }
@@ -270,6 +287,20 @@ export default class PanoramaDatasetLayer extends VectorTileLayer<PanoramaDatase
 
     if (config.zIndex === defaultOptions.zIndex) {
       delete config.zIndex;
+    }
+
+    defaultOptions.panoramaVectorProperties!.primitiveOptions!.offset = [
+      0,
+      0,
+      this.cameraOffset,
+    ];
+    const vectorPropertiesConfig = this._panoramaVectorProperties.getVcsMeta({
+      ...VectorProperties.getDefaultOptions(),
+      ...defaultOptions.panoramaVectorProperties,
+    });
+
+    if (Object.keys(vectorPropertiesConfig).length > 0) {
+      config.panoramaVectorProperties = vectorPropertiesConfig;
     }
 
     const thisDefaultStyle = getStyleOrDefaultStyle(defaultOptions.style);

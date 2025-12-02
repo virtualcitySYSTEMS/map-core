@@ -105,7 +105,7 @@ class VectorLayer
       dontUseTerrainForOblique: false,
       highlightStyle: undefined,
       isDynamic: false,
-      vectorProperties: {}, // XXX or should we return VectorProperties default options?
+      vectorProperties: undefined, // XXX or should we return VectorProperties default options?
       vectorClusterGroup: undefined,
       ignoreMapLayerTypes: true,
     };
@@ -545,7 +545,9 @@ class VectorLayer
       config.isDynamic = this.isDynamic;
     }
 
-    const vectorPropertiesConfig = this.vectorProperties.getVcsMeta();
+    const vectorPropertiesConfig = this.vectorProperties.getVcsMeta(
+      defaultOptions.vectorProperties,
+    );
     if (Object.keys(vectorPropertiesConfig).length > 0) {
       config.vectorProperties = vectorPropertiesConfig;
     }

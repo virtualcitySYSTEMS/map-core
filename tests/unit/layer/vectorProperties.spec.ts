@@ -8,7 +8,11 @@ import {
   NearFarScalar,
   Cartesian3,
 } from '@vcmap-cesium/engine';
-import type { VectorPropertiesPrimitiveOptions } from '../../../src/layer/vectorProperties.js';
+import type {
+  VcsMeta,
+  VectorPropertiesOptions,
+  VectorPropertiesPrimitiveOptions,
+} from '../../../src/layer/vectorProperties.js';
 import VectorProperties, {
   parseCartesian3,
   parseNearFarScalar,
@@ -160,19 +164,19 @@ describe('VectorProperties', () => {
         storeyHeightsAboveGround: [1, 2, 3],
         storeyHeightsBelowGround: [2, 3],
         modelUrl: 'http://localhost/test.glb',
-        modelPitch: 180,
-        modelRoll: 180,
-        modelHeading: 180,
         modelScaleX: 2,
         modelScaleY: 2,
         modelScaleZ: 2,
-        modelOptions: {},
+        modelHeading: 180,
+        modelPitch: 180,
+        modelRoll: 180,
         modelAutoScale: true,
-        baseUrl: 'http://other',
+        modelOptions: {},
         primitiveOptions: {
           type: PrimitiveOptionsType.SPHERE,
           geometryOptions: {},
         },
+        baseUrl: 'http://other',
       });
       eventListener = sandbox.spy();
       vectorProperties.propertyChanged.addEventListener(eventListener);
@@ -1091,6 +1095,200 @@ describe('VectorProperties', () => {
           features,
         );
         expect(features[0].get('olcs_altitudeMode')).to.equal(altitudeMode);
+      });
+    });
+
+    describe('serialization', () => {
+      describe('with a default object', () => {
+        let configuredVectorProperties: VectorProperties;
+
+        before(() => {
+          configuredVectorProperties = new VectorProperties({});
+        });
+
+        after(() => {
+          configuredVectorProperties.destroy();
+        });
+
+        it('should serialize to an empty object', () => {
+          const obj = configuredVectorProperties.getVcsMeta();
+          expect(obj).to.be.an('object').and.to.be.empty;
+        });
+      });
+
+      describe('with a configured object', () => {
+        let configuredVectorProperties: VectorProperties;
+        let vcsMeta: Omit<VcsMeta, 'version'>;
+        let inputConfig: VectorPropertiesOptions;
+
+        before(() => {
+          // Create a fully configured input object with every possible key
+          inputConfig = {
+            altitudeMode: 'absolute',
+            allowPicking: false,
+            classificationType: 'terrain',
+            scaleByDistance: [1, 2, 3, 4],
+            eyeOffset: [5, 6, 7],
+            heightAboveGround: 10,
+            skirt: 15,
+            groundLevel: 20,
+            extrudedHeight: 25,
+            storeysAboveGround: 5,
+            storeysBelowGround: 2,
+            storeyHeightsAboveGround: [3, 4, 5],
+            storeyHeightsBelowGround: [2.5, 3.5],
+            modelUrl: 'http://localhost/model.glb',
+            modelScaleX: 2,
+            modelScaleY: 3,
+            modelScaleZ: 4,
+            modelHeading: 90,
+            modelPitch: 45,
+            modelRoll: 30,
+            modelAutoScale: true,
+            modelOptions: {
+              color: 'red',
+              show: true,
+              maximumScreenSpaceError: 16,
+              shadows: 'enabled',
+            },
+            primitiveOptions: {
+              type: PrimitiveOptionsType.CYLINDER,
+              geometryOptions: {
+                length: 10,
+                topRadius: 5,
+                bottomRadius: 3,
+                slices: 8,
+                vertexFormat: undefined,
+              },
+              depthFailColor: [255, 0, 0, 0.5],
+              offset: [1, 2, 3],
+              additionalOptions: {
+                shadows: 'enabled',
+                debugShowBoundingVolume: false,
+              },
+            },
+            baseUrl: 'http://localhost/assets/',
+          };
+
+          configuredVectorProperties = new VectorProperties(inputConfig);
+          vcsMeta = configuredVectorProperties.getVcsMeta();
+        });
+
+        after(() => {
+          configuredVectorProperties.destroy();
+        });
+
+        it('should serialize altitudeMode correctly', () => {
+          expect(vcsMeta.altitudeMode).to.equal(inputConfig.altitudeMode);
+        });
+
+        it('should serialize allowPicking correctly', () => {
+          expect(vcsMeta.allowPicking).to.equal(inputConfig.allowPicking);
+        });
+
+        it('should serialize classificationType correctly', () => {
+          expect(vcsMeta.classificationType).to.equal(
+            inputConfig.classificationType,
+          );
+        });
+
+        it('should serialize scaleByDistance correctly', () => {
+          expect(vcsMeta.scaleByDistance).to.deep.equal(
+            inputConfig.scaleByDistance,
+          );
+        });
+
+        it('should serialize eyeOffset correctly', () => {
+          expect(vcsMeta.eyeOffset).to.deep.equal(inputConfig.eyeOffset);
+        });
+
+        it('should serialize heightAboveGround correctly', () => {
+          expect(vcsMeta.heightAboveGround).to.equal(
+            inputConfig.heightAboveGround,
+          );
+        });
+
+        it('should serialize skirt correctly', () => {
+          expect(vcsMeta.skirt).to.equal(inputConfig.skirt);
+        });
+
+        it('should serialize groundLevel correctly', () => {
+          expect(vcsMeta.groundLevel).to.equal(inputConfig.groundLevel);
+        });
+
+        it('should serialize extrudedHeight correctly', () => {
+          expect(vcsMeta.extrudedHeight).to.equal(inputConfig.extrudedHeight);
+        });
+
+        it('should serialize storeysAboveGround correctly', () => {
+          expect(vcsMeta.storeysAboveGround).to.equal(
+            inputConfig.storeysAboveGround,
+          );
+        });
+
+        it('should serialize storeysBelowGround correctly', () => {
+          expect(vcsMeta.storeysBelowGround).to.equal(
+            inputConfig.storeysBelowGround,
+          );
+        });
+
+        it('should serialize storeyHeightsAboveGround correctly', () => {
+          expect(vcsMeta.storeyHeightsAboveGround).to.deep.equal(
+            inputConfig.storeyHeightsAboveGround,
+          );
+        });
+
+        it('should serialize storeyHeightsBelowGround correctly', () => {
+          expect(vcsMeta.storeyHeightsBelowGround).to.deep.equal(
+            inputConfig.storeyHeightsBelowGround,
+          );
+        });
+
+        it('should serialize modelUrl correctly', () => {
+          expect(vcsMeta.modelUrl).to.equal(inputConfig.modelUrl);
+        });
+
+        it('should serialize modelScaleX correctly', () => {
+          expect(vcsMeta.modelScaleX).to.equal(inputConfig.modelScaleX);
+        });
+
+        it('should serialize modelScaleY correctly', () => {
+          expect(vcsMeta.modelScaleY).to.equal(inputConfig.modelScaleY);
+        });
+
+        it('should serialize modelScaleZ correctly', () => {
+          expect(vcsMeta.modelScaleZ).to.equal(inputConfig.modelScaleZ);
+        });
+
+        it('should serialize modelHeading correctly', () => {
+          expect(vcsMeta.modelHeading).to.equal(inputConfig.modelHeading);
+        });
+
+        it('should serialize modelPitch correctly', () => {
+          expect(vcsMeta.modelPitch).to.equal(inputConfig.modelPitch);
+        });
+
+        it('should serialize modelRoll correctly', () => {
+          expect(vcsMeta.modelRoll).to.equal(inputConfig.modelRoll);
+        });
+
+        it('should serialize modelAutoScale correctly', () => {
+          expect(vcsMeta.modelAutoScale).to.equal(inputConfig.modelAutoScale);
+        });
+
+        it('should serialize modelOptions correctly', () => {
+          expect(vcsMeta.modelOptions).to.deep.equal(inputConfig.modelOptions);
+        });
+
+        it('should serialize primitiveOptions correctly', () => {
+          expect(vcsMeta.primitiveOptions).to.deep.equal(
+            inputConfig.primitiveOptions,
+          );
+        });
+
+        it('should serialize baseUrl correctly', () => {
+          expect(vcsMeta.baseUrl).to.equal(inputConfig.baseUrl);
+        });
       });
     });
   });

@@ -38,6 +38,13 @@ export async function requestObjectUrl(
   return URL.createObjectURL(blob);
 }
 
+/**
+ * Get a RequestInit object for the given url, adding optional headers. If the url is in the
+ * TrustedServers {@see https://cesium.com/learn/cesiumjs/ref-doc/TrustedServers.html?classFilter=Trusted}
+ * credentials will be included in the request.
+ * @param url
+ * @param headers
+ */
 export function getInitForUrl(
   url: string,
   headers?: Record<string, string>,

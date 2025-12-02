@@ -55,8 +55,6 @@ export type DeclarativeStyleItemOptions = StyleItemOptions & {
   declarativeStyle?: DeclarativeStyleOptions;
 };
 
-const scratchColor = new Color();
-
 const defaultText = new OLText({
   font: '30px sans-serif',
   fill: new Fill({ color: whiteColor }),
@@ -205,7 +203,7 @@ class DeclarativeStyleItem extends StyleItem {
   private _stylePolygon(feature: Feature): Style {
     const style = new Style({});
     const color = this.cesiumStyle.color
-      ? this.cesiumStyle.color.evaluate<Color>(feature, scratchColor)
+      ? this.cesiumStyle.color.evaluate<Color>(feature, new Color())
       : Color.WHITE;
     if (color) {
       style.setFill(
@@ -223,7 +221,7 @@ class DeclarativeStyleItem extends StyleItem {
     const style = new Style({});
     const isExtruded = !!feature.get('olcs_extrudedHeight');
     const color = this.cesiumStyle.color
-      ? this.cesiumStyle.color.evaluate<Color>(feature, scratchColor)
+      ? this.cesiumStyle.color.evaluate<Color>(feature, new Color())
       : Color.WHITE;
     if (color) {
       if (isExtruded) {
@@ -269,7 +267,7 @@ class DeclarativeStyleItem extends StyleItem {
         if (this.cesiumStyle.labelColor) {
           const textColor = this.cesiumStyle.labelColor.evaluateColor(
             feature,
-            scratchColor,
+            new Color(),
           );
           if (textColor) {
             textStyle.getFill()!.setColor(cesiumColorToColor(textColor));
@@ -279,7 +277,7 @@ class DeclarativeStyleItem extends StyleItem {
           const outlineColor =
             this.cesiumStyle.labelOutlineColor.evaluate<Color>(
               feature,
-              scratchColor,
+              new Color(),
             );
           if (outlineColor) {
             const outlineWidth = this.cesiumStyle.labelOutlineWidth
@@ -314,7 +312,7 @@ class DeclarativeStyleItem extends StyleItem {
       }
     } else {
       const color =
-        this.cesiumStyle.color?.evaluate<Color>(feature, scratchColor) ??
+        this.cesiumStyle.color?.evaluate<Color>(feature, new Color()) ??
         Color.WHITE;
 
       let radius = 4;
@@ -330,7 +328,7 @@ class DeclarativeStyleItem extends StyleItem {
         if (this.cesiumStyle.pointOutlineColor) {
           pointOutlineColor = this.cesiumStyle.pointOutlineColor.evaluateColor(
             feature,
-            scratchColor,
+            new Color(),
           );
         }
         radius += width / 2;
@@ -372,7 +370,7 @@ class DeclarativeStyleItem extends StyleItem {
     if (this.cesiumStyle.strokeColor) {
       const strokeColor = this.cesiumStyle.strokeColor.evaluateColor(
         feature,
-        scratchColor,
+        new Color(),
       );
       if (strokeColor) {
         const strokeWidth = this.cesiumStyle.strokeWidth

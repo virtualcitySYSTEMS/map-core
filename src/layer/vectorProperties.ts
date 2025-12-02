@@ -347,8 +347,8 @@ class VectorProperties {
       modelRoll: 0,
       modelOptions: undefined,
       modelAutoScale: false,
-      baseUrl: undefined,
       primitiveOptions: undefined,
+      baseUrl: undefined,
     };
   }
 
@@ -1682,6 +1682,15 @@ class VectorProperties {
     }
     if (this.baseUrl !== defaultValues.baseUrl) {
       vcsMeta.baseUrl = this.baseUrl;
+    }
+    if (!deepEqual(this.modelOptions, defaultOptions?.modelOptions)) {
+      vcsMeta.modelOptions = this.modelOptions;
+    }
+    if (this.modelAutoScale !== defaultValues.modelAutoScale) {
+      vcsMeta.modelAutoScale = this.modelAutoScale;
+    }
+    if (!deepEqual(this.primitiveOptions, defaultOptions?.primitiveOptions)) {
+      vcsMeta.primitiveOptions = this.primitiveOptions;
     }
     return vcsMeta;
   }

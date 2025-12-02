@@ -757,6 +757,7 @@ export {
   requestUrl,
   requestJson,
   requestArrayBuffer,
+  getInitForUrl,
 } from './src/util/fetch.js';
 export {
   getFlatCoordinatesFromSimpleGeometry,

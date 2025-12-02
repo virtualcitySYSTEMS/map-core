@@ -136,6 +136,11 @@ describe('PanoramaDatasetLayer', () => {
           url: 'foo',
           baseLevel: 18,
           cameraOffset: 100,
+          panoramaVectorProperties: {
+            primitiveOptions: undefined,
+            modelUrl: 'foo.gltf',
+            modelScaleX: 2,
+          },
         };
 
         output = new PanoramaDataset(input).toJSON();
@@ -151,6 +156,12 @@ describe('PanoramaDatasetLayer', () => {
 
       it('should configure the camera offset', () => {
         expect(output).to.have.property('cameraOffset', input.cameraOffset);
+      });
+
+      it('should configure the panorama vector properties', () => {
+        expect(output)
+          .to.have.property('panoramaVectorProperties')
+          .and.to.deep.equal(input.panoramaVectorProperties);
       });
     });
   });

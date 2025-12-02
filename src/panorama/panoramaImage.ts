@@ -312,7 +312,7 @@ function parseRgbUrl(imageUrl: string): {
   if (!fileName || !fileName.endsWith('_rgb.tif')) {
     throw new Error('Invalid image url');
   }
-  const name = fileName.slice(0, -8);
+  const name = decodeURIComponent(fileName.slice(0, -8));
 
   return {
     name,
@@ -367,11 +367,14 @@ export async function createPanoramaImage(
   );
 
   let getIntensityImages: (() => Promise<GeoTIFFImage[]>) | undefined;
-  if (intensityImage || (hasIntensity && absoluteRootUrl)) {
+  if (intensityImage || (hasIntensity && absoluteRootUrl && name)) {
     getIntensityImages = async (): Promise<GeoTIFFImage[]> => {
       const usedIntensityImage =
         intensityImage ??
-        (await fromUrl(new URL(`${name}_intensity.tif`, absoluteRootUrl).href));
+        (await fromUrl(
+          new URL(`${encodeURIComponent(name!)}_intensity.tif`, absoluteRootUrl)
+            .href,
+        ));
 
       const {
         images: intensity,
@@ -398,10 +401,10 @@ export async function createPanoramaImage(
     | undefined;
 
   let usedDepthImage = depthImage;
-  if (!usedDepthImage && hasDepth && absoluteRootUrl) {
+  if (!usedDepthImage && hasDepth && absoluteRootUrl && name) {
     try {
       usedDepthImage = await fromUrl(
-        new URL(`${name}_depth.tif`, absoluteRootUrl).href,
+        new URL(`${encodeURIComponent(name)}_depth.tif`, absoluteRootUrl).href,
       );
     } catch (e) {
       getLogger('PanoramaImage').warning(
