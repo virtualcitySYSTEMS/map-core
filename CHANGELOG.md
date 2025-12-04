@@ -27,6 +27,11 @@
   Instead, propagation is stopped on these events. Drag events will always emit start & end, but end may
   use the last known position, if now position is available at end.
 
+### 6.2.4
+
+- Fixes an issue where `getAttributes` of cesium3DTileFeature did not return anything if the attributes where not defined in attributes bag and version was not set on 1.1
+- Fixes a bug in CesiumTilesetCesiumImpl where a hidden feature could reappear on style update of the layer, or would have its style not updated as the other features of the layer
+
 ### 6.2.3
 
 - Updates `getFeaturesByCoordinate` in `wmsFeatureProvider` to consider the extent and to respect the `tilingSchema` in the bbox calculation

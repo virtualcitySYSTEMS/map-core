@@ -9,7 +9,6 @@ import {
   Cartesian3,
   Math as CesiumMath,
   Resource,
-  Color,
   CustomShader,
 } from '@vcmap-cesium/engine';
 import CesiumTilesetLayer from '../../../../src/layer/cesiumTilesetLayer.js';
@@ -31,11 +30,11 @@ import GlobalHider from '../../../../src/layer/globalHider.js';
 
 describe('CesiumTilesetCesiumImpl', () => {
   let sandbox;
-  /** @type {import("@vcmap/core").CesiumTilesetLayer} */
+  /** @type {import("../../../../src/layer/cesiumTilesetLayer.js").default} */
   let cesiumTileset;
-  /** @type {import("@vcmap/core").CesiumMap} */
+  /** @type {import("../../../../src/map/cesiumMap.js").default} */
   let cesiumMap;
-  /** @type {import("@vcmap/core").CesiumTilesetCesiumImpl} */
+  /** @type {import("../../../../src/layer/cesium/cesiumTilesetCesiumImpl.js").default} */
   let cesiumTilesetCesium;
   let highlightStyle;
   let app;
@@ -601,33 +600,123 @@ describe('CesiumTilesetCesiumImpl', () => {
       });
     });
 
-    describe('highlight objects', () => {
-      it('sets the features color to the highlighted styles color', () => {
-        cesiumTilesetCesium.featureVisibility.highlight({
-          test: highlightStyle,
-        });
+    describe('unhide objects - FV', () => {
+      beforeEach(() => {
+        cesiumTilesetCesium.featureVisibility.hideObjects(['test']);
         cesiumTilesetCesium.styleContent(content);
-        expect(feature.color).to.equal(highlightStyle.cesiumFillColor);
       });
 
-      it('should add the feature to the set', () => {
+      it('should set a previously hidden objects show to true when unhiding', () => {
+        cesiumTilesetCesium.featureVisibility.showObjects(['test']);
+        cesiumTilesetCesium.styleContent(content);
+        expect(feature).to.have.property('show', true);
+      });
+
+      it('should remove the feature from the hidden set', () => {
+        cesiumTilesetCesium.featureVisibility.showObjects(['test']);
+        cesiumTilesetCesium.styleContent(content);
+        expect(
+          cesiumTilesetCesium.featureVisibility.hasHiddenFeature(
+            'test',
+            feature,
+          ),
+        ).to.not.be.true;
+      });
+    });
+
+    describe('unhide objects - GH', () => {
+      beforeEach(() => {
+        cesiumTilesetCesium.globalHider.hideObjects(['test']);
+        cesiumTilesetCesium.styleContent(content);
+      });
+
+      it('should set a previously hidden objects show to true when unhiding', () => {
+        cesiumTilesetCesium.globalHider.showObjects(['test']);
+        cesiumTilesetCesium.styleContent(content);
+        expect(feature).to.have.property('show', true);
+      });
+
+      it('should remove the feature from the global hider set', () => {
+        cesiumTilesetCesium.globalHider.showObjects(['test']);
+        cesiumTilesetCesium.styleContent(content);
+        expect(cesiumTileset.globalHider.hasFeature('test', feature)).to.be
+          .false;
+      });
+    });
+
+    describe('unhighlight objects', () => {
+      beforeEach(async () => {
+        await cesiumTilesetCesium.initialize();
         cesiumTilesetCesium.featureVisibility.highlight({
           test: highlightStyle,
         });
         cesiumTilesetCesium.styleContent(content);
-        cesiumTilesetCesium.featureVisibility.hasHighlightFeature(
-          'test',
-          feature,
+      });
+
+      it('should call makeStyleDirty when unhighlighting', () => {
+        const makeStyleDirty = sandbox.spy(
+          cesiumTilesetCesium.cesium3DTileset,
+          'makeStyleDirty',
         );
+        cesiumTilesetCesium.featureVisibility.unHighlight(['test']);
+        expect(makeStyleDirty).to.have.been.called;
       });
 
-      it('should re-hide the feature when calling the update feature override', () => {
+      it('should remove the feature from the highlighted set', () => {
+        cesiumTilesetCesium.featureVisibility.unHighlight(['test']);
+        cesiumTilesetCesium.styleContent(content);
+        expect(
+          cesiumTilesetCesium.featureVisibility.hasHighlightFeature(
+            'test',
+            feature,
+          ),
+        ).to.not.be.true;
+      });
+    });
+
+    describe('combined hide and highlight', () => {
+      it('should prioritize hiding over highlighting', () => {
+        cesiumTilesetCesium.featureVisibility.hideObjects(['test']);
         cesiumTilesetCesium.featureVisibility.highlight({
           test: highlightStyle,
         });
         cesiumTilesetCesium.styleContent(content);
-        feature.color = Color.GREEN;
+        expect(feature).to.have.property('show', false);
+      });
+
+      it('should highlight when global hider hides but feature visibility shows', () => {
+        cesiumTilesetCesium.globalHider.hideObjects(['test']);
+        cesiumTilesetCesium.featureVisibility.highlight({
+          test: highlightStyle,
+        });
         cesiumTilesetCesium.styleContent(content);
+        expect(feature).to.have.property('show', false);
+      });
+
+      it('should remain hidden when unhighlighting a hidden feature', () => {
+        cesiumTilesetCesium.featureVisibility.hideObjects(['test']);
+        cesiumTilesetCesium.featureVisibility.highlight({
+          test: highlightStyle,
+        });
+        cesiumTilesetCesium.styleContent(content);
+        expect(feature).to.have.property('show', false);
+
+        cesiumTilesetCesium.featureVisibility.unHighlight(['test']);
+        cesiumTilesetCesium.styleContent(content);
+        expect(feature).to.have.property('show', false);
+      });
+
+      it('should remain highlighted when unhiding a highlighted feature', () => {
+        cesiumTilesetCesium.featureVisibility.hideObjects(['test']);
+        cesiumTilesetCesium.featureVisibility.highlight({
+          test: highlightStyle,
+        });
+        cesiumTilesetCesium.styleContent(content);
+        expect(feature).to.have.property('show', false);
+
+        cesiumTilesetCesium.featureVisibility.showObjects(['test']);
+        cesiumTilesetCesium.styleContent(content);
+        expect(feature).to.have.property('show', true);
         expect(feature.color).to.equal(highlightStyle.cesiumFillColor);
       });
     });

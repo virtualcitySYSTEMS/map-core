@@ -14,7 +14,9 @@ export function getAttributes(
   this: Cesium3DTileFeature | Cesium3DTilePointFeature,
 ): Record<string, unknown> {
   if (
-    (this.tileset.asset as { version: string } | undefined)?.version === '1.1'
+    (this.tileset.asset as { version: string } | undefined)?.version ===
+      '1.1' ||
+    !this.getPropertyIds().includes('attributes')
   ) {
     const attributes: Record<string, unknown> = {};
     this.getPropertyIds().forEach((id) => {
