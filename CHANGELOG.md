@@ -1,6 +1,7 @@
 ### 6.2.4
 
 - Fixes an issue where `getAttributes` of cesium3DTileFeature did not return anything if the attributes where not defined in attributes bag and version was not set on 1.1
+- Fixes a bug in CesiumTilesetCesiumImpl where a hidden feature could reappear on style update of the layer, or would have its style not updated as the other features of the layer
 
 ### 6.2.3
 

@@ -26,6 +26,7 @@ import {
   highlightFeature,
   originalStyle,
   updateOriginalStyle,
+  FeatureVisibilityAction,
 } from '../featureVisibility.js';
 import Projection from '../../util/projection.js';
 import { circleFromCenterRadius } from '../../util/geometryHelpers.js';
@@ -119,6 +120,8 @@ class CesiumTilesetCesiumImpl
 
   private _onStyleChangeRemover: (() => void) | null = null;
 
+  private _onFeatureVisibilityChangeRemover: (() => void) | null = null;
+
   private _customShader: CustomShader | undefined;
 
   constructor(map: CesiumMap, options: CesiumTilesetImplementationOptions) {
@@ -135,6 +138,18 @@ class CesiumTilesetCesiumImpl
     this.offset = options.offset;
     this._customShader = options.customShader;
     this.allowPicking = options.allowPicking;
+
+    // Listen for unhighlight events to force style update when needed
+    this._onFeatureVisibilityChangeRemover =
+      this.featureVisibility.changed.addEventListener((event) => {
+        if (
+          event.action === FeatureVisibilityAction.UNHIGHLIGHT &&
+          this.cesium3DTileset
+        ) {
+          // Force tileset to re-apply style for unhighlighted features
+          this.cesium3DTileset.makeStyleDirty();
+        }
+      });
   }
 
   get customShader(): CustomShader | undefined {
@@ -330,12 +345,14 @@ class CesiumTilesetCesiumImpl
   }
 
   styleContent(content: Cesium3DTileContent): void {
+    const styleHasChanged =
+      this._styleLastUpdated > (content[cesiumTilesetLastUpdated] ?? 0);
     if (
       !content[cesiumTilesetLastUpdated] ||
       content[cesiumTilesetLastUpdated] < this.featureVisibility.lastUpdated ||
       content[cesiumTilesetLastUpdated] <
         (this.globalHider?.lastUpdated ?? 0) ||
-      content[cesiumTilesetLastUpdated] < this._styleLastUpdated
+      styleHasChanged
     ) {
       // content[updateFeatureOverride]?.reset();
       delete content[updateFeatureOverride];
@@ -361,27 +378,45 @@ class CesiumTilesetCesiumImpl
             this.featureVisibility.addHighlightFeature(id, feature);
             featureOverride.highlight.push([id, feature]);
             shouldUpdateOriginalStyle = false;
+          } else if (
+            this.featureVisibility.hasHighlightFeature(id, feature) &&
+            styleHasChanged &&
+            feature[originalStyle]
+          ) {
+            // Feature is already highlighted and style has changed
+            // Clear the old cached style - when unhighlighted, we'll force a tileset style update
+            delete feature[originalStyle];
+            featureOverride.highlight.push([id, feature]);
+            shouldUpdateOriginalStyle = false;
           }
 
-          if (
-            this.featureVisibility.hiddenObjects[id] &&
-            !this.featureVisibility.hasHiddenFeature(id, feature)
-          ) {
-            this.featureVisibility.addHiddenFeature(id, feature);
-            featureOverride.hideLocal.push([id, feature]);
+          if (this.featureVisibility.hiddenObjects[id]) {
+            if (!this.featureVisibility.hasHiddenFeature(id, feature)) {
+              this.featureVisibility.addHiddenFeature(id, feature);
+              featureOverride.hideLocal.push([id, feature]);
+            } else if (styleHasChanged && feature[originalStyle]) {
+              // Feature is already hidden and style has changed, clear original style
+              // so it will be re-cached with the new style when shown
+              delete feature[originalStyle];
+            }
+            shouldUpdateOriginalStyle = false;
           }
 
-          if (
-            this.globalHider?.hiddenObjects[id] &&
-            !this.globalHider?.hasFeature(id, feature)
-          ) {
-            this.globalHider?.addFeature(id, feature);
+          if (this.globalHider?.hiddenObjects[id]) {
+            if (!this.globalHider?.hasFeature(id, feature)) {
+              this.globalHider?.addFeature(id, feature);
+            }
             featureOverride.hideGlobal.push([id, feature]);
+            if (styleHasChanged && feature[originalStyle]) {
+              // Feature is globally hidden and style has changed, clear original style
+              delete feature[originalStyle];
+            }
+            shouldUpdateOriginalStyle = false;
           }
 
           if (
             shouldUpdateOriginalStyle &&
-            this._styleLastUpdated > (content[cesiumTilesetLastUpdated] ?? 0) &&
+            styleHasChanged &&
             feature[originalStyle] // can only be a color for cesium, so no check for undefined required
           ) {
             updateOriginalStyle(feature);
@@ -433,6 +468,10 @@ class CesiumTilesetCesiumImpl
 
     if (this._onStyleChangeRemover) {
       this._onStyleChangeRemover();
+    }
+
+    if (this._onFeatureVisibilityChangeRemover) {
+      this._onFeatureVisibilityChangeRemover();
     }
 
     super.destroy();
