@@ -21,13 +21,13 @@ stages:
     - linux-2.0
   before_script:
     - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.virtualcitysystems.de/".insteadOf "ssh://git@gitlab.virtualcitysystems.de/"
-    - git config --global user.email "gitlab-ci@virtualcitysystems.de"
-    - git config --global user.name "Gitlab CI"
+    - git config --global user.email "$GITLAB_USER_EMAIL"
+    - git config --global user.name "$GITLAB_USER_NAME"
+    - npm set registry 'http://npmregistry:4873'
 
 build:
   <<: *job_definition
   script:
-    - npm set registry 'http://npmregistry:4873'
     - npm ci
     - npm run postinstall
   stage: build
