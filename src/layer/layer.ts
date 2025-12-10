@@ -11,7 +11,16 @@ import { layerClassRegistry } from '../classRegistry.js';
 import GlobalHider from './globalHider.js';
 import type VcsMap from '../map/vcsMap.js';
 import type LayerImplementation from './layerImplementation.js';
-import type AbstractFeatureProvider from '../featureProvider/abstractFeatureProvider.js';
+import {
+  type default as AbstractFeatureProvider,
+  type AbstractFeatureProviderOptions,
+} from '../featureProvider/abstractFeatureProvider.js';
+import type {
+  // eslint-disable-next-line import/no-named-default
+  default as AbstractAttributeProvider,
+  AbstractAttributeProviderOptions,
+} from '../featureProvider/abstractAttributeProvider.js';
+import { getProviderForOption } from '../featureProvider/featureProviderFactory.js';
 
 export type CopyrightOptions = {
   provider?: string;
@@ -62,6 +71,14 @@ export type LayerOptions = VcsObjectOptions & {
    * if true, the layer types of the map will be ignored when checking if the layer is supported
    */
   ignoreMapLayerTypes?: boolean;
+  /**
+   * An optional feature or attribute provider to provide or augment features on click events.
+   */
+  featureProvider?:
+    | AbstractFeatureProvider
+    | AbstractAttributeProvider
+    | AbstractFeatureProviderOptions
+    | AbstractAttributeProviderOptions;
 };
 
 export type LayerImplementationOptions = {
@@ -98,6 +115,7 @@ class Layer<
       headers: undefined,
       ignoreMapLayerTypes: false,
       zIndex: 0,
+      featureProvider: undefined,
     };
   }
 
@@ -160,9 +178,12 @@ class Layer<
   stateChanged: VcsEvent<LayerState>;
 
   /**
-   * An optional feature provider to provider features based on click events.
+   * An optional feature or attribute provider to provide or augment features on click events.
    */
-  featureProvider: AbstractFeatureProvider | undefined;
+  featureProvider:
+    | AbstractFeatureProvider
+    | AbstractAttributeProvider
+    | undefined;
 
   private _locale: string;
 
@@ -235,6 +256,8 @@ class Layer<
       options.ignoreMapLayerTypes,
       defaultOptions.ignoreMapLayerTypes,
     );
+
+    this.featureProvider = getProviderForOption(options.featureProvider);
   }
 
   /**
@@ -810,6 +833,10 @@ class Layer<
 
     if (this._ignoreMapLayerTypes !== defaultOptions.ignoreMapLayerTypes) {
       config.ignoreMapLayerTypes = this._ignoreMapLayerTypes;
+    }
+
+    if (this.featureProvider) {
+      config.featureProvider = this.featureProvider.toJSON();
     }
 
     return config;

@@ -7,6 +7,7 @@ import type VcsMap from './map/vcsMap.js';
 import type StyleItem from './style/styleItem.js';
 import type Category from './category/category.js';
 import type AbstractFeatureProvider from './featureProvider/abstractFeatureProvider.js';
+import type AbstractAttributeProvider from './featureProvider/abstractAttributeProvider.js';
 import type TileProvider from './layer/tileProvider/tileProvider.js';
 
 function logger(): Logger {
@@ -102,9 +103,13 @@ export const tileProviderClassRegistry = new ClassRegistry<
   typeof TileProvider
 >();
 
-export const featureProviderClassRegistry = new ClassRegistry<
-  typeof AbstractFeatureProvider
->();
+export type FeatureProviderClass =
+  | ({ new (): AbstractFeatureProvider } & typeof AbstractFeatureProvider)
+  | ({
+      new (): AbstractAttributeProvider;
+    } & typeof AbstractAttributeProvider);
+export const featureProviderClassRegistry =
+  new ClassRegistry<FeatureProviderClass>();
 
 export const mapClassRegistry = new ClassRegistry<typeof VcsMap>();
 

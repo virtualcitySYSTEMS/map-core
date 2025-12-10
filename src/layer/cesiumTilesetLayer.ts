@@ -4,7 +4,7 @@ import {
   type CustomShader,
   Matrix4,
 } from '@vcmap-cesium/engine';
-import { check, maybe } from '@vcsuite/check';
+import { check, is, maybe, oneOf } from '@vcsuite/check';
 import { parseInteger } from '@vcsuite/parsers';
 import type { Coordinate } from 'ol/coordinate.js';
 import type { VectorStyleItemOptions } from '../style/vectorStyleItem.js';
@@ -25,6 +25,12 @@ import type VcsMap from '../map/vcsMap.js';
 import { cesiumColorToColor, getStringColor } from '../style/styleHelpers.js';
 import PanoramaMap from '../map/panoramaMap.js';
 import BaseCesiumMap from '../map/baseCesiumMap.js';
+import AbstractAttributeProvider, {
+  type AbstractAttributeProviderOptions,
+  type AttributeProvider,
+} from '../featureProvider/abstractAttributeProvider.js';
+import { getProviderForOption } from '../featureProvider/featureProviderFactory.js';
+import CompositeFeatureProvider from '../featureProvider/compositeFeatureProvider.js';
 
 export type CesiumTilesetOptions = LayerOptions & {
   /**
@@ -46,6 +52,10 @@ export type CesiumTilesetOptions = LayerOptions & {
    * a css string color to be used as an outline.
    */
   outlineColor?: string;
+  /**
+   * an optional attribute provider to provide custom attributes for the tileset features on load
+   */
+  attributeProvider?: AttributeProvider | AbstractAttributeProviderOptions;
 };
 
 export type CesiumTilesetTilesetProperties = {
@@ -61,6 +71,7 @@ export type CesiumTilesetImplementationOptions =
     modelMatrix?: Matrix4;
     offset?: Coordinate;
     customShader?: CustomShader;
+    attributeProvider?: AttributeProvider;
   };
 
 /**
@@ -100,6 +111,8 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
 
   private _customShader: CustomShader | undefined = undefined;
 
+  private _attributeProvider?: AttributeProvider;
+
   constructor(options: CesiumTilesetOptions) {
     const defaultOptions = CesiumTilesetLayer.getDefaultOptions();
     super({ ...defaultOptions, ...options });
@@ -138,6 +151,17 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
     this._modelMatrix = undefined;
 
     this._offset = options.offset || defaultOptions.offset;
+
+    const attributeProvider = getProviderForOption(options.attributeProvider);
+
+    if (
+      is(
+        attributeProvider,
+        oneOf(CompositeFeatureProvider, AbstractAttributeProvider),
+      )
+    ) {
+      this._attributeProvider = attributeProvider;
+    }
   }
 
   /**
@@ -188,6 +212,26 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
     }
   }
 
+  get attributeProvider(): AttributeProvider | undefined {
+    return this._attributeProvider;
+  }
+
+  set attributeProvider(provider: AttributeProvider | undefined) {
+    check(
+      provider,
+      maybe(oneOf(AbstractAttributeProvider, CompositeFeatureProvider)),
+    );
+
+    if (this._attributeProvider !== provider) {
+      this._attributeProvider = provider;
+      this.forceRedraw().catch((e: unknown) => {
+        this.getLogger().error(
+          `Error forcing redraw after setting attribute provider: ${String(e)}`,
+        );
+      });
+    }
+  }
+
   getImplementationOptions(): CesiumTilesetImplementationOptions {
     return {
       ...super.getImplementationOptions(),
@@ -196,6 +240,7 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
       modelMatrix: this.modelMatrix,
       offset: this.offset,
       customShader: this.customShader,
+      attributeProvider: this._attributeProvider,
     };
   }
 
@@ -284,6 +329,10 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
       config.offset = this.offset.slice();
     }
 
+    if (this._attributeProvider) {
+      config.attributeProvider = this._attributeProvider.toJSON();
+    }
+
     return config;
   }
 
@@ -291,6 +340,7 @@ class CesiumTilesetLayer extends FeatureLayer<CesiumTilesetCesiumImpl> {
    * disposes of this layer, removes instances from the current maps and the framework
    */
   destroy(): void {
+    this.attributeProvider?.destroy();
     super.destroy();
   }
 }

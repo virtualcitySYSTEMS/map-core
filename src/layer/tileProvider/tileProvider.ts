@@ -27,6 +27,7 @@ import VcsObject from '../../vcsObject.js';
 import VcsEvent from '../../vcsEvent.js';
 import { tileProviderClassRegistry } from '../../classRegistry.js';
 import type Extent from '../../util/extent.js';
+import { rectangleToMercatorExtent } from '../../util/math.js';
 
 export type TileProviderRTreeEntry = {
   minX: number;
@@ -56,6 +57,7 @@ for (let i = 0; i < mercatorResolutionsToLevel.length; i++) {
  * transforms cesium geographic rectangle to mercator extent
  * @param  rectangle in wgs84 radians
  * @returns  extent in mercator
+ * @deprecated use rectangleToMercatorExtent
  */
 export function rectangleToExtent(rectangle: Rectangle): OLExtent {
   const baseSouthWestLevel = Rectangle.southwest(rectangle);
@@ -387,6 +389,16 @@ class TileProvider extends VcsObject {
     return `${level}/${x}/${y}`;
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  parseCacheKey(key: string): { x: number; y: number; level: number } {
+    const parts = key.split('/');
+    return {
+      level: parseInt(parts[0], 10),
+      x: parseInt(parts[1], 10),
+      y: parseInt(parts[2], 10),
+    };
+  }
+
   private async _getRtreeForBaseTile(
     baseLevel: number,
     tileCenter: Cartographic,
@@ -506,7 +518,7 @@ class TileProvider extends VcsObject {
         if (level === baseLevel) {
           return rtree.all().map((item) => item.value);
         } else {
-          const extent = rectangleToExtent(rectangle);
+          const extent = rectangleToMercatorExtent(rectangle);
           const features = rtree
             .search({
               minX: extent[0],

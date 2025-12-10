@@ -1,7 +1,7 @@
 import type Feature from 'ol/Feature.js';
 import type { HttpReader } from 'flatgeobuf/lib/mjs/http-reader.js';
 import type { TileProviderOptions } from './tileProvider.js';
-import TileProvider, { rectangleToExtent } from './tileProvider.js';
+import TileProvider from './tileProvider.js';
 import type { ProjectionOptions } from '../../util/projection.js';
 import Projection, {
   getDefaultProjection,
@@ -14,6 +14,7 @@ import {
   getRootNode,
   getValidReader,
 } from '../flatGeobufHelpers.js';
+import { rectangleToMercatorExtent } from '../../util/math.js';
 
 export type FlatGeobufTileProviderOptions = Omit<
   TileProviderOptions,
@@ -81,7 +82,7 @@ export default class FlatGeobufTileProvider extends TileProvider {
 
   async loader(x: number, y: number, z: number): Promise<Feature[]> {
     const rectangle = this.tilingScheme.tileXYToRectangle(x, y, z);
-    const extent = rectangleToExtent(rectangle);
+    const extent = rectangleToMercatorExtent(rectangle);
     const mercatorExtent = new Extent({
       coordinates: extent,
       projection: mercatorProjection,

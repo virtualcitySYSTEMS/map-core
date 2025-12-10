@@ -24,7 +24,27 @@ export function getAttributes(
     });
     return attributes;
   }
-  return this.getProperty('attributes') as Record<string, unknown>;
+  return (this.getProperty('attributes') as Record<string, unknown>) ?? {};
 }
 
 Cesium3DTileFeature.prototype.getAttributes = getAttributes;
+
+export function setAttribute(
+  this: Cesium3DTileFeature | Cesium3DTilePointFeature,
+  key: string,
+  value: unknown,
+): void {
+  if (
+    (this.tileset.asset as { version: string } | undefined)?.version ===
+      '1.1' ||
+    !this.hasProperty('attributes')
+  ) {
+    this.setProperty(key, value);
+  }
+  const attributes =
+    (this.getProperty('attributes') as Record<string, unknown>) ?? {};
+  attributes[key] = value;
+  this.setProperty('attributes', attributes);
+}
+
+Cesium3DTileFeature.prototype.setAttribute = setAttribute;

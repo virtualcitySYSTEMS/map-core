@@ -3,6 +3,8 @@ import type {
   Cesium3DTileContent,
   SplitDirection,
   CustomShader,
+  TileBoundingVolume,
+  BoundingSphere,
 } from '@vcmap-cesium/engine';
 import {
   Composite3DTileContent,
@@ -39,6 +41,7 @@ import type StyleItem from '../../style/styleItem.js';
 import type GlobalHider from '../globalHider.js';
 import { getResourceOrUrl } from './resourceHelper.js';
 import type BaseCesiumMap from '../../map/baseCesiumMap.js';
+import type { AttributeProvider } from '../../featureProvider/abstractAttributeProvider.js';
 
 export const cesiumTilesetLastUpdated: unique symbol = Symbol(
   'cesiumTilesetLastUpdated',
@@ -48,13 +51,11 @@ export const updateFeatureOverride: unique symbol = Symbol(
   'updateFeatureOverride',
 );
 
-export function getExtentFromTileset(
-  cesium3DTileset?: Cesium3DTileset,
+function getExtentFromBoundingVolume(
+  boundingVolume: TileBoundingVolume,
+  boundingSphere: BoundingSphere,
 ): OLExtent {
-  if (!cesium3DTileset) {
-    return createEmpty();
-  }
-  const { rectangle } = cesium3DTileset.root.boundingVolume;
+  const { rectangle } = boundingVolume;
   if (rectangle) {
     const scratchSW = Rectangle.southwest(rectangle);
     const scratchNE = Rectangle.northeast(rectangle);
@@ -70,7 +71,7 @@ export function getExtentFromTileset(
     return [mercatorSW[0], mercatorSW[1], mercatorNE[0], mercatorNE[1]];
   }
 
-  const { center, radius } = cesium3DTileset.boundingSphere;
+  const { center, radius } = boundingSphere;
   const cart = Cartographic.fromCartesian(center);
   const mercatorCenter = Projection.wgs84ToMercator([
     CesiumMath.toDegrees(cart.longitude),
@@ -79,6 +80,18 @@ export function getExtentFromTileset(
   ]);
   const circle = circleFromCenterRadius(mercatorCenter, radius);
   return circle.getExtent();
+}
+
+export function getExtentFromTileset(
+  cesium3DTileset?: Cesium3DTileset,
+): OLExtent {
+  if (!cesium3DTileset) {
+    return createEmpty();
+  }
+  return getExtentFromBoundingVolume(
+    cesium3DTileset.root.boundingVolume,
+    cesium3DTileset.boundingSphere,
+  );
 }
 
 /**
@@ -112,6 +125,8 @@ class CesiumTilesetCesiumImpl
 
   allowPicking: boolean;
 
+  attributeProvider?: AttributeProvider;
+
   private _initializedPromise: Promise<Cesium3DTileset> | null = null;
 
   private _originalOrigin: Cartesian3 | null = null;
@@ -138,6 +153,7 @@ class CesiumTilesetCesiumImpl
     this.offset = options.offset;
     this._customShader = options.customShader;
     this.allowPicking = options.allowPicking;
+    this.attributeProvider = options.attributeProvider;
 
     // Listen for unhighlight events to force style update when needed
     this._onFeatureVisibilityChangeRemover =
@@ -199,6 +215,9 @@ class CesiumTilesetCesiumImpl
       }
       this.cesium3DTileset[vcsLayerName] = this.name;
       this.cesium3DTileset[allowPicking] = this.allowPicking;
+      this.cesium3DTileset.tileLoad.addEventListener((tile: Cesium3DTile) => {
+        this._tileLoaded(tile);
+      });
       this.cesium3DTileset.tileVisible.addEventListener(
         this.applyStyle.bind(this),
       );
@@ -451,6 +470,35 @@ class CesiumTilesetCesiumImpl
       content[cesiumTilesetLastUpdated] = Date.now();
     } else {
       content[updateFeatureOverride]?.();
+    }
+  }
+
+  private _tileLoaded(tile: Cesium3DTile): void {
+    if (this.attributeProvider) {
+      const extent = getExtentFromBoundingVolume(
+        tile.contentBoundingVolume,
+        tile.boundingSphere,
+      );
+      const features: HighlightableFeature[] = [];
+      const batchSize = tile.content.featuresLength;
+      for (let batchId = 0; batchId < batchSize; batchId++) {
+        const feature = tile.content.getFeature(batchId);
+        if (feature) {
+          features.push(feature);
+        }
+      }
+
+      this.attributeProvider
+        .augmentFeatures(features, extent)
+        .then(() => {
+          this.applyStyle(tile);
+        })
+        .catch((err: unknown) => {
+          this.getLogger().error(
+            'Error augmenting features in CesiumTilesetCesiumImpl:',
+            err,
+          );
+        });
     }
   }
 

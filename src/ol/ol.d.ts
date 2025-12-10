@@ -50,6 +50,7 @@ import type { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbo
 import type { PrimitiveType } from '../util/featureconverter/convert.js';
 
 import { PanoramaDatasetFeatureProperties } from '../layer/panoramaDatasetLayer.js';
+import { attributeProviderName } from '../featureProvider/abstractAttributeProvider.js';
 
 declare module 'ol/geom.js' {
   interface Geometry {
@@ -125,6 +126,7 @@ declare module 'ol/index.js' {
     [vectorClusterGroupName]?: string;
     [primitives]?: (PrimitiveType | Label | Billboard | Entity)[];
     [panoramaFeature]?: PanoramaDatasetFeatureProperties;
+    [attributeProviderName]?: string;
   }
 
   class CanvasTileRenderer extends CanvasImmediateRenderer {

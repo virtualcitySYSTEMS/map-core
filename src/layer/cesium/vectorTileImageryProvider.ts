@@ -17,9 +17,9 @@ import type { Feature } from 'ol/index.js';
 // eslint-disable-next-line import/no-named-default
 import type { default as Style, StyleFunction } from 'ol/style/Style.js';
 import type TileProvider from '../tileProvider/tileProvider.js';
-import { rectangleToExtent } from '../tileProvider/tileProvider.js';
 import { wgs84ToMercatorTransformer } from '../../util/projection.js';
 import CanvasTileRenderer from '../../ol/render/canvas/canvasTileRenderer.js';
+import { rectangleToMercatorExtent } from '../../util/math.js';
 
 export function toContext(
   extent: Extent,
@@ -222,7 +222,7 @@ class VectorTileImageryProvider {
       y,
       level,
     );
-    const extent = rectangleToExtent(rectangle);
+    const extent = rectangleToMercatorExtent(rectangle);
     const center = Rectangle.center(rectangle);
     return getCanvasFromFeatures(features, extent, center, this._tileSize);
   }

@@ -11,8 +11,19 @@ import type {
   StyleItemOptions,
 } from './style/styleItem.js';
 import type { TileProviderOptions } from './layer/tileProvider/tileProvider.js';
-import type { AbstractFeatureProviderOptions } from './featureProvider/abstractFeatureProvider.js';
+import type {
+  // eslint-disable-next-line import/no-named-default
+  default as AbstractFeatureProvider,
+  AbstractFeatureProviderOptions,
+} from './featureProvider/abstractFeatureProvider.js';
 import type VcsApp from './vcsApp.js';
+import type { CompositeFeatureProviderOptions } from './featureProvider/compositeFeatureProvider.js';
+import CompositeFeatureProvider from './featureProvider/compositeFeatureProvider.js';
+import type {
+  // eslint-disable-next-line import/no-named-default
+  default as AbstractAttributeProvider,
+  AbstractAttributeProviderOptions,
+} from './featureProvider/abstractAttributeProvider.js';
 
 function getLogger(): Logger {
   return getLoggerByName('init');
@@ -22,7 +33,7 @@ export type ModuleLayerOptions = LayerOptions & {
   style?: string | StyleItemOptions;
   highlightStyle?: string | StyleItemOptions;
   tileProvider?: TileProviderOptions;
-  featureProvider?: AbstractFeatureProviderOptions;
+  attributeProvider?: AbstractAttributeProviderOptions;
 };
 
 export function deserializeMap(
@@ -45,6 +56,44 @@ export function deserializeViewpoint(
     return viewpoint;
   }
   getLogger().warning(`Viewpoint ${String(viewpointObject.name)} is not valid`);
+  return null;
+}
+
+export function deserializeFeatureProvider(
+  vcsApp: VcsApp,
+  options:
+    | AbstractFeatureProviderOptions
+    | CompositeFeatureProviderOptions
+    | AbstractAttributeProviderOptions,
+): AbstractAttributeProvider | AbstractFeatureProvider | null {
+  if (options.type === CompositeFeatureProvider.className) {
+    const {
+      featureProviders: featureProviderOptions,
+      attributeProviders: attributeProviderOptions,
+    } = options as CompositeFeatureProviderOptions;
+
+    const featureProviders = featureProviderOptions
+      .map((fpConfig) => deserializeFeatureProvider(vcsApp, fpConfig))
+      .filter((fp): fp is AbstractFeatureProvider => !!fp);
+
+    const attributeProviders = attributeProviderOptions
+      .map((apConfig) => deserializeFeatureProvider(vcsApp, apConfig))
+      .filter((ap): ap is AbstractAttributeProvider => !!ap);
+
+    return new CompositeFeatureProvider({
+      ...options,
+      featureProviders,
+      attributeProviders,
+    });
+  }
+
+  if (options.type) {
+    return getObjectFromClassRegistry(
+      vcsApp.featureProviderClassRegistry,
+      options,
+    );
+  }
+
   return null;
 }
 
@@ -83,10 +132,18 @@ export function deserializeLayer(
     );
   }
 
+  let attributeProvider;
+  if (layerConfig.attributeProvider) {
+    attributeProvider = deserializeFeatureProvider(
+      vcsApp,
+      layerConfig.attributeProvider,
+    ) as AbstractAttributeProvider | null;
+  }
+
   let featureProvider;
   if (layerConfig.featureProvider) {
-    featureProvider = getObjectFromClassRegistry(
-      vcsApp.featureProviderClassRegistry,
+    featureProvider = deserializeFeatureProvider(
+      vcsApp,
       layerConfig.featureProvider,
     );
   }
@@ -97,6 +154,7 @@ export function deserializeLayer(
     highlightStyle,
     tileProvider,
     featureProvider,
+    attributeProvider,
   });
 }
 

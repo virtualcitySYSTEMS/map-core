@@ -76,7 +76,7 @@
   },
   "prettier": "@vcsuite/eslint-config/prettier.js",
   "dependencies": {
-    "@vcsuite/check": "^3.0.0",
+    "@vcsuite/check": "^3.2.2",
     "@vcsuite/logger": "^1.0.1",
     "@vcsuite/parsers": "^2.0.0",
     "fast-deep-equal": "^3.1.3",

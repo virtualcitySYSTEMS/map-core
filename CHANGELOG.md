@@ -11,6 +11,12 @@
 - The maps collection has a convenience API to pause panorama image selection & highlighting: `app.maps.pausePanoramaSelection = true;` turns off panorama image selection & highlighting for all panorama maps.
 - `getInitForUrl` is properly documented and exported for use in plugins.
 - `PanoramaDatasetLayer` has a new option `panoramaVectorProperties` to override the default vector properties for panorama images.
+- Attribute & feature provider changes:
+  - All layers may now have a feature provider assigned.
+  - Introducing the attribute provider concept. An attribute provider can augment existing features.
+    Attribute providers can be configured on a layer as a feature provider and are evaluated on click (analog to the feature porvider).
+  - Introducing a `CompositeFeatureProvider`, which can combine multiple feature providers and attribute providers.
+  - For `CesiumTilesetLayer` and `VectorTileLayer` an attribute provider can be configured to augment features on tile load.
 
 #### Fixes
 

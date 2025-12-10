@@ -16,7 +16,7 @@ import type { Options as WMSGetFeatureInfoOptions } from 'ol/format/WMSGetFeatur
 import { containsCoordinate } from 'ol/extent.js';
 import { parseInteger } from '@vcsuite/parsers';
 import { getLogger } from '@vcsuite/logger';
-import type { AbstractFeatureProviderOptions } from './abstractFeatureProvider.js';
+import { type AbstractFeatureProviderOptions } from './abstractFeatureProvider.js';
 import AbstractFeatureProvider from './abstractFeatureProvider.js';
 import type { ProjectionOptions } from '../util/projection.js';
 import Projection, { mercatorProjection } from '../util/projection.js';
@@ -27,6 +27,7 @@ import Extent from '../util/extent.js';
 import { getInitForUrl, requestUrl } from '../util/fetch.js';
 import { featureProviderClassRegistry } from '../classRegistry.js';
 import { TilingScheme } from '../layer/rasterLayer.js';
+import type Layer from '../layer/layer.js';
 
 export type FormatOptions = GeoJSONOptions &
   GMLOptions &
@@ -78,6 +79,10 @@ export type WMSFeatureProviderOptions = AbstractFeatureProviderOptions & {
    */
   version?: string;
   htmlPositionFeatureTitle?: string;
+  /**
+   * Optional headers to include in GetFeatureInfo requests. Overrides layer headers.
+   */
+  headers?: Record<string, string>;
 };
 
 const gmlFormats = { GML: GML3, GML2, GML3, GML32 };
@@ -191,6 +196,7 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
       tileSize: [256, 256],
       parameters: {},
       extent: undefined,
+      headers: undefined,
     };
   }
 
@@ -233,9 +239,14 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
 
   htmlPositionFeatureTitle?: string;
 
-  constructor(layerName: string, options: WMSFeatureProviderOptions) {
+  /**
+   * Optional headers to include in GetFeatureInfo requests.
+   */
+  headers?: Record<string, string>;
+
+  constructor(options: WMSFeatureProviderOptions) {
     const defaultOptions = WMSFeatureProvider.getDefaultOptions();
-    super(layerName, { ...defaultOptions, ...options });
+    super({ ...defaultOptions, ...options });
 
     if (options.extent) {
       if (options.extent instanceof Extent) {
@@ -271,6 +282,9 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
       ? new Projection(options.projection)
       : undefined;
     this.htmlPositionFeatureTitle = options.htmlPositionFeatureTitle;
+    this.headers = options.headers
+      ? structuredClone(options.headers)
+      : undefined;
   }
 
   get wmsSource(): TileWMS {
@@ -324,7 +338,7 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
   async getFeaturesByCoordinate(
     coordinate: Coordinate,
     resolution: number,
-    headers?: Record<string, string>,
+    layer: Layer,
   ): Promise<Feature[]> {
     if (
       this.extent?.isValid() &&
@@ -354,10 +368,10 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
 
     if (this.featureInfoResponseType === 'text/html') {
       return this.featureResponseCallback(null, coordinate).map((f) =>
-        this.getProviderFeature(f),
+        this.getProviderFeature(f, layer),
       );
     } else if (url) {
-      const init = getInitForUrl(url, headers);
+      const init = getInitForUrl(url, this.headers ?? layer.headers);
       let data: string;
       try {
         const response = await requestUrl(url, init);
@@ -367,7 +381,7 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
         return [];
       }
       return this.featureResponseCallback(data, coordinate).map((f) =>
-        this.getProviderFeature(f),
+        this.getProviderFeature(f, layer),
       );
     }
     return [];
@@ -426,6 +440,9 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
     }
     if (this.htmlPositionFeatureTitle) {
       config.htmlPositionFeatureTitle = this.htmlPositionFeatureTitle;
+    }
+    if (this.headers) {
+      config.headers = structuredClone(this.headers);
     }
 
     return config as WMSFeatureProviderOptions;

@@ -21,6 +21,7 @@ import type {
 import type { isTiledFeature } from '../layer/featureStoreLayer.js';
 import type { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
 import { scaleSymbol } from '../layer/vectorSymbols.js';
+import { attributeProviderName } from '../featureProvider/abstractAttributeProvider.js';
 
 declare module '@vcmap-cesium/engine' {
   enum TextureWarp {
@@ -105,6 +106,7 @@ declare module '@vcmap-cesium/engine' {
     [hidden]?: boolean;
     [highlighted]?: VectorStyleItem;
     [originalStyle]?: StyleLike | Color;
+    [attributeProviderName]?: string;
   }
 
   interface Primitive {
@@ -174,6 +176,7 @@ declare module '@vcmap-cesium/engine' {
 
   interface Cesium3DTile {
     boundingVolume: TileBoundingVolume;
+    contentBoundingVolume: TileBoundingVolume;
     contentReady: boolean;
     [cesiumTilesetLastUpdated]?: number;
   }
@@ -209,6 +212,7 @@ declare module '@vcmap-cesium/engine' {
     _batchId: number;
     getId(): number | string;
     getAttributes(): Record<string, unknown>;
+    setAttribute(key: string, value: unknown): void;
     [vcsLayerName]?: string;
     [globalHidden]?: boolean;
     [hidden]?: boolean;
@@ -216,6 +220,7 @@ declare module '@vcmap-cesium/engine' {
     [originalStyle]?: StyleLike | Color;
     [isTiledFeature]?: boolean;
     [allowPicking]?: boolean;
+    [attributeProviderName]?: string;
   }
 
   interface Cesium3DTilePointFeature {
@@ -223,12 +228,14 @@ declare module '@vcmap-cesium/engine' {
     _batchId: number;
     getId(): number | string;
     getAttributes(): Record<string, unknown>;
+    setAttribute(key: string, value: unknown): void;
     [vcsLayerName]?: string;
     [globalHidden]?: boolean;
     [hidden]?: boolean;
     [highlighted]?: VectorStyleItem;
     [originalStyle]?: StyleLike | Color;
     [allowPicking]?: boolean;
+    [attributeProviderName]?: string;
   }
 
   interface Cesium3DTileStyle {

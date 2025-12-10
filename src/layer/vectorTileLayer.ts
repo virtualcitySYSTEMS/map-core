@@ -1,3 +1,4 @@
+import { check, is, maybe, oneOf } from '@vcsuite/check';
 import Style, { type StyleFunction } from 'ol/style/Style.js';
 import type { Feature } from 'ol/index.js';
 import type { Size } from 'ol/size.js';
@@ -53,6 +54,14 @@ import VectorTileCesiumImpl from './cesium/vectorTileCesiumImpl.js';
 import VectorTilePanoramaImpl from './panorama/vectorTilePanoramaImpl.js';
 import PanoramaMap from '../map/panoramaMap.js';
 import type LayerImplementation from './layerImplementation.js';
+import AbstractFeatureProvider from '../featureProvider/abstractFeatureProvider.js';
+import AbstractAttributeProvider, {
+  type AbstractAttributeProviderOptions,
+  type AttributeProvider,
+} from '../featureProvider/abstractAttributeProvider.js';
+import CompositeFeatureProvider from '../featureProvider/compositeFeatureProvider.js';
+import { rectangleToMercatorExtent } from '../util/math.js';
+import { getProviderForOption } from '../featureProvider/featureProviderFactory.js';
 
 /**
  * synchronizes featureVisibility Symbols on the feature;
@@ -113,6 +122,10 @@ export type VectorTileOptions = FeatureLayerOptions & {
   declutter?: boolean;
   debug?: boolean;
   renderer?: VectorTileRenderer;
+  /**
+   * an optional attribute provider to provide custom attributes for the tileset features on load
+   */
+  attributeProvider?: AttributeProvider | AbstractAttributeProviderOptions;
 };
 
 export type VectorTileImplementationOptions =
@@ -163,6 +176,7 @@ class VectorTileLayer<
       declutter: true,
       debug: false,
       renderer: 'image',
+      attributeProvider: undefined,
     };
   }
 
@@ -176,6 +190,8 @@ class VectorTileLayer<
   vectorProperties: VectorProperties;
 
   tileProvider: TileProvider;
+
+  private _attributeProvider?: AttributeProvider;
 
   private _maxLevel: number;
 
@@ -199,6 +215,10 @@ class VectorTileLayer<
   private _debug = false;
 
   private _renderer: VectorTileRenderer;
+
+  private _defaultFeatureProvider?:
+    | TileProviderFeatureProvider
+    | CompositeFeatureProvider;
 
   /**
    * @param  options
@@ -229,6 +249,7 @@ class VectorTileLayer<
             tileProviderClassRegistry,
             options.tileProvider ?? { type: TileProvider.className },
           ) as TileProvider);
+
     if (this.tileProvider) {
       this.tileProvider.locale = this.locale;
     }
@@ -242,6 +263,17 @@ class VectorTileLayer<
       vectorTileRenderers,
       defaultOptions.renderer,
     );
+
+    const attributeProvider = getProviderForOption(options.attributeProvider);
+
+    if (
+      is(
+        attributeProvider,
+        oneOf(CompositeFeatureProvider, AbstractAttributeProvider),
+      )
+    ) {
+      this._attributeProvider = attributeProvider;
+    }
   }
 
   /**
@@ -267,6 +299,26 @@ class VectorTileLayer<
     this.vectorProperties.allowPicking = allowPicking;
   }
 
+  get attributeProvider(): AttributeProvider | undefined {
+    return this._attributeProvider;
+  }
+
+  set attributeProvider(provider: AttributeProvider | undefined) {
+    check(
+      provider,
+      maybe(oneOf(AbstractAttributeProvider, CompositeFeatureProvider)),
+    );
+
+    if (this._attributeProvider !== provider) {
+      this._attributeProvider = provider;
+      this.forceRedraw().catch((e: unknown) => {
+        this.getLogger().error(
+          `Error forcing redraw after setting attribute provider: ${String(e)}`,
+        );
+      });
+    }
+  }
+
   async initialize(): Promise<void> {
     if (!this.initialized) {
       this._tileLoadEventListener =
@@ -279,14 +331,26 @@ class VectorTileLayer<
           void this.reload();
         });
 
-      if (this._renderer === 'image') {
-        // primitives dont need a feature provider
-        this.featureProvider = new TileProviderFeatureProvider(this.name, {
-          // XXX this overwrites
+      if (
+        this._renderer === 'image' &&
+        !(this.featureProvider instanceof AbstractFeatureProvider)
+      ) {
+        const defaultFeatureProvider = new TileProviderFeatureProvider({
           style: this.style,
           tileProvider: this.tileProvider,
           vectorProperties: this.vectorProperties,
         });
+
+        if (this.featureProvider instanceof AbstractAttributeProvider) {
+          const attributeProvider = this.featureProvider;
+          this._defaultFeatureProvider = new CompositeFeatureProvider({
+            featureProviders: [defaultFeatureProvider],
+            attributeProviders: [attributeProvider],
+          });
+        } else {
+          this._defaultFeatureProvider = defaultFeatureProvider;
+        }
+        this.featureProvider = this._defaultFeatureProvider;
       }
     }
     await super.initialize();
@@ -297,27 +361,40 @@ class VectorTileLayer<
     return this._styleZIndex;
   }
 
-  private _handleTileLoaded({ rtree }: TileLoadedEvent): void {
-    rtree
-      .all()
-      .map((item) => item.value)
-      .forEach((feature) => {
-        const featureStyle = feature.getStyle();
-        if (featureStyle && featureStyle instanceof Style) {
-          featureStyle.setZIndex(this._getNextStyleZIndex());
-        }
-        feature[vcsLayerName] = this.name;
-        feature.getStyleFunction = (): StyleFunction => {
-          return this._featureStyle.bind(this) as StyleFunction;
-        };
-        if (this.tileProvider.trackFeaturesToTiles && this.globalHider) {
-          synchronizeFeatureVisibility(
-            this.featureVisibility,
-            this.globalHider,
-            feature,
-          );
-        }
-      });
+  private _handleTileLoaded({ rtree, tileId }: TileLoadedEvent): void {
+    const features = rtree.all().map((item) => {
+      const feature = item.value;
+      const featureStyle = feature.getStyle();
+      if (featureStyle && featureStyle instanceof Style) {
+        featureStyle.setZIndex(this._getNextStyleZIndex());
+      }
+      feature[vcsLayerName] = this.name;
+      feature.getStyleFunction = (): StyleFunction => {
+        return this._featureStyle.bind(this) as StyleFunction;
+      };
+      if (this.tileProvider.trackFeaturesToTiles && this.globalHider) {
+        synchronizeFeatureVisibility(
+          this.featureVisibility,
+          this.globalHider,
+          feature,
+        );
+      }
+      return feature;
+    });
+
+    if (this._attributeProvider) {
+      const { x, y, level } = this.tileProvider.parseCacheKey(tileId);
+      const rectangle = this.tileProvider.tilingScheme.tileXYToRectangle(
+        x,
+        y,
+        level,
+      );
+      this._attributeProvider
+        .augmentFeatures(features, rectangleToMercatorExtent(rectangle))
+        .catch((error: unknown) => {
+          this.getLogger().error(`Error augmenting features: ${String(error)}`);
+        });
+    }
   }
 
   setGlobalHider(globalHider: GlobalHider): void {
@@ -516,24 +593,6 @@ class VectorTileLayer<
     });
   }
 
-  destroy(): void {
-    this._featureVisibilityListeners.forEach((cb) => {
-      cb();
-    });
-    super.destroy();
-    this._tileLoadEventListener();
-    if (this.featureProvider) {
-      this.featureProvider.destroy();
-    }
-    if (this.tileProvider) {
-      this.tileProvider.destroy();
-    }
-    this._vectorPropertiesChangedListener();
-    if (this.vectorProperties) {
-      this.vectorProperties.destroy();
-    }
-  }
-
   toJSON(
     defaultOptions = VectorTileLayer.getDefaultOptions(),
   ): VectorTileOptions {
@@ -572,7 +631,36 @@ class VectorTileLayer<
       config.debug = this._debug;
     }
 
+    if (this.featureProvider === this._defaultFeatureProvider) {
+      delete config.featureProvider;
+      if (this.featureProvider instanceof CompositeFeatureProvider) {
+        const { attributeProviders } = this.featureProvider.toJSON();
+        config.featureProvider = attributeProviders[0];
+      }
+    }
+
+    if (this._attributeProvider) {
+      config.attributeProvider = this._attributeProvider.toJSON();
+    }
+
     return config;
+  }
+
+  destroy(): void {
+    this._featureVisibilityListeners.forEach((cb) => {
+      cb();
+    });
+    this.attributeProvider?.destroy();
+    this._defaultFeatureProvider?.destroy();
+    super.destroy();
+    this._tileLoadEventListener();
+    if (this.tileProvider) {
+      this.tileProvider.destroy();
+    }
+    this._vectorPropertiesChangedListener();
+    if (this.vectorProperties) {
+      this.vectorProperties.destroy();
+    }
   }
 }
 

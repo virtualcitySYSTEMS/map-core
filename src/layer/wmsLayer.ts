@@ -16,6 +16,10 @@ import WmsOpenlayersImpl from './openlayers/wmsOpenlayersImpl.js';
 import Extent from '../util/extent.js';
 import { layerClassRegistry } from '../classRegistry.js';
 import type VcsMap from '../map/vcsMap.js';
+import AbstractAttributeProvider from '../featureProvider/abstractAttributeProvider.js';
+import CompositeFeatureProvider, {
+  type CompositeFeatureProviderOptions,
+} from '../featureProvider/compositeFeatureProvider.js';
 
 export type WMSImplementationOptions = RasterLayerImplementationOptions & {
   parameters: Record<string, string>;
@@ -39,9 +43,10 @@ export type WMSOptions = RasterLayerOptions & {
    * key value pair of additional WMS parameters, url query notation possible
    */
   parameters?: Record<string, string> | string;
-
   /**
    * whether this layer should send getFeatureInfo requests to the service when objects are clicked.
+   * do not provide this option AND a feature provider. this option will configure a
+   * layer specific WMSFeatureProvider. providing an attribute provider will create a composite feature provider.
    */
   featureInfo?: Partial<WMSFeatureProviderOptions>;
   /**
@@ -92,6 +97,8 @@ class WMSLayer extends RasterLayer<WmsCesiumImpl | WmsOpenlayersImpl> {
 
   private _featureInfoOptions: Partial<WMSFeatureProviderOptions> | undefined;
 
+  private _attributeProvider?: AbstractAttributeProvider;
+
   /**
    * @param  options
    */
@@ -140,6 +147,10 @@ class WMSLayer extends RasterLayer<WmsCesiumImpl | WmsOpenlayersImpl> {
       options.singleImage2d,
       defaultOptions.singleImage2d,
     );
+
+    if (this.featureProvider instanceof AbstractAttributeProvider) {
+      this._attributeProvider = this.featureProvider;
+    }
   }
 
   initialize(): Promise<void> {
@@ -163,9 +174,19 @@ class WMSLayer extends RasterLayer<WmsCesiumImpl | WmsOpenlayersImpl> {
         extent: this.extent,
         parameters: this.parameters,
         version: this.version,
+        headers: this.headers,
         ...this._featureInfoOptions,
       };
-      this.featureProvider = new WMSFeatureProvider(this.name, options);
+
+      const wmsFeatureProvider = new WMSFeatureProvider(options);
+      if (this._attributeProvider) {
+        this.featureProvider = new CompositeFeatureProvider({
+          featureProviders: [wmsFeatureProvider],
+          attributeProviders: [this._attributeProvider],
+        });
+      } else {
+        this.featureProvider = wmsFeatureProvider;
+      }
     }
   }
 
@@ -260,49 +281,61 @@ class WMSLayer extends RasterLayer<WmsCesiumImpl | WmsOpenlayersImpl> {
       config.singleImage2d = this.singleImage2d;
     }
 
-    if (
-      this.featureProvider &&
-      this.featureProvider instanceof WMSFeatureProvider
-    ) {
-      const featureInfoConfig: Partial<WMSFeatureProviderOptions> =
-        this.featureProvider.toJSON();
-      if (
-        this.tileSize[0] === featureInfoConfig?.tileSize?.[0] ||
-        this.tileSize[1] === featureInfoConfig?.tileSize?.[1]
-      ) {
-        delete featureInfoConfig.tileSize;
+    if (this._featureInfoOptions) {
+      delete config.featureProvider;
+      if (this.featureProvider) {
+        let featureInfoConfig: Partial<WMSFeatureProviderOptions>;
+        if (this._attributeProvider) {
+          const compositeInfo =
+            this.featureProvider.toJSON() as CompositeFeatureProviderOptions;
+          featureInfoConfig = compositeInfo.featureProviders[0];
+          config.featureProvider = this._attributeProvider.toJSON();
+        } else {
+          featureInfoConfig = this.featureProvider.toJSON();
+        }
+        if (
+          this.tileSize[0] === featureInfoConfig?.tileSize?.[0] ||
+          this.tileSize[1] === featureInfoConfig?.tileSize?.[1]
+        ) {
+          delete featureInfoConfig.tileSize;
+        }
+        if (
+          Object.entries(this.parameters).every(
+            ([key, value]) => featureInfoConfig?.parameters?.[key] === value,
+          )
+        ) {
+          delete featureInfoConfig.parameters;
+        }
+        if (
+          featureInfoConfig.extent &&
+          new Extent(featureInfoConfig.extent).equals(this.extent)
+        ) {
+          delete featureInfoConfig.extent;
+        }
+        if (this.url === featureInfoConfig.url) {
+          delete featureInfoConfig.url;
+        }
+        if (this.tilingSchema === featureInfoConfig.tilingSchema) {
+          delete featureInfoConfig.tilingSchema;
+        }
+        if (this.version === featureInfoConfig.version) {
+          delete featureInfoConfig.version;
+        }
+        if (this.minLevel === featureInfoConfig.minLevel) {
+          delete featureInfoConfig.minLevel;
+        }
+        if (this.maxLevel === featureInfoConfig.maxLevel) {
+          delete featureInfoConfig.maxLevel;
+        }
+
+        if (this._featureInfoOptions) {
+          delete featureInfoConfig.name;
+          delete featureInfoConfig.type;
+        }
+        config.featureInfo = featureInfoConfig;
+      } else {
+        config.featureInfo = this._featureInfoOptions;
       }
-      if (
-        Object.entries(this.parameters).every(
-          ([key, value]) => featureInfoConfig?.parameters?.[key] === value,
-        )
-      ) {
-        delete featureInfoConfig.parameters;
-      }
-      if (
-        featureInfoConfig.extent &&
-        new Extent(featureInfoConfig.extent).equals(this.extent)
-      ) {
-        delete featureInfoConfig.extent;
-      }
-      if (this.url === featureInfoConfig.url) {
-        delete featureInfoConfig.url;
-      }
-      if (this.tilingSchema === featureInfoConfig.tilingSchema) {
-        delete featureInfoConfig.tilingSchema;
-      }
-      if (this.version === featureInfoConfig.version) {
-        delete featureInfoConfig.version;
-      }
-      if (this.minLevel === featureInfoConfig.minLevel) {
-        delete featureInfoConfig.minLevel;
-      }
-      if (this.maxLevel === featureInfoConfig.maxLevel) {
-        delete featureInfoConfig.maxLevel;
-      }
-      config.featureInfo = featureInfoConfig;
-    } else if (this._featureInfoOptions) {
-      config.featureInfo = this._featureInfoOptions;
     }
 
     return config;

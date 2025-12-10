@@ -3,6 +3,11 @@ import sinon, { type SinonSandbox } from 'sinon';
 import { type Size } from 'ol/size.js';
 import type { WMSOptions } from '../../../src/layer/wmsLayer.js';
 import WMSLayer from '../../../src/layer/wmsLayer.js';
+import UrlIdAttributeProvider from '../../../src/featureProvider/urlIdAttributeProvider.js';
+import {
+  CompositeFeatureProvider,
+  WMSFeatureProvider,
+} from '../../../index.js';
 
 describe('WMSLayer', () => {
   let sandbox: SinonSandbox;
@@ -48,6 +53,78 @@ describe('WMSLayer', () => {
           await layer.setLayers(['one', 'two']);
           expect(redraw).to.have.been.called;
         });
+      });
+    });
+  });
+
+  describe('feature provider & feature info', () => {
+    describe('with an attribute provider', () => {
+      let configObject: WMSOptions;
+      let options: WMSOptions;
+      let layer: WMSLayer;
+
+      before(async () => {
+        options = {
+          featureProvider: new UrlIdAttributeProvider({
+            urlTemplate: '/{id}.json',
+          }),
+          featureInfo: {},
+        };
+        layer = new WMSLayer(options);
+        await layer.initialize();
+        configObject = layer.toJSON();
+      });
+
+      it('should create a composite feature provider', () => {
+        expect(layer.featureProvider).to.be.instanceOf(
+          CompositeFeatureProvider,
+        );
+      });
+
+      it('should configure the attribute provider and feature info', () => {
+        expect(configObject)
+          .to.have.property('featureProvider')
+          .that.deep.equals(
+            (options.featureProvider as UrlIdAttributeProvider).toJSON(),
+          );
+
+        expect(configObject).to.have.property('featureInfo');
+      });
+    });
+
+    describe('with feature provider', () => {
+      let configObject: WMSOptions;
+      let options: WMSOptions;
+      let layer: WMSLayer;
+      let featureProvider: WMSFeatureProvider;
+
+      before(async () => {
+        featureProvider = new WMSFeatureProvider({
+          url: '/wms',
+          parameters: {},
+        });
+
+        options = {
+          featureProvider,
+          featureInfo: {},
+        };
+        layer = new WMSLayer(options);
+        await layer.initialize();
+        configObject = layer.toJSON();
+      });
+
+      after(() => {
+        layer.destroy();
+      });
+
+      it('should overwrite the feature provider', () => {
+        expect(layer.featureProvider).to.not.equal(featureProvider);
+        expect(layer.featureProvider).to.be.instanceOf(WMSFeatureProvider);
+      });
+
+      it('should create a composite feature provider', () => {
+        expect(configObject).to.not.have.property('featureProvider');
+        expect(configObject).to.have.property('featureInfo');
       });
     });
   });
@@ -140,7 +217,6 @@ describe('WMSLayer', () => {
         inputConfig = {
           url: '/wms',
           featureInfo: {
-            type: 'WMSFeatureProvider',
             responseType: 'application/json',
             url: '/wms2',
             tileSize: [512, 512],

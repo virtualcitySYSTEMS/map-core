@@ -31,11 +31,33 @@ export {
 export type { AbstractFeatureProviderOptions } from './src/featureProvider/abstractFeatureProvider.js';
 export { default as AbstractFeatureProvider } from './src/featureProvider/abstractFeatureProvider.js';
 export {
+  default as AbstractAttributeProvider,
+  type AttributeProvider,
+  type AbstractAttributeProviderOptions,
+} from './src/featureProvider/abstractAttributeProvider.js';
+export {
+  default as CompositeFeatureProvider,
+  type CompositeFeatureProviderOptions,
+} from './src/featureProvider/compositeFeatureProvider.js';
+export {
+  default as CsvAttributeProvider,
+  type CsvAttributeProviderOptions,
+} from './src/featureProvider/csvAttributeProvider.js';
+export {
   isProvidedFeature,
   isProvidedClusterFeature,
 } from './src/featureProvider/featureProviderSymbols.js';
+export {
+  default as JSONAttributeProvider,
+  type JsonAttributeProviderOptions,
+  type JsonAttributeData,
+} from './src/featureProvider/jsonAttributeProvider.js';
 export type { TileProviderFeatureProviderOptions } from './src/featureProvider/tileProviderFeatureProvider.js';
 export { default as TileProviderFeatureProvider } from './src/featureProvider/tileProviderFeatureProvider.js';
+export {
+  default as UrlIdAttributeProvider,
+  type UrlIdAttributeProviderOptions,
+} from './src/featureProvider/urlIdAttributeProvider.js';
 export type {
   FormatOptions,
   WMSFeatureProviderOptions,
@@ -850,6 +872,7 @@ export type { ModuleLayerOptions } from './src/vcsModuleHelpers.js';
 export {
   deserializeMap,
   deserializeViewpoint,
+  deserializeFeatureProvider,
   deserializeLayer,
   serializeLayer,
   getLayerIndex,

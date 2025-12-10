@@ -1,6 +1,8 @@
+import { expect } from 'chai';
+import type Feature from 'ol/Feature.js';
 import WFS from 'ol/format/WFS.js';
 import GML from 'ol/format/GML.js';
-import GeoJSON from 'ol/format/GeoJSON.js';
+import GeoJSON, { type GeoJSONFeatureCollection } from 'ol/format/GeoJSON.js';
 import GML3 from 'ol/format/GML3.js';
 import WMSGetFeatureInfo from 'ol/format/WMSGetFeatureInfo.js';
 import Point from 'ol/geom/Point.js';
@@ -8,9 +10,11 @@ import nock from 'nock';
 import GML32 from 'ol/format/GML32.js';
 import WMSFeatureProvider, {
   getFormat,
+  type WMSFeatureProviderOptions,
 } from '../../../src/featureProvider/wmsFeatureProvider.js';
 import { mercatorProjection } from '../../../src/util/projection.js';
 import Extent from '../../../src/util/extent.js';
+import { Layer, TilingScheme } from '../../../index.js';
 
 describe('WMSFeatureProvider', () => {
   after(() => {
@@ -18,15 +22,17 @@ describe('WMSFeatureProvider', () => {
   });
 
   describe('getFeaturesByCoordinate', () => {
-    let scope;
-    let testGeojson;
-    let provider;
-    let features;
+    let scope: nock.Scope;
+    let testGeojson: GeoJSONFeatureCollection;
+    let provider: WMSFeatureProvider;
+    let features: Feature[];
+    let layer: Layer;
 
     before(async () => {
       testGeojson = {
         type: 'FeatureCollection',
         features: [
+          // @ts-expect-error testing null geometry handling
           { type: 'Feature', geometry: null, properties: { foo: 'bar' } },
           {
             type: 'Feature',
@@ -39,16 +45,24 @@ describe('WMSFeatureProvider', () => {
         .get(/\/wms\?(\S)*/)
         // eslint-disable-next-line
         .reply(function () {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
           return [200, testGeojson, { 'Content-Type': 'application/json' }];
         });
 
-      provider = new WMSFeatureProvider('test', {
+      provider = new WMSFeatureProvider({
         url: 'http://myWmsFeatureProvider/wms',
         parameters: { LAYERS: 'one' },
         responseType: 'application/json',
         projection: mercatorProjection.toJSON(),
       });
-      features = await provider.getFeaturesByCoordinate([0, 0, 0], 2);
+      layer = new Layer({ name: 'testLayer' });
+      features = await provider.getFeaturesByCoordinate([0, 0, 0], 2, layer);
+    });
+
+    after(() => {
+      layer.destroy();
+      scope.done();
+      provider.destroy();
     });
 
     it('should return all features', () => {
@@ -58,25 +72,20 @@ describe('WMSFeatureProvider', () => {
     it('should set the geometry to the provided coordinate', () => {
       const geometry = features[0].getGeometry();
       expect(geometry).to.be.an.instanceOf(Point);
-      expect(geometry.getCoordinates()).to.have.ordered.members([0, 0, 0]);
+      expect(geometry!.getCoordinates()).to.have.ordered.members([0, 0, 0]);
     });
 
     it('should retrieve the geometry from the response', () => {
       const geometry = features[1].getGeometry();
       expect(geometry).to.be.an.instanceOf(Point);
-      expect(geometry.getCoordinates()).to.have.ordered.members([1, 1, 2]);
-    });
-
-    after(() => {
-      scope.done();
-      provider.destroy();
+      expect(geometry!.getCoordinates()).to.have.ordered.members([1, 1, 2]);
     });
 
     describe('extent handling', () => {
-      let wmsFeatureProvider;
+      let wmsFeatureProvider: WMSFeatureProvider;
 
       before(() => {
-        wmsFeatureProvider = new WMSFeatureProvider('testExtent', {
+        wmsFeatureProvider = new WMSFeatureProvider({
           url: 'http://myWmsFeatureProvider/wms',
           parameters: {},
           responseType: 'text/html',
@@ -92,13 +101,14 @@ describe('WMSFeatureProvider', () => {
         const insideFeatures = await wmsFeatureProvider.getFeaturesByCoordinate(
           [0, 0],
           1,
+          layer,
         );
         expect(insideFeatures).to.be.an('array').with.lengthOf(1);
       });
 
       it('should return an empty array if coordinate is outside the extent', async () => {
         const outsideFeatures =
-          await wmsFeatureProvider.getFeaturesByCoordinate([10, 10], 1);
+          await wmsFeatureProvider.getFeaturesByCoordinate([10, 10], 1, layer);
         expect(outsideFeatures).to.be.an('array').that.is.empty;
       });
 
@@ -108,10 +118,10 @@ describe('WMSFeatureProvider', () => {
     });
 
     describe('text/html no extent handling', () => {
-      let providerNoExtent;
+      let providerNoExtent: WMSFeatureProvider;
 
       before(() => {
-        providerNoExtent = new WMSFeatureProvider('testNoExtent', {
+        providerNoExtent = new WMSFeatureProvider({
           url: 'http://myWmsFeatureProvider/wms',
           parameters: {},
           responseType: 'text/html',
@@ -121,7 +131,11 @@ describe('WMSFeatureProvider', () => {
       });
 
       it('should return one feature when no extent is configured', async () => {
-        const feats = await providerNoExtent.getFeaturesByCoordinate([5, 5], 1);
+        const feats = await providerNoExtent.getFeaturesByCoordinate(
+          [5, 5],
+          1,
+          layer,
+        );
         expect(feats).to.be.an('array').with.lengthOf(1);
       });
 
@@ -132,15 +146,16 @@ describe('WMSFeatureProvider', () => {
   });
 
   describe('requestHeaders with getFeaturesByCoordinate', () => {
-    let scope;
-    let testGeojson;
-    let provider;
-    let requestHeaders;
+    let scope: nock.Scope;
+    let testGeojson: GeoJSONFeatureCollection;
+    let provider: WMSFeatureProvider;
+    let layer: Layer;
 
-    before(async () => {
+    before(() => {
       testGeojson = {
         type: 'FeatureCollection',
         features: [
+          // @ts-expect-error testing null geometry handling
           { type: 'Feature', geometry: null, properties: { foo: 'bar' } },
           {
             type: 'Feature',
@@ -150,34 +165,36 @@ describe('WMSFeatureProvider', () => {
         ],
       };
 
-      provider = new WMSFeatureProvider('test', {
+      provider = new WMSFeatureProvider({
         url: 'http://myWmsFeatureProvider/wms',
         parameters: { LAYERS: 'one' },
         responseType: 'application/json',
         projection: mercatorProjection.toJSON(),
+        headers: { testheader: 'test' },
       });
-    });
-
-    it('should send configured Headers to the Server', async () => {
-      scope = nock('http://myWmsFeatureProvider')
-        .get(/\/wms\?(\S)*/)
-        .reply(function nockReply() {
-          requestHeaders = this.req.headers;
-          return [200, testGeojson, { 'Content-Type': 'application/json' }];
-        });
-      await provider.getFeaturesByCoordinate([0, 0, 0], 2, {
-        testheader: 'test',
-      });
-      expect(requestHeaders).to.have.property('testheader', 'test');
+      layer = new Layer({ name: 'testLayer' });
     });
 
     afterEach(() => {
       scope.done();
-      requestHeaders = null;
     });
 
     after(() => {
       provider.destroy();
+      layer.destroy();
+    });
+
+    it('should send configured Headers to the Server', async () => {
+      let requestHeaders: Record<string, string>;
+      scope = nock('http://myWmsFeatureProvider')
+        .get(/\/wms\?(\S)*/)
+        .reply(function nockReply() {
+          requestHeaders = this.req.headers;
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          return [200, testGeojson, { 'Content-Type': 'application/json' }];
+        });
+      await provider.getFeaturesByCoordinate([0, 0, 0], 2, layer);
+      expect(requestHeaders!).to.have.property('testheader', 'test');
     });
   });
 
@@ -211,7 +228,7 @@ describe('WMSFeatureProvider', () => {
     });
 
     it('should return null, if no response type is specified', () => {
-      const format = getFormat();
+      const format = getFormat('');
       expect(format).to.be.null;
     });
 
@@ -236,23 +253,26 @@ describe('WMSFeatureProvider', () => {
   describe('getting the config', () => {
     describe('of a default feature provider', () => {
       it('should return the type, url and parameters', () => {
-        const provider = new WMSFeatureProvider('test', { url: 'example.com' });
+        const provider = new WMSFeatureProvider({
+          url: 'example.com',
+          parameters: {},
+        });
         const config = provider.toJSON();
-        expect(config).to.have.all.keys(['type', 'url', 'parameters']);
+        expect(config).to.have.all.keys(['type', 'name', 'url', 'parameters']);
         provider.destroy();
       });
     });
 
     describe('of a configured WMSLayer feature provider', () => {
-      let inputConfig;
-      let outputConfig;
+      let inputConfig: WMSFeatureProviderOptions;
+      let outputConfig: WMSFeatureProviderOptions;
 
       before(() => {
         inputConfig = {
           url: '/wms',
           parameters: { LAYERS: 'one' },
           version: '1.3.0',
-          tilingSchema: 'mercator',
+          tilingSchema: TilingScheme.MERCATOR,
           maxLevel: 22,
           minLevel: 3,
           tileSize: [512, 512],
@@ -264,7 +284,7 @@ describe('WMSFeatureProvider', () => {
           }).toJSON(),
           projection: mercatorProjection.toJSON(),
         };
-        const provider = new WMSFeatureProvider('test', inputConfig);
+        const provider = new WMSFeatureProvider(inputConfig);
         outputConfig = provider.toJSON();
         provider.destroy();
       });
@@ -326,9 +346,9 @@ describe('WMSFeatureProvider', () => {
   });
 
   describe('GML32 response parsing', () => {
-    let scope;
-    let provider;
-    let features;
+    let scope: nock.Scope;
+    let provider: WMSFeatureProvider;
+    let features: Feature[];
 
     const gml32Response = `<?xml version="1.0" encoding="utf-8"?>
 <gml:FeatureCollection gml:id="collection.0"  xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/gml/3.2" xmlns:test="http://example.org/test">
@@ -343,21 +363,24 @@ describe('WMSFeatureProvider', () => {
     </test:Feature>
 </gml:featureMember>
 </gml:FeatureCollection>`;
+    let layer: Layer;
 
     before(async () => {
       scope = nock('http://gml32test')
         .get(/\/wms\?(\S)*/)
         .reply(200, gml32Response);
-      provider = new WMSFeatureProvider('gml32test', {
+      provider = new WMSFeatureProvider({
         url: 'http://gml32test/wms',
         parameters: { LAYERS: 'test' },
         responseType: 'text/xml; subtype=gml/3.2.1',
       });
-      features = await provider.getFeaturesByCoordinate([0, 0, 0], 1);
+      layer = new Layer({ name: 'gml32Layer' });
+      features = await provider.getFeaturesByCoordinate([0, 0, 0], 1, layer);
     });
 
     after(() => {
       scope.done();
+      layer.destroy();
       provider.destroy();
     });
 
@@ -373,7 +396,7 @@ describe('WMSFeatureProvider', () => {
       const geometry = features[0].getGeometry();
       expect(geometry).to.be.an.instanceOf(Point);
 
-      const coords = geometry.getCoordinates();
+      const coords = (geometry as Point).getCoordinates();
       expect(coords[0]).to.equal(2);
       expect(coords[1]).to.equal(1);
     });

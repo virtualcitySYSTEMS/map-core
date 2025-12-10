@@ -306,7 +306,7 @@ export function setupCesiumContextLimits() {
 
 class BatchTable {
   constructor(properties) {
-    this.properties = properties;
+    this.properties = properties ?? {};
     this.color = new Color();
     this.show = true;
     this.destroyed = false;
@@ -318,6 +318,14 @@ class BatchTable {
 
   getProperty(id, prop) {
     return this.properties[prop];
+  }
+
+  setProperty(id, prop, value) {
+    this.properties[prop] = value;
+  }
+
+  hasProperty(id, prop) {
+    return this.properties[prop] !== undefined;
   }
 
   getColor() {

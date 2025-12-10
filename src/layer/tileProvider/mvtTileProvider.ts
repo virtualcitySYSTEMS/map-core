@@ -3,10 +3,11 @@ import Feature from 'ol/Feature.js';
 import { getCenter } from 'ol/extent.js';
 import type { Geometry } from 'ol/geom.js';
 import type { TileProviderOptions } from './tileProvider.js';
-import TileProvider, { rectangleToExtent } from './tileProvider.js';
+import TileProvider from './tileProvider.js';
 import { getURL } from './urlTemplateTileProvider.js';
 import { getInitForUrl, requestArrayBuffer } from '../../util/fetch.js';
 import { tileProviderClassRegistry } from '../../classRegistry.js';
+import { rectangleToMercatorExtent } from '../../util/math.js';
 
 export type MVTTileProviderOptions = TileProviderOptions & {
   /**
@@ -66,7 +67,7 @@ class MVTTileProvider extends TileProvider {
   ): Promise<Feature[]> {
     const rectangle = this.tilingScheme.tileXYToRectangle(x, y, z);
     const url = getURL(this.url, x, y, z, rectangle, this.locale);
-    const extent = rectangleToExtent(rectangle);
+    const extent = rectangleToMercatorExtent(rectangle);
     const center = getCenter(extent);
     const init = getInitForUrl(this.url, headers);
     const data = await requestArrayBuffer(url, init);

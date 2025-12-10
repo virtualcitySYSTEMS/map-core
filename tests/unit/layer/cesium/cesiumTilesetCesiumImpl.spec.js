@@ -10,6 +10,7 @@ import {
   Math as CesiumMath,
   Resource,
   CustomShader,
+  Rectangle,
 } from '@vcmap-cesium/engine';
 import CesiumTilesetLayer from '../../../../src/layer/cesiumTilesetLayer.js';
 import DeclarativeStyleItem from '../../../../src/style/declarativeStyleItem.js';
@@ -27,6 +28,8 @@ import {
 } from '../../../../src/layer/cesium/cesiumTilesetCesiumImpl.js';
 import { vcsLayerName } from '../../../../src/layer/layerSymbols.js';
 import GlobalHider from '../../../../src/layer/globalHider.js';
+import { timeout } from '../../helpers/helpers.js';
+import TestAttributeProvider from '../../featureProvider/testAttributeProvider.js';
 
 describe('CesiumTilesetCesiumImpl', () => {
   let sandbox;
@@ -729,6 +732,33 @@ describe('CesiumTilesetCesiumImpl', () => {
       expect(
         cesiumTilesetCesium.featureVisibility.hiddenObjects.test0,
       ).to.have.property('size', 1);
+    });
+  });
+
+  describe('augmenting feature on load', () => {
+    let feature;
+    let content;
+
+    beforeEach(() => {
+      feature = createDummyCesium3DTileFeature({ id: 'test' }, cesiumTileset);
+      content = {
+        featuresLength: 1,
+        getFeature() {
+          return feature;
+        },
+      };
+      cesiumTilesetCesium.attributeProvider = new TestAttributeProvider(42);
+    });
+
+    it('should add attributes from the attribute provider to the feature', async () => {
+      cesiumTilesetCesium._tileLoaded({
+        content,
+        contentBoundingVolume: {
+          rectangle: new Rectangle(),
+        },
+      });
+      await timeout(0);
+      expect(feature.getAttributes()).to.have.property('testAttribute', 42);
     });
   });
 });

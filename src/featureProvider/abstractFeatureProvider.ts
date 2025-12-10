@@ -1,12 +1,14 @@
 import { v4 as uuidv4 } from 'uuid';
-import { parseBoolean } from '@vcsuite/parsers';
 import type { Feature } from 'ol/index.js';
 import type { Coordinate } from 'ol/coordinate.js';
 
 import { vcsLayerName } from '../layer/layerSymbols.js';
 import VcsObject, { type VcsObjectOptions } from '../vcsObject.js';
 import { getStyleOrDefaultStyle } from '../style/styleFactory.js';
-import { defaultVectorStyle } from '../style/vectorStyleItem.js';
+import {
+  defaultVectorStyle,
+  type VectorStyleItemOptions,
+} from '../style/vectorStyleItem.js';
 import VectorProperties, {
   type VectorPropertiesOptions,
 } from '../layer/vectorProperties.js';
@@ -14,20 +16,22 @@ import { isProvidedFeature } from './featureProviderSymbols.js';
 import type StyleItem from '../style/styleItem.js';
 import { type StyleItemOptions } from '../style/styleItem.js';
 import type VcsMap from '../map/vcsMap.js';
+import type { DeclarativeStyleItemOptions } from '../style/declarativeStyleItem.js';
+import type Layer from '../layer/layer.js';
 
 export type AbstractFeatureProviderOptions = VcsObjectOptions & {
   /**
    * the style to apply to features created by this feature provider
    */
-  style?: StyleItemOptions | StyleItem;
+  style?:
+    | StyleItemOptions
+    | VectorStyleItemOptions
+    | DeclarativeStyleItemOptions
+    | StyleItem;
   /**
    * the vector properties of the features. Allow picking is false by default.
    */
   vectorProperties?: VectorProperties | VectorPropertiesOptions;
-  /**
-   * show the resulting geometry in the map
-   */
-  showGeometry?: boolean;
   /**
    * can be used to constrict the featureProvider to specific mapTypes empty array means no restriction
    */
@@ -38,7 +42,7 @@ export type AbstractFeatureProviderOptions = VcsObjectOptions & {
  * An abstract class providing features for {@link Layer}s which cannot provide features directly, but can provide features for
  * a given location, e.g. WmsLayer with a getFeatureInfo configuration. In this case, a feature provider can be created for this layer.
  */
-class AbstractFeatureProvider extends VcsObject {
+abstract class AbstractFeatureProvider extends VcsObject {
   static get className(): string {
     return 'AbstractFeatureProvider';
   }
@@ -48,25 +52,14 @@ class AbstractFeatureProvider extends VcsObject {
       vectorProperties: {
         allowPicking: false,
       },
-      showGeometry: false,
       mapTypes: [],
     };
   }
 
   /**
-   * The layer name of the associated layer
-   */
-  layerName: string;
-
-  /**
    * The style set on features created by this provider
    */
   style: StyleItem | undefined;
-
-  /**
-   * Whether to show the geometry on selection.
-   */
-  showGeometry: boolean;
 
   /**
    * The vector properties assigned to features created by this provider
@@ -78,20 +71,13 @@ class AbstractFeatureProvider extends VcsObject {
    */
   mapTypes: string[];
 
-  constructor(layerName: string, options: AbstractFeatureProviderOptions) {
+  constructor(options: AbstractFeatureProviderOptions) {
     const defaultOptions = AbstractFeatureProvider.getDefaultOptions();
     super({ ...defaultOptions, ...options });
-
-    this.layerName = layerName;
 
     this.style = options.style
       ? getStyleOrDefaultStyle(options.style, defaultVectorStyle.clone())
       : undefined;
-
-    this.showGeometry = parseBoolean(
-      options.showGeometry,
-      defaultOptions.showGeometry,
-    );
 
     this.vectorProperties =
       options.vectorProperties instanceof VectorProperties
@@ -120,14 +106,14 @@ class AbstractFeatureProvider extends VcsObject {
    * Ensures the feature has an ID, applies all vectorProperties and adds style and the vcsLayerName
    * and isProvidedFeature symbols to the feature
    */
-  getProviderFeature(feature: Feature): Feature {
+  getProviderFeature(feature: Feature, layer: Layer): Feature {
     if (!feature.getId()) {
       feature.setId(uuidv4());
     }
     if (this.style) {
       feature.setStyle(this.style.style);
     }
-    feature[vcsLayerName] = this.layerName;
+    feature[vcsLayerName] = layer.name;
     feature[isProvidedFeature] = true;
     Object.entries(this.vectorProperties.getValues()).forEach(
       ([key, value]) => {
@@ -146,19 +132,13 @@ class AbstractFeatureProvider extends VcsObject {
    * to handle your feature is called: (e.g. <code>return features.map(f => this.getProviderFeature(f)</code>);
    * @param coordinate - in mercator
    * @param resolution - meters per pixel for the given location
-   * @param headers - headers optional request headers to be sent with the server request
+   * @param layer - the layer to request the features for
    */
-  // eslint-disable-next-line class-methods-use-this
-  getFeaturesByCoordinate(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _coordinate: Coordinate,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _resolution: number,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _headers?: Record<string, string>,
-  ): Promise<Feature[]> {
-    return Promise.resolve([]);
-  }
+  abstract getFeaturesByCoordinate(
+    coordinate: Coordinate,
+    resolution: number,
+    layer: Layer,
+  ): Promise<Feature[]>;
 
   /**
    * Returns the object required to configure this feature provider.
@@ -168,12 +148,6 @@ class AbstractFeatureProvider extends VcsObject {
   ): AbstractFeatureProviderOptions {
     const config: AbstractFeatureProviderOptions = super.toJSON(defaultOptions);
 
-    delete config.name; // the name is irrelevant, since its the layers name
-
-    if (this.showGeometry !== defaultOptions.showGeometry) {
-      config.showGeometry = this.showGeometry;
-    }
-
     if (this.style) {
       config.style = this.style.toJSON();
     }
@@ -182,9 +156,15 @@ class AbstractFeatureProvider extends VcsObject {
       ...VectorProperties.getDefaultOptions(),
       ...(defaultOptions.vectorProperties as VectorPropertiesOptions),
     });
+
     if (Object.keys(vectorPropertiesConfig).length > 0) {
       config.vectorProperties = vectorPropertiesConfig;
     }
+
+    if (this.mapTypes.length > 0) {
+      config.mapTypes = this.mapTypes.slice();
+    }
+
     return config;
   }
 

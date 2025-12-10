@@ -29,7 +29,11 @@ import VcsEvent from './vcsEvent.js';
 import { setDefaultProjectionOptions } from './util/projection.js';
 import ObliqueMap from './map/obliqueMap.js';
 import OverrideClassRegistry from './overrideClassRegistry.js';
-import type { AbstractCtor, CtorType } from './classRegistry.js';
+import type {
+  AbstractCtor,
+  CtorType,
+  FeatureProviderClass,
+} from './classRegistry.js';
 import ClassRegistry, {
   categoryClassRegistry,
   featureProviderClassRegistry,
@@ -44,7 +48,6 @@ import { moduleIdSymbol } from './moduleIdSymbol.js';
 import type LayerCollection from './util/layerCollection.js';
 import type Category from './category/category.js';
 import type TileProvider from './layer/tileProvider/tileProvider.js';
-import type AbstractFeatureProvider from './featureProvider/abstractFeatureProvider.js';
 import type { HiddenObject } from './util/hiddenObjects.js';
 import { createHiddenObjectsCollection } from './util/hiddenObjects.js';
 import type { FlightInstanceOptions } from './util/flight/flightInstance.js';
@@ -155,9 +158,7 @@ class VcsApp {
     typeof TileProvider
   >;
 
-  private _featureProviderClassRegistry: OverrideClassRegistry<
-    typeof AbstractFeatureProvider
-  >;
+  private _featureProviderClassRegistry: OverrideClassRegistry<FeatureProviderClass>;
 
   /**
    * @param  options
@@ -402,9 +403,7 @@ class VcsApp {
     return this._tileProviderClassRegistry;
   }
 
-  get featureProviderClassRegistry(): OverrideClassRegistry<
-    typeof AbstractFeatureProvider
-  > {
+  get featureProviderClassRegistry(): OverrideClassRegistry<FeatureProviderClass> {
     return this._featureProviderClassRegistry;
   }
 

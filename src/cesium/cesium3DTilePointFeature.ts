@@ -1,5 +1,5 @@
 import { Cesium3DTilePointFeature } from '@vcmap-cesium/engine';
-import { getAttributes } from './cesium3DTileFeature.js';
+import { getAttributes, setAttribute } from './cesium3DTileFeature.js';
 
 Cesium3DTilePointFeature.prototype.getId = function getId(
   this: Cesium3DTilePointFeature,
@@ -11,3 +11,5 @@ Cesium3DTilePointFeature.prototype.getId = function getId(
 };
 
 Cesium3DTilePointFeature.prototype.getAttributes = getAttributes;
+
+Cesium3DTilePointFeature.prototype.setAttribute = setAttribute;
