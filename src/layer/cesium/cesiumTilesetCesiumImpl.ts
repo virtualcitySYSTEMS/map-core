@@ -28,7 +28,6 @@ import {
   highlightFeature,
   originalStyle,
   updateOriginalStyle,
-  FeatureVisibilityAction,
 } from '../featureVisibility.js';
 import Projection from '../../util/projection.js';
 import { circleFromCenterRadius } from '../../util/geometryHelpers.js';
@@ -42,6 +41,7 @@ import type GlobalHider from '../globalHider.js';
 import { getResourceOrUrl } from './resourceHelper.js';
 import type BaseCesiumMap from '../../map/baseCesiumMap.js';
 import type { AttributeProvider } from '../../featureProvider/abstractAttributeProvider.js';
+import type I3SCesiumImpl from './i3sCesiumImpl.js';
 
 export const cesiumTilesetLastUpdated: unique symbol = Symbol(
   'cesiumTilesetLastUpdated',
@@ -94,6 +94,262 @@ export function getExtentFromTileset(
   );
 }
 
+export function createCesiumStylingContext(
+  impl: CesiumTilesetCesiumImpl | I3SCesiumImpl,
+): {
+  styleContent: (content: Cesium3DTileContent) => void;
+  updateStyle: (style: StyleItem) => void;
+  applyStyle: (tile: Cesium3DTile) => void;
+  destroy: () => void;
+} {
+  let styleLastUpdated = 0;
+  let onStyleChangeRemover: (() => void) | null = null;
+  let onFeatureVisibilityChangeRemover: (() => void) | null = null;
+
+  function styleContent(content: Cesium3DTileContent): void {
+    const styleHasChanged =
+      styleLastUpdated > (content[cesiumTilesetLastUpdated] ?? 0);
+
+    if (
+      !content[cesiumTilesetLastUpdated] ||
+      content[cesiumTilesetLastUpdated] < impl.featureVisibility.lastUpdated ||
+      content[cesiumTilesetLastUpdated] <
+        (impl.globalHider?.lastUpdated ?? 0) ||
+      styleHasChanged
+    ) {
+      delete content[updateFeatureOverride];
+      const batchSize = content.featuresLength;
+      const featureOverride = {
+        hideLocal: [] as [string, HighlightableFeature][],
+        hideGlobal: [] as [string, HighlightableFeature][],
+        highlight: [] as [string, HighlightableFeature][],
+      };
+      for (let batchId = 0; batchId < batchSize; batchId++) {
+        const feature = content.getFeature(batchId);
+        if (feature) {
+          const id = String(feature.getId());
+          let shouldUpdateOriginalStyle = true;
+          if (
+            impl.featureVisibility.highlightedObjects[id] &&
+            !impl.featureVisibility.hasHighlightFeature(id, feature)
+          ) {
+            impl.featureVisibility.addHighlightFeature(id, feature);
+            featureOverride.highlight.push([id, feature]);
+            shouldUpdateOriginalStyle = false;
+          } else if (
+            impl.featureVisibility.hasHighlightFeature(id, feature) &&
+            styleHasChanged &&
+            feature[originalStyle]
+          ) {
+            // Feature is already highlighted and style has changed
+            // Clear the old cached style - when unhighlighted, we'll force a tileset style update
+            delete feature[originalStyle];
+            featureOverride.highlight.push([id, feature]);
+            shouldUpdateOriginalStyle = false;
+          }
+
+          if (impl.featureVisibility.hiddenObjects[id]) {
+            if (!impl.featureVisibility.hasHiddenFeature(id, feature)) {
+              impl.featureVisibility.addHiddenFeature(id, feature);
+              featureOverride.hideLocal.push([id, feature]);
+            } else if (styleHasChanged && feature[originalStyle]) {
+              // Feature is already hidden and style has changed, clear original style
+              // so it will be re-cached with the new style when shown
+              delete feature[originalStyle];
+            }
+            shouldUpdateOriginalStyle = false;
+          }
+
+          if (impl.globalHider?.hiddenObjects[id]) {
+            if (!impl.globalHider?.hasFeature(id, feature)) {
+              impl.globalHider?.addFeature(id, feature);
+            }
+            featureOverride.hideGlobal.push([id, feature]);
+            if (styleHasChanged && feature[originalStyle]) {
+              // Feature is globally hidden and style has changed, clear original style
+              delete feature[originalStyle];
+            }
+            shouldUpdateOriginalStyle = false;
+          }
+
+          if (
+            shouldUpdateOriginalStyle &&
+            styleHasChanged &&
+            feature[originalStyle] // can only be a color for cesium, so no check for undefined required
+          ) {
+            updateOriginalStyle(feature);
+          }
+        }
+      }
+      if (
+        featureOverride.hideLocal.length > 0 ||
+        featureOverride.hideGlobal.length > 0 ||
+        featureOverride.highlight.length > 0
+      ) {
+        content[updateFeatureOverride] = (): void => {
+          featureOverride.hideGlobal.forEach(([id, feature]) => {
+            if (impl.globalHider?.hasFeature(id, feature)) {
+              hideFeature(feature);
+            }
+          });
+
+          featureOverride.hideLocal.forEach(([id, feature]) => {
+            if (impl.featureVisibility.hasHiddenFeature(id, feature)) {
+              hideFeature(feature);
+            }
+          });
+
+          featureOverride.highlight.forEach(([id, feature]) => {
+            if (impl.featureVisibility.hasHighlightFeature(id, feature)) {
+              highlightFeature(feature);
+            }
+          });
+        };
+      }
+      content[cesiumTilesetLastUpdated] = Date.now();
+    } else {
+      content[updateFeatureOverride]?.();
+    }
+  }
+  function updateStyle(style: StyleItem): void {
+    impl.style = style;
+
+    function updateTilesetStyle(tileset: Cesium3DTileset): void {
+      tileset.style = impl.style.cesiumStyle;
+      if (onStyleChangeRemover) {
+        onStyleChangeRemover();
+      }
+      styleLastUpdated = Date.now();
+      if (tileset.colorBlendMode !== impl.style.colorBlendMode) {
+        // we only support replace and mix mode if the _3DTILESDIFFUSE Flag is set in the tileset
+        if (
+          impl.style.colorBlendMode !== Cesium3DTileColorBlendMode.HIGHLIGHT
+        ) {
+          if (
+            tileset.extras &&
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,no-underscore-dangle
+            (tileset.extras._3DTILESDIFFUSE as boolean)
+          ) {
+            tileset.colorBlendMode = impl.style.colorBlendMode;
+          }
+        } else {
+          tileset.colorBlendMode = impl.style.colorBlendMode;
+        }
+      }
+    }
+    if (impl.initialized) {
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      if (impl instanceof CesiumTilesetCesiumImpl) {
+        if (impl.cesium3DTileset) {
+          updateTilesetStyle(impl.cesium3DTileset);
+          onStyleChangeRemover = impl.style.styleChanged.addEventListener(
+            () => {
+              impl.cesium3DTileset?.makeStyleDirty();
+              styleLastUpdated = Date.now();
+            },
+          );
+        }
+      } else if (impl.data) {
+        impl.data.layers.forEach(({ tileset }) => {
+          if (tileset) {
+            updateTilesetStyle(tileset);
+          }
+        });
+        onStyleChangeRemover = impl.style.styleChanged.addEventListener(() => {
+          impl.data?.layers.forEach(({ tileset }) => {
+            tileset?.makeStyleDirty();
+          });
+          styleLastUpdated = Date.now();
+        });
+      }
+    }
+  }
+  function applyStyle(tile: Cesium3DTile): void {
+    if (tile.contentReady) {
+      if (tile.content instanceof Composite3DTileContent) {
+        for (let i = 0; i < tile.content.innerContents.length; i++) {
+          styleContent(tile.content.innerContents[i] as Cesium3DTileContent);
+        }
+      } else {
+        styleContent(tile.content);
+      }
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
+  if (impl instanceof CesiumTilesetCesiumImpl) {
+    onFeatureVisibilityChangeRemover =
+      impl.featureVisibility.changed.addEventListener(() => {
+        impl.cesium3DTileset?.makeStyleDirty();
+      });
+  } else {
+    onFeatureVisibilityChangeRemover =
+      impl.featureVisibility.changed.addEventListener(() => {
+        impl.data?.layers.forEach(({ tileset }) => {
+          tileset?.makeStyleDirty();
+        });
+        styleLastUpdated = Date.now();
+      });
+  }
+
+  return {
+    styleContent,
+    updateStyle,
+    applyStyle,
+    destroy: (): void => {
+      if (onStyleChangeRemover) {
+        onStyleChangeRemover();
+        onStyleChangeRemover = null;
+      }
+      if (onFeatureVisibilityChangeRemover) {
+        onFeatureVisibilityChangeRemover();
+        onFeatureVisibilityChangeRemover = null;
+      }
+    },
+  };
+}
+
+export function createTilesetEventListeners(
+  impl: CesiumTilesetCesiumImpl | I3SCesiumImpl,
+  tileset: Cesium3DTileset,
+): void {
+  function tileLoadedHandler(tile: Cesium3DTile): void {
+    if (impl.attributeProvider) {
+      const extent = getExtentFromBoundingVolume(
+        tile.contentBoundingVolume,
+        tile.boundingSphere,
+      );
+      const features: HighlightableFeature[] = [];
+      const batchSize = tile.content.featuresLength;
+      for (let batchId = 0; batchId < batchSize; batchId++) {
+        const feature = tile.content.getFeature(batchId);
+        if (feature) {
+          features.push(feature);
+        }
+      }
+
+      impl.attributeProvider
+        .augmentFeatures(features, extent)
+        .then(() => {
+          impl.applyStyle(tile);
+        })
+        .catch((err: unknown) => {
+          impl
+            .getLogger()
+            .error(`Error augmenting features in ${impl.className}:`, err);
+        });
+    }
+  }
+
+  tileset.tileLoad.addEventListener(tileLoadedHandler);
+  tileset.tileVisible.addEventListener(impl.applyStyle);
+  tileset.tileUnload.addEventListener((tile: Cesium3DTile) => {
+    delete tile[cesiumTilesetLastUpdated];
+    delete tile.content[cesiumTilesetLastUpdated];
+    delete tile.content[updateFeatureOverride];
+  });
+}
+
 /**
  * represents the cesium implementation for a {@link CesiumTilesetLayer} layer.
  */
@@ -131,13 +387,15 @@ class CesiumTilesetCesiumImpl
 
   private _originalOrigin: Cartesian3 | null = null;
 
-  private _styleLastUpdated: number = Date.now();
-
-  private _onStyleChangeRemover: (() => void) | null = null;
-
-  private _onFeatureVisibilityChangeRemover: (() => void) | null = null;
+  private _destroyStyle: (() => void) | null = null;
 
   private _customShader: CustomShader | undefined;
+
+  styleContent: (content: Cesium3DTileContent) => void;
+
+  updateStyle: (style: StyleItem) => void;
+
+  applyStyle: (tile: Cesium3DTile) => void;
 
   constructor(map: BaseCesiumMap, options: CesiumTilesetImplementationOptions) {
     super(map, options);
@@ -155,17 +413,11 @@ class CesiumTilesetCesiumImpl
     this.allowPicking = options.allowPicking;
     this.attributeProvider = options.attributeProvider;
 
-    // Listen for unhighlight events to force style update when needed
-    this._onFeatureVisibilityChangeRemover =
-      this.featureVisibility.changed.addEventListener((event) => {
-        if (
-          event.action === FeatureVisibilityAction.UNHIGHLIGHT &&
-          this.cesium3DTileset
-        ) {
-          // Force tileset to re-apply style for unhighlighted features
-          this.cesium3DTileset.makeStyleDirty();
-        }
-      });
+    const stylingContext = createCesiumStylingContext(this);
+    this.styleContent = stylingContext.styleContent;
+    this.updateStyle = stylingContext.updateStyle;
+    this.applyStyle = stylingContext.applyStyle;
+    this._destroyStyle = stylingContext.destroy;
   }
 
   get customShader(): CustomShader | undefined {
@@ -215,17 +467,7 @@ class CesiumTilesetCesiumImpl
       }
       this.cesium3DTileset[vcsLayerName] = this.name;
       this.cesium3DTileset[allowPicking] = this.allowPicking;
-      this.cesium3DTileset.tileLoad.addEventListener((tile: Cesium3DTile) => {
-        this._tileLoaded(tile);
-      });
-      this.cesium3DTileset.tileVisible.addEventListener(
-        this.applyStyle.bind(this),
-      );
-      this.cesium3DTileset.tileUnload.addEventListener((tile: Cesium3DTile) => {
-        delete tile[cesiumTilesetLastUpdated];
-        delete tile.content[cesiumTilesetLastUpdated];
-        delete tile.content[updateFeatureOverride];
-      });
+      createTilesetEventListeners(this, this.cesium3DTileset);
 
       this._originalOrigin = Cartesian3.clone(
         this.cesium3DTileset.boundingSphere.center,
@@ -309,196 +551,10 @@ class CesiumTilesetCesiumImpl
     }
   }
 
-  updateStyle(style: StyleItem): void {
-    this.style = style;
-    if (this.initialized && this.cesium3DTileset) {
-      this.cesium3DTileset.style = this.style.cesiumStyle;
-      if (this._onStyleChangeRemover) {
-        this._onStyleChangeRemover();
-      }
-      this._onStyleChangeRemover = this.style.styleChanged.addEventListener(
-        () => {
-          this.cesium3DTileset?.makeStyleDirty();
-          this._styleLastUpdated = Date.now();
-        },
-      );
-      this._styleLastUpdated = Date.now();
-      if (this.cesium3DTileset.colorBlendMode !== this.style.colorBlendMode) {
-        // we only support replace and mix mode if the _3DTILESDIFFUSE Flag is set in the tileset
-        if (
-          this.style.colorBlendMode !== Cesium3DTileColorBlendMode.HIGHLIGHT
-        ) {
-          if (
-            this.cesium3DTileset.extras &&
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,no-underscore-dangle
-            (this.cesium3DTileset.extras._3DTILESDIFFUSE as boolean)
-          ) {
-            this.cesium3DTileset.colorBlendMode = this.style.colorBlendMode;
-          }
-        } else {
-          this.cesium3DTileset.colorBlendMode = this.style.colorBlendMode;
-        }
-      }
-    }
-  }
-
   updateSplitDirection(splitDirection: SplitDirection): void {
     this.splitDirection = splitDirection;
     if (this.cesium3DTileset) {
       this.cesium3DTileset.splitDirection = splitDirection;
-    }
-  }
-
-  applyStyle(tile: Cesium3DTile): void {
-    if (tile.contentReady) {
-      if (tile.content instanceof Composite3DTileContent) {
-        for (let i = 0; i < tile.content.innerContents.length; i++) {
-          this.styleContent(
-            tile.content.innerContents[i] as Cesium3DTileContent,
-          );
-        }
-      } else {
-        this.styleContent(tile.content);
-      }
-    }
-  }
-
-  styleContent(content: Cesium3DTileContent): void {
-    const styleHasChanged =
-      this._styleLastUpdated > (content[cesiumTilesetLastUpdated] ?? 0);
-    if (
-      !content[cesiumTilesetLastUpdated] ||
-      content[cesiumTilesetLastUpdated] < this.featureVisibility.lastUpdated ||
-      content[cesiumTilesetLastUpdated] <
-        (this.globalHider?.lastUpdated ?? 0) ||
-      styleHasChanged
-    ) {
-      // content[updateFeatureOverride]?.reset();
-      delete content[updateFeatureOverride];
-      const batchSize = content.featuresLength;
-      const featureOverride = {
-        hideLocal: [] as [string, HighlightableFeature][],
-        hideGlobal: [] as [string, HighlightableFeature][],
-        highlight: [] as [string, HighlightableFeature][],
-      };
-      for (let batchId = 0; batchId < batchSize; batchId++) {
-        const feature = content.getFeature(batchId);
-        if (feature) {
-          let id = feature.getProperty('id') as string | undefined;
-          if (!id) {
-            id = `${content.url}${String(batchId)}`;
-          }
-
-          let shouldUpdateOriginalStyle = true;
-          if (
-            this.featureVisibility.highlightedObjects[id] &&
-            !this.featureVisibility.hasHighlightFeature(id, feature)
-          ) {
-            this.featureVisibility.addHighlightFeature(id, feature);
-            featureOverride.highlight.push([id, feature]);
-            shouldUpdateOriginalStyle = false;
-          } else if (
-            this.featureVisibility.hasHighlightFeature(id, feature) &&
-            styleHasChanged &&
-            feature[originalStyle]
-          ) {
-            // Feature is already highlighted and style has changed
-            // Clear the old cached style - when unhighlighted, we'll force a tileset style update
-            delete feature[originalStyle];
-            featureOverride.highlight.push([id, feature]);
-            shouldUpdateOriginalStyle = false;
-          }
-
-          if (this.featureVisibility.hiddenObjects[id]) {
-            if (!this.featureVisibility.hasHiddenFeature(id, feature)) {
-              this.featureVisibility.addHiddenFeature(id, feature);
-              featureOverride.hideLocal.push([id, feature]);
-            } else if (styleHasChanged && feature[originalStyle]) {
-              // Feature is already hidden and style has changed, clear original style
-              // so it will be re-cached with the new style when shown
-              delete feature[originalStyle];
-            }
-            shouldUpdateOriginalStyle = false;
-          }
-
-          if (this.globalHider?.hiddenObjects[id]) {
-            if (!this.globalHider?.hasFeature(id, feature)) {
-              this.globalHider?.addFeature(id, feature);
-            }
-            featureOverride.hideGlobal.push([id, feature]);
-            if (styleHasChanged && feature[originalStyle]) {
-              // Feature is globally hidden and style has changed, clear original style
-              delete feature[originalStyle];
-            }
-            shouldUpdateOriginalStyle = false;
-          }
-
-          if (
-            shouldUpdateOriginalStyle &&
-            styleHasChanged &&
-            feature[originalStyle] // can only be a color for cesium, so no check for undefined required
-          ) {
-            updateOriginalStyle(feature);
-          }
-        }
-      }
-      if (
-        featureOverride.hideLocal.length > 0 ||
-        featureOverride.hideGlobal.length > 0 ||
-        featureOverride.highlight.length > 0
-      ) {
-        content[updateFeatureOverride] = (): void => {
-          featureOverride.hideGlobal.forEach(([id, feature]) => {
-            if (this.globalHider?.hasFeature(id, feature)) {
-              hideFeature(feature);
-            }
-          });
-
-          featureOverride.hideLocal.forEach(([id, feature]) => {
-            if (this.featureVisibility.hasHiddenFeature(id, feature)) {
-              hideFeature(feature);
-            }
-          });
-
-          featureOverride.highlight.forEach(([id, feature]) => {
-            if (this.featureVisibility.hasHighlightFeature(id, feature)) {
-              highlightFeature(feature);
-            }
-          });
-        };
-      }
-      content[cesiumTilesetLastUpdated] = Date.now();
-    } else {
-      content[updateFeatureOverride]?.();
-    }
-  }
-
-  private _tileLoaded(tile: Cesium3DTile): void {
-    if (this.attributeProvider) {
-      const extent = getExtentFromBoundingVolume(
-        tile.contentBoundingVolume,
-        tile.boundingSphere,
-      );
-      const features: HighlightableFeature[] = [];
-      const batchSize = tile.content.featuresLength;
-      for (let batchId = 0; batchId < batchSize; batchId++) {
-        const feature = tile.content.getFeature(batchId);
-        if (feature) {
-          features.push(feature);
-        }
-      }
-
-      this.attributeProvider
-        .augmentFeatures(features, extent)
-        .then(() => {
-          this.applyStyle(tile);
-        })
-        .catch((err: unknown) => {
-          this.getLogger().error(
-            'Error augmenting features in CesiumTilesetCesiumImpl:',
-            err,
-          );
-        });
     }
   }
 
@@ -514,12 +570,8 @@ class CesiumTilesetCesiumImpl
       this.cesium3DTileset = null;
     }
 
-    if (this._onStyleChangeRemover) {
-      this._onStyleChangeRemover();
-    }
-
-    if (this._onFeatureVisibilityChangeRemover) {
-      this._onFeatureVisibilityChangeRemover();
+    if (this._destroyStyle) {
+      this._destroyStyle();
     }
 
     super.destroy();

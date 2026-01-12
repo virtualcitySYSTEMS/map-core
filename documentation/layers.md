@@ -29,6 +29,7 @@ The SplitLayer interface is implemented by split-able layers, namely (and their 
 - VectorLayer
 - RasterLayer
 - OpenStreetMapLayer
+- I3SLayer
 
 The interface is defined as:
 

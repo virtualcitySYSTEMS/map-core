@@ -174,6 +174,11 @@ declare module '@vcmap-cesium/engine' {
     [vcsLayerName]?: string;
   }
 
+  interface I3SDataProvider {
+    [vcsLayerName]?: string;
+    [allowPicking]?: boolean;
+  }
+
   interface Cesium3DTile {
     boundingVolume: TileBoundingVolume;
     contentBoundingVolume: TileBoundingVolume;

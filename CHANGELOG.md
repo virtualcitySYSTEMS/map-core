@@ -2,6 +2,7 @@
 
 #### Features
 
+- Introduces `I3SLayer` support to the VC Map, enabling integration and visualization of 3D scene layers. Extended `getFeatureFromPickObject` to handle I3S Features.
 - Adds the `layerTypes` concept to the `VcsMap`. This allows to restrict layer types to be supported on certain maps.
 - Made the `mapNames` concept reactive on `Layer`. Changing the mapNames of a layer will now add or remove the layer from maps automatically.
 - Added a `EnsurePositionInteraction` to the event handler. This will stop propagation on any events after

@@ -7,6 +7,7 @@ import {
   type CustomDataSource,
   type CzmlDataSource,
   Ellipsoid,
+  type I3SDataProvider,
   ImageryLayer,
   type ImageryLayerCollection,
   JulianDate,
@@ -47,7 +48,7 @@ function ensureInCollection<
 >(
   cesiumCollection: T,
   item: T extends PrimitiveCollection
-    ? PrimitiveCollection | Cesium3DTileset
+    ? PrimitiveCollection | Cesium3DTileset | I3SDataProvider
     : ImageryLayer,
   layerCollection: LayerCollection,
 ): void {
@@ -62,7 +63,7 @@ function ensureInCollection<
         const collectionItem = cesiumCollection.get(
           i,
         ) as T extends PrimitiveCollection
-          ? PrimitiveCollection | Cesium3DTileset
+          ? PrimitiveCollection | Cesium3DTileset | I3SDataProvider
           : ImageryLayer;
         if (
           (layerCollection.indexOfKey(collectionItem[vcsLayerName]) as number) >
@@ -139,7 +140,8 @@ export type CesiumVisualisationType =
   | CzmlDataSource
   | PrimitiveCollection
   | Cesium3DTileset
-  | ImageryLayer;
+  | ImageryLayer
+  | I3SDataProvider;
 
 export default class BaseCesiumMap extends VcsMap<CesiumVisualisationType> {
   static get className(): string {
@@ -481,7 +483,10 @@ export default class BaseCesiumMap extends VcsMap<CesiumVisualisationType> {
    * @param  primitiveCollection
    */
   addPrimitiveCollection(
-    primitiveCollection: PrimitiveCollection | Cesium3DTileset,
+    primitiveCollection:
+      | PrimitiveCollection
+      | Cesium3DTileset
+      | I3SDataProvider,
   ): void {
     if (!this._cesiumWidget) {
       throw new Error('Cannot add primitive to uninitialized map');
@@ -501,7 +506,10 @@ export default class BaseCesiumMap extends VcsMap<CesiumVisualisationType> {
    * @param  primitiveCollection
    */
   removePrimitiveCollection(
-    primitiveCollection: PrimitiveCollection | Cesium3DTileset,
+    primitiveCollection:
+      | PrimitiveCollection
+      | Cesium3DTileset
+      | I3SDataProvider,
   ): void {
     // XXX add destroy as boolean?
     this.removeVisualization(primitiveCollection);

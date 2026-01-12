@@ -3,7 +3,14 @@
  * Type overrides for types extended by the @vcmap/core API
  */
 import type CanvasImmediateRenderer from 'ol/render/canvas/Immediate.js';
-import type { Billboard, Color, Entity, Label } from '@vcmap-cesium/engine';
+import type {
+  Billboard,
+  Cartesian3,
+  Color,
+  Entity,
+  I3SNode,
+  Label,
+} from '@vcmap-cesium/engine';
 import type { StyleLike } from 'ol/style/Style.js';
 import type { vectorStyleSymbol } from '../style/vectorStyleItem.js';
 import type VectorStyleItem from '../style/vectorStyleItem.js';
@@ -19,7 +26,7 @@ import type {
   panoramaFeature,
   primitives,
 } from '../layer/vectorSymbols.js';
-import type { vcsLayerName } from '../layer/layerSymbols.js';
+import type { i3sData, vcsLayerName } from '../layer/layerSymbols.js';
 import type {
   isProvidedFeature,
   isProvidedClusterFeature,
@@ -111,6 +118,8 @@ declare module 'ol/index.js' {
     [featureArcStruct]?: ArcStruct;
     [isProvidedFeature]?: boolean;
     [isProvidedClusterFeature]?: boolean;
+    /** Is set in `featureAtPixelInteraction` to be used in `i3sAttributeProvider`; both properties are required to get I3S features */
+    [i3sData]?: { i3sNode: I3SNode; cartesianPosition?: Cartesian3 };
     [globalHidden]?: boolean;
     [hidden]?: boolean;
     [highlighted]?: VectorStyleItem;

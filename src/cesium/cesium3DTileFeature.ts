@@ -7,7 +7,7 @@ Cesium3DTileFeature.prototype.getId = function getId(
   return (
     (this.getProperty('id') as string | number) ||
     `${this.content.url}${String(this._batchId)}`
-  ); // XXX there is a new property `featureId` on the Cesium3DTileset. this may cause issues when picking b3dm.
+  );
 };
 
 export function getAttributes(

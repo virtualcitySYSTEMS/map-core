@@ -92,6 +92,7 @@ export {
 } from './src/layer/cesium/cesiumTilesetCesiumImpl.js';
 export { default as COGCesiumImpl } from './src/layer/cesium/cogCesiumImpl.js';
 export { default as DataSourceCesiumImpl } from './src/layer/cesium/dataSourceCesiumImpl.js';
+export { default as I3SCesiumImpl } from './src/layer/cesium/i3sCesiumImpl.js';
 export { default as OpenStreetMapCesiumImpl } from './src/layer/cesium/openStreetMapCesiumImpl.js';
 export { default as RasterLayerCesiumImpl } from './src/layer/cesium/rasterLayerCesiumImpl.js';
 export { default as SingleImageCesiumImpl } from './src/layer/cesium/singleImageCesiumImpl.js';
@@ -243,6 +244,8 @@ export { default as WmsOpenlayersImpl } from './src/layer/openlayers/wmsOpenlaye
 export { default as WmtsOpenlayersImpl } from './src/layer/openlayers/wmtsOpenlayersImpl.js';
 export type { PointCloudOptions } from './src/layer/pointCloudLayer.js';
 export { default as PointCloudLayer } from './src/layer/pointCloudLayer.js';
+export type { I3SOptions } from './src/layer/i3sLayer.js';
+export { default as I3SLayer } from './src/layer/i3sLayer.js';
 export type {
   RasterLayerOptions,
   RasterLayerImplementation,

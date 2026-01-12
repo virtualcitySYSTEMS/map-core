@@ -1,5 +1,4 @@
 import type { Coordinate } from 'ol/coordinate.js';
-
 import Point from 'ol/geom/Point.js';
 import Feature from 'ol/Feature.js';
 import AbstractInteraction, {

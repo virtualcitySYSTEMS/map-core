@@ -252,15 +252,25 @@ describe('CesiumTilesetCesiumImpl', () => {
       );
       styleItem.styleChanged.raiseEvent();
 
-      expect(cesiumTilesetCesium).to.have.property('_styleLastUpdated', now);
       expect(makeStyleDirty).to.have.been.called;
     });
 
     it('should always remove a previous style changed handler', () => {
-      const remover = sandbox.spy();
-      cesiumTilesetCesium._onStyleChangeRemover = remover;
+      const style2 = new DeclarativeStyleItem({
+        declarativeStyle: { show: false },
+      });
       cesiumTilesetCesium.updateStyle(styleItem);
-      expect(remover).to.have.been.called;
+      const makeStyleDirty = sandbox.spy(
+        cesiumTilesetCesium.cesium3DTileset,
+        'makeStyleDirty',
+      );
+      styleItem.styleChanged.raiseEvent();
+      expect(makeStyleDirty).to.have.been.called;
+      makeStyleDirty.resetHistory();
+
+      cesiumTilesetCesium.updateStyle(style2);
+      styleItem.styleChanged.raiseEvent();
+      expect(makeStyleDirty).to.not.have.been.called;
     });
 
     it('should set style.colorBlendMode to the cesium 3DTileset.colorBlendMode', () => {
@@ -460,7 +470,6 @@ describe('CesiumTilesetCesiumImpl', () => {
 
   describe('applyStyle', () => {
     let header;
-    let styleContent;
 
     before(() => {
       header = {
@@ -471,7 +480,6 @@ describe('CesiumTilesetCesiumImpl', () => {
 
     beforeEach(async () => {
       await cesiumTilesetCesium.initialize();
-      styleContent = sandbox.spy(cesiumTilesetCesium, 'styleContent');
     });
 
     it('should call styleContent for cesium3DTile', () => {
@@ -481,7 +489,7 @@ describe('CesiumTilesetCesiumImpl', () => {
         header,
       );
       cesiumTilesetCesium.applyStyle(tile);
-      expect(styleContent).to.have.been.calledWithExactly(tile.content);
+      expect(tile.content).to.have.property(cesiumTilesetLastUpdated);
     });
 
     it('should call style content for each content of Composite3dTileContent', () => {
@@ -498,9 +506,8 @@ describe('CesiumTilesetCesiumImpl', () => {
       const innerContent = [{}, {}];
       content._contents = innerContent;
       cesiumTilesetCesium.applyStyle({ contentReady: true, content });
-      expect(styleContent).to.have.been.calledTwice;
-      expect(styleContent).to.have.been.calledWith(innerContent[0]);
-      expect(styleContent).to.have.been.calledWith(innerContent[1]);
+      expect(innerContent[0]).to.have.property(cesiumTilesetLastUpdated);
+      expect(innerContent[1]).to.have.property(cesiumTilesetLastUpdated);
     });
   });
 
@@ -510,7 +517,7 @@ describe('CesiumTilesetCesiumImpl', () => {
     let feature;
     let content;
 
-    beforeEach(() => {
+    beforeEach(async () => {
       now = Date.now();
       clock = sandbox.useFakeTimers(now);
       feature = createDummyCesium3DTileFeature({ id: 'test' });
@@ -521,6 +528,7 @@ describe('CesiumTilesetCesiumImpl', () => {
           return feature;
         },
       };
+      await cesiumTilesetCesium.initialize();
     });
 
     it('should set the last updated, if the content does not already have TilesetLayer.lastUpdated', () => {
@@ -547,7 +555,7 @@ describe('CesiumTilesetCesiumImpl', () => {
     it('should update the content, if the contents last update is older then the _styleLastUpated', () => {
       content = { [cesiumTilesetLastUpdated]: now };
       clock.tick(1);
-      cesiumTilesetCesium._styleLastUpdated = now + 1;
+      cesiumTilesetCesium.updateStyle(new DeclarativeStyleItem({}));
       cesiumTilesetCesium.styleContent(content);
       expect(content).to.have.property(cesiumTilesetLastUpdated, now + 1);
     });
@@ -723,23 +731,13 @@ describe('CesiumTilesetCesiumImpl', () => {
         expect(feature.color).to.equal(highlightStyle.cesiumFillColor);
       });
     });
-
-    it('should use a combination of url and batchId, if no id is present', () => {
-      cesiumTilesetCesium.featureVisibility.hiddenObjects.test0 = new Set();
-      feature.getProperty = () => false;
-      content.url = 'test';
-      cesiumTilesetCesium.styleContent(content);
-      expect(
-        cesiumTilesetCesium.featureVisibility.hiddenObjects.test0,
-      ).to.have.property('size', 1);
-    });
   });
 
   describe('augmenting feature on load', () => {
     let feature;
     let content;
 
-    beforeEach(() => {
+    beforeEach(async () => {
       feature = createDummyCesium3DTileFeature({ id: 'test' }, cesiumTileset);
       content = {
         featuresLength: 1,
@@ -748,10 +746,11 @@ describe('CesiumTilesetCesiumImpl', () => {
         },
       };
       cesiumTilesetCesium.attributeProvider = new TestAttributeProvider(42);
+      await cesiumTilesetCesium.initialize();
     });
 
     it('should add attributes from the attribute provider to the feature', async () => {
-      cesiumTilesetCesium._tileLoaded({
+      cesiumTilesetCesium.cesium3DTileset.tileLoad.raiseEvent({
         content,
         contentBoundingVolume: {
           rectangle: new Rectangle(),

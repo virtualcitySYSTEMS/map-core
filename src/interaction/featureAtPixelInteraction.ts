@@ -4,6 +4,8 @@ import type {
   Ray,
   Billboard,
   Label,
+  I3SNode,
+  I3SDataProvider,
 } from '@vcmap-cesium/engine';
 import {
   Cartesian3,
@@ -12,7 +14,9 @@ import {
   Entity,
 } from '@vcmap-cesium/engine';
 import type OLMap from 'ol/Map.js';
-import type { Feature } from 'ol/index.js';
+import Feature from 'ol/Feature.js';
+import { Point } from 'ol/geom.js';
+import { v4 as uuid } from 'uuid';
 import AbstractInteraction, {
   type EventFeature,
   type InteractionEvent,
@@ -22,7 +26,7 @@ import {
   ModificationKeyType,
   PointerKeyType,
 } from './interactionType.js';
-import { allowPicking, vcsLayerName } from '../layer/layerSymbols.js';
+import { allowPicking, i3sData, vcsLayerName } from '../layer/layerSymbols.js';
 import { originalFeatureSymbol, primitives } from '../layer/vectorSymbols.js';
 import type OpenlayersMap from '../map/openlayersMap.js';
 import type ObliqueMap from '../map/obliqueMap.js';
@@ -31,6 +35,7 @@ import { cartesian3DDistance, cartesianToMercator } from '../util/math.js';
 import type { PrimitiveType } from '../util/featureconverter/convert.js';
 import type BaseCesiumMap from '../map/baseCesiumMap.js';
 import type PanoramaMap from '../map/panoramaMap.js';
+import { isProvidedFeature } from '../featureProvider/featureProviderSymbols.js';
 
 /**
  * This is the return from cesium scene.pick and scene.drillPick, which returns "any". We cast to this type.
@@ -44,6 +49,11 @@ type CesiumPickObject = {
   id?: {
     olFeature?: Feature;
     [vcsLayerName]?: string;
+  };
+  content?: {
+    tile?: {
+      i3sNode: I3SNode;
+    };
   };
 };
 
@@ -81,6 +91,12 @@ function getFeatureFromOlMap(
   return feature;
 }
 
+export function isI3SFeature(f: EventFeature): f is Feature & {
+  [i3sData]: { i3sNode: I3SNode; cartesianPosition?: Cartesian3 };
+} {
+  return !!(f != null && (f as Feature)[i3sData]);
+}
+
 export function getFeatureFromPickObject(
   object: CesiumPickObject,
 ): EventFeature | undefined {
@@ -114,8 +130,24 @@ export function getFeatureFromPickObject(
   ) {
     // entity
     feature = object.id;
+  } else if (object.content?.tile?.i3sNode) {
+    // i3s feature
+    const dataProvider =
+      // @ts-expect-error eslint-disable-next-line no-underscore-dangle, @typescript-eslint/ban-ts-comment
+      // eslint-disable-next-line no-underscore-dangle
+      object.content.tile.i3sNode._dataProvider as I3SDataProvider;
+    const layername = dataProvider[vcsLayerName];
+    if (object instanceof Cesium3DTileFeature) {
+      feature = object;
+      feature[vcsLayerName] = layername;
+    } else if (dataProvider[allowPicking] !== false) {
+      feature = new Feature({});
+      feature.setId(uuid());
+      feature[vcsLayerName] = layername;
+      feature[i3sData] = { i3sNode: object.content.tile.i3sNode };
+      feature[isProvidedFeature] = true;
+    }
   }
-
   return feature;
 }
 
@@ -350,6 +382,15 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
         if (event.map.className === 'CesiumMap') {
           event.position = cartesianToMercator(cartesianPosition);
           event.positionOrPixel = event.position.slice();
+          if (
+            feature instanceof Feature &&
+            feature[isProvidedFeature] &&
+            isI3SFeature(feature)
+          ) {
+            feature.setGeometry(new Point(event.position));
+            feature.set('olcs_altitudeMode', 'absolute');
+            feature[i3sData].cartesianPosition = cartesianPosition;
+          }
         } else {
           const currentImage = (event.map as PanoramaMap).currentPanoramaImage;
           if (currentImage) {
@@ -363,6 +404,15 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
             if (currentDistance == null || newDistance < currentDistance) {
               event.position = newPosition;
               event.positionOrPixel = event.position.slice();
+              if (
+                feature instanceof Feature &&
+                feature[isProvidedFeature] &&
+                isI3SFeature(feature)
+              ) {
+                feature.setGeometry(new Point(event.position));
+                feature.set('olcs_altitudeMode', 'absolute');
+                feature[i3sData].cartesianPosition = cartesianPosition;
+              }
             }
           }
         }

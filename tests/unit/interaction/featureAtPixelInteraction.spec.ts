@@ -1,17 +1,20 @@
 import { expect } from 'chai';
 import type { SinonSandbox, SinonStub } from 'sinon';
 import sinon from 'sinon';
-import type { Primitive, Scene } from '@vcmap-cesium/engine';
+import type { I3SNode, Primitive, Scene } from '@vcmap-cesium/engine';
 import {
   Cartesian2,
   Cartesian3,
   Clock,
   Entity,
+  I3SDataProvider,
   Ray,
 } from '@vcmap-cesium/engine';
 import type { Coordinate } from 'ol/coordinate.js';
 import Feature from 'ol/Feature.js';
-import FeatureAtPixel from '../../../src/interaction/featureAtPixelInteraction.js';
+import FeatureAtPixel, {
+  getFeatureFromPickObject,
+} from '../../../src/interaction/featureAtPixelInteraction.js';
 import OpenlayersMap from '../../../src/map/openlayersMap.js';
 import {
   EventType,
@@ -25,9 +28,14 @@ import {
   setCesiumMap,
 } from '../helpers/cesiumHelpers.js';
 import VcsApp from '../../../src/vcsApp.js';
-import { allowPicking, vcsLayerName } from '../../../src/layer/layerSymbols.js';
+import {
+  allowPicking,
+  i3sData,
+  vcsLayerName,
+} from '../../../src/layer/layerSymbols.js';
 import {
   cartesianToMercator,
+  isProvidedFeature,
   vectorClusterGroupName,
   type CesiumMap,
   type FeatureAtPixelInteraction,
@@ -238,6 +246,55 @@ describe('FeatureAtPixelInteraction', () => {
   });
 
   describe('Cesium', () => {
+    describe('i3s feature picking', () => {
+      let i3sNode: I3SNode;
+      let dataProvider: I3SDataProvider;
+      let i3sPickObject: { content: { tile: { i3sNode: I3SNode } } };
+
+      beforeEach(() => {
+        dataProvider = new I3SDataProvider({});
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        i3sNode = { _dataProvider: dataProvider } as unknown as I3SNode;
+        i3sPickObject = { content: { tile: { i3sNode } } };
+      });
+
+      it('should return the Cesium3DTileFeature and set vcsLayerName if object is a Cesium3DTileFeature', () => {
+        dataProvider[vcsLayerName] = 'i3sLayer';
+        const feature = {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          __proto__: createDummyCesium3DTileFeature(),
+          content: { tile: { i3sNode } },
+        };
+        const result = getFeatureFromPickObject(
+          feature as unknown as { content: { tile: { i3sNode: I3SNode } } },
+        );
+        expect(result).to.deep.include({
+          content: { tile: { i3sNode } },
+        });
+        expect(result?.[vcsLayerName]).to.equal('i3sLayer');
+      });
+
+      it('should not create a feature if allowPicking is false', () => {
+        dataProvider[allowPicking] = false;
+        const result = getFeatureFromPickObject(i3sPickObject);
+        expect(result).to.be.undefined;
+      });
+
+      it('should create a provided feature if allowPicking is not false and not Cesium3DTileFeature', () => {
+        dataProvider[vcsLayerName] = 'i3sLayer';
+        delete dataProvider[allowPicking];
+        const result = getFeatureFromPickObject(i3sPickObject);
+        expect(result).to.be.instanceOf(Feature);
+        expect(result?.getId()).to.be.a('string');
+        expect(result?.[vcsLayerName]).to.equal('i3sLayer');
+        expect((result as Feature)?.[i3sData]).to.have.property(
+          'i3sNode',
+          i3sNode,
+        );
+        expect((result as Feature)?.[isProvidedFeature]).to.be.true;
+      });
+    });
+
     it('should add all picked symbols from a TilesetLayer to the feature', () => {
       const test = Symbol('testSymobl');
       const dummy = createDummyCesium3DTileFeature(
