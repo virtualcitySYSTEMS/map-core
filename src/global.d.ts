@@ -12,6 +12,8 @@ declare global {
       createModuleFromConfig: (config: VcsModuleConfig) => VcsModule;
       getFirstApp: () => VcsApp | undefined;
       workerBase?: string;
+      scriptNonce?: string;
+      styleNonce?: string;
     };
     opera?: string;
   }
