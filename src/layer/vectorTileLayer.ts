@@ -132,8 +132,8 @@ export type VectorTileImplementationOptions =
   FeatureLayerImplementationOptions & {
     tileProvider: TileProvider;
     tileSize: Size;
-    minLevel: number;
-    maxLevel: number;
+    minLevel?: number;
+    maxLevel?: number;
     extent?: Extent;
     declutter: boolean;
     vectorProperties: VectorProperties;
@@ -193,9 +193,9 @@ class VectorTileLayer<
 
   private _attributeProvider?: AttributeProvider;
 
-  private _maxLevel: number;
+  private _maxLevel?: number;
 
-  private _minLevel: number;
+  private _minLevel?: number;
 
   private _declutter: boolean;
 

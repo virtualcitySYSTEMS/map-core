@@ -26,6 +26,7 @@
 - Panorama image names derived from URLs are properly decoded.
 - Fixes an issue with `VectorProperties` where `getVcsMeta` would not return `modelOptions`, `primitiveOptions` & `modelAutoScale`.
 - Fixes an issue where declarative styles would re-use the same color object.
+- Fixes an issue, where undefined min/max levels would break vector tile implementations.
 
 #### Breaking Changes
 

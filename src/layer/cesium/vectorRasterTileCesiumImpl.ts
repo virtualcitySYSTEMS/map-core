@@ -33,8 +33,14 @@ class VectorRasterTileCesiumImpl extends RasterLayerCesiumImpl {
   imageryProvider: undefined | VectorTileImageryProvider = undefined;
 
   constructor(map: CesiumMap, options: VectorTileImplementationOptions) {
+    const minRenderingLevel = options.minLevel;
+    const maxRenderingLevel = options.maxLevel;
     const rasterLayerOptions: RasterLayerImplementationOptions = {
+      maxLevel: 25,
+      minLevel: 0,
       ...options,
+      minRenderingLevel,
+      maxRenderingLevel,
       tilingSchema: TilingScheme.MERCATOR,
       opacity: 1,
     };
@@ -50,12 +56,7 @@ class VectorRasterTileCesiumImpl extends RasterLayerCesiumImpl {
       headers: this.headers,
     });
 
-    const layerOptions: CesiumImageryLayer.ConstructorOptions = {
-      alpha: this.opacity,
-      splitDirection: this.splitDirection,
-      minimumTerrainLevel: this.minLevel,
-      maximumTerrainLevel: this.maxLevel,
-    };
+    const layerOptions = this.getCesiumLayerOptions();
     if (this.extent && this.extent.isValid()) {
       const extent = this.extent.getCoordinatesInProjection(wgs84Projection);
       layerOptions.rectangle = Rectangle.fromDegrees(

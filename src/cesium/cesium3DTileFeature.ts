@@ -16,7 +16,7 @@ export function getAttributes(
   if (
     (this.tileset.asset as { version: string } | undefined)?.version ===
       '1.1' ||
-    !this.getPropertyIds().includes('attributes')
+    !this.hasProperty('attributes')
   ) {
     const attributes: Record<string, unknown> = {};
     this.getPropertyIds().forEach((id) => {

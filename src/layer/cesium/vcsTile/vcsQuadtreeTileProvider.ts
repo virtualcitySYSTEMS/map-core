@@ -91,10 +91,11 @@ export default class VcsQuadtreeTileProvider
         this.tilingScheme,
       );
 
+    const { tileProvider } = layerOptions;
     const { dataLevels, dataRange } = getDataTiles(
-      layerOptions.minLevel,
-      layerOptions.maxLevel,
-      layerOptions.tileProvider,
+      layerOptions.minLevel ?? tileProvider.baseLevels.at(-1) ?? 0,
+      layerOptions.maxLevel ?? tileProvider.baseLevels[0],
+      tileProvider,
     );
     this._dataLevels = dataLevels;
     this._dataRange = dataRange;
