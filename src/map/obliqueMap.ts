@@ -2,7 +2,6 @@ import { boundingExtent, containsXY } from 'ol/extent.js';
 import { getTransform, transform, transformExtent } from 'ol/proj.js';
 import type { Map as OLMap } from 'ol';
 import type { Coordinate } from 'ol/coordinate.js';
-
 import { check } from '@vcsuite/check';
 import { parseBoolean, parseNumber } from '@vcsuite/parsers';
 import Extent from '../util/extent.js';
@@ -427,15 +426,23 @@ class ObliqueMap extends BaseOLMap {
     const visibleMapUnits = resolution * size.height;
     const visibleMeters = visibleMapUnits * metersPerUnit;
     const height = Math.abs(visibleMeters / 2 / Math.tan(fovy / 2));
-
-    const avgHeight = groundPosition[2] || image.averageHeight;
-    const cameraHeight = height + avgHeight;
+    let pitch = -90;
+    if (image.projectionCenter) {
+      const verticalDistance = image.projectionCenter.z - image.averageHeight;
+      const horizontalDistance = Math.sqrt(
+        (image.projectionCenter.x - image.centerPointOnGround[0]) ** 2 +
+          (image.projectionCenter.y - image.centerPointOnGround[1]) ** 2,
+      );
+      if (horizontalDistance > 0) {
+        pitch =
+          -Math.atan(verticalDistance / horizontalDistance) * (180 / Math.PI);
+      }
+    }
 
     return new Viewpoint({
-      cameraPosition: [groundPosition[0], groundPosition[1], cameraHeight],
       groundPosition,
       heading: defaultHeadings[image.viewDirection],
-      pitch: -90,
+      pitch,
       roll: 0,
       distance: height,
     });

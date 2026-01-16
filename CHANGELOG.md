@@ -15,7 +15,7 @@
 - Attribute & feature provider changes:
   - All layers may now have a feature provider assigned.
   - Introducing the attribute provider concept. An attribute provider can augment existing features.
-    Attribute providers can be configured on a layer as a feature provider and are evaluated on click (analog to the feature porvider).
+    Attribute providers can be configured on a layer as a feature provider and are evaluated on click (analog to the feature provider).
   - Introducing a `CompositeFeatureProvider`, which can combine multiple feature providers and attribute providers.
   - For `CesiumTilesetLayer` and `VectorTileLayer` an attribute provider can be configured to augment features on tile load.
 
@@ -27,6 +27,7 @@
 - Fixes an issue with `VectorProperties` where `getVcsMeta` would not return `modelOptions`, `primitiveOptions` & `modelAutoScale`.
 - Fixes an issue where declarative styles would re-use the same color object.
 - Fixes an issue, where undefined min/max levels would break vector tile implementations.
+- Fixes viewpoint creation for ObliqueMap, allowing to preserve view orientation when switching from Oblique to 3D map.
 
 #### Breaking Changes
 
