@@ -33,7 +33,7 @@ export type I3SOptions = LayerOptions & {
   calculateNormals?: boolean;
   showFeatures?: boolean;
   cesium3dTilesetOptions?: Cesium3DTileset.ConstructorOptions;
-  lightColor?: { x: number; y: number; z: number };
+  lightColor?: string;
   outlineColor?: string;
   screenSpaceError?: number;
   screenSpaceErrorMobile?: number;
@@ -85,7 +85,7 @@ class I3SLayer extends FeatureLayer<I3SCesiumImpl> {
   cesium3dTilesetOptions:
     | Partial<Cesium3DTileset.ConstructorOptions>
     | undefined;
-  lightColor: { x: number; y: number; z: number } | undefined;
+  lightColor: string | undefined;
   outlineColor: string | undefined;
   screenSpaceError: number;
   screenSpaceErrorMobile: number;
@@ -135,18 +135,18 @@ class I3SLayer extends FeatureLayer<I3SCesiumImpl> {
     const cesium3dTilesetOptions =
       options.cesium3dTilesetOptions || defaultOptions.cesium3dTilesetOptions;
 
+    let lightColor: Cartesian3 | undefined;
+    if (options.lightColor) {
+      const color = Color.fromCssColorString(options.lightColor);
+      lightColor = new Cartesian3(color.red, color.green, color.blue);
+    }
+
     this.cesium3dTilesetOptions = {
       maximumScreenSpaceError: isMobile()
         ? this.screenSpaceErrorMobile
         : this.screenSpaceError,
       ...cesium3dTilesetOptions,
-      ...(options.lightColor && {
-        lightColor: new Cartesian3(
-          options.lightColor.x,
-          options.lightColor.y,
-          options.lightColor.z,
-        ),
-      }),
+      lightColor,
       ...(options.outlineColor && {
         outlineColor: Color.fromCssColorString(options.outlineColor),
       }),
@@ -290,11 +290,17 @@ class I3SLayer extends FeatureLayer<I3SCesiumImpl> {
     delete tilesetOptions.outlineColor;
 
     if (tilesetOptions.lightColor) {
-      config.lightColor = {
-        x: tilesetOptions.lightColor.x,
-        y: tilesetOptions.lightColor.y,
-        z: tilesetOptions.lightColor.z,
-      };
+      const { x, y, z } = tilesetOptions.lightColor;
+      const r = Math.round(x * 255)
+        .toString(16)
+        .padStart(2, '0');
+      const g = Math.round(y * 255)
+        .toString(16)
+        .padStart(2, '0');
+      const b = Math.round(z * 255)
+        .toString(16)
+        .padStart(2, '0');
+      config.lightColor = `#${r}${g}${b}`;
     }
     delete tilesetOptions.lightColor;
 

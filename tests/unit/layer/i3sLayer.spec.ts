@@ -268,7 +268,7 @@ describe('I3SLayer', () => {
           applySymbology: true,
           calculateNormals: true,
           showFeatures: true,
-          lightColor: { x: 1, y: 1, z: 1 },
+          lightColor: '#007736',
           outlineColor: 'rgba(255,0,0,1)',
         };
         configuredLayer = new I3SLayer(inputConfig);
