@@ -138,7 +138,7 @@ class I3SLayer extends FeatureLayer<I3SCesiumImpl> {
     let lightColor: Cartesian3 | undefined;
     if (options.lightColor) {
       const color = Color.fromCssColorString(options.lightColor);
-      lightColor = new Cartesian3(color.red, color.green, color.blue);
+      lightColor = new Cartesian3(...color.toBytes());
     }
 
     this.cesium3dTilesetOptions = {
@@ -291,16 +291,8 @@ class I3SLayer extends FeatureLayer<I3SCesiumImpl> {
 
     if (tilesetOptions.lightColor) {
       const { x, y, z } = tilesetOptions.lightColor;
-      const r = Math.round(x * 255)
-        .toString(16)
-        .padStart(2, '0');
-      const g = Math.round(y * 255)
-        .toString(16)
-        .padStart(2, '0');
-      const b = Math.round(z * 255)
-        .toString(16)
-        .padStart(2, '0');
-      config.lightColor = `#${r}${g}${b}`;
+      const color = Color.fromBytes(x, y, z);
+      config.lightColor = color.toCssHexString();
     }
     delete tilesetOptions.lightColor;
 
