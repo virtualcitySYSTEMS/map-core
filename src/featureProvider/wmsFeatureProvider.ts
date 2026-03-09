@@ -83,6 +83,11 @@ export type WMSFeatureProviderOptions = AbstractFeatureProviderOptions & {
    * Optional headers to include in GetFeatureInfo requests. Overrides layer headers.
    */
   headers?: Record<string, string>;
+
+  /**
+   * Optional RegExp string to evaluate text/html responses. If it matches the response, it will be treated as an empty response with no features.
+   */
+  textHTMLEvaluator?: string;
 };
 
 const gmlFormats = { GML: GML3, GML2, GML3, GML32 };
@@ -165,7 +170,7 @@ export function getFormat(
  * @param coordinate - Coordinate in geographic projection
  * @returns Meters per degree at the coordinate's latitude
  */
-function getMetersPerDegreeAtCoordinate(coordinate: Coordinate): number {
+export function getMetersPerDegreeAtCoordinate(coordinate: Coordinate): number {
   const latitude = coordinate[1];
   const latitudeRadians = (latitude * Math.PI) / 180;
 
@@ -197,6 +202,7 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
       parameters: {},
       extent: undefined,
       headers: undefined,
+      textHTMLEvaluator: undefined,
     };
   }
 
@@ -244,6 +250,8 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
    */
   headers?: Record<string, string>;
 
+  private _textHTMLEvaluator: string | undefined;
+
   constructor(options: WMSFeatureProviderOptions) {
     const defaultOptions = WMSFeatureProvider.getDefaultOptions();
     super({ ...defaultOptions, ...options });
@@ -285,6 +293,9 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
     this.headers = options.headers
       ? structuredClone(options.headers)
       : undefined;
+    if (options.textHTMLEvaluator) {
+      this._textHTMLEvaluator = options.textHTMLEvaluator;
+    }
   }
 
   get wmsSource(): TileWMS {
@@ -350,13 +361,10 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
       return [];
     }
 
-    const projection = this.wmsSource.getProjection() as OLProjection;
-    let coords = coordinate;
     let res = resolution;
-    if (projection) {
-      const transform = getTransform(mercatorProjection.proj, projection);
-      coords = transform(coordinate.slice());
-    }
+    const projection = this.wmsSource.getProjection() as OLProjection;
+    const transform = getTransform(mercatorProjection.proj, projection);
+    const coords = transform(coordinate.slice());
     if (projection.getUnits() === 'degrees') {
       const metersPerDegree = getMetersPerDegreeAtCoordinate(coords);
       res = resolution / metersPerDegree;
@@ -366,7 +374,10 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
       INFO_FORMAT: this.featureInfoResponseType,
     });
 
-    if (this.featureInfoResponseType === 'text/html') {
+    if (
+      this.featureInfoResponseType === 'text/html' &&
+      !this._textHTMLEvaluator
+    ) {
       return this.featureResponseCallback(null, coordinate).map((f) =>
         this.getProviderFeature(f, layer),
       );
@@ -378,6 +389,13 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
         data = await response.text();
       } catch (ex) {
         this.getLogger().error(`Failed fetching WMS FeatureInfo ${url}`);
+        return [];
+      }
+      if (
+        this.featureInfoResponseType === 'text/html' &&
+        this._textHTMLEvaluator &&
+        RegExp(this._textHTMLEvaluator).test(data)
+      ) {
         return [];
       }
       return this.featureResponseCallback(data, coordinate).map((f) =>
@@ -443,6 +461,9 @@ class WMSFeatureProvider extends AbstractFeatureProvider {
     }
     if (this.headers) {
       config.headers = structuredClone(this.headers);
+    }
+    if (this._textHTMLEvaluator) {
+      config.textHTMLEvaluator = this._textHTMLEvaluator;
     }
 
     return config as WMSFeatureProviderOptions;

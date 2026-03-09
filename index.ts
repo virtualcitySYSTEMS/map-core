@@ -64,6 +64,7 @@ export type {
 } from './src/featureProvider/wmsFeatureProvider.js';
 export {
   getFormat,
+  getMetersPerDegreeAtCoordinate,
   default as WMSFeatureProvider,
 } from './src/featureProvider/wmsFeatureProvider.js';
 export type {

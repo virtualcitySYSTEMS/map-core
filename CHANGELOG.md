@@ -11,7 +11,9 @@
 - `PanoramaMap` renders in HDR by default.
 - The maps collection has a convenience API to pause panorama image selection & highlighting: `app.maps.pausePanoramaSelection = true;` turns off panorama image selection & highlighting for all panorama maps.
 - `getInitForUrl` is properly documented and exported for use in plugins.
+- `getMetersPerDegreeAtCoordinate` is now exported
 - `PanoramaDatasetLayer` has a new option `panoramaVectorProperties` to override the default vector properties for panorama images.
+- `WMSFeatureProvider` has a new `textHTMLEvaluator`option (string RegExp) used to test text/html FeatureInfo responses; matches are treated as empty and no features are returned
 - Attribute & feature provider changes:
   - All layers may now have a feature provider assigned.
   - Introducing the attribute provider concept. An attribute provider can augment existing features.
