@@ -207,7 +207,8 @@ class VectorTileImageryProvider {
     x: number,
     y: number,
     level: number,
-  ): Promise<HTMLImageElement | HTMLCanvasElement> {
+    // @ts-expect-error returns undefined if there are too many active requests
+  ): Promise<HTMLImageElement | HTMLCanvasElement> | undefined {
     const features = await this.tileProvider.getFeaturesForTile(
       x,
       y,

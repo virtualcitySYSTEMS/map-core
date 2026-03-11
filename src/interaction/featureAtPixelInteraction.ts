@@ -15,6 +15,7 @@ import {
 } from '@vcmap-cesium/engine';
 import type OLMap from 'ol/Map.js';
 import Feature from 'ol/Feature.js';
+import RenderFeature from 'ol/render/Feature.js';
 import { Point } from 'ol/geom.js';
 import { v4 as uuid } from 'uuid';
 import AbstractInteraction, {
@@ -67,6 +68,10 @@ function getFeatureFromOlMap(
     pixel,
     (feat) => {
       let candidateFeature = feat;
+      if (candidateFeature instanceof RenderFeature) {
+        // Mapbox Feature, need to go through FeatureProvider
+        return true;
+      }
       if (
         candidateFeature &&
         (candidateFeature.get('olcs_allowPicking') == null ||

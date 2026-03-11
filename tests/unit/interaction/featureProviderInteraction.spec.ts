@@ -27,9 +27,11 @@ class TestFeatureProvider extends AbstractFeatureProvider {
 
   constructor(
     private _features: Feature[],
+    inRenderingOrder: boolean,
     options: AbstractFeatureProviderOptions,
   ) {
     super(options);
+    this._inRenderingOrder = inRenderingOrder;
   }
 
   getFeaturesByCoordinate(): Promise<Feature[]> {
@@ -40,9 +42,10 @@ class TestFeatureProvider extends AbstractFeatureProvider {
 async function addLayerWithFeatureProvider(
   layerCollection: LayerCollection,
   features: Feature[],
+  inRenderingOrder = false,
 ): Promise<VectorLayer> {
   const layer = new VectorLayer({});
-  layer.featureProvider = new TestFeatureProvider(features, {
+  layer.featureProvider = new TestFeatureProvider(features, inRenderingOrder, {
     mapTypes: [OpenlayersMap.className],
   });
   await layer.activate();
@@ -165,6 +168,87 @@ describe('FeatureProviderInteraction', () => {
       expect(event).to.have.property('feature');
       const features = (event.feature as Feature)?.get('features') as Feature[];
       expect(features).to.have.ordered.members([feature1, feature2]);
+    });
+
+    it('should return one feature if interaction and provider respect rendering order', async () => {
+      const feature1 = new Feature();
+      const feature2 = new Feature();
+      await addLayerWithFeatureProvider(
+        map.layerCollection,
+        [feature1, feature2],
+        true,
+      );
+      const renderingOrderInteraction = new FeatureProviderInteraction({
+        respectRenderingOrder: true,
+      });
+      const event = getDummyEvent();
+      await renderingOrderInteraction.pipe(event);
+      renderingOrderInteraction.destroy();
+      expect(event).to.have.property('feature', feature1);
+    });
+
+    it('should return all features if provider does not set rendering order', async () => {
+      const feature1 = new Feature();
+      const feature2 = new Feature();
+      await addLayerWithFeatureProvider(map.layerCollection, [
+        feature1,
+        feature2,
+      ]);
+      const renderingOrderInteraction = new FeatureProviderInteraction({
+        respectRenderingOrder: true,
+      });
+      const event = getDummyEvent();
+      await renderingOrderInteraction.pipe(event);
+      renderingOrderInteraction.destroy();
+      expect(event).to.have.property('feature');
+      const features = (event.feature as Feature)?.get('features') as Feature[];
+      expect(features).to.have.ordered.members([feature1, feature2]);
+    });
+
+    it('should return all features if interaction does not respect rendering order', async () => {
+      const feature1 = new Feature();
+      const feature2 = new Feature();
+      await addLayerWithFeatureProvider(
+        map.layerCollection,
+        [feature1, feature2],
+        true,
+      );
+      const event = getDummyEvent();
+      await interaction.pipe(event);
+      expect(event).to.have.property('feature');
+      const features = (event.feature as Feature)?.get('features') as Feature[];
+      expect(features).to.have.ordered.members([feature1, feature2]);
+    });
+
+    it('should return all features from non-rendering-order providers and one from rendering-order provider', async () => {
+      const renderingOrderFeature1 = new Feature();
+      const renderingOrderFeature2 = new Feature();
+      const defaultFeature1 = new Feature();
+      const defaultFeature2 = new Feature();
+      await addLayerWithFeatureProvider(
+        map.layerCollection,
+        [renderingOrderFeature1, renderingOrderFeature2],
+        true,
+      );
+      await addLayerWithFeatureProvider(map.layerCollection, [
+        defaultFeature1,
+        defaultFeature2,
+      ]);
+      const renderingOrderInteraction = new FeatureProviderInteraction({
+        respectRenderingOrder: true,
+      });
+      const event = getDummyEvent();
+      await renderingOrderInteraction.pipe(event);
+      renderingOrderInteraction.destroy();
+      expect(event).to.have.property('feature');
+      const features = (event.feature as Feature)?.get('features') as Feature[];
+      expect(features).to.have.length(3);
+      expect(features).to.include.members([
+        renderingOrderFeature1,
+        defaultFeature1,
+        defaultFeature2,
+      ]);
+      expect(features).to.not.include(renderingOrderFeature2);
     });
   });
 

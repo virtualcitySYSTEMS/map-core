@@ -1,8 +1,9 @@
 import { is, oneOf } from '@vcsuite/check';
+import { featureProviderClassRegistry } from '../classRegistry.js';
+import { getInitForUrl, requestJson } from '../util/fetch.js';
 import AbstractAttributeProvider, {
   type AbstractAttributeProviderOptions,
 } from './abstractAttributeProvider.js';
-import { getInitForUrl, requestJson } from '../util/fetch.js';
 
 export type JsonAttributeData = {
   features: { id: string | number; properties: Record<string, unknown> }[];
@@ -13,7 +14,7 @@ export type JsonAttributeProviderOptions = AbstractAttributeProviderOptions & {
   headers?: Record<string, string>;
 };
 
-export default class JsonAttributeProvider extends AbstractAttributeProvider {
+class JsonAttributeProvider extends AbstractAttributeProvider {
   static get className(): string {
     return 'JsonAttributeProvider';
   }
@@ -107,3 +108,10 @@ export default class JsonAttributeProvider extends AbstractAttributeProvider {
     super.destroy();
   }
 }
+
+featureProviderClassRegistry.registerClass(
+  JsonAttributeProvider.className,
+  JsonAttributeProvider,
+);
+
+export default JsonAttributeProvider;

@@ -3,7 +3,9 @@
 #### Features
 
 - Introduces `I3SLayer` support to the VC Map, enabling integration and visualization of 3D scene layers. Extended `getFeatureFromPickObject` to handle I3S Features.
+- _Beta:_ introduces `MapboxStyleLayer` support to the VC Map, enabling visualization of Mapbox Styles in all maps.
 - Adds the `layerTypes` concept to the `VcsMap`. This allows to restrict layer types to be supported on certain maps.
+- Adds the `preloadAncestors` option for Cesium and Panorama maps.
 - Made the `mapNames` concept reactive on `Layer`. Changing the mapNames of a layer will now add or remove the layer from maps automatically.
 - Added a `EnsurePositionInteraction` to the event handler. This will stop propagation on any events after
   coordinate at pixel & feature interactions, which do not have a position set.
@@ -14,6 +16,7 @@
 - `getMetersPerDegreeAtCoordinate` is now exported
 - `PanoramaDatasetLayer` has a new option `panoramaVectorProperties` to override the default vector properties for panorama images.
 - `WMSFeatureProvider` has a new `textHTMLEvaluator`option (string RegExp) used to test text/html FeatureInfo responses; matches are treated as empty and no features are returned
+- Adds `inRenderingOrder` option to Feature Providers, and FeatureProviderInteraction can be set to respect it (new `respectOrderingOrder` option), in which case only one feature is returned.
 - Attribute & feature provider changes:
   - All layers may now have a feature provider assigned.
   - Introducing the attribute provider concept. An attribute provider can augment existing features.

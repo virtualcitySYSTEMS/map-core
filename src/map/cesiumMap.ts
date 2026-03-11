@@ -29,7 +29,11 @@ import {
 import type { Coordinate } from 'ol/coordinate.js';
 import { check, maybe } from '@vcsuite/check';
 import { parseBoolean, parseInteger, parseNumber } from '@vcsuite/parsers';
-import VcsMap, { type VcsMapOptions } from './vcsMap.js';
+import type {
+  BaseCesiumMapOptions,
+  CesiumVisualisationType,
+} from './baseCesiumMap.js';
+import BaseCesiumMap from './baseCesiumMap.js';
 import type Viewpoint from '../util/viewpoint.js';
 import Projection, { mercatorProjection } from '../util/projection.js';
 import { getHeightFromTerrainProvider } from '../layer/terrainHelpers.js';
@@ -41,9 +45,6 @@ import type LayerCollection from '../util/layerCollection.js';
 import VcsEvent from '../vcsEvent.js';
 import type { DisableMapControlOptions } from '../util/mapCollection.js';
 import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
-import BaseCesiumMap, {
-  type CesiumVisualisationType,
-} from './baseCesiumMap.js';
 
 /**
  * @param  dataSourceCollection
@@ -120,7 +121,7 @@ function indexChangedOnDataSource(
   );
 }
 
-export type CesiumMapOptions = VcsMapOptions & {
+export type CesiumMapOptions = BaseCesiumMapOptions & {
   /**
    * if true, lighting will be activated.
    */
@@ -203,7 +204,7 @@ class CesiumMap extends BaseCesiumMap {
 
   static getDefaultOptions(): CesiumMapOptions {
     return {
-      ...VcsMap.getDefaultOptions(),
+      ...BaseCesiumMap.getDefaultOptions(),
       enableLightning: true,
       tileCacheSize: 1,
       webGLaa: false,

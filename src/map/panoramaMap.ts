@@ -6,7 +6,6 @@ import {
   Math as CesiumMath,
 } from '@vcmap-cesium/engine';
 import type { Coordinate } from 'ol/coordinate.js';
-import VcsMap, { type VcsMapOptions } from './vcsMap.js';
 import type { PanoramaImage } from '../panorama/panoramaImage.js';
 import { mapClassRegistry } from '../classRegistry.js';
 import type { PanoramaImageView } from '../panorama/panoramaImageView.js';
@@ -19,9 +18,10 @@ import Projection from '../util/projection.js';
 import { defaultCursorColor } from '../panorama/panoramaTileMaterial.js';
 import LayerState from '../layer/layerState.js';
 import type PanoramaDatasetLayer from '../layer/panoramaDatasetLayer.js';
+import type { BaseCesiumMapOptions } from './baseCesiumMap.js';
 import BaseCesiumMap from './baseCesiumMap.js';
 
-export type PanoramaMapOptions = VcsMapOptions & {
+export type PanoramaMapOptions = BaseCesiumMapOptions & {
   /**
    * Css color string to use for the overlay NaN color.
    */
@@ -43,7 +43,7 @@ export default class PanoramaMap extends BaseCesiumMap {
 
   static getDefaultOptions(): PanoramaMapOptions {
     return {
-      ...VcsMap.getDefaultOptions(),
+      ...BaseCesiumMap.getDefaultOptions(),
       overlayNaNColor: 'rgba(255, 0, 0, 1)',
       cursorColor: defaultCursorColor,
       fallbackToCurrentMap: false,

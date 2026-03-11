@@ -21,12 +21,22 @@ function replaceRelativeImport(content) {
   );
 }
 
-async function fixNode16RelativeImport(dir) {
+function replaceOlImports(content) {
+  return content.replaceAll(
+    /(import[^'"]*['"](?:ol)\/(?:\.\.\/)*[^'".]*)(['"])/g,
+    '$1.js$2',
+  );
+}
+
+async function fixNode16RelativeImport(dir, replaceOl = false) {
   if (fs.existsSync(dir)) {
     for await (const f of getFilesInDirectory(dir)) {
-      if (path.extname(f) === '.ts') {
+      if (path.extname(f) === '.ts' || path.extname(f) === '.d.ts') {
         let content = await fs.promises.readFile(f, 'utf-8');
         content = replaceRelativeImport(content);
+        if (replaceOl) {
+          content = replaceOlImports(content);
+        }
         await fs.promises.writeFile(f, content);
       }
     }
@@ -60,6 +70,10 @@ async function fixOpenlayers() {
     fixNode16RelativeImport(path.join(process.cwd(), 'node_modules', 'ol')),
     fixNode16RelativeImport(
       path.join(process.cwd(), 'node_modules', 'geotiff', 'dist-module'),
+    ),
+    fixNode16RelativeImport(
+      path.join(process.cwd(), 'node_modules', 'ol-mapbox-style'),
+      true,
     ),
     fixOpenlayersPaletteTextureUint8Array(),
   ]);

@@ -76,7 +76,9 @@ class EventHandler {
     this._positionInteraction = new CoordinateAtPixel();
     this._featureInteraction = new FeatureAtPixelInteraction();
     this._ensurePositionInteraction = new EnsurePositionInteraction();
-    this._featureProviderInteraction = new FeatureProviderInteraction();
+    this._featureProviderInteraction = new FeatureProviderInteraction({
+      respectRenderingOrder: true,
+    });
     this._interactionChain = new InteractionChain([
       this._positionInteraction,
       this._featureInteraction,

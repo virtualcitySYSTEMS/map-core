@@ -1,12 +1,12 @@
 import { Cartesian2 } from '@vcmap-cesium/engine';
 import { unByKey } from 'ol/Observable.js';
 import OLMap from 'ol/Map.js';
+import type OLLayer from 'ol/layer/Layer.js';
+import type OLLayerGroup from 'ol/layer/Group.js';
 import { defaults as defaultInteractions } from 'ol/interaction.js';
 import type { Collection as OLCollection, MapBrowserEvent } from 'ol';
-import type { Layer as OLLayer } from 'ol/layer.js';
 import type { EventsKey } from 'ol/events.js';
 import type { Coordinate } from 'ol/coordinate.js';
-
 import VcsMap from './vcsMap.js';
 import { vcsLayerName } from '../layer/layerSymbols.js';
 import {
@@ -20,22 +20,24 @@ import type Layer from '../layer/layer.js';
 import type { DisableMapControlOptions } from '../util/mapCollection.js';
 import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
 
+export type OLLayerLike = OLLayer | OLLayerGroup;
+
 function ensureLayerInCollection(
-  layers: OLCollection<OLLayer>,
-  layer: OLLayer,
+  layers: OLCollection<OLLayerLike>,
+  layer: OLLayerLike,
   layerCollection: LayerCollection,
 ): void {
   const sortedVectorClusterGroups = [
     ...layerCollection.vectorClusterGroups,
   ].sort((a, b) => a.zIndex - b.zIndex);
 
-  const getIndexOfOlLayer = (olL: OLLayer): number => {
+  const getIndexOfOlLayer = (olL: OLLayerLike): number => {
     let layerIndex;
     let clusterIndex = 0;
-    if (olL[vectorClusterGroupName]) {
-      const clusterGroup = layerCollection.vectorClusterGroups.getByKey(
-        olL[vectorClusterGroupName],
-      )!;
+    const clusterName = (olL as OLLayer)[vectorClusterGroupName];
+    if (clusterName) {
+      const clusterGroup =
+        layerCollection.vectorClusterGroups.getByKey(clusterName)!;
       layerIndex = layerCollection.findIndex(
         (l) => l.zIndex > clusterGroup.zIndex,
       );
@@ -90,7 +92,7 @@ function getPointerKeyType(button?: number): PointerKeyType {
 /**
  * @group Map
  */
-class BaseOLMap extends VcsMap<OLLayer> {
+class BaseOLMap extends VcsMap<OLLayerLike> {
   static get className(): string {
     return 'BaseOLMap';
   }
@@ -214,7 +216,7 @@ class BaseOLMap extends VcsMap<OLLayer> {
         const layers = (this._olMap as OLMap).getLayers();
         layers.remove(olLayer);
         ensureLayerInCollection(
-          layers as OLCollection<OLLayer>,
+          layers as OLCollection<OLLayerLike>,
           olLayer,
           this.layerCollection,
         );
@@ -226,11 +228,11 @@ class BaseOLMap extends VcsMap<OLLayer> {
    * Internal API for registering representations.
    * @param olLayer
    */
-  addOLLayer(olLayer: OLLayer): void {
+  addOLLayer(olLayer: OLLayerLike): void {
     if (this.validateVisualization(olLayer)) {
       this.addVisualization(olLayer);
       ensureLayerInCollection(
-        (this._olMap as OLMap).getLayers() as OLCollection<OLLayer>,
+        (this._olMap as OLMap).getLayers() as OLCollection<OLLayerLike>,
         olLayer,
         this.layerCollection,
       );
@@ -240,7 +242,7 @@ class BaseOLMap extends VcsMap<OLLayer> {
   /**
    * Internal API for deregistering representations.
    */
-  removeOLLayer(olLayer: OLLayer): void {
+  removeOLLayer(olLayer: OLLayerLike): void {
     this.removeVisualization(olLayer);
     if (this._olMap) {
       this._olMap.getLayers().remove(olLayer);

@@ -1,10 +1,11 @@
 import { SplitDirection } from '@vcmap-cesium/engine';
 import { unByKey } from 'ol/Observable.js';
 import type { EventsKey } from 'ol/events.js';
-import type OLLayer from 'ol/layer/Layer.js';
+import OLLayer from 'ol/layer/Layer.js';
 import type RenderEvent from 'ol/render/Event.js';
 import { vcsLayerName } from '../layerSymbols.js';
 import LayerImplementation from '../layerImplementation.js';
+import type { OLLayerLike } from '../../map/baseOLMap.js';
 import type OpenlayersMap from '../../map/openlayersMap.js';
 import type { LayerImplementationOptions } from '../layer.js';
 
@@ -22,7 +23,7 @@ class LayerOpenlayersImpl extends LayerImplementation<OpenlayersMap> {
     return 'LayerOpenlayersImpl';
   }
 
-  olLayer: OLLayer | null = null;
+  olLayer: OLLayerLike | null = null;
 
   splitDirection: SplitDirection;
 
@@ -62,10 +63,9 @@ class LayerOpenlayersImpl extends LayerImplementation<OpenlayersMap> {
 
   /**
    * returns the ol Layer
-   * @returns {import("ol/layer").Layer<import("ol/source/Source").default>}
    */
   // eslint-disable-next-line class-methods-use-this
-  getOLLayer(): OLLayer {
+  getOLLayer(): OLLayerLike {
     throw new Error();
   }
 
@@ -84,12 +84,23 @@ class LayerOpenlayersImpl extends LayerImplementation<OpenlayersMap> {
         !this._splitDirectionRenderListeners
       ) {
         this._splitDirectionRenderListeners = [];
-        this._splitDirectionRenderListeners.push(
-          this.olLayer!.on('prerender', this._splitPreRender.bind(this)),
-        );
-        this._splitDirectionRenderListeners.push(
-          this.olLayer!.on('postrender', this._splitPostReder.bind(this)),
-        );
+        if (this.olLayer instanceof OLLayer) {
+          this._splitDirectionRenderListeners.push(
+            this.olLayer.on('prerender', this._splitPreRender.bind(this)),
+          );
+          this._splitDirectionRenderListeners.push(
+            this.olLayer.on('postrender', this._splitPostReder.bind(this)),
+          );
+        } else {
+          this.olLayer!.getLayersArray().forEach((layer) => {
+            this._splitDirectionRenderListeners!.push(
+              layer.on('prerender', this._splitPreRender.bind(this)),
+            );
+            this._splitDirectionRenderListeners!.push(
+              layer.on('postrender', this._splitPostReder.bind(this)),
+            );
+          });
+        }
         this.olLayer!.changed();
       }
     }

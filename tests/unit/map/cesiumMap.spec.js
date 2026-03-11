@@ -752,6 +752,7 @@ describe('CesiumMap', () => {
       before(() => {
         inputConfig = {
           enableLightning: false,
+          preloadAncestors: true,
           tileCacheSize: 2,
           webGLaa: true,
           globeColor: '#00ff00',
@@ -781,6 +782,13 @@ describe('CesiumMap', () => {
         expect(outputConfig).to.have.property(
           'enableLightning',
           inputConfig.enableLightning,
+        );
+      });
+
+      it('should configure preloadAncestors', () => {
+        expect(outputConfig).to.have.property(
+          'preloadAncestors',
+          inputConfig.preloadAncestors,
         );
       });
 

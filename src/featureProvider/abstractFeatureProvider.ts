@@ -71,6 +71,11 @@ abstract class AbstractFeatureProvider extends VcsObject {
    */
   mapTypes: string[];
 
+  /**
+   * Indicates whether the feature provider should only return the first feature. Defaults to false, but is set to true in MapboxFeatureProvider. @link{FeatureProviderInteraction} can be configured to respect this property and only return the first feature when both the interaction and the provider have it set to true.
+   */
+  protected _inRenderingOrder = false;
+
   constructor(options: AbstractFeatureProviderOptions) {
     const defaultOptions = AbstractFeatureProvider.getDefaultOptions();
     super({ ...defaultOptions, ...options });
@@ -100,6 +105,13 @@ abstract class AbstractFeatureProvider extends VcsObject {
       map &&
       (this.mapTypes.length === 0 || this.mapTypes.includes(map.className))
     );
+  }
+
+  /**
+   * Indicates whether the feature provider should only return the first feature.
+   */
+  get inRenderingOrder(): boolean {
+    return this._inRenderingOrder;
   }
 
   /**

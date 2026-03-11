@@ -21,7 +21,9 @@ import {
   ScreenSpaceEventType,
   type TerrainProvider,
 } from '@vcmap-cesium/engine';
+import { parseBoolean } from '@vcsuite/parsers';
 import type { Coordinate } from 'ol/coordinate.js';
+import type { VcsMapOptions } from './vcsMap.js';
 import VcsMap from './vcsMap.js';
 import type Layer from '../layer/layer.js';
 import type LayerCollection from '../util/layerCollection.js';
@@ -35,6 +37,13 @@ import {
 import Projection from '../util/projection.js';
 
 RequestScheduler.maximumRequestsPerServer = 12;
+
+export type BaseCesiumMapOptions = VcsMapOptions & {
+  /**
+   * If true, ancestors will be preloaded
+   */
+  preloadAncestors?: boolean;
+};
 
 /**
  * Ensures, a primitive/imageryLayer/entity is part of a collection and placed at the correct location
@@ -148,17 +157,47 @@ export default class BaseCesiumMap extends VcsMap<CesiumVisualisationType> {
     return 'BaseCesiumMap';
   }
 
+  static getDefaultOptions(): BaseCesiumMapOptions {
+    return {
+      ...VcsMap.getDefaultOptions(),
+      preloadAncestors: false,
+    };
+  }
+
   protected _cesiumWidget: CesiumWidget | null = null;
 
   protected _terrainProvider: TerrainProvider | null | undefined = null;
 
   private _screenSpaceListener: (() => void) | undefined;
 
+  private _preloadAncestors = false;
+
   screenSpaceEventHandler: ScreenSpaceEventHandler | null = null;
 
   defaultTerrainProvider: TerrainProvider | null = null;
 
   protected _listeners: (() => void)[] = [];
+
+  constructor(options: BaseCesiumMapOptions) {
+    const defaultOptions = BaseCesiumMap.getDefaultOptions();
+    super({ ...defaultOptions, ...options });
+
+    this._preloadAncestors = parseBoolean(
+      options.preloadAncestors,
+      defaultOptions.preloadAncestors,
+    );
+  }
+
+  get preloadAncestors(): boolean {
+    return this._preloadAncestors;
+  }
+
+  set preloadAncestors(value: boolean) {
+    this._preloadAncestors = value;
+    if (this._cesiumWidget) {
+      this._cesiumWidget.scene.globe.preloadAncestors = value;
+    }
+  }
 
   get terrainProvider(): TerrainProvider | null | undefined {
     return this._terrainProvider;
@@ -185,6 +224,7 @@ export default class BaseCesiumMap extends VcsMap<CesiumVisualisationType> {
       ),
     );
 
+    this._cesiumWidget.scene.globe.preloadAncestors = this.preloadAncestors;
     this._cesiumWidget.scene.frameState.creditDisplay.update = (): void => {};
     this._cesiumWidget.scene.frameState.creditDisplay.beginFrame =
       (): void => {};
@@ -453,6 +493,13 @@ export default class BaseCesiumMap extends VcsMap<CesiumVisualisationType> {
     return this._cesiumWidget?.scene;
   }
 
+  /**
+   * defines whether ancestors are preloaded or not
+   */
+  setPreloadAncestors(value: boolean): void {
+    this.preloadAncestors = value;
+  }
+
   protected _indexChangedOnVisualization(vis: CesiumVisualisationType): void {
     if (vis instanceof PrimitiveCollection) {
       indexChangedOnPrimitive(
@@ -577,6 +624,16 @@ export default class BaseCesiumMap extends VcsMap<CesiumVisualisationType> {
         layer.deactivate();
       }
     }
+  }
+
+  toJSON(
+    defaultOptions = BaseCesiumMap.getDefaultOptions(),
+  ): BaseCesiumMapOptions {
+    const config: BaseCesiumMapOptions = super.toJSON(defaultOptions);
+    if (this.preloadAncestors !== defaultOptions.preloadAncestors) {
+      config.preloadAncestors = this.preloadAncestors;
+    }
+    return config;
   }
 
   override destroy(): void {

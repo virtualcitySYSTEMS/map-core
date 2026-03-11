@@ -3,9 +3,9 @@ import { getLogger as getLoggerByName } from '@vcsuite/logger';
 import { parseBoolean } from '@vcsuite/parsers';
 import { v4 as uuidv4 } from 'uuid';
 import type { MapEvent as OLMapEvent } from 'ol';
-import type { Layer as OLLayer } from 'ol/layer.js';
+import type OLLayer from 'ol/layer/Layer.js';
+import OLLayerGroup from 'ol/layer/Group.js';
 import type { Coordinate } from 'ol/coordinate.js';
-
 import { check, is, maybe, oneOf } from '@vcsuite/check';
 import type { VcsObjectOptions } from '../vcsObject.js';
 import VcsObject from '../vcsObject.js';
@@ -19,6 +19,7 @@ import type Viewpoint from '../util/viewpoint.js';
 import type Layer from '../layer/layer.js';
 import type { MapEvent } from '../interaction/abstractInteraction.js';
 import type { DisableMapControlOptions } from '../util/mapCollection.js';
+import type { OLLayerLike } from './baseOLMap.js';
 import type VectorClusterGroup from '../vectorCluster/vectorClusterGroup.js';
 import { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
 import type { CesiumVisualisationType } from './baseCesiumMap.js';
@@ -50,11 +51,11 @@ export type VcsMapOptions = VcsObjectOptions & {
   layerTypes?: string[];
 };
 
-export type VisualisationType = CesiumVisualisationType | OLLayer;
+export type VisualisationType = CesiumVisualisationType | OLLayerLike;
 
 export type VcsMapRenderEvent<V extends VisualisationType> = {
   map: VcsMap;
-  originalEvent: V extends OLLayer ? OLMapEvent : CesiumMapEvent;
+  originalEvent: V extends OLLayerLike ? OLMapEvent : CesiumMapEvent;
 };
 
 /**
@@ -421,18 +422,23 @@ class VcsMap<
     [vcsLayerName]?: string;
     [vectorClusterGroupName]?: string;
   } {
-    const vectorCluster = (item as OLLayer)[vectorClusterGroupName];
-    if (vectorCluster) {
-      return this.layerCollection.vectorClusterGroups.hasKey(
-        vectorCluster,
-      ) as boolean;
+    if (Object.hasOwn(item, vectorClusterGroupName)) {
+      if (item instanceof OLLayerGroup) {
+        return false;
+      } else {
+        const vectorCluster = (item as OLLayer)[vectorClusterGroupName];
+        if (vectorCluster) {
+          return this.layerCollection.vectorClusterGroups.hasKey(
+            vectorCluster,
+          ) as boolean;
+        }
+      }
     }
     const layerName = item[vcsLayerName];
     if (layerName == null) {
       this.getLogger().warning('item is missing vcsLayerName symbol');
       return false;
     }
-
     return this.layerCollection.hasKey(layerName) as boolean;
   }
 

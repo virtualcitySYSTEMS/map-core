@@ -26,7 +26,11 @@ import type {
   panoramaFeature,
   primitives,
 } from '../layer/vectorSymbols.js';
-import type { i3sData, vcsLayerName } from '../layer/layerSymbols.js';
+import type {
+  allowPicking,
+  i3sData,
+  vcsLayerName,
+} from '../layer/layerSymbols.js';
 import type {
   isProvidedFeature,
   isProvidedClusterFeature,
@@ -164,7 +168,12 @@ declare module 'ol/style.js' {
 declare module 'ol/layer.js' {
   interface Layer {
     [vcsLayerName]: string;
+    [allowPicking]?: boolean;
     [vectorClusterGroupName]?: string;
+  }
+
+  interface Group {
+    [vcsLayerName]: string;
   }
 }
 
