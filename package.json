@@ -71,7 +71,7 @@
     "typescript": "^5.6.2"
   },
   "peerDependencies": {
-    "@vcmap-cesium/engine": "^11.0.3",
+    "@vcmap-cesium/engine": "^11.0.5",
     "ol": "^10.4.0"
   },
   "prettier": "@vcsuite/eslint-config/prettier.js",
