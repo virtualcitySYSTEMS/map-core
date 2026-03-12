@@ -380,6 +380,7 @@ export type {
   VectorTileOptions,
 } from './src/layer/vectorTileLayer.js';
 export { default as VectorTileLayer } from './src/layer/vectorTileLayer.js';
+export type { MapboxStyleOptions } from './src/layer/mapboxStyleLayer.js';
 export { default as MapboxStyleLayer } from './src/layer/mapboxStyleLayer.js';
 export type { WFSOptions } from './src/layer/wfsLayer.js';
 export { default as WFSLayer } from './src/layer/wfsLayer.js';

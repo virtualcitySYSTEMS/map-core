@@ -140,9 +140,17 @@ export default class PanoramaDatasetLayer extends VectorTileLayer<PanoramaDatase
       defaultOptions.panoramaVectorProperties!,
     );
     if (options.panoramaVectorProperties) {
-      this._panoramaVectorProperties.setValues(
-        options.panoramaVectorProperties,
-      );
+      const panoramaVectorPropertiesOptions =
+        options.panoramaVectorProperties.primitiveOptions == null
+          ? options.panoramaVectorProperties
+          : {
+              ...options.panoramaVectorProperties,
+              primitiveOptions: {
+                offset: [0, 0, this.cameraOffset],
+                ...options.panoramaVectorProperties.primitiveOptions,
+              },
+            };
+      this._panoramaVectorProperties.setValues(panoramaVectorPropertiesOptions);
     }
 
     this._supportedMaps.push(PanoramaMap.className);
@@ -289,15 +297,27 @@ export default class PanoramaDatasetLayer extends VectorTileLayer<PanoramaDatase
       delete config.zIndex;
     }
 
-    defaultOptions.panoramaVectorProperties!.primitiveOptions!.offset = [
-      0,
-      0,
-      this.cameraOffset,
-    ];
+    const defaultPanoramaPrimitiveOptions =
+      defaultOptions.panoramaVectorProperties!.primitiveOptions!;
     const vectorPropertiesConfig = this._panoramaVectorProperties.getVcsMeta({
       ...VectorProperties.getDefaultOptions(),
       ...defaultOptions.panoramaVectorProperties,
+      primitiveOptions: {
+        offset: [0, 0, this.cameraOffset],
+        ...defaultPanoramaPrimitiveOptions,
+      },
     });
+
+    if (
+      vectorPropertiesConfig.primitiveOptions?.offset?.[0] === 0 &&
+      vectorPropertiesConfig.primitiveOptions?.offset?.[1] === 0 &&
+      vectorPropertiesConfig.primitiveOptions?.offset?.[2] === this.cameraOffset
+    ) {
+      delete vectorPropertiesConfig.primitiveOptions.offset;
+      if (Object.keys(vectorPropertiesConfig.primitiveOptions).length === 0) {
+        delete vectorPropertiesConfig.primitiveOptions;
+      }
+    }
 
     if (Object.keys(vectorPropertiesConfig).length > 0) {
       config.panoramaVectorProperties = vectorPropertiesConfig;

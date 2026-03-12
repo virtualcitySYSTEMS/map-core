@@ -1,3 +1,8 @@
+### 6.3.1
+
+- Export MapboxStyleOptions
+- Fixes a bug in PanoramaDatasetLayer, where serialization would always return default `panoramaVectorProperties` option
+
 ### 6.3.0
 
 #### Features
