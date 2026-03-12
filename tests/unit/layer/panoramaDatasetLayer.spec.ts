@@ -7,6 +7,7 @@ import RBush from 'rbush';
 import PanoramaDataset, {
   type PanoramaDatasetOptions,
 } from '../../../src/layer/panoramaDatasetLayer.js';
+import { PrimitiveOptionsType } from '../../../src/layer/vectorProperties.js';
 import type { TileProviderRTreeEntry } from '../../../src/layer/tileProvider/tileProvider.js';
 import { panoramaFeature } from '../../../src/layer/vectorSymbols.js';
 
@@ -162,6 +163,84 @@ describe('PanoramaDatasetLayer', () => {
         expect(output)
           .to.have.property('panoramaVectorProperties')
           .and.to.deep.equal(input.panoramaVectorProperties);
+      });
+    });
+
+    describe('with only altitudeMode override', () => {
+      it('should serialize altitudeMode change', () => {
+        const input = {
+          url: 'test',
+          panoramaVectorProperties: {
+            altitudeMode: 'relativeToGround' as const,
+          },
+        };
+        const output = new PanoramaDataset(input).toJSON();
+        expect(output).to.have.property('panoramaVectorProperties');
+        expect(output.panoramaVectorProperties).to.deep.equal({
+          altitudeMode: 'relativeToGround',
+        });
+      });
+    });
+
+    describe('with primitiveOptions override', () => {
+      it('should serialize primitiveOptions without derived offset', () => {
+        const input = {
+          url: 'test',
+          cameraOffset: 12,
+          panoramaVectorProperties: {
+            primitiveOptions: {
+              type: PrimitiveOptionsType.CYLINDER,
+              geometryOptions: {
+                topRadius: 2,
+                bottomRadius: 1,
+                length: 0.5,
+              },
+            },
+          },
+        };
+        const output = new PanoramaDataset(input).toJSON();
+        expect(output).to.have.property('panoramaVectorProperties');
+        expect(output.panoramaVectorProperties).to.deep.equal({
+          primitiveOptions: {
+            type: PrimitiveOptionsType.CYLINDER,
+            geometryOptions: {
+              topRadius: 2,
+              bottomRadius: 1,
+              length: 0.5,
+            },
+          },
+        });
+      });
+
+      it('should ignore cameraOffset when primitiveOptions.offset is provided', () => {
+        const input = {
+          url: 'test',
+          cameraOffset: 12,
+          panoramaVectorProperties: {
+            primitiveOptions: {
+              type: PrimitiveOptionsType.CYLINDER,
+              geometryOptions: {
+                topRadius: 2,
+                bottomRadius: 1,
+                length: 0.5,
+              },
+              offset: [0, 0, 9],
+            },
+          },
+        };
+        const output = new PanoramaDataset(input).toJSON();
+        expect(output).to.have.property('panoramaVectorProperties');
+        expect(output.panoramaVectorProperties).to.deep.equal({
+          primitiveOptions: {
+            type: PrimitiveOptionsType.CYLINDER,
+            geometryOptions: {
+              topRadius: 2,
+              bottomRadius: 1,
+              length: 0.5,
+            },
+            offset: [0, 0, 9],
+          },
+        });
       });
     });
   });
