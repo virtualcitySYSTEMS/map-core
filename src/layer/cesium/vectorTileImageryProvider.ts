@@ -1,23 +1,22 @@
 import {
-  Event as CesiumEvent,
-  Rectangle,
-  Math as CesiumMath,
   type Cartographic,
+  Event as CesiumEvent,
+  type Rectangle,
   type TilingScheme,
 } from '@vcmap-cesium/engine';
+import { getLogger } from '@vcsuite/logger';
 import {
   compose,
   create as createTransform,
   scale as scaleTransform,
 } from 'ol/transform.js';
-import type { Extent } from 'ol/extent.js';
+import { type Extent, getCenter } from 'ol/extent.js';
 import type { Coordinate } from 'ol/coordinate.js';
 import type { Size } from 'ol/size.js';
 import type { Feature } from 'ol/index.js';
 // eslint-disable-next-line import/no-named-default
 import type { default as Style, StyleFunction } from 'ol/style/Style.js';
 import type TileProvider from '../tileProvider/tileProvider.js';
-import { wgs84ToMercatorTransformer } from '../../util/projection.js';
 import CanvasTileRenderer from '../../ol/render/canvas/canvasTileRenderer.js';
 import { rectangleToMercatorExtent } from '../../util/math.js';
 
@@ -61,23 +60,30 @@ export function toContext(
 
 /**
  * creates a canvas and draws the features on the canvas;
+ * @param features
+ * @param extent
+ * @param deprecatedCenter deprecated, center is taken from the extent
+ * @param tileSize
+ * @returns a canvas with the features drawn on it
  */
 export function getCanvasFromFeatures(
   features: Feature[],
   extent: Extent,
-  center: Cartographic,
+  deprecatedCenter: Cartographic | undefined,
   tileSize: Size,
 ): HTMLCanvasElement {
+  if (deprecatedCenter) {
+    getLogger('VectorTileImageryProvider').deprecate(
+      'getCanvasFromFeatures',
+      'getCanvasFromFeatures no longer requires a center, it is taken from the extent',
+    );
+  }
   const canvas = document.createElement('canvas');
   canvas.width = tileSize[0];
   canvas.height = tileSize[0];
-  const centerMercator = wgs84ToMercatorTransformer([
-    CesiumMath.toDegrees(center.longitude),
-    CesiumMath.toDegrees(center.latitude),
-  ]);
   const vectorContext = toContext(
     extent,
-    centerMercator,
+    getCenter(extent),
     canvas.getContext('2d') as CanvasRenderingContext2D,
     tileSize,
   );
@@ -89,6 +95,7 @@ export function getCanvasFromFeatures(
       vectorContext.drawFeature(feature, styleToUse);
     });
   });
+
   return canvas;
 }
 
@@ -224,8 +231,7 @@ class VectorTileImageryProvider {
       level,
     );
     const extent = rectangleToMercatorExtent(rectangle);
-    const center = Rectangle.center(rectangle);
-    return getCanvasFromFeatures(features, extent, center, this._tileSize);
+    return getCanvasFromFeatures(features, extent, undefined, this._tileSize);
   }
 }
 

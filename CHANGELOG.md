@@ -1,3 +1,8 @@
+### 6.3.2
+
+- Fixes an issue, where vector tiles would be rendered wrong in 3D on lower levels.
+- Deprecates passing a `center` to `getCanvasFromFeatures`.
+
 ### 6.3.1
 
 - Export MapboxStyleOptions
