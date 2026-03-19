@@ -2,6 +2,7 @@
 
 - Fixes an issue, where vector tiles would be rendered wrong in 3D on lower levels.
 - Deprecates passing a `center` to `getCanvasFromFeatures`.
+- Fixes an issue, where COGs with differing tile sizes would not be rendered in 3D.
 
 ### 6.3.1
 
