@@ -13,7 +13,10 @@ import {
   PointerKeyType,
 } from '../../../index.js';
 import { getPanoramaMap } from '../helpers/panoramaHelpers.js';
-import { panoramaFeature } from '../../../src/layer/vectorSymbols.js';
+import {
+  createSync,
+  panoramaFeature,
+} from '../../../src/layer/vectorSymbols.js';
 import PanoramaDatasetLayer from '../../../src/layer/panoramaDatasetLayer.js';
 import { timeout } from '../helpers/helpers.js';
 import type PanoramaMap from '../../../src/map/panoramaMap.js';
@@ -181,6 +184,86 @@ describe('PanoramaFeatureHighlight', () => {
       pickStub.returns(undefined);
       await interaction.pipe({ ...testEvent });
       expect(dataset.featureVisibility.highlightedObjects).to.be.empty;
+    });
+  });
+
+  describe('createSync state', () => {
+    let clock: sinon.SinonFakeTimers;
+
+    beforeEach(() => {
+      clock = sinon.useFakeTimers(Date.now());
+    });
+
+    afterEach(() => {
+      clock.restore();
+    });
+
+    it('should set createSync to true when highlighting a feature without createSync', async () => {
+      delete feature[createSync];
+      pickStub.returns({
+        id: { olFeature: feature },
+      });
+      await interaction.pipe({ ...testEvent });
+      expect(feature[createSync]).to.equal(true);
+    });
+
+    it('should restore createSync to undefined (delete it) when unhighlighting a feature that had no createSync', async () => {
+      delete feature[createSync];
+      pickStub.returns({
+        id: { olFeature: feature },
+      });
+      await interaction.pipe({ ...testEvent });
+      clock.tick(100);
+      pickStub.returns(undefined);
+      await interaction.pipe({ ...testEvent });
+      expect(feature).to.not.have.property(createSync);
+    });
+
+    it('should keep createSync (true) when highlighting and unhighlighting', async () => {
+      feature[createSync] = true;
+      pickStub.returns({
+        id: { olFeature: feature },
+      });
+      await interaction.pipe({ ...testEvent });
+      clock.tick(100);
+      pickStub.returns(undefined);
+      await interaction.pipe({ ...testEvent });
+      expect(feature[createSync]).to.equal(true);
+    });
+
+    it('should preserve createSync (false) when highlighting and unhighlighting', async () => {
+      feature[createSync] = false;
+      pickStub.returns({
+        id: { olFeature: feature },
+      });
+      await interaction.pipe({ ...testEvent });
+      expect(feature[createSync]).to.equal(true);
+      clock.tick(100);
+      pickStub.returns(undefined);
+      await interaction.pipe({ ...testEvent });
+      expect(feature[createSync]).to.equal(false);
+    });
+
+    it('should restore createSync state on destruction (true)', async () => {
+      feature[createSync] = true;
+      pickStub.returns({
+        id: { olFeature: feature },
+      });
+      await interaction.pipe({ ...testEvent });
+      expect(feature[createSync]).to.equal(true);
+      interaction.destroy();
+      expect(feature[createSync]).to.equal(true);
+    });
+
+    it('should restore createSync state on destruction (false)', async () => {
+      feature[createSync] = false;
+      pickStub.returns({
+        id: { olFeature: feature },
+      });
+      await interaction.pipe({ ...testEvent });
+      expect(feature[createSync]).to.equal(true);
+      interaction.destroy();
+      expect(feature[createSync]).to.equal(false);
     });
   });
 });

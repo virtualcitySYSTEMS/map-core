@@ -4,6 +4,7 @@
 - Introduced a new imagery provider which renders features in an openlayers map with `declutter` for better visualization of point features in 3D.
 - Panorama cesium implementation is now decluttered in 3D.
 - Changes the way panorama features are selected, allowing to jump into the first panorama image feature of a cluster directly.
+- Fixes undefined state of picked feature when highlighting on mouse over in Panorama Map
 
 ### 6.3.2
 
