@@ -1,7 +1,7 @@
 import type GeoTIFFSource from 'ol/source/GeoTIFF.js';
 import { ImageryLayer as CesiumImageryLayer } from '@vcmap-cesium/engine';
 import RasterLayerCesiumImpl from './rasterLayerCesiumImpl.js';
-import COGImageryProvider from './cogImageryProvider.js';
+import COGImageryProvider from './imageryProvider/cogImageryProvider.js';
 import type { COGLayerImplementationOptions } from '../cogLayer.js';
 import type CesiumMap from '../../map/cesiumMap.js';
 

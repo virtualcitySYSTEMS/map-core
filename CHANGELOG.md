@@ -1,3 +1,10 @@
+### 6.3.3
+
+- Introduces the `AbstracVcsImageryProvider` class, of which all custom imagery providers are now a child of.
+- Introduced a new imagery provider which renders features in an openlayers map with `declutter` for better visualization of point features in 3D.
+- Panorama cesium implementation is now decluttered in 3D.
+- Changes the way panorama features are selected, allowing to jump into the first panorama image feature of a cluster directly.
+
 ### 6.3.2
 
 - Fixes an issue, where vector tiles would be rendered wrong in 3D on lower levels.

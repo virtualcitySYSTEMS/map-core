@@ -108,12 +108,21 @@ export {
   default as VectorContext,
 } from './src/layer/cesium/vectorContext.js';
 export { default as VectorRasterTileCesiumImpl } from './src/layer/cesium/vectorRasterTileCesiumImpl.js';
-export type { VectorTileImageryProviderOptions } from './src/layer/cesium/vectorTileImageryProvider.js';
+export type { VectorTileImageryProviderOptions } from './src/layer/cesium/imageryProvider/vectorTileImageryProvider.js';
 export {
   toContext,
   getCanvasFromFeatures,
   default as VectorTileImageryProvider,
-} from './src/layer/cesium/vectorTileImageryProvider.js';
+} from './src/layer/cesium/imageryProvider/vectorTileImageryProvider.js';
+export {
+  default as AbstractVcsImageryProvider,
+  type AbstractVcsImageryProviderOptions,
+} from './src/layer/cesium/imageryProvider/abstractVcsImageryProvider.js';
+export {
+  createOLImageRenderer,
+  type OLImageRenderer,
+} from './src/layer/cesium/imageryProvider/olImageRenderer.js';
+export { default as PanoramaDatasetImageryProvider } from './src/layer/cesium/imageryProvider/panoramaDatasetImageryProvider.js';
 export { default as WmsCesiumImpl } from './src/layer/cesium/wmsCesiumImpl.js';
 export { default as WmtsCesiumImpl } from './src/layer/cesium/wmtsCesiumImpl.js';
 export type {

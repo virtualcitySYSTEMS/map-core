@@ -11,7 +11,7 @@ import type { LayerImplementationOptions } from '../layer.js';
 import TileProvider from '../tileProvider/tileProvider.js';
 import MapboxStyleImageryProvider, {
   type MapboxStyleImageryProviderOptions,
-} from './mapboxStyleImageryProvider.js';
+} from './imageryProvider/mapboxStyleImageryProvider.js';
 import RasterLayerCesiumImpl from './rasterLayerCesiumImpl.js';
 
 export type MapboxStyleLayerImplementationOptions =

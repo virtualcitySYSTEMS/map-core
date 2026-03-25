@@ -1,9 +1,4 @@
-import {
-  type Cartographic,
-  Event as CesiumEvent,
-  type Rectangle,
-  type TilingScheme,
-} from '@vcmap-cesium/engine';
+import { type Cartographic } from '@vcmap-cesium/engine';
 import { getLogger } from '@vcsuite/logger';
 import {
   compose,
@@ -16,9 +11,10 @@ import type { Size } from 'ol/size.js';
 import type { Feature } from 'ol/index.js';
 // eslint-disable-next-line import/no-named-default
 import type { default as Style, StyleFunction } from 'ol/style/Style.js';
-import type TileProvider from '../tileProvider/tileProvider.js';
-import CanvasTileRenderer from '../../ol/render/canvas/canvasTileRenderer.js';
-import { rectangleToMercatorExtent } from '../../util/math.js';
+import type TileProvider from '../../tileProvider/tileProvider.js';
+import CanvasTileRenderer from '../../../ol/render/canvas/canvasTileRenderer.js';
+import { rectangleToMercatorExtent } from '../../../util/math.js';
+import AbstractVcsImageryProvider from './abstractVcsImageryProvider.js';
 
 export function toContext(
   extent: Extent,
@@ -80,7 +76,7 @@ export function getCanvasFromFeatures(
   }
   const canvas = document.createElement('canvas');
   canvas.width = tileSize[0];
-  canvas.height = tileSize[0];
+  canvas.height = tileSize[1];
   const vectorContext = toContext(
     extent,
     getCenter(extent),
@@ -108,94 +104,21 @@ export type VectorTileImageryProviderOptions = {
 /**
  * implementation of Cesium ImageryProvider Interface
  */
-class VectorTileImageryProvider {
+class VectorTileImageryProvider extends AbstractVcsImageryProvider {
   tileProvider: TileProvider;
-
-  private _tilingScheme: TilingScheme;
-
-  private _tileSize: Size;
-
-  private _errorEvent = new CesiumEvent();
-
-  headers?: Record<string, string>;
-
-  emptyCanvas: HTMLCanvasElement;
-
-  minLevel = 0;
-
-  maxLevel = 26;
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   _reload: undefined | (() => void) = undefined;
 
   constructor(options: VectorTileImageryProviderOptions) {
+    super({
+      tilingScheme: options.tileProvider.tilingScheme,
+      tileSize: options.tileSize,
+      headers: options.headers,
+      minLevel: 0,
+      maxLevel: 26,
+    });
     this.tileProvider = options.tileProvider;
-    this._tilingScheme = this.tileProvider.tilingScheme;
-    this._tileSize = options.tileSize;
-    this._errorEvent = new CesiumEvent();
-
-    this.emptyCanvas = document.createElement('canvas');
-    this.emptyCanvas.width = this.tileWidth;
-    this.emptyCanvas.height = this.tileHeight;
-    this.headers = options.headers;
-  }
-
-  // eslint-disable-next-line class-methods-use-this,@typescript-eslint/naming-convention
-  get _ready(): boolean {
-    return true;
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  get ready(): boolean {
-    return true;
-  }
-
-  get rectangle(): Rectangle {
-    return this._tilingScheme.rectangle;
-  }
-
-  get tileWidth(): number {
-    return this._tileSize[0];
-  }
-
-  get tileHeight(): number {
-    return this._tileSize[1];
-  }
-
-  get maximumLevel(): number {
-    return this.maxLevel;
-  }
-
-  get minimumLevel(): number {
-    return this.minLevel;
-  }
-
-  get tilingScheme(): TilingScheme {
-    return this._tilingScheme;
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  get tileDiscardPolicy(): undefined {
-    return undefined;
-  }
-
-  get errorEvent(): CesiumEvent {
-    return this._errorEvent;
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  get credit(): undefined {
-    return undefined;
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  get proxy(): undefined {
-    return undefined;
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  get hasAlphaChannel(): boolean {
-    return true;
   }
 
   /**
@@ -231,7 +154,11 @@ class VectorTileImageryProvider {
       level,
     );
     const extent = rectangleToMercatorExtent(rectangle);
-    return getCanvasFromFeatures(features, extent, undefined, this._tileSize);
+
+    return getCanvasFromFeatures(features, extent, undefined, [
+      this.tileWidth,
+      this.tileHeight,
+    ]);
   }
 }
 

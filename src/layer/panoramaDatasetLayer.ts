@@ -25,6 +25,9 @@ import {
 import Extent from '../util/extent.js';
 import { cartesian2DDistanceSquared } from '../util/math.js';
 import { getStyleOrDefaultStyle } from '../style/styleFactory.js';
+import CesiumMap from '../map/cesiumMap.js';
+import VectorTileCesiumImpl from './cesium/vectorTileCesiumImpl.js';
+import PanoramaDatasetCesiumImpl from './cesium/panoramaDatasetCesiumImpl.js';
 
 export type PanoramaDatasetOptions = Omit<
   VectorTileOptions,
@@ -54,7 +57,7 @@ export default class PanoramaDatasetLayer extends VectorTileLayer<PanoramaDatase
       baseLevel: 15,
       cameraOffset: 0,
       minLevel: 15,
-      maxLevel: 22,
+      maxLevel: undefined,
       zIndex: maxZIndexMin50,
       ignoreMapLayerTypes: true,
       panoramaVectorProperties: {
@@ -188,6 +191,14 @@ export default class PanoramaDatasetLayer extends VectorTileLayer<PanoramaDatase
           vectorProperties: this._panoramaVectorProperties,
           hideInPanorama: this.hideInPanorama,
         }),
+      ];
+    }
+
+    if (map instanceof CesiumMap) {
+      return [
+        this.renderer === 'image'
+          ? new PanoramaDatasetCesiumImpl(map, this.getImplementationOptions())
+          : new VectorTileCesiumImpl(map, this.getImplementationOptions()),
       ];
     }
     return super.createImplementationsForMap(map);

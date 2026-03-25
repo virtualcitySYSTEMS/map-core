@@ -11,7 +11,6 @@ import type { Size } from 'ol/size.js';
 import TileState from 'ol/TileState.js';
 import {
   Cartesian2,
-  Event as CesiumEvent,
   GeographicTilingScheme,
   type ImageryTypes,
   Math as CesiumMath,
@@ -24,7 +23,8 @@ import type TileGrid from 'ol/tilegrid/TileGrid.js';
 import {
   mercatorExtentToRectangle,
   rectangleToMercatorExtent,
-} from '../../util/math.js';
+} from '../../../util/math.js';
+import AbstractVcsImageryProvider from './abstractVcsImageryProvider.js';
 
 export function createEmptyCanvas(
   width: number,
@@ -134,10 +134,10 @@ function drawData(
   ctx.putImageData(imageData, offsetX, offsetY);
 }
 
-function getMaximumTileSize(tileGrid: TileGrid, source: GeoTIFFSource): Size {
+function getMaximumTileSize(source: GeoTIFFSource): Size {
   let width = 0;
   let height = 0;
-  const numResolutions = tileGrid.getResolutions().length;
+  const numResolutions = source.getTileGrid()!.getResolutions().length;
   for (let i = 0; i < numResolutions; i++) {
     // @ts-expect-error protected
     const size = source.getTileSize(i);
@@ -150,15 +150,11 @@ function getMaximumTileSize(tileGrid: TileGrid, source: GeoTIFFSource): Size {
   return [width, height];
 }
 
-export default class COGImageryProvider {
-  private _emptyCanvas: HTMLCanvasElement;
-
+export default class COGImageryProvider extends AbstractVcsImageryProvider {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   _reload: undefined | (() => void) = undefined;
 
   private _projection: Projection;
-
-  private _tilingScheme: TilingScheme;
 
   private _tileGrid: TileGrid;
 
@@ -168,84 +164,26 @@ export default class COGImageryProvider {
     level: number,
   ) => Promise<ImageryTypes>;
 
-  readonly tileWidth: number = 256;
-
-  readonly tileHeight: number = 256;
-
   constructor(private _source: GeoTIFFSource) {
+    const tileSize = getMaximumTileSize(_source);
+    const maxLevel = _source.getTileGrid()?.getMaxZoom?.() ?? 26;
+
+    super({
+      tilingScheme: getTilingSchemeFromSource(_source),
+      tileSize,
+      minLevel: 0,
+      maxLevel,
+    });
+
     this._projection = this._source.getProjection()!;
     this._tileGrid = this._source.getTileGrid()!;
-    this._tilingScheme = getTilingSchemeFromSource(this._source);
     if (areGridsAligned(this._tileGrid, this._tilingScheme, this._source)) {
       this._boundTileLoader = this._loadAlignedTile.bind(this);
     } else {
       this._boundTileLoader = this._loadUnalignedTile.bind(this);
     }
-    const [width, height] = getMaximumTileSize(this._tileGrid, this._source);
-    this.tileWidth = width;
-    this.tileHeight = height;
-    this._emptyCanvas = createEmptyCanvas(this.tileWidth, this.tileHeight);
   }
 
-  // eslint-disable-next-line class-methods-use-this,@typescript-eslint/naming-convention
-  get _ready(): boolean {
-    return true;
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  get ready(): boolean {
-    return true;
-  }
-
-  get rectangle(): Rectangle {
-    return this._tilingScheme.rectangle;
-  }
-
-  get tilingScheme(): TilingScheme {
-    return this._tilingScheme;
-  }
-
-  readonly errorEvent: CesiumEvent = new CesiumEvent();
-
-  // eslint-disable-next-line class-methods-use-this
-  get credit(): undefined {
-    return undefined;
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  get proxy(): undefined {
-    return undefined;
-  }
-
-  get maximumLevel(): number {
-    const tileGrid = this._source.getTileGrid();
-    if (tileGrid) {
-      return tileGrid.getMaxZoom();
-    } else {
-      return 18; // some arbitrary value
-    }
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  get minimumLevel(): number {
-    // WARNING: Do not use the minimum level (at least until the extent is
-    // properly set). Cesium assumes the minimumLevel to contain only
-    // a few tiles and tries to load them all at once -- this can
-    // freeze and/or crash the browser !
-    return 0;
-    //var tg = this._source.getTileGrid();
-    //return tg ? tg.getMinZoom() : 0;
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  get tileDiscardPolicy(): undefined {
-    return undefined;
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  get hasAlphaChannel(): boolean {
-    return true;
-  }
   private _getTileSizeForLevel(level: number): [number, number] {
     // @ts-expect-error protected
     const [width, height] = this._source.getTileSize(level);
@@ -306,7 +244,7 @@ export default class COGImageryProvider {
       return canvas;
     }
 
-    return this._emptyCanvas;
+    return this.emptyCanvas;
   }
 
   private async _loadUnalignedTile(
@@ -335,7 +273,7 @@ export default class COGImageryProvider {
 
     const ctx = canvas.getContext('2d');
     if (!ctx) {
-      return this._emptyCanvas;
+      return this.emptyCanvas;
     }
 
     const promises: Promise<void>[] = [];
@@ -413,10 +351,14 @@ export default class COGImageryProvider {
       return windowCanvas;
     }
 
-    return this._emptyCanvas;
+    return this.emptyCanvas;
   }
 
-  requestImage(x: number, y: number, level: number): Promise<ImageryTypes> {
+  requestImage(
+    x: number,
+    y: number,
+    level: number,
+  ): Promise<ImageryTypes> | undefined {
     return this._boundTileLoader(x, y, level);
   }
 }

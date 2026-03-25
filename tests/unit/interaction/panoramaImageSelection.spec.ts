@@ -6,11 +6,13 @@ import Point from 'ol/geom/Point.js';
 import {
   EventType,
   type InteractionEvent,
+  isProvidedClusterFeature,
   MapCollection,
   ModificationKeyType,
   OpenlayersMap,
   PointerEventType,
   PointerKeyType,
+  vcsLayerName,
 } from '../../../index.js';
 import PanoramaImageSelection from '../../../src/interaction/panoramaImageSelection.js';
 import PanoramaDataset from '../../../src/layer/panoramaDatasetLayer.js';
@@ -30,6 +32,7 @@ describe('PanoramaImageSelection', () => {
   let feature: Feature;
   let dataset: PanoramaDataset;
   let activatePanoramaMapStub: sinon.SinonStub;
+  let createPanoramaImageStub: sinon.SinonStub;
   let destroyPanoramaImage: () => void;
 
   before(async () => {
@@ -58,9 +61,12 @@ describe('PanoramaImageSelection', () => {
       name: 'testPanorama',
       time: new Date('2023-10-01T00:00:00Z'),
     };
+    feature[vcsLayerName] = 'test';
     activatePanoramaMapStub = sinon.stub(mapCollection, 'activatePanoramaMap');
     const { panoramaImage, destroy } = await getPanoramaImage();
-    sinon.stub(dataset, 'createPanoramaImage').resolves(panoramaImage);
+    createPanoramaImageStub = sinon
+      .stub(dataset, 'createPanoramaImage')
+      .resolves(panoramaImage);
     destroyPanoramaImage = destroy;
   });
 
@@ -71,6 +77,7 @@ describe('PanoramaImageSelection', () => {
   afterEach(() => {
     interaction.destroy();
     activatePanoramaMapStub.resetHistory();
+    createPanoramaImageStub.resetHistory();
   });
 
   after(() => {
@@ -120,6 +127,74 @@ describe('PanoramaImageSelection', () => {
         map: panoramaMap,
       });
       expect(setCurrentImageStub).to.not.have.been.called;
+      expect(activatePanoramaMapStub).to.not.have.been.called;
+    });
+  });
+
+  describe('if passed a cluster feature', () => {
+    function createClusterFeature(features: Feature[]): Feature {
+      const clusterFeature = new Feature({
+        geometry: new Point([0, 0]),
+      });
+      clusterFeature.set('features', features);
+      clusterFeature[isProvidedClusterFeature] = true;
+      return clusterFeature;
+    }
+
+    it('should select the first image, if there are only panorama images of the same layer', async () => {
+      const otherPanoramaFeature = new Feature({
+        geometry: new Point([0, 0]),
+      });
+      otherPanoramaFeature.setId('testPanoramaFeature2');
+      otherPanoramaFeature[panoramaFeature] = {
+        dataset,
+        name: 'testPanorama2',
+        time: new Date('2023-10-01T00:00:00Z'),
+      };
+      otherPanoramaFeature[vcsLayerName] = 'test';
+
+      const clusterFeature = createClusterFeature([
+        otherPanoramaFeature,
+        feature,
+      ]);
+      await interaction.pipe({ ...event, feature: clusterFeature });
+      expect(activatePanoramaMapStub).to.have.been.calledOnce;
+      expect(createPanoramaImageStub).to.have.been.calledOnce;
+      expect(createPanoramaImageStub).to.have.been.calledWith('testPanorama2');
+    });
+
+    it('should not select, if there are only panorama images, but of differing layers', async () => {
+      const otherPanoramaFeature = new Feature({
+        geometry: new Point([0, 0]),
+      });
+      otherPanoramaFeature.setId('testPanoramaFeature2');
+      otherPanoramaFeature[panoramaFeature] = {
+        dataset,
+        name: 'testPanorama2',
+        time: new Date('2023-10-01T00:00:00Z'),
+      };
+      otherPanoramaFeature[vcsLayerName] = 'otherLayer';
+
+      const clusterFeature = createClusterFeature([
+        otherPanoramaFeature,
+        feature,
+      ]);
+      await interaction.pipe({ ...event, feature: clusterFeature });
+      expect(activatePanoramaMapStub).to.not.have.been.called;
+    });
+
+    it('should not select, if there are other features in the cluster', async () => {
+      const otherPanoramaFeature = new Feature({
+        geometry: new Point([0, 0]),
+      });
+      otherPanoramaFeature.setId('notAPanoramaFeature');
+      otherPanoramaFeature[vcsLayerName] = 'test';
+
+      const clusterFeature = createClusterFeature([
+        otherPanoramaFeature,
+        feature,
+      ]);
+      await interaction.pipe({ ...event, feature: clusterFeature });
       expect(activatePanoramaMapStub).to.not.have.been.called;
     });
   });

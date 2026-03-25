@@ -4,7 +4,7 @@ import {
 } from '@vcmap-cesium/engine';
 import type { Size } from 'ol/size.js';
 
-import VectorTileImageryProvider from './vectorTileImageryProvider.js';
+import VectorTileImageryProvider from './imageryProvider/vectorTileImageryProvider.js';
 import RasterLayerCesiumImpl from './rasterLayerCesiumImpl.js';
 import { wgs84Projection } from '../../util/projection.js';
 import type { VectorTileImplementationOptions } from '../vectorTileLayer.js';
@@ -15,6 +15,7 @@ import {
 } from '../rasterLayer.js';
 import type TileProvider from '../tileProvider/tileProvider.js';
 import type StyleItem from '../../style/styleItem.js';
+import type AbstractVcsImageryProvider from './imageryProvider/abstractVcsImageryProvider.js';
 
 /**
  * represents a rasterized tiled vector layer implementation for cesium.
@@ -30,7 +31,7 @@ class VectorRasterTileCesiumImpl extends RasterLayerCesiumImpl {
 
   private _reloadTimeout: number | undefined = undefined;
 
-  imageryProvider: undefined | VectorTileImageryProvider = undefined;
+  imageryProvider: undefined | AbstractVcsImageryProvider = undefined;
 
   constructor(map: CesiumMap, options: VectorTileImplementationOptions) {
     const minRenderingLevel = options.minLevel;
@@ -49,12 +50,16 @@ class VectorRasterTileCesiumImpl extends RasterLayerCesiumImpl {
     this.tileSize = options.tileSize;
   }
 
-  getCesiumLayer(): Promise<CesiumImageryLayer> {
-    this.imageryProvider = new VectorTileImageryProvider({
+  protected _getImageryProvider(): AbstractVcsImageryProvider {
+    return new VectorTileImageryProvider({
       tileProvider: this.tileProvider,
       tileSize: this.tileSize,
       headers: this.headers,
     });
+  }
+
+  getCesiumLayer(): Promise<CesiumImageryLayer> {
+    this.imageryProvider = this._getImageryProvider();
 
     const layerOptions = this.getCesiumLayerOptions();
     if (this.extent && this.extent.isValid()) {
@@ -105,6 +110,11 @@ class VectorRasterTileCesiumImpl extends RasterLayerCesiumImpl {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   updateStyle(_style: StyleItem, _silent?: boolean): void {
     this._reloadTiles();
+  }
+
+  destroy(): void {
+    this.imageryProvider?.destroy();
+    super.destroy();
   }
 }
 
