@@ -2,6 +2,7 @@
 
 - Fixes a bug in MapboxStyleLayer serialization by avoiding persistent runtime-only MapboxFeatureProvider configs
 - Fixes 2D MapboxStyleLayer picking by isolating picker layer renderers, preventing layers from disappearing on click
+- Fix bug when using pattern materials in 3D, which caused the fragment shader to crash
 
 ### 6.3.3
 
