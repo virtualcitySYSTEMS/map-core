@@ -7,8 +7,12 @@ import type BaseLayer from 'ol/layer/Base.js';
 import { apply } from 'ol-mapbox-style';
 import { layerClassRegistry } from '../classRegistry.js';
 import AbstractAttributeProvider from '../featureProvider/abstractAttributeProvider.js';
-import CompositeFeatureProvider from '../featureProvider/compositeFeatureProvider.js';
-import MapboxFeatureProvider from '../featureProvider/mapboxFeatureProvider.js';
+import CompositeFeatureProvider, {
+  type CompositeFeatureProviderOptions,
+} from '../featureProvider/compositeFeatureProvider.js';
+import MapboxFeatureProvider, {
+  type MapboxFeatureProviderOptions,
+} from '../featureProvider/mapboxFeatureProvider.js';
 import type VcsMap from '../map/vcsMap.js';
 import BaseCesiumMap from '../map/baseCesiumMap.js';
 import CesiumMap from '../map/cesiumMap.js';
@@ -204,6 +208,42 @@ class MapboxStyleLayer
     defaultOptions = MapboxStyleLayer.getDefaultOptions(),
   ): MapboxStyleOptions {
     const config: MapboxStyleOptions = { ...super.toJSON() };
+
+    if (
+      (config.featureProvider as MapboxFeatureProviderOptions)?.type ===
+      MapboxFeatureProvider.className
+    ) {
+      delete config.featureProvider;
+    } else if (
+      (config.featureProvider as CompositeFeatureProviderOptions)?.type ===
+      CompositeFeatureProvider.className
+    ) {
+      const compositeConfig =
+        config.featureProvider as CompositeFeatureProviderOptions;
+      const featureProviders = (compositeConfig.featureProviders || []).filter(
+        (providerConfig) =>
+          (providerConfig as MapboxFeatureProviderOptions).type !==
+          MapboxFeatureProvider.className,
+      );
+      const attributeProviders = compositeConfig.attributeProviders || [];
+
+      if (featureProviders.length === 0 && attributeProviders.length === 0) {
+        delete config.featureProvider;
+      } else if (
+        featureProviders.length === 0 &&
+        attributeProviders.length === 1
+      ) {
+        config.featureProvider =
+          attributeProviders[0] as AbstractAttributeProvider;
+      } else {
+        const filteredComposite: CompositeFeatureProviderOptions = {
+          ...compositeConfig,
+          featureProviders,
+          attributeProviders,
+        };
+        config.featureProvider = filteredComposite;
+      }
+    }
 
     if (this._sources && this._sources.length > 0) {
       config.sources = this._sources.slice();

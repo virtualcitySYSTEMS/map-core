@@ -143,18 +143,8 @@ describe('MapboxStyleLayer', () => {
     const config = layer.toJSON();
 
     expect(layer.featureProvider).to.be.instanceOf(CompositeFeatureProvider);
-    const compositeProvider =
-      config.featureProvider as CompositeFeatureProviderOptions;
-
-    expect(compositeProvider.featureProviders).to.have.length(1);
-    expect(compositeProvider.attributeProviders[0]).to.deep.equal(
-      augmentationProvider.toJSON(),
-    );
-    expect(compositeProvider.featureProviders).to.have.length(1);
-    expect(compositeProvider.featureProviders[0]).to.have.property(
-      'type',
-      'MapboxFeatureProvider',
-    );
+    // composites with only attribute providers collapse on serialization
+    expect(config.featureProvider).to.deep.equal(augmentationProvider.toJSON());
     expect(config.excludeLayerFromPicking).to.have.members(['buildings']);
 
     layer.destroy();
@@ -177,6 +167,46 @@ describe('MapboxStyleLayer', () => {
     expect(layer.featureProvider).to.equal(featureProvider);
     expect(config.featureProvider).to.deep.equal(featureProvider.toJSON());
     expect(config.sources).to.have.members(['roads']);
+
+    layer.destroy();
+  });
+
+  it('should keep composite providers when non-mapbox providers remain', async () => {
+    const featureProvider = new TestFeatureProvider({
+      name: 'custom-feature-provider',
+    });
+    const attributeProvider = new TestAttributeProvider(42, {
+      name: 'custom-attribute-provider',
+    });
+    const layer = new MapboxStyleLayer({
+      url: 'http://localhost/style-feature-provider-tojson.json',
+      featureProvider: attributeProvider,
+    });
+
+    await layer.initialize();
+
+    layer.featureProvider = new CompositeFeatureProvider({
+      featureProviders: [
+        featureProvider,
+        new MapboxFeatureProvider({
+          styledMapboxLayerGroup:
+            layer.getImplementationOptions().styledMapboxLayerGroup,
+        }),
+      ],
+      attributeProviders: [attributeProvider],
+    });
+
+    const config = layer.toJSON();
+    const compositeProvider =
+      config.featureProvider as CompositeFeatureProviderOptions;
+
+    expect(compositeProvider.type).to.equal(CompositeFeatureProvider.className);
+    expect(compositeProvider.featureProviders).to.deep.equal([
+      featureProvider.toJSON(),
+    ]);
+    expect(compositeProvider.attributeProviders).to.deep.equal([
+      attributeProvider.toJSON(),
+    ]);
 
     layer.destroy();
   });

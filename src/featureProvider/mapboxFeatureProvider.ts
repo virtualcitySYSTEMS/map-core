@@ -1,8 +1,9 @@
 import { v4 as uuid } from 'uuid';
 import OLMap from 'ol/Map.js';
+import LayerGroup from 'ol/layer/Group.js';
+import VectorTileLayer from 'ol/layer/VectorTile.js';
 import type Feature from 'ol/Feature.js';
 import type { Coordinate } from 'ol/coordinate.js';
-import type LayerGroup from 'ol/layer/Group.js';
 import type RenderFeature from 'ol/render/Feature.js';
 import { toFeature } from 'ol/render/Feature.js';
 import type Layer from '../layer/layer.js';
@@ -31,7 +32,19 @@ export default class MapboxFeatureProvider extends AbstractFeatureProvider {
     super(options);
 
     this._renderMap.setSize([256, 256]);
-    this._renderMap.addLayer(options.styledMapboxLayerGroup);
+    const pickerLayers = options.styledMapboxLayerGroup
+      .getLayersArray()
+      .filter(
+        (layer): layer is VectorTileLayer => layer instanceof VectorTileLayer,
+      )
+      .map(
+        (layer) =>
+          new VectorTileLayer({
+            source: layer.getSource() ?? undefined,
+            style: layer.getStyleFunction() ?? undefined,
+          }),
+      );
+    this._renderMap.addLayer(new LayerGroup({ layers: pickerLayers }));
     this._excludeLayerFromPicking = options.excludeLayerFromPicking;
   }
 

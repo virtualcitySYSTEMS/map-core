@@ -1,3 +1,8 @@
+### 6.3.4
+
+- Fixes a bug in MapboxStyleLayer serialization by avoiding persistent runtime-only MapboxFeatureProvider configs
+- Fixes 2D MapboxStyleLayer picking by isolating picker layer renderers, preventing layers from disappearing on click
+
 ### 6.3.3
 
 - Introduces the `AbstracVcsImageryProvider` class, of which all custom imagery providers are now a child of.
