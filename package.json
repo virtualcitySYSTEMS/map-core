@@ -53,10 +53,10 @@
     "@types/sinon-chai": "^3.2.12",
     "@vcsuite/eslint-config": "^4.0.0",
     "c8": "^10.1.2",
-    "canvas": "^2.11.2",
+    "canvas": "^3.2.3",
     "chai": "^4.4.1",
     "chai-as-promised": "^8.0.1",
-    "jsdom": "^24.1.0",
+    "jsdom": "^26.1.0",
     "jsdom-global": "^3.0.2",
     "madge": "^8.0.0",
     "mocha": "^10.0.0",
@@ -87,6 +87,9 @@
     "rbush": ">=4.0.0",
     "rbush-knn": "^4.0.0",
     "uuid": "^11.1.0"
+  },
+  "overrides": {
+    "serialize-javascript": "^7.0.5"
   },
   "engines": {
     "node": "^20.0.0"
