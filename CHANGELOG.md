@@ -1,3 +1,7 @@
+### 6.3.5
+
+- Fixes a `MapboxStyleLayer` multi-map rendering bug by using per-map styled OpenLayers layer groups
+
 ### 6.3.4
 
 - Fixes a bug in MapboxStyleLayer serialization by avoiding persistent runtime-only MapboxFeatureProvider configs

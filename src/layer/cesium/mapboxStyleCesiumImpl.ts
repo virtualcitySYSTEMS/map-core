@@ -16,7 +16,7 @@ import RasterLayerCesiumImpl from './rasterLayerCesiumImpl.js';
 
 export type MapboxStyleLayerImplementationOptions =
   LayerImplementationOptions & {
-    styledMapboxLayerGroup: LayerGroup;
+    createStyledLayerGroup: () => Promise<LayerGroup>;
     splitDirection: SplitDirection;
     minRenderingLevel?: number;
     maxRenderingLevel?: number;
@@ -27,7 +27,9 @@ class MapboxStyleCesiumImpl extends RasterLayerCesiumImpl {
     return 'MapboxStyleCesiumImpl';
   }
 
-  private _styledMapboxLayerGroup: LayerGroup;
+  private _styledMapboxLayerGroup: LayerGroup | undefined;
+
+  private _createStyledLayerGroup: () => Promise<LayerGroup>;
 
   minRenderingLevel: number | undefined;
 
@@ -46,19 +48,21 @@ class MapboxStyleCesiumImpl extends RasterLayerCesiumImpl {
       tilingSchema: TilingScheme.MERCATOR,
       opacity: 1,
     });
-    this._styledMapboxLayerGroup = options.styledMapboxLayerGroup;
+    this._createStyledLayerGroup = options.createStyledLayerGroup;
     this.minRenderingLevel = options.minRenderingLevel;
     this.maxRenderingLevel = options.maxRenderingLevel;
   }
 
   async activate(): Promise<void> {
     await super.activate();
-    if (this.active) {
+    if (this.active && this._styledMapboxLayerGroup) {
       this._styledMapboxLayerGroup.setVisible(true);
     }
   }
 
-  getCesiumLayer(): Promise<CesiumImageryLayer> {
+  async getCesiumLayer(): Promise<CesiumImageryLayer> {
+    this._styledMapboxLayerGroup = await this._createStyledLayerGroup();
+
     const options: MapboxStyleImageryProviderOptions = {
       headers: this.headers,
       styledMapboxLayerGroup: this._styledMapboxLayerGroup,
@@ -80,14 +84,14 @@ class MapboxStyleCesiumImpl extends RasterLayerCesiumImpl {
         extent[3],
       );
     }
-    return Promise.resolve(
-      // @ts-expect-error mistyped
-      new CesiumImageryLayer(this.imageryProvider, layerOptions),
-    );
+    // @ts-expect-error mistyped
+    return new CesiumImageryLayer(this.imageryProvider, layerOptions);
   }
 
   destroy(): void {
     this.imageryProvider?.destroy();
+    this._styledMapboxLayerGroup?.dispose();
+    this._styledMapboxLayerGroup = undefined;
     super.destroy();
   }
 }

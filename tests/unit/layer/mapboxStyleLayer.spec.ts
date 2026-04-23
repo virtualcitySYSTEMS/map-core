@@ -78,7 +78,9 @@ describe('MapboxStyleLayer', () => {
 
     await layer.initialize();
 
-    const group = layer.getImplementationOptions().styledMapboxLayerGroup;
+    const group = await layer
+      .getImplementationOptions()
+      .createStyledLayerGroup();
     const layers = group.getLayersArray();
 
     expect(layers).to.have.length(1);
@@ -189,8 +191,8 @@ describe('MapboxStyleLayer', () => {
       featureProviders: [
         featureProvider,
         new MapboxFeatureProvider({
-          styledMapboxLayerGroup:
-            layer.getImplementationOptions().styledMapboxLayerGroup,
+          createStyledLayerGroup:
+            layer.getImplementationOptions().createStyledLayerGroup,
         }),
       ],
       attributeProviders: [attributeProvider],

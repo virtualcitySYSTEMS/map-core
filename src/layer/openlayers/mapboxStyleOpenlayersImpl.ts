@@ -12,7 +12,9 @@ class MapboxVectorTileOpenlayersImpl extends LayerOpenlayersImpl {
     return 'MapboxVectorTileOpenlayersImpl';
   }
 
-  private _styledMapboxLayerGroup: LayerGroup;
+  private _styledMapboxLayerGroup: LayerGroup | undefined;
+
+  private _createStyledLayerGroup: () => Promise<LayerGroup>;
 
   private _removeChildLayerListeners: (() => void) | null = null;
 
@@ -21,10 +23,20 @@ class MapboxVectorTileOpenlayersImpl extends LayerOpenlayersImpl {
     options: MapboxStyleLayerImplementationOptions,
   ) {
     super(map, options);
-    this._styledMapboxLayerGroup = options.styledMapboxLayerGroup;
+    this._createStyledLayerGroup = options.createStyledLayerGroup;
+  }
+
+  async initialize(): Promise<void> {
+    if (!this.initialized) {
+      this._styledMapboxLayerGroup = await this._createStyledLayerGroup();
+    }
+    await super.initialize();
   }
 
   getOLLayer(): OLLayerLike {
+    if (!this._styledMapboxLayerGroup) {
+      throw new Error('Mapbox layer group must be initialized before use');
+    }
     return this._styledMapboxLayerGroup as OLLayerLike;
   }
 
@@ -33,6 +45,10 @@ class MapboxVectorTileOpenlayersImpl extends LayerOpenlayersImpl {
     if (this.initialized) {
       this._removeChildLayerListeners?.();
       this._removeChildLayerListeners = null;
+
+      if (!this._styledMapboxLayerGroup) {
+        return;
+      }
 
       if (splitDirection !== SplitDirection.NONE) {
         const childLayers = this._styledMapboxLayerGroup.getLayersArray();
@@ -61,6 +77,8 @@ class MapboxVectorTileOpenlayersImpl extends LayerOpenlayersImpl {
   destroy(): void {
     this._removeChildLayerListeners?.();
     this._removeChildLayerListeners = null;
+    this._styledMapboxLayerGroup?.dispose();
+    this._styledMapboxLayerGroup = undefined;
     super.destroy();
   }
 }

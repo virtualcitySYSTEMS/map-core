@@ -18,7 +18,8 @@ describe('MapboxFeatureProvider', () => {
 
     it('should exclude configured mvt layers from picking', async () => {
       const provider = new MapboxFeatureProvider({
-        styledMapboxLayerGroup: new LayerGroup(),
+        createStyledLayerGroup: (): Promise<LayerGroup> =>
+          Promise.resolve(new LayerGroup()),
         excludeLayerFromPicking: ['buildings'],
       });
       const includedFeature = new RenderFeature(
@@ -60,7 +61,8 @@ describe('MapboxFeatureProvider', () => {
 
     it('should keep all layers when no exclude list is configured', async () => {
       const provider = new MapboxFeatureProvider({
-        styledMapboxLayerGroup: new LayerGroup(),
+        createStyledLayerGroup: (): Promise<LayerGroup> =>
+          Promise.resolve(new LayerGroup()),
       });
       const featureA = new RenderFeature(
         'Point',

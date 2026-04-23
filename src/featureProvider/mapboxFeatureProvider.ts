@@ -1,7 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import OLMap from 'ol/Map.js';
-import LayerGroup from 'ol/layer/Group.js';
-import VectorTileLayer from 'ol/layer/VectorTile.js';
+import type LayerGroup from 'ol/layer/Group.js';
 import type Feature from 'ol/Feature.js';
 import type { Coordinate } from 'ol/coordinate.js';
 import type RenderFeature from 'ol/render/Feature.js';
@@ -14,7 +13,7 @@ import AbstractFeatureProvider, {
 import { isProvidedFeature } from './featureProviderSymbols.js';
 
 export type MapboxFeatureProviderOptions = AbstractFeatureProviderOptions & {
-  styledMapboxLayerGroup: LayerGroup;
+  createStyledLayerGroup: () => Promise<LayerGroup>;
   excludeLayerFromPicking?: string[];
 };
 
@@ -24,27 +23,27 @@ export default class MapboxFeatureProvider extends AbstractFeatureProvider {
   }
 
   protected _inRenderingOrder = true;
-
   private _renderMap = new OLMap({ target: document.createElement('div') });
+  private _styledLayerGroup?: LayerGroup;
   private _excludeLayerFromPicking?: string[];
 
   constructor(options: MapboxFeatureProviderOptions) {
     super(options);
 
     this._renderMap.setSize([256, 256]);
-    const pickerLayers = options.styledMapboxLayerGroup
-      .getLayersArray()
-      .filter(
-        (layer): layer is VectorTileLayer => layer instanceof VectorTileLayer,
-      )
-      .map(
-        (layer) =>
-          new VectorTileLayer({
-            source: layer.getSource() ?? undefined,
-            style: layer.getStyleFunction() ?? undefined,
-          }),
-      );
-    this._renderMap.addLayer(new LayerGroup({ layers: pickerLayers }));
+    options
+      .createStyledLayerGroup()
+      .then((layerGroup) => {
+        if (this.isDestroyed) {
+          layerGroup.dispose();
+          return;
+        }
+        this._styledLayerGroup = layerGroup;
+        this._renderMap.addLayer(layerGroup);
+      })
+      .catch((error: unknown) => {
+        this.getLogger().error('Error creating styled layer group', error);
+      });
     this._excludeLayerFromPicking = options.excludeLayerFromPicking;
   }
 
@@ -80,6 +79,11 @@ export default class MapboxFeatureProvider extends AbstractFeatureProvider {
   }
 
   destroy(): void {
+    if (this._styledLayerGroup) {
+      this._renderMap.removeLayer(this._styledLayerGroup);
+      this._styledLayerGroup.dispose();
+      this._styledLayerGroup = undefined;
+    }
     this._renderMap.setTarget(undefined);
     this._renderMap.dispose();
     super.destroy();

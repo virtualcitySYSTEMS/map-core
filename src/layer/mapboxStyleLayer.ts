@@ -1,10 +1,7 @@
 import { SplitDirection } from '@vcmap-cesium/engine';
 import { parseInteger } from '@vcsuite/parsers';
 import { is } from '@vcsuite/check';
-import Collection from 'ol/Collection.js';
-import LayerGroup from 'ol/layer/Group.js';
-import type BaseLayer from 'ol/layer/Base.js';
-import { apply } from 'ol-mapbox-style';
+import type LayerGroup from 'ol/layer/Group.js';
 import { layerClassRegistry } from '../classRegistry.js';
 import AbstractAttributeProvider from '../featureProvider/abstractAttributeProvider.js';
 import CompositeFeatureProvider, {
@@ -26,8 +23,8 @@ import MapboxVectorRasterTileCesiumImpl, {
 import Layer from './layer.js';
 import type { LayerOptions, SplitLayer } from './layer.js';
 import type LayerImplementation from './layerImplementation.js';
+import { createStyledMapboxLayerGroup } from './mapboxStyleLayerHelpers.js';
 import MapboxVectorTileOpenlayersImpl from './openlayers/mapboxStyleOpenlayersImpl.js';
-import { allowPicking, vcsLayerName } from './layerSymbols.js';
 
 export type MapboxStyleOptions = LayerOptions & {
   /** The sources from the Mapbox Style to use. If not provided, all sources from the style will be used. */
@@ -72,10 +69,10 @@ class MapboxStyleLayer
     OpenlayersMap.className,
     PanoramaMap.className,
   ];
-  private _mapboxLayerGroup: LayerGroup;
   private _sources?: string[];
   private _excludeLayerFromPicking?: string[];
   private _splitDirection: SplitDirection = SplitDirection.NONE;
+  private _boundCreateStyledLayerGroup: () => Promise<LayerGroup>;
   splitDirectionChanged = new VcsEvent<SplitDirection>();
   /**
    * defines the visible level in the rendered map, maps to Openlayers `minZoom` and Cesium `minimiumTerrainLevel`.
@@ -108,40 +105,24 @@ class MapboxStyleLayer
       options.maxRenderingLevel,
       defaultOptions.maxRenderingLevel,
     );
+    this._boundCreateStyledLayerGroup = this._createStyledLayerGroup.bind(this);
+  }
 
-    this._mapboxLayerGroup = new LayerGroup({
-      minZoom: this.minRenderingLevel,
-      maxZoom: this.maxRenderingLevel,
+  private _createStyledLayerGroup(): Promise<LayerGroup> {
+    return createStyledMapboxLayerGroup({
+      url: this.url,
+      name: this.name,
+      allowPicking: this.allowPicking,
+      sources: this._sources,
+      minRenderingLevel: this.minRenderingLevel,
+      maxRenderingLevel: this.maxRenderingLevel,
     });
   }
 
   async initialize(): Promise<void> {
-    if (!this.initialized) {
-      await apply(this._mapboxLayerGroup, this.url);
-
-      const layers = this._mapboxLayerGroup.getLayersArray();
-      layers.forEach((layer) => {
-        layer[vcsLayerName] = this.name;
-        layer[allowPicking] = super.allowPicking;
-      });
-
-      if (this._sources && this._sources.length > 0) {
-        const filteredCollection = new Collection<BaseLayer>();
-        layers
-          .filter((layer) =>
-            this._sources!.includes(layer.get('mapbox-source') as string),
-          )
-          .forEach((layer) => {
-            filteredCollection.push(layer);
-          });
-
-        this._mapboxLayerGroup.setLayers(filteredCollection);
-      }
-    }
-
     if (!this.featureProvider) {
       this.featureProvider = new MapboxFeatureProvider({
-        styledMapboxLayerGroup: this._mapboxLayerGroup,
+        createStyledLayerGroup: this._boundCreateStyledLayerGroup,
         excludeLayerFromPicking: this._excludeLayerFromPicking,
       });
     } else if (is(this.featureProvider, AbstractAttributeProvider)) {
@@ -149,7 +130,7 @@ class MapboxStyleLayer
         attributeProviders: [this.featureProvider],
         featureProviders: [
           new MapboxFeatureProvider({
-            styledMapboxLayerGroup: this._mapboxLayerGroup,
+            createStyledLayerGroup: this._boundCreateStyledLayerGroup,
             excludeLayerFromPicking: this._excludeLayerFromPicking,
           }),
         ],
@@ -176,7 +157,7 @@ class MapboxStyleLayer
   getImplementationOptions(): MapboxStyleLayerImplementationOptions {
     return {
       ...super.getImplementationOptions(),
-      styledMapboxLayerGroup: this._mapboxLayerGroup,
+      createStyledLayerGroup: this._boundCreateStyledLayerGroup,
       splitDirection: this._splitDirection,
       minRenderingLevel: this.minRenderingLevel,
       maxRenderingLevel: this.maxRenderingLevel,
@@ -274,7 +255,6 @@ class MapboxStyleLayer
 
   destroy(): void {
     this.splitDirectionChanged.destroy();
-    this._mapboxLayerGroup.dispose();
     this.featureProvider?.destroy();
     super.destroy();
   }
