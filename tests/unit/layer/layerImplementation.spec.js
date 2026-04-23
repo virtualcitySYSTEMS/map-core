@@ -57,6 +57,25 @@ describe('LayerImplementation', () => {
     });
 
     describe('with an active map', () => {
+      it('should initialize once while loading on concurrent activate calls', async () => {
+        let resolveInitialize;
+        let initializeCalls = 0;
+        implementation.initialize = () => {
+          initializeCalls += 1;
+          return new Promise((resolve) => {
+            resolveInitialize = resolve;
+          });
+        };
+
+        const p1 = implementation.activate();
+        const p2 = implementation.activate();
+
+        expect(initializeCalls).to.equal(1);
+
+        resolveInitialize();
+        await Promise.all([p1, p2]);
+      });
+
       it('should initialize the implementation', async () => {
         await implementation.activate();
         expect(implementation.initialized).to.be.true;
@@ -100,6 +119,26 @@ describe('LayerImplementation', () => {
         implementation.deactivate();
         await promise;
         expect(implementation.active).to.be.false;
+      });
+
+      it('should keep on/off/on activate calls synchronized', async () => {
+        let resolveInitialize;
+        let initializeCalls = 0;
+        implementation.initialize = () => {
+          initializeCalls += 1;
+          return new Promise((resolve) => {
+            resolveInitialize = resolve;
+          });
+        };
+
+        const firstActivation = implementation.activate();
+        implementation.deactivate();
+        const secondActivation = implementation.activate();
+
+        expect(initializeCalls).to.equal(1);
+
+        resolveInitialize();
+        await Promise.all([firstActivation, secondActivation]);
       });
     });
   });

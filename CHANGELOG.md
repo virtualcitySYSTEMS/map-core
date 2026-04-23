@@ -1,6 +1,7 @@
 ### 6.3.5
 
 - Fixes a `MapboxStyleLayer` multi-map rendering bug by using per-map styled OpenLayers layer groups
+- Fixes repeated layer implementation initialization on rapid activation
 
 ### 6.3.4
 

@@ -19,6 +19,8 @@ class LayerImplementation<M extends VcsMap> extends VcsObject {
 
   private _initialized = false;
 
+  private _loadingPromise: Promise<void> | null = null;
+
   headers?: Record<string, string>;
 
   constructor(map: M, options: LayerImplementationOptions) {
@@ -64,12 +66,30 @@ class LayerImplementation<M extends VcsMap> extends VcsObject {
    * Once the promise resolves, the layer can still be inactive, if deactivate was called while initializing the layer.
    */
   async activate(): Promise<void> {
-    if (this.map.active && !this.active) {
-      this._state = LayerState.LOADING;
-      await this.initialize();
-      if (this.loading) {
-        this._state = LayerState.ACTIVE;
-      }
+    if (this._loadingPromise) {
+      await this._loadingPromise;
+      return;
+    }
+
+    if (this.map.active && this._state === LayerState.INACTIVE) {
+      this._loadingPromise = (async (): Promise<void> => {
+        this._state = LayerState.LOADING;
+        await this.initialize();
+        if (this.loading) {
+          this._state = LayerState.ACTIVE;
+        }
+      })()
+        .catch((err: unknown) => {
+          if (this.loading) {
+            this._state = LayerState.INACTIVE;
+          }
+          return Promise.reject(err as Error);
+        })
+        .finally(() => {
+          this._loadingPromise = null;
+        });
+
+      await this._loadingPromise;
     }
   }
 
