@@ -1,6 +1,7 @@
 ### 6.3.6
 
 - Adds support for I3SLayer to ClippingObject
+- Fixes a bug in `CesiumTilesetCesiumImpl` which caused highlighted features to loose the highlighting when new features where highlighted
 
 ### 6.3.5
 

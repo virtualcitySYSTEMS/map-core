@@ -731,6 +731,62 @@ describe('CesiumTilesetCesiumImpl', () => {
         expect(feature.color).to.equal(highlightStyle.cesiumFillColor);
       });
     });
+
+    describe('highlighting and unhighlighting multiple features sequentially', () => {
+      let feature2;
+      let multiContent;
+      let highlightStyle2;
+
+      beforeEach(() => {
+        feature2 = createDummyCesium3DTileFeature({ id: 'test2' });
+        highlightStyle2 = new VectorStyleItem({
+          fill: { color: [255, 0, 0, 1] },
+        });
+        multiContent = {
+          featuresLength: 2,
+          getFeature(index) {
+            return index === 0 ? feature : feature2;
+          },
+        };
+        const originalColor = feature.color.clone();
+        sandbox
+          .stub(cesiumTilesetCesium.cesium3DTileset, 'makeStyleDirty')
+          .callsFake(() => {
+            feature.color = originalColor;
+          });
+      });
+
+      it('should retain the highlight on a previously highlighted feature when highlighting a new feature', () => {
+        cesiumTilesetCesium.featureVisibility.highlight({
+          test: highlightStyle,
+        });
+        cesiumTilesetCesium.styleContent(multiContent);
+        expect(feature.color).to.equal(highlightStyle.cesiumFillColor);
+
+        clock.tick(1);
+        cesiumTilesetCesium.featureVisibility.highlight({
+          test2: highlightStyle2,
+        });
+
+        cesiumTilesetCesium.styleContent(multiContent);
+        expect(feature.color).to.equal(highlightStyle.cesiumFillColor);
+        expect(feature2.color).to.equal(highlightStyle2.cesiumFillColor);
+      });
+
+      it('should retain the highlight on a previously highlighted feature when unhighlighting another feature', () => {
+        cesiumTilesetCesium.featureVisibility.highlight({
+          test: highlightStyle,
+          test2: highlightStyle2,
+        });
+        cesiumTilesetCesium.styleContent(multiContent);
+        expect(feature.color).to.equal(highlightStyle.cesiumFillColor);
+        expect(feature2.color).to.equal(highlightStyle2.cesiumFillColor);
+
+        cesiumTilesetCesium.featureVisibility.unHighlight(['test2']);
+        cesiumTilesetCesium.styleContent(multiContent);
+        expect(feature.color).to.equal(highlightStyle.cesiumFillColor);
+      });
+    });
   });
 
   describe('augmenting feature on load', () => {

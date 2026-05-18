@@ -97,13 +97,7 @@ export function hideFeature(feature: HighlightableFeature): void {
  */
 export function cacheOriginalStyle(feature: HighlightableFeature): void {
   if (!Reflect.has(feature, originalStyle)) {
-    if (
-      (feature instanceof Cesium3DTileFeature ||
-        feature instanceof Cesium3DTilePointFeature) &&
-      featureExists(feature)
-    ) {
-      feature[originalStyle] = feature.color.clone();
-    } else if (feature instanceof Feature) {
+    if (feature instanceof Feature) {
       feature[originalStyle] = feature.getStyle();
     }
   }
@@ -111,18 +105,10 @@ export function cacheOriginalStyle(feature: HighlightableFeature): void {
 
 export function resetOriginalStyle(feature: HighlightableFeature): void {
   if (!(feature[globalHidden] || feature[hidden] || feature[highlighted])) {
-    const style = feature[originalStyle];
-    if (
-      style &&
-      (feature instanceof Cesium3DTileFeature ||
-        feature instanceof Cesium3DTilePointFeature) &&
-      featureExists(feature)
-    ) {
-      feature.color = style as Color;
-    } else if (feature instanceof Feature) {
+    if (feature instanceof Feature) {
       feature.changed();
+      delete feature[originalStyle];
     }
-    delete feature[originalStyle];
   }
 }
 
@@ -146,8 +132,10 @@ export function highlightFeature(feature: HighlightableFeature): void {
  * Updates the cached original style
  */
 export function updateOriginalStyle(feature: HighlightableFeature): void {
-  delete feature[originalStyle];
-  cacheOriginalStyle(feature);
+  if (feature instanceof Feature) {
+    delete feature[originalStyle];
+    cacheOriginalStyle(feature);
+  }
   if (feature[hidden] || feature[globalHidden]) {
     hideFeature(feature);
   } else if (feature[highlighted]) {

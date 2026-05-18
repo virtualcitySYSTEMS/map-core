@@ -24,10 +24,9 @@ import { allowPicking, vcsLayerName } from '../layerSymbols.js';
 import type { HighlightableFeature } from '../featureVisibility.js';
 import type FeatureVisibility from '../featureVisibility.js';
 import {
+  FeatureVisibilityAction,
   hideFeature,
   highlightFeature,
-  originalStyle,
-  updateOriginalStyle,
 } from '../featureVisibility.js';
 import Projection from '../../util/projection.js';
 import { circleFromCenterRadius } from '../../util/geometryHelpers.js';
@@ -128,36 +127,18 @@ export function createCesiumStylingContext(
         const feature = content.getFeature(batchId);
         if (feature) {
           const id = String(feature.getId());
-          let shouldUpdateOriginalStyle = true;
-          if (
-            impl.featureVisibility.highlightedObjects[id] &&
-            !impl.featureVisibility.hasHighlightFeature(id, feature)
-          ) {
-            impl.featureVisibility.addHighlightFeature(id, feature);
+          if (impl.featureVisibility.highlightedObjects[id]) {
+            if (!impl.featureVisibility.hasHighlightFeature(id, feature)) {
+              impl.featureVisibility.addHighlightFeature(id, feature);
+            }
             featureOverride.highlight.push([id, feature]);
-            shouldUpdateOriginalStyle = false;
-          } else if (
-            impl.featureVisibility.hasHighlightFeature(id, feature) &&
-            styleHasChanged &&
-            feature[originalStyle]
-          ) {
-            // Feature is already highlighted and style has changed
-            // Clear the old cached style - when unhighlighted, we'll force a tileset style update
-            delete feature[originalStyle];
-            featureOverride.highlight.push([id, feature]);
-            shouldUpdateOriginalStyle = false;
           }
 
           if (impl.featureVisibility.hiddenObjects[id]) {
             if (!impl.featureVisibility.hasHiddenFeature(id, feature)) {
               impl.featureVisibility.addHiddenFeature(id, feature);
-              featureOverride.hideLocal.push([id, feature]);
-            } else if (styleHasChanged && feature[originalStyle]) {
-              // Feature is already hidden and style has changed, clear original style
-              // so it will be re-cached with the new style when shown
-              delete feature[originalStyle];
             }
-            shouldUpdateOriginalStyle = false;
+            featureOverride.hideLocal.push([id, feature]);
           }
 
           if (impl.globalHider?.hiddenObjects[id]) {
@@ -165,19 +146,6 @@ export function createCesiumStylingContext(
               impl.globalHider?.addFeature(id, feature);
             }
             featureOverride.hideGlobal.push([id, feature]);
-            if (styleHasChanged && feature[originalStyle]) {
-              // Feature is globally hidden and style has changed, clear original style
-              delete feature[originalStyle];
-            }
-            shouldUpdateOriginalStyle = false;
-          }
-
-          if (
-            shouldUpdateOriginalStyle &&
-            styleHasChanged &&
-            feature[originalStyle] // can only be a color for cesium, so no check for undefined required
-          ) {
-            updateOriginalStyle(feature);
           }
         }
       }
@@ -207,6 +175,7 @@ export function createCesiumStylingContext(
         };
       }
       content[cesiumTilesetLastUpdated] = Date.now();
+      content[updateFeatureOverride]?.();
     } else {
       content[updateFeatureOverride]?.();
     }
@@ -279,8 +248,10 @@ export function createCesiumStylingContext(
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   if (impl instanceof CesiumTilesetCesiumImpl) {
     onFeatureVisibilityChangeRemover =
-      impl.featureVisibility.changed.addEventListener(() => {
-        impl.cesium3DTileset?.makeStyleDirty();
+      impl.featureVisibility.changed.addEventListener((event) => {
+        if (event.action === FeatureVisibilityAction.UNHIGHLIGHT) {
+          impl.cesium3DTileset?.makeStyleDirty();
+        }
       });
   } else {
     onFeatureVisibilityChangeRemover =
