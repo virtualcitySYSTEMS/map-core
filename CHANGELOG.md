@@ -1,3 +1,7 @@
+### 6.3.6
+
+- Adds support for I3SLayer to ClippingObject
+
 ### 6.3.5
 
 - Fixes a `MapboxStyleLayer` multi-map rendering bug by using per-map styled OpenLayers layer groups

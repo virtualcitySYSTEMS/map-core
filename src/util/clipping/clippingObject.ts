@@ -5,6 +5,7 @@ import {
   type CustomDataSource,
   type Entity,
   type Globe,
+  type I3SDataProvider,
   type Scene,
 } from '@vcmap-cesium/engine';
 
@@ -18,6 +19,7 @@ import FeatureStoreLayer from '../../layer/featureStoreLayer.js';
 import type VcsMap from '../../map/vcsMap.js';
 import type Layer from '../../layer/layer.js';
 import CesiumTilesetLayer from '../../layer/cesiumTilesetLayer.js';
+import I3SLayer from '../../layer/i3sLayer.js';
 
 export type ClippingObjectEntityOption = {
   layerName: string;
@@ -84,7 +86,9 @@ class ClippingObject {
    */
   clippingPlaneUpdated = new VcsEvent<void>();
 
-  private _cachedLayers = new Set<FeatureStoreLayer | CesiumTilesetLayer>();
+  private _cachedLayers = new Set<
+    FeatureStoreLayer | CesiumTilesetLayer | I3SLayer
+  >();
 
   private _activeMap: VcsMap | null = null;
 
@@ -165,7 +169,17 @@ class ClippingObject {
         if (layer.active) {
           const visualisations = map.getVisualizationsForLayer(layer);
           const tilesets = visualisations
-            ? [...visualisations].filter((v) => v instanceof Cesium3DTileset)
+            ? [...visualisations].flatMap((v) => {
+                if (v instanceof Cesium3DTileset) {
+                  return [v];
+                }
+                return (v as I3SDataProvider).layers
+                  ?.map((i3sLayer) => i3sLayer.tileset)
+                  .filter(
+                    (tileset): tileset is Cesium3DTileset =>
+                      tileset instanceof Cesium3DTileset,
+                  );
+              })
             : [];
 
           if (tilesets.length > 0) {
@@ -231,7 +245,8 @@ class ClippingObject {
     } else if (
       this.layerNames.includes(layer.name) &&
       (layer instanceof FeatureStoreLayer ||
-        layer instanceof CesiumTilesetLayer)
+        layer instanceof CesiumTilesetLayer ||
+        layer instanceof I3SLayer)
     ) {
       if (layer.active) {
         this._cachedLayers.add(layer);
