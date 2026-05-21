@@ -1,5 +1,12 @@
+import type { GeoTIFF } from 'geotiff';
+import { Cartesian3, HeadingPitchRoll, Matrix4 } from '@vcmap-cesium/engine';
 import { expect } from 'chai';
-import Viewpoint from '../../../src/util/viewpoint.js';
+import Viewpoint, {
+  getViewpointForPanoramaImage,
+} from '../../../src/util/viewpoint.js';
+import type { PanoramaImage } from '../../../src/panorama/panoramaImage.js';
+import type { PanoramaTileProvider } from '../../../src/panorama/panoramaTileProvider.js';
+import { arrayCloseTo } from '../helpers/helpers.js';
 
 describe('Viewpoint', () => {
   describe('isValid', () => {
@@ -169,6 +176,105 @@ describe('Viewpoint', () => {
       vp2.cameraPosition![0] += 0.01;
       expect(vp1.equals(vp2, 0.01)).to.be.false;
       expect(vp1.equals(vp2, 0.001)).to.be.false;
+    });
+  });
+
+  describe('getting the viewpoint for a panorama image', () => {
+    let panoramaImage: PanoramaImage;
+    let position: Cartesian3;
+    let orientation: HeadingPitchRoll;
+
+    beforeEach(() => {
+      position = Cartesian3.fromDegrees(0, 0, 0);
+      orientation = HeadingPitchRoll.fromDegrees(0, 0, 0);
+
+      panoramaImage = {
+        hasDepth: false,
+        hasIntensity: false,
+        image: {} as unknown as GeoTIFF,
+        invModelMatrix: Matrix4.IDENTITY,
+        maxDepth: 0,
+        maxLevel: 0,
+        minLevel: 0,
+        modelMatrix: Matrix4.IDENTITY,
+        name: '',
+        orientation,
+        position,
+        tileProvider: {} as unknown as PanoramaTileProvider,
+        tileSize: [512, 512],
+        up: Cartesian3.UNIT_Z,
+        destroy(): void {},
+        equals(): boolean {
+          return false;
+        },
+        getPositionAtImageCoordinate(): Promise<Cartesian3 | undefined> {
+          return Promise.resolve(undefined);
+        },
+        getPositionAtImageCoordinateMostDetailed(): Promise<
+          Cartesian3 | undefined
+        > {
+          return Promise.resolve(undefined);
+        },
+      };
+    });
+
+    it('should get the viewpoint from the image', () => {
+      const vp = getViewpointForPanoramaImage(panoramaImage);
+      expect(vp)
+        .to.have.property('cameraPosition')
+        .which.is.an('array')
+        .and.has.members([0, 0, 0]);
+
+      expect(vp).to.have.property('heading', 0);
+      expect(vp).to.have.property('pitch', 0);
+      expect(vp).to.have.property('roll', 0);
+    });
+
+    it('should ensure the correct position is used for the camera', () => {
+      Cartesian3.fromDegrees(10, 20, 25, undefined, position);
+      const vp = getViewpointForPanoramaImage(panoramaImage);
+      expect(vp).to.have.property('cameraPosition').which.is.an('array');
+      arrayCloseTo(vp.cameraPosition!, [10, 20, 25], 0.0001);
+    });
+
+    it('should ensure the correct orientation is used for the camera', () => {
+      HeadingPitchRoll.fromDegrees(10, 20, 25, orientation);
+      const vp = getViewpointForPanoramaImage(panoramaImage);
+      expect(vp).to.have.property('heading', 10);
+      expect(vp).to.have.property('pitch', 20);
+      expect(vp).to.have.property('roll', 25);
+    });
+
+    it('should handle pitch > 180', () => {
+      HeadingPitchRoll.fromDegrees(10, 200, 25, orientation);
+      const vp = getViewpointForPanoramaImage(panoramaImage);
+      expect(vp).to.have.property('heading', 10);
+      expect(vp).to.have.property('pitch', -160);
+      expect(vp).to.have.property('roll', 25);
+    });
+
+    it('should handle pitch < -180', () => {
+      HeadingPitchRoll.fromDegrees(10, -200, 25, orientation);
+      const vp = getViewpointForPanoramaImage(panoramaImage);
+      expect(vp).to.have.property('heading', 10);
+      expect(vp).to.have.property('pitch', 160);
+      expect(vp).to.have.property('roll', 25);
+    });
+
+    it('should handle roll > 180', () => {
+      HeadingPitchRoll.fromDegrees(10, 20, 200, orientation);
+      const vp = getViewpointForPanoramaImage(panoramaImage);
+      expect(vp).to.have.property('heading', 10);
+      expect(vp).to.have.property('pitch', 20);
+      expect(vp).to.have.property('roll', -160);
+    });
+
+    it('should handle roll < -180', () => {
+      HeadingPitchRoll.fromDegrees(10, 20, -200, orientation);
+      const vp = getViewpointForPanoramaImage(panoramaImage);
+      expect(vp).to.have.property('heading', 10);
+      expect(vp).to.have.property('pitch', 20);
+      expect(vp).to.have.property('roll', 160);
     });
   });
 });

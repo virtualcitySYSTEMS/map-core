@@ -41,6 +41,10 @@ export type PanoramaImageView = {
    */
   defaultFov: number;
   /**
+   * The heading of the current view
+   */
+  heading: number;
+  /**
    * The primitive collection that contains the panorama tiles.
    */
   readonly tilePrimitiveCollection: PanoramaTilePrimitiveCollection;
@@ -449,6 +453,19 @@ export function createPanoramaImageView(
       if (currentView) {
         currentView.suspendTileLoading = value;
       }
+    },
+    get heading(): number {
+      return scene.camera.heading;
+    },
+    set heading(newHeading: number) {
+      const { camera } = scene;
+      camera.setView({
+        orientation: {
+          heading: newHeading,
+          pitch: camera.pitch,
+          roll: camera.roll,
+        },
+      });
     },
     get tilePrimitiveCollection(): PanoramaTilePrimitiveCollection {
       return primitiveCollection;

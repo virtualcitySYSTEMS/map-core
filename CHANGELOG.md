@@ -1,3 +1,7 @@
+### 6.3.7
+
+- Fixes an issue, where the heading applied in panorama would not be the expected value.
+
 ### 6.3.6
 
 - Adds support for I3SLayer to ClippingObject
