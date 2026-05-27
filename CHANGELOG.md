@@ -1,6 +1,8 @@
 ### 6.3.7
 
 - Fixes an issue, where the heading applied in panorama would not be the expected value.
+- More natural zoom handling in panorama.
+- Pinch zoom enabled in panorama.
 
 ### 6.3.6
 
