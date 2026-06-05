@@ -365,6 +365,18 @@ describe('MapCollection', () => {
         expect(newVp!.distance).to.equal(200);
       });
 
+      it('should reset the prvious maps roll', async () => {
+        cesiumMap.getScene()!.camera.setView({
+          orientation: { heading: 0, pitch: 0, roll: Math.PI / 2 },
+        });
+        await mapCollection.setActiveMap(openlayers.name);
+        const newVp = await openlayers.getViewpoint();
+        newVp!.pitch = -45;
+        expect(newVp!.groundPosition).to.have.members([0, 0]);
+        expect(newVp!.distance).to.equal(200);
+        expect(newVp!.roll).to.equal(0);
+      });
+
       it('should no longer listen to post render events from the previous map', async () => {
         await mapCollection.setActiveMap(openlayers.name);
         const spy = getVcsEventSpy(mapCollection.postRender, sandbox);
@@ -528,11 +540,24 @@ describe('MapCollection', () => {
       expect(panoramaMap.currentPanoramaImage).to.equal(panoramaImage);
     });
 
-    it('should go to the viewpoint of the panorama image, if the current map is a cesium map', async () => {
-      await mapCollection.setActiveMap(cesiumMap.name);
-      const gotoVpSpy = sinon.spy(cesiumMap, 'gotoViewpoint');
-      await mapCollection.activatePanoramaMap(panoramaMap, panoramaImage);
-      expect(gotoVpSpy).to.have.been.calledOnce;
+    describe('if the current map is a cesium map', () => {
+      beforeEach(async () => {
+        await mapCollection.setActiveMap(cesiumMap.name);
+      });
+
+      it('should go to the viewpoint of the panorama image, if the current map is a cesium map', async () => {
+        const gotoVpSpy = sinon.spy(cesiumMap, 'gotoViewpoint');
+        await mapCollection.activatePanoramaMap(panoramaMap, panoramaImage);
+        expect(gotoVpSpy).to.have.been.calledOnce;
+      });
+
+      it('should set the heading of the current map on the panorama view', async () => {
+        cesiumMap.getScene()!.camera.setView({
+          orientation: { heading: Math.PI, pitch: 0, roll: 0 },
+        });
+        await mapCollection.activatePanoramaMap(panoramaMap, panoramaImage);
+        expect(panoramaMap.panoramaView).to.have.property('heading', Math.PI);
+      });
     });
   });
 

@@ -1,6 +1,7 @@
 import { check, maybe, oneOf } from '@vcsuite/check';
 import { getLogger } from '@vcsuite/logger';
 import { v4 as uuidv4 } from 'uuid';
+import { Math as CesiumMath } from '@vcmap-cesium/engine';
 import VcsEvent from '../vcsEvent.js';
 import Collection from './collection.js';
 import EventHandler from '../interaction/eventHandler.js';
@@ -409,8 +410,10 @@ class MapCollection extends Collection<VcsMap> {
       return;
     }
 
+    const viewpoint = getViewpointForPanoramaImage(panoramaImage);
     if (this._activeMap?.className === 'CesiumMap') {
-      const viewpoint = getViewpointForPanoramaImage(panoramaImage);
+      viewpoint.heading =
+        this._activeMap.getViewpointSync()?.heading ?? viewpoint.heading;
       viewpoint.animate = true;
       viewpoint.duration = 1;
       await this._activeMap.gotoViewpoint(viewpoint);
@@ -418,6 +421,9 @@ class MapCollection extends Collection<VcsMap> {
 
     map.setCurrentImage(panoramaImage);
     await this._setActiveMap(map);
+    if (map.initialized) {
+      map.panoramaView.heading = CesiumMath.toRadians(viewpoint.heading);
+    }
   }
 
   /**
@@ -473,9 +479,15 @@ class MapCollection extends Collection<VcsMap> {
 
     let viewpoint;
     if (this._activeMap || this._cachedViewpoint) {
-      viewpoint = this._activeMap
-        ? await this._activeMap.getViewpoint()
-        : this._cachedViewpoint;
+      if (this._activeMap) {
+        viewpoint = await this._activeMap.getViewpoint();
+        if (viewpoint) {
+          // reset panorama roll
+          viewpoint.roll = 0;
+        }
+      } else {
+        viewpoint = this._cachedViewpoint;
+      }
 
       let canShow = false;
       if (map.className === 'PanoramaMap' && viewpoint) {

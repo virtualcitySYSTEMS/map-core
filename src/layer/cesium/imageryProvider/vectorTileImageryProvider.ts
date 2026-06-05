@@ -1,25 +1,20 @@
-import {
-  Event as CesiumEvent,
-  Rectangle,
-  Math as CesiumMath,
-  type Cartographic,
-  type TilingScheme,
-} from '@vcmap-cesium/engine';
+import { type Cartographic } from '@vcmap-cesium/engine';
+import { getLogger } from '@vcsuite/logger';
 import {
   compose,
   create as createTransform,
   scale as scaleTransform,
 } from 'ol/transform.js';
-import type { Extent } from 'ol/extent.js';
+import { type Extent, getCenter } from 'ol/extent.js';
 import type { Coordinate } from 'ol/coordinate.js';
 import type { Size } from 'ol/size.js';
 import type { Feature } from 'ol/index.js';
 // eslint-disable-next-line import/no-named-default
 import type { default as Style, StyleFunction } from 'ol/style/Style.js';
-import type TileProvider from '../tileProvider/tileProvider.js';
-import { wgs84ToMercatorTransformer } from '../../util/projection.js';
-import CanvasTileRenderer from '../../ol/render/canvas/canvasTileRenderer.js';
-import { rectangleToMercatorExtent } from '../../util/math.js';
+import type TileProvider from '../../tileProvider/tileProvider.js';
+import CanvasTileRenderer from '../../../ol/render/canvas/canvasTileRenderer.js';
+import { rectangleToMercatorExtent } from '../../../util/math.js';
+import AbstractVcsImageryProvider from './abstractVcsImageryProvider.js';
 
 export function toContext(
   extent: Extent,
@@ -61,23 +56,30 @@ export function toContext(
 
 /**
  * creates a canvas and draws the features on the canvas;
+ * @param features
+ * @param extent
+ * @param deprecatedCenter deprecated, center is taken from the extent
+ * @param tileSize
+ * @returns a canvas with the features drawn on it
  */
 export function getCanvasFromFeatures(
   features: Feature[],
   extent: Extent,
-  center: Cartographic,
+  deprecatedCenter: Cartographic | undefined,
   tileSize: Size,
 ): HTMLCanvasElement {
+  if (deprecatedCenter) {
+    getLogger('VectorTileImageryProvider').deprecate(
+      'getCanvasFromFeatures',
+      'getCanvasFromFeatures no longer requires a center, it is taken from the extent',
+    );
+  }
   const canvas = document.createElement('canvas');
   canvas.width = tileSize[0];
-  canvas.height = tileSize[0];
-  const centerMercator = wgs84ToMercatorTransformer([
-    CesiumMath.toDegrees(center.longitude),
-    CesiumMath.toDegrees(center.latitude),
-  ]);
+  canvas.height = tileSize[1];
   const vectorContext = toContext(
     extent,
-    centerMercator,
+    getCenter(extent),
     canvas.getContext('2d') as CanvasRenderingContext2D,
     tileSize,
   );
@@ -89,6 +91,7 @@ export function getCanvasFromFeatures(
       vectorContext.drawFeature(feature, styleToUse);
     });
   });
+
   return canvas;
 }
 
@@ -101,94 +104,21 @@ export type VectorTileImageryProviderOptions = {
 /**
  * implementation of Cesium ImageryProvider Interface
  */
-class VectorTileImageryProvider {
+class VectorTileImageryProvider extends AbstractVcsImageryProvider {
   tileProvider: TileProvider;
-
-  private _tilingScheme: TilingScheme;
-
-  private _tileSize: Size;
-
-  private _errorEvent = new CesiumEvent();
-
-  headers?: Record<string, string>;
-
-  emptyCanvas: HTMLCanvasElement;
-
-  minLevel = 0;
-
-  maxLevel = 26;
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   _reload: undefined | (() => void) = undefined;
 
   constructor(options: VectorTileImageryProviderOptions) {
+    super({
+      tilingScheme: options.tileProvider.tilingScheme,
+      tileSize: options.tileSize,
+      headers: options.headers,
+      minLevel: 0,
+      maxLevel: 26,
+    });
     this.tileProvider = options.tileProvider;
-    this._tilingScheme = this.tileProvider.tilingScheme;
-    this._tileSize = options.tileSize;
-    this._errorEvent = new CesiumEvent();
-
-    this.emptyCanvas = document.createElement('canvas');
-    this.emptyCanvas.width = this.tileWidth;
-    this.emptyCanvas.height = this.tileHeight;
-    this.headers = options.headers;
-  }
-
-  // eslint-disable-next-line class-methods-use-this,@typescript-eslint/naming-convention
-  get _ready(): boolean {
-    return true;
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  get ready(): boolean {
-    return true;
-  }
-
-  get rectangle(): Rectangle {
-    return this._tilingScheme.rectangle;
-  }
-
-  get tileWidth(): number {
-    return this._tileSize[0];
-  }
-
-  get tileHeight(): number {
-    return this._tileSize[1];
-  }
-
-  get maximumLevel(): number {
-    return this.maxLevel;
-  }
-
-  get minimumLevel(): number {
-    return this.minLevel;
-  }
-
-  get tilingScheme(): TilingScheme {
-    return this._tilingScheme;
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  get tileDiscardPolicy(): undefined {
-    return undefined;
-  }
-
-  get errorEvent(): CesiumEvent {
-    return this._errorEvent;
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  get credit(): undefined {
-    return undefined;
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  get proxy(): undefined {
-    return undefined;
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  get hasAlphaChannel(): boolean {
-    return true;
   }
 
   /**
@@ -224,8 +154,11 @@ class VectorTileImageryProvider {
       level,
     );
     const extent = rectangleToMercatorExtent(rectangle);
-    const center = Rectangle.center(rectangle);
-    return getCanvasFromFeatures(features, extent, center, this._tileSize);
+
+    return getCanvasFromFeatures(features, extent, undefined, [
+      this.tileWidth,
+      this.tileHeight,
+    ]);
   }
 }
 

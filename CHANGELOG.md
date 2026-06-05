@@ -1,3 +1,39 @@
+### 6.3.7
+
+- Fixes an issue, where the heading applied in panorama would not be the expected value.
+- More natural zoom handling in panorama.
+- Pinch zoom enabled in panorama.
+
+### 6.3.6
+
+- Adds support for I3SLayer to ClippingObject
+- Fixes a bug in `CesiumTilesetCesiumImpl` which caused highlighted features to loose the highlighting when new features where highlighted
+
+### 6.3.5
+
+- Fixes a `MapboxStyleLayer` multi-map rendering bug by using per-map styled OpenLayers layer groups
+- Fixes repeated layer implementation initialization on rapid activation
+
+### 6.3.4
+
+- Fixes a bug in MapboxStyleLayer serialization by avoiding persistent runtime-only MapboxFeatureProvider configs
+- Fixes 2D MapboxStyleLayer picking by isolating picker layer renderers, preventing layers from disappearing on click
+- Fix bug when using pattern materials in 3D, which caused the fragment shader to crash
+
+### 6.3.3
+
+- Introduces the `AbstracVcsImageryProvider` class, of which all custom imagery providers are now a child of.
+- Introduced a new imagery provider which renders features in an openlayers map with `declutter` for better visualization of point features in 3D.
+- Panorama cesium implementation is now decluttered in 3D.
+- Changes the way panorama features are selected, allowing to jump into the first panorama image feature of a cluster directly.
+- Fixes undefined state of picked feature when highlighting on mouse over in Panorama Map
+
+### 6.3.2
+
+- Fixes an issue, where vector tiles would be rendered wrong in 3D on lower levels.
+- Deprecates passing a `center` to `getCanvasFromFeatures`.
+- Fixes an issue, where COGs with differing tile sizes would not be rendered in 3D.
+
 ### 6.3.1
 
 - Export MapboxStyleOptions

@@ -15,9 +15,9 @@ Material._materialCache.addMaterial('Wallpaper', {
     },
     components: {
       diffuse:
-        'texture2D(image, fract((gl_FragCoord.xy - anchor.xy) / vec2(imageDimensions.xy))).rgb',
+        'texture(image, fract((gl_FragCoord.xy - anchor.xy) / vec2(imageDimensions.xy))).rgb',
       alpha:
-        'texture2D(image, fract((gl_FragCoord.xy - anchor.xy) / vec2(imageDimensions.xy))).a',
+        'texture(image, fract((gl_FragCoord.xy - anchor.xy) / vec2(imageDimensions.xy))).a',
     },
   },
   translucent: false,

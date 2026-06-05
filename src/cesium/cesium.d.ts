@@ -3,14 +3,12 @@
  * Type overrides for types extended by the @vcmap/core API
  */
 // eslint-disable-next-line max-classes-per-file
-import type { StyleLike } from 'ol/style/Style.js';
 import type VectorStyleItem from '../style/vectorStyleItem.js';
 import type { allowPicking, vcsLayerName } from '../layer/layerSymbols.js';
 import type {
   globalHidden,
   hidden,
   highlighted,
-  originalStyle,
 } from '../layer/featureVisibility.js';
 import type { handlerSymbol } from '../util/editor/editorSymbols.js';
 import type { AxisAndPlanes } from '../util/editor/transformation/transformationTypes.js';
@@ -105,7 +103,6 @@ declare module '@vcmap-cesium/engine' {
     [globalHidden]?: boolean;
     [hidden]?: boolean;
     [highlighted]?: VectorStyleItem;
-    [originalStyle]?: StyleLike | Color;
     [attributeProviderName]?: string;
   }
 
@@ -222,7 +219,6 @@ declare module '@vcmap-cesium/engine' {
     [globalHidden]?: boolean;
     [hidden]?: boolean;
     [highlighted]?: VectorStyleItem;
-    [originalStyle]?: StyleLike | Color;
     [isTiledFeature]?: boolean;
     [allowPicking]?: boolean;
     [attributeProviderName]?: string;
@@ -238,7 +234,6 @@ declare module '@vcmap-cesium/engine' {
     [globalHidden]?: boolean;
     [hidden]?: boolean;
     [highlighted]?: VectorStyleItem;
-    [originalStyle]?: StyleLike | Color;
     [allowPicking]?: boolean;
     [attributeProviderName]?: string;
   }

@@ -417,6 +417,16 @@ class Viewpoint extends VcsObject {
 
 export default Viewpoint;
 
+function clampPitchAndRoll(angle: number): number {
+  if (angle > 180) {
+    return angle - 360;
+  }
+  if (angle < -180) {
+    return 360 + angle;
+  }
+  return angle;
+}
+
 export function getViewpointForPanoramaImage(image: PanoramaImage): Viewpoint {
   const { heading, pitch, roll } = image.orientation;
 
@@ -425,7 +435,7 @@ export function getViewpointForPanoramaImage(image: PanoramaImage): Viewpoint {
       cartesianToMercator(image.position),
     ),
     heading: CesiumMath.toDegrees(heading),
-    pitch: CesiumMath.toDegrees(pitch),
-    roll: CesiumMath.toDegrees(roll),
+    pitch: clampPitchAndRoll(CesiumMath.toDegrees(pitch)),
+    roll: clampPitchAndRoll(CesiumMath.toDegrees(roll)),
   });
 }

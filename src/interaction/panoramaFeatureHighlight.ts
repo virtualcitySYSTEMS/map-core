@@ -3,11 +3,10 @@ import AbstractInteraction, {
   type InteractionEvent,
 } from './abstractInteraction.js';
 import { EventType } from './interactionType.js';
-import { panoramaFeature } from '../layer/vectorSymbols.js';
+import { createSync, panoramaFeature } from '../layer/vectorSymbols.js';
 import PanoramaMap from '../map/panoramaMap.js';
 import { getFeatureFromScene } from './featureAtPixelInteraction.js';
 import { getDefaultHighlightStyle } from '../util/editor/selectFeaturesSession.js';
-import type { PanoramaDatasetFeatureProperties } from '../layer/panoramaDatasetLayer.js';
 
 /**
  * Throttle time in milliseconds to limit how frequently mouse move events are processed.
@@ -43,9 +42,8 @@ const THROTTLE_TIME_MS = 50;
  */
 export default class PanoramaFeatureHighlight extends AbstractInteraction {
   private _lastPickTime = 0;
-  private _lastPickedPanoramaFeature:
-    | PanoramaDatasetFeatureProperties
-    | undefined = undefined;
+  private _lastPickedPanoramaFeature: Feature | undefined;
+  private _syncState: boolean | undefined;
 
   constructor() {
     super(EventType.MOVE);
@@ -53,9 +51,17 @@ export default class PanoramaFeatureHighlight extends AbstractInteraction {
 
   private _unhighlightLastFeature(): void {
     if (this._lastPickedPanoramaFeature) {
-      this._lastPickedPanoramaFeature.dataset.featureVisibility.unHighlight([
-        this._lastPickedPanoramaFeature.name,
+      this._lastPickedPanoramaFeature[
+        panoramaFeature
+      ]?.dataset.featureVisibility.unHighlight([
+        this._lastPickedPanoramaFeature[panoramaFeature]?.name,
       ]);
+      if (this._syncState !== undefined) {
+        this._lastPickedPanoramaFeature[createSync] = this._syncState;
+      } else {
+        delete this._lastPickedPanoramaFeature[createSync];
+      }
+      this._lastPickedPanoramaFeature = undefined;
     }
   }
 
@@ -77,20 +83,23 @@ export default class PanoramaFeatureHighlight extends AbstractInteraction {
       if (picked.feature && (picked.feature as Feature)[panoramaFeature]) {
         const { dataset, name } = (picked.feature as Feature)[panoramaFeature]!;
 
-        if (name !== this._lastPickedPanoramaFeature?.name) {
+        if (name !== this._lastPickedPanoramaFeature?.[panoramaFeature]?.name) {
           this._unhighlightLastFeature();
+
+          this._syncState = (picked.feature as Feature)[createSync];
+
+          (picked.feature as Feature)[createSync] = true;
 
           dataset.featureVisibility.highlight({
             [name]: getDefaultHighlightStyle(),
           });
 
-          this._lastPickedPanoramaFeature = (picked.feature as Feature)[
-            panoramaFeature
-          ]!;
+          this._lastPickedPanoramaFeature = picked.feature as Feature;
         }
-      } else if (this._lastPickedPanoramaFeature?.name !== undefined) {
+      } else if (
+        this._lastPickedPanoramaFeature?.[panoramaFeature]?.name !== undefined
+      ) {
         this._unhighlightLastFeature();
-        this._lastPickedPanoramaFeature = undefined;
       }
     } else {
       this._unhighlightLastFeature();
@@ -100,9 +109,7 @@ export default class PanoramaFeatureHighlight extends AbstractInteraction {
 
   destroy(): void {
     if (this._lastPickedPanoramaFeature) {
-      this._lastPickedPanoramaFeature.dataset.featureVisibility.unHighlight([
-        this._lastPickedPanoramaFeature.name,
-      ]);
+      this._unhighlightLastFeature();
     }
     super.destroy();
   }

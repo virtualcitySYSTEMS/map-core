@@ -206,6 +206,18 @@ describe('PanoramaImageView', () => {
         expect(map.panoramaView.tilePrimitiveCollection.contains(firstTile)).to
           .be.false;
       });
+
+      it('should set the current heading on the image', () => {
+        map.panoramaView.heading = Math.PI;
+        map.setCurrentImage(newImage);
+        expect(map.getScene()!.camera.heading).to.equal(Math.PI);
+      });
+
+      it('should change the heading on the set image', () => {
+        map.setCurrentImage(newImage);
+        map.panoramaView.heading = Math.PI;
+        expect(map.getScene()!.camera.heading).to.equal(Math.PI);
+      });
     });
 
     describe('unsetting the image', () => {

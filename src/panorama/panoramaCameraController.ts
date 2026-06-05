@@ -1,8 +1,9 @@
-import type { PerspectiveFrustum } from '@vcmap-cesium/engine';
 import {
   Cartesian2,
   Math as CesiumMath,
+  type PerspectiveFrustum,
   ScreenSpaceEventType,
+  type ScreenSpaceEventHandler,
 } from '@vcmap-cesium/engine';
 import { windowPositionToImageSpherical } from './fieldOfView.js';
 import type PanoramaMap from '../map/panoramaMap.js';
@@ -63,6 +64,46 @@ export type PanoramaCameraController = {
   destroy: () => void;
 };
 
+/**
+ * this is typed wrong in cesium
+ */
+type TwoPointMotionEventCallback = (event: {
+  distance: { startPosition: Cartesian2; endPosition: Cartesian2 };
+}) => void;
+
+function createPinchHandler(
+  screenSpaceEventHandler: ScreenSpaceEventHandler,
+  zoom: (e: number, step?: number, center?: Cartesian2) => void,
+): void {
+  const center = new Cartesian2();
+  screenSpaceEventHandler.setInputAction(
+    ((event): void => {
+      Cartesian2.lerp(event.position1, event.position2, 0.5, center);
+    }) satisfies ScreenSpaceEventHandler.TwoPointEventCallback,
+    ScreenSpaceEventType.PINCH_START,
+  );
+
+  screenSpaceEventHandler.setInputAction(
+    // @ts-expect-error wrongly typed in cesium
+    ((event): void => {
+      const startingDistance = event.distance.startPosition.y;
+      const currentDistance = event.distance.endPosition.y;
+
+      const delta = Math.abs(currentDistance - startingDistance);
+      if (delta < 1) {
+        return;
+      }
+
+      if (currentDistance > startingDistance) {
+        zoom(1, undefined, center);
+      } else if (currentDistance < startingDistance) {
+        zoom(-1, undefined, center);
+      }
+    }) satisfies TwoPointMotionEventCallback,
+    ScreenSpaceEventType.PINCH_MOVE,
+  );
+}
+
 export function createPanoramaCameraController(
   map: PanoramaMap,
 ): PanoramaCameraController {
@@ -95,35 +136,10 @@ export function createPanoramaCameraController(
       } else {
         pointerInput.leftDown = false;
       }
-    } else if (
-      event.pointerEvent === PointerEventType.MOVE &&
-      pointerInput.leftDown
-    ) {
+    } else if (event.pointerEvent === PointerEventType.MOVE) {
       pointerInput.position = event.windowPosition.clone(pointerInput.position);
     }
   });
-
-  function panoZoom(event: number, step = 0.1): void {
-    if (event > 0 && frustum.fov > MIN_FOV) {
-      frustum.fov -= step;
-      if (frustum.fov < MIN_FOV) {
-        frustum.fov = MIN_FOV;
-      }
-      map.panoramaView.render();
-    } else if (event < 0 && frustum.fov < MAX_FOV) {
-      frustum.fov += step;
-      if (frustum.fov > MAX_FOV) {
-        frustum.fov = MAX_FOV;
-      }
-      map.panoramaView.render();
-    }
-  }
-
-  map.screenSpaceEventHandler!.setInputAction((event: number): void => {
-    if (!map.movementPointerEventsDisabled) {
-      panoZoom(event);
-    }
-  }, ScreenSpaceEventType.WHEEL);
 
   let yInertia = 0;
   let xInertia = 0;
@@ -192,6 +208,63 @@ export function createPanoramaCameraController(
     animationFrameHandle = requestAnimationFrame(loop);
   };
   loop();
+
+  function panoZoom(event: number, step = 0.1, center?: Cartesian2): void {
+    let startImagePosition: [number, number] | undefined;
+    if (center && currentImage) {
+      startImagePosition = windowPositionToImageSpherical(
+        center,
+        camera,
+        currentImage.invModelMatrix,
+      );
+    }
+
+    let reRender = false;
+
+    if (event > 0 && frustum.fov > MIN_FOV) {
+      frustum.fov -= step;
+      if (frustum.fov < MIN_FOV) {
+        frustum.fov = MIN_FOV;
+      }
+      reRender = true;
+    } else if (event < 0 && frustum.fov < MAX_FOV) {
+      frustum.fov += step;
+      if (frustum.fov > MAX_FOV) {
+        frustum.fov = MAX_FOV;
+      }
+      reRender = true;
+    }
+
+    if (reRender) {
+      let newImagePosition: [number, number] | undefined;
+      if (startImagePosition && currentImage) {
+        newImagePosition = windowPositionToImageSpherical(
+          center!,
+          camera,
+          currentImage.invModelMatrix,
+        );
+        if (newImagePosition) {
+          let diffX = startImagePosition[0] - newImagePosition[0];
+          if (diffX > CesiumMath.PI) {
+            diffX -= CesiumMath.TWO_PI;
+          } else if (diffX < -CesiumMath.PI) {
+            diffX += CesiumMath.TWO_PI;
+          }
+          const diffY = startImagePosition[1] - newImagePosition[1];
+          camera.look(currentImage.up, diffX);
+          camera.look(camera.right, diffY);
+        }
+      }
+      map.panoramaView.render();
+    }
+  }
+  createPinchHandler(map.screenSpaceEventHandler!, panoZoom);
+
+  map.screenSpaceEventHandler!.setInputAction((event: number): void => {
+    if (!map.movementPointerEventsDisabled) {
+      panoZoom(event, undefined, pointerInput.position);
+    }
+  }, ScreenSpaceEventType.WHEEL);
 
   return {
     get enabled(): boolean {

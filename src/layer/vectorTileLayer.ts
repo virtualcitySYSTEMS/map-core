@@ -319,6 +319,10 @@ class VectorTileLayer<
     }
   }
 
+  get renderer(): VectorTileRenderer {
+    return this._renderer;
+  }
+
   async initialize(): Promise<void> {
     if (!this.initialized) {
       this._tileLoadEventListener =

@@ -260,23 +260,6 @@ describe('FeatureVisibility', () => {
       expect(featureVisibility.highlightedObjects).to.not.have.property('test');
     });
 
-    it('should set the originalCesiumColor color on features, if they still exist', () => {
-      featureVisibility.highlight({ test: Color.BLUE });
-      const features: [Cesium3DTileFeature, Color][] = [
-        [createDummyCesium3DTileFeature(), Color.GREEN],
-        [createDummyCesium3DTileFeature(), Color.BLUE],
-      ];
-      features.forEach(([feat, color]) => {
-        feat.color = color;
-        featureVisibility.addHighlightFeature('test', feat);
-      });
-      featureVisibility.unHighlight(['test']);
-      features.forEach(([key, val]) => {
-        expect(key).to.have.property('color');
-        expect(key.color.equals(val)).to.be.true;
-      });
-    });
-
     it('should return original style for ol.Features', () => {
       featureVisibility.highlight({ test: Color.BLUE });
       const styles = [new Style(), new Style()];
@@ -430,19 +413,6 @@ describe('FeatureVisibility', () => {
 
       it('should set the highlight symbol', () => {
         expect(feature).to.have.property(highlighted, highlightStyle);
-      });
-
-      it('should set the originalStyle symbol', () => {
-        expect(feature)
-          .to.have.property(originalStyle)
-          .and.to.be.an.instanceOf(Color);
-      });
-
-      it('should not reset the originalStyle symbol', () => {
-        const color = Color.RED.clone();
-        feature[originalStyle] = color;
-        featureVisibility.addHighlightFeature('test', feature);
-        expect(feature).to.have.property(originalStyle, color);
       });
     });
   });
@@ -688,20 +658,6 @@ describe('FeatureVisibility', () => {
 
       it('should set the hidden symbol', () => {
         expect(feature).to.have.property(hidden, true);
-      });
-
-      it('should set the originalStyle symbol', () => {
-        expect(feature)
-          .to.have.property(originalStyle)
-          .and.to.be.an.instanceOf(Color);
-      });
-
-      it('should not reset the originalStyle symbol', () => {
-        const color = Color.RED.clone();
-        feature[originalStyle] = color;
-        feature.color = highlightStyle.cesiumFillColor as Color;
-        featureVisibility.addHiddenFeature('test', feature);
-        expect(feature).to.have.property(originalStyle, color);
       });
     });
   });

@@ -8,3 +8,4 @@ dist/
 .tests/
 *.shader.ts
 .idea/copilot*
+.vscode/
