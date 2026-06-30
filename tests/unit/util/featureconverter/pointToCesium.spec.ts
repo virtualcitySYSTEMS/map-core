@@ -426,7 +426,7 @@ describe('pointToCesium', () => {
           vectorProperties,
         );
         expect(labelOptions?.style).to.be.equal(LabelStyle.FILL);
-        expect(Color.equals(labelOptions!.fillColor!, color)).to.be.true;
+        expect(Color.equals(labelOptions!.fillColor, color)).to.be.true;
         expect(labelOptions?.outlineWidth).to.be.undefined;
         expect(labelOptions?.outlineColor).to.be.undefined;
       });
@@ -448,7 +448,7 @@ describe('pointToCesium', () => {
           vectorProperties,
         );
         expect(labelOptions?.style).to.be.equal(LabelStyle.OUTLINE);
-        expect(Color.equals(labelOptions!.outlineColor!, color)).to.be.true;
+        expect(Color.equals(labelOptions!.outlineColor, color)).to.be.true;
         expect(labelOptions?.outlineWidth).to.be.equal(3);
       });
 
@@ -466,9 +466,9 @@ describe('pointToCesium', () => {
           vectorProperties,
         );
         expect(labelOptions?.style).to.be.equal(LabelStyle.FILL_AND_OUTLINE);
-        expect(Color.equals(labelOptions!.outlineColor!, color)).to.be.true;
+        expect(Color.equals(labelOptions!.outlineColor, color)).to.be.true;
         expect(labelOptions?.outlineWidth).to.be.equal(3);
-        expect(Color.equals(labelOptions!.fillColor!, color)).to.be.true;
+        expect(Color.equals(labelOptions!.fillColor, color)).to.be.true;
       });
     });
 

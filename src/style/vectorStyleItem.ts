@@ -31,6 +31,7 @@ import {
   olColorToCesiumColor,
   getStrokeFromOptions,
   getImageStyleOptions,
+  getRegularShapeImageUrl,
 } from './styleHelpers.js';
 import { getShapeFromOptions } from './shapesCategory.js';
 import { styleClassRegistry } from '../classRegistry.js';
@@ -190,7 +191,7 @@ class VectorStyleItem extends StyleItem {
   validateOptions(options: VectorStyleItemOptions): void {
     const checkColor = (option: { color?: ColorType | null }): void => {
       try {
-        option.color = parseColor(option.color as ColorType);
+        option.color = parseColor(option.color);
         check(option.color, [Number]);
         check(option.color.length, oneOf(3, 4));
       } catch (e) {
@@ -252,7 +253,6 @@ class VectorStyleItem extends StyleItem {
       }
 
       if (options.image.radius) {
-        options.image.radius = Number(options.image.radius);
         if (!Number.isFinite(options.image.radius)) {
           this.getLogger().error('radius must be a number');
           options.image.radius = 5;
@@ -544,7 +544,7 @@ class VectorStyleItem extends StyleItem {
         }
         pointSizeConditions.splice(1, 1, ['true', String(size)]);
       } else if (this._image instanceof RegularShape) {
-        const dataUrl = this._image.getImage(1).toDataURL();
+        const dataUrl = getRegularShapeImageUrl(this._image);
         imageConditions.splice(1, 1, ['true', `"${dataUrl}"`]);
       } else if (this._image instanceof Icon) {
         imageConditions.splice(1, 1, [

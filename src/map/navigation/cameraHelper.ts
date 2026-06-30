@@ -142,7 +142,9 @@ export function getEnuVector(
  * @param camera
  */
 export function getFov(camera: Camera): number {
-  return camera.frustum instanceof PerspectiveFrustum ? camera.frustum.fov : 1;
+  return camera.frustum instanceof PerspectiveFrustum
+    ? (camera.frustum.fov ?? 1)
+    : 1;
 }
 
 /**

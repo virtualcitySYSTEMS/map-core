@@ -125,7 +125,11 @@ export async function createFlightVisualization(
 
     layer.addFeatures(features);
     const mercatorExtent = layer.getSource().getExtent();
-    extent = mercatorToWgs84Transformer(mercatorExtent, mercatorExtent, 2);
+    if (mercatorExtent) {
+      extent = mercatorToWgs84Transformer(mercatorExtent, mercatorExtent, 2);
+    } else {
+      extent = createEmpty();
+    }
   };
   setFeatures();
 

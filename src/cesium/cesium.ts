@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable @typescript-eslint/no-explicit-any,@typescript-eslint/consistent-type-imports,@typescript-eslint/naming-convention */
 /**
  * Type overrides for types extended by the @vcmap/core API
@@ -26,6 +27,12 @@ declare module '@vcmap-cesium/engine' {
     CLAMP_TO_EDGE = 33071,
     REPEAT = 10497,
     MIRRORED_REPEAT = 33648,
+  }
+
+  enum BoundingSphereState { // error in cesium types
+    DONE = 0,
+    PENDING = 1,
+    FAILED = 2,
   }
 
   class Sampler {

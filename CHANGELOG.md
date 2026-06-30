@@ -1,3 +1,19 @@
+### 7.0.0
+
+#### Breaking Changes
+
+- Updated Cesium to 1.142
+- Updated OpenLayers to 10.9.0
+- Changed CI/CD from Node 20 to 24
+
+### Features
+
+- Export `ImageStyleOptions` type
+
+#### Changes
+
+#### Bugfixes
+
 ### 6.3.7
 
 - Fixes an issue, where the heading applied in panorama would not be the expected value.

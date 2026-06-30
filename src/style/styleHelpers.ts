@@ -554,6 +554,22 @@ export function getImageStyleFromOptions(
   }
 }
 
+export function getRegularShapeImageUrl(
+  image: RegularShape,
+): string | undefined {
+  const canvas = image.getImage(1);
+  if (canvas instanceof HTMLCanvasElement) {
+    return canvas.toDataURL();
+  } else {
+    const newCanvas = document.createElement('canvas');
+    newCanvas.width = canvas.width;
+    newCanvas.height = canvas.height;
+    const context = newCanvas.getContext('2d')!;
+    context.drawImage(canvas, 0, 0);
+    return newCanvas.toDataURL();
+  }
+}
+
 export type StyleOptions = {
   fill?: FillOptions | undefined;
   stroke?: StrokeOptions | undefined;

@@ -67,8 +67,8 @@ const scratchRightHalfWidth = new Cartesian3();
  */
 export function getFov(camera: Camera, result?: Fov): Fov {
   const frustum = camera.frustum as PerspectiveFrustum;
-  const hNear = 2 * Math.tan(frustum.fov / 2) * frustum.near;
-  const wNear = hNear * frustum.aspectRatio;
+  const hNear = 2 * Math.tan((frustum.fov ?? 1) / 2) * frustum.near;
+  const wNear = hNear * (frustum.aspectRatio ?? 1);
 
   const hNearHalf = hNear / 2;
   const wNearHalf = wNear / 2;

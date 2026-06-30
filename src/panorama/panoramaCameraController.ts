@@ -221,6 +221,9 @@ export function createPanoramaCameraController(
 
     let reRender = false;
 
+    if (!frustum.fov) {
+      frustum.fov = map.defaultFov;
+    }
     if (event > 0 && frustum.fov > MIN_FOV) {
       frustum.fov -= step;
       if (frustum.fov < MIN_FOV) {

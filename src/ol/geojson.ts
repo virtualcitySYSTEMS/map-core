@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore unused import
 import type { GeoJsonProperties, Geometry } from 'geojson';
 import type { VcsMeta } from '../layer/vectorProperties.js';
 import type { FeatureStoreLayerState } from '../layer/featureStoreLayerState.js';

@@ -499,7 +499,10 @@ class FeatureStoreLayer extends VectorLayer {
     }
 
     if (this.staticRepresentation.twoDim && this._twoDimLoaded) {
-      extendExtent(mercatorExtent, this._twoDimStaticSource.getExtent());
+      const twoDimExtent = this._twoDimStaticSource.getExtent();
+      if (twoDimExtent) {
+        extendExtent(mercatorExtent, twoDimExtent);
+      }
     }
 
     const actualExtent = new Extent({

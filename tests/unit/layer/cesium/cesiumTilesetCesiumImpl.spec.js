@@ -2,13 +2,11 @@ import {
   Cesium3DTileset,
   Cesium3DTileColorBlendMode,
   SplitDirection,
-  Composite3DTileContent,
   Cesium3DTile,
   BoundingSphere,
   Matrix4,
   Cartesian3,
   Math as CesiumMath,
-  Resource,
   CustomShader,
   Rectangle,
 } from '@vcmap-cesium/engine';
@@ -492,19 +490,11 @@ describe('CesiumTilesetCesiumImpl', () => {
       expect(tile.content).to.have.property(cesiumTilesetLastUpdated);
     });
 
-    it('should call style content for each content of Composite3dTileContent', () => {
-      const arrayBuffer = new ArrayBuffer(32);
-      const view = new DataView(arrayBuffer);
-      view.setUint32(Uint32Array.BYTES_PER_ELEMENT, 1, true);
-
-      const content = new Composite3DTileContent(
-        cesiumTilesetCesium.cesium3DTileset,
-        null,
-        new Resource('http://localhost/test'),
-        arrayBuffer,
-      );
+    it('should call style content for each content of composite tile content', () => {
       const innerContent = [{}, {}];
-      content._contents = innerContent;
+      const content = {
+        innerContents: innerContent,
+      };
       cesiumTilesetCesium.applyStyle({ contentReady: true, content });
       expect(innerContent[0]).to.have.property(cesiumTilesetLastUpdated);
       expect(innerContent[1]).to.have.property(cesiumTilesetLastUpdated);

@@ -7,6 +7,11 @@ import {
   Cesium3DTileset as ActualCesium3DTileset,
 } from '@vcmap-cesium/engine';
 
+const destroyedObject = {
+  isDestroyed: () => true,
+  destroy: () => {},
+};
+
 class Cesium3DTileset {
   constructor() {
     this.extras = {};
@@ -23,6 +28,8 @@ class Cesium3DTileset {
       boundingVolume: {},
       boundingSphere: {},
     };
+    this._environmentMapManager = destroyedObject;
+    this._imageryLayers = destroyedObject;
   }
 
   destroy() {

@@ -7,7 +7,6 @@ import type {
   BoundingSphere,
 } from '@vcmap-cesium/engine';
 import {
-  Composite3DTileContent,
   Cesium3DTileset,
   Cesium3DTileColorBlendMode,
   Matrix4,
@@ -235,7 +234,7 @@ export function createCesiumStylingContext(
   }
   function applyStyle(tile: Cesium3DTile): void {
     if (tile.contentReady) {
-      if (tile.content instanceof Composite3DTileContent) {
+      if (tile.content.innerContents?.length > 0) {
         for (let i = 0; i < tile.content.innerContents.length; i++) {
           styleContent(tile.content.innerContents[i] as Cesium3DTileContent);
         }

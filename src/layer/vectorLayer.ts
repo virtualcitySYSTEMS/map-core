@@ -503,9 +503,13 @@ class VectorLayer
     if (metaExtent) {
       return metaExtent;
     }
+    const sourceExtent = this.source.getExtent();
+    if (!sourceExtent) {
+      return null;
+    }
     const extent = new Extent({
       projection: mercatorProjection.toJSON(),
-      coordinates: this.source.getExtent(),
+      coordinates: sourceExtent,
     });
     if (extent.isValid()) {
       return extent;

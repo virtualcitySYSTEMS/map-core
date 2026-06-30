@@ -1,3 +1,5 @@
+import { expect } from 'chai';
+import sinon from 'sinon';
 import LineString from 'ol/geom/LineString.js';
 import { getCenter, getSize } from 'ol/extent.js';
 import Polygon from 'ol/geom/Polygon.js';
@@ -17,6 +19,7 @@ import {
   JulianDate,
 } from '@vcmap-cesium/engine';
 import { Point } from 'ol/geom.js';
+import type { Coordinate } from 'ol/coordinate.js';
 import {
   clearClippingPlanes,
   copyClippingPlanesToCollection,
@@ -24,21 +27,29 @@ import {
   setClippingPlanes,
   createClippingFeature,
   getClippingOptions,
+  type ClippingPlaneCreationOptions,
 } from '../../../../src/util/clipping/clippingPlaneHelper.js';
 import Projection from '../../../../src/util/projection.js';
 import getDummyCesium3DTileset from '../../layer/cesium/getDummyCesium3DTileset.js';
 import VcsApp from '../../../../src/vcsApp.js';
 import { setCesiumMap } from '../../helpers/cesiumHelpers.js';
+import { type CesiumMap, getCartesianBearing } from '../../../../index.js';
+
+function expectedPlane(
+  plane: Plane,
+  distance: number,
+  x: number,
+  y: number,
+  z: number,
+): void {
+  expect(plane).to.have.property('distance', distance);
+  expect(plane.normal).to.have.property('x', x);
+  expect(plane.normal).to.have.property('y', y);
+  expect(plane.normal).to.have.property('z', z);
+}
 
 describe('util.clipping.ClippingPlaneHelpers', () => {
-  function expectedPlane(plane, distance, x, y, z) {
-    expect(plane).to.have.property('distance', distance);
-    expect(plane.normal).to.have.property('x', x);
-    expect(plane.normal).to.have.property('y', y);
-    expect(plane.normal).to.have.property('z', z);
-  }
-
-  let sandbox;
+  let sandbox: sinon.SinonSandbox;
 
   before(() => {
     sandbox = sinon.createSandbox();
@@ -52,7 +63,7 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
     /**
      * Transformations are stubbed for easier reading and generating of test cases
      */
-    let feature;
+    let feature: Feature;
 
     beforeEach(() => {
       feature = new Feature();
@@ -63,8 +74,8 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
     });
 
     describe('Point', () => {
-      let options;
-      let geometry;
+      let options: ClippingPlaneCreationOptions;
+      let geometry: Point;
 
       before(() => {
         options = { createBottomPlane: true, createTopPlane: true };
@@ -76,14 +87,14 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
       });
 
       it('should create a horizontal plane', () => {
-        const clippingPlanes = createClippingPlaneCollection(feature, options);
+        const clippingPlanes = createClippingPlaneCollection(feature, options)!;
         expect(clippingPlanes).to.have.length(1);
         expectedPlane(clippingPlanes.get(0), 1, 0, 0, -1);
       });
 
       it('should create a bottom and top plane, if extruded', () => {
         feature.set('olcs_extrudedHeight', 1);
-        const clippingPlanes = createClippingPlaneCollection(feature, options);
+        const clippingPlanes = createClippingPlaneCollection(feature, options)!;
         expect(clippingPlanes).to.have.length(2);
         expectedPlane(clippingPlanes.get(0), 1, 0, 0, -1);
         expectedPlane(clippingPlanes.get(1), -2, 0, 0, 1);
@@ -91,7 +102,7 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
     });
 
     describe('LineString', () => {
-      let geometry;
+      let geometry: LineString;
 
       beforeEach(() => {
         geometry = new LineString([
@@ -109,7 +120,7 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
         ]);
         const planes = createClippingPlaneCollection(feature, {
           createVerticalPlanes: true,
-        });
+        })!;
         expect(planes).to.have.length(2);
         expectedPlane(planes.get(0), 0, 0, 0, 1);
         expectedPlane(planes.get(1), 0, 0, 0, -1);
@@ -119,7 +130,7 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
         const planes = createClippingPlaneCollection(feature, {
           createVerticalPlanes: true,
           createEndingPlanes: true,
-        });
+        })!;
         expect(planes).to.have.length(3);
         expectedPlane(
           planes.get(0),
@@ -147,7 +158,7 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
         const planes = createClippingPlaneCollection(feature, {
           createTopPlane: true,
           createBottomPlane: true,
-        });
+        })!;
         expect(planes).to.have.length(1);
         expectedPlane(planes.get(0), 1, 0, 0, -1);
       });
@@ -162,7 +173,7 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
         const planes = createClippingPlaneCollection(feature, {
           createTopPlane: true,
           createBottomPlane: true,
-        });
+        })!;
         expect(planes).to.have.length(2);
         expectedPlane(planes.get(0), 1, 0, 0, -1);
         expectedPlane(planes.get(1), -2, 0, 0, 1);
@@ -170,7 +181,7 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
     });
 
     describe('Polygon', () => {
-      let geometry;
+      let geometry: Polygon;
 
       beforeEach(() => {
         geometry = new Polygon([
@@ -187,7 +198,7 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
       it('should create a vertical plane per segment', () => {
         const planes = createClippingPlaneCollection(feature, {
           createVerticalPlanes: true,
-        });
+        })!;
         expect(planes).to.have.length(4);
         expectedPlane(planes.get(0), 0, 0, 0, 1);
         expectedPlane(planes.get(1), 0, 0, 0, -1);
@@ -200,7 +211,7 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
         const planes = createClippingPlaneCollection(feature, {
           createTopPlane: true,
           createBottomPlane: true,
-        });
+        })!;
         expect(planes).to.have.length(1);
         expectedPlane(planes.get(0), -0, 0, 0, -1);
       });
@@ -211,7 +222,7 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
         const planes = createClippingPlaneCollection(feature, {
           createTopPlane: true,
           createBottomPlane: true,
-        });
+        })!;
         expect(planes).to.have.length(2);
         expectedPlane(planes.get(0), -0, 0, 0, -1);
         expectedPlane(planes.get(1), -1, 0, 0, 1);
@@ -223,15 +234,15 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
       const clippingPlanes = createClippingPlaneCollection(feature, {
         createBottomPlane: true,
         reverse: true,
-      });
+      })!;
       expect(clippingPlanes).to.have.length(1);
       expectedPlane(clippingPlanes.get(0), -1, 0, 0, 1);
     });
   });
 
   describe('copyClippingPlanesToCollection', () => {
-    let result;
-    let source;
+    let result: ClippingPlaneCollection;
+    let source: ClippingPlaneCollection;
 
     beforeEach(() => {
       result = new ClippingPlaneCollection();
@@ -304,7 +315,7 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
       const collection = new ClippingPlaneCollection({
         planes: [new ClippingPlane(new Cartesian3(1, 1, 1), 1)],
       });
-      entity.model.clippingPlanes = new ConstantProperty(collection);
+      entity.model!.clippingPlanes = new ConstantProperty(collection);
       clearClippingPlanes(entity);
       expect(collection).to.have.length(0);
     });
@@ -313,13 +324,13 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
       const entity = new Entity({ model: {} });
       clearClippingPlanes(entity);
       expect(entity.model).to.have.property('clippingPlanes');
-      expect(entity.model.clippingPlanes.getValue()).to.be.an.instanceOf(
+      expect(entity.model?.clippingPlanes?.getValue()).to.be.an.instanceOf(
         ClippingPlaneCollection,
       );
     });
 
     it('should clear the clipping planes of a Cesium3DTileset', () => {
-      const tileset = getDummyCesium3DTileset();
+      const tileset = getDummyCesium3DTileset() as Cesium3DTileset;
       const collection = new ClippingPlaneCollection({
         planes: [new ClippingPlane(new Cartesian3(1, 1, 1), 1)],
       });
@@ -340,7 +351,7 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
   });
 
   describe('setClippingPlanes', () => {
-    let collection;
+    let collection: ClippingPlaneCollection;
 
     beforeEach(() => {
       collection = new ClippingPlaneCollection({
@@ -349,10 +360,11 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
     });
 
     describe('Cesium3DTileset', () => {
-      let tileset;
+      let tileset: Cesium3DTileset;
 
       beforeEach(() => {
-        tileset = getDummyCesium3DTileset();
+        tileset = getDummyCesium3DTileset() as Cesium3DTileset;
+        // @ts-expect-error __proto__
         // eslint-disable-next-line no-proto
         tileset.__proto__ = Cesium3DTileset.prototype;
       });
@@ -436,7 +448,7 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
     });
 
     describe('Entity', () => {
-      let entity;
+      let entity: Entity;
 
       beforeEach(() => {
         entity = new Entity({
@@ -447,14 +459,16 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
 
       it('should set the clipping planes on the entity', () => {
         setClippingPlanes(entity, collection);
-        const clippingPlanes = entity.model.clippingPlanes.getValue();
+        const clippingPlanes =
+          entity.model?.clippingPlanes?.getValue() as ClippingPlaneCollection;
         expect(clippingPlanes).to.have.length(1);
         expectedPlane(clippingPlanes.get(0), 1, 1, 1, 1);
       });
 
       it('should clone the clipping collection', () => {
         setClippingPlanes(entity, collection);
-        const clippingPlanes = entity.model.clippingPlanes.getValue();
+        const clippingPlanes =
+          entity.model?.clippingPlanes?.getValue() as ClippingPlaneCollection;
 
         expect(clippingPlanes.contains(collection.get(0))).to.be.true;
         expect(clippingPlanes).to.not.equal(collection);
@@ -462,11 +476,12 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
 
       it('should clear any previous planes', () => {
         const plane = new ClippingPlane(new Cartesian3(1, 1, 1), -1);
-        entity.model.clippingPlanes = new ConstantProperty(
+        entity.model!.clippingPlanes = new ConstantProperty(
           new ClippingPlaneCollection({ planes: [plane] }),
         );
         setClippingPlanes(entity, collection);
-        const clippingPlanes = entity.model.clippingPlanes.getValue();
+        const clippingPlanes =
+          entity.model?.clippingPlanes?.getValue() as ClippingPlaneCollection;
         expect(clippingPlanes).to.have.length(1);
         expect(clippingPlanes.contains(plane)).to.be.false;
       });
@@ -478,7 +493,8 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
         const { args, returnValue } = inverse.getCall(0);
         expect(args[0].equals(entity.computeModelMatrix(JulianDate.now()))).to
           .be.true;
-        const clippingPlanes = entity.model.clippingPlanes.getValue();
+        const clippingPlanes =
+          entity.model?.clippingPlanes?.getValue() as ClippingPlaneCollection;
         expect(clippingPlanes.modelMatrix).to.equal(returnValue);
       });
 
@@ -492,7 +508,8 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
         const multiply = sandbox.spy(Matrix4, 'multiply');
         collection.modelMatrix = Matrix4.fromScale(new Cartesian3(2, 1, 1));
         setClippingPlanes(entity, collection);
-        const clippingPlanes = entity.model.clippingPlanes.getValue();
+        const clippingPlanes =
+          entity.model?.clippingPlanes?.getValue() as ClippingPlaneCollection;
         expect(multiply).to.have.been.calledWith(
           clippingPlanes.modelMatrix,
           collection.modelMatrix,
@@ -517,11 +534,8 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
   });
 
   describe('createClippingFeature', () => {
-    let app;
-    let cesiumMap;
-    function bearing(p1, p2) {
-      return Math.atan2(p2[0] - p1[0], p2[1] - p1[1]);
-    }
+    let app: VcsApp;
+    let cesiumMap: CesiumMap;
 
     before(async () => {
       app = new VcsApp();
@@ -536,7 +550,7 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
       it('should create a feature with a polygon geometry', () => {
         const feature = createClippingFeature(
           [0, 0],
-          cesiumMap.getScene().camera,
+          cesiumMap.getScene()!.camera,
         );
         expect(feature.getGeometry()).to.be.an.instanceOf(Polygon);
       });
@@ -545,8 +559,8 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
         sandbox.stub(Polygon.prototype, 'transform');
         const geometry = createClippingFeature(
           [0, 0],
-          cesiumMap.getScene().camera,
-        ).getGeometry();
+          cesiumMap.getScene()!.camera,
+        ).getGeometry()!;
         expect(
           getCenter(geometry.getExtent()).map((c) => Math.round(c)),
         ).to.have.members([0, 0]);
@@ -555,10 +569,10 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
       it('should create a polygon with a size defined by the offset', () => {
         const geometry = createClippingFeature(
           [0, 0],
-          cesiumMap.getScene().camera,
+          cesiumMap.getScene()!.camera,
           false,
           1,
-        ).getGeometry();
+        ).getGeometry()!;
         const roundedSize = getSize(geometry.getExtent()).map((c) =>
           Math.round(c),
         );
@@ -569,13 +583,17 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
         const rotationAngle = Math.PI / 2;
         const feature = createClippingFeature(
           [0, 0],
-          cesiumMap.getScene().camera,
+          cesiumMap.getScene()!.camera,
           false,
           1,
           rotationAngle,
         );
-        const coords = feature.getGeometry().getCoordinates();
-        expect(bearing(coords[0][1], coords[0][0])).to.equal(rotationAngle);
+        const coords = feature
+          .getGeometry()!
+          .getCoordinates() as Coordinate[][];
+        expect(getCartesianBearing(coords[0][1], coords[0][0])).to.equal(
+          rotationAngle,
+        );
       });
     });
 
@@ -583,7 +601,7 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
       it('should create a feature with a line', () => {
         const feature = createClippingFeature(
           [0, 0],
-          cesiumMap.getScene().camera,
+          cesiumMap.getScene()!.camera,
           true,
         );
         expect(feature.getGeometry()).to.be.an.instanceOf(LineString);
@@ -592,10 +610,10 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
       it('should create a line extending by the offset, away from the coordinate', () => {
         const geometry = createClippingFeature(
           [0, 0],
-          cesiumMap.getScene().camera,
+          cesiumMap.getScene()!.camera,
           true,
           1,
-        ).getGeometry();
+        ).getGeometry()!;
         const roundedSize = getSize(geometry.getExtent()).map((c) =>
           Math.round(c),
         );
@@ -605,7 +623,7 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
       it('should extrude the feature by twice the offset', () => {
         const feature = createClippingFeature(
           [0, 0],
-          cesiumMap.getScene().camera,
+          cesiumMap.getScene()!.camera,
           true,
           1,
         );
@@ -615,17 +633,18 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
       it('should offset the line in -z direction by the passed offset', () => {
         const feature = createClippingFeature(
           [0, 0, 0],
-          cesiumMap.getScene().camera,
+          cesiumMap.getScene()!.camera,
           true,
           1,
         );
-        expect(feature.getGeometry().getCoordinates()[0][2]).to.equal(-1);
-        expect(feature.getGeometry().getCoordinates()[1][2]).to.equal(-1);
+        const coords = feature.getGeometry()!.getCoordinates() as Coordinate[];
+        expect(coords[0][2]).to.equal(-1);
+        expect(coords[1][2]).to.equal(-1);
       });
 
       it('should rotate the line clockwise', () => {
         const rotationAngle = Math.PI / 2;
-        const { camera } = cesiumMap.getScene();
+        const { camera } = cesiumMap.getScene()!;
         const feature = createClippingFeature(
           [0, 0],
           camera,
@@ -633,9 +652,11 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
           1,
           rotationAngle,
         );
-        const lineCoords = feature.getGeometry().getCoordinates();
+        const lineCoords = feature
+          .getGeometry()!
+          .getCoordinates() as Coordinate[];
 
-        expect(bearing(lineCoords[0], lineCoords[1])).to.equal(
+        expect(getCartesianBearing(lineCoords[0], lineCoords[1])).to.equal(
           (camera.heading + rotationAngle) % (2 * Math.PI),
         );
       });
@@ -643,7 +664,7 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
   });
 
   describe('getClippingOptions', () => {
-    let feature;
+    let feature: Feature;
 
     describe('polygon', () => {
       beforeEach(() => {

@@ -1,6 +1,6 @@
 .vcs_pipeline_version: '1.0'
 default:
-  image: gitlab.virtualcitysystems.de:5050/vcsuite/devops/gitlabrunner/node:20-bookworm
+  image: gitlab.virtualcitysystems.de:5050/vcsuite/devops/gitlabrunner/node:24-bookworm
 
 variables:
   GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_PROJECT_PATH_SLUG/$CI_COMMIT_REF_SLUG

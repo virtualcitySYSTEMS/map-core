@@ -5,6 +5,7 @@ import RegularShape, {
 } from 'ol/style/RegularShape.js';
 import Circle, { type Options as CircleOptions } from 'ol/style/Circle.js';
 import type { VectorStyleItemImage } from './vectorStyleItem.js';
+import { getRegularShapeImageUrl } from './styleHelpers.js';
 
 export function getShapeFromOptions(
   options: VectorStyleItemImage,
@@ -25,9 +26,7 @@ class ShapeCategory {
 
   addImage(options: VectorStyleItemImage): void {
     const shape = getShapeFromOptions({ ...options });
-
-    const canvas = shape.getImage(1);
-    options.src = canvas.toDataURL();
+    options.src = getRegularShapeImageUrl(shape);
     this.shapes.push(options);
   }
 }

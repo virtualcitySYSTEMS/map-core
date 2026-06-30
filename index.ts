@@ -1,3 +1,8 @@
+import './src/global.js';
+import './src/cesium/cesium.js';
+import './src/ol/ol.js';
+import './src/ol/geojson.js';
+
 import './src/ol/geom/circle.js';
 import './src/ol/geom/geometryCollection.js';
 import './src/ol/feature.js';
@@ -502,7 +507,10 @@ export {
   shapeCategory,
 } from './src/style/shapesCategory.js';
 export { getStyleOrDefaultStyle } from './src/style/styleFactory.js';
-export type { FontObject } from './src/style/styleHelpers.js';
+export type {
+  FontObject,
+  ImageStyleOptions,
+} from './src/style/styleHelpers.js';
 export {
   PatternType,
   hexToOlColor,

@@ -61,7 +61,7 @@ describe('panoramaCameraController', () => {
     it('should decrease the frustum FOV when zooming in', () => {
       const frustum = map.getCesiumWidget().camera
         .frustum as PerspectiveFrustum;
-      const initialFov = frustum.fov;
+      const initialFov = frustum.fov ?? 1;
       controller.zoomIn();
       expect(frustum.fov).to.lessThan(initialFov);
     });
@@ -77,7 +77,7 @@ describe('panoramaCameraController', () => {
     it('should use the provided step value', () => {
       const frustum = map.getCesiumWidget().camera
         .frustum as PerspectiveFrustum;
-      const initialFov = frustum.fov;
+      const initialFov = frustum.fov ?? Number.NEGATIVE_INFINITY;
       const step = 0.2;
 
       controller.zoomIn(step);
@@ -96,7 +96,7 @@ describe('panoramaCameraController', () => {
     it('should increase the frustum FOV when zooming out', () => {
       const frustum = map.getCesiumWidget().camera
         .frustum as PerspectiveFrustum;
-      const initialFov = frustum.fov;
+      const initialFov = frustum.fov ?? Number.NEGATIVE_INFINITY;
 
       controller.zoomOut();
 
@@ -113,7 +113,7 @@ describe('panoramaCameraController', () => {
     it('should use the provided step value', () => {
       const frustum = map.getCesiumWidget().camera
         .frustum as PerspectiveFrustum;
-      const initialFov = frustum.fov;
+      const initialFov = frustum.fov ?? Number.NEGATIVE_INFINITY;
       const step = 0.2;
 
       controller.zoomOut(step);

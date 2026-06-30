@@ -25,7 +25,7 @@ global.ImageBitmap = HTMLCanvasElement;
 global.OffscreenCanvas = HTMLCanvasElement;
 global.createImageBitmap = (image, sx, sy, sw, sh) => {
   if (image instanceof HTMLCanvasElement) {
-    return image;
+    return Promise.resolve(image);
   }
   const canElem = canvas.createCanvas(sw, sh);
   const ctx = canElem.getContext('2d');
