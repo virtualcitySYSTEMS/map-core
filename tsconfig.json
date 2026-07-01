@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "es2022",
-    "module": "node16",
+    "module": "nodenext",
     "incremental": true,
     "lib": ["esnext", "dom"],
     "allowJs": true,
@@ -22,17 +22,17 @@
     "noFallthroughCasesInSwitch": false,
 
     /* Module Resolution Options */
-    "baseUrl": ".",
     "paths": {
-      "rbush-knn": ["types/rbush-knn"],
-      "rbush": ["types/rbush"]
+      "rbush-knn": ["./types/rbush-knn"],
+      "rbush": ["./types/rbush"]
     },
-    "moduleResolution": "node16",
+    "moduleResolution": "nodenext",
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "preserveSymlinks": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "types": ["node"]
   },
   "exclude": ["dist/", "build/", ".tests/"],
   "include": ["types/", "src/", "index.ts", "tests/unit/helpers/"]

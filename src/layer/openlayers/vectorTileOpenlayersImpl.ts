@@ -12,6 +12,7 @@ import type {
 } from '../vectorTileLayer.js';
 import type TileProvider from '../tileProvider/tileProvider.js';
 import type Extent from '../../util/extent.js';
+import { getCaughtError } from '../../util/error.js';
 import type OpenlayersMap from '../../map/openlayersMap.js';
 import type StyleItem from '../../style/styleItem.js';
 
@@ -73,7 +74,7 @@ class VectorTileOpenlayersImpl
             }
           })
           .catch((err: unknown) => {
-            this.getLogger().error((err as Error).message);
+            this.getLogger().error(getCaughtError(err).message);
           });
       },
       // url needs to be set for the tileLoadFunction to work.

@@ -5,6 +5,7 @@ import { parseBoolean, parseInteger } from '@vcsuite/parsers';
 import type { VcsObjectOptions } from '../vcsObject.js';
 import VcsObject from '../vcsObject.js';
 import Extent, { type ExtentOptions } from '../util/extent.js';
+import { getCaughtError } from '../util/error.js';
 import LayerState from './layerState.js';
 import VcsEvent from '../vcsEvent.js';
 import { layerClassRegistry } from '../classRegistry.js';
@@ -698,10 +699,10 @@ class Layer<
     this._state = LayerState.LOADING;
     try {
       this.stateChanged.raiseEvent(LayerState.LOADING);
-    } catch (e) {
+    } catch (err: unknown) {
       this.getLogger().debug(
         `Error on raising LayerState.LOADING event for layer ${this.name} : ${
-          (e as Error).message
+          getCaughtError(err).message
         }`,
       );
     }
@@ -722,10 +723,10 @@ class Layer<
     this._state = LayerState.ACTIVE;
     try {
       this.stateChanged.raiseEvent(LayerState.ACTIVE);
-    } catch (e) {
+    } catch (err: unknown) {
       this.getLogger().debug(
         `Error on raising LayerState.ACTIVE event for layer ${this.name} : ${
-          (e as Error).message
+          getCaughtError(err).message
         }`,
       );
     }
@@ -746,7 +747,7 @@ class Layer<
     if (this._state === LayerState.INACTIVE) {
       this._loadingPromise = this._activate().catch((err: unknown) => {
         this._state = LayerState.INACTIVE;
-        return Promise.reject(err as Error);
+        return Promise.reject(getCaughtError(err));
       });
       return this._loadingPromise;
     }
@@ -774,11 +775,11 @@ class Layer<
       this._state = LayerState.INACTIVE;
       try {
         this.stateChanged.raiseEvent(LayerState.INACTIVE);
-      } catch (e) {
+      } catch (err: unknown) {
         this.getLogger().debug(
           `Error on raising LayerState.INACTIVE event for layer ${
             this.name
-          } : ${(e as Error).message}`,
+          } : ${getCaughtError(err).message}`,
         );
       }
     }

@@ -11,13 +11,11 @@ import {
   OpenlayersMap,
   PointerEventType,
   PointerKeyType,
-  vcsLayerName,
   vertexSymbol,
 } from '../../../../../index.js';
 
 describe('EditGeometryMouseOverInteraction', () => {
   let interaction: EditGeometryMouseOverInteraction;
-  let layerName: string;
   let feature: Feature;
   let vertex: Feature;
   let cursorStyle: CSSStyleDeclaration;
@@ -26,7 +24,6 @@ describe('EditGeometryMouseOverInteraction', () => {
 
   before(() => {
     feature = new Feature();
-    feature[vcsLayerName] = layerName;
     vertex = new Feature();
     vertex[vertexSymbol] = true;
     map = new OpenlayersMap({});

@@ -306,7 +306,6 @@ export type {
 } from './src/layer/tileProvider/tileProvider.js';
 export {
   mercatorResolutionsToLevel,
-  rectangleToExtent,
   default as TileProvider,
 } from './src/layer/tileProvider/tileProvider.js';
 export type { URLTemplateTileProviderOptions } from './src/layer/tileProvider/urlTemplateTileProvider.js';
@@ -804,6 +803,7 @@ export {
   requestArrayBuffer,
   getInitForUrl,
 } from './src/util/fetch.js';
+export { getCaughtError } from './src/util/error.js';
 export {
   getFlatCoordinatesFromSimpleGeometry,
   getFlatCoordinateReferences,
@@ -847,6 +847,7 @@ export {
   getCartesianPitch,
   spherical2Distance,
   ecef3DDistance,
+  rectangleToMercatorExtent,
 } from './src/util/math.js';
 export type {
   OverrideCollection,

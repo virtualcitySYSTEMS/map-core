@@ -4,6 +4,7 @@ import VectorLayer from './vectorLayer.js';
 import Projection from '../util/projection.js';
 import { layerClassRegistry } from '../classRegistry.js';
 import { getInitForUrl, requestUrl } from '../util/fetch.js';
+import { getCaughtError } from '../util/error.js';
 
 export type WFSOptions = VectorOptions & {
   /**
@@ -145,7 +146,7 @@ class WFSLayer extends VectorLayer {
           this.getLogger().info(
             `Could not send request for loading layer content (${String(err)})`,
           );
-          return Promise.reject(err as Error);
+          return Promise.reject(getCaughtError(err));
         });
 
       return this._dataFetchedPromise;

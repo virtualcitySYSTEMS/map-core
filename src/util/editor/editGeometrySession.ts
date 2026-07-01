@@ -76,8 +76,8 @@ function createEditLineStringGeometryInteraction(
   options: EditGeometrySessionOptions,
   snapTo: SnapType[],
 ): EditGeometryInteraction {
-  const geometry =
-    feature[obliqueGeometry] ?? (feature.getGeometry() as LineString);
+  const geometry = (feature[obliqueGeometry] ??
+    feature.getGeometry()) as LineString;
   const olcsProps = getOlcsPropsFromFeature(feature);
   const vertices = geometry
     .getCoordinates()
@@ -158,8 +158,8 @@ function createEditCircleGeometryInteraction(
   scratchLayer: VectorLayer,
   options: EditGeometrySessionOptions,
 ): EditGeometryInteraction {
-  const geometry =
-    feature[obliqueGeometry] ?? (feature.getGeometry() as Circle);
+  const geometry = (feature[obliqueGeometry] ??
+    feature.getGeometry()) as Circle;
   const olcsProps = getOlcsPropsFromFeature(feature);
   const vertices = geometry
     .getCoordinates()
@@ -221,8 +221,8 @@ function createEditBBoxGeometryInteraction(
   scratchLayer: VectorLayer,
   options: EditGeometrySessionOptions,
 ): EditGeometryInteraction {
-  const geometry =
-    feature[obliqueGeometry] ?? (feature.getGeometry() as Polygon);
+  const geometry = (feature[obliqueGeometry] ??
+    feature.getGeometry()) as Polygon;
   const olcsProps = getOlcsPropsFromFeature(feature);
   const vertices = geometry
     .getCoordinates()[0]
@@ -313,8 +313,8 @@ function createEditSimplePolygonInteraction(
   options: EditGeometrySessionOptions,
   snapTo: SnapType[],
 ): EditGeometryInteraction {
-  const geometry =
-    feature[obliqueGeometry] ?? (feature.getGeometry() as Polygon);
+  const geometry = (feature[obliqueGeometry] ??
+    feature.getGeometry()) as Polygon;
   const linearRing = geometry.getLinearRing(0) as LinearRing;
   const olcsProps = getOlcsPropsFromFeature(feature);
 
@@ -399,7 +399,7 @@ function createEditPointInteraction(
   scratchLayer: VectorLayer,
   layer: VectorLayer,
 ): EditGeometryInteraction {
-  const geometry = feature[obliqueGeometry] ?? (feature.getGeometry() as Point);
+  const geometry = (feature[obliqueGeometry] ?? feature.getGeometry()) as Point;
   const olcsProps = getOlcsPropsFromFeature(feature);
 
   const vertex = createVertex(geometry.getCoordinates(), olcsProps, 0);
@@ -539,9 +539,9 @@ function startEditGeometrySession(
       currentFeature = feature;
       currentFeature[createSync] = true;
       app.maps.eventHandler.featureInteraction.excludeFromPickPosition(feature);
-      const geometry =
-        feature[obliqueGeometry] ?? (feature.getGeometry() as Geometry);
-      const geometryType = geometry.getType();
+      const geometry = (feature[obliqueGeometry] ??
+        feature.getGeometry()) as Geometry;
+      const geometryType = geometry.getType() as GeometryType;
       scratchLayer.vectorProperties.altitudeMode =
         layer.vectorProperties.getAltitudeMode(feature);
       if (geometryType === GeometryType.Polygon) {

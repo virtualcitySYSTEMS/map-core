@@ -154,7 +154,7 @@ function createEndingPlanes(coords: Coordinate[]): ClippingPlane[] {
 export function createClippingPlaneCollection(
   feature: Feature,
   options: ClippingPlaneCreationOptions = {},
-  transformMatrix: Matrix4 | undefined = undefined,
+  transformMatrix?: Matrix4,
 ): ClippingPlaneCollection | null {
   check(feature, Feature);
   check(options, Object);

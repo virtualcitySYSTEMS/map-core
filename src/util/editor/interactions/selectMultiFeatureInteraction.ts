@@ -78,7 +78,7 @@ class SelectMultiFeatureInteraction
     this._selectedFeatures.clear();
     const featureArray = Array.isArray(features) ? features : [features];
     const olFeatures = await Promise.all(
-      featureArray.map((f) => {
+      featureArray.map(async (f) => {
         if ((f as Cesium3DTileFeature)[isTiledFeature]) {
           return (
             this._layer as FeatureStoreLayer

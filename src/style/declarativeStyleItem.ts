@@ -257,7 +257,8 @@ class DeclarativeStyleItem extends StyleItem {
       const text = this.cesiumStyle.labelText.evaluate(feature);
       if (text) {
         const textStyle = defaultText.clone();
-        textStyle.setText(text.toString());
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-conversion
+        textStyle.setText(String(text));
         if (this.cesiumStyle.font) {
           const font = this.cesiumStyle.font.evaluate(feature);
           if (font) {

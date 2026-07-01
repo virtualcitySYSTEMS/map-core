@@ -733,8 +733,7 @@ class CesiumMap extends BaseCesiumMap {
     this._clusterDataSourceDisplay = new DataSourceDisplay({
       scene: this._cesiumWidget.scene,
       dataSourceCollection,
-      visualizersCallback:
-        visualizersCallback as unknown as DataSourceDisplay.VisualizersCallback, // XXX remove after type fix in cesium,
+      visualizersCallback,
     });
 
     this._listeners.push(

@@ -19,7 +19,6 @@
     "noFallthroughCasesInSwitch": false,
 
     /* Module Resolution Options */
-    "baseUrl": ".",
     "paths": {
       "rbush-knn": ["../types/rbush-knn"],
       "rbush": ["../types/rbush"]

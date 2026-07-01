@@ -230,9 +230,7 @@ function makeOverrideCollection<
             getLogger().error('failed to deserialize item');
             return;
           }
-          reincarnation[moduleIdSymbol] = serializedShadow[
-            moduleIdSymbol
-          ] as string;
+          reincarnation[moduleIdSymbol] = serializedShadow[moduleIdSymbol];
           const index = getShadowIndex(
             reincarnation,
             item,

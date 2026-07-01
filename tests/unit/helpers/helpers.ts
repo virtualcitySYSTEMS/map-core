@@ -31,15 +31,17 @@ export function replaceRequestAnimationFrame(): {
   cleanup: () => void;
 } {
   let callbacks: FrameRequestCallback[] = [];
-  const originalRequestAnimationFrame = global.requestAnimationFrame;
-  const originalCancelAnimationFrame = global.cancelAnimationFrame;
+  const originalRequestAnimationFrame = globalThis.requestAnimationFrame;
+  const originalCancelAnimationFrame = globalThis.cancelAnimationFrame;
 
-  global.requestAnimationFrame = (callback: FrameRequestCallback): number => {
+  globalThis.requestAnimationFrame = (
+    callback: FrameRequestCallback,
+  ): number => {
     callbacks.push(callback);
     return 0;
   };
 
-  global.cancelAnimationFrame = (): void => {
+  globalThis.cancelAnimationFrame = (): void => {
     callbacks = [];
   };
 
@@ -52,8 +54,8 @@ export function replaceRequestAnimationFrame(): {
       });
     },
     cleanup(): void {
-      global.requestAnimationFrame = originalRequestAnimationFrame;
-      global.cancelAnimationFrame = originalCancelAnimationFrame;
+      globalThis.requestAnimationFrame = originalRequestAnimationFrame;
+      globalThis.cancelAnimationFrame = originalCancelAnimationFrame;
     },
   };
 }

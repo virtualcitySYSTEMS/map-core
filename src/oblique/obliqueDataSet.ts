@@ -15,6 +15,7 @@ import { getTerrainProviderForUrl } from '../layer/terrainHelpers.js';
 import type { ProjectionOptions } from '../util/projection.js';
 import Projection from '../util/projection.js';
 import { getInitForUrl, requestJson } from '../util/fetch.js';
+import { getCaughtError } from '../util/error.js';
 import type ObliqueImage from './obliqueImage.js';
 import type {
   ObliqueDataSetTerrainProviderOptions,
@@ -144,7 +145,7 @@ class ObliqueDataSet {
           return this._initialize(data);
         })
         .catch((err: unknown) => {
-          return Promise.reject(err as Error);
+          return Promise.reject(getCaughtError(err));
         });
     }
     return this._loadingPromise;

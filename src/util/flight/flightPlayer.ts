@@ -12,7 +12,7 @@ import CesiumMap from '../../map/cesiumMap.js';
 import { getSplineAndTimesForInstance } from './flightHelpers.js';
 import FlightInstance from './flightInstance.js';
 import VcsEvent from '../../vcsEvent.js';
-import VcsApp from '../../vcsApp.js';
+import type VcsApp from '../../vcsApp.js';
 
 export type FlightPlayerClock = {
   readonly startTime: number;
@@ -97,12 +97,11 @@ export async function createFlightPlayer(
   app: VcsApp,
 ): Promise<FlightPlayer> {
   check(instance, FlightInstance);
-  check(app, VcsApp);
 
   let cesiumMap: CesiumMap =
-    app.maps.activeMap instanceof CesiumMap
+    app?.maps?.activeMap instanceof CesiumMap
       ? app.maps.activeMap
-      : (app.maps.getByType(CesiumMap.className)[0] as CesiumMap);
+      : (app?.maps?.getByType(CesiumMap.className)?.[0] as CesiumMap);
   if (!cesiumMap) {
     throw new Error('Cannot start a flight player without a cesium map');
   }

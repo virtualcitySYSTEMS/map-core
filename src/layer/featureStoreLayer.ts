@@ -39,6 +39,7 @@ import DeclarativeStyleItem from '../style/declarativeStyleItem.js';
 import VectorObliqueImpl from './oblique/vectorObliqueImpl.js';
 import Extent from '../util/extent.js';
 import { isMobile } from '../util/isMobile.js';
+import { getCaughtError } from '../util/error.js';
 import { layerClassRegistry } from '../classRegistry.js';
 import { requestJson } from '../util/fetch.js';
 import { vcsLayerName } from './layerSymbols.js';
@@ -561,7 +562,7 @@ class FeatureStoreLayer extends VectorLayer {
           return features[0];
         })
         .catch((err: unknown) => {
-          this.getLogger().error((err as Error).message);
+          this.getLogger().error(getCaughtError(err).message);
         }) as Promise<Feature>;
     }
     return Promise.reject(new Error('no injected fetching function'));

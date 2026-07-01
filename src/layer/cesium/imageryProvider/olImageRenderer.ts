@@ -5,6 +5,7 @@ import { buffer, type Extent, getCenter } from 'ol/extent.js';
 import { getLogger } from '@vcsuite/logger';
 import { parseInteger } from '@vcsuite/parsers';
 import { rectangleToMercatorExtent } from '../../../util/math.js';
+import { getCaughtError } from '../../../util/error.js';
 
 export type OLImageRenderer = {
   readonly isRendering: boolean;
@@ -149,9 +150,9 @@ export function createOLImageRenderer(
 
         renderMap.once('rendercomplete', wrappedHandleRenderComplete);
         renderMap.render();
-      } catch (e: unknown) {
+      } catch (err: unknown) {
         getLogger('MapboxVectorTileImageryProvider').error(
-          `Error rendering tile: ${(e as Error).message}`,
+          `Error rendering tile: ${getCaughtError(err).message}`,
         );
         finish(emptyCanvas);
       }

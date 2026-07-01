@@ -155,7 +155,7 @@ class OverrideClassRegistry<T extends AbstractCtor> {
       logger().error(`could not find constructor ${className}`);
       return undefined;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
     return new Constructor(...args);
   }
 
@@ -170,7 +170,6 @@ class OverrideClassRegistry<T extends AbstractCtor> {
   ): InstanceType<T> | undefined {
     check(options, { type: String });
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return this.create(options.type, options, ...args);
   }
 

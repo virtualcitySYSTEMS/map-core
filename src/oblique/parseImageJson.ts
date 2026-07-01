@@ -38,9 +38,7 @@ export function getVersionFromImageJson(json: {
     }
     const buildNumber = json.version.match(/-\d+-/);
     if (buildNumber) {
-      version.buildNumber = Number(
-        buildNumber?.[0]?.match?.(/\d+/)?.[0] as string,
-      );
+      version.buildNumber = Number(buildNumber?.[0]?.match?.(/\d+/)?.[0]);
     }
   }
   return version as ObliqueVersion;

@@ -1,5 +1,4 @@
 import { is, oneOf } from '@vcsuite/check';
-import type { StyleItemOptions } from './styleItem.js';
 import StyleItem from './styleItem.js';
 import type { DeclarativeStyleItemOptions } from './declarativeStyleItem.js';
 import { defaultDeclarativeStyle } from './declarativeStyleItem.js';
@@ -18,9 +17,7 @@ export function getStyleOrDefaultStyle(
     if (styleOptions instanceof StyleItem) {
       return styleOptions;
     } else {
-      const styleItem = styleClassRegistry.createFromTypeOptions(
-        styleOptions as StyleItemOptions,
-      );
+      const styleItem = styleClassRegistry.createFromTypeOptions(styleOptions);
       if (styleItem) {
         if (
           styleItem instanceof VectorStyleItem &&

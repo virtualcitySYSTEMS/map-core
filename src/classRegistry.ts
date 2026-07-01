@@ -81,7 +81,7 @@ class ClassRegistry<T extends AbstractCtor> {
       logger().error(`could not find constructor ${className}`);
       return undefined;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
     return new Ctor(...args);
   }
 
@@ -90,7 +90,7 @@ class ClassRegistry<T extends AbstractCtor> {
     ...args: unknown[]
   ): InstanceType<T> | undefined {
     check(options, { type: String });
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
     return this.create(options.type, options, ...args);
   }
 }
@@ -152,5 +152,5 @@ export function getObjectFromClassRegistry<T extends CtorType<T>>(
     logger().warning('ObjectCreation failed: could not create new Object');
     return null;
   }
-  return object as InstanceType<T>;
+  return object;
 }

@@ -282,7 +282,7 @@ class RasterLayer<
 
     this._opacity = parseNumberRange(
       options.opacity,
-      defaultOptions.opacity as number,
+      defaultOptions.opacity,
       0.0,
       1.0,
     );

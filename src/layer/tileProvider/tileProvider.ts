@@ -3,16 +3,11 @@ import RBush from 'rbush';
 import { check } from '@vcsuite/check';
 import {
   Rectangle,
-  Math as CesiumMath,
   WebMercatorTilingScheme,
   Cartographic,
 } from '@vcmap-cesium/engine';
 import LRUCache from 'ol/structs/LRUCache.js';
-import {
-  buffer,
-  createOrUpdateFromCoordinate,
-  type Extent as OLExtent,
-} from 'ol/extent.js';
+import { buffer, createOrUpdateFromCoordinate } from 'ol/extent.js';
 import type { Feature } from 'ol/index.js';
 import type { Coordinate } from 'ol/coordinate.js';
 import { parseBoolean, parseInteger } from '@vcsuite/parsers';
@@ -20,7 +15,6 @@ import {
   mercatorProjection,
   mercatorToWgs84Transformer,
   wgs84Projection,
-  wgs84ToMercatorTransformer,
 } from '../../util/projection.js';
 import type { VcsObjectOptions } from '../../vcsObject.js';
 import VcsObject from '../../vcsObject.js';
@@ -51,28 +45,6 @@ export type TileProviderRtree = RBush<TileProviderRTreeEntry>;
 export const mercatorResolutionsToLevel = new Array<number>(25);
 for (let i = 0; i < mercatorResolutionsToLevel.length; i++) {
   mercatorResolutionsToLevel[i] = (20037508.3427892 * 2) / 256 / 2 ** (i + 1);
-}
-
-/**
- * transforms cesium geographic rectangle to mercator extent
- * @param  rectangle in wgs84 radians
- * @returns  extent in mercator
- * @deprecated use rectangleToMercatorExtent
- */
-export function rectangleToExtent(rectangle: Rectangle): OLExtent {
-  const baseSouthWestLevel = Rectangle.southwest(rectangle);
-  const baseNorthEastLevel = Rectangle.northeast(rectangle);
-  const baseSouthWestWGS84 = [
-    CesiumMath.toDegrees(baseSouthWestLevel.longitude),
-    CesiumMath.toDegrees(baseSouthWestLevel.latitude),
-  ];
-  const baseNorthEastWGS84 = [
-    CesiumMath.toDegrees(baseNorthEastLevel.longitude),
-    CesiumMath.toDegrees(baseNorthEastLevel.latitude),
-  ];
-  const baseSouthWestMercator = wgs84ToMercatorTransformer(baseSouthWestWGS84);
-  const baseNorthEastMercator = wgs84ToMercatorTransformer(baseNorthEastWGS84);
-  return [...baseSouthWestMercator, ...baseNorthEastMercator];
 }
 
 export type TileProviderOptions = VcsObjectOptions & {
@@ -223,15 +195,16 @@ class TileProvider extends VcsObject {
   }
 
   async setTileCacheSize(value: number): Promise<void> {
-    const promises: (Promise<void> | undefined)[] = [];
+    const promises: (Promise<void> | void)[] = [];
     this._tileCacheSize = value;
     this.cache.forEach((lru, baseLevel) => {
       lru.setSize(this._tileCacheSize);
       while (lru.canExpireCache()) {
-        promises.push(this._removeLastTileFromCache(baseLevel));
+        const cb = this._removeLastTileFromCache(baseLevel);
+        promises.push(cb);
       }
     });
-    await Promise.all(promises);
+    await Promise.all(promises.filter((p): p is Promise<void> => !!p));
   }
 
   /**
@@ -282,7 +255,7 @@ class TileProvider extends VcsObject {
       .then((features) => {
         features.forEach((feature) => {
           const idToUse = this.idProperty
-            ? (feature.get(this.idProperty) as string)
+            ? (feature.get(this.idProperty) as string | number)
             : null;
           if (idToUse != null) {
             feature.setId(String(idToUse));

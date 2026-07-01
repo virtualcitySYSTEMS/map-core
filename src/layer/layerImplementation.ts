@@ -1,6 +1,7 @@
 import VcsObject from '../vcsObject.js';
 import LayerState from './layerState.js';
 import type VcsMap from '../map/vcsMap.js';
+import { getCaughtError } from '../util/error.js';
 import type { LayerImplementationOptions } from './layer.js';
 
 /**
@@ -83,7 +84,7 @@ class LayerImplementation<M extends VcsMap> extends VcsObject {
           if (this.loading) {
             this._state = LayerState.INACTIVE;
           }
-          return Promise.reject(err as Error);
+          return Promise.reject(getCaughtError(err));
         })
         .finally(() => {
           this._loadingPromise = null;

@@ -584,7 +584,7 @@ class VcsApp {
     config.flights = this._flights.serializeModule(moduleId);
     config.categories = [...this._categories]
       .map((c) => c.serializeModule(moduleId))
-      .filter((c) => !!c) as { name: string; items: object[] }[];
+      .filter((c) => !!c);
 
     return config;
   }

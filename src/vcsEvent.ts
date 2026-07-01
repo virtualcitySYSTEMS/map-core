@@ -52,13 +52,16 @@ class VcsEvent<T> {
   }
 
   async awaitRaisedEvent(event: T): Promise<void> {
-    const promises: (void | Promise<void>)[] = [];
-    [...this._listeners].forEach((cb) => {
-      if (this._listeners.has(cb)) {
-        promises.push(cb(event));
-      }
-    });
-    await Promise.all(promises);
+    await Promise.all(
+      [...this._listeners]
+        .map((cb) => {
+          if (this._listeners.has(cb)) {
+            return cb(event);
+          }
+          return undefined;
+        })
+        .filter((p): p is Promise<void> => !!p),
+    );
   }
 
   /**

@@ -80,7 +80,7 @@ class CreatePolygonInteraction
         this.created.raiseEvent(this._geometry);
         this._coordinates = [event.positionOrPixel.slice()];
         this._lastCoordinate = [...event.positionOrPixel];
-        this._validityPlaceHolder = event.positionOrPixel.slice() as Coordinate;
+        this._validityPlaceHolder = event.positionOrPixel.slice();
         this._coordinates.push(this._lastCoordinate);
         this._coordinates.push(this._validityPlaceHolder);
       } else if (this._validityPlaceHolder) {

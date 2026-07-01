@@ -36,6 +36,7 @@ import {
 import { getShapeFromOptions } from './shapesCategory.js';
 import { styleClassRegistry } from '../classRegistry.js';
 import { isSameOrigin } from '../util/urlHelpers.js';
+import { getCaughtError } from '../util/error.js';
 import ModelFill from './modelFill.js';
 
 export type ColorType = OLColor | OLColorLike;
@@ -194,8 +195,8 @@ class VectorStyleItem extends StyleItem {
         option.color = parseColor(option.color);
         check(option.color, [Number]);
         check(option.color.length, oneOf(3, 4));
-      } catch (e) {
-        this.getLogger().error((e as Error).message);
+      } catch (err: unknown) {
+        this.getLogger().error(getCaughtError(err).message);
         option.color = [255, 255, 255, 0.4];
       }
     };

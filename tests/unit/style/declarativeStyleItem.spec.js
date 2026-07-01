@@ -6,6 +6,7 @@ import Icon from 'ol/style/Icon.js';
 import OpenlayersText from 'ol/style/Text.js';
 import Feature from 'ol/Feature.js';
 import Point from 'ol/geom/Point.js';
+import MultiPoint from 'ol/geom/MultiPoint.js';
 import MultiLineString from 'ol/geom/MultiLineString.js';
 import LineString from 'ol/geom/LineString.js';
 import MultiPolygon from 'ol/geom/MultiPolygon.js';
@@ -321,7 +322,7 @@ describe('DeclarativeStyleItem', () => {
       });
     const getMultiPoint = () =>
       new Feature({
-        geometry: new Point([0, 0, 1], 'XYZ'),
+        geometry: new MultiPoint([[0, 0, 1]], 'XYZ'),
         image: 'marker',
       });
     pointTestShape('Point - Circle', getPoint);

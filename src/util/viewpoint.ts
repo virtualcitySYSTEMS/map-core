@@ -3,6 +3,7 @@ import type { Extent as OLExtent } from 'ol/extent.js';
 import { containsCoordinate } from 'ol/extent.js';
 import { EasingFunction, Math as CesiumMath } from '@vcmap-cesium/engine';
 import { parseBoolean, parseNumber } from '@vcsuite/parsers';
+import { is } from '@vcsuite/check';
 import Projection, { wgs84Projection } from './projection.js';
 import type { VcsObjectOptions } from '../vcsObject.js';
 import VcsObject from '../vcsObject.js';
@@ -187,15 +188,15 @@ class Viewpoint extends VcsObject {
 
     this.cameraPosition = null;
     if (
-      Array.isArray(options.cameraPosition) &&
+      is(options.cameraPosition, [Number]) &&
       options.cameraPosition.length === 3
     ) {
-      this.cameraPosition = options.cameraPosition.map((c) => Number(c));
+      this.cameraPosition = options.cameraPosition.slice();
     }
 
     this.groundPosition = null;
-    if (Array.isArray(options.groundPosition)) {
-      this.groundPosition = options.groundPosition.map((c) => Number(c));
+    if (is(options.groundPosition, [Number])) {
+      this.groundPosition = options.groundPosition.slice();
     }
     this.distance = parseNumber(
       options.distance,

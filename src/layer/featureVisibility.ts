@@ -236,7 +236,7 @@ class FeatureVisibility {
         const text = style.getText()?.getText();
         if (text && !Array.isArray(text)) {
           // getText can return a rich Text string[] We do not support this at the moment.
-          usedStyle.label = String(text);
+          usedStyle.label = text;
         }
         usedStyle.style = style;
       } else if (is(style, Function)) {

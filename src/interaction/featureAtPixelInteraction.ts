@@ -77,15 +77,13 @@ function getFeatureFromOlMap(
         (candidateFeature.get('olcs_allowPicking') == null ||
           candidateFeature.get('olcs_allowPicking') === true)
       ) {
-        if ((candidateFeature as Feature)[vectorClusterGroupName]) {
+        if (candidateFeature[vectorClusterGroupName]) {
           const features = candidateFeature.get('features') as Feature[];
           if (features.length === 1) {
             candidateFeature = features[0];
           }
         }
-        feature =
-          (candidateFeature as Feature)[originalFeatureSymbol] ||
-          (candidateFeature as Feature);
+        feature = candidateFeature[originalFeatureSymbol] || candidateFeature;
       }
 
       return true;

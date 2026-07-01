@@ -5,10 +5,12 @@
 - Updated Cesium to 1.142
 - Updated OpenLayers to 10.9.0
 - Changed CI/CD from Node 20 to 24
+- Removed `rectangleToExtent`, use `rectangleToMercatorExtent` instead
 
 ### Features
 
 - Export `ImageStyleOptions` type
+- Export new `getCaughtError` helper
 
 #### Changes
 

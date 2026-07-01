@@ -24,6 +24,7 @@ import type { PanoramaImage } from '../panorama/panoramaImage.js';
 import type PanoramaMap from '../map/panoramaMap.js';
 import PanoramaFeatureHighlight from '../interaction/panoramaFeatureHighlight.js';
 import { EventType } from '../interaction/interactionType.js';
+import { getCaughtError } from './error.js';
 
 export type MapCollectionInitializationError = {
   error: Error;
@@ -453,14 +454,14 @@ class MapCollection extends Collection<VcsMap> {
 
     try {
       await map.initialize();
-    } catch (error) {
+    } catch (err: unknown) {
       // typically unsupported webGL and cesium map
-      getLogger('MapCollection').error(String(error));
+      getLogger('MapCollection').error(getCaughtError(err).message);
       this.remove(map);
       const fallbackMap = this._getFallbackMapOrDefault(map);
       this.initializeError.raiseEvent({
         map,
-        error: error as Error,
+        error: getCaughtError(err),
       });
       if (!map.fallbackMap && map.fallbackToCurrentMap && this._activeMap) {
         this.fallbackMapActivated.raiseEvent(map);

@@ -924,9 +924,8 @@ class VectorProperties {
   set modelAutoScale(value: boolean) {
     check(value, maybe(Boolean));
 
-    const booleanValue = !!value;
-    if (this._modelAutoScale !== booleanValue) {
-      this._modelAutoScale = booleanValue;
+    if (this._modelAutoScale !== value) {
+      this._modelAutoScale = value;
       this.propertyChanged.raiseEvent(['modelAutoScale']);
     }
   }

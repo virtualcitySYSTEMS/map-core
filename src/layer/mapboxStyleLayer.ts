@@ -214,8 +214,7 @@ class MapboxStyleLayer
         featureProviders.length === 0 &&
         attributeProviders.length === 1
       ) {
-        config.featureProvider =
-          attributeProviders[0] as AbstractAttributeProvider;
+        config.featureProvider = attributeProviders[0];
       } else {
         const filteredComposite: CompositeFeatureProviderOptions = {
           ...compositeConfig,

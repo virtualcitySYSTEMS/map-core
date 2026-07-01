@@ -6,6 +6,7 @@ import { parseGeoJSON, writeGeoJSONFeature } from './geojsonHelpers.js';
 import { wgs84Projection } from '../util/projection.js';
 import { layerClassRegistry } from '../classRegistry.js';
 import { getInitForUrl, requestJson } from '../util/fetch.js';
+import { getCaughtError } from '../util/error.js';
 
 export type GeoJSONOptions = VectorOptions & {
   features?: GeoJSONFeature[];
@@ -97,7 +98,7 @@ class GeoJSONLayer extends VectorLayer {
           this.getLogger().warning(
             `Could not send request for loading layer content (${String(err)})`,
           );
-          return Promise.reject(err as Error);
+          return Promise.reject(getCaughtError(err));
         });
     } else {
       this._dataFetchedPromise = Promise.resolve();

@@ -5,6 +5,7 @@ import { vcsLayerName } from './layerSymbols.js';
 import { layerClassRegistry } from '../classRegistry.js';
 import type { LayerOptions } from './layer.js';
 import { getResourceOrUrl } from './cesium/resourceHelper.js';
+import { getCaughtError } from '../util/error.js';
 
 export type CzmlOptions = LayerOptions & {
   sourceUri?: string;
@@ -75,7 +76,7 @@ class CzmlLayer extends DataSourceLayer {
           this._loadedResolve();
         })
         .catch((err: unknown) => {
-          this._loadedReject(err as Error);
+          this._loadedReject(getCaughtError(err));
         });
     }
     return this._initializedPromise;

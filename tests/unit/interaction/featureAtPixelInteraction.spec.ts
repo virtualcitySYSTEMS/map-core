@@ -265,9 +265,7 @@ describe('FeatureAtPixelInteraction', () => {
           __proto__: createDummyCesium3DTileFeature(),
           content: { tile: { i3sNode } },
         };
-        const result = getFeatureFromPickObject(
-          feature as unknown as { content: { tile: { i3sNode: I3SNode } } },
-        );
+        const result = getFeatureFromPickObject(feature);
         expect(result).to.deep.include({
           content: { tile: { i3sNode } },
         });

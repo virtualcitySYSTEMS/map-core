@@ -44,10 +44,7 @@ export default class UrlIdAttributeProvider extends AbstractAttributeProvider {
   protected async _getAttributes(
     id: string,
   ): Promise<Record<string, unknown> | undefined> {
-    const url = this._urlTemplate.replace(
-      '{id}',
-      encodeURIComponent(String(id)),
-    );
+    const url = this._urlTemplate.replace('{id}', encodeURIComponent(id));
 
     try {
       return await requestJson<Record<string, unknown>>(

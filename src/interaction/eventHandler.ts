@@ -15,6 +15,7 @@ import {
 import FeatureProviderInteraction from './featureProviderInteraction.js';
 import EnsurePositionInteraction from './ensurePositionInteraction.js';
 import VcsEvent from '../vcsEvent.js';
+import { getCaughtError } from '../util/error.js';
 
 type EventHandlerExclusiveInteraction = {
   id: string;
@@ -426,8 +427,8 @@ class EventHandler {
       this._running = true;
       this._interactionChain
         .pipe(event)
-        .catch((error: unknown) => {
-          getLogger().error((error as Error).message);
+        .catch((err: unknown) => {
+          getLogger().error(getCaughtError(err).message);
         })
         .finally(() => {
           event.chainEnded?.raiseEvent();

@@ -325,7 +325,7 @@ class FeatureStoreLayerChanges extends VcsObject {
    */
   pauseTracking(event: keyof FeatureStoreChangesListeners): void {
     if (this._changesListeners[event]) {
-      unByKey(this._changesListeners[event] as EventsKey);
+      unByKey(this._changesListeners[event]);
       this._changesListeners[event] = null;
     }
   }

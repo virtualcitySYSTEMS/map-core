@@ -16,6 +16,7 @@ import type {
   DepthGDALMetadata,
   PanoramaFileDirectoryMetadata,
 } from './panoramaImage.js';
+import { getCaughtError } from '../util/error.js';
 
 export type PanoramaResourceType = 'rgb' | 'intensity' | 'depth';
 export type PanoramaResourceData<T extends PanoramaResourceType> =
@@ -185,10 +186,10 @@ function createPanoramaResourceProvider(
             type,
             resourceData.data as unknown as PanoramaResourceData<PanoramaResourceType>,
           );
-        } catch (error) {
+        } catch (err: unknown) {
           tileError.raiseEvent({
             tileCoordinate,
-            error: error as Error,
+            error: getCaughtError(err),
             type,
           });
         }

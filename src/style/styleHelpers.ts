@@ -18,6 +18,7 @@ import type {
   VectorStyleItemText,
 } from './vectorStyleItem.js';
 import { isSameOrigin } from '../util/urlHelpers.js';
+import { getCaughtError } from '../util/error.js';
 
 function getLogger(): Logger {
   return getLoggerByName('StyleHelpers');
@@ -121,7 +122,7 @@ export function parseColor(
   if (defaultColor) {
     return defaultColor;
   }
-  throw new Error(`Cannot parse color ${String(color as unknown)}`);
+  throw new Error(`Cannot parse color ${JSON.stringify(color)}`);
 }
 
 export function getCesiumColor(
@@ -362,8 +363,8 @@ export function getFillOptions(fill: Fill): FillOptions {
   let color = fill.getColor();
   try {
     color = parseColor(color as ColorType).slice();
-  } catch (e) {
-    getLogger().warning((e as Error).message);
+  } catch (err: unknown) {
+    getLogger().warning(getCaughtError(err).message);
   }
   return { color };
 }
@@ -381,8 +382,8 @@ export function getStrokeOptions(stroke: Stroke): StrokeOptions {
   if (color) {
     try {
       color = parseColor(color).slice();
-    } catch (e) {
-      getLogger().warning((e as Error).message);
+    } catch (err: unknown) {
+      getLogger().warning(getCaughtError(err).message);
     }
   }
   const options: StrokeOptions = {
@@ -449,8 +450,8 @@ export function getImageStyleOptions(image: ImageStyle): ImageStyleOptions {
       if (color) {
         options.color = color;
       }
-    } catch (e) {
-      getLogger().warning((e as Error).message);
+    } catch (err: unknown) {
+      getLogger().warning(getCaughtError(err).message);
     }
     if (image.getSrc()) {
       options.src = image.getSrc();
