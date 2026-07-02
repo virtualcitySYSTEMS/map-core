@@ -54,6 +54,27 @@ describe('WMSLayer', () => {
           expect(redraw).to.have.been.called;
         });
       });
+
+      describe('when initialized with feature info', () => {
+        let featureInfoLayer: WMSLayer;
+
+        beforeEach(async () => {
+          featureInfoLayer = new WMSLayer({ featureInfo: {} });
+          await featureInfoLayer.initialize();
+        });
+
+        afterEach(() => {
+          featureInfoLayer.destroy();
+        });
+
+        it('should reload to refresh the feature provider', async () => {
+          await featureInfoLayer.setLayers(['one', 'two']);
+          const params = (
+            featureInfoLayer.featureProvider as WMSFeatureProvider
+          ).wmsSource.getParams() as Record<string, string>;
+          expect(params).to.have.property('LAYERS', 'one,two');
+        });
+      });
     });
   });
 

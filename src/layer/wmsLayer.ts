@@ -228,7 +228,7 @@ class WMSLayer extends RasterLayer<WmsCesiumImpl | WmsOpenlayersImpl> {
     check(layers, oneOf(String, [String]));
     const layersArray = Array.isArray(layers) ? layers : [layers];
     this.parameters.LAYERS = layersArray.join(',');
-    await this.forceRedraw();
+    await this.reload();
   }
 
   /**
