@@ -22,11 +22,21 @@ global.fetch = fetch;
 global.ResizeObserver = ResizeObserverPolyfill;
 global.ShadowRoot = Function;
 global.ImageBitmap = HTMLCanvasElement;
+global.ImageData = canvas.ImageData;
 global.OffscreenCanvas = HTMLCanvasElement;
 global.createImageBitmap = (image, sx, sy, sw, sh) => {
   if (image instanceof HTMLCanvasElement) {
     return Promise.resolve(image);
   }
+
+  // PanoramaTileProvider uses createImageBitmap(new ImageData(...)); emulate that overload in node tests.
+  if (image instanceof global.ImageData) {
+    const canElem = canvas.createCanvas(image.width, image.height);
+    const ctx = canElem.getContext('2d');
+    ctx.putImageData(image, 0, 0);
+    return Promise.resolve(canElem);
+  }
+
   const canElem = canvas.createCanvas(sw, sh);
   const ctx = canElem.getContext('2d');
   const imageData = canvas.createImageData(

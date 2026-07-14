@@ -1,11 +1,15 @@
-import type { PanoramaFileDirectoryMetadata } from '../panorama/panoramaImage.js';
+import type { PanoramaResourceType } from '../panorama/panoramaTileProvider.js';
 
 declare let self: Worker;
 
+type PanoramaDecoderParameters = {
+  vcsPanoramaType?: PanoramaResourceType;
+};
 type PanoramaMessageEvent = MessageEvent<{
-  id: string;
+  jobId: number;
   buffer: ArrayBuffer;
-  fileDirectory: { vcsPanorama: PanoramaFileDirectoryMetadata };
+  compression: number;
+  decoderParameters: PanoramaDecoderParameters;
 }>;
 
 async function createDepthArray(buffer: Blob): Promise<Float32Array> {
@@ -17,34 +21,35 @@ async function createDepthArray(buffer: Blob): Promise<Float32Array> {
   const result = new Float32Array(depthData.length);
 
   for (let i = 0; i < depthData.length; i++) {
-    result[i] = depthData[i] / 65535; // Normalize to [0, 1]
+    result[i] = depthData[i] / 65535;
   }
 
   return result;
 }
 
 self.addEventListener('message', (e: PanoramaMessageEvent) => {
-  const { id, buffer, fileDirectory } = e.data;
-  const blob = new Blob([buffer]);
+  const { jobId, buffer, decoderParameters } = e.data;
+  const { vcsPanoramaType } = decoderParameters;
 
+  const blob = new Blob([buffer]);
   let dataPromise: Promise<ImageBitmap | Float32Array>;
 
-  if (fileDirectory.vcsPanorama?.type === 'image') {
+  if (vcsPanoramaType === 'rgb' || vcsPanoramaType === 'intensity') {
     dataPromise = createImageBitmap(blob, { imageOrientation: 'flipY' });
-  } else if (fileDirectory.vcsPanorama?.type === 'depth') {
+  } else if (vcsPanoramaType === 'depth') {
     dataPromise = createDepthArray(blob);
   } else {
-    dataPromise = Promise.reject(new Error('Missing vcsPanorama metadata'));
+    dataPromise = Promise.reject(new Error('Missing vcsPanoramaType metadata'));
   }
 
   dataPromise
     .then((decoded) => {
       self.postMessage(
-        { decoded, id },
+        { decoded, jobId },
         decoded instanceof ImageBitmap ? [decoded] : [decoded.buffer],
       );
     })
     .catch((error: unknown) => {
-      self.postMessage({ error, id });
+      self.postMessage({ error, jobId });
     });
 });

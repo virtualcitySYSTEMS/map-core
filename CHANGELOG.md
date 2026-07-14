@@ -5,6 +5,8 @@
 - Updated Cesium to 1.142
 - Updated OpenLayers to 10.9.0
 - Changed CI/CD from Node 20 to 24
+- Updated Geotiff to 3.0.5
+- Removed `PanoramaImageDecoder`
 - Removed `rectangleToExtent`, use `rectangleToMercatorExtent` instead
 
 ### Features

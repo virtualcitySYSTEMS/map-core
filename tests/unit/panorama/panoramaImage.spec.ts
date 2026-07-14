@@ -28,9 +28,9 @@ describe('PanoramaImage', () => {
       );
     });
 
-    afterEach(() => {
+    afterEach(async () => {
       if (image) {
-        image.close();
+        await image.close();
       }
 
       if (panoramaImage) {
@@ -218,7 +218,7 @@ describe('PanoramaImage', () => {
 
       expect(badMetadataPanoramaDepth.maxDepth).to.equal(50);
       badMetadataPanoramaDepth.destroy();
-      newImage.close();
+      await newImage.close();
     });
   });
 });

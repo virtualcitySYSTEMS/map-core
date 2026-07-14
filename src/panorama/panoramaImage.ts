@@ -6,14 +6,11 @@ import {
   Transforms,
 } from '@vcmap-cesium/engine';
 import { v4 as uuid } from 'uuid';
-import type { GeoTIFFImage, Pool, GeoTIFF } from 'geotiff';
+import type { BaseDecoder, GeoTIFF, GeoTIFFImage, Pool } from 'geotiff';
 import { fromUrl } from 'geotiff';
 import { getLogger } from '@vcsuite/logger';
 import type { Size } from 'ol/size.js';
-import type {
-  PanoramaImageDecoder,
-  PanoramaTileProvider,
-} from './panoramaTileProvider.js';
+import type { PanoramaTileProvider } from './panoramaTileProvider.js';
 import { createPanoramaTileProvider } from './panoramaTileProvider.js';
 import { imageSphericalToCartesian } from './sphericalCoordinates.js';
 import type PanoramaDatasetLayer from '../layer/panoramaDatasetLayer.js';
@@ -149,7 +146,7 @@ export type CreatePanoramaImageOptions = {
   /**
    * an optional pool or decoder to be passed to the tile provider. mainly used in testing
    */
-  poolOrDecoder?: Pool | PanoramaImageDecoder;
+  poolOrDecoder?: Pool | BaseDecoder;
   /**
    * The size of the tile cache. If not provided, the default is used.
    */
@@ -286,15 +283,10 @@ async function loadRGBImages(
   { images: GeoTIFFImage[] } & PanoramaImageMetadata & PanoramaGDALMetadata
 > {
   const { images, ...meta } = await loadMetadataFromImage(image);
-  const gdalMetadata = parsePanoramaGDALMetadata(
-    images.at(-1)!.getGDALMetadata() as Record<string, string> | undefined,
-  );
-
-  images.forEach((i) => {
-    (
-      i.fileDirectory as { vcsPanorama: PanoramaFileDirectoryMetadata }
-    ).vcsPanorama = { type: 'image' };
-  });
+  const metadata = (await images.at(-1)!.getGDALMetadata()) as
+    | Record<string, string>
+    | undefined;
+  const gdalMetadata = parsePanoramaGDALMetadata(metadata);
 
   return {
     images,
@@ -386,12 +378,6 @@ export async function createPanoramaImage(
         throw new Error('Intensity levels do not match RGB levels');
       }
 
-      intensity.forEach((i) => {
-        (
-          i.fileDirectory as { vcsPanorama: PanoramaFileDirectoryMetadata }
-        ).vcsPanorama = { type: 'image' };
-      });
-
       return intensity;
     };
   }
@@ -424,17 +410,10 @@ export async function createPanoramaImage(
       throw new Error('Depth levels do not match RGB levels');
     }
 
-    const depthMetadata = parseDepthGDALMetadata(
-      depthImages.at(-1)!.getGDALMetadata() as Record<string, string>,
-    );
-    depthImages.forEach((i) => {
-      (
-        i.fileDirectory as { vcsPanorama: PanoramaFileDirectoryMetadata }
-      ).vcsPanorama = {
-        type: 'depth',
-      };
-    });
-
+    const metadata = (await depthImages.at(-1)!.getGDALMetadata()) as
+      | Record<string, string>
+      | undefined;
+    const depthMetadata = parseDepthGDALMetadata(metadata);
     depth = { levelImages: depthImages, metadata: depthMetadata };
   }
 

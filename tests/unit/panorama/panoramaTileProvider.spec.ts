@@ -9,7 +9,7 @@ import type {
 import type { PanoramaTile } from '../../../src/panorama/panoramaTile.js';
 import type { PanoramaImage } from '../../../src/panorama/panoramaImage.js';
 import { createPanoramaImage } from '../../../src/panorama/panoramaImage.js';
-import { createTestingDecoder } from '../helpers/panoramaHelpers.js';
+import { TestingDecoder } from '../helpers/panoramaHelpers.js';
 import { createTileCoordinate } from '../../../src/panorama/panoramaTileCoordinate.js';
 
 function tileLoadedPromise(tileProvider: PanoramaTileProvider): Promise<void> {
@@ -41,8 +41,8 @@ describe('PanoramaTileProvider', () => {
     image = await fromFile('tests/data/panorama/testRgbGeotiff.tif');
   });
 
-  after(() => {
-    image.close();
+  after(async () => {
+    await image.close();
   });
 
   describe('loading of tiles', () => {
@@ -51,7 +51,7 @@ describe('PanoramaTileProvider', () => {
 
     beforeEach(async () => {
       panoramaImage = await createPanoramaImage(image, {
-        poolOrDecoder: createTestingDecoder(),
+        poolOrDecoder: new TestingDecoder(),
         providerConcurrency: 1,
         tileCacheSize: 3,
       });
@@ -169,7 +169,7 @@ describe('PanoramaTileProvider', () => {
     beforeEach(async () => {
       panoramaImage = await createPanoramaImage(image, {
         depthImage,
-        poolOrDecoder: createTestingDecoder(),
+        poolOrDecoder: new TestingDecoder(),
         providerConcurrency: 1,
         tileCacheSize: 3,
       });
@@ -180,8 +180,8 @@ describe('PanoramaTileProvider', () => {
       panoramaImage.destroy();
     });
 
-    after(() => {
-      depthImage.close();
+    after(async () => {
+      await depthImage.close();
     });
 
     it('should load tiles', async () => {
@@ -235,7 +235,7 @@ describe('PanoramaTileProvider', () => {
       panoramaImage = await createPanoramaImage(image, {
         depthImage,
         intensityImage,
-        poolOrDecoder: createTestingDecoder(),
+        poolOrDecoder: new TestingDecoder(),
         providerConcurrency: 1,
         tileCacheSize: 3,
       });
@@ -248,9 +248,9 @@ describe('PanoramaTileProvider', () => {
       panoramaImage.destroy();
     });
 
-    after(() => {
-      depthImage.close();
-      intensityImage.close();
+    after(async () => {
+      await depthImage.close();
+      await intensityImage.close();
     });
 
     it('should load tiles', async () => {
@@ -331,7 +331,7 @@ describe('PanoramaTileProvider', () => {
 
     beforeEach(async () => {
       panoramaImage = await createPanoramaImage(image, {
-        poolOrDecoder: createTestingDecoder(),
+        poolOrDecoder: new TestingDecoder(),
         providerConcurrency: 1,
         tileCacheSize: 3,
       });

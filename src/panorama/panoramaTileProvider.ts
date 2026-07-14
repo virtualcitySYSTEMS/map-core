@@ -1,7 +1,7 @@
 import type { Matrix4 } from '@vcmap-cesium/engine';
 import { getLogger } from '@vcsuite/logger';
-import type { GeoTIFFImage } from 'geotiff';
-import { Pool } from 'geotiff';
+import { addDecoder, BaseDecoder, Pool } from 'geotiff';
+import type { DecoderWorker, GeoTIFFImage } from 'geotiff';
 import type { Size } from 'ol/size.js';
 import type { PanoramaTile } from './panoramaTile.js';
 import { createPanoramaTile } from './panoramaTile.js';
@@ -12,10 +12,7 @@ import {
   type PanoramaTileCoordinate,
   getTileSphericalExtent,
 } from './panoramaTileCoordinate.js';
-import type {
-  DepthGDALMetadata,
-  PanoramaFileDirectoryMetadata,
-} from './panoramaImage.js';
+import type { DepthGDALMetadata } from './panoramaImage.js';
 import { getCaughtError } from '../util/error.js';
 
 export type PanoramaResourceType = 'rgb' | 'intensity' | 'depth';
@@ -51,13 +48,6 @@ type PanoramaResourceProvider = {
   readonly loading: boolean;
   loadingStateChanged: VcsEvent<boolean>;
   tileError: VcsEvent<PanoramaTileLoadError>;
-};
-
-export type PanoramaImageDecoder = {
-  decode(
-    fileDirectory: { vcsPanorama: PanoramaFileDirectoryMetadata },
-    buffer: ArrayBuffer,
-  ): Promise<PanoramaResourceData<PanoramaResourceType>>;
 };
 
 type PanoramaResource<T extends PanoramaResourceType> = {
@@ -120,7 +110,19 @@ export type PanoramaTileProvider = {
   destroy(): void;
 };
 
+/**
+ * We register a custom compression id as a GeoTIFF workaround.
+ * GeoTIFF is used only for worker-pool management (spawning and scheduling workers).
+ * Actual panorama decoding is done by our custom worker logic, which handles `rgb`,
+ * `intensity`, and `depth` resources.
+ * This lets us support all panorama resource types through one pool setup, even
+ * though GeoTIFF allows only one decoder per compression id.
+ */
+const PANORAMA_DECODER_ID = 50002;
+
 let defaultImagePool: Pool | undefined;
+let panoramaCompressionRegistered = false;
+
 function getDefaultImagePool(): Pool {
   if (!defaultImagePool) {
     let workerUrl: URL;
@@ -133,11 +135,20 @@ function getDefaultImagePool(): Pool {
       workerUrl = new URL('../workers/panoramaImageWorker.js', import.meta.url);
     }
 
-    defaultImagePool = new Pool(undefined, () => {
-      return new Worker(workerUrl, {
-        type: 'module',
-      });
-    });
+    if (!panoramaCompressionRegistered) {
+      addDecoder(
+        PANORAMA_DECODER_ID,
+        () => Promise.resolve(BaseDecoder),
+        undefined,
+        true,
+      );
+      panoramaCompressionRegistered = true;
+    }
+
+    defaultImagePool = new Pool(
+      undefined,
+      () => new Worker(workerUrl, { type: 'module' }),
+    );
   }
   return defaultImagePool;
 }
@@ -154,7 +165,7 @@ const typeOrder: Record<PanoramaResourceType, number> = {
 function createPanoramaResourceProvider(
   resources: ResourceOptions,
   minLevel: number,
-  poolOrDecoder: Pool | PanoramaImageDecoder,
+  poolOrDecoder: Pool | BaseDecoder,
   concurrency = 6,
 ): PanoramaResourceProvider {
   let currentlyVisibleTiles: PanoramaTile[] = [];
@@ -175,16 +186,24 @@ function createPanoramaResourceProvider(
       const levelImage = levelImages[tileCoordinate.level - minLevel];
       if (levelImage) {
         try {
-          const resourceData = await levelImage.getTileOrStrip(
+          let decoder: BaseDecoder | DecoderWorker;
+          if (poolOrDecoder instanceof Pool) {
+            decoder = poolOrDecoder.bindParameters(PANORAMA_DECODER_ID, {
+              vcsPanoramaType: type,
+            });
+          } else {
+            decoder = poolOrDecoder;
+          }
+          const { data } = await levelImage.getTileOrStrip(
             tileCoordinate.x,
             tileCoordinate.y,
             levelImage.getSamplesPerPixel(),
-            poolOrDecoder,
+            decoder,
           );
 
           tile.setResource(
             type,
-            resourceData.data as unknown as PanoramaResourceData<PanoramaResourceType>,
+            data as unknown as PanoramaResourceData<typeof type>,
           );
         } catch (err: unknown) {
           tileError.raiseEvent({
@@ -245,13 +264,13 @@ function createPanoramaResourceProvider(
     });
 
     Promise.all(promises)
-      .then(() => {
-        loading = false;
-        loadingStateChanged.raiseEvent(false);
-      })
       .catch((e: unknown) => {
         getLogger('PanoramaTileProvider').warning('Error loading tiles');
         getLogger('PanoramaTileProvider').warning(String(e));
+      })
+      .finally(() => {
+        loading = false;
+        loadingStateChanged.raiseEvent(false);
       });
   };
 
@@ -379,7 +398,7 @@ export function createPanoramaTileProvider(
   depth?: { levelImages: GeoTIFFImage[]; metadata: DepthGDALMetadata },
   maxCacheSize?: number,
   concurrency = 6,
-  poolOrDecoder: Pool | PanoramaImageDecoder = getDefaultImagePool(),
+  poolOrDecoder: Pool | BaseDecoder = getDefaultImagePool(),
 ): PanoramaTileProvider {
   const cache = new PanoramaTileCache(maxCacheSize);
   const resources: ResourceOptions = {

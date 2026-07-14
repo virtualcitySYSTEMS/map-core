@@ -1,13 +1,10 @@
-import type { BaseDecoder, Pool } from 'geotiff';
+import type { PanoramaResourceType } from '../src/panorama/panoramaTileProvider.js';
 
 declare module 'geotiff' {
-  interface GeoTIFFImage {
-    getTileOrStrip(
-      x: number,
-      y: number,
-      samplesPerPixel: number,
-      decoder: BaseDecoder | Pool,
-      abortSignal?: AbortSignal,
-    ): Promise<{ x: number; y: number; sample: number; data: ArrayBuffer }>;
+  interface Pool {
+    bindParameters(
+      decoderId: number,
+      parameters: { vcsPanoramaType: PanoramaResourceType },
+    ): DecoderWorker;
   }
 }

@@ -5,7 +5,6 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import GeoTIFFSource from 'ol/source/GeoTIFF.js';
 import { unByKey } from 'ol/Observable.js';
-import { Pool, getDecoder, type BaseDecoder } from 'geotiff';
 import type { ImageryLayer, ImageryTypes } from '@vcmap-cesium/engine';
 import {
   type CesiumMap,
@@ -58,15 +57,6 @@ async function serveFileWithRange(filePath: string): Promise<nock.Scope> {
     .persist();
 }
 
-function stubPoolDecode(): sinon.SinonStub {
-  return sinon
-    .stub(Pool.prototype, 'decode')
-    .callsFake(async (fd: unknown, data: ArrayBuffer): Promise<ArrayBuffer> => {
-      const decoder = (await getDecoder(fd)) as BaseDecoder;
-      return decoder.decode(fd, data) as Promise<ArrayBuffer>;
-    });
-}
-
 function sourceReady(source: GeoTIFFSource): Promise<void> {
   if (source.getState() === 'ready') {
     return Promise.resolve();
@@ -117,20 +107,17 @@ function getBandAvgs(
 describe('cogCesiumImpl', () => {
   let layer: COGLayer;
   let map: CesiumMap;
-  let poolStub: sinon.SinonStub;
 
   before(() => {
     layer = new COGLayer({});
     layer.tilingSchema = TilingScheme.MERCATOR;
     map = getCesiumMap();
     map.layerCollection.add(layer);
-    poolStub = stubPoolDecode();
   });
 
   after(() => {
     map.destroy();
     layer.destroy();
-    poolStub.restore();
   });
 
   describe('requesting images', () => {

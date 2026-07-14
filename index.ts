@@ -1016,7 +1016,6 @@ export type {
   PanoramaTileProvider,
   PanoramaResourceData,
   PanoramaResourceType,
-  PanoramaImageDecoder,
   PanoramaTileLoadError,
 } from './src/panorama/panoramaTileProvider.js';
 export { createPanoramaTileProvider } from './src/panorama/panoramaTileProvider.js';
