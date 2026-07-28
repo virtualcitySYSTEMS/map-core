@@ -22,7 +22,7 @@ function spawnProcess(command, args, name) {
 
 const tscProcess = spawnProcess(
   'node',
-  ['node_modules/typescript/bin/tsc', '--watch'],
+  ['node_modules/typescript/bin/tsc', '-b', '--watch'],
   'tsc',
 );
 

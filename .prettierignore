@@ -4,4 +4,3 @@ build/types/Cesium_module.d.ts
 coverage/
 docs/
 dist/
-.tests/

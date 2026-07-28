@@ -5,7 +5,6 @@ build/types/Cesium_module.d.ts
 test-results.xml
 docs/
 dist/
-.tests/
 *.shader.ts
 .idea/copilot*
 .vscode/

@@ -1,36 +1,9 @@
 {
+  "extends": "../tsconfig.lib.json",
   "compilerOptions": {
-    "target": "es2022",
-    "module": "node16",
-    "incremental": true,
-    "lib": ["esnext", "dom"],
-    "allowJs": true,
-    "checkJs": false,
-    "jsx": "preserve",
-    "outDir": "../.tests",
-    "rootDir": "..",
-    /* Strict Type-Checking Options */
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "sourceMap": true,
-    /* Additional Checks */
-    "noImplicitReturns": false,
-    "noFallthroughCasesInSwitch": false,
-
-    /* Module Resolution Options */
-    "paths": {
-      "rbush-knn": ["../types/rbush-knn"],
-      "rbush": ["../types/rbush"]
-    },
-    "moduleResolution": "node16",
-    "resolveJsonModule": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "preserveSymlinks": true,
-    "allowSyntheticDefaultImports": true,
     "types": ["mocha", "node"]
   },
-  "include": ["../types/", "../src/", "../index.ts", "."],
-  "exclude": ["../dist", "../.tests", "../build"]
+  "references": [{ "path": "../tsconfig.lib.json" }],
+  "include": ["."],
+  "exclude": ["../dist", "../build"]
 }

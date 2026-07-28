@@ -16,6 +16,8 @@
 
 #### Changes
 
+- change tsconfig to use project references
+
 #### Bugfixes
 
 ### 6.3.7

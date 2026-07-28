@@ -18,7 +18,7 @@ export default [
     },
   },
   {
-    ignores: ['node_modules/', 'coverage/', 'docs/', 'dist/', '.tests/'],
+    ignores: ['node_modules/', 'coverage/', 'docs/', 'dist/'],
   },
   {
     files: ['**/*.spec.js'],

@@ -1,39 +1,4 @@
 {
-  "compilerOptions": {
-    "target": "es2022",
-    "module": "nodenext",
-    "incremental": true,
-    "lib": ["esnext", "dom"],
-    "allowJs": true,
-    "checkJs": false,
-    "declaration": true,
-    "sourceMap": true,
-    "outDir": "dist",
-    "rootDir": ".",
-    /* Strict Type-Checking Options */
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-
-    /* Additional Checks */
-    "noImplicitReturns": false,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": false,
-
-    /* Module Resolution Options */
-    "paths": {
-      "rbush-knn": ["./types/rbush-knn"],
-      "rbush": ["./types/rbush"]
-    },
-    "moduleResolution": "nodenext",
-    "resolveJsonModule": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "preserveSymlinks": true,
-    "allowSyntheticDefaultImports": true,
-    "types": ["node"]
-  },
-  "exclude": ["dist/", "build/", ".tests/"],
-  "include": ["types/", "src/", "index.ts", "tests/unit/helpers/"]
+  "files": [],
+  "references": [{ "path": "./tsconfig.lib.json" }, { "path": "./tests" }]
 }
