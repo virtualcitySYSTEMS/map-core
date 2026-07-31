@@ -87,6 +87,11 @@ declare module '@vcmap-cesium/engine' {
       objectToExclude?: any[],
       width?: number,
     ): { object: any; position: Cartesian3; exclude?: boolean } | undefined;
+
+    drillPickFromRay(
+      ray: Ray,
+      drill: number,
+    ): Promise<{ object: any; position: Cartesian3; exclude?: boolean }[]>;
   }
 
   interface TileBoundingVolume {

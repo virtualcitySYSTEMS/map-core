@@ -11,7 +11,7 @@
 
 ### Features
 
-- Export `ImageStyleOptions` type
+- Export `ImageStyleOptions` type and `getRegularShapeImageUrl`helper
 - Export new `getCaughtError` helper
 
 #### Changes

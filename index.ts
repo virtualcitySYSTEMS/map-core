@@ -506,6 +506,7 @@ export {
   shapeCategory,
 } from './src/style/shapesCategory.js';
 export { getStyleOrDefaultStyle } from './src/style/styleFactory.js';
+export { getRegularShapeImageUrl } from './src/style/styleHelpers.js';
 export type {
   FontObject,
   ImageStyleOptions,
