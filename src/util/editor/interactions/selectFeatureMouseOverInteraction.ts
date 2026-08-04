@@ -26,8 +26,7 @@ export enum SelectionMode {
  */
 class SelectFeatureMouseOverInteraction extends AbstractInteraction {
   private _selectFeatureInteraction:
-    | SelectSingleFeatureInteraction
-    | SelectMultiFeatureInteraction;
+    SelectSingleFeatureInteraction | SelectMultiFeatureInteraction;
 
   selectionMode: SelectionMode;
 
@@ -46,8 +45,7 @@ class SelectFeatureMouseOverInteraction extends AbstractInteraction {
   constructor(
     layerName: string,
     selectFeatureInteraction:
-      | SelectSingleFeatureInteraction
-      | SelectMultiFeatureInteraction,
+      SelectSingleFeatureInteraction | SelectMultiFeatureInteraction,
   ) {
     let modkeys;
     let selectionMode;

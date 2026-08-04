@@ -1,4 +1,5 @@
 import { JulianDate, DataSourceClock } from '@vcmap-cesium/engine';
+import nock from 'nock';
 import CzmlLayer from '../../../src/layer/czmlLayer.js';
 import { vcsLayerName } from '../../../src/layer/layerSymbols.js';
 import importJSON from '../helpers/importJSON.js';
@@ -7,30 +8,23 @@ const dynamicPoint = await importJSON('./tests/data/dynamicPointCzml.json');
 
 describe('CzmlLayer', () => {
   describe('loading of data', () => {
-    let sandbox;
     let layer;
 
     before(async () => {
-      sandbox = sinon.createSandbox();
-      const server = sandbox.useFakeServer();
-      server.autoRespond = true;
-      server.respondImmediately = true;
-      server.respondWith('/dynamicPoint.czml', (res) => {
-        res.respond(
-          200,
-          { 'Content-Type': 'application/json' },
-          JSON.stringify(dynamicPoint),
-        );
-      });
+      nock('http://localhost')
+        .get('/dynamicPoint.czml')
+        .reply(200, dynamicPoint, {
+          'Content-Type': 'application/json',
+        });
       layer = new CzmlLayer({
-        url: '/dynamicPoint.czml',
+        url: 'http://localhost/dynamicPoint.czml',
       });
       await layer.initialize();
     });
 
     after(() => {
       layer.destroy();
-      sandbox.restore();
+      nock.cleanAll();
     });
 
     it('should load all the entities in the czml', () => {

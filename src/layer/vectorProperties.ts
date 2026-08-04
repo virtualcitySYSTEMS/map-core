@@ -906,8 +906,7 @@ class VectorProperties {
    */
   getModelOptions(feature: Feature): Record<string, unknown> | undefined {
     const featureValue = feature.get('olcs_modelOptions') as
-      | Record<string, unknown>
-      | undefined;
+      Record<string, unknown> | undefined;
     if (featureValue) {
       return featureValue;
     }
@@ -932,8 +931,7 @@ class VectorProperties {
 
   getModelAutoScale(feature: Feature): boolean {
     const featureValue = feature.get('olcs_modelAutoScale') as
-      | boolean
-      | undefined;
+      boolean | undefined;
     return featureValue !== undefined ? featureValue : this.modelAutoScale;
   }
 
@@ -972,8 +970,7 @@ class VectorProperties {
     feature: Feature,
   ): VectorPropertiesPrimitiveOptions | undefined {
     const featureValue = feature.get('olcs_primitiveOptions') as
-      | VectorPropertiesPrimitiveOptions
-      | undefined;
+      VectorPropertiesPrimitiveOptions | undefined;
     return featureValue !== undefined ? featureValue : this.primitiveOptions;
   }
 
@@ -1035,8 +1032,7 @@ class VectorProperties {
     }
 
     const primitiveOptions = feature.get('olcs_primitiveOptions') as
-      | VectorPropertiesPrimitiveOptions
-      | undefined;
+      VectorPropertiesPrimitiveOptions | undefined;
 
     if (primitiveOptions?.geometryOptions) {
       return 'primitive';

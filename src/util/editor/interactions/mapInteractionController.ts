@@ -35,9 +35,7 @@ function suspendPanoramaMap(map: PanoramaMap): () => void {
 }
 
 type CachedScreenSpaceCameraControllerKeys =
-  | 'lookEventTypes'
-  | 'tiltEventTypes'
-  | 'rotateEventTypes';
+  'lookEventTypes' | 'tiltEventTypes' | 'rotateEventTypes';
 function suspendCesiumMap(map: CesiumMap): () => void {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- cesium type
   function getOriginalEventTypes<T = any[] | CameraEventType | undefined>(

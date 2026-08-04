@@ -47,11 +47,11 @@ export const geometryChangeKeys = [
   'olcs_heightAboveGround',
 ];
 
-export const vectorPropertyChangeKeys: PropertyChangedKey[] = [
+export const vectorPropertyChangeKeys = [
   'altitudeMode',
   'groundLevel',
   'heightAboveGround',
-];
+] as const satisfies readonly PropertyChangedKey[];
 
 function assignVectorProperty<K extends PropertyChangedKey>(
   props: VectorProperties,

@@ -46,12 +46,10 @@ class SelectSingleFeatureInteraction
 
   async pipe(event: EventAfterEventHandler): Promise<EventAfterEventHandler> {
     if (event.feature && event.feature[vcsLayerName] === this._layer.name) {
-      if (
-        !(
-          this._selectedFeature &&
-          event.feature.getId() === this._selectedFeature.getId()
-        )
-      ) {
+      if (!(
+        this._selectedFeature &&
+        event.feature.getId() === this._selectedFeature.getId()
+      )) {
         event.stopPropagation = true;
         await this.setSelected(event.feature as SelectableFeatureType);
       }

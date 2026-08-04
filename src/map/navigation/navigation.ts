@@ -80,6 +80,8 @@ class Navigation {
 
   private _activeMap: VcsMap | undefined = undefined;
 
+  private _controllerListeners = new Map<string, () => void>();
+
   get currentNavigation(): NavigationImpl<VcsMap> | undefined {
     return this._currentNavigation;
   }
@@ -88,9 +90,14 @@ class Navigation {
     return this._movement;
   }
 
+  private _hasPollingControllers(): boolean {
+    return this._controller.size > this._controllerListeners.size;
+  }
+
   private _startInputLoop(): void {
     if (!this._animationFrameId) {
       const loop = (time: number): void => {
+        this._animationFrameId = undefined;
         let currentInput = getZeroInput();
         for (const controller of this.getControllers()) {
           const controllerInput = controller.getInputs();
@@ -101,7 +108,13 @@ class Navigation {
         }
         this.applyInput(time, currentInput);
         this.updateNavigation();
-        this._animationFrameId = requestAnimationFrame(loop);
+
+        const hasActiveInput = isNonZeroInput(currentInput);
+        const hasEasing = this._easing !== undefined;
+
+        if (hasActiveInput || hasEasing || this._hasPollingControllers()) {
+          this._animationFrameId = requestAnimationFrame(loop);
+        }
       };
       loop(performance.now());
     }
@@ -188,15 +201,27 @@ class Navigation {
       getLogger().warning(`Controller with id ${controller.id} already exists`);
     } else {
       this._controller.set(controller.id, controller);
-      this._startInputLoop();
+      if (controller.eventDriven) {
+        this._controllerListeners.set(
+          controller.id,
+          controller.inputChanged.addEventListener(() => {
+            this._startInputLoop();
+          }),
+        );
+      }
+      if (!controller.eventDriven) {
+        this._startInputLoop();
+      }
     }
   }
 
   removeController(controllerId: string): void {
     const controller = this._controller.get(controllerId);
     if (controller) {
+      this._controllerListeners.get(controllerId)?.();
+      this._controllerListeners.delete(controllerId);
       this._controller.delete(controllerId);
-      if (this._controller.size < 1) {
+      if (!this._hasPollingControllers()) {
         this._stopInputLoop();
       }
     }

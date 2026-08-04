@@ -45,8 +45,7 @@ type ObliqueGeneralImageInfo = {
   'tile-width': number;
   'tile-height': number;
   cameraParameter?:
-    | ObliqueCameraOptions[]
-    | Record<string, Omit<ObliqueCameraOptions, 'name'>>;
+    ObliqueCameraOptions[] | Record<string, Omit<ObliqueCameraOptions, 'name'>>;
   crs: string;
 };
 

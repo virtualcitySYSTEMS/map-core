@@ -159,8 +159,7 @@ export default class PanoramaMap extends BaseCesiumMap {
       defaultTranslucency.frontFaceAlpha = 0.75;
 
       cesiumWidget.scene.screenSpaceCameraController.enableInputs = false;
-      cesiumWidget.scene.screenSpaceCameraController.enableCollisionDetection =
-        false;
+      cesiumWidget.scene.screenSpaceCameraController.enableCollisionDetection = false;
 
       cesiumWidget.scene.primitives.destroyPrimitives = false;
 

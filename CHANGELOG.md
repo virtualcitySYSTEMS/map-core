@@ -13,6 +13,7 @@
 
 - Export `ImageStyleOptions` type and `getRegularShapeImageUrl`helper
 - Export new `getCaughtError` helper
+- Added `inputChanged` event and `eventDriven` option to `Controller`. Controllers are polled by default; event-driven controllers must raise `inputChanged` to start navigation updates.
 
 #### Changes
 

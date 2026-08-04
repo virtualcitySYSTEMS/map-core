@@ -149,9 +149,8 @@ function startSelectFeaturesSession(
   const modeChanged = new VcsEvent<SelectionMode>();
   const featuresChanged = new VcsEvent<Feature[]>();
   let currentSelectInteraction:
-    | SelectSingleFeatureInteraction
-    | SelectMultiFeatureInteraction
-    | null = null;
+    SelectSingleFeatureInteraction | SelectMultiFeatureInteraction | null =
+    null;
   let mouseOverInteraction: SelectFeatureMouseOverInteraction | null = null;
   let currentSelectionMode: SelectionMode;
   let obliqueMap: ObliqueMap | null = null;

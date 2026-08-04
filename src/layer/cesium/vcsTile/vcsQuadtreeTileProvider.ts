@@ -38,9 +38,7 @@ import type StyleItem from '../../../style/styleItem.js';
 
 const tileDirectionScratch = new Cartesian3();
 
-export default class VcsQuadtreeTileProvider
-  implements QuadtreeTileProviderInterface
-{
+export default class VcsQuadtreeTileProvider implements QuadtreeTileProviderInterface {
   // eslint-disable-next-line class-methods-use-this
   get className(): string {
     return 'VcsQuadtreeTileProvider';

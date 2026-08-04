@@ -217,8 +217,7 @@ class VectorTileLayer<
   private _renderer: VectorTileRenderer;
 
   private _defaultFeatureProvider?:
-    | TileProviderFeatureProvider
-    | CompositeFeatureProvider;
+    TileProviderFeatureProvider | CompositeFeatureProvider;
 
   /**
    * @param  options
@@ -565,9 +564,7 @@ class VectorTileLayer<
 
   getStyleOrDefaultStyle(
     styleOptions?:
-      | DeclarativeStyleItemOptions
-      | VectorStyleItemOptions
-      | StyleItem,
+      DeclarativeStyleItemOptions | VectorStyleItemOptions | StyleItem,
     defaultStyle?: VectorStyleItem,
   ): StyleItem {
     return super.getStyleOrDefaultStyle(

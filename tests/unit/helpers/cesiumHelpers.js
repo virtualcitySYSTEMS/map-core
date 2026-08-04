@@ -18,6 +18,7 @@ import {
   ContextLimits,
   Fog,
 } from '@vcmap-cesium/engine';
+import nock from 'nock';
 import CesiumTilesetLayer from '../../../src/layer/cesiumTilesetLayer.js';
 import DataSourceLayer from '../../../src/layer/dataSourceLayer.js';
 import CesiumMap from '../../../src/map/cesiumMap.js';
@@ -43,31 +44,23 @@ export const tilesetJSON = {
 };
 
 /**
- * @param {Sinon.SinonSandbox} sandbox
  * @param {string=} url
- * @returns {*|Sinon.SinonFakeServer|null}
+ * @returns {import("nock").Scope}
  */
-export function createTilesetServer(sandbox, url) {
-  const server = sandbox.useFakeServer();
-  server.autoRespond = true;
-  server.respondImmediately = true;
-  server.respondWith(url || 'http://test.com/tileset.json', [
-    200,
-    { 'Content-Type': 'application/json' },
-    JSON.stringify(tilesetJSON),
-  ]);
-  server.respond();
-  return server;
+export function createTilesetServer(url) {
+  const tilesetUrl = new URL(url || 'http://test.com/tileset.json');
+  return nock(tilesetUrl.origin)
+    .get(tilesetUrl.pathname)
+    .reply(200, tilesetJSON, { 'Content-Type': 'application/json' });
 }
 
 /**
- * @param {Sinon.SinonSandbox} sandbox
  * @param {CesiumMap=} cesiumMap
  * @param {string=} name
  * @returns {Promise<CesiumTilesetLayer>}
  */
-export async function createInitializedTilesetLayer(sandbox, cesiumMap, name) {
-  createTilesetServer(sandbox);
+export async function createInitializedTilesetLayer(cesiumMap, name) {
+  createTilesetServer();
   const tilesetLayer = new CesiumTilesetLayer({
     url: 'http://test.com/tileset.json',
     name,

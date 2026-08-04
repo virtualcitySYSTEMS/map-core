@@ -24,7 +24,7 @@ describe('util.displayQuality.DisplayQuality', () => {
     app = new VcsApp();
     DC = new DisplayQuality(app);
     cesiumMap = await setCesiumMap(app);
-    tilesetLayer = await createInitializedTilesetLayer(sandbox, cesiumMap);
+    tilesetLayer = await createInitializedTilesetLayer(cesiumMap);
   });
 
   after(() => {

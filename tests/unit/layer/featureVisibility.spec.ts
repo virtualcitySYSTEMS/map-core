@@ -199,7 +199,7 @@ describe('FeatureVisibility', () => {
       });
 
       beforeEach(() => {
-        clock = sandbox.useFakeTimers(now);
+        clock = sandbox.useFakeTimers({ now, toFake: ['Date'] });
       });
 
       it('should set last update, if id was not found', () => {
@@ -426,7 +426,7 @@ describe('FeatureVisibility', () => {
     });
 
     beforeEach(() => {
-      clock = sandbox.useFakeTimers(now);
+      clock = sandbox.useFakeTimers({ now, toFake: ['Date'] });
     });
 
     it('adds the given ids to the hiddenObjects', () => {

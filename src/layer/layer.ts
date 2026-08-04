@@ -182,9 +182,7 @@ class Layer<
    * An optional feature or attribute provider to provide or augment features on click events.
    */
   featureProvider:
-    | AbstractFeatureProvider
-    | AbstractAttributeProvider
-    | undefined;
+    AbstractFeatureProvider | AbstractAttributeProvider | undefined;
 
   private _locale: string;
 

@@ -216,8 +216,7 @@ export async function placeGeometryOnSurface(
   geometry: Geometry,
   scene: Scene,
   heightReference:
-    | HeightReference.CLAMP_TO_GROUND
-    | HeightReference.CLAMP_TO_TERRAIN,
+    HeightReference.CLAMP_TO_GROUND | HeightReference.CLAMP_TO_TERRAIN,
 ): Promise<void> {
   const layout = geometry.getLayout();
   const coordinates = geometry.getCoordinates() as any[];
@@ -271,8 +270,7 @@ export async function drapeGeometryOnSurface(
   geometry: Geometry,
   scene: Scene,
   heightReference:
-    | HeightReference.CLAMP_TO_GROUND
-    | HeightReference.CLAMP_TO_TERRAIN,
+    HeightReference.CLAMP_TO_GROUND | HeightReference.CLAMP_TO_TERRAIN,
 ): Promise<void> {
   const layout = geometry.getLayout();
   const coordinates = geometry.getCoordinates() as any[];
@@ -314,8 +312,7 @@ export async function from2Dto3DLayout(
   geometry: Geometry,
   scene: Scene,
   heightReference:
-    | HeightReference.CLAMP_TO_GROUND
-    | HeightReference.CLAMP_TO_TERRAIN,
+    HeightReference.CLAMP_TO_GROUND | HeightReference.CLAMP_TO_TERRAIN,
 ): Promise<void> {
   if (is2DLayout(geometry.getLayout())) {
     await drapeGeometryOnSurface(geometry, scene, heightReference);

@@ -43,6 +43,7 @@ class KeyboardController extends Controller {
         turnRight: 1,
       },
       inputThreshold: 0,
+      eventDriven: true,
       target: null,
       keys: [
         { key: 'ArrowUp', direction: DIRECTIONS.FORWARD },
@@ -126,12 +127,14 @@ class KeyboardController extends Controller {
         const direction = this._keys.get(event.key);
         if (direction !== undefined) {
           this._keyState.set(direction, true);
+          this.inputChanged.raiseEvent();
         }
       };
       const keyUp = (event: KeyboardEvent): void => {
         const direction = this._keys.get(event.key);
         if (direction !== undefined) {
           this._keyState.set(direction, false);
+          this.inputChanged.raiseEvent();
         }
       };
 

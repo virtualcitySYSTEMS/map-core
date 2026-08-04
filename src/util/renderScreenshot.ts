@@ -114,8 +114,7 @@ async function getImageFromOpenlayers(
               .match(/^matrix\(([^(]*)\)$/)?.[1]
               .split(',')
               .map(Number) as
-              | [number, number, number, number, number, number]
-              | undefined;
+              [number, number, number, number, number, number] | undefined;
             if (matrix) {
               canvasContext.setTransform(...matrix);
             }

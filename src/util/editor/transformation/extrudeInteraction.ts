@@ -24,8 +24,7 @@ class ExtrudeInteraction extends AbstractInteraction {
   private _transformationHandler: TransformationHandler | null;
 
   private _getExtrudeEvent:
-    | null
-    | ((coord: Coordinate, windowPosition: Cartesian2) => number) = null;
+    null | ((coord: Coordinate, windowPosition: Cartesian2) => number) = null;
 
   /**
    * Event raised with the extrusion delta to the last event fired.

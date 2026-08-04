@@ -18,7 +18,6 @@ import {
   panoramaFeature,
 } from '../../../src/layer/vectorSymbols.js';
 import PanoramaDatasetLayer from '../../../src/layer/panoramaDatasetLayer.js';
-import { timeout } from '../helpers/helpers.js';
 import type PanoramaMap from '../../../src/map/panoramaMap.js';
 
 describe('PanoramaFeatureHighlight', () => {
@@ -28,8 +27,10 @@ describe('PanoramaFeatureHighlight', () => {
   let feature: Feature;
   let dataset: PanoramaDatasetLayer;
   let pickStub: sinon.SinonStub;
+  let clock: sinon.SinonFakeTimers;
 
   before(() => {
+    clock = sinon.useFakeTimers(Date.now());
     map = getPanoramaMap();
     feature = new Feature({
       geometry: new Point([0, 0]),
@@ -66,6 +67,7 @@ describe('PanoramaFeatureHighlight', () => {
 
   after(() => {
     map.destroy();
+    clock.restore();
   });
 
   describe('without a highlighted panorama feature', () => {
@@ -98,7 +100,7 @@ describe('PanoramaFeatureHighlight', () => {
         id: { olFeature: feature },
       });
       await interaction.pipe({ ...testEvent });
-      await timeout(100); // wait for min frame length
+      await clock.tickAsync(100); // wait for min frame length
     });
 
     it('should unhighlight the panorama feature, if no feature is present', async () => {
@@ -143,16 +145,6 @@ describe('PanoramaFeatureHighlight', () => {
   });
 
   describe('throttling of events', () => {
-    let clock: sinon.SinonFakeTimers;
-
-    beforeEach(() => {
-      clock = sinon.useFakeTimers(Date.now());
-    });
-
-    afterEach(() => {
-      clock.restore();
-    });
-
     it('should process first event immediately, ignoring any other features', async () => {
       pickStub.returns(undefined);
       await interaction.pipe({ ...testEvent });
@@ -188,16 +180,6 @@ describe('PanoramaFeatureHighlight', () => {
   });
 
   describe('createSync state', () => {
-    let clock: sinon.SinonFakeTimers;
-
-    beforeEach(() => {
-      clock = sinon.useFakeTimers(Date.now());
-    });
-
-    afterEach(() => {
-      clock.restore();
-    });
-
     it('should set createSync to true when highlighting a feature without createSync', async () => {
       delete feature[createSync];
       pickStub.returns({

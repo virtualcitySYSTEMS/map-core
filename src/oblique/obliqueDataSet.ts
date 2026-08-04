@@ -62,8 +62,7 @@ class ObliqueDataSet {
   projection: Projection;
 
   private _terrainProviderOptions:
-    | ObliqueDataSetTerrainProviderOptions
-    | undefined;
+    ObliqueDataSetTerrainProviderOptions | undefined;
 
   private _terrainProvider: CesiumTerrainProvider | undefined = undefined;
 

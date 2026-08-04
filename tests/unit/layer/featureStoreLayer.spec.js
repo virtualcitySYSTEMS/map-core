@@ -240,7 +240,7 @@ describe('FeatureStoreLayer', () => {
     });
 
     it('should extend the extent with the extent of the static layer', async () => {
-      createTilesetServer(sandbox);
+      createTilesetServer();
       FS.staticRepresentation.threeDim = 'http://test.com/tileset.json';
       const [, impl] = FS.getImplementationsForMap(cesiumMap);
       await impl.initialize();
@@ -264,7 +264,7 @@ describe('FeatureStoreLayer', () => {
     let impl;
 
     beforeEach(() => {
-      createTilesetServer(sandbox);
+      createTilesetServer();
       FS.staticRepresentation.threeDim = 'http://test.com/tileset.json';
       [, impl] = FS.getImplementationsForMap(cesiumMap);
     });

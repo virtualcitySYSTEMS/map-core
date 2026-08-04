@@ -1,5 +1,7 @@
 import type Feature from 'ol/Feature.js';
-import { fromFeature } from 'flatgeobuf/lib/mjs/ol/feature.js';
+import { getFromFeatureFn } from 'flatgeobuf/lib/mjs/ol/feature.js';
+import type { Feature as FgbFeature } from 'flatgeobuf/lib/mjs/flat-geobuf/feature.js';
+import type { HeaderMeta } from 'flatgeobuf/lib/mjs/header-meta.js';
 import { NODE_ITEM_BYTE_LEN } from 'flatgeobuf/lib/mjs/packedrtree.js';
 import { HttpReader } from 'flatgeobuf/lib/mjs/http-reader.js';
 import type Projection from '../util/projection.js';
@@ -30,8 +32,13 @@ export async function getOlFeatures(
   extent: Extent,
 ): Promise<Feature[]> {
   const features = [];
-  const isMercator = projection.epsg === mercatorProjection.epsg;
   const dataExtent = extent.getCoordinatesInProjection(projection);
+  const fromFeature = getFromFeatureFn(
+    false,
+    projection.epsg,
+    mercatorProjection.epsg,
+    // cast required since import `.js` file extension in flatgeobuf/lib/mjs/ol/feature.d.ts is missing
+  ) as (id: number, feature: FgbFeature, header: HeaderMeta) => Feature;
 
   for await (const feature of reader.selectBbox({
     minX: dataExtent[0],
@@ -39,14 +46,9 @@ export async function getOlFeatures(
     maxX: dataExtent[2],
     maxY: dataExtent[3],
   })) {
-    const olFeature = fromFeature(
-      feature.id,
-      feature.feature,
-      reader.header,
-    ) as Feature;
+    const olFeature = fromFeature(feature.id, feature.feature, reader.header);
     const geometry = olFeature.getGeometry();
-    if (geometry && !isMercator) {
-      geometry.transform(projection.proj, mercatorProjection.proj);
+    if (geometry) {
       geometry[alreadyTransformedToMercator] = true;
     }
 

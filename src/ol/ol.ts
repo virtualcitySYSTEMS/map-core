@@ -160,8 +160,7 @@ declare module 'ol/index.js' {
 declare module 'ol/style.js' {
   interface Fill {
     fallBackColor:
-      | import('ol/colorlike.js').ColorLike
-      | import('ol/color.js').Color;
+      import('ol/colorlike.js').ColorLike | import('ol/color.js').Color;
   }
 }
 

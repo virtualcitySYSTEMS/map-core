@@ -37,10 +37,7 @@ export const hidden = Symbol('hidden');
 export const globalHidden = Symbol('globalHidden');
 
 export type HighlightableFeature =
-  | Feature
-  | Cesium3DTileFeature
-  | Cesium3DTilePointFeature
-  | CesiumEntity;
+  Feature | Cesium3DTileFeature | Cesium3DTilePointFeature | CesiumEntity;
 
 /**
  * Enumeration of feature visibility actions.
@@ -63,10 +60,7 @@ export type FeatureVisibilityEvent = {
 };
 
 export type HighlightStyleType =
-  | VectorStyleItem
-  | Color
-  | Style
-  | StyleFunction;
+  VectorStyleItem | Color | Style | StyleFunction;
 
 export function featureExists(
   feature: Cesium3DTileFeature | Cesium3DTilePointFeature,

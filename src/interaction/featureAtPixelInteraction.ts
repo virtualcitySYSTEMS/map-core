@@ -160,8 +160,7 @@ export function getFeatureFromScene(
   hitTolerance: number,
 ): { pickObject: unknown; feature?: EventFeature } {
   const pickObject = scene.pick(windowPosition, hitTolerance, hitTolerance) as
-    | CesiumPickObject
-    | undefined;
+    CesiumPickObject | undefined;
 
   let feature: EventFeature | undefined;
   if (pickObject) {

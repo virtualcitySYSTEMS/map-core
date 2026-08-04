@@ -12,6 +12,7 @@ Entity.prototype.getProperty = function getProperty(
   this: Entity,
   property: string,
 ): any {
+  // eslint-disable-next-line @typescript-eslint/unbound-method -- Property names are intentionally dynamic and may refer to data or methods.
   return this[property as keyof Entity];
 };
 

@@ -5,6 +5,7 @@ import { unByKey } from 'ol/Observable.js';
 import type { Coordinate } from 'ol/coordinate.js';
 import type { EventsKey } from 'ol/events.js';
 
+import { getLogger } from '@vcsuite/logger';
 import { DataState } from './obliqueDataSet.js';
 import ObliqueView from './obliqueView.js';
 import { transformFromImage } from './helpers.js';
@@ -123,8 +124,7 @@ class ObliqueProvider {
   setCollection(collection: ObliqueCollection): void {
     this._loadingImage = null;
     if (!collection.loaded) {
-      // eslint-disable-next-line no-console
-      console.error('cannot set an unloaded collection');
+      getLogger('ObliqueProvider').error('cannot set an unloaded collection');
       return;
     }
     this._collection = collection;

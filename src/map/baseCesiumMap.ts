@@ -531,9 +531,7 @@ export default class BaseCesiumMap extends VcsMap<CesiumVisualisationType> {
    */
   addPrimitiveCollection(
     primitiveCollection:
-      | PrimitiveCollection
-      | Cesium3DTileset
-      | I3SDataProvider,
+      PrimitiveCollection | Cesium3DTileset | I3SDataProvider,
   ): void {
     if (!this._cesiumWidget) {
       throw new Error('Cannot add primitive to uninitialized map');
@@ -554,9 +552,7 @@ export default class BaseCesiumMap extends VcsMap<CesiumVisualisationType> {
    */
   removePrimitiveCollection(
     primitiveCollection:
-      | PrimitiveCollection
-      | Cesium3DTileset
-      | I3SDataProvider,
+      PrimitiveCollection | Cesium3DTileset | I3SDataProvider,
   ): void {
     // XXX add destroy as boolean?
     this.removeVisualization(primitiveCollection);

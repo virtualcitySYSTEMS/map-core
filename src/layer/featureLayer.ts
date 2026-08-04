@@ -45,8 +45,8 @@ export interface FeatureLayerImplementation {
  * @group Layer
  */
 class FeatureLayer<
-    T extends LayerImplementation<VcsMap> & FeatureLayerImplementation,
-  >
+  T extends LayerImplementation<VcsMap> & FeatureLayerImplementation,
+>
   extends Layer<T>
   implements SplitLayer
 {

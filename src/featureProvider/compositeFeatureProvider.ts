@@ -12,12 +12,10 @@ import { getProviderForOption } from './featureProviderFactory.js';
 
 export type CompositeFeatureProviderOptions = AbstractFeatureProviderOptions & {
   featureProviders: (
-    | AbstractFeatureProviderOptions
-    | AbstractFeatureProvider
+    AbstractFeatureProviderOptions | AbstractFeatureProvider
   )[];
   attributeProviders: (
-    | AbstractAttributeProviderOptions
-    | AbstractAttributeProvider
+    AbstractAttributeProviderOptions | AbstractAttributeProvider
   )[];
 };
 

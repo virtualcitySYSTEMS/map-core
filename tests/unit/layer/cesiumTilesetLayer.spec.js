@@ -30,7 +30,7 @@ describe('CesiumTilesetLayer', () => {
   });
 
   beforeEach(() => {
-    createTilesetServer(sandbox);
+    createTilesetServer();
     cesiumTileset = new CesiumTilesetLayer({
       url: 'http://test.com/tileset.json',
     });

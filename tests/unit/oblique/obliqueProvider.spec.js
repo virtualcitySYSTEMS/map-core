@@ -16,7 +16,6 @@ import { ObliqueViewDirection } from '../../../src/oblique/obliqueViewDirection.
 import { setTerrainServer } from '../helpers/terrain/terrainData.js';
 import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
 import Projection from '../../../src/util/projection.js';
-import { getTerrainProviderForUrl } from '../../../src/layer/terrainHelpers.js';
 import { transformFromImage } from '../../../src/oblique/helpers.js';
 import importJSON from '../helpers/importJSON.js';
 
@@ -278,14 +277,10 @@ describe('ObliqueProvider', () => {
       scope = nock('http://localhost');
       setTerrainServer(scope);
       setTiledObliqueImageServer(scope);
-      const terrainProvider = getTerrainProviderForUrl({
-        url: 'http://localhost/terrain/',
-      });
-      await terrainProvider.readyPromise;
       const dataSet = new ObliqueDataSet(url, projection, {
         url: 'http://localhost/terrain/',
       });
-      dataSet.initialize(imageJson);
+      await dataSet.initialize(imageJson);
       collection = new ObliqueCollection({ dataSets: [dataSet] });
       await collection.load();
       image = await collection.loadImageForCoordinate(

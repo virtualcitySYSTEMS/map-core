@@ -83,8 +83,7 @@ class I3SLayer extends FeatureLayer<I3SCesiumImpl> {
   calculateNormals: boolean;
   showFeatures: boolean;
   cesium3dTilesetOptions:
-    | Partial<Cesium3DTileset.ConstructorOptions>
-    | undefined;
+    Partial<Cesium3DTileset.ConstructorOptions> | undefined;
   lightColor: string | undefined;
   outlineColor: string | undefined;
   screenSpaceError: number;

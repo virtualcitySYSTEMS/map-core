@@ -6,7 +6,6 @@ import Style from 'ol/style/Style.js';
 import Fill from 'ol/style/Fill.js';
 import { v4 as uuidv4, v4 as uuid } from 'uuid';
 import sinon from 'sinon';
-import { timeout } from '../../helpers/helpers.js';
 import {
   actuallyIsCircle,
   alreadyTransformedToImage,
@@ -51,6 +50,13 @@ describe('sourceObliqueSync', () => {
     sandbox = sinon.createSandbox();
   });
 
+  beforeEach(() => {
+    sandbox.useFakeTimers({
+      now: 1,
+      toFake: ['Date', 'setTimeout', 'clearTimeout'],
+    });
+  });
+
   afterEach(() => {
     sandbox.restore();
   });
@@ -77,7 +83,7 @@ describe('sourceObliqueSync', () => {
       const addedFeature = createFeature();
       vectorSource.addFeature(addedFeature);
       sourceSync.activate();
-      await timeout(0);
+      await sandbox.clock.tickAsync(0);
       expect(
         sourceSync.obliqueSource.getFeatureById(addedFeature.getId()!),
       ).to.be.an.instanceof(Feature);
@@ -90,7 +96,7 @@ describe('sourceObliqueSync', () => {
         addedFeature = createFeature();
         vectorSource.addFeatures([addedFeature]);
         sourceSync.activate();
-        await timeout(0);
+        await sandbox.clock.tickAsync(0);
       });
 
       it('should remove a feature, if removed from the original source', () => {
@@ -198,7 +204,7 @@ describe('sourceObliqueSync', () => {
         originalFeature = createFeature();
         vectorSource.addFeatures([originalFeature]);
         sourceSync.activate();
-        await timeout(0);
+        await sandbox.clock.tickAsync(0);
         obliqueFeature = sourceSync.obliqueSource.getFeatureById(
           originalFeature.getId()!,
         )!;
@@ -210,7 +216,7 @@ describe('sourceObliqueSync', () => {
         const spy = sandbox.spy();
         geom.on('change', spy);
         originalFeature.getGeometry()!.translate(1, 1);
-        await timeout(debounceTimeout);
+        await sandbox.clock.tickAsync(debounceTimeout);
         expect(spy).to.not.have.been.called;
       });
 
@@ -219,7 +225,7 @@ describe('sourceObliqueSync', () => {
         const spy = sandbox.spy();
         geom.on('change', spy);
         obliqueFeature.getGeometry()!.translate(1, 1);
-        await timeout(debounceTimeout);
+        await sandbox.clock.tickAsync(debounceTimeout);
         expect(spy).to.not.have.been.called;
       });
 
@@ -251,7 +257,7 @@ describe('sourceObliqueSync', () => {
       style = new Style({ fill: new Fill({ color: '#ff0000' }) });
       originalFeature.setStyle(style);
       vectorSource.addFeatures([originalFeature]);
-      await timeout(debounceTimeout);
+      await sandbox.clock.tickAsync(debounceTimeout);
       obliqueFeature = sourceSync.obliqueSource.getFeatureById(id)!;
     });
 
@@ -272,7 +278,7 @@ describe('sourceObliqueSync', () => {
       const clone = originalFeature.clone();
       clone.setId(originalFeature.getId());
       vectorSource.addFeatures([clone]);
-      await timeout(1);
+      await sandbox.clock.tickAsync(1);
       expect(sourceSync.obliqueSource.getFeatureById(clone.getId()!)).to.equal(
         obliqueFeature,
       );
@@ -287,7 +293,7 @@ describe('sourceObliqueSync', () => {
       doNotTransformFeature.setId(id);
       doNotTransformFeature.getGeometry()![alreadyTransformedToImage] = true;
       vectorSource.addFeatures([doNotTransformFeature]);
-      await timeout(1);
+      await sandbox.clock.tickAsync(1);
       const shadowFeature = sourceSync.obliqueSource.getFeatureById(id);
       expect(shadowFeature).to.equal(doNotTransformFeature);
     });
@@ -296,7 +302,7 @@ describe('sourceObliqueSync', () => {
       const clone = originalFeature.clone();
       clone.setId(uuidv4());
       vectorSource.addFeatures([clone]);
-      await timeout(1);
+      await sandbox.clock.tickAsync(1);
       expect(clone[obliqueGeometry]).to.equal(
         sourceSync.obliqueSource.getFeatureById(clone.getId()!)?.getGeometry(),
       );
@@ -310,7 +316,7 @@ describe('sourceObliqueSync', () => {
       clone.setGeometry(geom);
       vectorSource.addFeatures([clone]);
       vectorSource.addFeatures([clone]);
-      await timeout(1);
+      await sandbox.clock.tickAsync(1);
       expect(clone[obliqueGeometry]).to.equal(
         sourceSync.obliqueSource.getFeatureById(clone.getId()!)?.getGeometry(),
       );
@@ -343,12 +349,12 @@ describe('sourceObliqueSync', () => {
         originalFeature.getId()!,
       );
       expect(obliqueFeature).to.be.null;
-      await timeout(1);
+      await sandbox.clock.tickAsync(1);
       obliqueFeature = sourceSync.obliqueSource.getFeatureById(
         originalFeature.getId()!,
       );
       expect(obliqueFeature).to.not.be.null;
-      await timeout(1);
+      await sandbox.clock.tickAsync(1);
     });
 
     it('should not add the obliqueFeature after the conversion is done, if the original feature was removed', async () => {
@@ -358,7 +364,7 @@ describe('sourceObliqueSync', () => {
       );
       expect(obliqueFeature).to.be.null;
       vectorSource.removeFeature(originalFeature);
-      await timeout(1);
+      await sandbox.clock.tickAsync(1);
       obliqueFeature = sourceSync.obliqueSource.getFeatureById(
         originalFeature.getId()!,
       );
@@ -383,7 +389,7 @@ describe('sourceObliqueSync', () => {
       style = new Style({ fill: new Fill({ color: '#ff0000' }) });
       originalFeature.setStyle(style);
       vectorSource.addFeatures([originalFeature]);
-      await timeout(debounceTimeout);
+      await sandbox.clock.tickAsync(debounceTimeout);
       obliqueFeature = sourceSync.obliqueSource.getFeatureById(id)!;
       vectorSource.removeFeature(originalFeature);
     });
@@ -403,7 +409,7 @@ describe('sourceObliqueSync', () => {
         const spy = sandbox.spy();
         geom.on('change', spy);
         originalFeature.getGeometry()!.translate(1, 1);
-        await timeout(debounceTimeout);
+        await sandbox.clock.tickAsync(debounceTimeout);
         expect(spy).to.not.have.been.called;
       });
 
@@ -412,7 +418,7 @@ describe('sourceObliqueSync', () => {
         const spy = sandbox.spy();
         geom.on('change', spy);
         obliqueFeature.getGeometry()!.translate(1, 1);
-        await timeout(debounceTimeout);
+        await sandbox.clock.tickAsync(debounceTimeout);
         expect(spy).to.not.have.been.called;
       });
 
@@ -430,7 +436,6 @@ describe('sourceObliqueSync', () => {
     let originalFeature: Feature;
     let obliqueFeature: Feature;
     let id: string | number;
-    let clock: sinon.SinonFakeTimers;
 
     beforeEach(async () => {
       vectorSource = new VectorSource();
@@ -439,9 +444,8 @@ describe('sourceObliqueSync', () => {
       originalFeature = createFeature();
       id = originalFeature.getId()!;
       vectorSource.addFeatures([originalFeature]);
-      await timeout(debounceTimeout);
+      await sandbox.clock.tickAsync(debounceTimeout);
       obliqueFeature = sourceSync.obliqueSource.getFeatureById(id)!;
-      clock = sandbox.useFakeTimers(1);
     });
 
     afterEach(() => {
@@ -461,7 +465,7 @@ describe('sourceObliqueSync', () => {
         done();
       });
       originalFeature.getGeometry()!.translate(1, 1);
-      clock.tick(debounceTimeout);
+      sandbox.clock.tick(debounceTimeout);
     });
 
     it('should add a change listener to the oblique geometry, updating the original geometry when called', (done) => {
@@ -469,7 +473,7 @@ describe('sourceObliqueSync', () => {
         done();
       });
       obliqueFeature.getGeometry()!.translate(1, 1);
-      clock.tick(debounceTimeout);
+      sandbox.clock.tick(debounceTimeout);
     });
 
     describe('original geometry change listener', () => {
@@ -478,7 +482,7 @@ describe('sourceObliqueSync', () => {
           done();
         });
         originalFeature.setGeometry(new Point([1489084, 6892790, 0]));
-        clock.tick(debounceTimeout);
+        sandbox.clock.tick(debounceTimeout);
       });
 
       it('should remove the previous geometry listener', (done) => {
@@ -487,12 +491,12 @@ describe('sourceObliqueSync', () => {
           const spy = sandbox.spy();
           obliqueFeature.getGeometry()!.on('change', spy);
           oldGeometry!.setCoordinates([2, 2, 1]);
-          clock.tick(debounceTimeout);
+          sandbox.clock.tick(debounceTimeout);
           expect(spy).to.not.have.been.called;
           done();
         });
         originalFeature.setGeometry(new Point([1489084, 6892790, 0]));
-        clock.tick(debounceTimeout);
+        sandbox.clock.tick(debounceTimeout);
       });
 
       it('should add a geometry change listener to the new geometry', (done) => {
@@ -502,10 +506,10 @@ describe('sourceObliqueSync', () => {
             done();
           });
           newGeometry.translate(1, 1);
-          clock.tick(debounceTimeout);
+          sandbox.clock.tick(debounceTimeout);
         });
         originalFeature.setGeometry(newGeometry);
-        clock.tick(debounceTimeout);
+        sandbox.clock.tick(debounceTimeout);
       });
 
       describe('handling of circles', () => {
@@ -537,7 +541,7 @@ describe('sourceObliqueSync', () => {
           });
           originalFeature.setGeometry(actuallyCircle);
           actuallyCircle.translate(1, 1);
-          clock.tick(debounceTimeout);
+          sandbox.clock.tick(debounceTimeout);
           expect(actuallyCircle).to.not.have.property(actuallyIsCircle);
         });
 
@@ -547,7 +551,7 @@ describe('sourceObliqueSync', () => {
           const spy = sandbox.spy();
           obliqueFeature.on('change:geometry', spy);
           circle.translate(1, 1);
-          clock.tick(debounceTimeout);
+          sandbox.clock.tick(debounceTimeout);
           expect(actuallyCircle).to.have.property(actuallyIsCircle);
           expect(spy).to.not.have.been.called;
         });
@@ -561,7 +565,6 @@ describe('sourceObliqueSync', () => {
     let originalFeature: Feature;
     let obliqueFeature: Feature;
     let id: string | number;
-    let clock: sinon.SinonFakeTimers;
 
     beforeEach(async () => {
       vectorSource = new VectorSource();
@@ -570,9 +573,8 @@ describe('sourceObliqueSync', () => {
       originalFeature = createFeature();
       id = originalFeature.getId()!;
       vectorSource.addFeatures([originalFeature]);
-      await timeout(debounceTimeout);
+      await sandbox.clock.tickAsync(debounceTimeout);
       obliqueFeature = sourceSync.obliqueSource.getFeatureById(id)!;
-      clock = sandbox.useFakeTimers(1);
     });
 
     afterEach(() => {
@@ -583,7 +585,7 @@ describe('sourceObliqueSync', () => {
 
     it('should update the oblique geometry after 200ms', () => {
       originalFeature.getGeometry()!.translate(1, 1);
-      clock.tick(debounceTimeout);
+      sandbox.clock.tick(debounceTimeout);
       expect(obliqueFeature.getGeometry()!.getCoordinates()).to.have.members([
         2676.7210834316597, 6483.7722926452625, 0,
       ]);
@@ -593,9 +595,9 @@ describe('sourceObliqueSync', () => {
       const spy = sandbox.spy();
       obliqueFeature.getGeometry()!.on('change', spy);
       originalFeature.getGeometry()!.translate(1, 1);
-      clock.tick(debounceTimeout / 2);
+      sandbox.clock.tick(debounceTimeout / 2);
       originalFeature.getGeometry()!.translate(1, 1);
-      clock.tick(debounceTimeout);
+      sandbox.clock.tick(debounceTimeout);
       expect(obliqueFeature.getGeometry()!.getCoordinates()).to.have.members([
         2682.558409466228, 6487.261329634799, 0,
       ]);
@@ -607,7 +609,7 @@ describe('sourceObliqueSync', () => {
       obliqueFeature.getGeometry()!.translate(1, 1);
       obliqueFeature.getGeometry()!.on('change', spy);
       originalFeature.getGeometry()!.translate(1, 1);
-      clock.tick(debounceTimeout);
+      sandbox.clock.tick(debounceTimeout);
       expect(spy).to.not.have.been.called;
     });
 
@@ -626,7 +628,6 @@ describe('sourceObliqueSync', () => {
     let originalFeature: Feature;
     let obliqueFeature: Feature;
     let id: string | number;
-    let clock: sinon.SinonFakeTimers;
 
     beforeEach(async () => {
       vectorSource = new VectorSource();
@@ -635,9 +636,8 @@ describe('sourceObliqueSync', () => {
       originalFeature = createFeature();
       id = originalFeature.getId()!;
       vectorSource.addFeatures([originalFeature]);
-      await timeout(debounceTimeout);
+      await sandbox.clock.tickAsync(debounceTimeout);
       obliqueFeature = sourceSync.obliqueSource.getFeatureById(id)!;
-      clock = sandbox.useFakeTimers(1);
     });
 
     afterEach(() => {
@@ -646,49 +646,39 @@ describe('sourceObliqueSync', () => {
       vectorSource.dispose();
     });
 
-    it('should update the oblique geometry after 200ms', (done) => {
+    it('should update the oblique geometry after 200ms', async () => {
       const spy = sandbox.spy();
       originalFeature.getGeometry()!.on('change', spy);
       obliqueFeature.getGeometry()!.translate(1, 1);
-      clock.tick(debounceTimeout);
-      clock.restore();
-      setTimeout(() => {
-        expect(spy).to.have.been.calledOnce;
-        done();
-      });
+      sandbox.clock.tick(debounceTimeout);
+      await sandbox.clock.tickAsync(1);
+      expect(spy).to.have.been.calledOnce;
     });
 
-    it('should clear a previously updating geometry call, resetting the debounce timer, if called again', (done) => {
+    it('should clear a previously updating geometry call, resetting the debounce timer, if called again', async () => {
       const spy = sandbox.spy();
       originalFeature.getGeometry()!.on('change', spy);
       obliqueFeature.getGeometry()!.translate(1, 1);
-      clock.tick(debounceTimeout / 2);
+      sandbox.clock.tick(debounceTimeout / 2);
       obliqueFeature.getGeometry()!.translate(1, 1);
-      clock.tick(debounceTimeout);
-      clock.restore();
-      setTimeout(() => {
-        expect(spy).to.have.been.calledOnce;
-        done();
-      });
+      sandbox.clock.tick(debounceTimeout);
+      await sandbox.clock.tickAsync(1);
+      expect(spy).to.have.been.calledOnce;
     });
 
-    it('should not update oblique, if updating mercator', (done) => {
+    it('should not update oblique, if updating mercator', async () => {
       originalFeature.getGeometry()!.translate(1, 1);
       const spy = sandbox.spy();
       originalFeature.getGeometry()!.on('change', spy);
       obliqueFeature.getGeometry()!.translate(1, 1);
-      clock.tick(debounceTimeout);
-      clock.restore();
-      setTimeout(() => {
-        expect(spy).to.not.have.been.called;
-        done();
-      });
+      sandbox.clock.tick(debounceTimeout);
+      await sandbox.clock.tickAsync(1);
+      expect(spy).to.not.have.been.called;
     });
 
     it('should reset the original geometry, if its actually a circle', async () => {
-      clock.restore();
       originalFeature.setGeometry(new Circle([1489084, 6892790, 0], 20));
-      await timeout(debounceTimeout);
+      await sandbox.clock.tickAsync(debounceTimeout);
       obliqueFeature.getGeometry()!.setCoordinates([
         [
           [1, 1, 0],
@@ -696,7 +686,7 @@ describe('sourceObliqueSync', () => {
           [0, 0, 0],
         ],
       ]);
-      await timeout(debounceTimeout);
+      await sandbox.clock.tickAsync(debounceTimeout);
       const geometry = originalFeature.getGeometry();
       expect(geometry).to.have.property(actuallyIsCircle);
       expect(geometry).to.be.an.instanceof(Polygon);
@@ -709,7 +699,6 @@ describe('sourceObliqueSync', () => {
     let originalFeature: Feature;
     let obliqueFeature: Feature;
     let id: string | number;
-    let clock: sinon.SinonFakeTimers;
 
     beforeEach(async () => {
       vectorSource = new VectorSource();
@@ -718,9 +707,8 @@ describe('sourceObliqueSync', () => {
       originalFeature = createAlreadyTransformedToImageFeature();
       id = originalFeature.getId()!;
       vectorSource.addFeatures([originalFeature]);
-      await timeout(debounceTimeout);
+      await sandbox.clock.tickAsync(debounceTimeout);
       obliqueFeature = sourceSync.obliqueSource.getFeatureById(id)!;
-      clock = sandbox.useFakeTimers(1);
     });
 
     afterEach(() => {
@@ -729,57 +717,45 @@ describe('sourceObliqueSync', () => {
       vectorSource.dispose();
     });
 
-    it('should update the oblique geometry after 200ms', (done) => {
+    it('should update the oblique geometry after 200ms', async () => {
       const spy = sandbox.spy();
       originalFeature.getGeometry()!.on('change', spy);
       obliqueFeature.getGeometry()!.translate(1, 1);
-      clock.tick(debounceTimeout);
-      clock.restore();
-      setTimeout(() => {
-        expect(spy).to.have.been.calledOnce;
-        done();
-      });
+      sandbox.clock.tick(debounceTimeout);
+      await sandbox.clock.tickAsync(1);
+      expect(spy).to.have.been.calledOnce;
     });
 
-    it('after updating, the geometry should no longer be already transformed to image', (done) => {
+    it('after updating, the geometry should no longer be already transformed to image', async () => {
       const spy = sandbox.spy();
       originalFeature.getGeometry()!.on('change', spy);
       obliqueFeature.getGeometry()!.translate(1, 1);
-      clock.tick(debounceTimeout);
-      clock.restore();
-      setTimeout(() => {
-        expect(originalFeature.getGeometry()).to.not.have.property(
-          alreadyTransformedToImage,
-        );
-        done();
-      });
+      sandbox.clock.tick(debounceTimeout);
+      await sandbox.clock.tickAsync(1);
+      expect(originalFeature.getGeometry()).to.not.have.property(
+        alreadyTransformedToImage,
+      );
     });
 
-    it('should clear a previously updating geometry call, resetting the debounce timer, if called again', (done) => {
+    it('should clear a previously updating geometry call, resetting the debounce timer, if called again', async () => {
       const spy = sandbox.spy();
       originalFeature.getGeometry()!.on('change', spy);
       obliqueFeature.getGeometry()!.translate(1, 1);
-      clock.tick(debounceTimeout / 2);
+      sandbox.clock.tick(debounceTimeout / 2);
       obliqueFeature.getGeometry()!.translate(1, 1);
-      clock.tick(debounceTimeout);
-      clock.restore();
-      setTimeout(() => {
-        expect(spy).to.have.been.calledOnce;
-        done();
-      });
+      sandbox.clock.tick(debounceTimeout);
+      await sandbox.clock.tickAsync(1);
+      expect(spy).to.have.been.calledOnce;
     });
 
-    it('should not update oblique, if updating mercator', (done) => {
+    it('should not update oblique, if updating mercator', async () => {
       originalFeature.getGeometry()!.translate(1, 1);
       const spy = sandbox.spy();
       originalFeature.getGeometry()!.on('change', spy);
       obliqueFeature.getGeometry()!.translate(1, 1);
-      clock.tick(debounceTimeout);
-      clock.restore();
-      setTimeout(() => {
-        expect(spy).to.not.have.been.called;
-        done();
-      });
+      sandbox.clock.tick(debounceTimeout);
+      await sandbox.clock.tickAsync(1);
+      expect(spy).to.not.have.been.called;
     });
   });
 
@@ -808,7 +784,7 @@ describe('sourceObliqueSync', () => {
         targetFeature.setId(uuid());
 
         vectorSource.addFeatures([startingFeature, targetFeature]);
-        await timeout(debounceTimeout);
+        await sandbox.clock.tickAsync(debounceTimeout);
         obliqueFeature = sourceSync.obliqueSource.getFeatureById(
           startingFeature.getId()!,
         )!;
@@ -836,7 +812,7 @@ describe('sourceObliqueSync', () => {
         const spy = sandbox.spy();
         geom.on('change', spy);
         startingFeature.getGeometry()!.translate(1, 1);
-        await timeout(debounceTimeout);
+        await sandbox.clock.tickAsync(debounceTimeout);
         expect(spy).to.not.have.been.called;
       });
 
@@ -902,14 +878,14 @@ describe('sourceObliqueSync', () => {
       vectorSource.addFeatures([newFeature]);
       const obliqueGeom = newFeature[obliqueGeometry];
       expect(obliqueGeom).to.exist;
-      await timeout(1);
+      await sandbox.clock.tickAsync(1);
       const coords = obliqueGeom!.getCoordinates() as number[];
       expect(coords).to.not.deep.equal(
         newFeature.getGeometry()!.getCoordinates(),
       );
       newFeature.getGeometry()!.translate(1, 1);
       sourceSync.destroy();
-      await timeout(debounceTimeout);
+      await sandbox.clock.tickAsync(debounceTimeout);
       expect(obliqueGeom!.getCoordinates()).to.deep.equal(coords);
     });
   });

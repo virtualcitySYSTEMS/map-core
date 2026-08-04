@@ -126,7 +126,7 @@ export async function createFlightPlayer(
 
   let resetMapControls: (() => void) | undefined;
 
-  let backedBeforeTimeout: number | undefined;
+  let backedBeforeTimeout: NodeJS.Timeout | undefined;
 
   const stop = (): void => {
     if (playerState !== 'stopped') {
@@ -317,6 +317,7 @@ export async function createFlightPlayer(
 
     if (backedBeforeTimeout != null) {
       clearTimeout(backedBeforeTimeout);
+      backedBeforeTimeout = undefined;
     }
 
     listeners.forEach((cb) => {
@@ -390,7 +391,7 @@ export async function createFlightPlayer(
       }
       const newTime = clock.times[index];
       goToTime(newTime);
-      backedBeforeTimeout = window.setTimeout(() => {
+      backedBeforeTimeout = setTimeout(() => {
         backedBeforeTimeout = undefined;
       }, 700);
     },

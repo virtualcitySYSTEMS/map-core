@@ -58,30 +58,56 @@ describe('Navigation', () => {
 
       navigation = new Navigation();
       controller = new Controller({ id: 'test' });
-      navigation.addController(controller);
       controllerInputSpy = sandbox.spy(controller, 'getInputs');
       applyInputSpy = sandbox.spy(navigation, 'applyInput');
       updateNavigationSpy = sandbox.spy(navigation, 'updateNavigation');
-      clock.tick(tick * times);
     });
 
     afterEach(() => {
       navigation.destroy();
     });
 
-    it('should register controller', () => {
-      expect(navigation.getControllers()).to.have.members([controller]);
+    describe('with polling', () => {
+      beforeEach(() => {
+        navigation.addController(controller);
+        clock.tick(tick * times);
+      });
+
+      it('should register controller', () => {
+        expect(navigation.getControllers()).to.have.members([controller]);
+      });
+
+      it('should start input loop', () => {
+        expect(applyInputSpy).to.have.been.called;
+        expect(updateNavigationSpy).to.have.been.called;
+      });
+
+      it('should request controllers', () => {
+        expect(controllerInputSpy).to.have.been.called;
+      });
     });
 
-    it('should start input loop', () => {
-      expect(applyInputSpy.callCount).to.be.equal(times);
-      expect(updateNavigationSpy.callCount).to.be.equal(times);
-    });
+    describe('with event-driven input', () => {
+      beforeEach(() => {
+        controller.eventDriven = true;
+        navigation.addController(controller);
+      });
 
-    // Todo fix this test, with fakeTimers, at the moment it has too many erratic failures
+      it('should not start the input loop before an input event', () => {
+        clock.tick(tick * times);
 
-    it('should request controllers', () => {
-      expect(controllerInputSpy.callCount).to.be.equal(times);
+        expect(controllerInputSpy).to.not.have.been.called;
+        expect(applyInputSpy).to.not.have.been.called;
+        expect(updateNavigationSpy).to.not.have.been.called;
+      });
+
+      it('should start the input loop after an input event', () => {
+        controller.inputChanged.raiseEvent();
+
+        expect(controllerInputSpy).to.have.been.called;
+        expect(applyInputSpy).to.have.been.called;
+        expect(updateNavigationSpy).to.have.been.called;
+      });
     });
   });
 

@@ -175,7 +175,7 @@ describe('VectorHelpers', () => {
           impl.globalHider,
         );
         now = Date.now();
-        clock = sandbox.useFakeTimers(now);
+        clock = sandbox.useFakeTimers({ now, toFake: ['Date'] });
       });
 
       after(() => {
@@ -288,7 +288,7 @@ describe('VectorHelpers', () => {
           impl.globalHider,
         );
         now = Date.now();
-        clock = sandbox.useFakeTimers(now);
+        clock = sandbox.useFakeTimers({ now, toFake: ['Date'] });
       });
 
       after(() => {

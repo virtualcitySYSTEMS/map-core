@@ -8,9 +8,7 @@ import VectorStyleItem from './vectorStyleItem.js';
 
 export function getStyleOrDefaultStyle(
   styleOptions?:
-    | DeclarativeStyleItemOptions
-    | VectorStyleItemOptions
-    | StyleItem,
+    DeclarativeStyleItemOptions | VectorStyleItemOptions | StyleItem,
   defaultStyle?: StyleItem,
 ): StyleItem {
   if (is(styleOptions, oneOf(StyleItem, { type: String }))) {

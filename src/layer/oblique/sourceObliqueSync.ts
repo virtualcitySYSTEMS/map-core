@@ -191,8 +191,11 @@ export function createSourceObliqueSync(
     if (updatingMercator[id]) {
       return;
     }
-    if (updatingOblique[id] != null) {
-      clearTimeout(updatingOblique[id] as number);
+    if (
+      updatingOblique[id] != null &&
+      typeof updatingOblique[id] !== 'boolean'
+    ) {
+      clearTimeout(updatingOblique[id]);
     }
     if (originalFeature.getGeometry()?.[alreadyTransformedToImage]) {
       convertToOblique(originalFeature, obliqueFeature)
@@ -299,7 +302,9 @@ export function createSourceObliqueSync(
     const id = feature.getId()!;
     const feat = obliqueSource.getFeatureById(id);
     if (updatingOblique[id] != null) {
-      clearTimeout(updatingOblique[id] as number);
+      if (typeof updatingOblique[id] !== 'boolean') {
+        clearTimeout(updatingOblique[id]);
+      }
       updatingOblique[id] = null;
     }
     if (feat) {

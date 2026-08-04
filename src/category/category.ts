@@ -16,7 +16,10 @@ import IndexedCollection from '../util/indexedCollection.js';
 import { parseGeoJSON, writeGeoJSONFeature } from '../layer/geojsonHelpers.js';
 import Collection from '../util/collection.js';
 import { getStyleOrDefaultStyle } from '../style/styleFactory.js';
-import type { TypedConstructorOptions } from '../classRegistry.js';
+import type {
+  AbstractCtor,
+  TypedConstructorOptions,
+} from '../classRegistry.js';
 import {
   categoryClassRegistry,
   getObjectFromClassRegistry,
@@ -27,12 +30,20 @@ import type VcsApp from '../vcsApp.js';
 import { markVolatile } from '../vcsModule.js';
 import type VectorStyleItem from '../style/vectorStyleItem.js';
 
+type VcsAppClassRegistryName = {
+  [K in keyof VcsApp]: VcsApp[K] extends OverrideClassRegistry<infer Ctor>
+    ? Ctor extends AbstractCtor
+      ? K
+      : never
+    : never;
+}[keyof VcsApp];
+
 export type CategoryOptions<T extends VcsObject | object> = VcsObjectOptions & {
   title?: string;
   /**
    * the class registry name on the current app to provide classes for this category. if provided, parseItems will deserialize using this class registry. See: {@link getObjectFromClassRegistry}.
    */
-  classRegistryName?: keyof VcsApp;
+  classRegistryName?: VcsAppClassRegistryName;
   featureProperty?: keyof T;
   layerOptions?: VectorOptions;
   keyProperty?: keyof T;
@@ -103,7 +114,7 @@ class Category<
 
   private _featureProperty: keyof T | undefined;
 
-  private _classRegistryName: keyof VcsApp | undefined;
+  private _classRegistryName: VcsAppClassRegistryName | undefined;
 
   private _layerOptions: VectorOptions;
 
@@ -333,9 +344,7 @@ class Category<
       throw new Error('Cannot deserialize item before setting the vcApp');
     }
     const classRegistry = this._classRegistryName
-      ? (this._app[this._classRegistryName] as OverrideClassRegistry<
-          new () => T
-        >)
+      ? this._app[this._classRegistryName]
       : null;
 
     let item: T | null = null;
@@ -343,7 +352,7 @@ class Category<
       item = getObjectFromClassRegistry(
         classRegistry,
         config as TypedConstructorOptions,
-      );
+      ) as T | null;
     }
     return Promise.resolve((item ?? config) as T);
   }

@@ -54,9 +54,7 @@ class PointCloudLayer extends CesiumTilesetLayer {
 
   getStyleOrDefaultStyle(
     styleOptions?:
-      | DeclarativeStyleItemOptions
-      | VectorStyleItemOptions
-      | StyleItem,
+      DeclarativeStyleItemOptions | VectorStyleItemOptions | StyleItem,
     defaultStyle?: VectorStyleItem | DeclarativeStyleItem,
   ): StyleItem {
     return super.getStyleOrDefaultStyle(

@@ -643,14 +643,12 @@ class TileProvider extends VcsObject {
       config.tileCacheSize = this.tileCacheSize;
     }
 
-    if (
-      !(
-        this.baseLevels.length === defaultOptions.baseLevels?.length &&
-        this.baseLevels.every((level) =>
-          defaultOptions.baseLevels?.includes(level),
-        )
+    if (!(
+      this.baseLevels.length === defaultOptions.baseLevels?.length &&
+      this.baseLevels.every((level) =>
+        defaultOptions.baseLevels?.includes(level),
       )
-    ) {
+    )) {
       config.baseLevels = this.baseLevels.slice();
     }
 

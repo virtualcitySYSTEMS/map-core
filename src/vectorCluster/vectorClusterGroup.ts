@@ -68,9 +68,7 @@ function featureIsClusterable(
 
 function getStyleOrDefaultStyle(
   styleOptions:
-    | VectorClusterStyleItemOptions
-    | VectorClusterStyleItem
-    | undefined,
+    VectorClusterStyleItemOptions | VectorClusterStyleItem | undefined,
   defaultValue: VectorClusterStyleItem,
 ): VectorClusterStyleItem {
   if (styleOptions) {
@@ -385,8 +383,7 @@ export default class VectorClusterGroup extends VcsObject {
       this._implementations.set(map, this._createImplementationForMap(map));
     }
     return this._implementations.get(map) as
-      | VectorClusterGroupImpl<T>
-      | undefined;
+      VectorClusterGroupImpl<T> | undefined;
   }
 
   /**

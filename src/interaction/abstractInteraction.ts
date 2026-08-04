@@ -47,10 +47,7 @@ export type ObliqueParameters = {
 };
 
 export type EventFeature =
-  | Feature
-  | Cesium3DTileFeature
-  | Cesium3DTilePointFeature
-  | Entity;
+  Feature | Cesium3DTileFeature | Cesium3DTilePointFeature | Entity;
 
 export type InteractionEvent = MapEvent & {
   type: EventType;

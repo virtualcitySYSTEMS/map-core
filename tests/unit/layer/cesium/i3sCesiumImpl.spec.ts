@@ -190,7 +190,7 @@ describe('I3SCesiumImpl', () => {
 
     it('should attach an event listener to style changed, setting the style dirty and update timers', () => {
       const now = Date.now();
-      sandbox.useFakeTimers(now);
+      sandbox.useFakeTimers({ now, toFake: ['Date'] });
       i3sCesiumImpl.updateStyle(styleItem);
       styleItem.styleChanged.raiseEvent();
       expect(makeStyleDirtyStub).to.have.been.called;
@@ -262,7 +262,7 @@ describe('I3SCesiumImpl', () => {
 
     beforeEach(async () => {
       now = Date.now();
-      clock = sandbox.useFakeTimers(now);
+      clock = sandbox.useFakeTimers({ now, toFake: ['Date'] });
       feature = createDummyCesium3DTileFeature({ id: 'test' });
 
       content = {

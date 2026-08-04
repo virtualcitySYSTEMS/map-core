@@ -284,8 +284,7 @@ async function loadRGBImages(
 > {
   const { images, ...meta } = await loadMetadataFromImage(image);
   const metadata = (await images.at(-1)!.getGDALMetadata()) as
-    | Record<string, string>
-    | undefined;
+    Record<string, string> | undefined;
   const gdalMetadata = parsePanoramaGDALMetadata(metadata);
 
   return {
@@ -383,8 +382,7 @@ export async function createPanoramaImage(
   }
 
   let depth:
-    | { levelImages: GeoTIFFImage[]; metadata: DepthGDALMetadata }
-    | undefined;
+    { levelImages: GeoTIFFImage[]; metadata: DepthGDALMetadata } | undefined;
 
   let usedDepthImage = depthImage;
   if (!usedDepthImage && hasDepth && absoluteRootUrl && name) {
@@ -411,8 +409,7 @@ export async function createPanoramaImage(
     }
 
     const metadata = (await depthImages.at(-1)!.getGDALMetadata()) as
-      | Record<string, string>
-      | undefined;
+      Record<string, string> | undefined;
     const depthMetadata = parseDepthGDALMetadata(metadata);
     depth = { levelImages: depthImages, metadata: depthMetadata };
   }

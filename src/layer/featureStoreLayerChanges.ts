@@ -32,12 +32,7 @@ export type FeatureStoreChangesListeners = {
 };
 
 export type FeatureStoreGeojsonGeometry =
-  | Point
-  | MultiPoint
-  | LineString
-  | MultiLineString
-  | Polygon
-  | MultiPolygon;
+  Point | MultiPoint | LineString | MultiLineString | Polygon | MultiPolygon;
 
 export type FeatureStoreGeojsonFeature<
   G extends FeatureStoreGeojsonGeometry = FeatureStoreGeojsonGeometry,

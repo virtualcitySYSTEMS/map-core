@@ -30,6 +30,7 @@ import { timeout } from '../../helpers/helpers.js';
 import TestAttributeProvider from '../../featureProvider/testAttributeProvider.js';
 
 describe('CesiumTilesetCesiumImpl', () => {
+  /** @type {import("sinon").SinonSandbox} */
   let sandbox;
   /** @type {import("../../../../src/layer/cesiumTilesetLayer.js").default} */
   let cesiumTileset;
@@ -48,7 +49,7 @@ describe('CesiumTilesetCesiumImpl', () => {
   });
 
   beforeEach(() => {
-    createTilesetServer(sandbox);
+    createTilesetServer();
     cesiumTileset = new CesiumTilesetLayer({
       url: 'http://test.com/tileset.json',
     });
@@ -242,7 +243,7 @@ describe('CesiumTilesetCesiumImpl', () => {
 
     it('should attach an event listener to style changed, setting the style dirty and update timers', () => {
       const now = Date.now();
-      sandbox.useFakeTimers(now);
+      sandbox.useFakeTimers({ now, toFake: ['Date'] });
       cesiumTilesetCesium.updateStyle(styleItem);
       const makeStyleDirty = sandbox.spy(
         cesiumTilesetCesium.cesium3DTileset,
@@ -508,8 +509,10 @@ describe('CesiumTilesetCesiumImpl', () => {
     let content;
 
     beforeEach(async () => {
+      await cesiumTilesetCesium.initialize();
+
       now = Date.now();
-      clock = sandbox.useFakeTimers(now);
+      clock = sandbox.useFakeTimers({ now, toFake: ['Date'] });
       feature = createDummyCesium3DTileFeature({ id: 'test' });
 
       content = {
@@ -518,7 +521,6 @@ describe('CesiumTilesetCesiumImpl', () => {
           return feature;
         },
       };
-      await cesiumTilesetCesium.initialize();
     });
 
     it('should set the last updated, if the content does not already have TilesetLayer.lastUpdated', () => {

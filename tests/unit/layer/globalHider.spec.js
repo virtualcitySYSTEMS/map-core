@@ -50,7 +50,7 @@ describe('GlobalHider', () => {
     });
 
     it('should set lastUpdated', () => {
-      sandbox.useFakeTimers(1);
+      sandbox.useFakeTimers({ now: 1, toFake: ['Date'] });
       GH.hideObjects(['test', 'test1']);
       expect(GH.lastUpdated).to.equal(Date.now());
     });
@@ -65,7 +65,7 @@ describe('GlobalHider', () => {
     });
 
     it('should not set lastUpdated, if the array is empty', () => {
-      sandbox.useFakeTimers(1);
+      sandbox.useFakeTimers({ now: 1, toFake: ['Date'] });
       GH.hideObjects([]);
       expect(GH.lastUpdated).to.not.equal(Date.now());
     });

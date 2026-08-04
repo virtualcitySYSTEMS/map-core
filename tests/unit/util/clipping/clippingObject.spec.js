@@ -103,7 +103,7 @@ describe('util.clipping.ClippingObject', () => {
       let tilesetLayer;
 
       beforeEach(async () => {
-        tilesetLayer = await createInitializedTilesetLayer(sandbox, cesiumMap);
+        tilesetLayer = await createInitializedTilesetLayer(cesiumMap);
         CO.addLayer(tilesetLayer.name);
       });
 
@@ -352,7 +352,7 @@ describe('util.clipping.ClippingObject', () => {
 
     it('should add the layer to the targets, if the layer is active', (done) => {
       (async () => {
-        const layer = await createInitializedTilesetLayer(sandbox, cesiumMap);
+        const layer = await createInitializedTilesetLayer(cesiumMap);
         await layer.activate();
         app.layers.add(layer);
         CO.addLayer(layer.name);

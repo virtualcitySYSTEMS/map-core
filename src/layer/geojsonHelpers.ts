@@ -315,9 +315,7 @@ export function parseGeoJSON(
   readOptions: GeoJSONreadOptions = {},
 ): GeoJSONData {
   const geoJSON = (typeof input === 'string' ? JSON.parse(input) : input) as
-    | FeatureCollection
-    | GeojsonFeature
-    | GeojsonGeometry;
+    FeatureCollection | GeojsonFeature | GeojsonGeometry;
 
   const epsgCode = getEPSGCodeFromGeojson(geoJSON as FeatureCollection);
   const defaultDataProjection = epsgCode

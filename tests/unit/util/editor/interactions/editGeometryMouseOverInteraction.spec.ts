@@ -40,7 +40,7 @@ describe('EditGeometryMouseOverInteraction', () => {
   });
 
   beforeEach(() => {
-    cursorStyle = new CSSStyleDeclaration();
+    cursorStyle = document.createElement('div').style;
     interaction = new EditGeometryMouseOverInteraction();
     interaction.cursorStyle = cursorStyle;
   });

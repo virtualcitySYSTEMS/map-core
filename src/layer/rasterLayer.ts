@@ -174,8 +174,8 @@ export function calculateMinLevel(
  * @group Layer
  */
 class RasterLayer<
-    I extends LayerImplementation<VcsMap> & RasterLayerImplementation,
-  >
+  I extends LayerImplementation<VcsMap> & RasterLayerImplementation,
+>
   extends Layer<I>
   implements SplitLayer
 {

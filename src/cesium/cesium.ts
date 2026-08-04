@@ -29,7 +29,8 @@ declare module '@vcmap-cesium/engine' {
     MIRRORED_REPEAT = 33648,
   }
 
-  enum BoundingSphereState { // error in cesium types
+  enum BoundingSphereState {
+    // error in cesium types
     DONE = 0,
     PENDING = 1,
     FAILED = 2,

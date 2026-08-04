@@ -1,5 +1,3 @@
-import type { SinonSandbox } from 'sinon';
-import sinon from 'sinon';
 import { expect } from 'chai';
 import type { Cesium3DTileset, Globe } from '@vcmap-cesium/engine';
 import {
@@ -32,12 +30,10 @@ const coordinates = [
 
 describe('clippingPolygonObjectCollection', () => {
   describe('adding an item', () => {
-    let sandbox: SinonSandbox;
     let app: VcsApp;
     let cesiumMap: CesiumMap;
 
     before(async () => {
-      sandbox = sinon.createSandbox();
       app = new VcsApp();
       cesiumMap = await setCesiumMap(app);
     });
@@ -48,11 +44,7 @@ describe('clippingPolygonObjectCollection', () => {
     });
 
     it('should add ClippingPolygons, if item is set active on startup', async () => {
-      const layer = await createInitializedTilesetLayer(
-        sandbox,
-        cesiumMap,
-        'layer1',
-      );
+      const layer = await createInitializedTilesetLayer(cesiumMap, 'layer1');
       await layer.activate();
       app.layers.add(layer);
       const vis = getTilesetVisualization(cesiumMap, layer);
@@ -86,11 +78,7 @@ describe('clippingPolygonObjectCollection', () => {
       let globe: Globe;
 
       before(async () => {
-        layer = await createInitializedTilesetLayer(
-          sandbox,
-          cesiumMap,
-          'layer2',
-        );
+        layer = await createInitializedTilesetLayer(cesiumMap, 'layer2');
         await layer.activate();
         app.layers.add(layer);
         vis = getTilesetVisualization(cesiumMap, layer)!;
@@ -178,12 +166,10 @@ describe('clippingPolygonObjectCollection', () => {
   });
 
   describe('removing an item', () => {
-    let sandbox: SinonSandbox;
     let app: VcsApp;
     let cesiumMap: CesiumMap;
 
     before(async () => {
-      sandbox = sinon.createSandbox();
       app = new VcsApp();
       cesiumMap = await setCesiumMap(app);
     });
@@ -194,11 +180,7 @@ describe('clippingPolygonObjectCollection', () => {
     });
 
     it('should remove ClippingPolygons from active CesiumMaps', async () => {
-      const layer = await createInitializedTilesetLayer(
-        sandbox,
-        cesiumMap,
-        'layer3',
-      );
+      const layer = await createInitializedTilesetLayer(cesiumMap, 'layer3');
       await layer.activate();
       app.layers.add(layer);
       const vis = getTilesetVisualization(cesiumMap, layer);
@@ -232,11 +214,7 @@ describe('clippingPolygonObjectCollection', () => {
       let globe: Globe;
 
       before(async () => {
-        layer = await createInitializedTilesetLayer(
-          sandbox,
-          cesiumMap,
-          'layer4',
-        );
+        layer = await createInitializedTilesetLayer(cesiumMap, 'layer4');
         await layer.activate();
         app.layers.add(layer);
         vis = getTilesetVisualization(cesiumMap, layer)!;
@@ -297,16 +275,14 @@ describe('clippingPolygonObjectCollection', () => {
   });
 
   describe('map listener', () => {
-    let sandbox: SinonSandbox;
     let app: VcsApp;
     let cesiumMap: CesiumMap;
     let layer: CesiumTilesetLayer;
     let clippingPolygonObject: ClippingPolygonObject;
 
     before(async () => {
-      sandbox = sinon.createSandbox();
       app = new VcsApp();
-      layer = await createInitializedTilesetLayer(sandbox, cesiumMap, 'layer4');
+      layer = await createInitializedTilesetLayer(cesiumMap, 'layer4');
       app.layers.add(layer);
     });
 

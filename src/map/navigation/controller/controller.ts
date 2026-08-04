@@ -2,11 +2,13 @@ import { Math as CesiumMath } from '@vcmap-cesium/engine';
 import { v4 as uuidv4 } from 'uuid';
 import type { ControllerInput } from './controllerInput.js';
 import { checkThreshold, multiplyComponents } from './controllerInput.js';
+import VcsEvent from '../../../vcsEvent.js';
 
 export type ControllerOptions = {
   id: string;
   scales?: ControllerInput;
   inputThreshold?: number;
+  eventDriven?: boolean;
 };
 
 class Controller {
@@ -19,6 +21,7 @@ class Controller {
       id: '',
       scales: undefined,
       inputThreshold: CesiumMath.EPSILON1,
+      eventDriven: false,
     };
   }
 
@@ -28,6 +31,10 @@ class Controller {
 
   inputThreshold: number;
 
+  eventDriven: boolean;
+
+  readonly inputChanged = new VcsEvent<void>();
+
   constructor(options: ControllerOptions) {
     const defaultOptions = Controller.getDefaultOptions();
 
@@ -35,6 +42,7 @@ class Controller {
     this.scales = options.scales || defaultOptions.scales;
     this.inputThreshold =
       options.inputThreshold || defaultOptions.inputThreshold!;
+    this.eventDriven = options.eventDriven || defaultOptions.eventDriven!;
   }
 
   // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-unused-vars

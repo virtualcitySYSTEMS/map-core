@@ -118,11 +118,7 @@ export type VectorGeometryFactory<
 };
 
 export type CesiumGeometryOptionType =
-  | 'solid'
-  | 'fill'
-  | 'outline'
-  | 'line'
-  | 'groundLine';
+  'solid' | 'fill' | 'outline' | 'line' | 'groundLine';
 
 export type CesiumGeometryOption<
   T extends CesiumGeometryOptionType = CesiumGeometryOptionType,
