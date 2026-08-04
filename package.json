@@ -13,7 +13,7 @@
     "lint": "npm run lint:js && npm run lint:prettier",
     "format": "prettier --write --list-different . && npm run lint:js -- --fix",
     "type-check": "tsc -b",
-    "postinstall": "node build/postinstall.js && node build/buildShader.js",
+    "postinstall": "node build/buildShader.js",
     "coverage": "c8 --reporter text-summary npm run test",
     "coverage:gitlab": "c8 --reporter text-summary npm run test -- --reporter mocha-junit-reporter",
     "build-docs": "typedoc index.ts --out docs --skipErrorChecking",
@@ -28,7 +28,6 @@
     "url": "https://github.com/virtualcitySYSTEMS/map-core.git"
   },
   "files": [
-    "build/postinstall.js",
     "build/buildShader.js",
     "src/",
     "index.ts",
@@ -47,7 +46,7 @@
     "@types/chai-as-promised": "^8.0.2",
     "@types/geojson": "^7946.0.16",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^24.0.0",
+    "@types/node": "^24.13.3",
     "@types/sinon": "^22.0.0",
     "@types/sinon-chai": "^4.0.0",
     "@vcsuite/eslint-config": "^4.1.0",
@@ -56,9 +55,9 @@
     "chai": "^6.2.2",
     "chai-as-promised": "^8.0.2",
     "jsdom": "^30.0.1",
-    "mocha": "^11.7.6",
+    "mocha": "^11.8.0",
     "mocha-junit-reporter": "^2.2.1",
-    "nock": "^14.0.16",
+    "nock": "^14.0.17",
     "prettier": "^3.9.6",
     "resize-observer-polyfill": "^1.5.1",
     "sinon": "^22.1.0",
@@ -68,7 +67,7 @@
   },
   "peerDependencies": {
     "@vcmap-cesium/engine": "^26.0.1",
-    "ol": "^10.9.0"
+    "ol": "^10.10.0"
   },
   "prettier": "@vcsuite/eslint-config/prettier.js",
   "dependencies": {
@@ -77,9 +76,9 @@
     "@vcsuite/parsers": "^2.0.1",
     "fast-deep-equal": "^3.1.3",
     "flatgeobuf": "^4.4.0",
-    "geotiff": "^3.0.5",
-    "ol-mapbox-style": "^13.4.1",
-    "proj4": "^2.20.9",
+    "geotiff": "^3.1.0-beta.0",
+    "ol-mapbox-style": "^13.4.2",
+    "proj4": "^2.21.0",
     "rbush": "^4.0.1",
     "rbush-knn": "^4.0.0",
     "uuid": "^14.0.1"

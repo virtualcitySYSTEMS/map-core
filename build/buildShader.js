@@ -1,6 +1,19 @@
 import { readFile, writeFile, watch } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { getFilesInDirectory } from './postinstall.js';
+import path from 'path';
+import fs from 'fs';
+
+export async function* getFilesInDirectory(filePath) {
+  const entries = await fs.promises.readdir(filePath, { withFileTypes: true });
+
+  for (const file of entries) {
+    if (file.isDirectory()) {
+      yield* getFilesInDirectory(path.join(filePath, file.name));
+    } else if (file.isFile()) {
+      yield path.join(filePath, file.name);
+    }
+  }
+}
 
 async function buildShader(file) {
   const fileName = file.replace(/\.glsl$/, '.shader.ts');
