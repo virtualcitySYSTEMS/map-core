@@ -97,6 +97,16 @@ describe('CsvAttributeProvider', () => {
         });
       });
 
+      it('should not serialize headers read from the CSV', async () => {
+        const provider = new CsvAttributeProvider({
+          data: `id,name,age
+1,Alice,30`,
+        });
+        await provider.augmentFeature(feature);
+
+        expect(provider.toJSON().headers).to.be.undefined;
+      });
+
       it('should generate column names for missing headers', async () => {
         const csvData = `id,name
 1,Alice,30

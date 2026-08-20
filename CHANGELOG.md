@@ -1,3 +1,7 @@
+### 6.3.10
+
+- Fixes `CsvAttributeProvider` serializing headers extracted from CSV data.
+
 ### 6.3.9
 
 - Fixes WMS FeatureInfo to stay in sync when WMSLayer sublayers change at runtime.
