@@ -82,9 +82,6 @@
     "rbush-knn": "^4.0.0",
     "uuid": "^14.0.2"
   },
-  "overrides": {
-    "serialize-javascript": "^7.0.5"
-  },
   "engines": {
     "node": "^24.0.0"
   }
