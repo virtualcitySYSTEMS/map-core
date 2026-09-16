@@ -21,11 +21,22 @@
 
 #### Bugfixes
 
+### 6.3.10
+
+- Fixes `CsvAttributeProvider` serializing headers extracted from CSV data.
+
+### 6.3.9
+
+- Fixes WMS FeatureInfo to stay in sync when WMSLayer sublayers change at runtime.
+
+### 6.3.8
+
+- Pinch zoom enabled in panorama.
+- More natural zoom handling in panorama.
+
 ### 6.3.7
 
 - Fixes an issue, where the heading applied in panorama would not be the expected value.
-- More natural zoom handling in panorama.
-- Pinch zoom enabled in panorama.
 
 ### 6.3.6
 

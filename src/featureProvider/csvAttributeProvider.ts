@@ -105,9 +105,10 @@ export default class CsvAttributeProvider extends AbstractAttributeProvider {
     const dataMap = new Map<string, Record<string, unknown>>();
 
     let startIndex = 0;
+    let headers = this._headers;
 
-    if (!this._headers) {
-      this._headers = this._readLine(lines[0]);
+    if (!headers) {
+      headers = this._readLine(lines[0]);
       startIndex = 1;
     }
 
@@ -117,7 +118,7 @@ export default class CsvAttributeProvider extends AbstractAttributeProvider {
       const attributes: Record<string, unknown> = {};
 
       for (let j = 0; j < values.length; j++) {
-        const key = this._headers[j] ?? `column_${j}`;
+        const key = headers[j] ?? `column_${j}`;
         attributes[key] = values[j];
       }
 
