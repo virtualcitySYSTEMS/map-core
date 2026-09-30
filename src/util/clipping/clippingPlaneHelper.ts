@@ -2,7 +2,6 @@ import {
   Cartesian3,
   Plane,
   ClippingPlane,
-  Matrix3,
   Matrix4,
   ClippingPlaneCollection,
   Entity,
@@ -10,6 +9,7 @@ import {
   JulianDate,
   Cesium3DTileset,
   Globe,
+  VoxelPrimitive,
   type Camera,
 } from '@vcmap-cesium/engine';
 import type { Coordinate } from 'ol/coordinate.js';
@@ -226,6 +226,30 @@ export function createClippingPlaneCollection(
 }
 
 /**
+ * This function ensures that clipping planes on voxels
+ * behave the same way as clipping planes on tilesets, entities, etc, by:
+ * 1. Directly "bakes" the matrix into the planes definition,
+ * since clipping plane matrix is currently ignored by IntersectPlane.glsl.
+ * Only when `transform == true`.
+ * 2. Negates normal and inverts direction of each plane.
+ */
+function fixVoxelClippingPlanes(
+  clippingPlanes: ClippingPlaneCollection,
+  transform: boolean,
+): void {
+  for (let i = 0; i < clippingPlanes.length; i++) {
+    const plane = clippingPlanes.get(i);
+    if (transform) {
+      Plane.transform(plane, clippingPlanes.modelMatrix, plane);
+    }
+
+    // Most likely also a bug in IntersectPlane.glsl
+    Cartesian3.negate(plane.normal, plane.normal);
+    plane.distance *= -1;
+  }
+}
+
+/**
  * copies the clippingplanes and the properties from source to result
  * @param  source
  * @param  result
@@ -263,20 +287,16 @@ export function copyClippingPlanesToCollection(
 }
 
 export function clearClippingPlanes(
-  target: Globe | Cesium3DTileset | Entity,
+  target: Globe | Cesium3DTileset | Entity | VoxelPrimitive,
 ): void {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-  if (target.isDestroyed && target.isDestroyed()) {
+  if ('isDestroyed' in target && target.isDestroyed()) {
     return;
   }
   if (target instanceof Entity) {
     if (target.model) {
       if (target.model.clippingPlanes) {
-        const entityClippingPlanes = (
-          target.model.clippingPlanes as ConstantProperty
-        ).getValue() as ClippingPlaneCollection;
+        const entityClippingPlanes =
+          target.model.clippingPlanes.getValue() as ClippingPlaneCollection;
         entityClippingPlanes.removeAll();
       } else {
         target.model.clippingPlanes = new ConstantProperty(
@@ -291,116 +311,58 @@ export function clearClippingPlanes(
   }
 }
 
-function setTilesetClippingPlane(
-  cesium3DTileset: Cesium3DTileset,
-  clippingPlaneCollection: ClippingPlaneCollection,
-  local?: boolean,
-): void {
-  clearClippingPlanes(cesium3DTileset);
-  // copyClippingPlanesToCollection(clippingPlaneCollection, cesium3DTileset.clippingPlanes); XXX this is in release-4.0 but i think its an oversight
-  if (!local) {
-    if (!clippingPlaneCollection.modelMatrix.equals(Matrix4.IDENTITY)) {
-      copyClippingPlanesToCollection(
-        clippingPlaneCollection,
-        cesium3DTileset.clippingPlanes,
-      );
-      cesium3DTileset.clippingPlanes.modelMatrix = Matrix4.multiply(
-        Matrix4.inverse(
-          cesium3DTileset.clippingPlanesOriginMatrix,
-          cesium3DTileset.clippingPlanes.modelMatrix,
-        ),
-        clippingPlaneCollection.modelMatrix,
-        cesium3DTileset.clippingPlanes.modelMatrix,
-      );
-    } else {
-      const rotation = Matrix4.getMatrix3(
-        Matrix4.inverse(
-          cesium3DTileset.clippingPlanesOriginMatrix,
-          new Matrix4(),
-        ),
-        new Matrix3(),
-      );
-      const transformationMatrix = Matrix4.fromRotationTranslation(
-        rotation,
-        new Cartesian3(),
-      );
-      copyClippingPlanesToCollection(
-        clippingPlaneCollection,
-        cesium3DTileset.clippingPlanes,
-        transformationMatrix,
-        cesium3DTileset.boundingSphere.center,
-      );
-    }
-  } else {
-    copyClippingPlanesToCollection(
-      clippingPlaneCollection,
-      cesium3DTileset.clippingPlanes,
-    );
-  }
-}
-
-function setGlobeClippingPlanes(
-  globe: Globe,
-  clippingPlaneCollection: ClippingPlaneCollection,
-): void {
-  clearClippingPlanes(globe);
-  copyClippingPlanesToCollection(clippingPlaneCollection, globe.clippingPlanes);
-}
-
-/**
- * apply a clippingPlaneCollection to an entity
- * @param  entity
- * @param  clippingPlaneCollection
- * @param  local
- */
-function setEntityClippingPlanes(
-  entity: Entity,
-  clippingPlaneCollection: ClippingPlaneCollection,
-  local?: boolean,
-): void {
-  if (entity.model) {
-    clearClippingPlanes(entity);
-    const entityClippingPlanes = (
-      entity.model.clippingPlanes as ConstantProperty
-    ).getValue() as ClippingPlaneCollection;
-    copyClippingPlanesToCollection(
-      clippingPlaneCollection,
-      entityClippingPlanes,
-    );
-    if (!local) {
-      const localToFixedFrame = entity.computeModelMatrix(JulianDate.now());
-      Matrix4.inverseTransformation(
-        localToFixedFrame,
-        entityClippingPlanes.modelMatrix,
-      );
-      if (!clippingPlaneCollection.modelMatrix.equals(Matrix4.IDENTITY)) {
-        Matrix4.multiply(
-          entityClippingPlanes.modelMatrix,
-          clippingPlaneCollection.modelMatrix,
-          entityClippingPlanes.modelMatrix,
-        );
-      }
-    }
-  }
-}
-
 /**
  * @param  target
  * @param  clippingPlaneCollection
  * @param  local
  */
 export function setClippingPlanes(
-  target: Globe | Cesium3DTileset | Entity,
+  target: Globe | Cesium3DTileset | Entity | VoxelPrimitive,
   clippingPlaneCollection: ClippingPlaneCollection,
   local?: boolean,
 ): void {
+  clearClippingPlanes(target);
+  let localToWorld: Matrix4 | undefined;
+  let targetClippingPlanes: ClippingPlaneCollection | undefined;
+
   if (target instanceof Cesium3DTileset) {
-    setTilesetClippingPlane(target, clippingPlaneCollection, local);
+    localToWorld = target.clippingPlanesOriginMatrix;
+    targetClippingPlanes = target.clippingPlanes;
+  } else if (target instanceof Entity) {
+    localToWorld = target.computeModelMatrix(JulianDate.now());
+    targetClippingPlanes = target.model?.clippingPlanes?.getValue() as
+      ClippingPlaneCollection | undefined;
+  } else if (target instanceof VoxelPrimitive) {
+    localToWorld = target.provider.shapeTransform;
+    targetClippingPlanes = target.clippingPlanes;
   } else if (target instanceof Globe) {
-    setGlobeClippingPlanes(target, clippingPlaneCollection);
-  } else {
-    setEntityClippingPlanes(target, clippingPlaneCollection, local);
+    targetClippingPlanes = target.clippingPlanes;
   }
+
+  if (!targetClippingPlanes) {
+    return;
+  }
+
+  const clonedSourceClippingPlanes = copyClippingPlanesToCollection(
+    clippingPlaneCollection,
+    new ClippingPlaneCollection(),
+  );
+  if (!local && localToWorld) {
+    const worldToLocal = Matrix4.inverse(localToWorld, new Matrix4());
+    Matrix4.multiply(
+      worldToLocal,
+      clippingPlaneCollection.modelMatrix,
+      clonedSourceClippingPlanes.modelMatrix,
+    );
+  }
+  if (target instanceof VoxelPrimitive) {
+    fixVoxelClippingPlanes(clonedSourceClippingPlanes, !local);
+  }
+
+  copyClippingPlanesToCollection(
+    clonedSourceClippingPlanes,
+    targetClippingPlanes,
+  );
 }
 
 /**

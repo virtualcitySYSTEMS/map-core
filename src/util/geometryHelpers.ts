@@ -1,11 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { Scene } from '@vcmap-cesium/engine';
+import type { BoundingSphere, Scene } from '@vcmap-cesium/engine';
 import {
+  Cartographic,
   HeightReference,
+  Math as CesiumMath,
   sampleTerrainMostDetailed,
 } from '@vcmap-cesium/engine';
 import { offset as offsetSphere } from 'ol/sphere.js';
 import type { Coordinate } from 'ol/coordinate.js';
+import type { Extent as OLExtent } from 'ol/extent.js';
 import { fromCircle } from 'ol/geom/Polygon.js';
 import type { GeometryLayout } from 'ol/geom/Geometry.js';
 import {
@@ -101,6 +104,24 @@ export function circleFromCenterRadius(
   const dy2 = dy * dy;
   const radiusProjected = Math.sqrt(dx2 + dy2);
   return new Circle(center, radiusProjected);
+}
+
+/**
+ * Calculates the 2D extent of a bounding sphere.
+ * @param boundingSphere - center is expected in ECEF (EPSG:4978), radius in meters
+ * @returns the extent in Web Mercator (EPSG:3857)
+ */
+export function getExtentFromBoundingSphere(
+  boundingSphere: BoundingSphere,
+): OLExtent {
+  const { center, radius } = boundingSphere;
+  const cartographic = Cartographic.fromCartesian(center);
+  const mercatorCenter = Projection.wgs84ToMercator([
+    CesiumMath.toDegrees(cartographic.longitude),
+    CesiumMath.toDegrees(cartographic.latitude),
+    cartographic.height,
+  ]);
+  return circleFromCenterRadius(mercatorCenter, radius).getExtent();
 }
 
 export function convertGeometryToPolygon(geometry: Geometry): Geometry {

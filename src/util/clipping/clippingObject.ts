@@ -7,6 +7,7 @@ import {
   type Globe,
   type I3SDataProvider,
   type Scene,
+  VoxelPrimitive,
 } from '@vcmap-cesium/engine';
 
 import { check } from '@vcsuite/check';
@@ -20,6 +21,7 @@ import type VcsMap from '../../map/vcsMap.js';
 import type Layer from '../../layer/layer.js';
 import CesiumTilesetLayer from '../../layer/cesiumTilesetLayer.js';
 import I3SLayer from '../../layer/i3sLayer.js';
+import VoxelLayer from '../../layer/voxelLayer.js';
 
 export type ClippingObjectEntityOption = {
   layerName: string;
@@ -34,7 +36,7 @@ export type ClippingObjectOptions = {
   local?: boolean;
 };
 
-export type ClippingTarget = Globe | Entity | Cesium3DTileset;
+export type ClippingTarget = Globe | Entity | Cesium3DTileset | VoxelPrimitive;
 
 function getLogger(): Logger {
   return getLoggerByName('ClippingObject');
@@ -87,7 +89,7 @@ class ClippingObject {
   clippingPlaneUpdated = new VcsEvent<void>();
 
   private _cachedLayers = new Set<
-    FeatureStoreLayer | CesiumTilesetLayer | I3SLayer
+    FeatureStoreLayer | CesiumTilesetLayer | I3SLayer | VoxelLayer
   >();
 
   private _activeMap: VcsMap | null = null;
@@ -170,7 +172,10 @@ class ClippingObject {
           const visualisations = map.getVisualizationsForLayer(layer);
           const tilesets = visualisations
             ? [...visualisations].flatMap((v) => {
-                if (v instanceof Cesium3DTileset) {
+                if (
+                  v instanceof Cesium3DTileset ||
+                  v instanceof VoxelPrimitive
+                ) {
                   return [v];
                 }
                 return (v as I3SDataProvider).layers
@@ -246,6 +251,7 @@ class ClippingObject {
       this.layerNames.includes(layer.name) &&
       (layer instanceof FeatureStoreLayer ||
         layer instanceof CesiumTilesetLayer ||
+        layer instanceof VoxelLayer ||
         layer instanceof I3SLayer)
     ) {
       if (layer.active) {
@@ -259,13 +265,11 @@ class ClippingObject {
   handleMapChanged(map: VcsMap | null): void {
     // clear old destroyed targets
     this.targets.forEach((target, key) => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      if (target.isDestroyed && target.isDestroyed()) {
+      if ('isDestroyed' in target && target.isDestroyed()) {
         this.targets.delete(key);
       }
     });
+    this._activeMap = map;
     if (map instanceof CesiumMap) {
       const { globe } = map.getScene() as Scene;
       let raise = false;
@@ -288,7 +292,6 @@ class ClippingObject {
         this._cachedLayers.clear();
       }
     }
-    this._activeMap = map;
   }
 
   /**

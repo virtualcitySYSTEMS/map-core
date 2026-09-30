@@ -12,6 +12,8 @@ import {
   Cesium3DTileFeature,
   Cesium3DTilePointFeature,
   Entity,
+  VoxelPrimitive,
+  VoxelCell,
 } from '@vcmap-cesium/engine';
 import type OLMap from 'ol/Map.js';
 import Feature from 'ol/Feature.js';
@@ -110,7 +112,8 @@ export function getFeatureFromPickObject(
     object.primitive &&
     object.primitive[vcsLayerName] &&
     (object instanceof Cesium3DTileFeature ||
-      object instanceof Cesium3DTilePointFeature) &&
+      object instanceof Cesium3DTilePointFeature ||
+      object instanceof VoxelCell) &&
     object.primitive[allowPicking] !== false
   ) {
     // cesium 3d tileset
@@ -159,9 +162,12 @@ export function getFeatureFromScene(
   windowPosition: Cartesian2,
   hitTolerance: number,
 ): { pickObject: unknown; feature?: EventFeature } {
-  const pickObject = scene.pick(windowPosition, hitTolerance, hitTolerance) as
+  let pickObject = scene.pick(windowPosition, hitTolerance, hitTolerance) as
     CesiumPickObject | undefined;
 
+  if (pickObject?.primitive instanceof VoxelPrimitive) {
+    pickObject = scene.pickVoxel?.(windowPosition, hitTolerance, hitTolerance);
+  }
   let feature: EventFeature | undefined;
   if (pickObject) {
     feature = getFeatureFromPickObject(pickObject);
@@ -356,12 +362,15 @@ class FeatureAtPixelInteraction extends AbstractInteraction {
           .filter((f) => !!f);
       }
 
-      const cartesianPosition = getPositionFromScene(
-        scene,
-        event.windowPosition,
-        event.ray!,
-        primitivesToExclude,
-      );
+      const cartesianPosition =
+        feature instanceof VoxelCell
+          ? feature.orientedBoundingBox.center
+          : getPositionFromScene(
+              scene,
+              event.windowPosition,
+              event.ray!,
+              primitivesToExclude,
+            );
 
       if (
         cartesianPosition &&

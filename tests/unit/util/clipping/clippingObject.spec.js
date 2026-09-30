@@ -1,4 +1,13 @@
-import { Entity, ClippingPlaneCollection } from '@vcmap-cesium/engine';
+import {
+  Entity,
+  ClippingPlaneCollection,
+  Cesium3DTilesVoxelProvider,
+  MetadataComponentType,
+  MetadataType,
+  Cartesian3,
+  Matrix4,
+  VoxelShapeType,
+} from '@vcmap-cesium/engine';
 import ClippingObject from '../../../../src/util/clipping/clippingObject.js';
 import VcsApp from '../../../../src/vcsApp.js';
 import VectorLayer from '../../../../src/layer/vectorLayer.js';
@@ -11,6 +20,26 @@ import {
 } from '../../helpers/cesiumHelpers.js';
 import FeatureStoreLayer from '../../../../src/layer/featureStoreLayer.js';
 import { setOpenlayersMap } from '../../helpers/openlayersHelpers.js';
+import VoxelLayer from '../../../../src/layer/voxelLayer.js';
+
+function createVoxelProvider() {
+  return {
+    shape: VoxelShapeType.BOX,
+    dimensions: new Cartesian3(2, 2, 2),
+    paddingBefore: Cartesian3.ZERO,
+    paddingAfter: Cartesian3.ZERO,
+    names: ['value'],
+    types: [MetadataType.SCALAR],
+    componentTypes: [MetadataComponentType.FLOAT32],
+    minimumValues: [[0]],
+    maximumValues: [[1]],
+    availableLevels: 1,
+    maximumTileCount: 1,
+    globalTransform: Matrix4.IDENTITY,
+    shapeTransform: Matrix4.IDENTITY,
+    requestData: () => undefined,
+  };
+}
 
 describe('util.clipping.ClippingObject', () => {
   let sandbox;
@@ -223,6 +252,36 @@ describe('util.clipping.ClippingObject', () => {
         CO._cachedLayers.add(tiledLayer);
         CO.handleLayerChanged(tiledLayer);
         expect(CO._cachedLayers).to.be.empty;
+      });
+    });
+
+    describe('VoxelLayer', () => {
+      let voxelLayer;
+
+      beforeEach(async () => {
+        sandbox
+          .stub(Cesium3DTilesVoxelProvider, 'fromUrl')
+          .resolves(createVoxelProvider());
+        voxelLayer = new VoxelLayer({
+          url: 'http://test.com/voxels.json',
+        });
+        app.layers.add(voxelLayer);
+        CO.addLayer(voxelLayer.name);
+        await voxelLayer.activate();
+      });
+
+      it('should add the voxel primitive to the targets', () => {
+        CO.handleLayerChanged(voxelLayer);
+        expect(CO.targets.get(voxelLayer.name)).to.equal(
+          voxelLayer.getImplementations()[0].voxelPrimitive,
+        );
+      });
+
+      it('should remove the voxel primitive when the layer is deactivated', () => {
+        CO.handleLayerChanged(voxelLayer);
+        voxelLayer.deactivate();
+        CO.handleLayerChanged(voxelLayer);
+        expect(CO.targets.has(voxelLayer.name)).to.be.false;
       });
     });
 

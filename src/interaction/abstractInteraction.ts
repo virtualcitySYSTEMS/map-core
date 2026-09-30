@@ -5,6 +5,7 @@ import type {
   Cesium3DTilePointFeature,
   Entity,
   Ray,
+  VoxelCell,
 } from '@vcmap-cesium/engine';
 import type { Coordinate } from 'ol/coordinate.js';
 import type { Feature } from 'ol';
@@ -47,7 +48,7 @@ export type ObliqueParameters = {
 };
 
 export type EventFeature =
-  Feature | Cesium3DTileFeature | Cesium3DTilePointFeature | Entity;
+  Feature | Cesium3DTileFeature | Cesium3DTilePointFeature | Entity | VoxelCell;
 
 export type InteractionEvent = MapEvent & {
   type: EventType;

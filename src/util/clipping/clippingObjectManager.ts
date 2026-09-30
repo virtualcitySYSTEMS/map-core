@@ -270,7 +270,11 @@ class ClippingObjectManager {
         setClippingObject === clippingObject &&
         clippingObject.clippingPlaneCollection
       ) {
-        setClippingPlanes(target, clippingObject.clippingPlaneCollection);
+        setClippingPlanes(
+          target,
+          clippingObject.clippingPlaneCollection,
+          clippingObject.local,
+        );
       }
     });
   }

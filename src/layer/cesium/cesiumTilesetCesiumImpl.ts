@@ -28,7 +28,7 @@ import {
   highlightFeature,
 } from '../featureVisibility.js';
 import Projection from '../../util/projection.js';
-import { circleFromCenterRadius } from '../../util/geometryHelpers.js';
+import { getExtentFromBoundingSphere } from '../../util/geometryHelpers.js';
 import type {
   CesiumTilesetImplementationOptions,
   CesiumTilesetTilesetProperties,
@@ -69,15 +69,7 @@ function getExtentFromBoundingVolume(
     return [mercatorSW[0], mercatorSW[1], mercatorNE[0], mercatorNE[1]];
   }
 
-  const { center, radius } = boundingSphere;
-  const cart = Cartographic.fromCartesian(center);
-  const mercatorCenter = Projection.wgs84ToMercator([
-    CesiumMath.toDegrees(cart.longitude),
-    CesiumMath.toDegrees(cart.latitude),
-    cart.height,
-  ]);
-  const circle = circleFromCenterRadius(mercatorCenter, radius);
-  return circle.getExtent();
+  return getExtentFromBoundingSphere(boundingSphere);
 }
 
 export function getExtentFromTileset(

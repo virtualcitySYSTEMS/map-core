@@ -10,6 +10,7 @@ import './src/cesium/wallpaperMaterial.js';
 import './src/cesium/cesium3DTilePointFeature.js';
 import './src/cesium/cesium3DTileFeature.js';
 import './src/cesium/entity.js';
+import './src/cesium/voxelCell.js';
 import './src/cesium/clippingPolygon.js';
 import './src/cesium/clippingPolygonCollection.js';
 
@@ -105,6 +106,7 @@ export { default as SingleImageCesiumImpl } from './src/layer/cesium/singleImage
 export { default as TerrainCesiumImpl } from './src/layer/cesium/terrainCesiumImpl.js';
 export { default as TmsCesiumImpl } from './src/layer/cesium/tmsCesiumImpl.js';
 export { default as VectorCesiumImpl } from './src/layer/cesium/vectorCesiumImpl.js';
+export { default as VoxelCesiumImpl } from './src/layer/cesium/voxelCesiumImpl.js';
 export type { CesiumVectorContext } from './src/layer/cesium/vectorContext.js';
 export {
   setReferenceForPicking,
@@ -289,6 +291,11 @@ export type {
   TerrainImplementationOptions,
 } from './src/layer/terrainLayer.js';
 export { default as TerrainLayer } from './src/layer/terrainLayer.js';
+export type {
+  VoxelLayerOptions,
+  VoxelLayerImplementationOptions,
+} from './src/layer/voxelLayer.js';
+export { default as VoxelLayer } from './src/layer/voxelLayer.js';
 export { tiledLayerLoaded, globeLoaded } from './src/layer/tileLoadedHelper.js';
 export type { FlatGeobufTileProviderOptions } from './src/layer/tileProvider/flatGeobufTileProvider.js';
 export { default as FlatGeobufTileProvider } from './src/layer/tileProvider/flatGeobufTileProvider.js';

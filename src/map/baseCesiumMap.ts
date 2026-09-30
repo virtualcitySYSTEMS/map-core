@@ -20,6 +20,7 @@ import {
   ScreenSpaceEventHandler,
   ScreenSpaceEventType,
   type TerrainProvider,
+  VoxelPrimitive,
 } from '@vcmap-cesium/engine';
 import { parseBoolean } from '@vcsuite/parsers';
 import type { Coordinate } from 'ol/coordinate.js';
@@ -57,7 +58,7 @@ function ensureInCollection<
 >(
   cesiumCollection: T,
   item: T extends PrimitiveCollection
-    ? PrimitiveCollection | Cesium3DTileset | I3SDataProvider
+    ? PrimitiveCollection | Cesium3DTileset | I3SDataProvider | VoxelPrimitive
     : ImageryLayer,
   layerCollection: LayerCollection,
 ): void {
@@ -72,7 +73,10 @@ function ensureInCollection<
         const collectionItem = cesiumCollection.get(
           i,
         ) as T extends PrimitiveCollection
-          ? PrimitiveCollection | Cesium3DTileset | I3SDataProvider
+          ? | PrimitiveCollection
+            | Cesium3DTileset
+            | I3SDataProvider
+            | VoxelPrimitive
           : ImageryLayer;
         if (
           (layerCollection.indexOfKey(collectionItem[vcsLayerName]) as number) >
@@ -97,7 +101,7 @@ function ensureInCollection<
  */
 function indexChangedOnPrimitive(
   primitiveCollection: PrimitiveCollection,
-  item: PrimitiveCollection,
+  item: PrimitiveCollection | VoxelPrimitive,
   layerCollection: LayerCollection,
 ): void {
   const { destroyPrimitives } = primitiveCollection;
@@ -150,7 +154,8 @@ export type CesiumVisualisationType =
   | PrimitiveCollection
   | Cesium3DTileset
   | ImageryLayer
-  | I3SDataProvider;
+  | I3SDataProvider
+  | VoxelPrimitive;
 
 export default class BaseCesiumMap extends VcsMap<CesiumVisualisationType> {
   static get className(): string {
@@ -501,7 +506,7 @@ export default class BaseCesiumMap extends VcsMap<CesiumVisualisationType> {
   }
 
   protected _indexChangedOnVisualization(vis: CesiumVisualisationType): void {
-    if (vis instanceof PrimitiveCollection) {
+    if (vis instanceof PrimitiveCollection || vis instanceof VoxelPrimitive) {
       indexChangedOnPrimitive(
         (this.getScene() as Scene).primitives,
         vis,
@@ -531,7 +536,7 @@ export default class BaseCesiumMap extends VcsMap<CesiumVisualisationType> {
    */
   addPrimitiveCollection(
     primitiveCollection:
-      PrimitiveCollection | Cesium3DTileset | I3SDataProvider,
+      PrimitiveCollection | Cesium3DTileset | I3SDataProvider | VoxelPrimitive,
   ): void {
     if (!this._cesiumWidget) {
       throw new Error('Cannot add primitive to uninitialized map');
@@ -552,7 +557,7 @@ export default class BaseCesiumMap extends VcsMap<CesiumVisualisationType> {
    */
   removePrimitiveCollection(
     primitiveCollection:
-      PrimitiveCollection | Cesium3DTileset | I3SDataProvider,
+      PrimitiveCollection | Cesium3DTileset | I3SDataProvider | VoxelPrimitive,
   ): void {
     // XXX add destroy as boolean?
     this.removeVisualization(primitiveCollection);

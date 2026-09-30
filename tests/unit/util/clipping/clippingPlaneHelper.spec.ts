@@ -14,10 +14,13 @@ import {
   Entity,
   Globe,
   Cesium3DTileset,
-  Plane,
-  Matrix3,
   JulianDate,
+  MetadataComponentType,
+  MetadataType,
+  VoxelPrimitive,
+  VoxelShapeType,
 } from '@vcmap-cesium/engine';
+import type { Plane, VoxelProvider } from '@vcmap-cesium/engine';
 import { Point } from 'ol/geom.js';
 import type { Coordinate } from 'ol/coordinate.js';
 import {
@@ -50,6 +53,27 @@ function expectedPlane(
 
 describe('util.clipping.ClippingPlaneHelpers', () => {
   let sandbox: sinon.SinonSandbox;
+
+  function createVoxelProvider(): VoxelProvider {
+    return {
+      shape: VoxelShapeType.BOX,
+      dimensions: new Cartesian3(2, 2, 2),
+      paddingBefore: Cartesian3.ZERO,
+      paddingAfter: Cartesian3.ZERO,
+      names: ['value'],
+      types: [MetadataType.SCALAR],
+      componentTypes: [MetadataComponentType.FLOAT32],
+      minimumValues: [[0]],
+      maximumValues: [[1]],
+      availableLevels: 1,
+      maximumTileCount: 1,
+      globalTransform: Matrix4.IDENTITY,
+      shapeTransform: Matrix4.IDENTITY,
+      minBounds: Cartesian3.ZERO,
+      maxBounds: Cartesian3.ONE,
+      requestData: (): undefined => undefined,
+    };
+  }
 
   before(() => {
     sandbox = sinon.createSandbox();
@@ -392,58 +416,31 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
         expect(tileset.clippingPlanes.contains(plane)).to.be.false;
       });
 
-      it('should transform the plane with the rotation of the the inverted transformation of the tileset', () => {
-        const transform = sandbox.spy(Plane, 'transform');
-        const rotation = Matrix4.getMatrix3(
-          Matrix4.inverse(tileset.clippingPlanesOriginMatrix, new Matrix4()),
-          new Matrix3(),
+      it('should transform the clipping planes into the local frame of the tileset', () => {
+        tileset.clippingPlanesOriginMatrix = Matrix4.fromTranslation(
+          new Cartesian3(1, 2, 3),
         );
-        const transformationMatrix = Matrix4.fromRotationTranslation(
-          rotation,
-          new Cartesian3(),
-        );
+        collection.modelMatrix = Matrix4.fromScale(new Cartesian3(2, 1, 1));
         setClippingPlanes(tileset, collection);
-        expect(transform).to.have.been.called;
-        const { args } = transform.getCall(0);
-        expect(Matrix4.equals(args[1], transformationMatrix)).to.be.true;
-      });
-
-      it('should set the distance of the transformed plane to the distance of the original plane to the originPoint', () => {
-        setClippingPlanes(tileset, collection);
-        const originPoint = tileset.boundingSphere.center;
-        const distance = Plane.getPointDistance(collection.get(0), originPoint);
-        expect(tileset.clippingPlanes.get(0).distance).to.equal(distance);
-      });
-
-      it('should not apply the transformation of local', () => {
-        const inverse = sandbox.spy(Matrix4, 'inverse');
-        setClippingPlanes(tileset, collection, true);
-        expect(inverse).to.not.have.been.called;
-      });
-
-      it('should multiply any previous model matrix on the collection', () => {
-        const multiply = sandbox.spy(Matrix4, 'multiply');
-        collection.modelMatrix = Matrix4.multiplyByScalar(
-          Matrix4.IDENTITY,
-          2,
+        // transforming the stored matrix back into world space must reproduce the original
+        const roundTrip = Matrix4.multiply(
+          tileset.clippingPlanesOriginMatrix,
+          tileset.clippingPlanes.modelMatrix,
           new Matrix4(),
         );
-        setClippingPlanes(tileset, collection);
-        expect(multiply).to.have.been.called;
+        expect(roundTrip.equalsEpsilon(collection.modelMatrix, 1e-12)).to.be
+          .true;
       });
 
-      it('should not multiply any previous model, if its an IDENTITY', () => {
-        const multiply = sandbox.spy(Matrix4, 'multiply');
-        collection.modelMatrix = Matrix4.IDENTITY;
-        setClippingPlanes(tileset, collection);
-        expect(multiply).to.not.have.been.called;
-      });
-
-      it('should not multiply the previous model matrix, if local', () => {
-        const multiply = sandbox.spy(Matrix4, 'multiply');
+      it('should not transform the clipping planes, if local', () => {
+        tileset.clippingPlanesOriginMatrix = Matrix4.fromTranslation(
+          new Cartesian3(1, 2, 3),
+        );
         collection.modelMatrix = Matrix4.fromScale(new Cartesian3(2, 1, 1));
         setClippingPlanes(tileset, collection, true);
-        expect(multiply).to.not.have.been.called;
+        expect(
+          tileset.clippingPlanes.modelMatrix.equals(collection.modelMatrix),
+        ).to.be.true;
       });
     });
 
@@ -486,49 +483,86 @@ describe('util.clipping.ClippingPlaneHelpers', () => {
         expect(clippingPlanes.contains(plane)).to.be.false;
       });
 
-      it('should apply the inverse transformation of the model', () => {
-        const inverse = sandbox.spy(Matrix4, 'inverseTransformation');
-        setClippingPlanes(entity, collection);
-        expect(inverse).to.have.been.called;
-        const { args, returnValue } = inverse.getCall(0);
-        expect(args[0].equals(entity.computeModelMatrix(JulianDate.now()))).to
-          .be.true;
-        const clippingPlanes =
-          entity.model?.clippingPlanes?.getValue() as ClippingPlaneCollection;
-        expect(clippingPlanes.modelMatrix).to.equal(returnValue);
-      });
-
-      it('should not apply the transformation of local', () => {
-        const inverse = sandbox.spy(Matrix4, 'inverseTransformation');
-        setClippingPlanes(entity, collection, true);
-        expect(inverse).to.not.have.been.called;
-      });
-
-      it('should multiply any previous model matrix on the collection', () => {
-        const multiply = sandbox.spy(Matrix4, 'multiply');
+      it('should transform the clipping planes into the local frame of the entity', () => {
         collection.modelMatrix = Matrix4.fromScale(new Cartesian3(2, 1, 1));
         setClippingPlanes(entity, collection);
         const clippingPlanes =
           entity.model?.clippingPlanes?.getValue() as ClippingPlaneCollection;
-        expect(multiply).to.have.been.calledWith(
+        const localToWorld = entity.computeModelMatrix(JulianDate.now());
+        // transforming the stored matrix back into world space must reproduce the original
+        const roundTrip = Matrix4.multiply(
+          localToWorld,
           clippingPlanes.modelMatrix,
-          collection.modelMatrix,
-          clippingPlanes.modelMatrix,
+          new Matrix4(),
+        );
+        expect(roundTrip.equalsEpsilon(collection.modelMatrix, 1e-12)).to.be
+          .true;
+      });
+
+      it('should not transform the clipping planes, if local', () => {
+        collection.modelMatrix = Matrix4.fromScale(new Cartesian3(2, 1, 1));
+        setClippingPlanes(entity, collection, true);
+        const clippingPlanes =
+          entity.model?.clippingPlanes?.getValue() as ClippingPlaneCollection;
+        expect(clippingPlanes.modelMatrix.equals(collection.modelMatrix)).to.be
+          .true;
+      });
+    });
+
+    describe('VoxelPrimitive', () => {
+      let voxelPrimitive: VoxelPrimitive;
+
+      beforeEach(() => {
+        voxelPrimitive = new VoxelPrimitive({
+          provider: createVoxelProvider(),
+        });
+      });
+
+      afterEach(() => {
+        voxelPrimitive.destroy();
+      });
+
+      it('should set the clipping planes on the voxel primitive', () => {
+        setClippingPlanes(voxelPrimitive, collection);
+        expect(voxelPrimitive.clippingPlanes).to.have.length(1);
+      });
+
+      it('should clone the clipping collection', () => {
+        setClippingPlanes(voxelPrimitive, collection);
+        expect(voxelPrimitive.clippingPlanes).to.not.equal(collection);
+        expect(voxelPrimitive.clippingPlanes.get(0)).to.not.equal(
+          collection.get(0),
         );
       });
 
-      it('should not multiply any previous model matrix, if its an IDENTITY', () => {
-        const multiply = sandbox.spy(Matrix4, 'multiply');
-        collection.modelMatrix = Matrix4.IDENTITY;
-        setClippingPlanes(entity, collection);
-        expect(multiply).to.not.have.been.called;
+      it('should clear any previous planes', () => {
+        const plane = new ClippingPlane(new Cartesian3(1, 1, 1), -1);
+        voxelPrimitive.clippingPlanes = new ClippingPlaneCollection({
+          planes: [plane],
+        });
+        setClippingPlanes(voxelPrimitive, collection);
+        expect(voxelPrimitive.clippingPlanes).to.have.length(1);
+        expect(voxelPrimitive.clippingPlanes.contains(plane)).to.be.false;
       });
 
-      it('should not multiply the previous model matrix, if local', () => {
-        const multiply = sandbox.spy(Matrix4, 'multiply');
+      it('should preserve the clipping collection model matrix', () => {
         collection.modelMatrix = Matrix4.fromScale(new Cartesian3(2, 1, 1));
-        setClippingPlanes(entity, collection, true);
-        expect(multiply).to.not.have.been.called;
+        setClippingPlanes(voxelPrimitive, collection);
+        expect(
+          voxelPrimitive.clippingPlanes.modelMatrix.equals(
+            collection.modelMatrix,
+          ),
+        ).to.be.true;
+      });
+
+      it('should preserve the clipping collection model matrix if local', () => {
+        collection.modelMatrix = Matrix4.fromScale(new Cartesian3(2, 1, 1));
+        setClippingPlanes(voxelPrimitive, collection, true);
+        expect(
+          voxelPrimitive.clippingPlanes.modelMatrix.equals(
+            collection.modelMatrix,
+          ),
+        ).to.be.true;
       });
     });
   });

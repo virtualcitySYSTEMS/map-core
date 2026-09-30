@@ -210,6 +210,18 @@ declare module '@vcmap-cesium/engine' {
     [allowPicking]?: boolean;
   }
 
+  interface VoxelPrimitive {
+    [vcsLayerName]?: string;
+    [allowPicking]?: boolean;
+  }
+
+  interface VoxelCell {
+    getId(): string | number;
+    getAttributes(): Record<string, unknown>;
+    [vcsLayerName]?: string;
+    [attributeProviderName]?: string;
+  }
+
   interface CesiumTerrainProvider {
     [vcsLayerName]?: string;
   }
