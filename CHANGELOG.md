@@ -1,3 +1,7 @@
+### 6.3.11
+
+- Fixes a bug where ClippingObject could add an undefined target for unsupported layer visualizations
+
 ### 6.3.10
 
 - Fixes `CsvAttributeProvider` serializing headers extracted from CSV data.

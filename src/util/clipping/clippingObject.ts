@@ -5,7 +5,7 @@ import {
   type CustomDataSource,
   type Entity,
   type Globe,
-  type I3SDataProvider,
+  I3SDataProvider,
   type Scene,
 } from '@vcmap-cesium/engine';
 
@@ -38,6 +38,24 @@ export type ClippingTarget = Globe | Entity | Cesium3DTileset;
 
 function getLogger(): Logger {
   return getLoggerByName('ClippingObject');
+}
+
+/**
+ * Extracts the Cesium3DTilesets backing a layer visualisation, if any.
+ */
+function getTilesets(visualisation: object): Cesium3DTileset[] {
+  if (visualisation instanceof Cesium3DTileset) {
+    return [visualisation];
+  }
+  if (visualisation instanceof I3SDataProvider) {
+    return (visualisation.layers ?? [])
+      .map((i3sLayer) => i3sLayer.tileset)
+      .filter(
+        (tileset): tileset is Cesium3DTileset =>
+          tileset instanceof Cesium3DTileset,
+      );
+  }
+  return [];
 }
 
 const globeSymbol = Symbol('ClippingObjectGlobe');
@@ -169,17 +187,7 @@ class ClippingObject {
         if (layer.active) {
           const visualisations = map.getVisualizationsForLayer(layer);
           const tilesets = visualisations
-            ? [...visualisations].flatMap((v) => {
-                if (v instanceof Cesium3DTileset) {
-                  return [v];
-                }
-                return (v as I3SDataProvider).layers
-                  ?.map((i3sLayer) => i3sLayer.tileset)
-                  .filter(
-                    (tileset): tileset is Cesium3DTileset =>
-                      tileset instanceof Cesium3DTileset,
-                  );
-              })
+            ? [...visualisations].flatMap(getTilesets)
             : [];
 
           if (tilesets.length > 0) {
@@ -259,10 +267,7 @@ class ClippingObject {
   handleMapChanged(map: VcsMap | null): void {
     // clear old destroyed targets
     this.targets.forEach((target, key) => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      if (target.isDestroyed && target.isDestroyed()) {
+      if ('isDestroyed' in target && target.isDestroyed()) {
         this.targets.delete(key);
       }
     });

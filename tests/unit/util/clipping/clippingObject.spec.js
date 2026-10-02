@@ -201,6 +201,20 @@ describe('util.clipping.ClippingObject', () => {
       });
     });
 
+    it('should ignore unsupported visualizations without adding undefined targets', () => {
+      const layer = new VectorLayer({ name: 'unsupported' });
+      layer._state = LayerState.ACTIVE;
+      CO.addLayer(layer.name);
+      sandbox
+        .stub(cesiumMap, 'getVisualizationsForLayer')
+        .returns(new Set([{}]));
+
+      CO.handleLayerChanged(layer);
+
+      expect(CO.targets).to.be.empty;
+      expect(() => CO.handleMapChanged(cesiumMap)).to.not.throw();
+    });
+
     describe('FeatureStoreLayer 2D handling', () => {
       let tiledLayer;
 
