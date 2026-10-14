@@ -171,7 +171,14 @@ class MapCollection extends Collection<VcsMap> {
     );
 
     this.eventHandler.addPersistentInteraction(this._panoramaImageSelection);
-    this.eventHandler.addPersistentInteraction(this._panoramaTileHighlight);
+    const indexOfEnsurePosition = this.eventHandler.interactions.indexOf(
+      this.eventHandler.ensurePositionInteraction,
+    );
+    // we don't need a position for the highlighting. ensure position stops propagation. thus we insert the highlight interaction before ensure position.
+    this.eventHandler.addPersistentInteraction(
+      this._panoramaTileHighlight,
+      indexOfEnsurePosition,
+    );
   }
 
   /**

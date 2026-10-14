@@ -261,17 +261,22 @@ class EventHandler {
    * Adds an interaction permanently to the interaction chain. Only add non-interferring
    * interactions in such a fashion (for instance for displaying the cursor position)
    * @param  interaction
-   * @param  [index=3] - at what position this interaction should be added. By default, it is added after the featureProviderInteraction
+   * @param  [index] - at what position this interaction should be added. By default, it is added after the featureProviderInteraction
    * @returns  function to remove the interaction with. returns number of removed interactions (0|1)
    */
   addPersistentInteraction(
     interaction: AbstractInteraction,
-    index = 4,
+    index?: number,
   ): () => number {
     check(interaction, AbstractInteraction);
-    check(index, Number);
+    check(index, maybe(Number));
 
-    this._interactionChain.addInteraction(interaction, index);
+    const indexToInsertAt =
+      index ??
+      this._interactionChain.chain.indexOf(this._featureProviderInteraction) +
+        1;
+
+    this._interactionChain.addInteraction(interaction, indexToInsertAt);
     return () =>
       this._interactionChain.removeInteraction(interaction) !== -1 ? 1 : 0;
   }

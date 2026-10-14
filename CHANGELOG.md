@@ -1,6 +1,9 @@
 ### 6.3.12
 
 - Added horizontal panorama image flipping based on PANORAMA_FLIP meta tag.
+- Fixes an issue, where the panorama highlighting would not work for images without
+  depth.
+- Correctly places persistent interactions _after_ the feature provider interaction, even if an interaction has been inserted _before_.
 
 ### 6.3.11
 
