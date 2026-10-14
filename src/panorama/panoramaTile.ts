@@ -69,11 +69,13 @@ function createPanoramaTilePrimitive(
  * @param tileCoordinate
  * @param modelMatrix
  * @param tileSize
+ * @param flip - whether the source depth data needs a horizontal flip to match the renderer; true means it is not already mirrored
  */
 export function createPanoramaTile(
   tileCoordinate: PanoramaTileCoordinate,
   modelMatrix: Matrix4,
   tileSize: Size,
+  flip: boolean,
 ): PanoramaTile {
   let destroyed = false;
   const primitives = new Map<
@@ -98,6 +100,14 @@ export function createPanoramaTile(
         throw new Error(
           `Resource of type "${type}" already set for this tile. Cannot overwrite.`,
         );
+      }
+      if (flip && type === 'depth') {
+        const depthArray = resource as Float32Array;
+        const width = tileSize[0];
+        const height = depthArray.length / width;
+        for (let row = 0; row < height; row++) {
+          depthArray.subarray(row * width, (row + 1) * width).reverse();
+        }
       }
       resources[type] = resource as ImageBitmap & Float32Array;
       primitives.forEach(({ material }) => {

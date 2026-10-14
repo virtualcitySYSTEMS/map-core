@@ -30,7 +30,21 @@ self.addEventListener('message', (e: PanoramaMessageEvent) => {
   let dataPromise: Promise<ImageBitmap | Float32Array>;
 
   if (fileDirectory.vcsPanorama?.type === 'image') {
-    dataPromise = createImageBitmap(blob, { imageOrientation: 'flipY' });
+    const { flip } = fileDirectory.vcsPanorama;
+    dataPromise = createImageBitmap(blob, { imageOrientation: 'flipY' }).then(
+      (bitmap) => {
+        if (!flip) {
+          return bitmap;
+        }
+        const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+        const ctx = canvas.getContext('2d')!;
+        ctx.translate(bitmap.width, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(bitmap, 0, 0);
+        bitmap.close();
+        return canvas.transferToImageBitmap();
+      },
+    );
   } else if (fileDirectory.vcsPanorama?.type === 'depth') {
     dataPromise = createDepthArray(blob);
   } else {

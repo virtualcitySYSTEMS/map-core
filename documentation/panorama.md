@@ -61,6 +61,7 @@ The following `Item`s CAN be present in the GDAL metadata:
 
 - `PANORAMA_INTENSITY` (0|1): Whether an intensity image is available. 1 if available, 0 (or missing) if not.
 - `PANORAMA_DEPTH` (0|1): Whether a depth image is available. 1 if available, 0 (or missing) if not.
+- `PANORAMA_FLIP` (0|1): Whether the source images need a horizontal flip to match the panorama renderer's coordinates. Set to `1` if the source images are not mirrored along X and the loader flips them. Set to `0` if they are already mirrored. If missing (e.g. in older data), it is treated as `0`. Only the RGB image's metadata is evaluated, and its value applies to the intensity and depth images as well.
 
 NOTE: If no metadata is given, or the metadata given is not valid, the position will be assumed to be 0, 0, 0 and the
 orientation 0, 0, 0 as well.

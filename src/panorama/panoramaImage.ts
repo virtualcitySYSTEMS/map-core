@@ -39,6 +39,11 @@ type PanoramaGDALMetadata = {
    * This image has intensity information available
    */
   hasIntensity: boolean;
+  /**
+   * Whether source images need a horizontal flip to match the panorama renderer's coordinates.
+   * `true` means they are not already mirrored; `false` or missing metadata means they are.
+   */
+  flip: boolean;
 };
 
 type PanoramaImageMetadata = {
@@ -53,7 +58,10 @@ export type DepthGDALMetadata = {
   max: number;
 };
 
-export type PanoramaFileDirectoryMetadata = { type: 'image' | 'depth' };
+export type PanoramaFileDirectoryMetadata = {
+  type: 'image' | 'depth';
+  flip: boolean;
+};
 
 /**
  * The panorama image represents all resources associated with a panorama image.
@@ -62,7 +70,7 @@ export type PanoramaFileDirectoryMetadata = { type: 'image' | 'depth' };
  * and the panorama depth of the image (if available).
  */
 export type PanoramaImage = Readonly<
-  PanoramaImageMetadata & Omit<PanoramaGDALMetadata, 'version'>
+  PanoramaImageMetadata & Omit<PanoramaGDALMetadata, 'version' | 'flip'>
 > & {
   /**
    * The image name
@@ -167,6 +175,7 @@ function createDefaultMetadata(): PanoramaGDALMetadata {
     orientation: HeadingPitchRoll.fromDegrees(0, 0, 0),
     hasDepth: false,
     hasIntensity: false,
+    flip: false,
   };
 }
 
@@ -203,6 +212,7 @@ function parsePanoramaGDALMetadata(
 
   const hasDepth = gdalMetadata?.PANORAMA_DEPTH === '1';
   const hasIntensity = gdalMetadata?.PANORAMA_INTENSITY === '1';
+  const flip = gdalMetadata?.PANORAMA_FLIP === '1';
 
   return {
     version,
@@ -210,6 +220,7 @@ function parsePanoramaGDALMetadata(
     orientation,
     hasDepth,
     hasIntensity,
+    flip,
   };
 }
 
@@ -293,7 +304,7 @@ async function loadRGBImages(
   images.forEach((i) => {
     (
       i.fileDirectory as { vcsPanorama: PanoramaFileDirectoryMetadata }
-    ).vcsPanorama = { type: 'image' };
+    ).vcsPanorama = { type: 'image', flip: gdalMetadata.flip };
   });
 
   return {
@@ -340,6 +351,7 @@ export async function createPanoramaImage(
     orientation,
     hasIntensity,
     hasDepth,
+    flip,
   } = await loadRGBImages(rgbImage);
   const { name, absoluteRootUrl, intensityImage, depthImage, dataset, time } =
     options;
@@ -389,7 +401,7 @@ export async function createPanoramaImage(
       intensity.forEach((i) => {
         (
           i.fileDirectory as { vcsPanorama: PanoramaFileDirectoryMetadata }
-        ).vcsPanorama = { type: 'image' };
+        ).vcsPanorama = { type: 'image', flip };
       });
 
       return intensity;
@@ -432,6 +444,7 @@ export async function createPanoramaImage(
         i.fileDirectory as { vcsPanorama: PanoramaFileDirectoryMetadata }
       ).vcsPanorama = {
         type: 'depth',
+        flip,
       };
     });
 
@@ -449,6 +462,7 @@ export async function createPanoramaImage(
     options.tileCacheSize,
     options.providerConcurrency,
     options.poolOrDecoder,
+    flip,
   );
 
   const positionAtDepth = async (

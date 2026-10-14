@@ -39,6 +39,7 @@ describe('PanoramaImageView', () => {
                 tileCoordinate,
                 panoramaImage.modelMatrix,
                 panoramaImage.tileSize,
+                false,
               );
             });
           },
@@ -126,6 +127,7 @@ describe('PanoramaImageView', () => {
                 tileCoordinate,
                 panoramaImage.modelMatrix,
                 panoramaImage.tileSize,
+                false,
               );
             });
           },
@@ -180,6 +182,7 @@ describe('PanoramaImageView', () => {
                   tileCoordinate,
                   panoramaImage.modelMatrix,
                   panoramaImage.tileSize,
+                  false,
                 );
               });
             },
@@ -242,6 +245,7 @@ describe('PanoramaImageView', () => {
                   tileCoordinate,
                   panoramaImage.modelMatrix,
                   panoramaImage.tileSize,
+                  false,
                 );
               });
             },
@@ -334,6 +338,7 @@ describe('PanoramaImageView', () => {
                 tileCoordinate,
                 panoramaImage.modelMatrix,
                 panoramaImage.tileSize,
+                false,
               );
             });
           },
@@ -557,6 +562,7 @@ describe('PanoramaImageView', () => {
                 tileCoordinate,
                 panoramaImage.modelMatrix,
                 panoramaImage.tileSize,
+                false,
               );
             });
           },

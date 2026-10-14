@@ -12,6 +12,10 @@ import { createPanoramaImage } from '../../../src/panorama/panoramaImage.js';
 import { getPanoramaImage } from '../helpers/panoramaHelpers.js';
 import { imageSphericalToCartesian } from '../../../src/panorama/sphericalCoordinates.js';
 
+type PanoramaFileDirectory = {
+  vcsPanorama: { type: string; flip: boolean };
+};
+
 describe('PanoramaImage', () => {
   describe('metadata handling', () => {
     let image: GeoTIFF | undefined;
@@ -47,6 +51,16 @@ describe('PanoramaImage', () => {
       );
       expect(panoramaImage.hasDepth).to.be.false;
       expect(panoramaImage.hasIntensity).to.be.false;
+    });
+
+    it('should not flip, if the PANORAMA_FLIP metadata is missing', async () => {
+      image = await fromFile('tests/data/panorama/testRgbGeotiff.tif');
+      panoramaImage = await createPanoramaImage(image);
+      const rgbImage = await image.getImage(0);
+      expect(
+        (rgbImage.fileDirectory as unknown as PanoramaFileDirectory)
+          .vcsPanorama,
+      ).to.have.property('flip', false);
     });
 
     it('should handle malformed position', async () => {

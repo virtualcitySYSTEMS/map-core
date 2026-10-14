@@ -1,3 +1,7 @@
+### 6.3.12
+
+- Added horizontal panorama image flipping based on PANORAMA_FLIP meta tag.
+
 ### 6.3.11
 
 - Fixes a bug where ClippingObject could add an undefined target for unsupported layer visualizations

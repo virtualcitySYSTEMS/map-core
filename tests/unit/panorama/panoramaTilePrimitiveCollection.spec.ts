@@ -39,6 +39,7 @@ describe('PanoramaTilePrimitiveCollection', () => {
             createTileCoordinate(i, 0, 2),
             Matrix4.IDENTITY,
             [4, 4],
+            false,
           ),
         );
       }
@@ -169,6 +170,7 @@ describe('PanoramaTilePrimitiveCollection', () => {
         createTileCoordinate(1, 0, 2),
         Matrix4.IDENTITY,
         [4, 4],
+        false,
       );
       collection = new PanoramaTilePrimitiveCollection();
     });
@@ -232,6 +234,7 @@ describe('PanoramaTilePrimitiveCollection', () => {
         createTileCoordinate(2, 0, 2),
         Matrix4.IDENTITY,
         [4, 4],
+        false,
       );
       collection = new PanoramaTilePrimitiveCollection();
       collection.add(tile.getPrimitive(map));

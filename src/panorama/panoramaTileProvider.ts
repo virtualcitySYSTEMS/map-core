@@ -155,6 +155,7 @@ function createPanoramaResourceProvider(
   minLevel: number,
   poolOrDecoder: Pool | PanoramaImageDecoder,
   concurrency = 6,
+  flip = false,
 ): PanoramaResourceProvider {
   let currentlyVisibleTiles: PanoramaTile[] = [];
   let loading = false;
@@ -174,8 +175,16 @@ function createPanoramaResourceProvider(
       const levelImage = levelImages[tileCoordinate.level - minLevel];
       if (levelImage) {
         try {
+          let tileX = tileCoordinate.x;
+          if (flip) {
+            const numTilesX = Math.ceil(
+              levelImage.getWidth() / levelImage.getTileWidth(),
+            );
+            tileX = numTilesX - 1 - tileCoordinate.x;
+          }
+
           const resourceData = await levelImage.getTileOrStrip(
-            tileCoordinate.x,
+            tileX,
             tileCoordinate.y,
             levelImage.getSamplesPerPixel(),
             poolOrDecoder,
@@ -379,6 +388,7 @@ export function createPanoramaTileProvider(
   maxCacheSize?: number,
   concurrency = 6,
   poolOrDecoder: Pool | PanoramaImageDecoder = getDefaultImagePool(),
+  flip = false,
 ): PanoramaTileProvider {
   const cache = new PanoramaTileCache(maxCacheSize);
   const resources: ResourceOptions = {
@@ -400,6 +410,7 @@ export function createPanoramaTileProvider(
     minLevel,
     poolOrDecoder,
     concurrency,
+    flip,
   );
   let showIntensity = false;
 
@@ -413,7 +424,12 @@ export function createPanoramaTileProvider(
     if (cache.containsKey(tileCoordinate.key)) {
       return cache.get(tileCoordinate.key);
     }
-    const newTile = createPanoramaTile(tileCoordinate, modelMatrix, tileSize);
+    const newTile = createPanoramaTile(
+      tileCoordinate,
+      modelMatrix,
+      tileSize,
+      flip,
+    );
     addTileToCache(newTile, cache, currentlyVisibleTileCoordinates);
     return newTile;
   };
@@ -441,7 +457,8 @@ export function createPanoramaTileProvider(
     const width = maxPhi - minPhi;
     const height = maxTheta - minTheta;
 
-    const x = tileSize[0] - Math.floor((offsetX / width) * tileSize[0]);
+    const scaledX = Math.floor((offsetX / width) * tileSize[0]);
+    const x = flip ? scaledX : tileSize[0] - scaledX;
     const y = Math.floor((offsetY / height) * tileSize[1]);
 
     const depthValue = tile.getDepthAtPixel(x, y);

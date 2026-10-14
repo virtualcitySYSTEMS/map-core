@@ -30,6 +30,7 @@ describe('panorama tile', () => {
         createTileCoordinate(1, 1, 1),
         Matrix4.IDENTITY,
         [4, 4],
+        false,
       );
     });
 
@@ -95,6 +96,7 @@ describe('panorama tile', () => {
         createTileCoordinate(1, 1, 1),
         Matrix4.IDENTITY,
         [4, 4],
+        false,
       );
     });
 
@@ -112,6 +114,22 @@ describe('panorama tile', () => {
       const depth = tile.getDepthAtPixel(2, 2);
       expect(depth).to.be.undefined;
     });
+
+    it('should mirror the depth rows along X, if flip is set', () => {
+      const flippedTile = createPanoramaTile(
+        createTileCoordinate(1, 1, 1),
+        Matrix4.IDENTITY,
+        [4, 4],
+        true,
+      );
+      flippedTile.setResource(
+        'depth',
+        Float32Array.from({ length: 16 }, (_v, i) => i),
+      );
+      expect(flippedTile.getDepthAtPixel(0, 2)).to.equal(11);
+      expect(flippedTile.getDepthAtPixel(3, 2)).to.equal(8);
+      flippedTile.destroy();
+    });
   });
 
   describe('destruction', () => {
@@ -122,6 +140,7 @@ describe('panorama tile', () => {
         createTileCoordinate(2, 2, 2),
         Matrix4.IDENTITY,
         [4, 4],
+        false,
       );
     });
 
