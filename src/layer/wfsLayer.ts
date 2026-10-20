@@ -131,10 +131,10 @@ class WFSLayer extends VectorLayer {
       init.method = 'POST';
       init.body = postData;
       init.headers = {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        'Content-Type': 'text/xml',
         // eslint-disable-next-line @typescript-eslint/no-misused-spread
         ...init.headers,
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        'Content-Type': 'application/text+xml',
       };
       this._dataFetchedPromise = requestUrl(this.url, init)
         .then((response) => response.text())

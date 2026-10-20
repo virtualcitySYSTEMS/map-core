@@ -1,5 +1,6 @@
 ### 6.3.12
 
+- Allows overwriting the content-type for WFS Requests. Also changed the default content-type to text/xml
 - Added horizontal panorama image flipping based on PANORAMA_FLIP meta tag.
 - Fixes an issue, where the panorama highlighting would not work for images without
   depth.
