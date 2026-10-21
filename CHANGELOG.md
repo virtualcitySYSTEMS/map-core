@@ -1,3 +1,7 @@
+### 6.3.13
+
+- Change `CsvAttributeProvider` to set empty CSV values to `null` instead of an empty string
+
 ### 6.3.12
 
 - Allows overwriting the content-type for WFS Requests. Also changed the default content-type to text/xml

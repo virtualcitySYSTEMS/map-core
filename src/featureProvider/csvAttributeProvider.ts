@@ -119,7 +119,7 @@ export default class CsvAttributeProvider extends AbstractAttributeProvider {
 
       for (let j = 0; j < values.length; j++) {
         const key = headers[j] ?? `column_${j}`;
-        attributes[key] = values[j];
+        attributes[key] = values[j] === '' ? null : values[j];
       }
 
       const id = attributes[this._idColumn];

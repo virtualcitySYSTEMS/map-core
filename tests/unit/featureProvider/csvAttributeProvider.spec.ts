@@ -137,6 +137,15 @@ describe('CsvAttributeProvider', () => {
         });
       });
 
+      it('should set empty values to null', async () => {
+        const csvData = `
+          id,name,age
+          1,,25`;
+        const provider = new CsvAttributeProvider({ data: csvData });
+        await provider.augmentFeature(feature);
+        expect(feature.getProperties()).to.include({ name: null, age: '25' });
+      });
+
       it('should trim whitespace around delimited values', async () => {
         const csvData = `id , name , age
 1 , Alice , 30
