@@ -27,6 +27,7 @@ export type WMSImplementationOptions = RasterLayerImplementationOptions & {
   tileSize: Size;
   version: string;
   singleImage2d: boolean;
+  headers?: Record>string, string>;
 };
 
 export type WMSOptions = RasterLayerOptions & {
@@ -206,6 +207,7 @@ class WMSLayer extends RasterLayer<WmsCesiumImpl | WmsOpenlayersImpl> {
       highResolution: this.highResolution,
       tileSize: this.tileSize,
       singleImage2d: this.singleImage2d,
+      headers: this.headers,
     };
   }
 
