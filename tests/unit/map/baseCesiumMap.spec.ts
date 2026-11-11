@@ -1,7 +1,9 @@
 import {
+  Cartesian2,
   Cartesian3,
   Math as CesiumMath,
   PrimitiveCollection,
+  ScreenSpaceEventType,
 } from '@vcmap-cesium/engine';
 import { expect } from 'chai';
 import sinon from 'sinon';
@@ -16,6 +18,7 @@ import { vcsLayerName } from '../../../index.js';
 import { arrayCloseTo } from '../helpers/helpers.js';
 import Layer from '../../../src/layer/layer.js';
 import LayerCollection from '../../../src/util/layerCollection.js';
+import type CesiumSceneCursor from '../../../src/cursor/cesiumSceneCursor.js';
 
 describe('BaseCesiumMap', () => {
   describe('activating a cesium map', () => {
@@ -41,6 +44,54 @@ describe('BaseCesiumMap', () => {
       const resize = sinon.spy(map.getCesiumWidget()!, 'resize');
       await map.activate();
       expect(resize).to.have.been.called;
+    });
+  });
+
+  describe('depth cursor', () => {
+    /* eslint-disable @typescript-eslint/naming-convention */
+    type CursorMap = {
+      _initializeCursor(): CesiumSceneCursor;
+      _setupCesiumInteractions(): void;
+    };
+    /* eslint-enable @typescript-eslint/naming-convention */
+    let map: BaseCesiumMap;
+
+    beforeEach(() => {
+      map = getBaseCesiumMap();
+    });
+
+    afterEach(() => {
+      map.destroy();
+    });
+
+    it('should not have a cursor by default', () => {
+      expect(map.cursor).to.be.undefined;
+    });
+
+    it('should create the cursor once', () => {
+      const cursor = (map as unknown as CursorMap)._initializeCursor();
+      expect(map.cursor).to.equal(cursor);
+      expect((map as unknown as CursorMap)._initializeCursor()).to.equal(
+        cursor,
+      );
+    });
+
+    it('should update the cursor on mouse move of the screen space event handler', () => {
+      const cursor = (map as unknown as CursorMap)._initializeCursor();
+      (map as unknown as CursorMap)._setupCesiumInteractions();
+      const setWindowPosition = sinon.spy(cursor, 'setWindowPosition');
+      const endPosition = new Cartesian2(10, 20);
+      const handler = map.screenSpaceEventHandler!.getInputAction(
+        ScreenSpaceEventType.MOUSE_MOVE,
+      ) as (event: unknown) => void;
+      handler({ startPosition: new Cartesian2(), endPosition });
+      expect(setWindowPosition).to.have.been.calledOnceWith(endPosition);
+    });
+
+    it('should remove the cursor on destroy', () => {
+      (map as unknown as CursorMap)._initializeCursor();
+      map.destroy();
+      expect(map.cursor).to.be.undefined;
     });
   });
 

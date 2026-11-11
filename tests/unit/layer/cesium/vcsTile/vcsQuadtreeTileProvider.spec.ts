@@ -72,7 +72,7 @@ describe('VcsQuadtreeProvider', () => {
       camera: map.getScene()!.camera,
       context: {
         fragmentDepth: false,
-      },
+      } as unknown as FrameState['context'],
       creditDisplay: new CreditDisplay(document.createElement('div')),
       cullingVolume: new CullingVolume(),
       fog: new Fog(),

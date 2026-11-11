@@ -4,9 +4,13 @@ import {
   CesiumWidget,
   ShadowMode,
   Math as CesiumMath,
+  type Cesium3DTileset,
 } from '@vcmap-cesium/engine';
 import type { Coordinate } from 'ol/coordinate.js';
-import type { PanoramaImage } from '../panorama/panoramaImage.js';
+import {
+  type PanoramaImage,
+  usesPointCloudDepth,
+} from '../panorama/panoramaImage.js';
 import { mapClassRegistry } from '../classRegistry.js';
 import type { PanoramaImageView } from '../panorama/panoramaImageView.js';
 import { createPanoramaImageView } from '../panorama/panoramaImageView.js';
@@ -20,6 +24,8 @@ import LayerState from '../layer/layerState.js';
 import type PanoramaDatasetLayer from '../layer/panoramaDatasetLayer.js';
 import type { BaseCesiumMapOptions } from './baseCesiumMap.js';
 import BaseCesiumMap from './baseCesiumMap.js';
+import type TilesetDepthPass from '../cursor/TilesetDepthPass.js';
+import { isPanoramaCamera } from '../panorama/panoramaSymbols.js';
 
 export type PanoramaMapOptions = BaseCesiumMapOptions & {
   /**
@@ -47,7 +53,12 @@ export default class PanoramaMap extends BaseCesiumMap {
       overlayNaNColor: 'rgba(255, 0, 0, 1)',
       cursorColor: defaultCursorColor,
       fallbackToCurrentMap: false,
-      layerTypes: ['PanoramaDatasetLayer', 'TerrainLayer', 'VectorLayer'],
+      layerTypes: [
+        'PanoramaDatasetLayer',
+        'VectorLayer',
+        'PointCloudLayer',
+        'TerrainLayer',
+      ],
       defaultFov: 90,
     };
   }
@@ -57,6 +68,13 @@ export default class PanoramaMap extends BaseCesiumMap {
    * or a viewpoint fails to load an image.
    */
   readonly currentImageChanged = new VcsEvent<PanoramaImage | undefined>();
+
+  /**
+   * Raised with the new value, whenever {@link hasDepthInformation} changes.
+   */
+  readonly depthInformationChanged = new VcsEvent<boolean>();
+
+  private _hasDepthInformation = false;
 
   private _imageView: PanoramaImageView | undefined;
 
@@ -87,6 +105,13 @@ export default class PanoramaMap extends BaseCesiumMap {
 
   get currentPanoramaImage(): PanoramaImage | undefined {
     return this._currentImage;
+  }
+
+  /**
+   * Whether depth is available for the current image, from its depth image (version 1) or from point clouds (version 2).
+   */
+  get hasDepthInformation(): boolean {
+    return this._hasDepthInformation;
   }
 
   /**
@@ -158,6 +183,8 @@ export default class PanoramaMap extends BaseCesiumMap {
       defaultTranslucency.backFaceAlpha = 0.75;
       defaultTranslucency.frontFaceAlpha = 0.75;
 
+      cesiumWidget.camera[isPanoramaCamera] = true;
+
       cesiumWidget.scene.screenSpaceCameraController.enableInputs = false;
       cesiumWidget.scene.screenSpaceCameraController.enableCollisionDetection =
         false;
@@ -186,6 +213,7 @@ export default class PanoramaMap extends BaseCesiumMap {
       }
 
       this._cameraController = createPanoramaCameraController(this);
+      this._setupCursor();
     }
     await super.initialize();
   }
@@ -224,6 +252,87 @@ export default class PanoramaMap extends BaseCesiumMap {
       }
     }
     this.setCurrentImage(closestImage);
+  }
+
+  override addToDepthPass(tileset: Cesium3DTileset): () => void {
+    const remove = super.addToDepthPass(tileset);
+    this._updateDepthInformation();
+    return (): void => {
+      remove();
+      this._updateDepthInformation();
+    };
+  }
+
+  private _updateDepthInformation(): void {
+    const image = this.currentPanoramaImage;
+    const hasDepthInformation =
+      !!image &&
+      (usesPointCloudDepth(image) ? !!this.depthPass : image.hasDepth);
+    if (hasDepthInformation !== this._hasDepthInformation) {
+      this._hasDepthInformation = hasDepthInformation;
+      this.depthInformationChanged.raiseEvent(hasDepthInformation);
+    }
+  }
+
+  /**
+   * The depth cursor is enabled together with the depth pass, see _setupDepthPass. It shares its color with the cursor of
+   * the depth image, so hiding the cursor (alpha 0) or changing its color applies to both.
+   */
+  private _setupCursor(): void {
+    const cursor = this._initializeCursor();
+    const { tilePrimitiveCollection } = this._imageView!;
+    cursor.color = tilePrimitiveCollection.cursorColor;
+    cursor.enabled = this.depthPass?.enabled ?? false;
+    this._listeners.push(
+      tilePrimitiveCollection.cursorColorChanged.addEventListener((color) => {
+        cursor.color = color;
+      }),
+    );
+  }
+
+  /**
+   * Enables the depth pass and its cursor only for images using point cloud depth, see {@link usesPointCloudDepth}.
+   * Without a depth pass, the cursor stays disabled, since there is no depth to show.
+   * Gives the panorama image tiles priority over the depth pass tiles by suspending depth pass
+   * tile loading for as long as the current images tile provider is loading. Without this, both
+   * request their tiles in parallel and compete for the same connections.
+   */
+  protected override _setupDepthPass(depthPass: TilesetDepthPass): () => void {
+    let release: (() => void) | undefined;
+    const setLoading = (loading: boolean): void => {
+      if (loading) {
+        release ??= depthPass.suspend();
+      } else {
+        release?.();
+        release = undefined;
+      }
+    };
+
+    let removeLoadingListener: (() => void) | undefined;
+    const trackImage = (image?: PanoramaImage): void => {
+      const enabled = !!image && usesPointCloudDepth(image);
+      depthPass.enabled = enabled;
+      if (this.cursor) {
+        this.cursor.enabled = enabled;
+      }
+      removeLoadingListener?.();
+      setLoading(image?.tileProvider.loading ?? false);
+      removeLoadingListener =
+        image?.tileProvider.loadingStateChanged.addEventListener(setLoading);
+    };
+
+    trackImage(this.currentPanoramaImage);
+    const removeImageListener =
+      this.currentImageChanged.addEventListener(trackImage);
+
+    return (): void => {
+      removeImageListener();
+      removeLoadingListener?.();
+      setLoading(false);
+      if (this.cursor) {
+        this.cursor.enabled = false;
+      }
+    };
   }
 
   override getViewpointSync(): Viewpoint | null {
@@ -310,6 +419,7 @@ export default class PanoramaMap extends BaseCesiumMap {
       const currentImage = this._currentImage;
       this._currentImage = image;
       currentImage?.destroy();
+      this._updateDepthInformation();
       this.currentImageChanged.raiseEvent(image);
     }
   }
@@ -339,6 +449,7 @@ export default class PanoramaMap extends BaseCesiumMap {
 
   override destroy(): void {
     this.currentImageChanged.destroy();
+    this.depthInformationChanged.destroy();
     this._currentImage?.destroy();
     this._cameraController?.destroy();
     this._imageView?.destroy();

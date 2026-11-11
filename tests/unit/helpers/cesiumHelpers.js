@@ -17,6 +17,7 @@ import {
   TweenCollection,
   ContextLimits,
   Fog,
+  PostProcessStageCollection,
 } from '@vcmap-cesium/engine';
 import CesiumTilesetLayer from '../../../src/layer/cesiumTilesetLayer.js';
 import DataSourceLayer from '../../../src/layer/dataSourceLayer.js';
@@ -132,6 +133,8 @@ export function getMockScene() {
     screenSpaceCameraController: {
       enableInputs: true,
     },
+    postProcessStages: new PostProcessStageCollection(),
+    pickTranslucentDepth: false,
     pickPositionSupported: true,
     globe: new Globe(),
     mode: SceneMode.SCENE3D,
@@ -142,6 +145,7 @@ export function getMockScene() {
     drawingBufferHeight: 100,
     drawingBufferWidth: 100,
     postRender: new CesiumEvent(),
+    preRender: new CesiumEvent(),
     preUpdate: new CesiumEvent(),
     mapProjection: new WebMercatorProjection(),
     shadowMap: { enabled: false },
@@ -155,6 +159,7 @@ export function getMockScene() {
       context: {
         depthTexture: true,
         stencilBuffer: true,
+        defaultTexture: {},
       },
       lineWidth: 1,
     },

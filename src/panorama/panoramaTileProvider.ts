@@ -17,6 +17,8 @@ import type {
   PanoramaFileDirectoryMetadata,
 } from './panoramaImage.js';
 
+export const DEFAULT_MAX_DEPTH = 50;
+
 export type PanoramaResourceType = 'rgb' | 'intensity' | 'depth';
 export type PanoramaResourceData<T extends PanoramaResourceType> =
   T extends 'rgb'
@@ -466,7 +468,7 @@ export function createPanoramaTileProvider(
       return interpolateDepth(
         depthValue,
         depth?.metadata?.min ?? 0,
-        depth?.metadata?.max ?? 50,
+        depth?.metadata?.max ?? DEFAULT_MAX_DEPTH,
       );
     }
     return depthValue;

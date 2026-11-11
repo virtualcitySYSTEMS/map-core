@@ -72,6 +72,7 @@ export type CesiumTilesetImplementationOptions =
     offset?: Coordinate;
     customShader?: CustomShader;
     attributeProvider?: AttributeProvider;
+    renderDepthPass?: boolean;
   };
 
 /**

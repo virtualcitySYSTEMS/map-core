@@ -44,7 +44,7 @@ function cartesianToSpherical(cartesian: Cartesian3): [number, number] {
   Cartesian3.normalize(cartesian, scratchNormal);
   const { x, y, z } = scratchNormal;
   const phi = Math.atan2(y, x);
-  const theta = Math.acos(z);
+  const theta = Math.acos(CesiumMath.clamp(z, -1, 1));
 
   return [phi, theta];
 }

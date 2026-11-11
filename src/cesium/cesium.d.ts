@@ -18,10 +18,30 @@ import type {
 } from '../layer/cesium/cesiumTilesetCesiumImpl.js';
 import type { isTiledFeature } from '../layer/featureStoreLayer.js';
 import type { vectorClusterGroupName } from '../vectorCluster/vectorClusterSymbols.js';
+import type { isPanoramaCamera } from '../panorama/panoramaSymbols.js';
 import { scaleSymbol } from '../layer/vectorSymbols.js';
 import { attributeProviderName } from '../featureProvider/abstractAttributeProvider.js';
 
 declare module '@vcmap-cesium/engine' {
+  interface DrawCommand {
+    renderState?: unknown;
+    execute(context: unknown, passState: PassState): void;
+  }
+
+  class Cesium3DTilePassState {
+    constructor(options: {
+      pass: number;
+      commandList?: DrawCommand[];
+      camera?: Camera;
+      cullingVolume?: CullingVolume;
+    });
+
+    pass: number;
+    commandList: DrawCommand[];
+    camera?: Camera;
+    cullingVolume?: CullingVolume;
+  }
+
   enum TextureWarp {
     CLAMP_TO_EDGE = 33071,
     REPEAT = 10497,
@@ -29,6 +49,8 @@ declare module '@vcmap-cesium/engine' {
   }
 
   class Sampler {
+    static readonly NEAREST: Sampler;
+
     constructor(options: {
       warpS?: TextureWarp;
       warpT?: TextureWarp;
@@ -45,6 +67,8 @@ declare module '@vcmap-cesium/engine' {
   }
 
   class Texture {
+    width: number;
+    height: number;
     constructor(options: {
       context: Context;
       source?: any;
@@ -66,6 +90,7 @@ declare module '@vcmap-cesium/engine' {
     render(): void;
     frameState: FrameState;
     context: Context;
+    view: unknown;
     updateHeight(
       cartographic: Cartographic,
       callback: (cartographic: Cartographic) => void,
@@ -176,10 +201,20 @@ declare module '@vcmap-cesium/engine' {
     [allowPicking]?: boolean;
   }
 
+  interface Camera {
+    [isPanoramaCamera]?: boolean;
+  }
+
   interface Cesium3DTile {
     boundingVolume: TileBoundingVolume;
     contentBoundingVolume: TileBoundingVolume;
     contentReady: boolean;
+    _distanceToCamera: number;
+    getScreenSpaceError(
+      frameState: FrameState,
+      useParentGeometricError: boolean,
+      progressiveResolutionHeightFraction?: number,
+    ): number;
     [cesiumTilesetLastUpdated]?: number;
   }
 
@@ -192,6 +227,7 @@ declare module '@vcmap-cesium/engine' {
 
   interface Cesium3DTileset {
     clippingPlanesOriginMatrix: Matrix4;
+    updateForPass(frameState: unknown, tilesetPassState: unknown): void;
     [vcsLayerName]: string;
     [isTiledFeature]?: boolean;
     [allowPicking]?: boolean;
@@ -311,6 +347,24 @@ declare module '@vcmap-cesium/engine' {
 
   class Context {
     fragmentDepth: boolean;
+    drawingBufferWidth?: number;
+    drawingBufferHeight?: number;
+    uniformState?: {
+      updatePass(pass: number): void;
+      inverseProjection: Matrix4;
+      inverseView: Matrix4;
+    };
+    readPixels(options: {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+      framebuffer?: Framebuffer;
+    }): Uint8Array;
+    createViewportQuadCommand(
+      fragmentShaderSource: string,
+      overrides?: { uniformMap?: Record<string, () => unknown> },
+    ): DrawCommand;
   }
 
   class FrameState {
@@ -450,5 +504,39 @@ declare module '@vcmap-cesium/engine' {
   interface WebMercatorTilingScheme {
     _projection: MapProjection;
     _rectangle: Rectangle;
+  }
+
+  class ClearCommand {
+    constructor(options: { depth: number });
+    execute(context: unknown, passState: unknown): void;
+  }
+
+  namespace DerivedCommand {
+    function createDepthOnlyDerivedCommand(
+      scene: Scene,
+      command: unknown,
+      context: Context,
+      derivedCommand?: unknown,
+    ): unknown;
+  }
+
+  class Framebuffer {
+    constructor(options: any);
+    destroy(): void;
+  }
+
+  class PassState {
+    constructor(context: any);
+    framebuffer: any;
+    viewport: any;
+  }
+
+  export namespace Pass {
+    const CESIUM_3D_TILE: number;
+    const GLOBE: number;
+    const OPAQUE: number;
+    const TRANSLUCENT: number;
+    const OVERLAY: number;
+    const SILHOUETTE: number;
   }
 }

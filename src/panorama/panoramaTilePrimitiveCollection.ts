@@ -34,6 +34,8 @@ export default class PanoramaTilePrimitiveCollection extends PrimitiveCollection
 
   overlayChanged = new VcsEvent<PanoramaOverlayMode>();
 
+  cursorColorChanged = new VcsEvent<Color>();
+
   constructor(options?: ConstructorParameters<typeof PrimitiveCollection>[0]) {
     super(options ?? { destroyPrimitives: false });
   }
@@ -167,6 +169,7 @@ export default class PanoramaTilePrimitiveCollection extends PrimitiveCollection
         (primitive.appearance.material as PanoramaTileMaterial).cursorColor =
           value;
       });
+      this.cursorColorChanged.raiseEvent(value);
     }
   }
 

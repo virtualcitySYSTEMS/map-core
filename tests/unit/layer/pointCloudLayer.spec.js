@@ -1,5 +1,7 @@
 import PointCloudLayer from '../../../src/layer/pointCloudLayer.js';
 import VectorStyleItem from '../../../src/style/vectorStyleItem.js';
+import { createTilesetServer } from '../helpers/cesiumHelpers.js';
+import { getPanoramaMap } from '../helpers/panoramaHelpers.js';
 
 describe('PointCloudLayer', () => {
   let sandbox;
@@ -17,6 +19,54 @@ describe('PointCloudLayer', () => {
   afterEach(() => {
     PCL.destroy();
     sandbox.restore();
+  });
+
+  describe('rendering a depth pass', () => {
+    let map;
+    let layer;
+
+    beforeEach(() => {
+      createTilesetServer(sandbox);
+      map = getPanoramaMap();
+      layer = new PointCloudLayer({
+        url: 'http://test.com/tileset.json',
+        renderDepthPass: true,
+      });
+      map.layerCollection.add(layer);
+    });
+
+    afterEach(() => {
+      layer.destroy();
+      map.destroy();
+    });
+
+    it('should add the tileset of an inactive layer to the depth pass, without activating the layer', async () => {
+      await layer.mapActivated(map);
+      expect(map.depthPass).to.have.property('size', 1);
+      expect(layer.active).to.be.false;
+    });
+  });
+
+  describe('isSupported', () => {
+    let map;
+
+    beforeEach(() => {
+      map = getPanoramaMap({ layerTypes: ['PanoramaDatasetLayer'] });
+    });
+
+    afterEach(() => {
+      map.destroy();
+    });
+
+    it('should support a panorama map not listing point clouds, if rendering a depth pass', () => {
+      const layer = new PointCloudLayer({ renderDepthPass: true });
+      expect(layer.isSupported(map)).to.be.true;
+      layer.destroy();
+    });
+
+    it('should not support a panorama map not listing point clouds, if not rendering a depth pass', () => {
+      expect(PCL.isSupported(map)).to.be.false;
+    });
   });
 
   describe('setStyle', () => {

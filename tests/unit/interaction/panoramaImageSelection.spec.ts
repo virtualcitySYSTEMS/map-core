@@ -120,6 +120,24 @@ describe('PanoramaImageSelection', () => {
       expect(activatePanoramaMapStub).to.not.have.been.called;
     });
 
+    it('should suspend the depth pass while the image is created', async () => {
+      const suspendWhile = sinon.spy(
+        <T>(promise: Promise<T>): Promise<T> => promise,
+      );
+      const depthPassStub = sinon
+        .stub(panoramaMap, 'depthPass')
+        .get(() => ({ suspendWhile }));
+      try {
+        await interaction.pipe({ ...event, feature, map: panoramaMap });
+      } finally {
+        depthPassStub.restore();
+      }
+      expect(suspendWhile).to.have.been.calledOnceWith(
+        createPanoramaImageStub.firstCall.returnValue,
+      );
+      expect(setCurrentImageStub).to.have.been.calledOnce;
+    });
+
     it('should not set the current panorama image if feature is not a panorama feature', async () => {
       await interaction.pipe({
         ...event,

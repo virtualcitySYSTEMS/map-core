@@ -14,7 +14,10 @@ import type {
   PanoramaImageDecoder,
   PanoramaTileProvider,
 } from './panoramaTileProvider.js';
-import { createPanoramaTileProvider } from './panoramaTileProvider.js';
+import {
+  createPanoramaTileProvider,
+  DEFAULT_MAX_DEPTH,
+} from './panoramaTileProvider.js';
 import { imageSphericalToCartesian } from './sphericalCoordinates.js';
 import type PanoramaDatasetLayer from '../layer/panoramaDatasetLayer.js';
 
@@ -70,7 +73,7 @@ export type PanoramaFileDirectoryMetadata = {
  * and the panorama depth of the image (if available).
  */
 export type PanoramaImage = Readonly<
-  PanoramaImageMetadata & Omit<PanoramaGDALMetadata, 'version' | 'flip'>
+  PanoramaImageMetadata & Omit<PanoramaGDALMetadata, 'flip'>
 > & {
   /**
    * The image name
@@ -179,11 +182,15 @@ function createDefaultMetadata(): PanoramaGDALMetadata {
   };
 }
 
+function getMajorVersion(version: string): number {
+  return Number.parseInt(version.split('.')[0], 10);
+}
+
 function parsePanoramaGDALMetadata(
   gdalMetadata?: Record<string, string>,
 ): PanoramaGDALMetadata {
   const version = gdalMetadata?.PANORAMA_VERSION ?? '';
-  if (version !== '1.0') {
+  if (!(getMajorVersion(version) >= 1)) {
     return createDefaultMetadata();
   }
 
@@ -224,11 +231,19 @@ function parsePanoramaGDALMetadata(
   };
 }
 
+/**
+ * Version 1 images bring their own depth image. From version 2 on, the depth is taken from point clouds
+ * rendered into the depth pass of the panorama map.
+ */
+export function usesPointCloudDepth(image: PanoramaImage): boolean {
+  return getMajorVersion(image.version) >= 2;
+}
+
 function createDefaultDepthMetadata(): DepthGDALMetadata {
   return {
     version: '1.0',
     min: 0,
-    max: 50,
+    max: DEFAULT_MAX_DEPTH,
   };
 }
 
@@ -352,6 +367,7 @@ export async function createPanoramaImage(
     hasIntensity,
     hasDepth,
     flip,
+    version,
   } = await loadRGBImages(rgbImage);
   const { name, absoluteRootUrl, intensityImage, depthImage, dataset, time } =
     options;
@@ -470,12 +486,16 @@ export async function createPanoramaImage(
     mostDetailed: boolean,
     result?: Cartesian3,
   ): Promise<Cartesian3 | undefined> => {
+    if (!imageCoordinate.every(Number.isFinite)) {
+      return undefined;
+    }
     const depthValue = mostDetailed
       ? await tileProvider.getDepthAtImageCoordinateMostDetailed(
           imageCoordinate,
         )
       : await tileProvider.getDepthAtImageCoordinate(imageCoordinate);
-    if (depthValue === undefined || depthValue === 0) {
+    if (!depthValue) {
+      // also catches NaN from out of bounds depth reads
       return undefined;
     }
     const cartesian = imageSphericalToCartesian(imageCoordinate, result);
@@ -488,6 +508,9 @@ export async function createPanoramaImage(
   return {
     get name(): string {
       return nameOrId;
+    },
+    get version(): string {
+      return version;
     },
     get time(): Date | undefined {
       return imageTime;
@@ -529,7 +552,7 @@ export async function createPanoramaImage(
       return maxLevel;
     },
     get maxDepth(): number {
-      return depth?.metadata?.max ?? 50;
+      return depth?.metadata?.max ?? DEFAULT_MAX_DEPTH;
     },
     get dataset(): PanoramaDatasetLayer | undefined {
       return dataset;

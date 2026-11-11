@@ -189,6 +189,7 @@ describe('Viewpoint', () => {
       orientation = HeadingPitchRoll.fromDegrees(0, 0, 0);
 
       panoramaImage = {
+        version: '1.0',
         hasDepth: false,
         hasIntensity: false,
         image: {} as unknown as GeoTIFF,

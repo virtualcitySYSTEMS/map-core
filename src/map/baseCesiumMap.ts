@@ -35,6 +35,8 @@ import {
   PointerKeyType,
 } from '../interaction/interactionType.js';
 import Projection from '../util/projection.js';
+import CesiumSceneCursor from '../cursor/cesiumSceneCursor.js';
+import TilesetDepthPass from '../cursor/TilesetDepthPass.js';
 
 RequestScheduler.maximumRequestsPerServer = 12;
 
@@ -169,6 +171,12 @@ export default class BaseCesiumMap extends VcsMap<CesiumVisualisationType> {
   protected _terrainProvider: TerrainProvider | null | undefined = null;
 
   private _screenSpaceListener: (() => void) | undefined;
+
+  private _cursor: CesiumSceneCursor | undefined;
+
+  private _depthPass: TilesetDepthPass | undefined;
+
+  private _removeDepthPassSetup: (() => void) | undefined;
 
   private _preloadAncestors = false;
 
@@ -441,6 +449,7 @@ export default class BaseCesiumMap extends VcsMap<CesiumVisualisationType> {
             | ScreenSpaceEventHandler.MotionEventCallback =
             type === ScreenSpaceEventType.MOUSE_MOVE
               ? (csEvent: ScreenSpaceEventHandler.MotionEvent): void => {
+                  this._cursor?.setWindowPosition(csEvent.endPosition);
                   if (scene.frameState.frameNumber !== lastEventFrameNumber) {
                     lastEventFrameNumber = scene.frameState.frameNumber;
                     raisePointerInteraction(
@@ -477,6 +486,74 @@ export default class BaseCesiumMap extends VcsMap<CesiumVisualisationType> {
         removeListener();
       });
     };
+  }
+
+  /**
+   * The depth cursor of this map. Only available, if the map enabled it.
+   */
+  get cursor(): CesiumSceneCursor | undefined {
+    return this._cursor;
+  }
+
+  /**
+   * The shared depth pass of all tilesets added with addToDepthPass. Undefined, if there are none.
+   */
+  get depthPass(): TilesetDepthPass | undefined {
+    return this._depthPass;
+  }
+
+  /**
+   * Adds a (hidden) tileset to this maps shared depth pass, creating it if necessary. The depth pass is destroyed, once its last tileset is removed.
+   * @returns a function to remove the tileset again
+   */
+  addToDepthPass(tileset: Cesium3DTileset): () => void {
+    const scene = this.getScene();
+    if (!scene) {
+      throw new Error('CesiumWidget not initialized');
+    }
+    if (!this._depthPass) {
+      this._depthPass = new TilesetDepthPass(scene);
+      this._removeDepthPassSetup = this._setupDepthPass(this._depthPass);
+    }
+    const depthPass = this._depthPass;
+    const removeTileset = depthPass.addTileset(tileset);
+    return (): void => {
+      removeTileset();
+      if (depthPass.size === 0 && this._depthPass === depthPass) {
+        this._destroyDepthPass();
+      }
+    };
+  }
+
+  /**
+   * Called once the shared depth pass has been created, to couple it to the map, e.g. its loading.
+   * @returns a function to undo the setup, called before the depth pass is destroyed
+   */
+  // eslint-disable-next-line class-methods-use-this
+  protected _setupDepthPass(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _depthPass: TilesetDepthPass,
+  ): (() => void) | undefined {
+    return undefined;
+  }
+
+  private _destroyDepthPass(): void {
+    this._removeDepthPassSetup?.();
+    this._removeDepthPassSetup = undefined;
+    this._depthPass?.destroy();
+    this._depthPass = undefined;
+  }
+
+  /**
+   * Creates the depth cursor post processing stage on the scene. The cursor follows the pointer using the maps ScreenSpaceEventHandler.
+   * Must be called after the cesium widget has been initialized. Is destroyed with the map.
+   */
+  protected _initializeCursor(): CesiumSceneCursor {
+    if (!this._cesiumWidget) {
+      throw new Error('CesiumWidget not initialized');
+    }
+    this._cursor ??= new CesiumSceneCursor(this._cesiumWidget.scene, this);
+    return this._cursor;
   }
 
   /**
@@ -642,6 +719,9 @@ export default class BaseCesiumMap extends VcsMap<CesiumVisualisationType> {
     });
     this._listeners = [];
     this._screenSpaceListener?.();
+    this._cursor?.destroy();
+    this._cursor = undefined;
+    this._destroyDepthPass();
 
     this.screenSpaceEventHandler?.destroy();
     this.screenSpaceEventHandler = null;

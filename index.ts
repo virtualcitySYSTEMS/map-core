@@ -4,6 +4,7 @@ import './src/ol/feature.js';
 import './src/cesium/wallpaperMaterial.js';
 import './src/cesium/cesium3DTilePointFeature.js';
 import './src/cesium/cesium3DTileFeature.js';
+import './src/cesium/cesium3DTile.js';
 import './src/cesium/entity.js';
 import './src/cesium/clippingPolygon.js';
 import './src/cesium/clippingPolygonCollection.js';
@@ -979,6 +980,7 @@ export type {
 export {
   createPanoramaImage,
   createPanoramaImageFromURL,
+  usesPointCloudDepth,
 } from './src/panorama/panoramaImage.js';
 export type { PanoramaImageView } from './src/panorama/panoramaImageView.js';
 export { createPanoramaImageView } from './src/panorama/panoramaImageView.js';

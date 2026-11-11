@@ -59,6 +59,7 @@ export default [
       'src/panorama/panoramaTileMaterial.ts',
       'src/panorama/panoramaTileMaterial.spec.ts',
       'src/panorama/panoramaTileMaterial.test.ts',
+      'src/cursor/cesiumSceneCursor.ts',
     ],
     rules: {
       '@typescript-eslint/naming-convention': [

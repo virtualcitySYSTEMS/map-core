@@ -211,7 +211,7 @@ describe('Panorama tile material', () => {
     let update: SinonStub;
 
     before(() => {
-      context = { fragmentDepth: false };
+      context = { fragmentDepth: false } as unknown as Context;
       tileSize = [4, 4];
       depthData = new Float32Array(tileSize[0] * tileSize[1]);
       for (let i = 0; i < depthData.length; i++) {

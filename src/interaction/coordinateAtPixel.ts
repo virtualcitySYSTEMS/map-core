@@ -1,5 +1,6 @@
 import {
   Cartographic,
+  Cartesian2,
   Cartesian3,
   Math as CesiumMath,
 } from '@vcmap-cesium/engine';
@@ -20,34 +21,58 @@ import type ObliqueMap from '../map/obliqueMap.js';
 import type PanoramaMap from '../map/panoramaMap.js';
 import { cartesianToMercator } from '../util/math.js';
 import { windowPositionToImageSpherical } from '../panorama/fieldOfView.js';
+import {
+  type PanoramaImage,
+  usesPointCloudDepth,
+} from '../panorama/panoramaImage.js';
 
 const scratchPanoramaCartesian = new Cartesian3();
+const scratchDepthUv = new Cartesian2();
+const scratchDepthCartesian = new Cartesian3();
+
+function getPointCloudPosition(
+  map: PanoramaMap,
+  event: InteractionEvent,
+): Cartesian3 | undefined {
+  const { canvas } = map.getCesiumWidget().scene;
+  scratchDepthUv.x = event.windowPosition.x / canvas.clientWidth;
+  scratchDepthUv.y = 1 - event.windowPosition.y / canvas.clientHeight;
+  return map.depthPass?.getPositionAtUv(scratchDepthUv, scratchDepthCartesian);
+}
+
+async function getDepthImagePosition(
+  map: PanoramaMap,
+  image: PanoramaImage,
+  event: InteractionEvent,
+): Promise<Cartesian3 | undefined> {
+  const imageCoordinate = windowPositionToImageSpherical(
+    event.windowPosition,
+    map.getCesiumWidget().camera,
+    image.invModelMatrix,
+  );
+  if (!imageCoordinate) {
+    return undefined;
+  }
+  return image.getPositionAtImageCoordinate(
+    imageCoordinate,
+    scratchPanoramaCartesian,
+  );
+}
+
 async function getCoordinateFromPanoramaMap(
   map: PanoramaMap,
   event: InteractionEvent,
 ): Promise<InteractionEvent> {
   const image = map.currentPanoramaImage;
   event.ray = map.getCesiumWidget().camera.getPickRay(event.windowPosition);
-  let position;
+  let cartesian: Cartesian3 | undefined;
   if (image) {
-    const { camera } = map.getCesiumWidget();
-    const imageCoordinate = windowPositionToImageSpherical(
-      event.windowPosition,
-      camera,
-      image.invModelMatrix,
-    );
-
-    if (imageCoordinate) {
-      const cartesian = await image.getPositionAtImageCoordinate(
-        imageCoordinate,
-        scratchPanoramaCartesian,
-      );
-      if (cartesian) {
-        position = cartesianToMercator(cartesian);
-      }
-    }
+    cartesian = usesPointCloudDepth(image)
+      ? getPointCloudPosition(map, event)
+      : await getDepthImagePosition(map, image, event);
   }
 
+  const position = cartesian ? cartesianToMercator(cartesian) : undefined;
   event.position = position;
   event.positionOrPixel = position;
   return event;

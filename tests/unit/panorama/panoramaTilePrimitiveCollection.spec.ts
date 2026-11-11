@@ -78,6 +78,19 @@ describe('PanoramaTilePrimitiveCollection', () => {
       expect(spy).to.have.been.calledOnce;
     });
 
+    it('should raise cursorColorChanged event when the cursor color changes', () => {
+      const spy = getVcsEventSpy(collection.cursorColorChanged, sinon);
+      collection.cursorColor = Color.RED;
+      expect(spy).to.have.been.calledOnceWith(Color.RED);
+    });
+
+    it('should not raise cursorColorChanged event when the cursor color does not change', () => {
+      const spy = getVcsEventSpy(collection.cursorColorChanged, sinon);
+      collection.cursorColor = Color.RED;
+      collection.cursorColor = Color.RED.clone();
+      expect(spy).to.have.been.calledOnce;
+    });
+
     it('should set a new overlayOpacity and update all primitives', () => {
       collection.overlayOpacity = 0.5;
       tiles.forEach((tile) => {

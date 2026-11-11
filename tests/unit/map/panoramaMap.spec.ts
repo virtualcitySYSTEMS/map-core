@@ -3,6 +3,7 @@ import { Feature } from 'ol';
 import { intersects } from 'ol/extent.js';
 import Point from 'ol/geom/Point.js';
 import sinon from 'sinon';
+import { Color, type Cesium3DTileset } from '@vcmap-cesium/engine';
 import {
   getPanoramaImage,
   getPanoramaMap,
@@ -11,7 +12,8 @@ import type { PanoramaMapOptions } from '../../../src/map/panoramaMap.js';
 import PanoramaMap from '../../../src/map/panoramaMap.js';
 import PanoramaDataset from '../../../src/layer/panoramaDatasetLayer.js';
 import type { PanoramaImage } from '../../../src/panorama/panoramaImage.js';
-import { Projection, Viewpoint, Extent } from '../../../index.js';
+import { Projection, Viewpoint, Extent, VcsEvent } from '../../../index.js';
+import type TilesetDepthPass from '../../../src/cursor/TilesetDepthPass.js';
 import { getVcsEventSpy } from '../helpers/cesiumHelpers.js';
 
 async function createStubbedDataset(
@@ -249,6 +251,265 @@ describe('PanoramaMap', () => {
         }),
       );
       expect(map.currentPanoramaImage).to.be.undefined;
+    });
+  });
+
+  describe('depth cursor', () => {
+    let map: PanoramaMap;
+
+    function setupCursor(version?: string): void {
+      if (version) {
+        sinon.stub(map, 'currentPanoramaImage').get(
+          () =>
+            ({
+              version,
+              tileProvider: {
+                loading: false,
+                loadingStateChanged: new VcsEvent(),
+              },
+            }) as unknown as PanoramaImage,
+        );
+      }
+      (
+        map as unknown as {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          _setupCursor(): void;
+        }
+      )._setupCursor();
+    }
+
+    beforeEach(() => {
+      map = getPanoramaMap();
+    });
+
+    afterEach(() => {
+      sinon.restore();
+      map.destroy();
+    });
+
+    function addTilesetToDepthPass(): () => void {
+      return map.addToDepthPass({
+        preloadWhenHidden: false,
+        isDestroyed: () => false,
+      } as unknown as Cesium3DTileset);
+    }
+
+    it('should disable the cursor for version 2 images without a depth pass', () => {
+      setupCursor('2.0');
+      expect(map.cursor!.enabled).to.be.false;
+    });
+
+    it('should enable the cursor for version 2 images, once a depth pass exists', () => {
+      setupCursor('2.0');
+      addTilesetToDepthPass();
+      expect(map.cursor!.enabled).to.be.true;
+    });
+
+    it('should disable the cursor, once the depth pass is removed', () => {
+      setupCursor('2.0');
+      const remove = addTilesetToDepthPass();
+      remove();
+      expect(map.depthPass).to.be.undefined;
+      expect(map.cursor!.enabled).to.be.false;
+    });
+
+    it('should use and follow the cursor color of the tile primitive collection', () => {
+      const { tilePrimitiveCollection } = map.panoramaView;
+      tilePrimitiveCollection.cursorColor = Color.RED;
+      setupCursor('2.0');
+      expect(map.cursor!.color).to.equal(Color.RED);
+      const hidden = Color.RED.withAlpha(0);
+      tilePrimitiveCollection.cursorColor = hidden;
+      expect(map.cursor!.color).to.equal(hidden);
+    });
+  });
+
+  describe('coupling the depth pass to the image loading', () => {
+    type FakeImage = {
+      version: string;
+      tileProvider: {
+        loading: boolean;
+        loadingStateChanged: VcsEvent<boolean>;
+      };
+    };
+    let fakeMap: {
+      currentPanoramaImage: FakeImage | undefined;
+      currentImageChanged: VcsEvent<FakeImage | undefined>;
+      cursor: { enabled: boolean };
+    };
+    let release: sinon.SinonSpy;
+    let suspend: sinon.SinonSpy;
+    let depthPass: { suspend: sinon.SinonSpy; enabled: boolean };
+    let removeSetup: () => void;
+
+    function createImage(loading: boolean, version = '2.0'): FakeImage {
+      return {
+        version,
+        tileProvider: { loading, loadingStateChanged: new VcsEvent() },
+      };
+    }
+
+    function setupDepthPass(image?: FakeImage): void {
+      fakeMap = {
+        currentPanoramaImage: image,
+        currentImageChanged: new VcsEvent(),
+        cursor: { enabled: false },
+      };
+      release = sinon.spy();
+      suspend = sinon.spy(() => release);
+      depthPass = { suspend, enabled: true };
+      removeSetup = (
+        PanoramaMap.prototype as unknown as {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          _setupDepthPass(depthPass: TilesetDepthPass): () => void;
+        }
+      )._setupDepthPass.call(fakeMap, depthPass as unknown as TilesetDepthPass);
+    }
+
+    it('should disable the depth pass without an image', () => {
+      setupDepthPass();
+      expect(depthPass.enabled).to.be.false;
+    });
+
+    it('should switch the depth pass and the cursor with the version of a new image', () => {
+      setupDepthPass(createImage(false, '1.0'));
+      fakeMap.currentImageChanged.raiseEvent(createImage(false, '2.0'));
+      expect(depthPass.enabled).to.be.true;
+      expect(fakeMap.cursor.enabled).to.be.true;
+      fakeMap.currentImageChanged.raiseEvent(createImage(false, '1.0'));
+      expect(depthPass.enabled).to.be.false;
+      expect(fakeMap.cursor.enabled).to.be.false;
+    });
+
+    it('should disable the cursor, when removing the setup', () => {
+      setupDepthPass(createImage(false, '2.0'));
+      removeSetup();
+      expect(fakeMap.cursor.enabled).to.be.false;
+    });
+
+    it('should suspend the depth pass, while the current image is loading', () => {
+      const image = createImage(true);
+      setupDepthPass(image);
+      expect(suspend).to.have.been.calledOnce;
+      image.tileProvider.loadingStateChanged.raiseEvent(false);
+      expect(release).to.have.been.calledOnce;
+    });
+
+    it('should suspend only once, while the image keeps loading', () => {
+      const image = createImage(false);
+      setupDepthPass(image);
+      image.tileProvider.loadingStateChanged.raiseEvent(true);
+      image.tileProvider.loadingStateChanged.raiseEvent(true);
+      expect(suspend).to.have.been.calledOnce;
+    });
+
+    it('should follow the loading of a new image', () => {
+      const oldImage = createImage(true);
+      setupDepthPass(oldImage);
+      fakeMap.currentImageChanged.raiseEvent(createImage(false));
+      expect(release).to.have.been.calledOnce;
+      oldImage.tileProvider.loadingStateChanged.raiseEvent(true);
+      expect(suspend).to.have.been.calledOnce;
+    });
+
+    it('should release the suspension and stop listening, when removing the setup', () => {
+      const image = createImage(true);
+      setupDepthPass(image);
+      removeSetup();
+      expect(release).to.have.been.calledOnce;
+      image.tileProvider.loadingStateChanged.raiseEvent(true);
+      fakeMap.currentImageChanged.raiseEvent(createImage(true));
+      expect(suspend).to.have.been.calledOnce;
+    });
+  });
+
+  describe('depth information', () => {
+    let map: PanoramaMap;
+    let destroyImages: (() => void)[];
+
+    /**
+     * testRgbGeotiff has a depth image, noVersionRgb has none (version 1)
+     */
+    async function setImage(options: {
+      depth?: boolean;
+      version?: string;
+    }): Promise<void> {
+      const { panoramaImage, destroy } = await getPanoramaImage({
+        fileName: options.depth ? 'testRgbGeotiff.tif' : 'noVersionRgb.tif',
+        depth: options.depth,
+      });
+      destroyImages.push(destroy);
+      if (options.version) {
+        sinon.stub(panoramaImage, 'version').get(() => options.version);
+      }
+      map.setCurrentImage(panoramaImage);
+    }
+
+    function addTilesetToDepthPass(): () => void {
+      return map.addToDepthPass({
+        preloadWhenHidden: false,
+        isDestroyed: () => false,
+      } as unknown as Cesium3DTileset);
+    }
+
+    function spyOnDepthInformationChanged(): sinon.SinonSpy {
+      const spy = sinon.spy();
+      map.depthInformationChanged.addEventListener(spy);
+      return spy;
+    }
+
+    beforeEach(() => {
+      map = getPanoramaMap();
+      destroyImages = [];
+    });
+
+    afterEach(() => {
+      map.setCurrentImage(undefined);
+      destroyImages.forEach((destroy) => {
+        destroy();
+      });
+      sinon.restore();
+      map.destroy();
+    });
+
+    it('should not have depth information without an image', () => {
+      expect(map.hasDepthInformation).to.be.false;
+    });
+
+    it('should use the depth image of version 1 images', async () => {
+      const spy = spyOnDepthInformationChanged();
+      await setImage({ depth: true });
+      expect(map.hasDepthInformation).to.be.true;
+      expect(spy).to.have.been.calledOnceWith(true);
+      await setImage({ depth: false });
+      expect(map.hasDepthInformation).to.be.false;
+    });
+
+    it('should use the depth pass of version 2 images', async () => {
+      await setImage({ version: '2.0' });
+      expect(map.hasDepthInformation).to.be.false;
+      const spy = spyOnDepthInformationChanged();
+      const remove = addTilesetToDepthPass();
+      expect(map.hasDepthInformation).to.be.true;
+      remove();
+      expect(map.hasDepthInformation).to.be.false;
+      expect(spy.args).to.eql([[true], [false]]);
+    });
+
+    it('should only raise the event, if the value changes', async () => {
+      await setImage({ version: '2.0' });
+      addTilesetToDepthPass();
+      const spy = spyOnDepthInformationChanged();
+      addTilesetToDepthPass();
+      expect(spy).to.not.have.been.called;
+    });
+
+    it('should update, once the image changes from version 1 with depth to version 2 without a depth pass', async () => {
+      await setImage({ depth: true });
+      const spy = spyOnDepthInformationChanged();
+      await setImage({ version: '2.0' });
+      expect(map.hasDepthInformation).to.be.false;
+      expect(spy).to.have.been.calledOnceWith(false);
     });
   });
 

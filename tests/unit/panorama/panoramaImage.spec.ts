@@ -8,7 +8,10 @@ import {
 import type { GeoTIFF } from 'geotiff';
 import { fromFile } from 'geotiff';
 import type { PanoramaImage } from '../../../src/panorama/panoramaImage.js';
-import { createPanoramaImage } from '../../../src/panorama/panoramaImage.js';
+import {
+  createPanoramaImage,
+  usesPointCloudDepth,
+} from '../../../src/panorama/panoramaImage.js';
 import { getPanoramaImage } from '../helpers/panoramaHelpers.js';
 import { imageSphericalToCartesian } from '../../../src/panorama/sphericalCoordinates.js';
 
@@ -17,6 +20,24 @@ type PanoramaFileDirectory = {
 };
 
 describe('PanoramaImage', () => {
+  describe('depth source', () => {
+    function usesPointCloudDepthForVersion(version: string): boolean {
+      return usesPointCloudDepth({ version } as unknown as PanoramaImage);
+    }
+
+    it('should use the depth image for version 1 images', () => {
+      expect(usesPointCloudDepthForVersion('1.0')).to.be.false;
+      expect(usesPointCloudDepthForVersion('1')).to.be.false;
+      expect(usesPointCloudDepthForVersion('1.1')).to.be.false;
+    });
+
+    it('should use point cloud depth from version 2 on', () => {
+      expect(usesPointCloudDepthForVersion('2.0')).to.be.true;
+      expect(usesPointCloudDepthForVersion('2.1')).to.be.true;
+      expect(usesPointCloudDepthForVersion('3.0')).to.be.true;
+    });
+  });
+
   describe('metadata handling', () => {
     let image: GeoTIFF | undefined;
     let panoramaImage: PanoramaImage | undefined;
@@ -51,6 +72,7 @@ describe('PanoramaImage', () => {
       );
       expect(panoramaImage.hasDepth).to.be.false;
       expect(panoramaImage.hasIntensity).to.be.false;
+      expect(panoramaImage.version).to.equal('1.0');
     });
 
     it('should not flip, if the PANORAMA_FLIP metadata is missing', async () => {

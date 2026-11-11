@@ -1,7 +1,10 @@
 import { check, maybe, oneOf } from '@vcsuite/check';
 // eslint-disable-next-line import/no-named-default
 import type { default as OLStyle, StyleFunction } from 'ol/style/Style.js';
-import type { CesiumTilesetOptions } from './cesiumTilesetLayer.js';
+import type {
+  CesiumTilesetOptions,
+  CesiumTilesetImplementationOptions,
+} from './cesiumTilesetLayer.js';
 import CesiumTilesetLayer from './cesiumTilesetLayer.js';
 import type { DeclarativeStyleItemOptions } from '../style/declarativeStyleItem.js';
 import type DeclarativeStyleItem from '../style/declarativeStyleItem.js';
@@ -10,9 +13,16 @@ import type { VectorStyleItemOptions } from '../style/vectorStyleItem.js';
 import VectorStyleItem from '../style/vectorStyleItem.js';
 import { layerClassRegistry } from '../classRegistry.js';
 import type StyleItem from '../style/styleItem.js';
+import BaseCesiumMap from '../map/baseCesiumMap.js';
+import PanoramaMap from '../map/panoramaMap.js';
+import type VcsMap from '../map/vcsMap.js';
 
 export type PointCloudOptions = CesiumTilesetOptions & {
   pointSize?: number | string;
+  /**
+   * if true, the point cloud is additionally rendered into the depth pass of panorama maps, even if the layer is not active.
+   */
+  renderDepthPass?: boolean;
 };
 
 /**
@@ -21,6 +31,7 @@ export type PointCloudOptions = CesiumTilesetOptions & {
  * <ul>
  *  <li>url: string: url to the p3dm dataset
  *  <li>pointSize: number: size of the points to display
+ *  <li>renderDepthPass: boolean: render the point cloud into the depth pass of panorama maps
  * </ul>
  * @group Layer
  */
@@ -33,6 +44,7 @@ class PointCloudLayer extends CesiumTilesetLayer {
     return {
       ...CesiumTilesetLayer.getDefaultOptions(),
       pointSize: undefined,
+      renderDepthPass: false,
     };
   }
 
@@ -43,6 +55,8 @@ class PointCloudLayer extends CesiumTilesetLayer {
 
   private _pointSize: number | string | undefined;
 
+  private _renderDepthPass: boolean;
+
   constructor(options: PointCloudOptions) {
     const defaultOptions = PointCloudLayer.getDefaultOptions();
     super({ ...defaultOptions, ...options });
@@ -50,6 +64,16 @@ class PointCloudLayer extends CesiumTilesetLayer {
     this.defaultPointSize =
       options.pointSize != null ? options.pointSize : defaultOptions.pointSize;
     this._pointSize = this.defaultPointSize;
+
+    this._renderDepthPass =
+      options.renderDepthPass ?? defaultOptions.renderDepthPass ?? false;
+  }
+
+  getImplementationOptions(): CesiumTilesetImplementationOptions {
+    return {
+      ...super.getImplementationOptions(),
+      renderDepthPass: this.renderDepthPass,
+    };
   }
 
   getStyleOrDefaultStyle(
@@ -65,6 +89,21 @@ class PointCloudLayer extends CesiumTilesetLayer {
     );
   }
 
+  get renderDepthPass(): boolean {
+    return this._renderDepthPass;
+  }
+
+  set renderDepthPass(value: boolean) {
+    if (this._renderDepthPass !== value) {
+      this._renderDepthPass = value;
+      this.forceRedraw().catch((e: unknown) => {
+        this.getLogger().error(
+          `Error forcing redraw after setting renderDepthPass: ${String(e)}`,
+        );
+      });
+    }
+  }
+
   get pointSize(): number | string | undefined {
     return this._pointSize;
   }
@@ -78,6 +117,36 @@ class PointCloudLayer extends CesiumTilesetLayer {
   async initialize(): Promise<void> {
     await super.initialize();
     this.pointSize = this._pointSize;
+  }
+
+  /**
+   * Point clouds rendering a depth pass are always supported by panorama maps, regardless of the maps layer types.
+   */
+  override isSupported(map: VcsMap): boolean {
+    if (this.renderDepthPass && map instanceof PanoramaMap) {
+      return true;
+    }
+    return super.isSupported(map);
+  }
+
+  /**
+   * Initializes the implementation for depth pass point clouds, even if the layer is not active.
+   * The implementation is not activated: its tileset stays hidden and is only rendered by the depth pass.
+   */
+  async mapActivated(map: VcsMap): Promise<void> {
+    await super.mapActivated(map);
+    if (
+      this.renderDepthPass &&
+      !this.active &&
+      map instanceof BaseCesiumMap &&
+      this.isSupported(map)
+    ) {
+      if (!this.initialized) {
+        await this.initialize();
+      }
+      const [impl] = this.getImplementationsForMap(map);
+      await impl?.initialize();
+    }
   }
 
   /**
@@ -108,6 +177,10 @@ class PointCloudLayer extends CesiumTilesetLayer {
 
     if (this.defaultPointSize !== defaultOptions.pointSize) {
       config.pointSize = this.defaultPointSize;
+    }
+
+    if (this.renderDepthPass !== defaultOptions.renderDepthPass) {
+      config.renderDepthPass = this.renderDepthPass;
     }
 
     return config;

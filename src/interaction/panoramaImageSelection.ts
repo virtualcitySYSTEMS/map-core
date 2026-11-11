@@ -69,7 +69,12 @@ export default class PanoramaImageSelection extends AbstractInteraction {
     );
     if (panoramaDatasetProperties) {
       const { dataset, name, time } = panoramaDatasetProperties;
-      const panoramaImage = await dataset.createPanoramaImage(name, time);
+      const loadImage = dataset.createPanoramaImage(name, time);
+      // depth pass tiles would otherwise occupy the connections, delaying the image switch
+      const depthPass =
+        event.map instanceof PanoramaMap ? event.map.depthPass : undefined;
+      const panoramaImage = await (depthPass?.suspendWhile(loadImage) ??
+        loadImage);
       event.stopPropagation = true;
 
       if (event.map instanceof PanoramaMap) {

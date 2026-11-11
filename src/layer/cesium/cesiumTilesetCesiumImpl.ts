@@ -362,6 +362,10 @@ class CesiumTilesetCesiumImpl
 
   private _customShader: CustomShader | undefined;
 
+  private _renderDepthPass = false;
+
+  private _removeFromDepthPass: (() => void) | undefined;
+
   styleContent: (content: Cesium3DTileContent) => void;
 
   updateStyle: (style: StyleItem) => void;
@@ -383,6 +387,8 @@ class CesiumTilesetCesiumImpl
     this._customShader = options.customShader;
     this.allowPicking = options.allowPicking;
     this.attributeProvider = options.attributeProvider;
+    this._renderDepthPass =
+      (options.renderDepthPass ?? false) && map.className === 'PanoramaMap';
 
     const stylingContext = createCesiumStylingContext(this);
     this.styleContent = stylingContext.styleContent;
@@ -449,12 +455,21 @@ class CesiumTilesetCesiumImpl
       } else if (this.offset) {
         this._calculateOffset();
       }
+
       this.map.addPrimitiveCollection(this.cesium3DTileset);
+
       await super.initialize();
       if (this.splitDirection) {
         this.cesium3DTileset.splitDirection = this.splitDirection;
       }
+
       this.updateStyle(this.style);
+
+      if (this._renderDepthPass && !this.isDestroyed) {
+        this._removeFromDepthPass = this.map.addToDepthPass(
+          this.cesium3DTileset,
+        );
+      }
     }
     await this._initializedPromise;
   }
@@ -530,6 +545,8 @@ class CesiumTilesetCesiumImpl
   }
 
   destroy(): void {
+    this._removeFromDepthPass?.();
+    this._removeFromDepthPass = undefined;
     if (this.cesium3DTileset) {
       if (this.map.initialized) {
         const toRemove = this.cesium3DTileset;
