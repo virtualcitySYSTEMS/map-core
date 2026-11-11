@@ -1,12 +1,17 @@
 import {
   Cartesian2,
+  Cartesian3,
+  Cartesian4,
   Math as CesiumMath,
+  Matrix4,
   type PerspectiveFrustum,
   ScreenSpaceEventType,
   type ScreenSpaceEventHandler,
+  Transforms,
 } from '@vcmap-cesium/engine';
 import { windowPositionToImageSpherical } from './fieldOfView.js';
 import type PanoramaMap from '../map/panoramaMap.js';
+import type { PanoramaImage } from './panoramaImage.js';
 import {
   PointerEventType,
   PointerKeyType,
@@ -153,9 +158,28 @@ export function createPanoramaCameraController(
     }
   }
 
+  const localUp = new Cartesian3();
+  const invLocalFrame = new Matrix4();
+  const scratchLocalFrame = new Matrix4();
+  const scratchUp = new Cartesian4();
+  function setLocalFrame(image?: PanoramaImage): void {
+    if (image) {
+      Transforms.eastNorthUpToFixedFrame(
+        image.position,
+        undefined,
+        scratchLocalFrame,
+      );
+      Matrix4.inverseTransformation(scratchLocalFrame, invLocalFrame);
+      Matrix4.getColumn(scratchLocalFrame, 2, scratchUp);
+      Cartesian3.fromCartesian4(scratchUp, localUp);
+    }
+  }
+
   let currentImage = map.currentPanoramaImage;
+  setLocalFrame(currentImage);
   const imageListener = map.currentImageChanged.addEventListener((image) => {
     currentImage = image;
+    setLocalFrame(image);
   });
   let animationFrameHandle: number;
   const loop = (): void => {
@@ -170,12 +194,12 @@ export function createPanoramaCameraController(
         const startImagePosition = windowPositionToImageSpherical(
           startPosition,
           camera,
-          currentImage.invModelMatrix,
+          invLocalFrame,
         );
         const newImagePosition = windowPositionToImageSpherical(
           position,
           camera,
-          currentImage.invModelMatrix,
+          invLocalFrame,
         );
 
         if (startImagePosition && newImagePosition) {
@@ -186,7 +210,7 @@ export function createPanoramaCameraController(
             diffX += CesiumMath.TWO_PI;
           }
           const diffY = startImagePosition[1] - newImagePosition[1];
-          widget.camera.look(currentImage.up, diffX);
+          widget.camera.look(localUp, diffX);
           widget.camera.look(camera.right, diffY);
 
           yInertia = diffY;
@@ -198,7 +222,7 @@ export function createPanoramaCameraController(
       } else if (decay < DECAY_FRAMES) {
         decay += 1;
         xInertia *= INERTIA_DECAY;
-        widget.camera.look(currentImage.up, xInertia);
+        widget.camera.look(localUp, xInertia);
         yInertia *= INERTIA_DECAY;
         widget.camera.look(camera.right, yInertia);
 
@@ -215,7 +239,7 @@ export function createPanoramaCameraController(
       startImagePosition = windowPositionToImageSpherical(
         center,
         camera,
-        currentImage.invModelMatrix,
+        invLocalFrame,
       );
     }
 
@@ -241,7 +265,7 @@ export function createPanoramaCameraController(
         newImagePosition = windowPositionToImageSpherical(
           center!,
           camera,
-          currentImage.invModelMatrix,
+          invLocalFrame,
         );
         if (newImagePosition) {
           let diffX = startImagePosition[0] - newImagePosition[0];
@@ -251,7 +275,7 @@ export function createPanoramaCameraController(
             diffX += CesiumMath.TWO_PI;
           }
           const diffY = startImagePosition[1] - newImagePosition[1];
-          camera.look(currentImage.up, diffX);
+          camera.look(localUp, diffX);
           camera.look(camera.right, diffY);
         }
       }

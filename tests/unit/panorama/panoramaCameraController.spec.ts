@@ -1,11 +1,20 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 import type { PerspectiveFrustum } from '@vcmap-cesium/engine';
-import { Math as CesiumMath, Cartesian2 } from '@vcmap-cesium/engine';
+import {
+  Math as CesiumMath,
+  Cartesian2,
+  Cartesian3,
+  Cartesian4,
+  HeadingPitchRoll,
+  Matrix4,
+  Transforms,
+} from '@vcmap-cesium/engine';
 import {
   getPanoramaImage,
   getPanoramaMap,
 } from '../helpers/panoramaHelpers.js';
+import type { PanoramaImage } from '../../../src/panorama/panoramaImage.js';
 import type { PanoramaCameraController } from '../../../src/panorama/panoramaCameraController.js';
 import {
   MIN_FOV,
@@ -20,6 +29,36 @@ import {
   PointerKeyType,
 } from '../../../src/interaction/interactionType.js';
 import { replaceRequestAnimationFrame } from '../helpers/helpers.js';
+
+/**
+ * Stubs the orientation of a panorama image and its matrices, the same way createPanoramaImage builds them.
+ */
+function stubImageOrientation(
+  sandbox: sinon.SinonSandbox,
+  image: PanoramaImage,
+  orientation: HeadingPitchRoll,
+): void {
+  const modelMatrix = Transforms.headingPitchRollToFixedFrame(
+    image.position,
+    new HeadingPitchRoll(
+      orientation.heading + Math.PI / 2,
+      -orientation.pitch,
+      -orientation.roll,
+    ),
+  );
+  const invModelMatrix = Matrix4.inverseTransformation(
+    modelMatrix,
+    new Matrix4(),
+  );
+  const up = Cartesian3.fromCartesian4(
+    Matrix4.getColumn(modelMatrix, 2, new Cartesian4()),
+    new Cartesian3(),
+  );
+  sandbox.stub(image, 'orientation').get(() => orientation);
+  sandbox.stub(image, 'modelMatrix').get(() => modelMatrix);
+  sandbox.stub(image, 'invModelMatrix').get(() => invModelMatrix);
+  sandbox.stub(image, 'up').get(() => up);
+}
 
 describe('panoramaCameraController', () => {
   let map: PanoramaMap;
@@ -220,6 +259,61 @@ describe('panoramaCameraController', () => {
       expect(camera.heading).to.be.closeTo(
         CesiumMath.PI + 3 * CesiumMath.PI_OVER_FOUR,
         CesiumMath.EPSILON6,
+      );
+    });
+
+    it('should move the camera the same way on a level and a tilted image', () => {
+      const { camera } = map.getCesiumWidget();
+      // drags diagonally, releases & lets the inertia run out
+      const drag = (): HeadingPitchRoll => {
+        camera.setView({ orientation: { heading: 0, pitch: 0, roll: 0 } });
+        map.pointerInteractionEvent.raiseEvent({
+          map,
+          windowPosition: new Cartesian2(10, 20),
+          key: ModificationKeyType.NONE,
+          pointer: PointerKeyType.LEFT,
+          multipleTouch: false,
+          pointerEvent: PointerEventType.DOWN,
+        });
+        map.pointerInteractionEvent.raiseEvent({
+          map,
+          windowPosition: new Cartesian2(80, 35),
+          key: ModificationKeyType.NONE,
+          pointer: PointerKeyType.ALL,
+          multipleTouch: false,
+          pointerEvent: PointerEventType.MOVE,
+        });
+        requestAnimationFrameStub.tick();
+        requestAnimationFrameStub.tick();
+        map.pointerInteractionEvent.raiseEvent({
+          map,
+          windowPosition: new Cartesian2(80, 35),
+          key: ModificationKeyType.NONE,
+          pointer: PointerKeyType.LEFT,
+          multipleTouch: false,
+          pointerEvent: PointerEventType.UP,
+        });
+        for (let i = 0; i < 61; i++) {
+          requestAnimationFrameStub.tick();
+        }
+        return new HeadingPitchRoll(camera.heading, camera.pitch, camera.roll);
+      };
+
+      const level = drag();
+      stubImageOrientation(
+        sandbox,
+        map.currentPanoramaImage!,
+        HeadingPitchRoll.fromDegrees(30, 20, 10),
+      );
+      const tilted = drag();
+
+      expect(level.heading).to.not.be.closeTo(0, CesiumMath.EPSILON3);
+      expect(level.pitch).to.not.be.closeTo(0, CesiumMath.EPSILON3);
+      expect(tilted.heading).to.be.closeTo(level.heading, CesiumMath.EPSILON10);
+      expect(tilted.pitch).to.be.closeTo(level.pitch, CesiumMath.EPSILON10);
+      expect(CesiumMath.negativePiToPi(tilted.roll)).to.be.closeTo(
+        0,
+        CesiumMath.EPSILON8,
       );
     });
 

@@ -2,6 +2,8 @@
 
 - Adds a depth cursor and depth picking for panorama images with `PANORAMA_VERSION` 2 or higher, based on `PointCloudLayer`s with the new `renderDepthPass` option. Version 1 images keep using their depth images.
 - Adds `PanoramaMap.hasDepthInformation` and the `depthInformationChanged` event, to tell whether depth is available for the current panorama image.
+- Fixes the panorama view being tilted for tilted panorama images. The camera now stays level and rotates around the local vertical.
+- The panorama camera now keeps its pitch when switching images, instead of taking the pitch of the new image.
 
 ### 6.3.13
 

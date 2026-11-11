@@ -87,6 +87,33 @@ describe('Panorama Tile Coordinates', () => {
     expect(distance0).to.be.closeTo(CesiumMath.PI_OVER_FOUR, 0.0001);
   });
 
+  it('should calculate the distance to a tile across the pole on the sphere', () => {
+    const position: [number, number] = [0, CesiumMath.toRadians(5)];
+    // phi 168.75 and theta 11.25 degrees, on the other side of the north pole
+    const acrossPole = getDistanceToTileCoordinate(
+      position,
+      createTileCoordinate(8, 0, 3),
+    );
+    // phi 11.25 and theta 56.25 degrees, on the same side as the position
+    const sameSide = getDistanceToTileCoordinate(
+      position,
+      createTileCoordinate(15, 2, 3),
+    );
+
+    expect(acrossPole).to.be.closeTo(CesiumMath.toRadians(16.183), 0.0001);
+    expect(acrossPole).to.be.lessThan(sameSide);
+  });
+
+  it('should calculate the distance to a tile across the 0 meridian on the sphere', () => {
+    // the tile is at phi 348.75 and theta 33.75 degrees, 12.5 degrees across the 0 meridian
+    const distance = getDistanceToTileCoordinate(
+      [CesiumMath.toRadians(1.25), CesiumMath.toRadians(78.75)],
+      createTileCoordinate(0, 1, 3),
+    );
+
+    expect(distance).to.be.closeTo(CesiumMath.toRadians(46.037), 0.0001);
+  });
+
   it('should create a tile coordiante from a key', () => {
     const tileCoordinate = createTileCoordinate(0, 0, 0);
     const createdTileCoordinate = createTileCoordinateFromKey(

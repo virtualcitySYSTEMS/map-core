@@ -246,7 +246,7 @@ export default class PanoramaMap extends BaseCesiumMap {
           orientation: {
             heading: CesiumMath.toRadians(viewpoint.heading),
             pitch: camera.pitch,
-            roll: camera.roll,
+            roll: 0,
           },
         });
       }

@@ -2,11 +2,13 @@ import type { Extent } from 'ol/extent.js';
 import type {
   Camera,
   Cartesian2,
-  Matrix4,
   PerspectiveFrustum,
 } from '@vcmap-cesium/engine';
-import { Cartesian3, Math as CesiumMath } from '@vcmap-cesium/engine';
-import { globalCartesianToImageSpherical } from './sphericalCoordinates.js';
+import { Cartesian3, Math as CesiumMath, Matrix4 } from '@vcmap-cesium/engine';
+import {
+  cartesianToImageSpherical,
+  globalCartesianToImageSpherical,
+} from './sphericalCoordinates.js';
 
 /**
  * The field of view of a camera in global cartesian coordinates
@@ -67,7 +69,7 @@ const scratchRightHalfWidth = new Cartesian3();
  */
 export function getFov(camera: Camera, result?: Fov): Fov {
   const frustum = camera.frustum as PerspectiveFrustum;
-  const hNear = 2 * Math.tan(frustum.fov / 2) * frustum.near;
+  const hNear = 2 * Math.tan(frustum.fovy / 2) * frustum.near;
   const wNear = hNear * frustum.aspectRatio;
 
   const hNearHalf = hNear / 2;
@@ -153,44 +155,104 @@ export function getProjectedFov(
 }
 
 const scratchExtentFov = createEmptyFov();
-const scratchExtentProjectedFov = createEmptyProjectedFov();
+const scratchCorners = [
+  new Cartesian3(),
+  new Cartesian3(),
+  new Cartesian3(),
+  new Cartesian3(),
+];
+const scratchEdge = new Cartesian3();
+const scratchEdgePoint = new Cartesian3();
 
-function getRightBound(projectedFov: ProjectedFov): number {
-  return Math.max(
-    projectedFov.right[0],
-    projectedFov.topRight[0],
-    projectedFov.bottomRight[0],
-  );
+/**
+ * Returns the theta where the edge turns towards or away from a pole, if that point lies on the edge.
+ * @param start - the start of the edge in the spheres reference system
+ * @param end - the end of the edge in the spheres reference system
+ */
+function getEdgeTurningTheta(
+  start: Cartesian3,
+  end: Cartesian3,
+): number | undefined {
+  const edge = Cartesian3.subtract(end, start, scratchEdge);
+  // the derivative of cos(theta) along start + t * edge is 0 at this t
+  const a = start.z;
+  const b = edge.z;
+  const c = Cartesian3.dot(start, start);
+  const d = Cartesian3.dot(start, edge);
+  const e = Cartesian3.dot(edge, edge);
+  const t = (a * d - b * c) / (b * d - a * e);
+  if (t > 0 && t < 1) {
+    Cartesian3.multiplyByScalar(edge, t, scratchEdgePoint);
+    Cartesian3.add(start, scratchEdgePoint, scratchEdgePoint);
+    return cartesianToImageSpherical(scratchEdgePoint)[1];
+  }
+  return undefined;
 }
 
-function getLeftBound(projectedFov: ProjectedFov): number {
-  return Math.min(
-    projectedFov.left[0],
-    projectedFov.topLeft[0],
-    projectedFov.bottomLeft[0],
-  );
+const scratchSphereDirection = new Cartesian3();
+const scratchSphereUp = new Cartesian3();
+const scratchSphereRight = new Cartesian3();
+
+/**
+ * Small offset to keep extents within [0, 2 * PI) and [0, PI), since 2 * PI === 0 & PI would be outside of the image.
+ */
+const EXTENT_EPSILON = 0.0001;
+
+/**
+ * Wraps a longitude into [0, 2 * PI)
+ * @param phi
+ */
+function wrapLongitude(phi: number): number {
+  const wrapped = phi - Math.floor(phi / CesiumMath.TWO_PI) * CesiumMath.TWO_PI;
+  return wrapped < CesiumMath.TWO_PI ? wrapped : 0;
 }
 
-function getTopBound(projectedFov: ProjectedFov): number {
-  return Math.min(
-    projectedFov.top[1],
-    projectedFov.topLeft[1],
-    projectedFov.topRight[1],
-  );
-}
+/**
+ * Determines whether one of the poles of the image sphere is within the field of view of the camera.
+ * Uses the same (perspective) frustum as getFov.
+ * @param camera
+ * @param invModelMatrix - the inverse model matrix of the panorama image
+ * @returns 1 if the north pole (theta 0) is in view, -1 if the south pole (theta PI) is in view, 0 otherwise
+ */
+function getPoleInView(camera: Camera, invModelMatrix: Matrix4): -1 | 0 | 1 {
+  const frustum = camera.frustum as PerspectiveFrustum;
+  const tanHalfHeight = Math.tan(frustum.fovy / 2);
+  const tanHalfWidth = tanHalfHeight * frustum.aspectRatio;
 
-function getBottomBound(projectedFov: ProjectedFov): number {
-  return Math.max(
-    projectedFov.bottom[1],
-    projectedFov.bottomLeft[1],
-    projectedFov.bottomRight[1],
+  // the z component of the camera axes in the spheres reference system equals the dot product with the north pole.
+  const { z: directionZ } = Matrix4.multiplyByPointAsVector(
+    invModelMatrix,
+    camera.direction,
+    scratchSphereDirection,
   );
+  const { z: upZ } = Matrix4.multiplyByPointAsVector(
+    invModelMatrix,
+    camera.up,
+    scratchSphereUp,
+  );
+  const { z: rightZ } = Matrix4.multiplyByPointAsVector(
+    invModelMatrix,
+    camera.right,
+    scratchSphereRight,
+  );
+
+  const depth = Math.abs(directionZ);
+  if (
+    depth > 0 &&
+    Math.abs(upZ) <= tanHalfHeight * depth &&
+    Math.abs(rightZ) <= tanHalfWidth * depth
+  ) {
+    return directionZ > 0 ? 1 : -1;
+  }
+  return 0;
 }
 
 /**
  * Returns the extent of the fov in image spherical coordinates. May return two extents, if the FOV wraps around along the longitude.
- * it DOES NOT handle the case where the fov wraps around the poles (the pole is in the fov).
- * Furthermore, the camera has to be aligned with the up axis of the sphere. it is not allowed to be rolled.
+ * If a pole of the image is within the fov, all longitudes are visible and the extent spans the entire width of the image
+ * from the pole to the furthest point of the fov.
+ * The orientation of the camera relative to the image does not matter, the camera may be pitched & rolled relative to the
+ * up axis of the image (e.g. for tilted images).
  * @param camera
  * @param invModelMatrix - the inverse model matrix of the panorama image to create the projected fov for
  * @returns The extent of the fov in image spherical coordinates and the center. if providing more than on extent, the first will be up until 2 * PI and the second starting at 0.
@@ -200,40 +262,69 @@ export function getFovImageSphericalExtent(
   invModelMatrix: Matrix4,
 ): { extents: [Extent] | [Extent, Extent]; center: [number, number] } {
   const fov = getFov(camera, scratchExtentFov);
-  const projectedFov = projectFov(
-    fov,
-    invModelMatrix,
-    scratchExtentProjectedFov,
+  const center = globalCartesianToImageSpherical(fov.center, invModelMatrix);
+  const corners = [
+    fov.topLeft,
+    fov.topRight,
+    fov.bottomRight,
+    fov.bottomLeft,
+  ].map((corner, index) =>
+    Matrix4.multiplyByPoint(invModelMatrix, corner, scratchCorners[index]),
   );
-  const simpleExtent = [
-    getLeftBound(projectedFov),
-    getTopBound(projectedFov),
-    getRightBound(projectedFov),
-    getBottomBound(projectedFov),
-  ];
 
-  let extents: [Extent] | [Extent, Extent];
-  if (simpleExtent[0] > simpleExtent[2]) {
-    extents = [
-      [simpleExtent[0], simpleExtent[1], CesiumMath.TWO_PI, simpleExtent[3]],
-      [0, simpleExtent[1], simpleExtent[2], simpleExtent[3]],
-    ];
-  } else {
-    extents = [simpleExtent];
-  }
-
-  extents.forEach((e) => {
-    if (e[1] > e[3]) {
-      const largerY = e[1];
-      e[1] = e[3];
-      e[3] = largerY;
-    }
+  let top = CesiumMath.PI;
+  let bottom = 0;
+  // longitudes relative to the center, to be independent of the 0 meridian & the orientation of the camera
+  let minPhi = 0;
+  let maxPhi = 0;
+  corners.forEach((corner, index) => {
+    const [phi, theta] = cartesianToImageSpherical(corner);
+    // a straight edge never turns back in phi, so the corners are enough for phi
+    const relativePhi = CesiumMath.negativePiToPi(phi - center[0]);
+    minPhi = Math.min(minPhi, relativePhi);
+    maxPhi = Math.max(maxPhi, relativePhi);
+    // an edge can turn towards a pole between its corners, so that point is checked for theta too
+    const edgeTheta =
+      getEdgeTurningTheta(corner, corners[(index + 1) % corners.length]) ??
+      theta;
+    top = Math.min(top, theta, edgeTheta);
+    bottom = Math.max(bottom, theta, edgeTheta);
   });
 
-  return {
-    extents,
-    center: projectedFov.center,
-  };
+  const pole = getPoleInView(camera, invModelMatrix);
+  if (pole !== 0) {
+    const extent: Extent =
+      pole > 0
+        ? [
+            0,
+            0,
+            CesiumMath.TWO_PI - EXTENT_EPSILON,
+            Math.min(bottom, CesiumMath.PI - EXTENT_EPSILON),
+          ]
+        : [
+            0,
+            top,
+            CesiumMath.TWO_PI - EXTENT_EPSILON,
+            CesiumMath.PI - EXTENT_EPSILON,
+          ];
+
+    return { extents: [extent], center };
+  }
+
+  const left = wrapLongitude(center[0] + minPhi);
+  const right = wrapLongitude(center[0] + maxPhi);
+
+  let extents: [Extent] | [Extent, Extent];
+  if (left > right) {
+    extents = [
+      [left, top, CesiumMath.TWO_PI, bottom],
+      [0, top, right, bottom],
+    ];
+  } else {
+    extents = [[left, top, right, bottom]];
+  }
+
+  return { extents, center };
 }
 
 /**

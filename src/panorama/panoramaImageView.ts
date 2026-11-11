@@ -244,8 +244,8 @@ function createImageWrapper(
     destination: image.position,
     orientation: {
       heading: camera.heading,
-      pitch: image.orientation.pitch,
-      roll: image.orientation.roll,
+      pitch: camera.pitch,
+      roll: 0,
     },
   });
 
@@ -463,7 +463,7 @@ export function createPanoramaImageView(
         orientation: {
           heading: newHeading,
           pitch: camera.pitch,
-          roll: camera.roll,
+          roll: 0,
         },
       });
     },

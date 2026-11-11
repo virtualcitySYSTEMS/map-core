@@ -1,7 +1,6 @@
 import { Math as CesiumMath } from '@vcmap-cesium/engine';
 import type { Extent } from 'ol/extent.js';
 import type { Size } from 'ol/size.js';
-import { cartesian2DDistance } from '../util/math.js';
 
 /**
  * Tile coordinate in format [x, y, level]
@@ -156,11 +155,11 @@ export function getDistanceToTileCoordinate(
   position: [number, number],
   tileCoordinate: PanoramaTileCoordinate,
 ): number {
-  const center = getTileSphericalCenter(tileCoordinate);
-  const distance = cartesian2DDistance(position, center);
-
-  if (distance > Math.PI) {
-    return Math.abs(CesiumMath.TWO_PI - distance);
-  }
-  return distance;
+  const [phi1, theta1] = position;
+  const [phi2, theta2] = getTileSphericalCenter(tileCoordinate);
+  // the angle between both directions on the sphere
+  const cosDistance =
+    Math.cos(theta1) * Math.cos(theta2) +
+    Math.sin(theta1) * Math.sin(theta2) * Math.cos(phi1 - phi2);
+  return Math.acos(CesiumMath.clamp(cosDistance, -1, 1));
 }

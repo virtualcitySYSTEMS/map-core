@@ -1,7 +1,12 @@
 import { expect } from 'chai';
 import sinon, { type SinonSandbox, type SinonStub } from 'sinon';
 import type { Primitive } from '@vcmap-cesium/engine';
-import { Cartesian3, Ray } from '@vcmap-cesium/engine';
+import {
+  Cartesian3,
+  HeadingPitchRoll,
+  Math as CesiumMath,
+  Ray,
+} from '@vcmap-cesium/engine';
 import {
   getPanoramaImage,
   getPanoramaMap,
@@ -61,8 +66,8 @@ describe('PanoramaImageView', () => {
       const tileCoordinates = createVisibleTiles.getCall(0)
         .args[0] as PanoramaTileCoordinate[];
       expect(tileCoordinates.map((tc) => tc.key)).to.have.ordered.members([
-        '2/7/2',
         '2/7/1',
+        '2/7/2',
         '2/0/1',
         '2/0/2',
         '0/0/0',
@@ -198,6 +203,21 @@ describe('PanoramaImageView', () => {
       after(() => {
         destroy();
         destroyNewImage();
+      });
+
+      it('should not pitch or roll the camera with the orientation of the image', () => {
+        sandbox
+          .stub(newImage, 'orientation')
+          .get(() => HeadingPitchRoll.fromDegrees(10, 5, 2));
+        const { camera } = map.getCesiumWidget();
+        const pitch = CesiumMath.toRadians(-10);
+        camera.setView({ orientation: { heading: 1, pitch, roll: 0 } });
+        map.setCurrentImage(newImage);
+        expect(camera.pitch).to.be.closeTo(pitch, CesiumMath.EPSILON6);
+        expect(CesiumMath.negativePiToPi(camera.roll)).to.be.closeTo(
+          0,
+          CesiumMath.EPSILON6,
+        );
       });
 
       it('should add the new tile primitives to the collection', () => {
