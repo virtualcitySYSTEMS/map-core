@@ -949,7 +949,12 @@ export type { FlightVisualization } from './src/util/flight/flightVisualizer.js'
 export { createFlightVisualization } from './src/util/flight/flightVisualizer.js';
 export { getTileLoadFunction } from './src/layer/openlayers/loadFunctionHelpers.js';
 export { default as ModelFill } from './src/style/modelFill.js';
-export { renderTemplate } from './src/util/vcsTemplate.js';
+export type {
+  CompiledTemplate,
+  TemplateData,
+  TemplateOptions,
+} from './src/util/vcsTemplate.js';
+export { compileTemplate, renderTemplate } from './src/util/vcsTemplate.js';
 export {
   startRotation,
   rotationMapControlSymbol,

@@ -8,6 +8,9 @@
 - Updated Geotiff to 3.0.5
 - Removed `PanoramaImageDecoder`
 - Removed `rectangleToExtent`, use `rectangleToMercatorExtent` instead
+- Changed `renderTemplate` to render invalid template content (invalid ol style expressions, unbalanced blocks, `{{else}}` before `{{elseif}}`) as text and log a warning instead of throwing. Pass the new `strict` option to throw. `compileTemplate` has the same default. Empty placeholders (`{{ }}`) are kept as text, also in strict mode.
+- Changed template placeholders starting with `'` to be string literals: `{{ 'foo' }}` renders `foo` instead of looking up the property `'foo'`, and `{{#t 'my.key'}}` translates `my.key` instead of `'my.key'` (quotes included).
+- Changed template placeholder parsing: placeholders and block tags end at the first closing delimiter (`}}`), so their content may contain `}` (e.g. `{{ ["concat", "}", "a"] }}`, `{{#if ["==", ["get", "a"], "}"]}}`). A placeholder containing `{{` renders the inner placeholder and keeps the outer `{{` as text. Block tags outside of a block (`{{else}}`, `{{elseif a}}`) are kept as text and log a warning, instead of being rendered as an empty string.
 
 ### Features
 
@@ -15,12 +18,26 @@
 - Export new `getCaughtError` helper
 - Added `inputChanged` event and `eventDriven` option to `Controller`. Controllers are polled by default; event-driven controllers must raise `inputChanged` to start navigation updates.
 - add `VoxelLayer` which allows 3D visualization of Voxel 3D Tiles
+- Added `compileTemplate` to compile a template once and render it multiple times, see [the documentation](documentation/vcsTemplate.md).
+  - The `delimiters` option allows other placeholder delimiters than `{{ }}`, e.g. single braces (`{foo}`).
+  - The `strict` option throws on invalid template content, when it is rendered (templates without blocks: when compiled).
+  - String literals (`{{ '{{' }}`) render text as is and can be used to escape the delimiters and block tags (`{{ '{{#if}}' }}`).
+  - The `formatValue` option converts the values of placeholders to text, e.g. to render objects as JSON.
+  - `renderTemplate` accepts array data (`TemplateData`), like `compileTemplate`: `{{0}}-{{1}}`.
 
 #### Changes
 
 - change tsconfig to use project references
 
 #### Bugfixes
+
+- Fixed template `{{#each}}` blocks throwing, if the data contains values which cannot be cloned, such as functions or class instances with function properties.
+- Fixed template block tags with whitespace within the delimiters, e.g. `{{ else }}`, `{{ /if }}` or `{{#each  (v)  in  list}}`, which were rendered as properties or failed as unbalanced blocks. Properties named like block tags (`else`, `/if`, …) can no longer be rendered. Malformed block tags (e.g. `{{#if}}`, `{{#each foo}}`) and `{{else if foo}}` (use `{{elseif foo}}`) are kept as text and log a warning, instead of being rendered silently as an empty property. Both branches of a block with `{{else if foo}}` are still rendered.
+- Fixed template `{{else}}` and `{{elseif}}` tags of `{{#if}}` blocks within `{{#each}}` blocks being assigned to an outer `{{#if}}` block, which failed the rendering of the template.
+- Fixed template `{{#each}}` blocks not iterating over plain objects with an own `toString` property.
+- Fixed template `{{#each}}` blocks dropping inherited properties of the data (e.g. getters of class instances) within the block.
+- Fixed the error of unbalanced template `{{#if}}` blocks naming the wrong missing tag (opening instead of closing and vice versa).
+- Fixed templates throwing for values which cannot be converted to a string (e.g. `Object.create(null)` or a throwing `toString`). They are rendered as an empty string.
 
 ### 6.3.10
 
