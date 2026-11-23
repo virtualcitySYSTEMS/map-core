@@ -13,7 +13,6 @@ import {
   globalHidden,
   hidden,
   highlighted,
-  originalStyle,
 } from '../../../src/layer/featureVisibility.js';
 
 describe('GlobalHider', () => {
@@ -131,21 +130,13 @@ describe('GlobalHider', () => {
       expect(feature).to.have.property(globalHidden, true);
     });
 
-    it('should set the originalStyle symbol', () => {
+    it('should return the features own style as original style', () => {
       const feature = new Feature();
       const style = new Style({});
       feature.setStyle(style);
       GH.addFeature('test', feature);
-      expect(feature).to.have.property(originalStyle, style);
-    });
-
-    it('should not reset the originalStyle symbol', () => {
-      const feature = new Feature();
-      feature[originalStyle] = undefined;
-      const style = new Style({});
-      feature.setStyle(style);
-      GH.addFeature('test', feature);
-      expect(feature).to.have.property(originalStyle, undefined);
+      expect(feature.getOriginalStyle()).to.equal(style);
+      expect(feature.getStyle()).to.not.equal(style);
     });
   });
 

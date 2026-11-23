@@ -367,7 +367,7 @@ class VectorTileLayer<
   private _handleTileLoaded({ rtree, tileId }: TileLoadedEvent): void {
     const features = rtree.all().map((item) => {
       const feature = item.value;
-      const featureStyle = feature.getStyle();
+      const featureStyle = feature.getOriginalStyle();
       if (featureStyle && featureStyle instanceof Style) {
         featureStyle.setZIndex(this._getNextStyleZIndex());
       }
@@ -521,7 +521,7 @@ class VectorTileLayer<
       ({ style } = this.style);
     } else {
       // if vectorStyle use featureStyle
-      style = feature.getStyle() || this.style.style;
+      style = feature.getOriginalStyle() || this.style.style;
     }
     return getStylesArray(style, feature, resolution);
   }

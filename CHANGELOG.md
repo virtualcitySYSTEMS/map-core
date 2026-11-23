@@ -8,6 +8,7 @@
 - Updated Geotiff to 3.0.5
 - Removed `PanoramaImageDecoder`
 - Removed `rectangleToExtent`, use `rectangleToMercatorExtent` instead
+- Removed `originalStyle` symbol and the `cacheOriginalStyle`, `resetOriginalStyle` and `updateOriginalStyle` helpers of the `featureVisibility` module. Use the new `Feature.getOriginalStyle()` to get the style set on a feature, ignoring hidden & highlighted states.
 - Changed `renderTemplate` to render invalid template content (invalid ol style expressions, unbalanced blocks, `{{else}}` before `{{elseif}}`) as text and log a warning instead of throwing. Pass the new `strict` option to throw. `compileTemplate` has the same default. Empty placeholders (`{{ }}`) are kept as text, also in strict mode.
 - Changed template placeholders starting with `'` to be string literals: `{{ 'foo' }}` renders `foo` instead of looking up the property `'foo'`, and `{{#t 'my.key'}}` translates `my.key` instead of `'my.key'` (quotes included).
 - Changed template placeholder parsing: placeholders and block tags end at the first closing delimiter (`}}`), so their content may contain `}` (e.g. `{{ ["concat", "}", "a"] }}`, `{{#if ["==", ["get", "a"], "}"]}}`). A placeholder containing `{{` renders the inner placeholder and keeps the outer `{{` as text. Block tags outside of a block (`{{else}}`, `{{elseif a}}`) are kept as text and log a warning, instead of being rendered as an empty string.
@@ -24,6 +25,7 @@
   - String literals (`{{ '{{' }}`) render text as is and can be used to escape the delimiters and block tags (`{{ '{{#if}}' }}`).
   - The `formatValue` option converts the values of placeholders to text, e.g. to render objects as JSON.
   - `renderTemplate` accepts array data (`TemplateData`), like `compileTemplate`: `{{0}}-{{1}}`.
+- Added `Feature.getOriginalStyle()`, which returns the style set on a feature, ignoring hidden & highlighted states. In contrast, `Feature.getStyle()` returns the highlight style of highlighted features and an empty style of hidden features.
 
 #### Changes
 
@@ -38,6 +40,8 @@
 - Fixed template `{{#each}}` blocks dropping inherited properties of the data (e.g. getters of class instances) within the block.
 - Fixed the error of unbalanced template `{{#if}}` blocks naming the wrong missing tag (opening instead of closing and vice versa).
 - Fixed templates throwing for values which cannot be converted to a string (e.g. `Object.create(null)` or a throwing `toString`). They are rendered as an empty string.
+- Fixed `Feature.clone()` of highlighted or hidden features, which set the highlight style or an empty style on the clone, instead of the features own style.
+- Fixed `VectorLayer.setStyle` and `FeatureStoreLayer.setStyle` resetting the style of highlighted or hidden features, which already have their dedicated style.
 
 ### 6.3.10
 

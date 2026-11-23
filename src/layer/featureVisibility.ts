@@ -13,12 +13,6 @@ import VectorStyleItem, { fromCesiumColor } from '../style/vectorStyleItem.js';
 import VcsEvent from '../vcsEvent.js';
 
 /**
- * Set on an ol.Feature or Cesium.Cesium3DTileFeature to indicate its style before it was hidden or highlighted.
- * Can be undefined or ol.style.Style for ol.Features and Cesium.Color for Cesium.Cesium3DTileFeatures.
- */
-export const originalStyle = Symbol('originalStyle');
-
-/**
  * Set on an ol.Feature or Cesium.Cesium3DTileFeature to indicate that this features is highlighted.
  * Its value is a {@link VectorStyleItem}.
  */
@@ -87,21 +81,14 @@ export function hideFeature(feature: HighlightableFeature): void {
 }
 
 /**
- * Caches the original style on the feature using the originalStyle symbol
+ * Triggers a re-render of an ol.Feature, once it is no longer hidden or highlighted.
+ * Rendering then falls back to the features own style, since the `getStyleFunction` override of the ol.Feature prototype
+ * (or the style function of a VectorTileLayer) only applies the highlight or hidden style while the respective symbols are set.
  */
-export function cacheOriginalStyle(feature: HighlightableFeature): void {
-  if (!Reflect.has(feature, originalStyle)) {
-    if (feature instanceof Feature) {
-      feature[originalStyle] = feature.getStyle();
-    }
-  }
-}
-
-export function resetOriginalStyle(feature: HighlightableFeature): void {
+function resetFeature(feature: HighlightableFeature): void {
   if (!(feature[globalHidden] || feature[hidden] || feature[highlighted])) {
     if (feature instanceof Feature) {
       feature.changed();
-      delete feature[originalStyle];
     }
   }
 }
@@ -122,24 +109,9 @@ export function highlightFeature(feature: HighlightableFeature): void {
   }
 }
 
-/**
- * Updates the cached original style
- */
-export function updateOriginalStyle(feature: HighlightableFeature): void {
-  if (feature instanceof Feature) {
-    delete feature[originalStyle];
-    cacheOriginalStyle(feature);
-  }
-  if (feature[hidden] || feature[globalHidden]) {
-    hideFeature(feature);
-  } else if (feature[highlighted]) {
-    highlightFeature(feature);
-  }
-}
-
 function unhighlightFeature(feature: HighlightableFeature): void {
   delete feature[highlighted];
-  resetOriginalStyle(feature);
+  resetFeature(feature);
 }
 
 export function showFeature(
@@ -160,7 +132,7 @@ export function showFeature(
     if (feature[highlighted]) {
       highlightFeature(feature);
     } else {
-      resetOriginalStyle(feature);
+      resetFeature(feature);
     }
   }
 }
@@ -310,7 +282,6 @@ class FeatureVisibility {
     feature: HighlightableFeature,
   ): void {
     if (this.highlightedObjects[id]) {
-      cacheOriginalStyle(feature);
       this.highlightedObjects[id].features.add(feature);
       feature[highlighted] = this.highlightedObjects[id].style;
       highlightFeature(feature);
@@ -379,7 +350,6 @@ class FeatureVisibility {
 
   addHiddenFeature(id: string | number, feature: HighlightableFeature): void {
     if (this.hiddenObjects[id]) {
-      cacheOriginalStyle(feature);
       this.hiddenObjects[id].add(feature);
       feature[hidden] = true;
       hideFeature(feature);

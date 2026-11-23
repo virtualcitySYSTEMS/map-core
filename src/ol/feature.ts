@@ -84,7 +84,7 @@ Feature.prototype.getStyleFunction = function getStyleFunction(
       return [this[highlighted]?.style];
     }) as StyleFunction;
   }
-  return originalStyleFunction.bind(this)();
+  return originalStyleFunction.call(this);
 };
 
 // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -100,7 +100,33 @@ Feature.prototype.getStyle = function getStyle(
     return this[highlighted].style;
   }
 
-  return originalGetStyle.bind(this)();
+  return originalGetStyle.call(this);
+};
+
+/**
+ * Returns the style set on the feature, ignoring hidden & highlighted states.
+ * In contrast to getStyle, which returns the highlight style or an empty style if the feature is highlighted or hidden.
+ * Returns undefined, if no style is set on the feature.
+ */
+Feature.prototype.getOriginalStyle = function getOriginalStyle(
+  this: Feature,
+): StyleLike | undefined {
+  // ol initializes the style with null
+  return originalGetStyle.call(this) ?? undefined;
+};
+
+// eslint-disable-next-line @typescript-eslint/unbound-method
+const originalClone = Feature.prototype.clone;
+/**
+ * ol's clone sets the style returned by getStyle on the cloned feature, which is the highlight style or an empty style
+ * for highlighted or hidden features. Ensures the cloned feature gets the features own style instead (same instance, not a copy).
+ */
+Feature.prototype.clone = function clone(this: Feature): Feature {
+  const clonedFeature = originalClone.call(this);
+  if (this[hidden] || this[globalHidden] || this[highlighted]) {
+    clonedFeature.setStyle(this.getOriginalStyle());
+  }
+  return clonedFeature;
 };
 
 // TODO implement getExactClassName, isClass & isExactClass

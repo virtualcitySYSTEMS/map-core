@@ -6,7 +6,6 @@ import type CanvasImmediateRenderer from 'ol/render/canvas/Immediate.js';
 import type {
   Billboard,
   Cartesian3,
-  Color,
   Entity,
   I3SNode,
   Label,
@@ -39,7 +38,6 @@ import type {
   globalHidden,
   hidden,
   highlighted,
-  originalStyle,
 } from '../layer/featureVisibility.js';
 import type {
   FeatureStoreLayerState,
@@ -116,6 +114,10 @@ declare module 'ol/index.js' {
     getProperty(key: string): any;
     getPropertyInherited(key: string): any;
     getAttributes(): Record<string, unknown>;
+    /**
+     * Returns the style set on the feature, ignoring hidden & highlighted states.
+     */
+    getOriginalStyle(): StyleLike | undefined;
     [vcsLayerName]?: string;
     [originalFeatureSymbol]?: Feature<Geometry>;
     [vectorStyleSymbol]?: VectorStyleItem;
@@ -127,7 +129,6 @@ declare module 'ol/index.js' {
     [globalHidden]?: boolean;
     [hidden]?: boolean;
     [highlighted]?: VectorStyleItem;
-    [originalStyle]?: StyleLike | Color;
     [featureStoreStateSymbol]?: FeatureStoreLayerState;
     [isTiledFeature]?: boolean;
     [featureFromOptions]?: boolean;

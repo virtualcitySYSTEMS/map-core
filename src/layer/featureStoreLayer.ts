@@ -11,7 +11,7 @@ import type {
   VectorImplementationOptions,
   VectorOptions,
 } from './vectorLayer.js';
-import VectorLayer from './vectorLayer.js';
+import VectorLayer, { updateDedicatedFeatureStyles } from './vectorLayer.js';
 import { featureStoreStateSymbol } from './featureStoreLayerState.js';
 import { parseGeoJSON } from './geojsonHelpers.js';
 import { mercatorProjection } from '../util/projection.js';
@@ -22,9 +22,7 @@ import VectorStyleItem, {
 } from '../style/vectorStyleItem.js';
 import FeatureVisibility, {
   FeatureVisibilityAction,
-  originalStyle,
   synchronizeFeatureVisibility,
-  updateOriginalStyle,
 } from './featureVisibility.js';
 import CesiumTilesetCesiumImpl, {
   getExtentFromTileset,
@@ -407,22 +405,10 @@ class FeatureStoreLayer extends VectorLayer {
       this.changeTracker.pauseTracking('changefeature');
     }
     super.setStyle(style, silent);
-    const isDeclarative = this.style instanceof DeclarativeStyleItem;
-    this._twoDimStaticSource.getFeatures().forEach((f) => {
-      if (f[vectorStyleSymbol]) {
-        let changed;
-        if (isDeclarative) {
-          changed = true;
-          f.setStyle(undefined);
-        } else if (f.getStyle() !== f[vectorStyleSymbol].style) {
-          changed = true;
-          f.setStyle(f[vectorStyleSymbol].style);
-        }
-        if (changed && Reflect.has(f, originalStyle)) {
-          updateOriginalStyle(f);
-        }
-      }
-    });
+    updateDedicatedFeatureStyles(
+      this._twoDimStaticSource.getFeatures(),
+      this.style,
+    );
     if (changeTrackerActive) {
       this.changeTracker.track();
       this.changeTracker.changed.raiseEvent();

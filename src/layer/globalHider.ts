@@ -6,7 +6,6 @@ import type {
 import {
   globalHidden,
   hideFeature,
-  cacheOriginalStyle,
   showFeature,
   FeatureVisibilityAction,
 } from './featureVisibility.js';
@@ -91,7 +90,6 @@ class GlobalHider {
     if (!this._hiddenObjectFeatures[uuid]) {
       this._hiddenObjectFeatures[uuid] = new Set();
     }
-    cacheOriginalStyle(feature);
     this._hiddenObjectFeatures[uuid].add(feature);
     feature[globalHidden] = true;
     hideFeature(feature);

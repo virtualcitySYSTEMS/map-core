@@ -13,7 +13,6 @@ import FeatureVisibility, {
   globalHidden,
   hidden,
   highlighted,
-  originalStyle,
   synchronizeFeatureVisibility,
 } from '../../../src/layer/featureVisibility.js';
 import VectorStyleItem, {
@@ -287,7 +286,7 @@ describe('FeatureVisibility', () => {
       expect(feature.getStyleFunction()?.(feature, 0)).to.eql([style]);
     });
 
-    it('should not reset the style for hidden ol.Features', () => {
+    it('should keep hidden ol.Features hidden, without changing their own style', () => {
       featureVisibility.highlight({ test: Color.BLUE });
       featureVisibility.hideObjects(['test']);
       const feature = new Feature();
@@ -296,19 +295,40 @@ describe('FeatureVisibility', () => {
       featureVisibility.addHighlightFeature('test', feature);
       featureVisibility.addHiddenFeature('test', feature);
       featureVisibility.unHighlight(['test']);
-      expect(feature.getStyle()).to.not.equal(style);
+      expect(feature.getStyleFunction()?.(feature, 0)).to.be.empty;
+      expect(feature.getOriginalStyle()).to.equal(style);
     });
 
-    it('should not reset the style for globaly hidden ol.Features', () => {
+    it('should keep globaly hidden ol.Features hidden, without changing their own style', () => {
       featureVisibility.highlight({ test: Color.BLUE });
       const feature = new Feature();
       const style = new Style();
       feature.setStyle(style);
       feature[globalHidden] = true;
       featureVisibility.addHighlightFeature('test', feature);
-      feature.setStyle(new Style({}));
       featureVisibility.unHighlight(['test']);
-      expect(feature.getStyle()).to.not.equal(style);
+      expect(feature.getStyleFunction()?.(feature, 0)).to.be.empty;
+      expect(feature.getOriginalStyle()).to.equal(style);
+    });
+
+    it('should trigger a change on unhighlighted ol.Features, to re-render them', () => {
+      featureVisibility.highlight({ test: Color.BLUE });
+      const feature = new Feature();
+      featureVisibility.addHighlightFeature('test', feature);
+      const changed = sandbox.spy(feature, 'changed');
+      featureVisibility.unHighlight(['test']);
+      expect(changed).to.have.been.calledOnce;
+    });
+
+    it('should not trigger a change on unhighlighted ol.Features, which are still hidden', () => {
+      featureVisibility.highlight({ test: Color.BLUE });
+      featureVisibility.hideObjects(['test']);
+      const feature = new Feature();
+      featureVisibility.addHighlightFeature('test', feature);
+      featureVisibility.addHiddenFeature('test', feature);
+      const changed = sandbox.spy(feature, 'changed');
+      featureVisibility.unHighlight(['test']);
+      expect(changed).to.not.have.been.called;
     });
 
     describe('raising the changed event', () => {
@@ -377,19 +397,25 @@ describe('FeatureVisibility', () => {
         expect(feature).to.have.property(highlighted, highlightStyle);
       });
 
-      it('should set the originalStyle symbol', () => {
+      it('should return the features own style as original style', () => {
         const style = new Style({});
         feature.setStyle(style);
         featureVisibility.addHighlightFeature('test', feature);
-        expect(feature).to.have.property(originalStyle, style);
+        expect(feature.getOriginalStyle()).to.equal(style);
       });
 
-      it('should not reset the originalStyle symbol', () => {
+      it('should return the style set on a highlighted feature as original style', () => {
+        featureVisibility.addHighlightFeature('test', feature);
         const style = new Style({});
         feature.setStyle(style);
-        feature[originalStyle] = undefined;
+        expect(feature.getOriginalStyle()).to.equal(style);
+        expect(feature.getStyle()).to.equal(highlightStyle.style);
+      });
+
+      it('should trigger a change on the feature', () => {
+        const changed = sandbox.spy(feature, 'changed');
         featureVisibility.addHighlightFeature('test', feature);
-        expect(feature).to.have.property(originalStyle).and.to.be.undefined;
+        expect(changed).to.have.been.calledOnce;
       });
     });
 
@@ -534,14 +560,32 @@ describe('FeatureVisibility', () => {
       });
     });
 
-    it('should not reset the style for globaly hidden ol.Features', () => {
+    it('should keep globaly hidden ol.Features hidden, without changing their own style', () => {
       const feature = new Feature();
       const style = new Style();
       feature.setStyle(style);
       feature[globalHidden] = true;
       featureVisibility.addHiddenFeature('test', feature);
       featureVisibility.showObjects(['test']);
-      expect(feature.getStyle()).to.not.equal(style);
+      expect(feature.getStyleFunction()?.(feature, 0)).to.be.empty;
+      expect(feature.getOriginalStyle()).to.equal(style);
+    });
+
+    it('should trigger a change on shown ol.Features, to re-render them', () => {
+      const feature = new Feature();
+      featureVisibility.addHiddenFeature('test', feature);
+      const changed = sandbox.spy(feature, 'changed');
+      featureVisibility.showObjects(['test']);
+      expect(changed).to.have.been.calledOnce;
+    });
+
+    it('should apply a style set while the ol.Feature was hidden, once it is shown', () => {
+      const feature = new Feature();
+      featureVisibility.addHiddenFeature('test', feature);
+      const style = new Style();
+      feature.setStyle(style);
+      featureVisibility.showObjects(['test']);
+      expect(feature.getStyle()).to.equal(style);
     });
 
     describe('raising the changed event', () => {
@@ -627,15 +671,15 @@ describe('FeatureVisibility', () => {
         expect(feature).to.have.property(hidden, true);
       });
 
-      it('should set the originalStyle symbol', () => {
-        expect(feature).to.have.property(originalStyle, null);
+      it('should return undefined as original style, if the feature has no style', () => {
+        expect(feature.getOriginalStyle()).to.be.undefined;
       });
 
-      it('should not set the originalStyle symbol', () => {
+      it('should return the style set on a hidden feature as original style', () => {
         const style = new Style({});
         feature.setStyle(style);
-        featureVisibility.addHighlightFeature('test', feature);
-        expect(feature).to.have.property(originalStyle).and.to.not.equal(style);
+        expect(feature.getOriginalStyle()).to.equal(style);
+        expect(feature.getStyle()).to.not.equal(style);
       });
     });
 

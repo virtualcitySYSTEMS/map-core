@@ -194,7 +194,6 @@ export type {
   HighlightedObject,
 } from './src/layer/featureVisibility.js';
 export {
-  originalStyle,
   highlighted,
   hidden,
   globalHidden,

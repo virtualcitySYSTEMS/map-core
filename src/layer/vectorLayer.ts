@@ -35,7 +35,6 @@ import VectorCesiumImpl from './cesium/vectorCesiumImpl.js';
 import VectorObliqueImpl from './oblique/vectorObliqueImpl.js';
 import ObliqueMap from '../map/obliqueMap.js';
 import CesiumMap from '../map/cesiumMap.js';
-import { originalStyle, updateOriginalStyle } from './featureVisibility.js';
 import type { StyleItemOptions } from '../style/styleItem.js';
 import StyleItem from '../style/styleItem.js';
 import { layerClassRegistry } from '../classRegistry.js';
@@ -72,6 +71,27 @@ export type VectorImplementationOptions = FeatureLayerImplementationOptions & {
   minResolution?: number;
   vectorProperties: VectorProperties;
 };
+
+/**
+ * Updates the style of features with a dedicated style (vectorStyleSymbol) after the layer style changed.
+ * For a declarative layer style, the feature style is unset, so the layer style applies. Otherwise, the dedicated style is set,
+ * if it is not already the features original style.
+ */
+export function updateDedicatedFeatureStyles(
+  features: Feature[],
+  layerStyle: StyleItem,
+): void {
+  const isDeclarative = layerStyle instanceof DeclarativeStyleItem;
+  features.forEach((f) => {
+    if (f[vectorStyleSymbol]) {
+      if (isDeclarative) {
+        f.setStyle(undefined);
+      } else if (f.getOriginalStyle() !== f[vectorStyleSymbol].style) {
+        f.setStyle(f[vectorStyleSymbol].style);
+      }
+    }
+  });
+}
 
 /**
  * the vector layer is the standard layer to display vector features on the map. mostly, a specialization
@@ -339,23 +359,7 @@ class VectorLayer
   setStyle(style: Style | StyleFunction | StyleItem, silent?: boolean): void {
     super.setStyle(style, silent);
     this._trackStyleChanges();
-
-    const isDeclarative = this.style instanceof DeclarativeStyleItem;
-    this.getFeatures().forEach((f) => {
-      if (f[vectorStyleSymbol]) {
-        let changed;
-        if (isDeclarative) {
-          changed = true;
-          f.setStyle(undefined);
-        } else if (f.getStyle() !== f[vectorStyleSymbol].style) {
-          changed = true;
-          f.setStyle(f[vectorStyleSymbol].style);
-        }
-        if (changed && Reflect.has(f, originalStyle)) {
-          updateOriginalStyle(f);
-        }
-      }
-    });
+    updateDedicatedFeatureStyles(this.getFeatures(), this.style);
   }
 
   /**

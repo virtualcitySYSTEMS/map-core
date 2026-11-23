@@ -13,7 +13,6 @@ import VcsApp from '../../../src/vcsApp.js';
 import VectorStyleItem, {
   vectorStyleSymbol,
 } from '../../../src/style/vectorStyleItem.js';
-import { originalStyle } from '../../../src/layer/featureVisibility.js';
 import {
   AltitudeModeCesium,
   ClassificationTypeCesium,
@@ -144,19 +143,35 @@ describe('VectorLayer', () => {
         );
       });
 
-      it('should update the originalStyle of the feature to undefined, it the layer style is dedicated', () => {
-        dedicatedFeature[originalStyle] =
-          dedicatedFeature[vectorStyleSymbol]?.style;
+      it('should set the original style of a highlighted feature to undefined, if the layer style is declarative', () => {
+        dedicatedFeature.setStyle(dedicatedFeature[vectorStyleSymbol]?.style);
+        VL.featureVisibility.highlight({ test: new VectorStyleItem({}) });
+        VL.featureVisibility.addHighlightFeature('test', dedicatedFeature);
         VL.setStyle(new DeclarativeStyleItem({}));
-        expect(dedicatedFeature[originalStyle]).to.be.undefined;
+        expect(dedicatedFeature.getOriginalStyle()).to.be.undefined;
+        expect(dedicatedFeature.getStyle()).to.equal(
+          VL.featureVisibility.highlightedObjects.test.style.style,
+        );
       });
 
-      it('should set the original style of the feature to the features style, it the layer style is vector', () => {
-        dedicatedFeature[originalStyle] = undefined;
+      it('should set the original style of a highlighted feature to the features style, if the layer style is vector', () => {
+        const highlightStyle = new VectorStyleItem({});
+        VL.featureVisibility.highlight({ test: highlightStyle });
+        VL.featureVisibility.addHighlightFeature('test', dedicatedFeature);
         VL.setStyle(new VectorStyleItem({}));
-        expect(dedicatedFeature[originalStyle]).to.equal(
+        expect(dedicatedFeature.getOriginalStyle()).to.equal(
           dedicatedFeature[vectorStyleSymbol]?.style,
         );
+        expect(dedicatedFeature.getStyle()).to.equal(highlightStyle.style);
+      });
+
+      it('should not set the style of a highlighted feature, if its original style is already the dedicated style', () => {
+        dedicatedFeature.setStyle(dedicatedFeature[vectorStyleSymbol]?.style);
+        VL.featureVisibility.highlight({ test: new VectorStyleItem({}) });
+        VL.featureVisibility.addHighlightFeature('test', dedicatedFeature);
+        const setStyle = sandbox.spy(dedicatedFeature, 'setStyle');
+        VL.setStyle(new VectorStyleItem({}));
+        expect(setStyle).to.not.have.been.called;
       });
     });
   });

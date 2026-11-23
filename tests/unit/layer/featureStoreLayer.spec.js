@@ -217,6 +217,59 @@ describe('FeatureStoreLayer', () => {
       });
       style.fillColor = '#FF00FF';
     });
+
+    describe('highlighted & hidden two dim features', () => {
+      let dedicatedFeature;
+      let highlightStyle;
+
+      beforeEach(() => {
+        [, dedicatedFeature] = setupStaticTwoDim();
+        highlightStyle = new VectorStyleItem({});
+      });
+
+      afterEach(() => {
+        highlightStyle.destroy();
+      });
+
+      it('should unset the original style of a highlighted feature, if the style is declarative', () => {
+        dedicatedFeature.setStyle(dedicatedFeature[vectorStyleSymbol].style);
+        FS.featureVisibility.highlight({ test: highlightStyle });
+        FS.featureVisibility.addHighlightFeature('test', dedicatedFeature);
+        FS.setStyle(new DeclarativeStyleItem({}));
+        expect(dedicatedFeature.getOriginalStyle()).to.be.undefined;
+        expect(dedicatedFeature.getStyle()).to.equal(highlightStyle.style);
+      });
+
+      it('should set the dedicated style as original style of a highlighted feature, if the style is vector', () => {
+        FS.featureVisibility.highlight({ test: highlightStyle });
+        FS.featureVisibility.addHighlightFeature('test', dedicatedFeature);
+        FS.setStyle(new VectorStyleItem({}));
+        expect(dedicatedFeature.getOriginalStyle()).to.equal(
+          dedicatedFeature[vectorStyleSymbol].style,
+        );
+        expect(dedicatedFeature.getStyle()).to.equal(highlightStyle.style);
+      });
+
+      it('should set the dedicated style as original style of a hidden feature, keeping it hidden', () => {
+        FS.featureVisibility.hideObjects(['test']);
+        FS.featureVisibility.addHiddenFeature('test', dedicatedFeature);
+        FS.setStyle(new VectorStyleItem({}));
+        expect(dedicatedFeature.getOriginalStyle()).to.equal(
+          dedicatedFeature[vectorStyleSymbol].style,
+        );
+        expect(dedicatedFeature.getStyleFunction()(dedicatedFeature, 0)).to.be
+          .empty;
+      });
+
+      it('should not set the style of a highlighted feature, if its original style is already the dedicated style', () => {
+        dedicatedFeature.setStyle(dedicatedFeature[vectorStyleSymbol].style);
+        FS.featureVisibility.highlight({ test: highlightStyle });
+        FS.featureVisibility.addHighlightFeature('test', dedicatedFeature);
+        const setStyle = sandbox.spy(dedicatedFeature, 'setStyle');
+        FS.setStyle(new VectorStyleItem({}));
+        expect(setStyle).to.not.have.been.called;
+      });
+    });
   });
 
   describe('getZoomToExtent', () => {

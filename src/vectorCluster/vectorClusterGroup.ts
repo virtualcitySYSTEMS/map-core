@@ -197,6 +197,8 @@ export default class VectorClusterGroup extends VcsObject {
         impl.style = this._styleFunction;
       }
     });
+    // only features rendered with the cluster style. getStyle is used on purpose, since hidden or highlighted features
+    // do not depend on the cluster style and are re-rendered, once they are shown or unhighlighted.
     this._source
       .getFeatures()
       .filter((f) => !f.getStyle())
