@@ -1,4 +1,4 @@
-### 6.3.14
+### 6.4.0
 
 - Adds a depth cursor and depth picking for panorama images with `PANORAMA_VERSION` 2 or higher, based on `PointCloudLayer`s with the new `renderDepthPass` option. Version 1 images keep using their depth images.
 - Adds `PanoramaMap.hasDepthInformation` and the `depthInformationChanged` event, to tell whether depth is available for the current panorama image.
