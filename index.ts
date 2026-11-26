@@ -254,6 +254,8 @@ export { default as RasterLayerOpenlayersImpl } from './src/layer/openlayers/ras
 export { default as SingleImageOpenlayersImpl } from './src/layer/openlayers/singleImageOpenlayersImpl.js';
 export { default as TileDebugOpenlayersImpl } from './src/layer/openlayers/tileDebugOpenlayersImpl.js';
 export { default as TmsOpenlayersImpl } from './src/layer/openlayers/tmsOpenlayersImpl.js';
+export { default as OGCMapOpenlayersImpl } from './src/layer/openlayers/ogcMapOpenlayersImpl.js';
+export { default as OGCMapCesiumImpl } from './src/layer/cesium/ogcMapCesiumImpl.js';
 export { default as VectorOpenlayersImpl } from './src/layer/openlayers/vectorOpenlayersImpl.js';
 export { default as VectorTileOpenlayersImpl } from './src/layer/openlayers/vectorTileOpenlayersImpl.js';
 export { default as WmsOpenlayersImpl } from './src/layer/openlayers/wmsOpenlayersImpl.js';
@@ -410,6 +412,11 @@ export type {
   WMSImplementationOptions,
 } from './src/layer/wmsLayer.js';
 export { default as WMSLayer } from './src/layer/wmsLayer.js';
+export type {
+  OGCMapOptions,
+  OGCMapImplementationOptions,
+} from './src/layer/ogcMapLayer.js';
+export { default as OGCMapLayer } from './src/layer/ogcMapLayer.js';
 export type {
   WMTSOptions,
   WMTSImplementationOptions,

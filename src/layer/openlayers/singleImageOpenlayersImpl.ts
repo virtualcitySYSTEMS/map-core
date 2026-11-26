@@ -8,7 +8,7 @@ import { wgs84Projection } from '../../util/projection.js';
 import { isSameOrigin } from '../../util/urlHelpers.js';
 import type { SingleImageImplementationOptions } from '../singleImageLayer.js';
 import type OpenlayersMap from '../../map/openlayersMap.js';
-import { getInitForUrl, requestObjectUrl } from '../../util/fetch.js';
+import { getImageLoadFunction } from './loadFunctionHelpers.js';
 
 /**
  * represents a specific OpenLayers SingleImageLayer Layer class.
@@ -42,23 +42,7 @@ class SingleImageOpenlayersImpl extends RasterLayerOpenlayersImpl {
     }
 
     if (this.headers) {
-      options.imageLoadFunction = (imageWrapper, src): void => {
-        const init = getInitForUrl(src, this.headers);
-        requestObjectUrl(src, init)
-          .then((blobUrl) => {
-            const image = imageWrapper.getImage() as HTMLImageElement;
-            image.src = blobUrl;
-            image.onload = (): void => {
-              URL.revokeObjectURL(blobUrl);
-            };
-          })
-          .catch(() => {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call,no-underscore-dangle
-            imageWrapper.handleImageError_();
-          });
-      };
+      options.imageLoadFunction = getImageLoadFunction(this.headers);
     }
 
     return new ImageLayer({

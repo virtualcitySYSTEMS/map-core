@@ -18,6 +18,8 @@ Whenever a map is active an implementation of all supported layers will be gener
 The implementation takes care of initializing and viewing the datasource on the specific map.
 Some layers only relevant for one specific map, e.g. [TerrainLayer](../src/layer/terrainLayer.ts) for 3D, only provide an implementation for this map, in that case [CesiumMap](../src/map/cesiumMap.ts).
 
+For details on supported OGC API services and configuring an [OGC API - Maps layer](../src/layer/ogcMapLayer.ts), see [OGC API services](./OGCAPIServices.md).
+
 The following diagram gives an overview over all available layer types and their corresponding implementations:
 ![VcsLayerDiagram](VcsLayer.png)
 

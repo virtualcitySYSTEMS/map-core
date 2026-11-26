@@ -1,5 +1,4 @@
 import { TrustedServers } from '@vcmap-cesium/engine';
-import { getLogger } from '@vcsuite/logger';
 import type { Size } from 'ol/size.js';
 import TileWMS, { type Options as TileWMSOptions } from 'ol/source/TileWMS.js';
 import ImageWMS, {
@@ -14,8 +13,10 @@ import { mercatorProjection, wgs84Projection } from '../util/projection.js';
 import { isSameOrigin } from '../util/urlHelpers.js';
 import type Extent from '../util/extent.js';
 import { TilingScheme } from './rasterLayer.js';
-import { getTileLoadFunction } from './openlayers/loadFunctionHelpers.js';
-import { getInitForUrl, requestObjectUrl } from '../util/fetch.js';
+import {
+  getImageLoadFunction,
+  getTileLoadFunction,
+} from './openlayers/loadFunctionHelpers.js';
 
 export type WMSSourceOptions = {
   url: string;
@@ -117,23 +118,7 @@ export function getImageWMSSource(options: {
   }
 
   if (options.headers) {
-    sourceOptions.imageLoadFunction = function imageLoadFunction(
-      image,
-      src,
-    ): void {
-      const img = image.getImage() as HTMLImageElement;
-      const init = getInitForUrl(src, options.headers);
-      requestObjectUrl(src, init)
-        .then((blobUrl) => {
-          img.src = blobUrl;
-          img.onload = (): void => {
-            URL.revokeObjectURL(blobUrl);
-          };
-        })
-        .catch(() => {
-          getLogger('ImageWMSSource').error(`Could not load image: ${src}`);
-        });
-    };
+    sourceOptions.imageLoadFunction = getImageLoadFunction(options.headers);
   }
 
   return new ImageWMS(sourceOptions);

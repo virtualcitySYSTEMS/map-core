@@ -15,6 +15,7 @@
 
 ### Features
 
+- Added `OGCMapLayer` to display map images of an OGC API - Maps service in 2D and 3D, see [the documentation](documentation/OGCAPIServices.md).
 - Export `ImageStyleOptions` type and `getRegularShapeImageUrl`helper
 - Export new `getCaughtError` helper
 - Added `inputChanged` event and `eventDriven` option to `Controller`. Controllers are polled by default; event-driven controllers must raise `inputChanged` to start navigation updates.
