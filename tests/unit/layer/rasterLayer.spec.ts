@@ -101,6 +101,14 @@ describe('RasterLayer', () => {
       ARL.splitDirection = SplitDirection.LEFT;
       expect(updateSplitDirection).to.have.been.called;
     });
+
+    it('should ignore a splitDirection option of legacy configs', () => {
+      const legacyConfig = { name: 'legacy', splitDirection: 'left' };
+      const layer = new RasterLayer(legacyConfig);
+      expect(layer.splitDirection).to.equal(SplitDirection.NONE);
+      expect(layer.toJSON()).to.not.have.property('splitDirection');
+      layer.destroy();
+    });
   });
 
   describe('getting config objects', () => {
@@ -127,7 +135,6 @@ describe('RasterLayer', () => {
           imageryLayerOptions: { alpha: 2 },
           tilingSchema: TilingScheme.MERCATOR,
           opacity: 0.5,
-          splitDirection: 'left',
         };
         configuredLayer = new RasterLayer(inputConfig);
         outputConfig = configuredLayer.toJSON();
@@ -175,13 +182,6 @@ describe('RasterLayer', () => {
 
       it('should configure opacity', () => {
         expect(outputConfig).to.have.property('opacity', inputConfig.opacity);
-      });
-
-      it('should configure splitDirection', () => {
-        expect(outputConfig).to.have.property(
-          'splitDirection',
-          inputConfig.splitDirection,
-        );
       });
     });
   });

@@ -17,10 +17,6 @@ import BaseCesiumMap from '../map/baseCesiumMap.js';
 
 export type OpenStreetMapOptions = LayerOptions & {
   /**
-   * either 'left' or 'right', if omitted none is applied
-   */
-  splitDirection?: string;
-  /**
    * opacity between 0 and 1
    * @default 1
    */
@@ -62,7 +58,6 @@ class OpenStreetMapLayer
   static getDefaultOptions(): OpenStreetMapOptions {
     return {
       ...Layer.getDefaultOptions(),
-      splitDirection: undefined,
       opacity: 1,
       maxLevel: 19,
       minRenderingLevel: undefined,
@@ -70,7 +65,7 @@ class OpenStreetMapLayer
     };
   }
 
-  private _splitDirection: SplitDirection;
+  private _splitDirection: SplitDirection = SplitDirection.NONE;
 
   private _opacity: number;
 
@@ -113,14 +108,6 @@ class OpenStreetMapLayer
   constructor(options: OpenStreetMapOptions) {
     const defaultOptions = OpenStreetMapLayer.getDefaultOptions();
     super({ ...defaultOptions, ...options });
-    this._splitDirection = SplitDirection.NONE;
-
-    if (options.splitDirection) {
-      this._splitDirection =
-        options.splitDirection === 'left'
-          ? SplitDirection.LEFT
-          : SplitDirection.RIGHT;
-    }
 
     this._opacity = parseNumberRange(
       options.opacity,
@@ -207,11 +194,6 @@ class OpenStreetMapLayer
   ): OpenStreetMapOptions {
     const config: OpenStreetMapOptions = super.toJSON(defaultOptions);
 
-    if (this._splitDirection !== SplitDirection.NONE) {
-      config.splitDirection =
-        this._splitDirection === SplitDirection.RIGHT ? 'right' : 'left';
-    }
-
     if (this.opacity !== defaultOptions.opacity) {
       config.opacity = this.opacity;
     }
@@ -226,11 +208,6 @@ class OpenStreetMapLayer
 
     if (this.maxRenderingLevel !== defaultOptions.maxRenderingLevel) {
       config.maxRenderingLevel = this.maxRenderingLevel;
-    }
-
-    if (this._splitDirection !== SplitDirection.NONE) {
-      config.splitDirection =
-        this._splitDirection === SplitDirection.RIGHT ? 'right' : 'left';
     }
 
     if (this.imageryLayerOptions !== defaultOptions.imageryLayerOptions) {

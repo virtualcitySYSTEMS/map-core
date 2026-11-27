@@ -31,8 +31,6 @@ export type MapboxStyleOptions = LayerOptions & {
   sources?: string[];
   /** The Mapbox layers to exclude from picking. */
   excludeLayerFromPicking?: string[];
-  /** either 'left' or 'right', none if omitted */
-  splitDirection?: string;
   /** configures the visible level in the rendered map. Maps to Openlayers `minZoom` and Cesium `minimiumTerrainLevel` */
   minRenderingLevel?: number;
   /** configures the visible level in the rendered map. Maps to Openlayers `maxZoom` and Cesium `maximumTerrainLevel` */
@@ -91,12 +89,6 @@ class MapboxStyleLayer
 
     this._sources = options.sources;
     this._excludeLayerFromPicking = options.excludeLayerFromPicking;
-    if (options.splitDirection) {
-      this._splitDirection =
-        options.splitDirection === 'left'
-          ? SplitDirection.LEFT
-          : SplitDirection.RIGHT;
-    }
     this.minRenderingLevel = parseInteger(
       options.minRenderingLevel,
       defaultOptions.minRenderingLevel,
@@ -234,11 +226,6 @@ class MapboxStyleLayer
       this._excludeLayerFromPicking.length > 0
     ) {
       config.excludeLayerFromPicking = this._excludeLayerFromPicking.slice();
-    }
-
-    if (this._splitDirection !== SplitDirection.NONE) {
-      config.splitDirection =
-        this._splitDirection === SplitDirection.LEFT ? 'left' : 'right';
     }
 
     if (this.minRenderingLevel !== defaultOptions.minRenderingLevel) {

@@ -98,6 +98,13 @@ describe('FeatureLayer', () => {
       vectorLayer.splitDirection = SplitDirection.LEFT;
       expect(impl.splitDirection).to.equal(SplitDirection.LEFT);
     });
+
+    it('should ignore a splitDirection option of legacy configs', () => {
+      const layer = new FeatureLayer({ splitDirection: 'left' });
+      expect(layer.splitDirection).to.equal(SplitDirection.NONE);
+      expect(layer.toJSON()).to.not.have.property('splitDirection');
+      layer.destroy();
+    });
   });
 
   describe('getting a config', () => {
@@ -122,7 +129,6 @@ describe('FeatureLayer', () => {
               color: '#FF00FF',
             },
           },
-          splitDirection: 'left',
         };
         configuredLayer = new FeatureLayer(inputConfig);
         outputConfig = configuredLayer.toJSON();
@@ -142,13 +148,6 @@ describe('FeatureLayer', () => {
               color: [255, 0, 255, 1],
             },
           });
-      });
-
-      it('should configure splitDirection', () => {
-        expect(outputConfig).to.have.property(
-          'splitDirection',
-          inputConfig.splitDirection,
-        );
       });
     });
   });

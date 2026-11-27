@@ -66,6 +66,14 @@ describe('OpenStreetMapLayer', () => {
         SplitDirection.LEFT,
       );
     });
+
+    it('should ignore a splitDirection option of legacy configs', () => {
+      const legacyConfig = { name: 'legacy', splitDirection: 'left' };
+      const layer = new OpenStreetMapLayer(legacyConfig);
+      expect(layer.splitDirection).to.equal(SplitDirection.NONE);
+      expect(layer.toJSON()).to.not.have.property('splitDirection');
+      layer.destroy();
+    });
   });
 
   describe('getting config objects', () => {
@@ -88,7 +96,6 @@ describe('OpenStreetMapLayer', () => {
           minRenderingLevel: 18,
           maxRenderingLevel: 20,
           imageryLayerOptions: { alpha: 2 },
-          splitDirection: 'left',
         };
         configuredLayer = new OpenStreetMapLayer(inputConfig);
         outputConfig = configuredLayer.toJSON();
@@ -104,13 +111,6 @@ describe('OpenStreetMapLayer', () => {
 
       it('should configure opacity', () => {
         expect(outputConfig).to.have.property('opacity', inputConfig.opacity);
-      });
-
-      it('should configure splitDirection', () => {
-        expect(outputConfig).to.have.property(
-          'splitDirection',
-          inputConfig.splitDirection,
-        );
       });
 
       it('should configure minRenderingLevel', () => {

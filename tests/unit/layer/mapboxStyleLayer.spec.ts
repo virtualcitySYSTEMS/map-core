@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import nock from 'nock';
+import { SplitDirection } from '@vcmap-cesium/engine';
 import type Feature from 'ol/Feature.js';
 import AbstractFeatureProvider from '../../../src/featureProvider/abstractFeatureProvider.js';
 import type { CompositeFeatureProviderOptions } from '../../../src/featureProvider/compositeFeatureProvider.js';
@@ -126,6 +127,20 @@ describe('MapboxStyleLayer', () => {
 
     expect(config.sources).to.have.members(['roads']);
     expect(config.excludeLayerFromPicking).to.have.members(['buildings']);
+
+    layer.destroy();
+  });
+
+  it('should ignore a splitDirection option of legacy configs', () => {
+    const legacyConfig = {
+      url: 'http://localhost/style-tojson.json',
+      splitDirection: 'left',
+    };
+    const layer = new MapboxStyleLayer(legacyConfig);
+    expect(layer.splitDirection).to.equal(SplitDirection.NONE);
+
+    const config = layer.toJSON();
+    expect(config).to.not.have.property('splitDirection');
 
     layer.destroy();
   });

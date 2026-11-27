@@ -24,7 +24,6 @@ import type { DeclarativeStyleItemOptions } from '../style/declarativeStyleItem.
 
 export type FeatureLayerOptions = LayerOptions & {
   style?: VectorStyleItemOptions | DeclarativeStyleItemOptions | StyleItem;
-  splitDirection?: string;
   featureVisibility?: FeatureVisibility;
 };
 
@@ -58,7 +57,6 @@ class FeatureLayer<
     return {
       ...Layer.getDefaultOptions(),
       style: undefined,
-      splitDirection: undefined,
     };
   }
 
@@ -92,13 +90,6 @@ class FeatureLayer<
 
     this._style = this.getStyleOrDefaultStyle(options.style);
     this._defaultStyle = this._style;
-
-    if (options.splitDirection) {
-      this._splitDirection =
-        options.splitDirection === 'left'
-          ? SplitDirection.LEFT
-          : SplitDirection.RIGHT;
-    }
 
     this.featureVisibility =
       options.featureVisibility || new FeatureVisibility();
@@ -194,10 +185,6 @@ class FeatureLayer<
     const config: FeatureLayerOptions = super.toJSON(defaultOptions);
     if (!this.getStyleOrDefaultStyle().equals(this._style)) {
       config.style = this.style.toJSON();
-    }
-    if (this._splitDirection !== SplitDirection.NONE) {
-      config.splitDirection =
-        this._splitDirection === SplitDirection.RIGHT ? 'right' : 'left';
     }
     return config;
   }

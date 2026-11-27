@@ -58,10 +58,6 @@ export type RasterLayerOptions = LayerOptions & {
    * @default 1
    */
   opacity?: number;
-  /**
-   * either 'left' or 'right', none if omitted
-   */
-  splitDirection?: string;
 
   /**
    * can be used to forward options to the cesium ImageryLayer
@@ -193,7 +189,6 @@ class RasterLayer<
       maxRenderingLevel: undefined,
       tilingSchema: TilingScheme.GEOGRAPHIC,
       opacity: 1,
-      splitDirection: undefined,
       imageryLayerOptions: undefined,
     };
   }
@@ -287,13 +282,6 @@ class RasterLayer<
       1.0,
     );
 
-    if (options.splitDirection) {
-      this._splitDirection =
-        options.splitDirection === 'left'
-          ? SplitDirection.LEFT
-          : SplitDirection.RIGHT;
-    }
-
     this.imageryLayerOptions = structuredClone(options.imageryLayerOptions);
   }
 
@@ -379,11 +367,6 @@ class RasterLayer<
 
     if (this.opacity !== defaultOptions.opacity) {
       config.opacity = this.opacity;
-    }
-
-    if (this._splitDirection !== SplitDirection.NONE) {
-      config.splitDirection =
-        this._splitDirection === SplitDirection.RIGHT ? 'right' : 'left';
     }
 
     if (this.imageryLayerOptions !== defaultOptions.imageryLayerOptions) {
